@@ -16,6 +16,12 @@
 				Clear the dictionary, removing all key/value pairs.
 			</description>
 		</method>
+		<method name="duplicate">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>

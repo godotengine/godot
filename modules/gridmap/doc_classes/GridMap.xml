@@ -21,6 +21,26 @@
 				Clear all cells.
 			</description>
 		</method>
+		<method name="clear_baked_meshes">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bake_mesh_instance">
+			<return type="RID">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bake_meshes">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_cell_item" qualifiers="const">
 			<return type="int">
 			</return>
@@ -101,6 +121,16 @@
 			</return>
 			<description>
 				Array of [Vector3] with the non empty cell coordinates in the grid map.
+			</description>
+		</method>
+		<method name="make_baked_meshes">
+			<return type="void">
+			</return>
+			<argument index="0" name="gen_lightmap_uv" type="bool" default="false">
+			</argument>
+			<argument index="1" name="lightmap_uv_texel_size" type="float" default="0.1">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">

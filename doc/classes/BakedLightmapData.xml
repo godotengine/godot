@@ -16,6 +16,8 @@
 			</argument>
 			<argument index="1" name="lightmap" type="Texture">
 			</argument>
+			<argument index="2" name="instance" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>

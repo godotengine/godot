@@ -57,11 +57,7 @@
 		</constant>
 		<constant name="SUBDIV_1024" value="3" enum="Subdiv">
 		</constant>
-		<constant name="SUBDIV_2048" value="4" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_4096" value="5" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_MAX" value="6" enum="Subdiv">
+		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
 		</constant>
 		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
 		</constant>
@@ -72,6 +68,16 @@
 		<constant name="BAKE_MODE_CONE_TRACE" value="0" enum="BakeMode">
 		</constant>
 		<constant name="BAKE_MODE_RAY_TRACE" value="1" enum="BakeMode">
+		</constant>
+		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="1" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_MESHES" value="2" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="3" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_USER_ABORTED" value="4" enum="BakeError">
 		</constant>
 	</constants>
 </class>
