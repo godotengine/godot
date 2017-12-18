@@ -273,7 +273,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file = fname.get_file();
+		String file = String(fname).get_file();
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
