@@ -927,7 +927,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *e
 
 	int stringCount = env->GetArrayLength(args);
 
-	print_line("Singl:  " + singname + " Method: " + mname + " RetVal: " + retval);
 	for (int i = 0; i < stringCount; i++) {
 
 		jstring string = (jstring)env->GetObjectArrayElement(args, i);
@@ -939,7 +938,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *e
 	cs += ")";
 	cs += get_jni_sig(retval);
 	jclass cls = env->GetObjectClass(s->get_instance());
-	print_line("METHOD: " + mname + " sig: " + cs);
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 
