@@ -209,9 +209,10 @@ class EditorSelection : public Object {
 
 	GDCLASS(EditorSelection, Object);
 
-public:
+private:
 	Map<Node *, Object *> selection;
 
+	bool emitted;
 	bool changed;
 	bool nl_changed;
 
@@ -223,6 +224,7 @@ public:
 	void _update_nl();
 	Array _get_selected_nodes();
 	Array _get_transformable_selected_nodes();
+	void _emit_change();
 
 protected:
 	static void _bind_methods();
