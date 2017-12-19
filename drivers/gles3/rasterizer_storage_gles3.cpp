@@ -6048,6 +6048,7 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 			glDeleteTextures(1, &rt->effects.mip_maps[i].color);
 			rt->effects.mip_maps[i].sizes.clear();
 			rt->effects.mip_maps[i].levels = 0;
+			rt->effects.mip_maps[i].color = 0;
 		}
 	}
 
