@@ -475,16 +475,17 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		xform.basis.set_orthogonal_index(c.rot);
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		if (baked_meshes.size()) {
+			if (theme->get_item_mesh(c.item).is_valid()) {
+				if (!multimesh_items.has(c.item)) {
+					multimesh_items[c.item] = List<Pair<Transform, IndexKey> >();
+				}
 
-		if (theme->get_item_mesh(c.item).is_valid()) {
-			if (!multimesh_items.has(c.item)) {
-				multimesh_items[c.item] = List<Pair<Transform, IndexKey> >();
+				Pair<Transform, IndexKey> p;
+				p.first = xform;
+				p.second = E->get();
+				multimesh_items[c.item].push_back(p);
 			}
-
-			Pair<Transform, IndexKey> p;
-			p.first = xform;
-			p.second = E->get();
-			multimesh_items[c.item].push_back(p);
 		}
 
 		Vector<MeshLibrary::ShapeData> shapes = theme->get_item_shapes(c.item);

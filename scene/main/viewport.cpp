@@ -1659,6 +1659,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							//cancel event, sorry, modal exclusive EATS UP ALL
 							//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
 							get_tree()->set_input_as_handled();
+
 							return; // no one gets the event if exclusive NO ONE
 						}
 
@@ -2348,7 +2349,6 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	//no need for change
 	if (gui.key_focus && gui.key_focus == p_control)
 		return;
-
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 	gui.key_focus = p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
@@ -2369,6 +2369,11 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
 		p_control->_modal_set_prev_focus_owner(0);
+
+	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus)) {
+		gui.mouse_focus->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		gui.mouse_focus = NULL;
+	}
 
 	return gui.modal_stack.back();
 }

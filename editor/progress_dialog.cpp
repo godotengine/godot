@@ -188,6 +188,9 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	cancel_hb->raise();
 	cancelled = false;
 	_popup();
+	if (p_can_cancel) {
+		cancel->grab_focus();
+	}
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
