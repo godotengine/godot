@@ -183,14 +183,23 @@ static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalf
 	return true; /* box and triangle overlaps */
 }
 
-static _FORCE_INLINE_ Vector2 get_uv(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv) {
+static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 
-	if (p_pos.distance_squared_to(p_vtx[0]) < CMP_EPSILON2)
-		return p_uv[0];
-	if (p_pos.distance_squared_to(p_vtx[1]) < CMP_EPSILON2)
-		return p_uv[1];
-	if (p_pos.distance_squared_to(p_vtx[2]) < CMP_EPSILON2)
-		return p_uv[2];
+	if (p_pos.distance_squared_to(p_vtx[0]) < CMP_EPSILON2) {
+		r_uv = p_uv[0];
+		r_normal = p_normal[0];
+		return;
+	}
+	if (p_pos.distance_squared_to(p_vtx[1]) < CMP_EPSILON2) {
+		r_uv = p_uv[1];
+		r_normal = p_normal[1];
+		return;
+	}
+	if (p_pos.distance_squared_to(p_vtx[2]) < CMP_EPSILON2) {
+		r_uv = p_uv[2];
+		r_normal = p_normal[2];
+		return;
+	}
 
 	Vector3 v0 = p_vtx[1] - p_vtx[0];
 	Vector3 v1 = p_vtx[2] - p_vtx[0];
@@ -202,16 +211,20 @@ static _FORCE_INLINE_ Vector2 get_uv(const Vector3 &p_pos, const Vector3 *p_vtx,
 	float d20 = v2.dot(v0);
 	float d21 = v2.dot(v1);
 	float denom = (d00 * d11 - d01 * d01);
-	if (denom == 0)
-		return p_uv[0];
+	if (denom == 0) {
+		r_uv = p_uv[0];
+		r_normal = p_normal[0];
+		return;
+	}
 	float v = (d11 * d20 - d01 * d21) / denom;
 	float w = (d00 * d21 - d01 * d20) / denom;
 	float u = 1.0f - v - w;
 
-	return p_uv[0] * u + p_uv[1] * v + p_uv[2] * w;
+	r_uv = p_uv[0] * u + p_uv[1] * v + p_uv[2] * w;
+	r_normal = (p_normal[0] * u + p_normal[1] * v + p_normal[2] * w).normalized();
 }
 
-void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
+void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
 
 	if (p_level == cell_subdiv - 1) {
 		//plot the face by guessing it's albedo and emission value
@@ -289,7 +302,11 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 
 				intersection = Face3(p_vtx[0], p_vtx[1], p_vtx[2]).get_closest_point_to(intersection);
 
-				Vector2 uv = get_uv(intersection, p_vtx, p_uv);
+				Vector2 uv;
+				Vector3 lnormal;
+				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
+				if (lnormal == Vector3()) //just in case normal as nor provided
+					lnormal = normal;
 
 				int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
 				int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -304,7 +321,7 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				emission_accum.g += p_material.emission[ofs].g;
 				emission_accum.b += p_material.emission[ofs].b;
 
-				normal_accum += normal;
+				normal_accum += lnormal;
 
 				alpha += 1.0;
 			}
@@ -316,7 +333,11 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 			Face3 f(p_vtx[0], p_vtx[1], p_vtx[2]);
 			Vector3 inters = f.get_closest_point_to(p_aabb.position + p_aabb.size * 0.5);
 
-			Vector2 uv = get_uv(inters, p_vtx, p_uv);
+			Vector3 lnormal;
+			Vector2 uv;
+			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
+			if (lnormal == Vector3()) //just in case normal as nor provided
+				lnormal = normal;
 
 			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
 			int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -334,7 +355,7 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 			emission_accum.g = p_material.emission[ofs].g * alpha;
 			emission_accum.b = p_material.emission[ofs].b * alpha;
 
-			normal_accum *= alpha;
+			normal_accum = lnormal * alpha;
 
 		} else {
 
@@ -415,7 +436,7 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				bake_cells[child_idx].level = p_level + 1;
 			}
 
-			_plot_face(bake_cells[p_idx].childs[i], p_level + 1, nx, ny, nz, p_vtx, p_uv, p_material, aabb);
+			_plot_face(bake_cells[p_idx].childs[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
 		}
 	}
 }
@@ -539,14 +560,22 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 		PoolVector<Vector3>::Read vr = vertices.read();
 		PoolVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
 		PoolVector<Vector2>::Read uvr;
+		PoolVector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
+		PoolVector<Vector3>::Read nr;
 		PoolVector<int> index = a[Mesh::ARRAY_INDEX];
 
 		bool read_uv = false;
+		bool read_normals = false;
 
 		if (uv.size()) {
 
 			uvr = uv.read();
 			read_uv = true;
+		}
+
+		if (normals.size()) {
+			read_normals = true;
+			nr = normals.read();
 		}
 
 		if (index.size()) {
@@ -558,6 +587,7 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
+				Vector3 normal[3];
 
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[ir[j * 3 + k]]);
@@ -569,11 +599,17 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 					}
 				}
 
+				if (read_normals) {
+					for (int k = 0; k < 3; k++) {
+						normal[k] = nr[ir[j * 3 + k]];
+					}
+				}
+
 				//test against original bounds
 				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
 					continue;
 				//plot
-				_plot_face(0, 0, 0, 0, 0, vtxs, uvs, material, po2_bounds);
+				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
 
 		} else {
@@ -584,6 +620,7 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
+				Vector3 normal[3];
 
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[j * 3 + k]);
@@ -595,11 +632,17 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 					}
 				}
 
+				if (read_normals) {
+					for (int k = 0; k < 3; k++) {
+						normal[k] = nr[j * 3 + k];
+					}
+				}
+
 				//test against original bounds
 				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
 					continue;
 				//plot face
-				_plot_face(0, 0, 0, 0, 0, vtxs, uvs, material, po2_bounds);
+				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
 		}
 	}
@@ -1761,6 +1804,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			Vector3 vertex[3];
 			Vector3 normal[3];
 			Vector2 uv[3];
+
 			for (int j = 0; j < 3; j++) {
 				int idx = ic ? ir[i * 3 + j] : i * 3 + j;
 				vertex[j] = xform.xform(vr[idx]);
