@@ -1643,19 +1643,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	return accum;
 }
 
-uint32_t xorshiftstate[] = { 123 }; // anything non-zero will do here
-
-_ALWAYS_INLINE_ uint32_t xorshift32() {
-	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
-	uint32_t x = xorshiftstate[0];
-	x ^= x << 13;
-	x ^= x >> 17;
-	x ^= x << 5;
-	xorshiftstate[0] = x;
-	return x;
-}
-
-Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal) {
+Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal, xorshift32 &rng) {
 
 	int samples_per_quality[3] = { 48, 128, 512 };
 
@@ -1679,9 +1667,9 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 
 	for (int i = 0; i < samples; i++) {
 
-		float random_angle1 = (((xorshift32() % 65535) / 65535.0) * 2.0 - 1.0) * spread;
+		float random_angle1 = (((rng.rand() % 65535) / 65535.0) * 2.0 - 1.0) * spread;
 		Vector3 axis(0, sin(random_angle1), cos(random_angle1));
-		float random_angle2 = ((xorshift32() % 65535) / 65535.0) * Math_PI * 2.0;
+		float random_angle2 = ((rng.rand() % 65535) / 65535.0) * Math_PI * 2.0;
 		Basis rot(Vector3(0, 0, 1), random_angle2);
 		axis = rot.xform(axis);
 
@@ -1815,18 +1803,19 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			_plot_triangle(uv, vertex, normal, lightmap.ptrw(), width, height);
 		}
 	}
-	//step 3 perform voxel cone trace on lightmap pixels
 
+	//step 3 perform voxel cone trace on lightmap pixels
 	{
 		LightMap *lightmap_ptr = lightmap.ptrw();
 		uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
 		volatile int lines = 0;
+		xorshift32 rng;
 
 		for (int i = 0; i < height; i++) {
 
 		//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1) private(rng)
 #endif
 			for (int j = 0; j < width; j++) {
 
@@ -1842,7 +1831,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 						pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
 					} break;
 					case BAKE_MODE_RAY_TRACE: {
-						pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal) * energy;
+						pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal, rng) * energy;
 					} break;
 						//	pixel->light = Vector3(1, 1, 1);
 						//}
