@@ -171,7 +171,7 @@ VERTEX_SHADER_CODE
 
 #ifdef USE_PIXEL_SNAP
 
-	outvec.xy=floor(outvec+0.5);
+	outvec.xy=floor(outvec+0.5).xy;
 #endif
 
 
