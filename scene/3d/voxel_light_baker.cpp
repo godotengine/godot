@@ -1709,6 +1709,9 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 				accum.y += light[cell].accum[i][1] * amount;
 				accum.z += light[cell].accum[i][2] * amount;
 			}
+			accum.x += cells[cell].emission[0];
+			accum.y += cells[cell].emission[1];
+			accum.z += cells[cell].emission[2];
 		}
 	}
 

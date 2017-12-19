@@ -107,8 +107,8 @@ void EditorFileDialog::_notification(int p_what) {
 		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
 		fav_rm->set_icon(get_icon("Remove", "EditorIcons"));
-
-		update_file_list();
+		// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
+		invalidate();
 	}
 }
 
@@ -637,6 +637,7 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 	return false;
 }
 
+// DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
