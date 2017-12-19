@@ -947,6 +947,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->add_newline();
 	}
 
+	bool method_descr = false;
 	bool sort_methods = EditorSettings::get_singleton()->get("text_editor/help/sort_functions_alphabetically");
 
 	Vector<DocData::MethodDoc> methods;
@@ -1013,6 +1014,10 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 					class_desc->pop(); //cell
 					class_desc->push_cell();
 					class_desc->pop(); //cell
+				}
+
+				if (m[i].description != "") {
+					method_descr = true;
 				}
 
 				_add_method(m[i], true);
@@ -1409,40 +1414,43 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		}
 	}
 
-	section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
-	class_desc->push_color(title_color);
-	class_desc->push_font(doc_title_font);
-	class_desc->add_text(TTR("Method Description:"));
-	class_desc->pop();
-	class_desc->pop();
+	if (method_descr) {
 
-	class_desc->add_newline();
-	class_desc->add_newline();
-
-	for (int i = 0; i < methods.size(); i++) {
-
-		_add_method(methods[i], false);
+		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
+		class_desc->push_color(title_color);
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text(TTR("Method Description:"));
+		class_desc->pop();
+		class_desc->pop();
 
 		class_desc->add_newline();
-		class_desc->push_color(text_color);
-		class_desc->push_font(doc_font);
-		class_desc->push_indent(1);
-		if (methods[i].description.strip_edges() != String()) {
-			_add_text(methods[i].description);
-		} else {
-			class_desc->add_image(get_icon("Error", "EditorIcons"));
-			class_desc->add_text(" ");
-			class_desc->push_color(comment_color);
-			class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+		class_desc->add_newline();
+
+		for (int i = 0; i < methods.size(); i++) {
+
+			_add_method(methods[i], false);
+
+			class_desc->add_newline();
+			class_desc->push_color(text_color);
+			class_desc->push_font(doc_font);
+			class_desc->push_indent(1);
+			if (methods[i].description.strip_edges() != String()) {
+				_add_text(methods[i].description);
+			} else {
+				class_desc->add_image(get_icon("Error", "EditorIcons"));
+				class_desc->add_text(" ");
+				class_desc->push_color(comment_color);
+				class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+				class_desc->pop();
+			}
+
 			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->add_newline();
+			class_desc->add_newline();
+			class_desc->add_newline();
 		}
-
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->add_newline();
 	}
 
 	scroll_locked = false;
