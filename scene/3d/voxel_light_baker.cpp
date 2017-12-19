@@ -1687,9 +1687,9 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 
 		Vector3 direction = normal_xform.xform(axis).normalized();
 
-		Vector3 pos = p_pos + Vector3(0.5, 0.5, 0.5) + direction * bias;
-
 		Vector3 advance = direction * _get_normal_advance(direction);
+
+		Vector3 pos = p_pos /*+ Vector3(0.5, 0.5, 0.5)*/ + advance * bias;
 
 		uint32_t cell = CHILD_EMPTY;
 
