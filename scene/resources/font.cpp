@@ -257,8 +257,8 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 			if (keys.has("file")) {
 
-				String file = keys["file"];
-				file = p_file.get_base_dir() + "/" + file;
+				String base_dir = p_file.get_base_dir();
+				String file = base_dir.plus_file(keys["file"]);
 				Ref<Texture> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
