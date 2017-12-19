@@ -1645,13 +1645,13 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 
 uint32_t xorshiftstate[] = { 123 }; // anything non-zero will do here
 
-_ALWAYS_INLINE_ uint32_t xorshift32() {
+_ALWAYS_INLINE_ uint32_t xorshift32(uint32_t *seed) {
 	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
-	uint32_t x = xorshiftstate[0];
+	uint32_t x = *seed;
 	x ^= x << 13;
 	x ^= x >> 17;
 	x ^= x << 5;
-	xorshiftstate[0] = x;
+	*seed = x;
 	return x;
 }
 
@@ -1677,11 +1677,16 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 	const Light *light = bake_light.ptr();
 	const Cell *cells = bake_cells.ptr();
 
+	uint32_t seed = 0;
+	while (seed == 0) {
+		seed = rand(); //system rand is thread safe, do not replace by Math:: random.
+	}
+
 	for (int i = 0; i < samples; i++) {
 
-		float random_angle1 = (((xorshift32() % 65535) / 65535.0) * 2.0 - 1.0) * spread;
+		float random_angle1 = (((xorshift32(&seed) % 65535) / 65535.0) * 2.0 - 1.0) * spread;
 		Vector3 axis(0, sin(random_angle1), cos(random_angle1));
-		float random_angle2 = ((xorshift32() % 65535) / 65535.0) * Math_PI * 2.0;
+		float random_angle2 = ((xorshift32(&seed) % 65535) / 65535.0) * Math_PI * 2.0;
 		Basis rot(Vector3(0, 0, 1), random_angle2);
 		axis = rot.xform(axis);
 
