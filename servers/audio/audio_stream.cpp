@@ -76,6 +76,13 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 			internal_buffer[1] = internal_buffer[INTERNAL_BUFFER_LEN + 1];
 			internal_buffer[2] = internal_buffer[INTERNAL_BUFFER_LEN + 2];
 			internal_buffer[3] = internal_buffer[INTERNAL_BUFFER_LEN + 3];
+			if (!is_playing()) {
+				for (int i = 4; i < INTERNAL_BUFFER_LEN; ++i) {
+					internal_buffer[i] = AudioFrame(0, 0);
+				}
+
+				return;
+			}
 			_mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
 			mix_offset -= (INTERNAL_BUFFER_LEN << FP_BITS);
 		}
