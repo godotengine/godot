@@ -5,52 +5,59 @@
 #define NV_MESH_ATLASPACKER_H
 
 #include "nvcore/RadixSort.h"
+#include "nvmath/Vector.h"
+#include "nvmath/Random.h"
 #include "nvimage/BitMap.h"
 #include "nvimage/Image.h"
-#include "nvmath/Random.h"
-#include "nvmath/Vector.h"
 
 #include "nvmesh/nvmesh.h"
 
-namespace nv {
-class Atlas;
-class Chart;
 
-struct AtlasPacker {
-	AtlasPacker(Atlas *atlas);
-	~AtlasPacker();
+namespace nv
+{
+    class Atlas;
+    class Chart;
 
-	void packCharts(int quality, float texelArea, bool blockAligned, bool conservative);
-	float computeAtlasUtilization() const;
+    struct AtlasPacker
+    {
+        AtlasPacker(Atlas * atlas);
+        ~AtlasPacker();
 
-private:
-	void findChartLocation(int quality, const BitMap *bitmap, Vector2::Arg extents, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r);
-	void findChartLocation_bruteForce(const BitMap *bitmap, Vector2::Arg extents, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r);
-	void findChartLocation_random(const BitMap *bitmap, Vector2::Arg extents, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, int minTrialCount);
+        void packCharts(int quality, float texelArea, bool blockAligned, bool conservative);
+        float computeAtlasUtilization() const;
 
-	void drawChartBitmapDilate(const Chart *chart, BitMap *bitmap, int padding);
-	void drawChartBitmap(const Chart *chart, BitMap *bitmap, const Vector2 &scale, const Vector2 &offset);
+    private:
 
-	bool canAddChart(const BitMap *bitmap, int w, int h, int x, int y, int r);
-	void addChart(const BitMap *bitmap, int w, int h, int x, int y, int r, Image *debugOutput);
-	//void checkCanAddChart(const Chart * chart, int w, int h, int x, int y, int r);
-	void addChart(const Chart *chart, int w, int h, int x, int y, int r, Image *debugOutput);
+        void findChartLocation(int quality, const BitMap * bitmap, Vector2::Arg extents, int w, int h, int * best_x, int * best_y, int * best_w, int * best_h, int * best_r);
+        void findChartLocation_bruteForce(const BitMap * bitmap, Vector2::Arg extents, int w, int h, int * best_x, int * best_y, int * best_w, int * best_h, int * best_r);
+        void findChartLocation_random(const BitMap * bitmap, Vector2::Arg extents, int w, int h, int * best_x, int * best_y, int * best_w, int * best_h, int * best_r, int minTrialCount);
 
-	static bool checkBitsCallback(void *param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
-	static bool setBitsCallback(void *param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
+        void drawChartBitmapDilate(const Chart * chart, BitMap * bitmap, int padding);
+        void drawChartBitmap(const Chart * chart, BitMap * bitmap, const Vector2 & scale, const Vector2 & offset);
+        
+        bool canAddChart(const BitMap * bitmap, int w, int h, int x, int y, int r);
+        void addChart(const BitMap * bitmap, int w, int h, int x, int y, int r, Image * debugOutput);
+        //void checkCanAddChart(const Chart * chart, int w, int h, int x, int y, int r);
+        void addChart(const Chart * chart, int w, int h, int x, int y, int r, Image * debugOutput);
+        
 
-private:
-	Atlas *m_atlas;
-	BitMap m_bitmap;
-	//Image m_debug_bitmap;
-	RadixSort m_radix;
+        static bool checkBitsCallback(void * param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
+        static bool setBitsCallback(void * param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
 
-	uint m_width;
-	uint m_height;
+    private:
 
-	MTRand m_rand;
-};
+        Atlas * m_atlas;
+        BitMap m_bitmap;
+        Image m_debug_bitmap;
+        RadixSort m_radix;
 
-} // namespace nv
+        uint m_width;
+        uint m_height;
+        
+        MTRand m_rand;
+       
+    };
+
+} // nv namespace
 
 #endif // NV_MESH_ATLASPACKER_H
