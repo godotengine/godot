@@ -48,7 +48,9 @@ namespace nv
 
         Atlas * m_atlas;
         BitMap m_bitmap;
-        Image m_debug_bitmap;
+        // -- GODOT start --
+        //Image m_debug_bitmap;
+        // -- GODOT end --
         RadixSort m_radix;
 
         uint m_width;

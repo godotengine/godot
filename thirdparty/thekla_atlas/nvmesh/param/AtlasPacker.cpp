@@ -142,9 +142,11 @@ AtlasPacker::AtlasPacker(Atlas * atlas) : m_atlas(atlas), m_bitmap(256, 256)
 {
     m_width = 0;
     m_height = 0;
-    
-    m_debug_bitmap.allocate(256, 256);
-    m_debug_bitmap.fill(Color32(0,0,0,0));
+
+    // -- GODOT start --
+    //m_debug_bitmap.allocate(256, 256);
+    //m_debug_bitmap.fill(Color32(0,0,0,0));
+    // -- GODOT end --
 }
 
 AtlasPacker::~AtlasPacker()
@@ -597,8 +599,10 @@ void AtlasPacker::packCharts(int quality, float texelsPerUnit, bool blockAligned
     m_bitmap.clearAll();
     if (approximateExtent > m_bitmap.width()) {
         m_bitmap.resize(approximateExtent, approximateExtent, false);
-        m_debug_bitmap.resize(approximateExtent, approximateExtent);
-        m_debug_bitmap.fill(Color32(0,0,0,0));
+        // -- GODOT start --
+        //m_debug_bitmap.resize(approximateExtent, approximateExtent);
+        //m_debug_bitmap.fill(Color32(0,0,0,0));
+        // -- GODOT end --
     }
 
     
@@ -680,20 +684,24 @@ void AtlasPacker::packCharts(int quality, float texelsPerUnit, bool blockAligned
         {
             //nvDebug("Resize bitmap (%d, %d).\n", nextPowerOfTwo(w), nextPowerOfTwo(h));
             m_bitmap.resize(nextPowerOfTwo(U32(w)), nextPowerOfTwo(U32(h)), false);
-            m_debug_bitmap.resize(nextPowerOfTwo(U32(w)), nextPowerOfTwo(U32(h)));
+            // -- GODOT start --
+            //m_debug_bitmap.resize(nextPowerOfTwo(U32(w)), nextPowerOfTwo(U32(h)));
+            // -- GODOT end --
         }
 
         //nvDebug("Add chart at (%d, %d).\n", best_x, best_y);
 
         addChart(&chart_bitmap, w, h, best_x, best_y, best_r, /*debugOutput=*/NULL);
 
+        // -- GODOT start --
         // IC: Output chart again to debug bitmap.
-        if (chart->isVertexMapped()) {
+        /*if (chart->isVertexMapped()) {
             addChart(&chart_bitmap, w, h, best_x, best_y, best_r, &m_debug_bitmap);
         }
         else {
             addChart(chart, w, h, best_x, best_y, best_r, &m_debug_bitmap);
-        }
+        }*/
+        // -- GODOT end --
 
         //float best_angle = 2 * PI * best_r;
 
@@ -842,8 +850,10 @@ void AtlasPacker::packCharts(int quality, float texelsPerUnit, bool blockAligned
     nvCheck(isAligned(m_width, 4));
     nvCheck(isAligned(m_height, 4));
 
-    m_debug_bitmap.resize(m_width, m_height);
-    m_debug_bitmap.setFormat(Image::Format_ARGB);
+    // -- GODOT start --
+    //m_debug_bitmap.resize(m_width, m_height);
+    //m_debug_bitmap.setFormat(Image::Format_ARGB);
+    // -- GODOT end --
 
 #if DEBUG_OUTPUT
     //outputDebugBitmap("debug_packer_final.tga", m_bitmap, w, h);

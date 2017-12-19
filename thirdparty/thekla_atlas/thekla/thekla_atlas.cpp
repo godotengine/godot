@@ -2,6 +2,9 @@
 #include "thekla_atlas.h"
 
 #include <cfloat>
+// -- GODOT start --
+#include <stdio.h>
+// -- GODOT end --
 
 #include "nvmesh/halfedge/Edge.h"
 #include "nvmesh/halfedge/Mesh.h"
@@ -112,6 +115,8 @@ static Atlas_Output_Mesh * mesh_atlas_to_output(const HalfEdge::Mesh * mesh, con
     output->index_count = face_count * 3;
     output->index_array = new int[face_count * 3];
 
+    // -- GODOT start --
+    int face_ofs = 0;
     // Set face indices.
     for (int f = 0; f < face_count; f++) {
         uint c = charts->faceChartAt(f);
@@ -121,13 +126,25 @@ static Atlas_Output_Mesh * mesh_atlas_to_output(const HalfEdge::Mesh * mesh, con
         const Chart * chart = charts->chartAt(c);
         nvDebugCheck(chart->faceAt(i) == f);
 
+        if (i >= chart->chartMesh()->faceCount()) {
+            printf("WARNING: Faces may be missing in the final vertex, which could not be packed\n");
+            continue;
+        }
+
         const HalfEdge::Face * face = chart->chartMesh()->faceAt(i);
         const HalfEdge::Edge * edge = face->edge;
 
-        output->index_array[3*f+0] = vertexOffset + edge->vertex->id;
-        output->index_array[3*f+1] = vertexOffset + edge->next->vertex->id;
-        output->index_array[3*f+2] = vertexOffset + edge->next->next->vertex->id;
+        //output->index_array[3*f+0] = vertexOffset + edge->vertex->id;
+        //output->index_array[3*f+1] = vertexOffset + edge->next->vertex->id;
+        //output->index_array[3*f+2] = vertexOffset + edge->next->next->vertex->id;
+        output->index_array[3 * face_ofs + 0] = vertexOffset + edge->vertex->id;
+        output->index_array[3 * face_ofs + 1] = vertexOffset + edge->next->vertex->id;
+        output->index_array[3 * face_ofs + 2] = vertexOffset + edge->next->next->vertex->id;
+        face_ofs++;
     }
+
+    output->index_count = face_ofs * 3;
+    // -- GODOT end --
 
     *error = Atlas_Error_Success;
     output->atlas_width = w;
