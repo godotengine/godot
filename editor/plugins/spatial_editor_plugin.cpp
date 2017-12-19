@@ -812,15 +812,25 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hig
 	return false;
 }
 
-void SpatialEditorViewport::_smouseenter() {
+void SpatialEditorViewport::_surface_mouse_enter() {
 
 	if (!surface->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 		surface->grab_focus();
 }
 
-void SpatialEditorViewport::_smouseexit() {
+void SpatialEditorViewport::_surface_mouse_exit() {
 
 	_remove_preview();
+}
+
+void SpatialEditorViewport::_surface_focus_enter() {
+
+	view_menu->set_disable_shortcuts(false);
+}
+
+void SpatialEditorViewport::_surface_focus_exit() {
+
+	view_menu->set_disable_shortcuts(true);
 }
 
 void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
@@ -1785,50 +1795,35 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event)) {
-			cursor.y_rot = 0;
-			cursor.x_rot = -Math_PI / 2.0;
-			set_message(TTR("Bottom View."), 2);
-			name = TTR("Bottom");
-			_update_name();
+			_menu_option(VIEW_BOTTOM);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event)) {
-			cursor.y_rot = 0;
-			cursor.x_rot = Math_PI / 2.0;
-			set_message(TTR("Top View."), 2);
-			name = TTR("Top");
-			_update_name();
+			_menu_option(VIEW_TOP);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event)) {
-			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
-			set_message(TTR("Rear View."), 2);
-			name = TTR("Rear");
-			_update_name();
+			_menu_option(VIEW_REAR);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event)) {
-			cursor.x_rot = 0;
-			cursor.y_rot = 0;
-			set_message(TTR("Front View."), 2);
-			name = TTR("Front");
-			_update_name();
+			_menu_option(VIEW_FRONT);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_event)) {
-			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI / 2.0;
-			set_message(TTR("Left View."), 2);
-			name = TTR("Left");
-			_update_name();
+			_menu_option(VIEW_LEFT);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_event)) {
-			cursor.x_rot = 0;
-			cursor.y_rot = -Math_PI / 2.0;
-			set_message(TTR("Right View."), 2);
-			name = TTR("Right");
-			_update_name();
+			_menu_option(VIEW_RIGHT);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event)) {
+			_menu_option(VIEW_CENTER_TO_ORIGIN);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
+			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/switch_perspective_orthogonal", p_event)) {
 			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
 			_update_name();
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/align_selection_with_view", p_event)) {
+			_menu_option(VIEW_ALIGN_SELECTION_WITH_VIEW);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE)
@@ -2248,8 +2243,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		surface->connect("draw", this, "_draw");
 		surface->connect("gui_input", this, "_sinput");
-		surface->connect("mouse_entered", this, "_smouseenter");
-		surface->connect("mouse_exited", this, "_smouseexit");
+		surface->connect("mouse_entered", this, "_surface_mouse_enter");
+		surface->connect("mouse_exited", this, "_surface_mouse_exit");
+		surface->connect("focus_entered", this, "_surface_focus_enter");
+		surface->connect("focus_exited", this, "_surface_focus_exit");
 		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
@@ -2423,47 +2420,54 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 		case VIEW_TOP: {
 
-			cursor.x_rot = Math_PI / 2.0;
 			cursor.y_rot = 0;
+			cursor.x_rot = Math_PI / 2.0;
+			set_message(TTR("Top View."), 2);
 			name = TTR("Top");
 			_update_name();
+
 		} break;
 		case VIEW_BOTTOM: {
 
-			cursor.x_rot = -Math_PI / 2.0;
 			cursor.y_rot = 0;
+			cursor.x_rot = -Math_PI / 2.0;
+			set_message(TTR("Bottom View."), 2);
 			name = TTR("Bottom");
 			_update_name();
 
 		} break;
 		case VIEW_LEFT: {
 
-			cursor.y_rot = Math_PI / 2.0;
 			cursor.x_rot = 0;
+			cursor.y_rot = Math_PI / 2.0;
+			set_message(TTR("Left View."), 2);
 			name = TTR("Left");
 			_update_name();
 
 		} break;
 		case VIEW_RIGHT: {
 
-			cursor.y_rot = -Math_PI / 2.0;
 			cursor.x_rot = 0;
+			cursor.y_rot = -Math_PI / 2.0;
+			set_message(TTR("Right View."), 2);
 			name = TTR("Right");
 			_update_name();
 
 		} break;
 		case VIEW_FRONT: {
 
-			cursor.y_rot = 0;
 			cursor.x_rot = 0;
+			cursor.y_rot = 0;
+			set_message(TTR("Front View."), 2);
 			name = TTR("Front");
 			_update_name();
 
 		} break;
 		case VIEW_REAR: {
 
-			cursor.y_rot = Math_PI;
 			cursor.x_rot = 0;
+			cursor.y_rot = Math_PI;
+			set_message(TTR("Rear View."), 2);
 			name = TTR("Rear");
 			_update_name();
 
@@ -2884,8 +2888,11 @@ Dictionary SpatialEditorViewport::get_state() const {
 void SpatialEditorViewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_draw"), &SpatialEditorViewport::_draw);
-	ClassDB::bind_method(D_METHOD("_smouseenter"), &SpatialEditorViewport::_smouseenter);
-	ClassDB::bind_method(D_METHOD("_smouseexit"), &SpatialEditorViewport::_smouseexit);
+
+	ClassDB::bind_method(D_METHOD("_surface_mouse_enter"), &SpatialEditorViewport::_surface_mouse_enter);
+	ClassDB::bind_method(D_METHOD("_surface_mouse_exit"), &SpatialEditorViewport::_surface_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_surface_focus_enter"), &SpatialEditorViewport::_surface_focus_enter);
+	ClassDB::bind_method(D_METHOD("_surface_focus_exit"), &SpatialEditorViewport::_surface_focus_exit);
 	ClassDB::bind_method(D_METHOD("_sinput"), &SpatialEditorViewport::_sinput);
 	ClassDB::bind_method(D_METHOD("_menu_option"), &SpatialEditorViewport::_menu_option);
 	ClassDB::bind_method(D_METHOD("_toggle_camera_preview"), &SpatialEditorViewport::_toggle_camera_preview);
@@ -3352,6 +3359,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	view_menu->set_disable_shortcuts(true);
 
 	ED_SHORTCUT("spatial_editor/freelook_left", TTR("Freelook Left"), KEY_A);
 	ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), KEY_D);

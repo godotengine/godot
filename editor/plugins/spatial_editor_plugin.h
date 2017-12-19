@@ -273,8 +273,11 @@ private:
 	Transform to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
-	void _smouseenter();
-	void _smouseexit();
+	void _surface_mouse_enter();
+	void _surface_mouse_exit();
+	void _surface_focus_enter();
+	void _surface_focus_exit();
+
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
 	SpatialEditor *spatial_editor;

@@ -40,6 +40,7 @@ class MenuButton : public Button {
 	GDCLASS(MenuButton, Button);
 
 	bool clicked;
+	bool disable_shortcuts;
 	PopupMenu *popup;
 	virtual void pressed();
 
@@ -54,6 +55,8 @@ protected:
 
 public:
 	PopupMenu *get_popup();
+	void set_disable_shortcuts(bool p_disabled);
+
 	MenuButton();
 	~MenuButton();
 };
