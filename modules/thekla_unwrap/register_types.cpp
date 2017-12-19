@@ -65,7 +65,7 @@ bool thekla_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	Thekla::atlas_set_default_options(&options);
 	options.packer_options.witness.packing_quality = 1;
 	options.packer_options.witness.texel_area = 1.0 / p_texel_size;
-	options.packer_options.witness.conservative = true;
+	options.packer_options.witness.conservative = false;
 
 	//generate
 	Thekla::Atlas_Error err;
