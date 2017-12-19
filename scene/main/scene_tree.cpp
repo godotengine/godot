@@ -38,6 +38,7 @@
 #include "os/os.h"
 #include "print_string.h"
 #include "project_settings.h"
+#include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -494,6 +495,10 @@ bool SceneTree::idle(float p_time) {
 
 	Size2 win_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
 	if (win_size != last_screen_size) {
+
+		if (use_font_oversampling) {
+			DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
+		}
 
 		last_screen_size = win_size;
 		_update_root_rect();
@@ -2195,6 +2200,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_connection_failed"), &SceneTree::_connection_failed);
 	ClassDB::bind_method(D_METHOD("_server_disconnected"), &SceneTree::_server_disconnected);
 
+	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
+	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
+
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node")));
@@ -2242,6 +2250,20 @@ void SceneTree::_call_idle_callbacks() {
 void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	ERR_FAIL_COND(idle_callback_count >= MAX_IDLE_CALLBACKS);
 	idle_callbacks[idle_callback_count++] = p_callback;
+}
+
+void SceneTree::set_use_font_oversampling(bool p_oversampling) {
+
+	use_font_oversampling = p_oversampling;
+	if (use_font_oversampling) {
+		DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
+	} else {
+		DynamicFontAtSize::font_oversampling = 1.0;
+	}
+}
+
+bool SceneTree::is_using_font_oversampling() const {
+	return use_font_oversampling;
 }
 
 SceneTree::SceneTree() {
@@ -2380,6 +2402,8 @@ SceneTree::SceneTree() {
 	last_send_cache_id = 1;
 
 #endif
+
+	use_font_oversampling = false;
 }
 
 SceneTree::~SceneTree() {

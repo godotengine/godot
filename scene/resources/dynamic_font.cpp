@@ -191,10 +191,10 @@ Error DynamicFontAtSize::_load() {
 		ERR_FAIL_COND_V( error, ERR_INVALID_PARAMETER );
 	}*/
 
-	error = FT_Set_Pixel_Sizes(face, 0, id.size);
+	error = FT_Set_Pixel_Sizes(face, 0, id.size * oversampling);
 
-	ascent = face->size->metrics.ascender >> 6;
-	descent = -face->size->metrics.descender >> 6;
+	ascent = (face->size->metrics.ascender >> 6) / oversampling;
+	descent = (-face->size->metrics.descender >> 6) / oversampling;
 	linegap = 0;
 	texture_flags = 0;
 	if (id.mipmaps)
@@ -207,6 +207,8 @@ Error DynamicFontAtSize::_load() {
 	valid = true;
 	return OK;
 }
+
+float DynamicFontAtSize::font_oversampling = 1.0;
 
 float DynamicFontAtSize::get_height() const {
 
@@ -282,11 +284,11 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 				if (delta.x == 0)
 					continue;
 
-				ret.x += delta.x >> 6;
+				ret.x += (delta.x >> 6) / oversampling;
 				break;
 			}
 		} else {
-			ret.x += delta.x >> 6;
+			ret.x += (delta.x >> 6) / oversampling;
 		}
 	}
 
@@ -338,7 +340,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 			cpos.y += ch->v_align;
 			ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= fb->textures.size(), 0);
 			if (ch->texture_idx != -1)
-				VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), fb->textures[ch->texture_idx].texture->get_rid(), ch->rect, p_modulate, false, RID(), false);
+				VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), fb->textures[ch->texture_idx].texture->get_rid(), ch->rect_uv, p_modulate, false, RID(), false);
 			advance = ch->advance;
 			used_fallback = true;
 			break;
@@ -360,7 +362,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 		cpos.y += c->v_align;
 		ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 		if (c->texture_idx != -1)
-			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate, false, RID(), false);
+			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect_uv, p_modulate, false, RID(), false);
 		advance = c->advance;
 		//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
 	}
@@ -382,11 +384,11 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 				if (delta.x == 0)
 					continue;
 
-				advance += delta.x >> 6;
+				advance += (delta.x >> 6) / oversampling;
 				break;
 			}
 		} else {
-			advance += delta.x >> 6;
+			advance += (delta.x >> 6) / oversampling;
 		}
 	}
 
@@ -602,13 +604,16 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	}
 
 	Character chr;
-	chr.h_align = xofs;
-	chr.v_align = ascent - yofs; // + ascent - descent;
-	chr.advance = advance;
+	chr.h_align = xofs / oversampling;
+	chr.v_align = ascent - (yofs / oversampling); // + ascent - descent;
+	chr.advance = advance / oversampling;
 	chr.texture_idx = tex_index;
 	chr.found = true;
 
-	chr.rect = Rect2(tex_x + rect_margin, tex_y + rect_margin, w, h);
+	chr.rect_uv = Rect2(tex_x + rect_margin, tex_y + rect_margin, w, h);
+	chr.rect = chr.rect_uv;
+	chr.rect.position /= oversampling;
+	chr.rect.size /= oversampling;
 
 	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" RECT: "+chr.rect+" X OFS: "+itos(xofs)+" Y OFS: "+itos(yofs));
 
@@ -623,6 +628,7 @@ DynamicFontAtSize::DynamicFontAtSize() {
 	descent = 1;
 	linegap = 1;
 	texture_flags = 0;
+	oversampling = font_oversampling;
 }
 
 DynamicFontAtSize::~DynamicFontAtSize() {

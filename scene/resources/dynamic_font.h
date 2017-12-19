@@ -97,10 +97,11 @@ class DynamicFontAtSize : public Reference {
 	FT_Face face; /* handle to face object */
 	FT_StreamRec stream;
 
-	int ascent;
-	int descent;
-	int linegap;
-	int rect_margin;
+	float ascent;
+	float descent;
+	float linegap;
+	float rect_margin;
+	float oversampling;
 
 	uint32_t texture_flags;
 
@@ -121,6 +122,7 @@ class DynamicFontAtSize : public Reference {
 		bool found;
 		int texture_idx;
 		Rect2 rect;
+		Rect2 rect_uv;
 		float v_align;
 		float h_align;
 		float advance;
@@ -145,8 +147,9 @@ class DynamicFontAtSize : public Reference {
 	static HashMap<String, Vector<uint8_t> > _fontdata;
 	Error _load();
 
-protected:
 public:
+	static float font_oversampling;
+
 	float get_height() const;
 
 	float get_ascent() const;

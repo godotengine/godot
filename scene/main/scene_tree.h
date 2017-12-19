@@ -122,11 +122,13 @@ private:
 	bool _quit;
 	bool initialized;
 	bool input_handled;
+
 	Size2 last_screen_size;
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
 
+	bool use_font_oversampling;
 	int64_t current_frame;
 	int node_count;
 
@@ -419,6 +421,9 @@ public:
 	bool has_group(const StringName &p_identifier) const;
 
 	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink = 1);
+
+	void set_use_font_oversampling(bool p_oversampling);
+	bool is_using_font_oversampling() const;
 
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();

@@ -207,7 +207,7 @@ void Label::_notification(int p_what) {
 				} break;
 			}
 
-			int y_ofs = style->get_offset().y;
+			float y_ofs = style->get_offset().y;
 			y_ofs += (line - lines_skipped) * font_h + font->get_ascent();
 			y_ofs += vbegin + line * vsep;
 
