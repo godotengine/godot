@@ -70,7 +70,9 @@ void gdmono_MonoLogCallback(const char *log_domain, const char *log_level, const
 	}
 
 	if (fatal) {
-		ERR_PRINTS("Mono: FALTAL ERROR, ABORTING! Logfile: " + GDMonoLog::get_singleton()->get_log_file_path() + "\n");
+		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: " + GDMonoLog::get_singleton()->get_log_file_path() + "\n");
+		// If we were to abort without flushing, the log wouldn't get written.
+		f->flush();
 		abort();
 	}
 }
