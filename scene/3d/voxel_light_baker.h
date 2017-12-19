@@ -64,6 +64,28 @@ private:
 		int next_leaf;
 	};
 
+	class xorshift32 {
+	public:
+		xorshift32() {
+			state[0] = 0;
+			while (state[0] == 0) {
+				state[0] = random();
+			}
+		}
+
+		_ALWAYS_INLINE_ uint32_t rand() {
+			/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+			uint32_t x = state[0];
+			x ^= x << 13;
+			x ^= x >> 17;
+			x ^= x << 5;
+			state[0] = x;
+			return x;
+		}
+	private:
+		uint32_t state[1];
+	};
+
 	int first_leaf;
 
 	Vector<Light> bake_light;
@@ -118,7 +140,7 @@ private:
 	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, float p_level, Vector3 &r_color, float &r_alpha);
 	_FORCE_INLINE_ Vector3 _voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture);
 	_FORCE_INLINE_ Vector3 _compute_pixel_light_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
+	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal, xorshift32 &rng);
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
