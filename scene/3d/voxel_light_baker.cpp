@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "voxel_light_baker.h"
 #include "os/os.h"
 #define FINDMINMAX(x0, x1, x2, min, max) \
