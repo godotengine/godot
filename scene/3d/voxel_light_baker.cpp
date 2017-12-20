@@ -1711,11 +1711,14 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 	const Light *light = bake_light.ptr();
 	const Cell *cells = bake_cells.ptr();
 
+	// Prevent false sharing when running on OpenMP
+	uint32_t local_rng_state = *rng_state;
+
 	for (int i = 0; i < samples; i++) {
 
-		float random_angle1 = (((xorshift32(rng_state) % 65535) / 65535.0) * 2.0 - 1.0) * spread;
+		float random_angle1 = (((xorshift32(&local_rng_state) % 65535) / 65535.0) * 2.0 - 1.0) * spread;
 		Vector3 axis(0, sin(random_angle1), cos(random_angle1));
-		float random_angle2 = ((xorshift32(rng_state) % 65535) / 65535.0) * Math_PI * 2.0;
+		float random_angle2 = ((xorshift32(&local_rng_state) % 65535) / 65535.0) * Math_PI * 2.0;
 		Basis rot(Vector3(0, 0, 1), random_angle2);
 		axis = rot.xform(axis);
 
@@ -1792,6 +1795,8 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 		}
 	}
 
+	// Make sure we don't reset this thread's RNG state
+	*rng_state = local_rng_state;
 	return accum / samples;
 }
 
