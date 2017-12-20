@@ -32,6 +32,10 @@
 #include "os/os.h"
 
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define FINDMINMAX(x0, x1, x2, min, max) \
 	min = max = x0;                      \
 	if (x1 < min) min = x1;              \
@@ -1675,19 +1679,17 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	return accum;
 }
 
-uint32_t xorshiftstate[] = { 123 }; // anything non-zero will do here
-
-_ALWAYS_INLINE_ uint32_t xorshift32(uint32_t *seed) {
+_ALWAYS_INLINE_ uint32_t xorshift32(uint32_t *state) {
 	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
-	uint32_t x = *seed;
+	uint32_t x = *state;
 	x ^= x << 13;
 	x ^= x >> 17;
 	x ^= x << 5;
-	*seed = x;
+	*state = x;
 	return x;
 }
 
-Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal) {
+Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal, uint32_t *rng_state) {
 
 	int samples_per_quality[3] = { 48, 128, 512 };
 
@@ -1709,16 +1711,11 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 	const Light *light = bake_light.ptr();
 	const Cell *cells = bake_cells.ptr();
 
-	uint32_t seed = 0;
-	while (seed == 0) {
-		seed = rand(); //system rand is thread safe, do not replace by Math:: random.
-	}
-
 	for (int i = 0; i < samples; i++) {
 
-		float random_angle1 = (((xorshift32(&seed) % 65535) / 65535.0) * 2.0 - 1.0) * spread;
+		float random_angle1 = (((xorshift32(rng_state) % 65535) / 65535.0) * 2.0 - 1.0) * spread;
 		Vector3 axis(0, sin(random_angle1), cos(random_angle1));
-		float random_angle2 = ((xorshift32(&seed) % 65535) / 65535.0) * Math_PI * 2.0;
+		float random_angle2 = ((xorshift32(rng_state) % 65535) / 65535.0) * Math_PI * 2.0;
 		Basis rot(Vector3(0, 0, 1), random_angle2);
 		axis = rot.xform(axis);
 
@@ -1852,20 +1849,42 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			_plot_triangle(uv, vertex, normal, lightmap.ptrw(), width, height);
 		}
 	}
-	//step 3 perform voxel cone trace on lightmap pixels
 
+	//step 3 perform voxel cone trace on lightmap pixels
 	{
 		LightMap *lightmap_ptr = lightmap.ptrw();
 		uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
 		volatile int lines = 0;
 
+		// make sure our OS-level rng is seeded
+		srand(OS::get_singleton()->get_ticks_usec());
+
+		// setup an RNG state for each OpenMP thread
+		uint32_t threadcount = 1;
+		uint32_t threadnum = 0;
+#ifdef _OPENMP
+		threadcount = omp_get_max_threads();
+#endif
+		Vector<uint32_t> rng_states;
+		rng_states.resize(threadcount);
+		for (uint32_t i = 0; i < threadcount; i++) {
+			do {
+				rng_states[i] = rand();
+			} while (rng_states[i] == 0);
+		}
+		uint32_t *rng_states_p = rng_states.ptrw();
+
 		for (int i = 0; i < height; i++) {
 
 		//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1) private(threadnum)
 #endif
 			for (int j = 0; j < width; j++) {
+
+#ifdef _OPENMP
+				threadnum = omp_get_thread_num();
+#endif
 
 				//if (i == 125 && j == 280) {
 
@@ -1879,7 +1898,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 						pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
 					} break;
 					case BAKE_MODE_RAY_TRACE: {
-						pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal) * energy;
+						pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal, &rng_states_p[threadnum]) * energy;
 					} break;
 						//	pixel->light = Vector3(1, 1, 1);
 						//}
