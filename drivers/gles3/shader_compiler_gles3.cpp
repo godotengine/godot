@@ -505,6 +505,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.renames.has(vnode->name))
 				code = p_default_actions.renames[vnode->name];
+#ifdef ANDROID_ENABLED
+			else if (vnode->get_datatype() == ShaderLanguage::TYPE_BOOL)
+				// Hack for Adreno 3xx GPUs, see comments in ShaderGLES3::get_current_version
+				code = "UNWRAP_BOOL(" + _mkid(vnode->name) + ")";
+#endif
 			else
 				code = _mkid(vnode->name);
 
