@@ -76,6 +76,9 @@ public:
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
 
+	void select_file(const String &p_file);
+	String get_selected_path() const;
+
 	void inspect_object(Object *p_obj, const String &p_for_property = String());
 
 	EditorSelection *get_selection();
