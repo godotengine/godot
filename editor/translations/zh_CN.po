@@ -43,8 +43,9 @@ msgid "All Selection"
 msgstr "所有选中项"
 
 #: editor/animation_editor.cpp
-msgid "Move Add Key"
-msgstr "移动已添加关键帧"
+#, fuzzy
+msgid "Anim Change Keyframe Time"
+msgstr "修改动画值"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -55,7 +56,8 @@ msgid "Anim Change Transform"
 msgstr "修改变换"
 
 #: editor/animation_editor.cpp
-msgid "Anim Change Value"
+#, fuzzy
+msgid "Anim Change Keyframe Value"
 msgstr "修改动画值"
 
 #: editor/animation_editor.cpp
@@ -547,8 +549,9 @@ msgid "Connecting Signal:"
 msgstr "连接事件:"
 
 #: editor/connections_dialog.cpp
-msgid "Create Subscription"
-msgstr "创建订阅"
+#, fuzzy
+msgid "Disconnect '%s' from '%s'"
+msgstr "连接'%s'到'%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -564,7 +567,8 @@ msgid "Signals"
 msgstr "信号"
 
 #: editor/create_dialog.cpp
-msgid "Create New"
+#, fuzzy
+msgid "Create New %s"
 msgstr "新建"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
@@ -579,7 +583,7 @@ msgstr "最近文件:"
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+#: editor/quick_open.cpp
 msgid "Search:"
 msgstr "搜索:"
 
@@ -616,6 +620,7 @@ msgid ""
 msgstr "资源'%s'正在使用中，修改将在重新加载后生效。"
 
 #: editor/dependency_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
 msgstr "依赖"
 
@@ -716,9 +721,10 @@ msgid "Delete selected files?"
 msgstr "删除选中的文件？"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
-#: editor/editor_node.cpp editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
-#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/project_export.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "删除"
 
@@ -859,6 +865,11 @@ msgid "Rename Audio Bus"
 msgstr "重命名音频总线（Audio Bus）"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Change Audio Bus Volume"
+msgstr "切换音频独奏"
+
+#: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
 msgstr "切换音频独奏"
 
@@ -906,8 +917,8 @@ msgstr "旁通"
 msgid "Bus options"
 msgstr "音频总线选项"
 
-#: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "拷贝"
 
@@ -918,6 +929,10 @@ msgstr "重置音量"
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
 msgstr "删除效果"
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1070,17 +1085,14 @@ msgstr "路径:"
 msgid "Node Name:"
 msgstr "节点名称:"
 
-#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
+#: editor/project_manager.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "名称"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "单独（Singleton）"
-
-#: editor/editor_autoload_settings.cpp
-msgid "List:"
-msgstr "列表:"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1093,6 +1105,15 @@ msgstr "保存修改中.."
 #: editor/editor_data.cpp
 msgid "Updating scene.."
 msgstr "更新场景中.."
+
+#: editor/editor_data.cpp
+#, fuzzy
+msgid "[empty]"
+msgstr "（空）"
+
+#: editor/editor_data.cpp
+msgid "[unsaved]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1143,6 +1164,22 @@ msgstr "文件已存在，确定要覆盖它吗？"
 msgid "Select Current Folder"
 msgstr "选择当前目录"
 
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "拷贝路径"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "在资源管理器中打开"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "New Folder.."
+msgstr "新建文件夹 .."
+
+#: editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr "刷新"
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "所有可用类型"
@@ -1188,10 +1225,6 @@ msgstr "前进"
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
 msgstr "上一级"
-
-#: editor/editor_file_dialog.cpp
-msgid "Refresh"
-msgstr "刷新"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
@@ -1373,7 +1406,8 @@ msgstr "输出："
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "清除"
 
@@ -2291,6 +2325,16 @@ msgstr "自身"
 msgid "Frame #:"
 msgstr "帧序号:"
 
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Time"
+msgstr "时间:"
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Calls"
+msgstr "调用到"
+
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
 msgstr "从列表中选择设备"
@@ -2428,7 +2472,8 @@ msgstr "无响应。"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
+#, fuzzy
+msgid "Request Failed."
 msgstr "请求失败."
 
 #: editor/export_template_manager.cpp
@@ -2475,7 +2520,8 @@ msgid "Connecting.."
 msgstr "连接中.."
 
 #: editor/export_template_manager.cpp
-msgid "Can't Conect"
+#, fuzzy
+msgid "Can't Connect"
 msgstr "无法连接"
 
 #: editor/export_template_manager.cpp
@@ -2568,6 +2614,11 @@ msgid "Error moving:\n"
 msgstr "移动时出错:\n"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error duplicating:\n"
+msgstr "加载出错:"
+
+#: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
 msgstr "无法更新依赖关系:\n"
 
@@ -2600,16 +2651,22 @@ msgid "Renaming folder:"
 msgstr "重命名文件夹:"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating file:"
+msgstr "拷贝"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating folder:"
+msgstr "重命名文件夹:"
+
+#: editor/filesystem_dock.cpp
 msgid "Expand all"
 msgstr "展开所有"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "收起所有"
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "拷贝路径"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename.."
@@ -2620,12 +2677,9 @@ msgid "Move To.."
 msgstr "移动.."
 
 #: editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "新建文件夹 .."
-
-#: editor/filesystem_dock.cpp
-msgid "Show In File Manager"
-msgstr "在资源管理器中打开"
+#, fuzzy
+msgid "Open Scene(s)"
+msgstr "打开场景"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2638,6 +2692,11 @@ msgstr "编辑依赖.."
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "查看所有者.."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicate.."
+msgstr "拷贝"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2732,6 +2791,16 @@ msgstr "导入场景"
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene.."
 msgstr "导入场景.."
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating Lightmaps"
+msgstr "转移到光照贴图:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating for Mesh: "
+msgstr "正在生成AABB"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3301,6 +3370,7 @@ msgid "last"
 msgstr "最后一页"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "全部"
 
@@ -3341,6 +3411,28 @@ msgstr "测试"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
 msgstr "ZIP资源包"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Can't determine a save path for lightmap images.\n"
+"Save your scene (for images to be saved in the same dir), or pick a save "
+"path from the BakedLightmap properties."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed creating lightmap images, make sure path is writable."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Bake Lightmaps"
+msgstr "转移到光照贴图:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3478,7 +3570,6 @@ msgid "Toggles snapping"
 msgstr "切换吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "使用吸附"
 
@@ -3657,16 +3748,6 @@ msgstr "新节点"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "从%s实例化场景出错"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "好吧"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "没有选中节点来添加实例。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3868,6 +3949,22 @@ msgid "Create Navigation Mesh"
 msgstr "创建导航Mesh(网格)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "No mesh to debug."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Model has no UV in this layer"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "MeshInstance (网格实例) 缺少 Mesh(网格)！"
 
@@ -3906,6 +4003,20 @@ msgstr "创建凸(Convex)碰撞同级"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
 msgstr "创建轮廓网格(Outline Mesh).."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV1"
+msgstr "视图"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV2"
+msgstr "视图"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Unwrap UV2 for Lightmap/AO"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4092,10 +4203,6 @@ msgid "Create Navigation Polygon"
 msgstr "创建导航多边形"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "清除Emission Mask（发射屏蔽）"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
 msgstr "正在生成AABB"
@@ -4113,16 +4220,16 @@ msgid "No pixels with transparency > 128 in image.."
 msgstr "图片中没有透明度> 128的像素.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Set Emission Mask"
-msgstr "设置Emission Mask（发射屏蔽）"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
 msgstr "生成可视化区域"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
 msgstr "加载Emission Mask（发射屏蔽）"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "清除Emission Mask（发射屏蔽）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -4181,10 +4288,6 @@ msgstr "从网格（ Mesh）创建发射器(Emission)"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
 msgstr "从节点创建发射器(Emission)"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Clear Emitter"
-msgstr "清除发射器(Emitter)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4474,11 +4577,13 @@ msgstr "排序"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
 msgstr "向上移动"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
 msgstr "向下移动"
 
@@ -4494,7 +4599,7 @@ msgstr "上一个脚本"
 msgid "File"
 msgstr "文件"
 
-#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "New"
 msgstr "新建"
 
@@ -4505,6 +4610,11 @@ msgstr "全部保存"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
 msgstr "软重载脚本"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Copy Script Path"
+msgstr "拷贝路径"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4697,11 +4807,7 @@ msgstr "拷贝到下一行"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
-msgid "Fold Line"
-msgstr "折叠行"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Unfold Line"
+msgid "Fold/Unfold Line"
 msgstr "取消折叠行"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5030,6 +5136,14 @@ msgstr "帧数"
 msgid "Align with view"
 msgstr "与视图对齐"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "好吧"
+
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "没有选中节点来添加实例。"
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "显示法线"
@@ -5138,6 +5252,20 @@ msgid "Scale Mode (R)"
 msgstr "缩放模式（R）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Local Coords"
+msgstr "本地坐标"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Local Space Mode (%s)"
+msgstr "缩放模式（R）"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Mode (%s)"
+msgstr "吸附模式:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
 msgstr "底部视图"
 
@@ -5211,10 +5339,6 @@ msgid "Configure Snap.."
 msgstr "设置吸附.."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "本地坐标"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
 msgstr "变换对话框.."
 
@@ -5254,6 +5378,10 @@ msgstr "显示网格"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "设置"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Skeleton Gizmo visibility"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5641,6 +5769,11 @@ msgid "Merge from scene?"
 msgstr "确定要合并场景？"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "砖块集.."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
 msgstr "从场景中创建"
 
@@ -5651,6 +5784,10 @@ msgstr "从场景中合并"
 #: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr "错误"
+
+#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "取消"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -5768,10 +5905,6 @@ msgstr "请选择一个不包含'project.godot'文件的文件夹。"
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "已导入的项目"
-
-#: editor/project_manager.cpp
-msgid " "
-msgstr " .. "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6038,8 +6171,9 @@ msgid "Joypad Button Index:"
 msgstr "手柄按钮:"
 
 #: editor/project_settings_editor.cpp
-msgid "Add Input Action"
-msgstr "添加输入动作"
+#, fuzzy
+msgid "Erase Input Action"
+msgstr "移除输入事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6104,6 +6238,10 @@ msgstr "不能包含 \"/\" 或 \":\""
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr "已经存在"
+
+#: editor/project_settings_editor.cpp
+msgid "Add Input Action"
+msgstr "添加输入动作"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6285,6 +6423,10 @@ msgid "New Script"
 msgstr "新建脚本"
 
 #: editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/property_editor.cpp
 msgid "Make Unique"
 msgstr "转换为独立资源"
 
@@ -6316,6 +6458,11 @@ msgstr "(Bit)位 %d, val %d."
 msgid "On"
 msgstr "启用"
 
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "[Empty]"
+msgstr "添加空白帧"
+
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
 msgstr "设置"
@@ -6323,10 +6470,6 @@ msgstr "设置"
 #: editor/property_editor.cpp
 msgid "Properties:"
 msgstr "属性:"
-
-#: editor/property_editor.cpp
-msgid "Sections:"
-msgstr "选项:"
 
 #: editor/property_selector.cpp
 msgid "Select Property"
@@ -6891,6 +7034,10 @@ msgstr "从场景树设置"
 msgid "Shortcuts"
 msgstr "快捷键"
 
+#: editor/settings_config_dialog.cpp
+msgid "Binding"
+msgstr ""
+
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
 msgstr "设置光照半径"
@@ -6939,16 +7086,56 @@ msgstr "修改粒子AABB"
 msgid "Change Probe Extents"
 msgstr "修改探针(Probe)范围"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select the dynamic library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select dependencies of the library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Remove current entry"
+msgstr "移除路径顶点"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Double click to create a new entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform:"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Platform"
+msgstr "复制到平台.."
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Dynamic Library"
+msgstr "库"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Add an architecture entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "GDNativeLibrary"
+msgstr "GDNative"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
 msgid "Library"
 msgstr "库"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr "状态"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr "库: "
 
@@ -7621,6 +7808,25 @@ msgstr "锚 id 必须不是 0 或这个锚点将不绑定到实际的锚"
 msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
 
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Meshes: "
+msgstr "正在绘制网格"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Lights:"
+msgstr "正在绘制网格"
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "正在完成划分"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Lighting Meshes: "
+msgstr "正在绘制网格"
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -7654,10 +7860,6 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "正在绘制网格"
-
-#: scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "正在完成划分"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -7716,10 +7918,6 @@ msgstr "Raw 模式"
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
 msgstr "将当前颜色添加为预设"
-
-#: scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "取消"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7789,6 +7987,31 @@ msgstr "加载字体出错。"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "字体大小非法。"
+
+#~ msgid "Move Add Key"
+#~ msgstr "移动已添加关键帧"
+
+#~ msgid "Create Subscription"
+#~ msgstr "创建订阅"
+
+#~ msgid "List:"
+#~ msgstr "列表:"
+
+#~ msgid "Set Emission Mask"
+#~ msgstr "设置Emission Mask（发射屏蔽）"
+
+#~ msgid "Clear Emitter"
+#~ msgstr "清除发射器(Emitter)"
+
+#, fuzzy
+#~ msgid "Fold Line"
+#~ msgstr "折叠行"
+
+#~ msgid " "
+#~ msgstr " .. "
+
+#~ msgid "Sections:"
+#~ msgstr "选项:"
 
 #~ msgid "Cannot navigate to '"
 #~ msgstr "无法导航到 '"
@@ -8326,9 +8549,6 @@ msgstr "字体大小非法。"
 #~ msgid "Making BVH"
 #~ msgstr "制作BVH(动作骨骼)"
 
-#~ msgid "Transfer to Lightmaps:"
-#~ msgstr "转移到光照贴图:"
-
 #~ msgid "Allocating Texture #"
 #~ msgstr "分配纹理 #"
 
@@ -8479,9 +8699,6 @@ msgstr "字体大小非法。"
 
 #~ msgid "Del"
 #~ msgstr "删除"
-
-#~ msgid "Copy To Platform.."
-#~ msgstr "复制到平台.."
 
 #~ msgid "just pressed"
 #~ msgstr "正好按下"

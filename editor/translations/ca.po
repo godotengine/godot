@@ -28,8 +28,9 @@ msgid "All Selection"
 msgstr "Tota la Selecció"
 
 #: editor/animation_editor.cpp
-msgid "Move Add Key"
-msgstr "Mou o Afegeix una Clau"
+#, fuzzy
+msgid "Anim Change Keyframe Time"
+msgstr "Modifica el Valor"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -40,7 +41,8 @@ msgid "Anim Change Transform"
 msgstr "Modifica la Transformació de l'Animació"
 
 #: editor/animation_editor.cpp
-msgid "Anim Change Value"
+#, fuzzy
+msgid "Anim Change Keyframe Value"
 msgstr "Modifica el Valor"
 
 #: editor/animation_editor.cpp
@@ -535,8 +537,9 @@ msgid "Connecting Signal:"
 msgstr "Connectant Senyal:"
 
 #: editor/connections_dialog.cpp
-msgid "Create Subscription"
-msgstr "Crea Subscripció"
+#, fuzzy
+msgid "Disconnect '%s' from '%s'"
+msgstr "Connecta '%s' amb '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -552,7 +555,8 @@ msgid "Signals"
 msgstr "Senyals"
 
 #: editor/create_dialog.cpp
-msgid "Create New"
+#, fuzzy
+msgid "Create New %s"
 msgstr "Crea Nou"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
@@ -567,7 +571,7 @@ msgstr "Recents:"
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+#: editor/quick_open.cpp
 msgid "Search:"
 msgstr "Cerca:"
 
@@ -608,6 +612,7 @@ msgstr ""
 "Els canvis s'actualitzaran en recarregar."
 
 #: editor/dependency_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
 msgstr "Dependències"
 
@@ -711,9 +716,10 @@ msgid "Delete selected files?"
 msgstr "Voleu Esborrar els fitxers seleccionats?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
-#: editor/editor_node.cpp editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
-#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/project_export.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Esborra"
 
@@ -856,6 +862,11 @@ msgid "Rename Audio Bus"
 msgstr "Reanomena Bus d'Àudio"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Change Audio Bus Volume"
+msgstr "Commuta el solo del Bus d'àudio"
+
+#: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
 msgstr "Commuta el solo del Bus d'àudio"
 
@@ -903,8 +914,8 @@ msgstr "Derivació"
 msgid "Bus options"
 msgstr "Opcions del Bus"
 
-#: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Duplica"
 
@@ -915,6 +926,10 @@ msgstr "Restableix el Volum"
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
 msgstr "Elimina l'Efecte"
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1073,17 +1088,14 @@ msgstr "Camí:"
 msgid "Node Name:"
 msgstr "Nom del node:"
 
-#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
+#: editor/project_manager.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nom"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Singleton"
-
-#: editor/editor_autoload_settings.cpp
-msgid "List:"
-msgstr "Llista:"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1096,6 +1108,15 @@ msgstr "Emmagatzemant canvis locals..."
 #: editor/editor_data.cpp
 msgid "Updating scene.."
 msgstr "S'està actualitzant l'escena.."
+
+#: editor/editor_data.cpp
+#, fuzzy
+msgid "[empty]"
+msgstr "(buit)"
+
+#: editor/editor_data.cpp
+msgid "[unsaved]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1146,6 +1167,22 @@ msgstr "Fitxer Existent, Voleu sobreescriure'l?"
 msgid "Select Current Folder"
 msgstr "Selecciona el Directori Actual"
 
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Copia Camí"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Mostra en el Gestor de Fitxers"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "New Folder.."
+msgstr "Nou Directori.."
+
+#: editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr "Refresca"
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "Tots Reconeguts"
@@ -1191,10 +1228,6 @@ msgstr "Endavant"
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
 msgstr "Puja"
-
-#: editor/editor_file_dialog.cpp
-msgid "Refresh"
-msgstr "Refresca"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
@@ -1376,7 +1409,8 @@ msgstr "Sortida:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "Neteja"
 
@@ -2328,6 +2362,16 @@ msgstr "Propi"
 msgid "Frame #:"
 msgstr "Fotograma núm.:"
 
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Time"
+msgstr "Temps:"
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Calls"
+msgstr "Crida"
+
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
 msgstr "Selecciona un dispositiu de la llista"
@@ -2469,7 +2513,8 @@ msgstr "Cap resposta."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
+#, fuzzy
+msgid "Request Failed."
 msgstr "Ha fallat la sol·licitud."
 
 #: editor/export_template_manager.cpp
@@ -2516,7 +2561,8 @@ msgid "Connecting.."
 msgstr "Connexió en marxa..."
 
 #: editor/export_template_manager.cpp
-msgid "Can't Conect"
+#, fuzzy
+msgid "Can't Connect"
 msgstr "No es pot connectar"
 
 #: editor/export_template_manager.cpp
@@ -2611,6 +2657,11 @@ msgid "Error moving:\n"
 msgstr "Error en moure:\n"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error duplicating:\n"
+msgstr "Error en carregar:"
+
+#: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
 msgstr "No s'han pogut actualitzar les dependències:\n"
 
@@ -2643,16 +2694,22 @@ msgid "Renaming folder:"
 msgstr "Reanomenant directori:"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating file:"
+msgstr "Duplica"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating folder:"
+msgstr "Reanomenant directori:"
+
+#: editor/filesystem_dock.cpp
 msgid "Expand all"
 msgstr "Expandir tot"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "Col·lapsar tot"
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "Copia Camí"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename.."
@@ -2663,12 +2720,9 @@ msgid "Move To.."
 msgstr "Mou cap a..."
 
 #: editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "Nou Directori.."
-
-#: editor/filesystem_dock.cpp
-msgid "Show In File Manager"
-msgstr "Mostra en el Gestor de Fitxers"
+#, fuzzy
+msgid "Open Scene(s)"
+msgstr "Obre una Escena"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2681,6 +2735,11 @@ msgstr "Edita Dependències..."
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "Mostra Propietaris..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicate.."
+msgstr "Duplica"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2773,6 +2832,16 @@ msgstr "Importa Escena"
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene.."
 msgstr "Important Escena..."
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating Lightmaps"
+msgstr "Generant AABB"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating for Mesh: "
+msgstr "Generant AABB"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3342,6 +3411,7 @@ msgid "last"
 msgstr "darrer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Tot"
 
@@ -3382,6 +3452,28 @@ msgstr "Provant"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
 msgstr "Arxiu ZIP d'Actius"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Can't determine a save path for lightmap images.\n"
+"Save your scene (for images to be saved in the same dir), or pick a save "
+"path from the BakedLightmap properties."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed creating lightmap images, make sure path is writable."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Bake Lightmaps"
+msgstr "Modifica el Radi de Llum"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3521,7 +3613,6 @@ msgid "Toggles snapping"
 msgstr "Activa/Desactiva Alineament"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "Alinea"
 
@@ -3698,16 +3789,6 @@ msgstr "Crea un Node"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Error en instanciar l'escena des de %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "Buenu, pos molt bé, pos adiós... :("
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "No hi ha cap node Pare per instanciar-li un fill."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3906,6 +3987,22 @@ msgid "Create Navigation Mesh"
 msgstr "Crea un malla de Navegació"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "No mesh to debug."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Model has no UV in this layer"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "MeshInstance manca d'una Malla!"
 
@@ -3944,6 +4041,20 @@ msgstr "Crea col·lisions convexes entre nodes germans"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
 msgstr "Crea una malla de contorn..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV1"
+msgstr "Vista"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV2"
+msgstr "Vista"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Unwrap UV2 for Lightmap/AO"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4122,10 +4233,6 @@ msgid "Create Navigation Polygon"
 msgstr "Crea un Polígon de Navegació"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Esborra la Màscara d'Emissió"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
 msgstr "Generant AABB"
@@ -4143,16 +4250,16 @@ msgid "No pixels with transparency > 128 in image.."
 msgstr "Cap píxel amb transparència > 128 en la imatge..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Set Emission Mask"
-msgstr "Estableix la Màscara d'Emissió"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
 msgstr "Genera un Rectangle de Visibilitat"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
 msgstr "Carrega una Màscara d'Emissió"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Esborra la Màscara d'Emissió"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -4211,10 +4318,6 @@ msgstr "Crea Punts d'Emissió des d'una Malla"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
 msgstr "Crea Punts d'Emissió des d'un Node"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Clear Emitter"
-msgstr "Esborra l'Emissor"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4501,11 +4604,13 @@ msgstr "Ordena"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
 msgstr "Mou Amunt"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
 msgstr "Mou avall"
 
@@ -4521,7 +4626,7 @@ msgstr "Script Anterior"
 msgid "File"
 msgstr "Fitxer"
 
-#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "New"
 msgstr "Nou"
 
@@ -4532,6 +4637,11 @@ msgstr "Desa-ho Tot"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
 msgstr "Recarrega parcialment l'Script"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Copy Script Path"
+msgstr "Copia Camí"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4724,11 +4834,8 @@ msgid "Clone Down"
 msgstr "Clona avall"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Fold Line"
-msgstr "Plega la Línia"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Unfold Line"
+#, fuzzy
+msgid "Fold/Unfold Line"
 msgstr "Desplega la línia"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5056,6 +5163,14 @@ msgstr "FPS"
 msgid "Align with view"
 msgstr "Alinea amb la Vista"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "Buenu, pos molt bé, pos adiós... :("
+
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "No hi ha cap node Pare per instanciar-li un fill."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Mostra les Normals"
@@ -5163,6 +5278,20 @@ msgid "Scale Mode (R)"
 msgstr "Mode Escala (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Local Coords"
+msgstr "Coordenades Locals"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Local Space Mode (%s)"
+msgstr "Mode Escala (R)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Mode (%s)"
+msgstr "Mode Imant:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
 msgstr "Vista Inferior"
 
@@ -5235,10 +5364,6 @@ msgid "Configure Snap.."
 msgstr "Configura l'Alineament..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "Coordenades Locals"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
 msgstr "Diàleg de Transformació..."
 
@@ -5278,6 +5403,10 @@ msgstr "Mostra la Graella"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "Configuració"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Skeleton Gizmo visibility"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5662,6 +5791,11 @@ msgid "Merge from scene?"
 msgstr "Combinar-ho a partir de l'escena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "TileSet..."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
 msgstr "Crea-ho a partir de l'Escena"
 
@@ -5672,6 +5806,10 @@ msgstr "Combina-ho a partir de l'Escena"
 #: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr "Error"
+
+#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Cancel·la"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -5796,10 +5934,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Project importat"
-
-#: editor/project_manager.cpp
-msgid " "
-msgstr " "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6069,8 +6203,9 @@ msgid "Joypad Button Index:"
 msgstr "Índex del Botó de la Maneta:"
 
 #: editor/project_settings_editor.cpp
-msgid "Add Input Action"
-msgstr "Afegeix una Acció d'Entrada"
+#, fuzzy
+msgid "Erase Input Action"
+msgstr "Elimina la Incidència d'Acció d'Entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6135,6 +6270,10 @@ msgstr "No pot contenir '/' o ':'"
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr "Ja existeix"
+
+#: editor/project_settings_editor.cpp
+msgid "Add Input Action"
+msgstr "Afegeix una Acció d'Entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6313,6 +6452,10 @@ msgid "New Script"
 msgstr "Script Nou"
 
 #: editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/property_editor.cpp
 msgid "Make Unique"
 msgstr "Fes-lo Únic"
 
@@ -6344,6 +6487,11 @@ msgstr "Bit %d, valor %d."
 msgid "On"
 msgstr "Activat"
 
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "[Empty]"
+msgstr "Afegeix un element Buit"
+
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
 msgstr "Estableix"
@@ -6351,10 +6499,6 @@ msgstr "Estableix"
 #: editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Propietats:"
-
-#: editor/property_editor.cpp
-msgid "Sections:"
-msgstr "Seccions:"
 
 #: editor/property_selector.cpp
 msgid "Select Property"
@@ -6921,6 +7065,10 @@ msgstr "Estableix des de l'Arbre"
 msgid "Shortcuts"
 msgstr "Dreceres"
 
+#: editor/settings_config_dialog.cpp
+msgid "Binding"
+msgstr ""
+
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
 msgstr "Modifica el Radi de Llum"
@@ -6969,15 +7117,54 @@ msgstr "Modifica les Partícules AABB"
 msgid "Change Probe Extents"
 msgstr "Modifica l'abast de la Sonda"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select the dynamic library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select dependencies of the library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Remove current entry"
+msgstr "Elimina un punt de la Corba"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Double click to create a new entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform:"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Dynamic Library"
+msgstr "Biblioteca"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Add an architecture entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "GDNativeLibrary"
+msgstr "GDNative"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
 msgstr "Biblioteca"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr "Estat"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr "Biblioteques: "
 
@@ -7679,6 +7866,25 @@ msgstr ""
 msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "El node ARVROrigin requreix un node Fill del tipus ARVRCamera"
 
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Meshes: "
+msgstr "S'estàn traçant les Malles"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Plotting Lights:"
+msgstr "S'estàn traçant les Malles"
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "S'està finalitzant el Traçat"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Lighting Meshes: "
+msgstr "S'estàn traçant les Malles"
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -7714,10 +7920,6 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "S'estàn traçant les Malles"
-
-#: scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "S'està finalitzant el Traçat"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -7783,10 +7985,6 @@ msgstr "Mode Cru"
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
 msgstr "Afegeix el Color actual com a predeterminat"
-
-#: scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "Cancel·la"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7859,6 +8057,30 @@ msgstr "Error carregant lletra."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "La mida de la lletra no és vàlida."
+
+#~ msgid "Move Add Key"
+#~ msgstr "Mou o Afegeix una Clau"
+
+#~ msgid "Create Subscription"
+#~ msgstr "Crea Subscripció"
+
+#~ msgid "List:"
+#~ msgstr "Llista:"
+
+#~ msgid "Set Emission Mask"
+#~ msgstr "Estableix la Màscara d'Emissió"
+
+#~ msgid "Clear Emitter"
+#~ msgstr "Esborra l'Emissor"
+
+#~ msgid "Fold Line"
+#~ msgstr "Plega la Línia"
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid "Sections:"
+#~ msgstr "Seccions:"
 
 #~ msgid "Cannot navigate to '"
 #~ msgstr "No es pot navegar fins '"

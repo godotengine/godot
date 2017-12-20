@@ -31,8 +31,8 @@ msgstr "Koko valinta"
 
 #: editor/animation_editor.cpp
 #, fuzzy
-msgid "Move Add Key"
-msgstr "Siirrä lisäyspainiketta"
+msgid "Anim Change Keyframe Time"
+msgstr "Animaatio: muuta arvoa"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -43,7 +43,8 @@ msgid "Anim Change Transform"
 msgstr "Animaatio: muuta siirtymää"
 
 #: editor/animation_editor.cpp
-msgid "Anim Change Value"
+#, fuzzy
+msgid "Anim Change Keyframe Value"
 msgstr "Animaatio: muuta arvoa"
 
 #: editor/animation_editor.cpp
@@ -544,8 +545,9 @@ msgid "Connecting Signal:"
 msgstr "Yhdistävä signaali:"
 
 #: editor/connections_dialog.cpp
-msgid "Create Subscription"
-msgstr "Luo tilaus"
+#, fuzzy
+msgid "Disconnect '%s' from '%s'"
+msgstr "Yhdistä '%s' '%s':n"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -561,7 +563,8 @@ msgid "Signals"
 msgstr "Signaalit"
 
 #: editor/create_dialog.cpp
-msgid "Create New"
+#, fuzzy
+msgid "Create New %s"
 msgstr "Luo uusi"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
@@ -576,7 +579,7 @@ msgstr "Viimeaikaiset:"
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+#: editor/quick_open.cpp
 msgid "Search:"
 msgstr "Hae:"
 
@@ -617,6 +620,7 @@ msgstr ""
 "Muutokset tulevat voimaan päivitettäessä."
 
 #: editor/dependency_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
 msgstr "Riippuvuudet"
 
@@ -723,9 +727,10 @@ msgid "Delete selected files?"
 msgstr "Poista valitut tiedostot?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
-#: editor/editor_node.cpp editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
-#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/project_export.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Poista"
 
@@ -870,6 +875,11 @@ msgid "Rename Audio Bus"
 msgstr "Nimeä väylä uudelleen"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Change Audio Bus Volume"
+msgstr "Ääniväylä sooloksi"
+
+#: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
 msgstr "Ääniväylä sooloksi"
 
@@ -917,8 +927,8 @@ msgstr "Ohita"
 msgid "Bus options"
 msgstr "Väylän asetukset"
 
-#: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Monista"
 
@@ -929,6 +939,10 @@ msgstr "Palauta äänenvoimakkuus"
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
 msgstr "Poista efekti"
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1090,7 +1104,8 @@ msgstr "Polku:"
 msgid "Node Name:"
 msgstr "Noden nimi:"
 
-#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
+#: editor/project_manager.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nimi"
 
@@ -1098,10 +1113,6 @@ msgstr "Nimi"
 #, fuzzy
 msgid "Singleton"
 msgstr "Ainokainen"
-
-#: editor/editor_autoload_settings.cpp
-msgid "List:"
-msgstr "Lista:"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1114,6 +1125,15 @@ msgstr "Varastoidaan paikalliset muutokset..."
 #: editor/editor_data.cpp
 msgid "Updating scene.."
 msgstr "Päivitetään skeneä..."
+
+#: editor/editor_data.cpp
+#, fuzzy
+msgid "[empty]"
+msgstr "(tyhjä)"
+
+#: editor/editor_data.cpp
+msgid "[unsaved]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1165,6 +1185,22 @@ msgstr "Tiedosto on jo olemassa, korvaa?"
 msgid "Select Current Folder"
 msgstr "Luo kansio"
 
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Kopioi polku"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Näytä tiedostonhallinnassa"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "New Folder.."
+msgstr "Luo kansio..."
+
+#: editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr "Päivitä"
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "Kaikki tunnistetut"
@@ -1210,10 +1246,6 @@ msgstr "Mene eteenpäin"
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
 msgstr "Mene ylös"
-
-#: editor/editor_file_dialog.cpp
-msgid "Refresh"
-msgstr "Päivitä"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
@@ -1411,7 +1443,8 @@ msgstr " Tuloste:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "Tyhjennä"
 
@@ -2371,6 +2404,16 @@ msgstr "Itse"
 msgid "Frame #:"
 msgstr "Ruutu #:"
 
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Time"
+msgstr "Aika:"
+
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Calls"
+msgstr "Kutsu"
+
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
 msgstr "Valitse laite listasta"
@@ -2512,7 +2555,8 @@ msgstr "Ei vastausta."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
+#, fuzzy
+msgid "Request Failed."
 msgstr "Pyyntö epäonnistui."
 
 #: editor/export_template_manager.cpp
@@ -2566,7 +2610,8 @@ msgid "Connecting.."
 msgstr "Yhdistä..."
 
 #: editor/export_template_manager.cpp
-msgid "Can't Conect"
+#, fuzzy
+msgid "Can't Connect"
 msgstr "Ei voitu yhdistää"
 
 #: editor/export_template_manager.cpp
@@ -2669,6 +2714,11 @@ msgstr "Virhe tuotaessa:"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
+msgid "Error duplicating:\n"
+msgstr "Virhe ladatessa:"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Unable to update dependencies:\n"
 msgstr "Scenellä '%s' on rikkinäisiä riippuvuuksia:"
 
@@ -2707,16 +2757,22 @@ msgid "Renaming folder:"
 msgstr "Nimeä Node uudelleen"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating file:"
+msgstr "Monista"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicating folder:"
+msgstr "Nimeä Node uudelleen"
+
+#: editor/filesystem_dock.cpp
 msgid "Expand all"
 msgstr "Laajenna kaikki"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "Pienennä kaikki"
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "Kopioi polku"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -2728,12 +2784,9 @@ msgid "Move To.."
 msgstr "Siirrä..."
 
 #: editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "Luo kansio..."
-
-#: editor/filesystem_dock.cpp
-msgid "Show In File Manager"
-msgstr "Näytä tiedostonhallinnassa"
+#, fuzzy
+msgid "Open Scene(s)"
+msgstr "Avaa scene"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2746,6 +2799,11 @@ msgstr "Muokkaa riippuvuuksia..."
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "Tarkastele omistajia..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Duplicate.."
+msgstr "Monista"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2850,6 +2908,16 @@ msgstr "Tuo Scene"
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene.."
 msgstr "Tuodaan Scene..."
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating Lightmaps"
+msgstr "Muunna Lightmapiksi:"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Generating for Mesh: "
+msgstr "Luo AABB"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3424,6 +3492,7 @@ msgid "last"
 msgstr "viimeinen"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Kaikki"
 
@@ -3465,6 +3534,28 @@ msgstr "Testaus"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
 msgstr "Assettien zip-tiedosto"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Can't determine a save path for lightmap images.\n"
+"Save your scene (for images to be saved in the same dir), or pick a save "
+"path from the BakedLightmap properties."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed creating lightmap images, make sure path is writable."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Bake Lightmaps"
+msgstr "Muunna Lightmapiksi:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3609,7 +3700,6 @@ msgid "Toggles snapping"
 msgstr "Asettaa tarttumisen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "Käytä tarttumista"
 
@@ -3794,16 +3884,6 @@ msgstr "Luo Node"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Virhe luotaessa instanssia kohteesta %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "Asia kunnossa :("
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -4006,6 +4086,22 @@ msgid "Create Navigation Mesh"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Contained Mesh is not of type ArrayMesh."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Unwrap failed, mesh may not be manifold?"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "No mesh to debug."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Model has no UV in this layer"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr ""
 
@@ -4043,6 +4139,20 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV1"
+msgstr "Näytä/Tarkastele"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "View UV2"
+msgstr "Näytä/Tarkastele"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Unwrap UV2 for Lightmap/AO"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4225,10 +4335,6 @@ msgid "Create Navigation Polygon"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Generating AABB"
@@ -4247,16 +4353,16 @@ msgid "No pixels with transparency > 128 in image.."
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Set Emission Mask"
-msgstr "Aseta emissiomaski"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
 msgstr "Lataa emissiomaski"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -4317,10 +4423,6 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
 msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Clear Emitter"
-msgstr "Tyhjennä säteilijä/lähetin"
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -4619,11 +4721,13 @@ msgstr "Lajittele:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
 msgstr "Siirrä ylös"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
 msgstr "Siirrä alas"
 
@@ -4639,7 +4743,7 @@ msgstr "Edellinen skripti"
 msgid "File"
 msgstr "Tiedosto"
 
-#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "New"
 msgstr "Uusi"
 
@@ -4650,6 +4754,11 @@ msgstr "Tallenna kaikki"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
 msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Copy Script Path"
+msgstr "Kopioi polku"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4846,11 +4955,7 @@ msgstr "Kloonaa alas"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
-msgid "Fold Line"
-msgstr "Mene riville"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Unfold Line"
+msgid "Fold/Unfold Line"
 msgstr "Avaa rivi"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5187,6 +5292,14 @@ msgstr ""
 msgid "Align with view"
 msgstr "Kohdista näkymään"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "Asia kunnossa :("
+
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Näytä normaali"
@@ -5302,6 +5415,20 @@ msgid "Scale Mode (R)"
 msgstr "Skaalaustila (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Local Coords"
+msgstr "Paikalliset koordinaatit"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Local Space Mode (%s)"
+msgstr "Skaalaustila (R)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Mode (%s)"
+msgstr "Tarttumisen tila:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
 msgstr "Pohjanäkymä"
 
@@ -5379,10 +5506,6 @@ msgid "Configure Snap.."
 msgstr "Määrittele tarttuminen..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "Paikalliset koordinaatit"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
 msgstr ""
 
@@ -5422,6 +5545,10 @@ msgstr "Näytä ruudukko"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "Asetukset"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Skeleton Gizmo visibility"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5816,6 +5943,11 @@ msgid "Merge from scene?"
 msgstr "Yhdistä skenestä?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "Vie tileset"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
 msgstr "Luo skenestä"
 
@@ -5826,6 +5958,10 @@ msgstr ""
 #: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr "Virhe"
+
+#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Peru"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -5950,10 +6086,6 @@ msgstr "Ole hyvä ja valitse hakemisto jossa ei ole 'project.godot' tiedostoa."
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Tuotu projekti"
-
-#: editor/project_manager.cpp
-msgid " "
-msgstr " "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6229,8 +6361,9 @@ msgid "Joypad Button Index:"
 msgstr "Ohjaimen painikkeen indeksi:"
 
 #: editor/project_settings_editor.cpp
-msgid "Add Input Action"
-msgstr "Lisää syöttötapahtuma"
+#, fuzzy
+msgid "Erase Input Action"
+msgstr "Tyhjennä syöttötapahtuma"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6298,6 +6431,10 @@ msgstr "Yhdistä Nodeen:"
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Add Input Action"
+msgstr "Lisää syöttötapahtuma"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6479,6 +6616,10 @@ msgid "New Script"
 msgstr "Uusi skripti"
 
 #: editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/property_editor.cpp
 #, fuzzy
 msgid "Make Unique"
 msgstr "Tee luut"
@@ -6512,6 +6653,11 @@ msgstr ""
 msgid "On"
 msgstr "Päällä"
 
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "[Empty]"
+msgstr "Lisää tyhjä"
+
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
 msgstr "Aseta"
@@ -6519,10 +6665,6 @@ msgstr "Aseta"
 #: editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Ominaisuudet:"
-
-#: editor/property_editor.cpp
-msgid "Sections:"
-msgstr "Osiot:"
 
 #: editor/property_selector.cpp
 msgid "Select Property"
@@ -7089,6 +7231,10 @@ msgstr ""
 msgid "Shortcuts"
 msgstr "Pikakuvakkeet"
 
+#: editor/settings_config_dialog.cpp
+msgid "Binding"
+msgstr ""
+
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
 msgstr "Muuta valon sädettä"
@@ -7137,17 +7283,56 @@ msgstr ""
 msgid "Change Probe Extents"
 msgstr ""
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select the dynamic library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Select dependencies of the library for this entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Remove current entry"
+msgstr "Poista käyrän piste"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Double click to create a new entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform:"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Platform"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "Dynamic Library"
+msgstr "Vie kirjasto"
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+msgid "Add an architecture entry"
+msgstr ""
+
+#: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
+msgid "GDNativeLibrary"
+msgstr "Vie kirjasto"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
 msgid "Library"
 msgstr "Vie kirjasto"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
 msgid "Status"
 msgstr "Tila:"
 
-#: modules/gdnative/gd_native_library_editor.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr ""
 
@@ -7827,6 +8012,22 @@ msgstr ""
 msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr ""
 
+#: scene/3d/baked_lightmap.cpp
+msgid "Plotting Meshes: "
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Plotting Lights:"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Lighting Meshes: "
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -7853,10 +8054,6 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr ""
-
-#: scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -7910,10 +8107,6 @@ msgstr "Kääntötila"
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
 msgstr "Lisää nykyinen väri esiasetukseksi"
-
-#: scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "Peru"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7988,6 +8181,32 @@ msgstr "Virhe fontin latauksessa."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
+
+#, fuzzy
+#~ msgid "Move Add Key"
+#~ msgstr "Siirrä lisäyspainiketta"
+
+#~ msgid "Create Subscription"
+#~ msgstr "Luo tilaus"
+
+#~ msgid "List:"
+#~ msgstr "Lista:"
+
+#~ msgid "Set Emission Mask"
+#~ msgstr "Aseta emissiomaski"
+
+#~ msgid "Clear Emitter"
+#~ msgstr "Tyhjennä säteilijä/lähetin"
+
+#, fuzzy
+#~ msgid "Fold Line"
+#~ msgstr "Mene riville"
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid "Sections:"
+#~ msgstr "Osiot:"
 
 #~ msgid "Cannot navigate to '"
 #~ msgstr "Ei voida navigoida '"
@@ -8338,9 +8557,6 @@ msgstr "Virheellinen fonttikoko."
 
 #~ msgid "Import Languages:"
 #~ msgstr "Tuo kielet:"
-
-#~ msgid "Transfer to Lightmaps:"
-#~ msgstr "Muunna Lightmapiksi:"
 
 #~ msgid "Zoom (%):"
 #~ msgstr "Lähennä (%):"
