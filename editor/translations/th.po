@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-28 13:50+0000\n"
+"PO-Revision-Date: 2017-12-03 07:50+0000\n"
 "Last-Translator: Kaveeta Vivatchai <katviv@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -844,7 +844,7 @@ msgstr "ลำโพง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "เพิ่มเอฟเฟกต์"
+msgstr "เอฟเฟกต์"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
@@ -880,7 +880,7 @@ msgstr "ลบเอฟเฟกต์เสียง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr "Audio Bus, ลากและวางเพื่อย้ายตำแหน่ง"
+msgstr "Audio Bus ลากและวางเพื่อย้ายตำแหน่ง"
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -953,7 +953,7 @@ msgstr "ไม่พบไฟล์ 'res://default_bus_layout.tres'"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "ไฟล์ไม่ถูกต้อง, ไม่ใช่เลย์เอาต์ของ Audio Bus"
+msgstr "ไฟล์ไม่ถูกต้อง ไม่ใช่เลย์เอาต์ของ Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1132,9 +1132,8 @@ msgid "File Exists, Overwrite?"
 msgstr "มีไฟล์นี้อยู่แล้ว จะเขียนทับหรือไม่?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "สร้างโฟลเดอร์"
+msgstr "เลือกโฟลเดอร์ปัจจุบัน"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1512,14 +1511,12 @@ msgstr ""
 "อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการแก้ไขจุดบกพร่อง"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand all properties"
-msgstr "ขยายโฟลเดอร์"
+msgstr "ขยายคุณสมบัติทั้งหมด"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Collapse all properties"
-msgstr "ยุบโฟลเดอร์"
+msgstr "ยุบคุณสมบัติทั้งหมด"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2969,54 +2966,51 @@ msgstr "คัดลอกแอนิเมชัน"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "ภาพเงาการเคลื่อนไหว"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "เปิดภาพเงาการเคลื่อนไหว"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "หัวข้อ:"
+msgstr "ทิศทาง"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
-msgstr "วาง"
+msgstr "อดีต"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Future"
-msgstr "ฟีเจอร์"
+msgstr "อนาคต"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "ความลึก"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 ระดับ"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 ระดับ"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 ระดับ"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "เฉพาะที่แตกต่าง"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "บังคับระดับสีขาว"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "รวมสัญลักษณ์ (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5896,6 +5890,8 @@ msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"คุณยังไม่มีโปรเจกต์ใดๆ\n"
+"ต้องการสำรวจโปรเจกต์ตัวอย่างในแหล่งรวมทรัพยากรหรือไม่?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7672,9 +7668,8 @@ msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select this Folder"
-msgstr "เลือกเมท็อด"
+msgstr "เลือกโฟลเดอร์นี้"
 
 #: scene/gui/popup.cpp
 msgid ""

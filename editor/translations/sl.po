@@ -4,13 +4,14 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # matevž lapajne <sivar.lapajne@gmail.com>, 2016-2017.
+# Matjaž Vitas <matjaz.vitas@gmail.com>, 2017.
 # Simon Šander <simon.sand3r@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-29 08:12+0000\n"
-"Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
+"PO-Revision-Date: 2017-12-07 02:49+0000\n"
+"Last-Translator: Matjaž Vitas <matjaz.vitas@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -69,9 +70,8 @@ msgid "Remove Anim Track"
 msgstr ""
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Set Transitions to:"
-msgstr "Izberi Prevod:"
+msgstr "Nastavite Prehode na:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -90,12 +90,14 @@ msgid "Anim Track Change Wrap Mode"
 msgstr ""
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Uredi Node Krivuljo"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Uredi Izbor Krivulje"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -177,11 +179,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Prehodi"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimiziraj Animacijo"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
@@ -202,7 +204,7 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
-msgstr "Naredi"
+msgstr "Ustvari"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
@@ -338,11 +340,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Pobriši vse animacije"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Izbriši Animacij(o/e) (BREZ VRNITVE)"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
@@ -7633,24 +7635,24 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Dodaj trenutno barvo za prednastavitev"
 
 #: scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Prekliči"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Opozorilo!"
 
 #: scene/gui/dialogs.cpp
+#, fuzzy
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Potrdite..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select this Folder"
-msgstr "Dodaj Setter Lastnost"
+msgstr "Izberite mapo"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7658,6 +7660,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"Pojavna okna se bodo po privzeti nastavitvi skrila, razen ob klicu popup() "
+"ali katerih izmed popup*() funkcij. Spreminjanje vidnosti za urejanje je "
+"sprejemljivo, vendar se bodo ob zagonu skrila."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -7668,7 +7673,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Ostalo)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -7686,19 +7691,19 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Napaka pri inicializaciji FreeType."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Neznani format pisave."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Napaka naložitve pisave."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Neveljavna velikost pisave."
 
 #, fuzzy
 #~ msgid "Invalid unique name."

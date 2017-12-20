@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-25 07:45+0000\n"
-"Last-Translator: Jiri Hysek <contact@jirihysek.com>\n"
+"PO-Revision-Date: 2017-12-09 19:45+0000\n"
+"Last-Translator: Martin Novák <maidx@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -24,7 +24,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "Vypnuto"
+msgstr "Zakázáno"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
@@ -89,7 +89,7 @@ msgstr "Animace: změna typu hodnot"
 #: editor/animation_editor.cpp
 #, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr "Animace: změna typu hodnot"
+msgstr "Změna režimu opakování animační stopy"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -110,7 +110,7 @@ msgstr "Duplikovat výběr"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "Duplikovat transponované"
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
@@ -167,15 +167,15 @@ msgstr "In"
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr "Out"
+msgstr "Výstup"
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
-msgstr "In-Out"
+msgstr "Vstup-Výstup"
 
 #: editor/animation_editor.cpp
 msgid "Out-In"
-msgstr "Out-In"
+msgstr "Výstup-Vstup"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
@@ -268,7 +268,7 @@ msgstr "Zapnout/vypnout opakování animace."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr "Přidat nové stopy."
+msgstr "Přidat novou stopu."
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
@@ -324,7 +324,7 @@ msgstr "Přechod"
 
 #: editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr "Poměr velikosti:"
+msgstr "Poměr měřítka:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
@@ -336,7 +336,7 @@ msgstr "Odstranit neplatné klíče"
 
 #: editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "Odstranit nevyřešené a prázdné stopy"
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
@@ -375,7 +375,6 @@ msgid "No Matches"
 msgstr "Žádné shody"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d occurrence(s)."
 msgstr "Nahrazeno %d výskytů."
 
@@ -425,7 +424,7 @@ msgstr "Nahradit"
 
 #: editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "Rozlišovat velká a malá písmena"
 
 #: editor/code_editor.cpp
 msgid "Backwards"
@@ -707,7 +706,7 @@ msgstr "Zdroje bez explicitního vlastnictví:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Průzkumník sirotků zdrojů"
+msgstr "Průzkumník osiřelých zdrojů"
 
 #: editor/dependency_editor.cpp
 msgid "Delete selected files?"
@@ -725,9 +724,8 @@ msgid "Change Dictionary Key"
 msgstr "Změnit slovníkový klíč"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "Změnit hodnotu pole"
+msgstr "Změnit hodnotu slovníku"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -739,7 +737,7 @@ msgstr "Díky!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Přispívající do Godot Enginu"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -752,7 +750,7 @@ msgstr "Vedoucí vývojář"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Projektový manažer"
+msgstr "Správce projektů"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -805,6 +803,10 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine závisí na volně dostupných a open source knihovnách od třetích "
+"stran; všechny jsou kompatibilní s podmínkami jeho MIT licence. Následuje "
+"vyčerpávající seznam těchto komponent třetích stran s jejich příslušnými "
+"popisy autorských práv a s licenčními podmínkami."
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -826,7 +828,7 @@ msgstr "Nepodařilo se otevřít balíček, není ve formátu zip."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Dekomprese uživatelského obsahu"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
@@ -835,7 +837,7 @@ msgstr "Balíček byl úspěšně nainstalován!"
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Úspěch!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
@@ -848,7 +850,7 @@ msgstr "Instalátor balíčků"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Reproduktory"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
@@ -1260,7 +1262,7 @@ msgstr ""
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr ""
+msgstr "Prohledat nápovědu"
 
 #: editor/editor_help.cpp
 msgid "Class List:"
@@ -1384,7 +1386,7 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr ""
+msgstr "Výstup:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
@@ -1460,6 +1462,8 @@ msgstr ""
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
+"Nepodařilo se uložit scénu. Nejspíše se nepodařilo uspokojit závislosti "
+"(instance)."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1487,7 +1491,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr ""
+msgstr "Výchozí rozložení editoru přepsáno."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -1565,7 +1569,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
-msgstr ""
+msgstr "Otevřít v nápovědě"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -1602,7 +1606,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Otevřít scénu"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -1610,11 +1614,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "Rychlé otevření scény.."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr ""
+msgstr "Rychlé otevření skriptu.."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -1627,7 +1631,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "Uložit scénu jako.."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1687,7 +1691,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "Ukončit editor?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
@@ -1733,6 +1737,8 @@ msgstr "Chyba nahrávání fontu."
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Nepodařilo se načíst addon skript z cesty: '%s'. Základní typ není "
+"EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
@@ -1836,19 +1842,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Nová scéna"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr ""
+msgstr "Nová odvozená scéna.."
 
 #: editor/editor_node.cpp
 msgid "Open Scene.."
-msgstr ""
+msgstr "Otevřít scénu.."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Uložit scénu"
 
 #: editor/editor_node.cpp
 msgid "Save all Scenes"
@@ -1856,15 +1862,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Zavřít scénu"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Otevřít nedávné"
 
 #: editor/editor_node.cpp
 msgid "Convert To.."
-msgstr ""
+msgstr "Konvertovat na.."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary.."
@@ -1915,11 +1921,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Ukončit do seznamu projektů"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Ladění"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -1990,29 +1996,28 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "Upravit"
+msgstr "Editor"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr ""
+msgstr "Nastavení editoru"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr ""
+msgstr "Rozložení editoru"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "Celá obrazovka"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr ""
+msgstr "Spravovat exportní šablony"
 
 #: editor/editor_node.cpp
 msgid "Help"
-msgstr ""
+msgstr "Nápověda"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
@@ -2032,7 +2037,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Z komunity"
+msgstr "Komunita"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -2150,7 +2155,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Výstup"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
@@ -2158,7 +2163,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Importovat šablony ze ZIP souboru"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -2377,30 +2382,30 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr ""
+msgstr "Nelze otevřít zip soubor exportních šablon."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "Neplatný formát version.txt uvnitř šablon."
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Invalid version.txt format inside templates. Revision is not a valid "
 "identifier."
 msgstr ""
+"Neplatný formát version.txt uvnitř šablon. Revize není platný identifikátor."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "Nenalezena version.txt uvnitř šablon."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:\n"
-msgstr "Chyba při vytváření podpisového objektu."
+msgstr "Chyba při vytváření cesty pro šablony:\n"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
-msgstr ""
+msgstr "Extrakce exportních šablon"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
@@ -2538,9 +2543,8 @@ msgid "Export Template Manager"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Templates"
-msgstr "Odstranit výběr"
+msgstr "Stáhnout šablony"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: "
@@ -4767,12 +4771,11 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert To Uppercase"
-msgstr ""
+msgstr "Konvertovat na velká písmena"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert To Lowercase"
-msgstr "Připojit k uzlu:"
+msgstr "Konvertovat na malá písmena"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
@@ -5691,7 +5694,7 @@ msgstr "Odstranit vybrané soubory?"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted: "
-msgstr ""
+msgstr "Exportní šablony pro tuto platformu chybí nebo jsou poškozené: "
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -5763,11 +5766,11 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
-msgstr ""
+msgstr "Exportní šablony pro tuto platformu chybí:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
-msgstr ""
+msgstr "Exportní šablony pro tuto platformu chybí nebo jsou poškozené:"
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
@@ -5918,7 +5921,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr ""
+msgstr "Seznam projektů"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -5933,9 +5936,8 @@ msgid "New Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Templates"
-msgstr "Odstranit výběr"
+msgstr "Šablony"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -6321,9 +6323,8 @@ msgid "Show in File System"
 msgstr ""
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Convert To %s"
-msgstr "Připojit k uzlu:"
+msgstr "Konvertovat na %s"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -6570,9 +6571,8 @@ msgid "Copy Node Path"
 msgstr "Zkopírovat uzly"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "Potvrďte prosím..."
+msgstr "Odstranit (bez potvrzení)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6995,7 +6995,7 @@ msgstr ""
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Neplatný typ argumentu funkce convert(), použijte některou z konstant TYPE_*"
+"Neplatný typ argumentu funkce convert(), použijte některou z konstant TYPE_*."
 
 #: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7811,7 +7811,7 @@ msgstr "Pozor!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Potvrďte prosím..."
+msgstr "Potvrďte prosím.."
 
 #: scene/gui/file_dialog.cpp
 #, fuzzy
@@ -7837,13 +7837,15 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Ostatní)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
 msgstr ""
+"Výchozí prostředí specifikované v nastavení projektu (Vykreslování -> "
+"Zobrazovací výřez -> Výchozí prostředí) se nepodařilo načíst."
 
 #: scene/main/viewport.cpp
 msgid ""

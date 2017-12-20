@@ -1,99 +1,98 @@
-# Hebrew translation of the Godot Engine editor
+# Tamil translation of the Godot Engine editor
 # Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# Ben Golan <golanben4@gmail.com>, 2017.
-# Luc Stepniewski <lior@gradstein.info>, 2017.
+# Senthil Kumar K <logickumar@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-10 12:47+0000\n"
-"Last-Translator: Ben Golan <golanben4@gmail.com>\n"
-"Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
-"godot/he/>\n"
-"Language: he\n"
+"PO-Revision-Date: 2017-12-20 15:43+0000\n"
+"Last-Translator: Senthil Kumar K <logickumar@gmail.com>\n"
+"Language-Team: Tamil <https://hosted.weblate.org/projects/godot-engine/godot/"
+"ta/>\n"
+"Language: ta\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.18\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "מושבת"
+msgstr "முடக்கப்பட்டது"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "כל האלמנטים שנבחרו"
+msgstr "அனைத்து தேர்வுகள்"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "சேர் முக்கியப்புள்ளியை நகர்த்து"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "மாற்றம் அசைவூட்டு"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "உருமாற்றம் அசைவூட்டு"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "மாற்ற மதிப்பு அசைவூட்டு"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "மாற்ற அழைப்பு அசைவூட்டு"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "அசைவூட்டு பாதை சேர்"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "அசைவூட்டு போலிபச்சாவிகள்"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "அசைவூட்டு பாதையை மேலே நகர்த்து"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "அசைவூட்டு பாதையை கீழே நகர்த்து"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "அசைவூட்டு பாதையை நீக்கு"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "மாற்றங்களை இதற்கு அமை:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "அசைவூட்டு பாதைக்கு மறுபெயர் இடு"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "அசைவூட்டு பாதை [interpolation]யை மாற்று"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "அசைவூட்டு பாதை மதிப்பு[value] விதம் மாற்று"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr ""
+msgstr "அசைவூட்டு பாதை மறை[wrap] விதம் மாற்று"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "கணு வளைவை[Node Curve] திருத்து"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "தேர்வு வளைவை [Selection Curve] திருத்து"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-27 10:46+0000\n"
+"PO-Revision-Date: 2017-12-05 21:46+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -1139,9 +1139,8 @@ msgid "File Exists, Overwrite?"
 msgstr "Το αρχείο υπάρχει. Θέλετε να το αντικαταστήσετε;"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Δημιουργία φακέλου"
+msgstr "Επιλογή τρέχοντα φακέλου"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1532,14 +1531,12 @@ msgstr ""
 "καταλάβετε καλύτερα την διαδικασία."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand all properties"
-msgstr "Ανάπτυξη όλων"
+msgstr "Ανάπτυξη όλων των ιδιοτήτων"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Collapse all properties"
-msgstr "Σύμπτηξη όλων"
+msgstr "Σύμπτηξη όλων των ιδιοτήτων"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -3036,54 +3033,51 @@ msgstr "Ανιγραφή κίνησης"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "Ξεφλούδισμα κρεμμυδιού"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Ενεργοποίηση ξεφλουδίσματος κρεμμυδιού"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Ενότητες:"
+msgstr "Κατευθήνσεις"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
-msgstr "Επικόληση"
+msgstr "Παρελθόν"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Future"
-msgstr "Δυνατότητες"
+msgstr "Μέλλον"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Βάθος"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 βήμα"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 βήματα"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 βήματα"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Μόνο διαφορές"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Εξανάγκασε τονισμό άσπρου"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Συμπεριέλαβε μαραφέτια (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5989,6 +5983,8 @@ msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"Δεν έχετε κανένα έργο.\n"
+"Θα θέλατε να εξερευνήσετε μερικά παραδείγματα στην βιβλιοθήκη πόρων;"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7842,9 +7838,8 @@ msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select this Folder"
-msgstr "Επιλογή μεθόδου"
+msgstr "Επιλογή αυτού του φακέλου"
 
 #: scene/gui/popup.cpp
 msgid ""

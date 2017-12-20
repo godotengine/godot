@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-29 08:13+0000\n"
+"PO-Revision-Date: 2017-12-01 23:50+0000\n"
 "Last-Translator: bergmarklund <davemcgroin@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -1553,9 +1553,8 @@ msgstr "Spara Resurs Som.."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "I see.."
-msgstr "Jag ser.."
+msgstr "Jag förstår.."
 
 #: editor/editor_node.cpp
 #, fuzzy

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-27 02:44+0000\n"
+"PO-Revision-Date: 2017-12-01 11:44+0000\n"
 "Last-Translator: Ray West <the.raxar@gmail.com>\n"
 "Language-Team: Afrikaans <https://hosted.weblate.org/projects/godot-engine/"
 "godot/af/>\n"
@@ -243,7 +243,7 @@ msgstr "Animasie Zoem."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Lengte (s):"
+msgstr "Lengte(s):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."

@@ -1,19 +1,18 @@
-# Hebrew translation of the Godot Engine editor
+# Icelandic translation of the Godot Engine editor
 # Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# Ben Golan <golanben4@gmail.com>, 2017.
-# Luc Stepniewski <lior@gradstein.info>, 2017.
+# Jóhannes G. Þorsteinsson <johannesg@johannesg.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-10 12:47+0000\n"
-"Last-Translator: Ben Golan <golanben4@gmail.com>\n"
-"Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
-"godot/he/>\n"
-"Language: he\n"
+"PO-Revision-Date: 2017-12-05 21:47+0000\n"
+"Last-Translator: Jóhannes G. Þorsteinsson <johannesg@johannesg.com>\n"
+"Language-Team: Icelandic <https://hosted.weblate.org/projects/godot-engine/"
+"godot/is/>\n"
+"Language: is\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
@@ -21,63 +20,63 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "מושבת"
+msgstr "Óvirkt"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "כל האלמנטים שנבחרו"
+msgstr "Allt Val"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "Hreyfa Viðbótar Lykil"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Hreyfimynd Breyta Stöðuskiptum"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Hreyfimynd Breyta Ummyndun"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Hreyfimynd Breyta Gildi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Hreyfimynd Breyta Kalli"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "Hreyfimynd Bæta Við Rás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Hreyfimynd Tvöfalda Lykla"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "Færa Hreyfimynda Rás Upp"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "Færa Hreyfimynda Rás Niður"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Fjarlægja Hreyfimynda Rás"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "Sitja Stöðuskipti á:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Endurnefna Hreyfimyndarás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Breyta Brúun á Hreyfimyndarás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"

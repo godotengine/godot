@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-11-27 10:44+0000\n"
-"Last-Translator: dragonandy <dragonandy@foxmail.com>\n"
+"PO-Revision-Date: 2017-12-10 10:33+0000\n"
+"Last-Translator: Geequlim <geequlim@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -1140,9 +1140,8 @@ msgid "File Exists, Overwrite?"
 msgstr "文件已存在，确定要覆盖它吗？"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "新建目录"
+msgstr "选择当前目录"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1516,7 +1515,6 @@ msgstr ""
 "请阅读与导入场景相关的文档, 以便更好地理解此工作流。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object so changes to it will not be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
@@ -1526,14 +1524,12 @@ msgstr ""
 "请阅读与调试相关的文档，以便更好地理解这个工作流。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand all properties"
-msgstr "展开所有"
+msgstr "展开所有属性"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Collapse all properties"
-msgstr "收起所有"
+msgstr "收起所有属性"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1783,19 +1779,16 @@ msgid "Switch Scene Tab"
 msgstr "切换场景标签页"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files or folders"
-msgstr "%d个文件或目录未展示"
+msgstr "%d 个文件或目录未展示"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "%d个目录未展示"
+msgstr "%d 个目录未展示"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files"
-msgstr "%d个文件未展示"
+msgstr "%d 个文件未展示"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
@@ -2696,9 +2689,8 @@ msgid "Import as Single Scene"
 msgstr "导入为独立场景"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import with Separate Animations"
-msgstr "导入独立动画"
+msgstr "导入独立的动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
@@ -2713,19 +2705,16 @@ msgid "Import with Separate Objects+Materials"
 msgstr "导入独立物体 + 材质"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import with Separate Objects+Animations"
-msgstr "导入独立物体 + 动画"
+msgstr "导入独立物体+动画"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import with Separate Materials+Animations"
-msgstr "导入独立材质 + 动画"
+msgstr "导入独立材质+动画"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "导入独立物体 + 材质 + 动画"
+msgstr "导入独立物体+材质+动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -2990,21 +2979,19 @@ msgstr "拷贝动画"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "洋葱皮(Onion Skining)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "启用洋葱皮(Onion Skinning)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "选项:"
+msgstr "方向"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
-msgstr "粘贴"
+msgstr "穿过"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -3013,19 +3000,19 @@ msgstr "功能"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "深度"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1步"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2步"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3步"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
@@ -4482,9 +4469,8 @@ msgid " Class Reference"
 msgstr " 类引用"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Sort"
-msgstr "排序:"
+msgstr "排序"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
@@ -5943,6 +5929,8 @@ msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"您目前没有任何项目。\n"
+"是否要打开资源商店浏览官方样例项目？"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -6098,9 +6086,8 @@ msgid "Select a setting item first!"
 msgstr "请先选择一个设置项目 ！"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "No property '%s' exists."
-msgstr "没有属性 '%s'"
+msgstr "属性 '%s' 不存在"
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
@@ -6579,9 +6566,8 @@ msgid "Remote"
 msgstr "移除"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Local"
-msgstr "地区"
+msgstr "本地"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
@@ -7025,9 +7011,8 @@ msgid "GridMap Duplicate Selection"
 msgstr "复制选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Floor:"
-msgstr "目录:"
+msgstr "地板:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7769,9 +7754,8 @@ msgstr ""
 "寸。"
 
 #: scene/gui/tree.cpp
-#, fuzzy
 msgid "(Other)"
-msgstr "（其它）"
+msgstr "(其它)"
 
 #: scene/main/scene_tree.cpp
 msgid ""

@@ -4,6 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Addiel Lucena Perez <addiell2017@gmail.com>, 2017.
+# Aleix Sanchis <aleixsanchis@hotmail.com>, 2017.
 # Alejandro Alvarez <eliluminado00@gmail.com>, 2017.
 # BLaDoM GUY <simplybladom@gmail.com>, 2017.
 # Carlos López <genetita@gmail.com>, 2016.
@@ -25,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-11-28 18:49+0000\n"
-"Last-Translator: Diego López <diegodario21@gmail.com>\n"
+"PO-Revision-Date: 2017-12-09 22:50+0000\n"
+"Last-Translator: Aleix Sanchis <aleixsanchis@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -175,8 +176,9 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "In"
-msgstr "Entrada"
+msgstr "In"
 
 #: editor/animation_editor.cpp
 msgid "Out"
@@ -842,9 +844,8 @@ msgid "Error opening package file, not in zip format."
 msgstr "Error al abrir el paquete, no se encuentra en formato zip."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Uncompressing Assets"
-msgstr "Descomprimir Assets"
+msgstr "Descomprimiendo Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
@@ -889,17 +890,14 @@ msgid "Toggle Audio Bus Bypass Effects"
 msgstr "Alternar efectos de bypass del Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Select Audio Bus Send"
-msgstr "Seleccionar Bus de audio de envío"
+msgstr "Seleccionar Bus de Audio de envío"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Audio Bus Effect"
 msgstr "Añadir Efecto de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Bus Effect"
 msgstr "Mover Efecto de Bus"
 
@@ -924,7 +922,6 @@ msgid "Bypass"
 msgstr "Sobrepasar"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus options"
 msgstr "Opciones del Bus"
 
@@ -982,9 +979,8 @@ msgid "There is no 'res://default_bus_layout.tres' file."
 msgstr "No existe el archivo 'res://default_bus_layout.tres'."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Invalid file, not an audio bus layout."
-msgstr "Archivo inválido, no es un layout de bus de audio"
+msgstr "Archivo inválido, no es un formato de bus de audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1009,9 +1005,8 @@ msgid "Save As"
 msgstr "Guardar como"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Save this Bus Layout to a file."
-msgstr "Guardar formato de los Audio Bus como..."
+msgstr "Guardar este Formato Bus como..."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -1019,7 +1014,7 @@ msgstr "Cargar Predeterminado"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Cargar Formato del Bus por defecto."
+msgstr "Cargar Formato de Bus predeterminado."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1126,7 +1121,7 @@ msgstr "Actualizando escena.."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
-msgstr "Por favor seleccione primero un directorio base."
+msgstr "Por favor seleccione primero un directorio base"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1170,9 +1165,8 @@ msgid "File Exists, Overwrite?"
 msgstr "El archivo ya existe, ¿quieres sobreescribirlo?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Crear carpeta"
+msgstr "Seleccionar Carpeta Actual"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1275,7 +1269,7 @@ msgstr "AnalizandoFuentes"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "Reimportando Assets"
+msgstr "(Re)Importando Assets"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1328,7 +1322,7 @@ msgstr "Métodos públicos:"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items"
-msgstr "Elementos de tema de GUI"
+msgstr "Elementos del Tema de GUI"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1466,9 +1460,8 @@ msgid "Creating Thumbnail"
 msgstr "Creando miniatura"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a tree root."
-msgstr "Esta operación no puede realizarse sin una escena."
+msgstr "Esta operación no puede realizarse sin una escena raíz."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1565,7 +1558,7 @@ msgstr ""
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Expand all properties"
-msgstr "Expandir todo"
+msgstr "Expandir todas las propiedades"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -1610,9 +1603,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal, ¿quieres elegir alguna?\n"
-"Es posible cambiarla más tarde en «Ajustes del proyecto» bajo la categoría "
-"«aplicación»."
+"No se ha definido ninguna escena principal, ¿Quieres elegir alguna?\n"
+"Es posible cambiarla más tarde en «Ajustes del Proyecto» bajo la categoría "
+"«Aplicación»."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1666,7 +1659,7 @@ msgstr "Guardar & Cerrar"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr "¿Guardar cambios a '%s' antes de cerrar?"
+msgstr "¿Guardar cambios de '%s' antes de cerrar?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
@@ -1862,7 +1855,7 @@ msgstr "Modo sin distracciones"
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Toggle distraction-free mode."
-msgstr "Alternar Modo sin distracciones"
+msgstr "Alternar Modo sin distracciones."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
@@ -2255,7 +2248,6 @@ msgid "Open & Run a Script"
 msgstr "Abrir y ejecutar un script"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "New Inherited"
 msgstr "Nueva escena heredada"
 
@@ -2292,9 +2284,8 @@ msgid "Open the previous Editor"
 msgstr "Abrir Editor anterior"
 
 #: editor/editor_plugin.cpp
-#, fuzzy
 msgid "Creating Mesh Previews"
-msgstr "Crear biblioteca de modelos 3D"
+msgstr "Creando vistas previas de los modelos 3D"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
@@ -2371,12 +2362,11 @@ msgid "Select device from the list"
 msgstr "Seleccionar dispositivo de la lista"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
-"No se ha encontrado un preset ejecutable de exportación para esta "
+"No se ha encontrado ningún preset ejecutable de exportación para esta "
 "plataforma.\n"
 "Por favor, añade un preset ejecutable en el menú de exportación."
 
@@ -2473,7 +2463,6 @@ msgid "No version.txt found inside templates."
 msgstr "No se ha encontrado el archivo version.txt dentro de las plantillas."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:\n"
 msgstr "Error al crear ruta para las plantillas:\n"
 
@@ -3090,11 +3079,11 @@ msgstr "Copiar animación"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "Papel Cebolla"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Activar Papel Cebolla"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -3113,23 +3102,26 @@ msgstr "Textura"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Profundidad"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "1 step"
-msgstr ""
+msgstr "1 paso"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "2 steps"
-msgstr ""
+msgstr "2 pasos"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "3 steps"
-msgstr ""
+msgstr "3 pasos"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Solo las Diferencias"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
@@ -3137,7 +3129,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Incluir Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -6210,10 +6202,13 @@ msgid "Can't run project"
 msgstr "Conectar.."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"Actualmente no tiene ningún proyecto.\n"
+"¿Le gustaría explorar los proyectos ejemplo oficiales del Asset Library?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7367,8 +7362,9 @@ msgid "GridMap Duplicate Selection"
 msgstr "Duplicar selección"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Floor:"
-msgstr ""
+msgstr "Piso:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7386,8 +7382,9 @@ msgid "Previous Floor"
 msgstr "Pestaña anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Floor"
-msgstr ""
+msgstr "Próximo Piso"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7482,8 +7479,9 @@ msgid "Pick Distance:"
 msgstr "Instancia:"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
 msgid "Builds"
-msgstr ""
+msgstr "Compilaciones"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

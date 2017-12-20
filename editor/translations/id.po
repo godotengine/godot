@@ -9,6 +9,7 @@
 # Damar Inderajati <damarind@gmail.com>, 2017.
 # Damar S. M <the.last.walla@gmail.com>, 2017.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
+# Romi Kusuma Bakti <romikusumab@gmail.com>, 2017.
 # Sofyan Sugianto <sofyanartem@gmail.com>, 2017.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
@@ -16,8 +17,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-23 18:47+0000\n"
-"Last-Translator: Damar Inderajati <damarind@gmail.com>\n"
+"PO-Revision-Date: 2017-12-11 10:47+0000\n"
+"Last-Translator: Romi Kusuma Bakti <romikusumab@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -59,9 +60,8 @@ msgid "Anim Add Track"
 msgstr "Tambah Trek Anim"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "Duplikat Tombol Anim"
+msgstr "Tombol Duplikat Anim"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
@@ -372,7 +372,7 @@ msgstr "Pergi ke Baris"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Baris Nomor:"
+msgstr "Nomor Baris:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
@@ -385,11 +385,11 @@ msgstr "Diganti kejadian (kejadian-kejadian) %d."
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr "Ubah"
+msgstr "Ganti"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr "Ubah Semua"
+msgstr "Ganti Semua"
 
 #: editor/code_editor.cpp
 msgid "Match Case"

@@ -7,13 +7,14 @@
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # flesk <eivindkn@gmail.com>, 2017.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
+# NicolaiF <nico-fre@hotmail.com>, 2017.
 # Norwegian Disaster <stian.furu.overbye@gmail.com>, 2017.
 # passeride <lukas@passeride.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-29 08:12+0000\n"
+"PO-Revision-Date: 2017-12-05 23:48+0000\n"
 "Last-Translator: flesk <eivindkn@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
@@ -29,11 +30,11 @@ msgstr "Deaktivert"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Hele utvalget"
+msgstr "Alle valg"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr "Flytt Legg til Nøkkel"
+msgstr "Flytt Legg-Til-Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -41,7 +42,7 @@ msgstr "Anim Forandre Overgang"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Anim Endre Transformering"
+msgstr "Anim Forandre Omforming"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
@@ -96,8 +97,9 @@ msgid "Edit Node Curve"
 msgstr "Forandre Nodekurve"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Selection Curve"
-msgstr "Forandre Utvalgskurve"
+msgstr "Forandre utvalgskurve"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -150,7 +152,7 @@ msgstr "Gå til Neste Steg"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr "Gåtil Forrige Steg"
+msgstr "Gå til Forrige Steg"
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -187,7 +189,7 @@ msgstr "Optimaliser Animasjon"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Rengjør Animasjon"
+msgstr "Rydd-Opp-Animasjon"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -212,7 +214,7 @@ msgstr "Anim Lag og Sett Inn"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Anim Sett inn Spor og Nøkkel"
+msgstr "Anim Sett Inn Spor & Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
@@ -243,7 +245,6 @@ msgid "Anim Add Call Track"
 msgstr "Anim Legg Til Call Track"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Animation zoom."
 msgstr "Animasjons-zoom."
 
@@ -265,7 +266,7 @@ msgstr "Pekersteghopp (i sekunder)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr "Aktiver/Deaktiver løkke i animasjon."
+msgstr "Aktiver/Deaktiver animasjonsløkke."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -285,7 +286,7 @@ msgstr "Fjern valgt spor."
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
-msgstr "Sporverktøy"
+msgstr "Spoor verktøy"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
@@ -312,9 +313,8 @@ msgid "Optimize"
 msgstr "Optimaliser"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr "Marker en AnimationPlayer fra scenetreet for å endre animasjoner."
+msgstr "Velg en AnimationPlayer fra scenetreet for å endre animasjoner."
 
 #: editor/animation_editor.cpp
 msgid "Key"
@@ -536,7 +536,6 @@ msgid "Connect '%s' to '%s'"
 msgstr "Koble '%s' til '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connecting Signal:"
 msgstr "Kobler Til Signal:"
 
@@ -678,7 +677,7 @@ msgstr "Feil ved innlasting:"
 
 #: editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr "Scenen kunne ikke lastes, på grunn av manglende avhengigheter:"
+msgstr "Scenen kunne ikke lastes på grunn av manglende avhengigheter:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -698,7 +697,7 @@ msgstr "Feil ved lasting!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Slett %d ting for godt? (kan ikke angres)"
+msgstr "Slett %d elementer for godt? (kan ikke angres)"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
@@ -724,15 +723,16 @@ msgid "Delete"
 msgstr "Slett"
 
 #: editor/dictionary_property_edit.cpp
+#, fuzzy
 msgid "Change Dictionary Key"
 msgstr "Endre Ordboksnøkkel"
 
 #: editor/dictionary_property_edit.cpp
+#, fuzzy
 msgid "Change Dictionary Value"
 msgstr "Endre Ordboksverdi"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Thanks from the Godot community!"
 msgstr "Takk fra Godot-samfunnet!"
 
@@ -742,7 +742,7 @@ msgstr "Takk!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Godot Engines bidragsytere"
+msgstr "Godot Engine sine bidragsytere"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
@@ -900,7 +900,7 @@ msgstr "Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "Mute"
+msgstr "Demp"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
@@ -1059,160 +1059,159 @@ msgstr "Flytt Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
-msgstr ""
+msgstr "Fjern Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Enable"
-msgstr ""
+msgstr "Aktiver"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
-msgstr ""
+msgstr "Omorganiser Autoloads"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Bane:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr ""
+msgstr "Nodenavn:"
 
 #: editor/editor_autoload_settings.cpp editor/project_manager.cpp
 msgid "Name"
-msgstr ""
+msgstr "Navn"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr ""
+msgstr "Singleton"
 
 #: editor/editor_autoload_settings.cpp
 msgid "List:"
-msgstr ""
+msgstr "Liste:"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr ""
+msgstr "Oppdaterer Scene"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes.."
-msgstr ""
+msgstr "Lagrer lokale endringer.."
 
 #: editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr ""
+msgstr "Oppdaterer scene.."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
-msgstr ""
+msgstr "Venligst velg en basemappe først"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr ""
+msgstr "Velg en Mappe"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "Lag mappe"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Name:"
-msgstr ""
+msgstr "Navn:"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
-msgstr ""
+msgstr "Kunne ikke opprette mappe."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
-msgstr ""
+msgstr "Velg"
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr ""
+msgstr "Lagrer Fil:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
-msgstr ""
+msgstr "Pakking"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
-msgstr ""
+msgstr "Malfil ble ikke funnet:\n"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Filen finnes, overskriv?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Kutt Noder"
+msgstr "Velg Gjeldende Mappe"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "Alle gjenkjente"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "Alle filer (*)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Åpne en fil"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Åpne fil(er)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "Åpne ei mappe"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Åpne ei fil eller mappe"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
-msgstr ""
+msgstr "Lagre"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Lagre ei fil"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Gå tilbake"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Gå framover"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Gå oppover"
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Oppdater"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Veksle visning av skjulte filer"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr ""
+msgstr "Veksle favorittmerkering"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr ""
+msgstr "Veksle modus"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
@@ -1220,32 +1219,32 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
-msgstr ""
+msgstr "Flytt favoritt oppover"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
-msgstr ""
+msgstr "Flytt favoritt nedover"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
-msgstr ""
+msgstr "Gå til overnevnt mappe"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Mapper og filer:"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr ""
+msgstr "Forhåndsvisning:"
 
 #: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
 #: scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr ""
+msgstr "Fil:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "Må ha en gyldig filutvidelse."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1258,35 +1257,35 @@ msgstr ""
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr ""
+msgstr "Søk hjelp"
 
 #: editor/editor_help.cpp
 msgid "Class List:"
-msgstr ""
+msgstr "Klasseliste:"
 
 #: editor/editor_help.cpp
 msgid "Search Classes"
-msgstr ""
+msgstr "Søk i klasser"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "Topp"
 
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
-msgstr ""
+msgstr "Klasse:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 msgid "Inherits:"
-msgstr ""
+msgstr "Arver:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr ""
+msgstr "Arvet av:"
 
 #: editor/editor_help.cpp
 msgid "Brief Description:"
-msgstr ""
+msgstr "Kort beskrivelse:"
 
 #: editor/editor_help.cpp
 msgid "Members"
@@ -1298,193 +1297,199 @@ msgstr "Medlemmer:"
 
 #: editor/editor_help.cpp
 msgid "Public Methods"
-msgstr ""
+msgstr "Offentlige metoder"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
-msgstr ""
+msgstr "Offentlige metoder:"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items"
-msgstr ""
+msgstr "GUI Tema Elementer"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
-msgstr ""
+msgstr "GUI Tema Elementer:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
 msgstr "Signaler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Funksjoner:"
+msgstr "Nummereringer"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations:"
-msgstr "Funksjoner:"
+msgstr "Nummereringer:"
 
 #: editor/editor_help.cpp
 msgid "enum  "
-msgstr ""
+msgstr "num  "
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr ""
+msgstr "Konstanter"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
-msgstr ""
+msgstr "Konstanter:"
 
 #: editor/editor_help.cpp
 msgid "Description"
-msgstr ""
+msgstr "Beskrivelse"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "Egenskaper"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
-msgstr ""
+msgstr "Egenskapsbeskrivelse:"
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Det finnes i øyeblikket ingen beskrivelse av denne egenskapen. Hjelp til ved "
+"å [colour=$color][url=$url]bidra med en[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr ""
+msgstr "Metoder"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
-msgstr ""
+msgstr "Metodebeskrivelse:"
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Det finnes i øyeblikket ingen beskrivelse av denne metoden. Hjelp til ved å "
+"[colour=$color][url=$url]bidra med en[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Search Text"
-msgstr ""
+msgstr "Søk Tekst"
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr ""
+msgstr "Output:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Clear"
-msgstr ""
+msgstr "Tøm"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr ""
+msgstr "Feil ved lagring av ressurs!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As.."
-msgstr ""
+msgstr "Lagre Ressurs Som.."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "I see.."
-msgstr ""
+msgstr "Jeg ser.."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr ""
+msgstr "Kan ikke åpne fil for skriving:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr ""
+msgstr "Forespurte filformat ukjent:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr ""
+msgstr "Feil under lagring."
 
 #: editor/editor_node.cpp
 msgid "Can't open '%s'."
-msgstr ""
+msgstr "Kan ikke åpne '%s'."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr ""
+msgstr "Error ved parsing av '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Unexpected end of file '%s'."
-msgstr ""
+msgstr "Uventet ende av fil '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr ""
+msgstr "Mangler '%s' eller dens avhengigheter."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr ""
+msgstr "Feil ved lasting av '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr ""
+msgstr "Lagrer Scene"
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
-msgstr ""
+msgstr "Analyserer"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr ""
+msgstr "Lager Thumbnail"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr ""
+msgstr "Denne operasjonen kan ikke gjennomføres uten en trerot."
 
 #: editor/editor_node.cpp
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
+"Kunne ikke lagre scene. Sannsynligvis avhengigheter (instanser) ikke kunne "
+"oppfylles."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
-msgstr ""
+msgstr "Kunne ikke laste ressurs."
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "Kan ikke laste MeshLibrary for sammenslåing!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "Error ved lagring av MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr ""
+msgstr "Kan ikke laste TileSet for sammenslåing!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr ""
+msgstr "Error ved lagring av TileSet!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr ""
+msgstr "Error ved lagring av layout!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr ""
+msgstr "Standard editor layout overskrevet."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr ""
+msgstr "Layoutnavn ikke funnet!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr ""
+msgstr "Gjenoppretter standard layout til grunninnstillinger."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1492,18 +1497,26 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Denne ressursen tilhører en scene som ble importert, så den er ikke "
+"redigerbar.\n"
+"Les dokumentasjonen om import av scener for å bedre forstå denne "
+"arbeidsflyten."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
+"Denne ressursen tilhører en scene som ble instansert eller arvet.\n"
+"Endringer vil ikke bli beholdt ved lagring av scenen."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"Denne ressursen ble importert, så det ikke er redigerbar. Endre "
+"innstillingene i import-panelet og importer deretter på nytt."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1512,6 +1525,10 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Denne scenen er importert, så endringer vil ikke bli lagret.\n"
+"Instansere eller arving vil tillate endringer i den.\n"
+"Vennligst les dokumentasjonen når det gjelder import av scener for å bedre "
+"forstå denne arbeidsflyten."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1519,46 +1536,51 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
+"Dette er et eksternt objekt så endringer vil ikke beholdes.\n"
+"Vennligst les dokumentasjonen relevant til debugging for å forstå denne "
+"arbeidsflyten."
 
 #: editor/editor_node.cpp
 msgid "Expand all properties"
-msgstr ""
+msgstr "Utvid alle egenskaper"
 
 #: editor/editor_node.cpp
 msgid "Collapse all properties"
-msgstr ""
+msgstr "Kollaps alle egenskaper"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
-msgstr ""
+msgstr "Kopier Parametre"
 
 #: editor/editor_node.cpp
 msgid "Paste Params"
-msgstr ""
+msgstr "Lim inn Parametre"
 
 #: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
-msgstr ""
+msgstr "Lim inn Ressurs"
 
 #: editor/editor_node.cpp
 msgid "Copy Resource"
-msgstr ""
+msgstr "Kopier Ressurs"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Make Built-In"
-msgstr ""
+msgstr "Lag Innebygd"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Make Sub-Resources Unique"
-msgstr ""
+msgstr "Gjør Underressurs Unik"
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
-msgstr ""
+msgstr "Åpne i Hjelp"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "Det er ingen definert scene å kjøre."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1566,13 +1588,20 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Ingen hovedscene har blitt definert, velg en?\n"
+"Du kan endre dette senere under \"Prosjekt Innstilliner\" i kategorien "
+"'applikasjon'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Valgte scene '%s' finnes ikke, velg en gyldig en?\n"
+"Du kan endre dette senere under \"Prosjekt Innstillinger\" under kategorien "
+"'applikasjon'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1583,15 +1612,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "Gjeldende scene ble aldri lagret, vennligst lagre før kjøring."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "Kunne ikke starta subprosess!"
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Åpne Scene"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -1599,121 +1628,124 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "Hurtigåpne Scene.."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr ""
+msgstr "Hurtigåpne Skript.."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr ""
+msgstr "Lagre og Lukk"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "Lagre endringer til '%s' før lukking?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "Lagre Scene Som.."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "Nei"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "Denne scene har aldri blitt lagret. Lagre før kjøring?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "Denne operasjonen kan ikke gjøres uten en scene."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "Eksporter MeshBibliotek"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr ""
+msgstr "Denne operasjonen kan ikke gjennomføres uten en rotnode."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr ""
+msgstr "Eksporter Tile Set"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr ""
+msgstr "Denne operasjonen kan ikke gjøres uten en valgt node."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr ""
+msgstr "Gjeldende scene er ikke lagret. Åpne likevel?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr ""
+msgstr "Kan ikke laste en scene som aldri ble lagret."
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr ""
+msgstr "Gå tilbake"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr ""
+msgstr "Denne handlingen kan ikke angres. Gå tilbake likevel?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene.."
-msgstr ""
+msgstr "Hurtigkjør Scene.."
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "Avslutt"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "Avslutt editoren?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "Åpne ProsjektManager?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr ""
+msgstr "Lagre & Avslutt"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "Lagre endring til følgende scene(r) før avslutting?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "Lagre endringer til følgende scene(r) før åpning av Prosjekt-Manager?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"Dette alternativet er foreldet. Situasjoner der oppdatering må bli tvunget "
+"regnes nå som en feil. Vennligst rapporter."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "Velg en HovedScene"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr ""
+msgstr "Kan ikke aktivere addon-plugin på: '%s' parsing av konfig feilet."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
+msgstr "Kunne ikke finne skriptfelt for addon-plugin i: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr ""
+msgstr "Kan ikke laste addon-skript fra bane: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1729,194 +1761,205 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Scene '%s' var automatisk importert, så den kan ikke modifiseres.\n"
+"For å gjøre endringer i den, kan du opprette en ny arvet scene."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ugh"
-msgstr ""
+msgstr "Æsj"
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
+"Feil ved lasting av scene, den må være i prosjektbanen. Bruk \"Importer\" "
+"for å åpne scenen, så lagre den i prosjektbanen."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr ""
+msgstr "Scene '%s' har ødelagte avhengigheter:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr ""
+msgstr "Fjern Nylige Scener"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr ""
+msgstr "Lagre Layout"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr ""
+msgstr "Slett Layout"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr ""
+msgstr "Bytt Scenefane"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
-msgstr ""
+msgstr "%d flere filer eller mapper"
 
 #: editor/editor_node.cpp
 msgid "%d more folders"
-msgstr ""
+msgstr "%d flere mapper"
 
 #: editor/editor_node.cpp
 msgid "%d more files"
-msgstr ""
+msgstr "%d flere filer"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "Dock-posisjon"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Distraksjonsfri Modus"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr ""
+msgstr "Vis/skjul distraksjonsfri modus."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr ""
+msgstr "Legg til ny scene."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr ""
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr ""
+msgstr "Gå til forrige åpne scene."
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr ""
+msgstr "Neste fane"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr ""
+msgstr "Forrige fane"
 
 #: editor/editor_node.cpp
 msgid "Filter Files.."
-msgstr ""
+msgstr "Filtrer Filer.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "Operasjoner med scene-filer."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Ny Scene"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr ""
+msgstr "Ny Arvet Scene.."
 
 #: editor/editor_node.cpp
 msgid "Open Scene.."
-msgstr ""
+msgstr "Åpne Scene.."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Lagre Scene"
 
 #: editor/editor_node.cpp
 msgid "Save all Scenes"
-msgstr ""
+msgstr "Lagre alle Scener"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Lukk Scene"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Åpne Nylig"
 
 #: editor/editor_node.cpp
 msgid "Convert To.."
-msgstr ""
+msgstr "Konverter Til.."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary.."
-msgstr ""
+msgstr "MeshBibliotek.."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "TileSet.."
-msgstr ""
+msgstr "TileSet.."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "Angre"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Gjenta"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr ""
+msgstr "Tilbakestille Scene"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "Diverse prosjekt- eller scene-relaterte verktøy"
 
 #: editor/editor_node.cpp
 msgid "Project"
-msgstr ""
+msgstr "Prosjekt"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "Prosjektinnstillinger"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
-msgstr ""
+msgstr "Kjør Skript"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Eksporter"
 
 #: editor/editor_node.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Verktøy"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Avslutt til Prosjektliste"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Deploy with Remote Debug"
-msgstr ""
+msgstr "Deploy med Ekstern Debug"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
+"Ved eksportering eller deploying, den følgende kjørbare filen vil prøve å "
+"koble til IP'en til denne datamaskinen for å bli debugget."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "Liten Deploy med Network FS"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1929,28 +1972,33 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Synlige Kollisjons-Former"
 
 #: editor/editor_node.cpp
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"Kollisjons-former eller raycast-noder (for 2D og 3D) vil være synlige under "
+"kjøring av spill om denne innstillingen er aktivert."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr ""
+msgstr "Synlig Navigasjon"
 
 #: editor/editor_node.cpp
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
+"Navigasjons-maske og polygoner vil være synlig under kjøring av spill om "
+"denne innstillingen er aktivert."
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "Synkroniser Sceneforandringer"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1959,18 +2007,27 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Når denne innstillingen er aktivert, alle endringer gjort til scenen i "
+"editoren vil bli replikert i det kjørende spillet.\n"
+"Når det brukes eksternt på en enhet, dette er mer effektivt med et "
+"nettverksfilsystem."
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr ""
+msgstr "Synkroniser Skriptforandringer"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When this option is turned on, any script that is saved will be reloaded on "
 "the running game.\n"
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Når denne innstillingen er aktivert, alle skript som er lagret vil lastes "
+"inn på nytt i det kjørende spillet.\n"
+"Når det brukes ekstert på en enhet, dette er mer effektivt med et "
+"nettverksfilsystem."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -1987,23 +2044,24 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "Skru av/på Fullskjerm"
 
 #: editor/editor_node.cpp editor/project_export.cpp
+#, fuzzy
 msgid "Manage Export Templates"
-msgstr ""
+msgstr "Håndter Eksportmaler"
 
 #: editor/editor_node.cpp
 msgid "Help"
-msgstr ""
+msgstr "Hjelp"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
-msgstr ""
+msgstr "Klasser"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "Online Dokumentasjon"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
@@ -2011,83 +2069,84 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr ""
+msgstr "Problemtracker"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Fellesskap"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Om"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "Spill prosjektet."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr ""
+msgstr "Spill"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
-msgstr ""
+msgstr "Pause scenen"
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr ""
+msgstr "Pause Scene"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr ""
+msgstr "Stopp scenen."
 
 #: editor/editor_node.cpp
 msgid "Stop"
-msgstr ""
+msgstr "Stopp"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Spill den redigerte scenen."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Spill Scene"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Spill tilpasset scene"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Spill av Tilpasset Scene"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Spins when the editor window repaints!"
-msgstr ""
+msgstr "Snurrer når editorvinduet rendrer om!"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
-msgstr ""
+msgstr "Oppdater Alltid"
 
 #: editor/editor_node.cpp
 msgid "Update Changes"
-msgstr ""
+msgstr "Oppdater Endringer"
 
 #: editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "Deaktiver Oppdateringsspinner"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr ""
+msgstr "Inspektør"
 
 #: editor/editor_node.cpp
 msgid "Create a new resource in memory and edit it."
-msgstr ""
+msgstr "Lag en ny ressurs i minnet og endre den."
 
 #: editor/editor_node.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr ""
+msgstr "Last inn en eksisterende ressurs fra disk og rediger den."
 
 #: editor/editor_node.cpp
 msgid "Save the currently edited resource."
@@ -2095,285 +2154,293 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
-msgstr ""
+msgstr "Lagre Som.."
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
-msgstr ""
+msgstr "Gå til det forrige redigerte objektet i historikken."
 
 #: editor/editor_node.cpp
 msgid "Go to the next edited object in history."
-msgstr ""
+msgstr "Gå til det neste redigerte objektet i historikken."
 
 #: editor/editor_node.cpp
 msgid "History of recently edited objects."
-msgstr ""
+msgstr "Historikk av nylige redigerte objekter."
 
 #: editor/editor_node.cpp
 msgid "Object properties."
-msgstr ""
+msgstr "Objektegenskaper."
 
 #: editor/editor_node.cpp
 msgid "Changes may be lost!"
-msgstr ""
+msgstr "Endringer kan bli tapt!"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Importer"
 
 #: editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "Node"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "FilSystem"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Output"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "Ikke Lagre"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Importer Mal Fra ZIP-Fil"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "Eksporter Prosjekt"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "Eksporter Bibliotek"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr ""
+msgstr "Slå sammen Med Eksisterende"
 
 #: editor/editor_node.cpp
 msgid "Password:"
-msgstr ""
+msgstr "Passord:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr ""
+msgstr "Åpne & Kjør et Skript"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "New Inherited"
-msgstr ""
+msgstr "Ny Arvet"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr ""
+msgstr "Last Errors"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr ""
+msgstr "Velg"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr ""
+msgstr "Åpne 2D Editor"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr ""
+msgstr "Åpne 3D Editor"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr ""
+msgstr "Åpne SkriptEditor"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr ""
+msgstr "Åpne Assets-Bibliotek"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr ""
+msgstr "Åpne den neste Editoren"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr ""
+msgstr "Åpne den forrige Editoren"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr ""
+msgstr "Lager Forhåndsvisning av Mesh"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
-msgstr ""
+msgstr "Miniatyrbilde.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Installerte Plugins:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Update"
-msgstr ""
+msgstr "Oppdater"
 
 #: editor/editor_plugin_settings.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr ""
+msgstr "Versjon:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
-msgstr ""
+msgstr "Forfatter:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "Status:"
 
 #: editor/editor_profiler.cpp
 msgid "Stop Profiling"
-msgstr ""
+msgstr "Stopp Profilering"
 
 #: editor/editor_profiler.cpp
 msgid "Start Profiling"
-msgstr ""
+msgstr "Start Profilering"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
-msgstr ""
+msgstr "Mål:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "Frame Tid (sek)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "Gjennomsnittstid (sek)"
 
 #: editor/editor_profiler.cpp
+#, fuzzy
 msgid "Frame %"
-msgstr ""
+msgstr "Frame %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr ""
+msgstr "Fysikk-Frame %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Tid:"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr ""
+msgstr "Inklusiv"
 
 #: editor/editor_profiler.cpp
+#, fuzzy
 msgid "Self"
-msgstr ""
+msgstr "Selv"
 
 #: editor/editor_profiler.cpp
+#, fuzzy
 msgid "Frame #:"
-msgstr ""
+msgstr "Frame #:"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
-msgstr ""
+msgstr "Velg enhet fra listen"
 
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
+"Ingen kjørbar eksport-preset funnet for denne plattformen.\n"
+"Vennligst legg til en kjørbar preset i eksportmenyen."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr ""
+msgstr "Skriv logikken din i _run() metoden."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr ""
+msgstr "Det er en redigert scene allerede."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr ""
+msgstr "Kunne ikke innstansiere skript:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr ""
+msgstr "Glemte du nøkkelordet 'tool'?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr ""
+msgstr "Kunne ikke kjøre skript:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr ""
+msgstr "Glemte du '_run'-metoden?"
 
 #: editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
-msgstr ""
+msgstr "Standard (Samme som Editor)"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "Velg Node(r) for Importering"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "Scene-Sti:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "Importer Fra Node:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
-msgstr ""
+msgstr "Last Ned På Nytt"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr ""
+msgstr "Avinstaller"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(Installert)"
 
 #: editor/export_template_manager.cpp
 msgid "Download"
-msgstr ""
+msgstr "Last ned"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Mangler)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(Gjeldende)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait.."
-msgstr ""
+msgstr "Henter fillager, vennligst vent.."
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "Fjern mal versjon '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr ""
+msgstr "Kan ikke åpne eksportmalzip."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "Ugyldig version.txt format i mal."
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Invalid version.txt format inside templates. Revision is not a valid "
 "identifier."
 msgstr ""
+"Ugyldig version.txt format i mal. Revisjon er ikke en gyldig identifikator."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "Ingen version.txt funnet i mal."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:\n"
-msgstr ""
+msgstr "Feil ved laging av sti for mal:\n"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2381,59 +2448,63 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr ""
+msgstr "Importerer:"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
+"Ingen nedlastningslink funnet for denne versjonen. Direkte nedlastning er "
+"kun mulig for offisielle utvigelser."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Can't resolve."
-msgstr ""
+msgstr "Kan ikke løse."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr ""
+msgstr "Kan ikke koble til."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Ingen respons."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "Forespørsel Feilet."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Redirect Loop."
-msgstr ""
+msgstr "Omdirigerings-Loop."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Feilet:"
 
 #: editor/export_template_manager.cpp
 msgid "Can't write file."
-msgstr ""
+msgstr "Kan ikke skrive fil."
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr ""
+msgstr "Nedlastning fullført."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting url: "
-msgstr ""
+msgstr "Error ved forespørsel av url: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror.."
-msgstr ""
+msgstr "Kobler til Fillager.."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2441,20 +2512,20 @@ msgstr "Frakoblet"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
-msgstr ""
+msgstr "Løser"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr ""
+msgstr "Kan ikke Løses"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting.."
-msgstr ""
+msgstr "Kobler til.."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Conect"
-msgstr ""
+msgstr "Kan ikke koble til"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
@@ -2462,335 +2533,349 @@ msgstr "Tilkoblet"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Requesting.."
-msgstr ""
+msgstr "Ber om.."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
-msgstr ""
+msgstr "Laster ned"
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
 msgstr "Tilkoblingsfeil"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "SSL Handshake Error"
-msgstr ""
+msgstr "SSL Handshake Error"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr ""
+msgstr "Gjeldende Versjon:"
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
-msgstr ""
+msgstr "Installerte Versjoner:"
 
 #: editor/export_template_manager.cpp
 msgid "Install From File"
-msgstr ""
+msgstr "Installer Fra Fil"
 
 #: editor/export_template_manager.cpp
 msgid "Remove Template"
-msgstr ""
+msgstr "Fjern Mal"
 
 #: editor/export_template_manager.cpp
 msgid "Select template file"
-msgstr ""
+msgstr "Velg malfil"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Export Template Manager"
-msgstr ""
+msgstr "Eksporter Mal-Manager"
 
 #: editor/export_template_manager.cpp
 msgid "Download Templates"
-msgstr ""
+msgstr "Last ned Mal"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: "
-msgstr ""
+msgstr "Velg fillager fra liste: "
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
+"Kan ikke åpne fyle_type_cache.cch for skriving, lagrer ikke file type cache!"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
+msgstr "Kan ikke navigere til '%s' for den ble ikke funnet på filsystemet!"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails"
-msgstr ""
+msgstr "Vis elementer som et rutenett av miniatyrbilder"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a list"
-msgstr ""
+msgstr "Vis elementer som liste"
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "\n"
 "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
+"\n"
+"Status: Import av fil feilet. Vennligst reparer filen eller reimporter "
+"manuelt."
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Cannot move/rename resources root."
-msgstr ""
+msgstr "Kan ikke flytte/endre navn ressursrot"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move a folder into itself.\n"
-msgstr ""
+msgstr "Kan ikke flytte mappe inn i seg selv.\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Error moving:\n"
-msgstr ""
+msgstr "Error ved flytting:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
-msgstr ""
+msgstr "Kan ikke oppdatere av avhengigheter:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
-msgstr ""
+msgstr "Ingen navn gitt"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
+msgstr "Gitt navn inneholder ugyldige tegn"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided."
-msgstr ""
+msgstr "Ingen navn gitt."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr ""
+msgstr "Navn inneholder ugyldige tegn."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
-msgstr ""
+msgstr "En fil eller mappe med dette navnet eksisterer allerede."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr ""
+msgstr "Endrer filnavn:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr ""
+msgstr "Ender mappenavn:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
-msgstr ""
+msgstr "Utvid alle"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "Kollaps alle"
 
 #: editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr ""
+msgstr "Kopier Sti"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename.."
-msgstr ""
+msgstr "Endre Navn.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To.."
-msgstr ""
+msgstr "Flytt Til.."
 
 #: editor/filesystem_dock.cpp
 msgid "New Folder.."
-msgstr ""
+msgstr "Ny Mappe.."
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
-msgstr ""
+msgstr "Vis I Filutforsker"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr ""
+msgstr "Instans"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies.."
-msgstr ""
+msgstr "Endre Avhengigheter.."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
-msgstr ""
+msgstr "Vis Eiere.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
-msgstr ""
+msgstr "Forrige Katalog"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Directory"
-msgstr ""
+msgstr "Neste Katalog"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr ""
+msgstr "Re-Skann Filsystem"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle folder status as Favorite"
-msgstr ""
+msgstr "Vis/skjul mappestatus som Favoritt"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
+msgstr "Instanser den valgte scene(r) som barn av den valgte noden."
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"Skanner Filer,\n"
+"Vennligst Vent.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "Flytt"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Rename"
-msgstr ""
+msgstr "Endre navn"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "Legg til i Gruppe"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
+msgstr "Fjern fra Gruppe"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
-msgstr ""
+msgstr "Importer som Enkel Scene"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr ""
+msgstr "Importer med Separerte Animasjoner"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "Importer med Separerte Materialer"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "Importer med Separerte Objekter"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "Importer med Separerte Objekter+Materialer"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "Importer med Separerte Objekter+Animasjoner"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "Importer med Separerte Materialer+Animasjoner"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "Importer med Separerte Objekter+Materialer+Animasjoner"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr ""
+msgstr "Importer som Flere Scener"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "Importer som Flere Scener+Materialer"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import Scene"
-msgstr ""
+msgstr "Importer Scene"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene.."
-msgstr ""
+msgstr "Importerer Scene.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
-msgstr ""
+msgstr "Kjører Tilpasser Skript.."
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
 msgid "Couldn't load post-import script:"
-msgstr ""
+msgstr "Kunne ikke laste post-importert skript:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
-msgstr ""
+msgstr "Ugyldig/ødelagt skript for post-import (sjekk konsoll):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr ""
+msgstr "Error ved kjøring av post-import script:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving.."
-msgstr ""
+msgstr "Lagrer.."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "Sett som Standard for '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "Fjern Standard for '%s'"
 
 #: editor/import_dock.cpp
 msgid " Files"
-msgstr ""
+msgstr " Filer"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr ""
+msgstr "Importer Som:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
+#, fuzzy
 msgid "Preset.."
-msgstr ""
+msgstr "Preset.."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr ""
+msgstr "Reimporter"
 
 #: editor/multi_node_edit.cpp
+#, fuzzy
 msgid "MultiNode Set"
-msgstr ""
+msgstr "MultiNode Set"
 
 #: editor/node_dock.cpp
 msgid "Groups"
-msgstr ""
+msgstr "Grupper"
 
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "Velg en Node for å endre Signaler og Grupper."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Poly"
-msgstr ""
+msgstr "Lag Poly"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Edit Poly"
-msgstr ""
+msgstr "Rediger Poly"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "Sett inn Punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Edit Poly (Remove Point)"
-msgstr ""
+msgstr "Rediger Poly (Fjern Punkt)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Poly And Point"
-msgstr ""
+msgstr "Fjern Poly Og Punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Create a new polygon from scratch"
-msgstr ""
+msgstr "Lag en ny polygon fra bunnen"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -2799,238 +2884,246 @@ msgid ""
 "Ctrl+LMB: Split Segment.\n"
 "RMB: Erase Point."
 msgstr ""
+"Endre eksisterende polygon:\n"
+"Venstreklikk: Flytt Punkt.\n"
+"Ctrl+Venstreklikk: Splitt Segment.\n"
+"Høyreklikk: Fjern Punkt."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Delete points"
 msgstr "Slett punkter"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Toggle Autoplay"
-msgstr ""
+msgstr "Slå av/på Autoavspilling"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Nytt Animasjonsnavn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Ny Anim"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Endre Animasjonsnavn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Fjern Animasjon?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Fjern Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr ""
+msgstr "ERROR: Ugyldig animasjonsnavn!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr ""
+msgstr "ERROR: Animasjonsnavnet finnes allerede!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Endre navn på Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Blend Next Changed"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Change Blend Time"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to copy!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation resource on clipboard!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Pasted Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Paste Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to edit!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Stop animation playback. (S)"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Play selected animation from current pos. (D)"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Animation position (in seconds)."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Scale animation playback globally for the node."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create new animation in player."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load animation from disk."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load an animation from disk."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save the current animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Display list of animations in player."
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Autoplay on Load"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Edit Target Blend Times"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Animation Tools"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Copy Animation"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Onion Skinning"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Legg til Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
+msgid "Blend Next Changed"
+msgstr "Blend Neste Endret"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Change Blend Time"
+msgstr "Endre Blend-Tid"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Load Animation"
+msgstr "Last Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "Dupliser Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "ERROR: No animation to copy!"
+msgstr "ERROR: Ingen animasjon å kopiere!"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "ERROR: No animation resource on clipboard!"
+msgstr "ERROR: Ingen animasjonsressurs på utklippstavlen!"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Pasted Animation"
+msgstr "Limt inn Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Paste Animation"
+msgstr "Lim inn Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "ERROR: No animation to edit!"
+msgstr "ERROR: Ingen animasjon å endre!"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "Spill av valgte animasjon baklengs fra gjeldende posisjon. (A)"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "Spill av valgte animasjon baklengs fra slutten. (Shift+A)"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Stop animation playback. (S)"
+msgstr "Stopp avspilling av animasjon. (S)"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "Spill av valgte animasjon fra start. (Shift+D)"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Play selected animation from current pos. (D)"
+msgstr "Spill av valgte animasjon fra gjeldende posisjon. (D)"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Animation position (in seconds)."
+msgstr "Animasjonsposisjon (i sekunder)."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Scale animation playback globally for the node."
+msgstr "Skaler animasjonsavspilling globalt for noden."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create new animation in player."
+msgstr "Lag ny animasjon i avspiller."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Load animation from disk."
+msgstr "Last animasjon fra disk."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Load an animation from disk."
+msgstr "Last en animasjon fra disk."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Save the current animation"
+msgstr "Lagre den gjeldene animasjonen"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Display list of animations in player."
+msgstr "Vis liste av animasjoner i avspiller."
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Autoplay on Load"
+msgstr "Autoavspill ved Lasting"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Edit Target Blend Times"
+msgstr "Endre Blend-Tid-Mål"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Animation Tools"
+msgstr "Animasjonsverktøy"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Copy Animation"
+msgstr "Kopier Animasjon"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr "Løk-lag"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr "Aktiver Løk-Lag"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
-msgstr "Beskrivelse:"
+msgstr "Retninger"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
-msgstr ""
+msgstr "Fortid"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "Framtid"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Dybde"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 steg"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 steg"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 steg"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Kun Forskjeller"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Tving Hvit-Modulat"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Inkluder Gizmoer (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Lag Ny Animasjon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Animasjonsnavn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
-msgstr ""
+msgstr "Error!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "Blend-Tid:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Neste (Automatisk Kø):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Kryss-Animasjon Blend-Tid"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animasjon"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "Nytt navn:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Filters"
@@ -3039,52 +3132,54 @@ msgstr "Rediger Filtre"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Skala:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr ""
+msgstr "Fade Inn (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "Fade Ut (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Blend"
-msgstr ""
+msgstr "Blend"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "Bland"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Start Om Igjen Automatisk:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Omstart (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "Tilfeldig Omstart (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Start!"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
-msgstr ""
+msgstr "Mengde:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Blend:"
-msgstr ""
+msgstr "Blend:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 0:"
-msgstr ""
+msgstr "Blend 0:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 1:"
@@ -3092,39 +3187,41 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
+msgstr "X-Fade Tid (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Current:"
-msgstr ""
+msgstr "Gjeldende:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "Legg til Input"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "Fjern Auto-Avansering"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "Sett Auto-Avansering"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Slett Input"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "Animasjonstre er gyldig."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "Animasjonstre er ugyldig."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Animasjonsnode"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
@@ -3132,47 +3229,50 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Miks-Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Blend2 Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Blend3 Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Blend4 Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "TidSkala Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "TidSøk Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Overgang Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr ""
+msgstr "Importer Animasjoner.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Rediger Node-Filtre"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters.."
-msgstr ""
+msgstr "Filtre.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Frigjør"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3180,191 +3280,195 @@ msgstr "Innhold:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "Vis Filer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Kan ikke løse tjenernavn:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Tilkoblingsfeil, vennligst prøv igjen."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "Kan ikke koble til tjener:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Ingen respons fra tjener:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
-msgstr ""
+msgstr "Forespørsel feilet, returneringskode:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "Forespørsel feilet, for mange omdirigeringer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Dårlig nedlastningshash, antar at filen har blitt tuklet med."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Forventet:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Fikk:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "Feilet sha256 hash-sjekk"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Asset Nedlasting Error:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "Henter:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving.."
-msgstr ""
+msgstr "Løser.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Error making request"
-msgstr ""
+msgstr "Feil ved forespørsel"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Inaktiv"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Prøv på nytt"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Nedlastningserror"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Nedlastning for denne asset'en er allerede i gang!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "first"
-msgstr ""
+msgstr "første"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "prev"
-msgstr ""
+msgstr "forrige"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "next"
-msgstr ""
+msgstr "neste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "last"
-msgstr ""
+msgstr "siste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Alle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid "Plugins"
-msgstr ""
+msgstr "Plugins"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Sorter:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "Reverser"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategori:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Side:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr ""
+msgstr "Support.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Offisiell"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Tester"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "Assets ZIP-Fil"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Forhåndsvis"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "Konfigurer Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr ""
+msgstr "Rutenett Offset:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr ""
+msgstr "Rutenett Steg:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr ""
+msgstr "Rotasjon Offset:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr ""
+msgstr "Rotasjon Steg:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Pivot"
-msgstr ""
+msgstr "Flytt Pivot"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Action"
-msgstr ""
+msgstr "Flytt Handling"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
-msgstr ""
+msgstr "Flytt vertikal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new vertical guide"
-msgstr ""
+msgstr "Lag ny vertikal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove vertical guide"
-msgstr ""
+msgstr "Fjern vertikal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move horizontal guide"
-msgstr ""
+msgstr "Flytt horisontal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal guide"
-msgstr ""
+msgstr "Lag ny horisontal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove horizontal guide"
@@ -3372,211 +3476,218 @@ msgstr "Fjern horisontal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
-msgstr ""
+msgstr "Lag ny horisontal og vertikal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
-msgstr ""
+msgstr "Endre IK Kjede"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit CanvasItem"
-msgstr ""
+msgstr "Endre CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
-msgstr ""
+msgstr "Kun anker"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors and Margins"
-msgstr ""
+msgstr "Endre Anker og Marginer"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
-msgstr ""
+msgstr "Endre Anker"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
-msgstr ""
+msgstr "Lim Inn Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
-msgstr ""
+msgstr "Velg Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
-msgstr ""
+msgstr "Dra: Roter"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move"
-msgstr ""
+msgstr "Alt+Dra: Flytt"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
 msgstr ""
+"Trykk 'v' for å Endre Pivot, 'Shift+v' for å Dra Privot (under flytting)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
-msgstr ""
+msgstr "Alt+Høyreklikk: Dybdelisteutvalg"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Mode"
-msgstr ""
+msgstr "Flytt Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr ""
+msgstr "Roter Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
+"Vis en liste av elementer på posisjonen du klikker\n"
+"(samme som Alt+Høyreklikk i velg-modus)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr ""
+msgstr "Klikk for å endre objektets rotasjonspivot."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
-msgstr ""
+msgstr "Panorerings-Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggles snapping"
-msgstr ""
+msgstr "Slå av/på snapping"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "Bruk Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping options"
-msgstr ""
+msgstr "Snapping innstillinger"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to grid"
-msgstr ""
+msgstr "Snap til rutenett"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "Bruk Rotasjons-Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr ""
+msgstr "Konfigurer Snap..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "Snap Relativt"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "Bruk Piksel Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Smart snapping"
-msgstr ""
+msgstr "Smart snapping"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to parent"
-msgstr ""
+msgstr "Snap til foreldre"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr ""
+msgstr "Snap til nodeanker"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr ""
+msgstr "Snap til nodesider"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr ""
+msgstr "Snap til andre noder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to guides"
-msgstr ""
+msgstr "Snap til veiledere"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr ""
+msgstr "Lås fast det valgte objektet (kan ikke flyttes)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr ""
+msgstr "Lås opp det valgte objektet (kan flyttes)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
-msgstr ""
+msgstr "Vær sikker at objektets barn ikke er valgbar."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
+msgstr "Gjenopprett objektets barn sin mulighet for å bli valgt."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Bones"
-msgstr ""
+msgstr "Lag Ben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
-msgstr ""
+msgstr "Fjern Ben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
-msgstr ""
+msgstr "Vis Ben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
-msgstr ""
+msgstr "Lag IK Kjede"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
-msgstr ""
+msgstr "Fjern IK Kjede"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
+msgstr "Vis"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Show Grid"
-msgstr ""
+msgstr "Vis Rutenett"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show helpers"
-msgstr ""
+msgstr "Vis hjelpere"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show rulers"
-msgstr ""
+msgstr "Vis linjaler"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show guides"
-msgstr ""
+msgstr "Vis veiledere"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Center Selection"
-msgstr ""
+msgstr "Plasser Utvalg I Midten"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Layout"
-msgstr ""
+msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Keys"
-msgstr ""
+msgstr "Sett inn Nøkler"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Sett inn Nøkkel"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -3584,130 +3695,133 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
-msgstr ""
+msgstr "Kopier Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr ""
+msgstr "Fjern Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag pivot from mouse position"
-msgstr ""
+msgstr "Dra pivot fra musposisjon"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Set pivot at mouse position"
-msgstr "Fjern Funksjon"
+msgstr "Sett pivot på musposisjon"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "Multipliser rutenett-steg med 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "Del rutenett-steg med 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
-msgstr ""
+msgstr "Legg til %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Legger til %s.."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr ""
+msgstr "Lag Node"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
+msgstr "Error ved instansiering av scene fra %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
-msgstr ""
+msgstr "OK :("
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr ""
+msgstr "Ingen foreldre å instansere et barn på."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr ""
+msgstr "Denne operasjonen krever én valgt node."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
-msgstr ""
+msgstr "Endre standard type"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Dra & Slipp + Shift: Legg til node som søsken\n"
+"Dra & Slipp + Alft: Endre nodetype"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Poly3D"
-msgstr ""
+msgstr "Lag Poly3D"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Set Handle"
-msgstr ""
+msgstr "Sett Handle"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Remove item %d?"
-msgstr ""
+msgstr "Fjern element %d?"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Item"
-msgstr ""
+msgstr "Legg til Element"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Remove Selected Item"
-msgstr ""
+msgstr "Fjern Valgte Element"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import from Scene"
-msgstr ""
+msgstr "Importer fra Scene"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr ""
-
-#: editor/plugins/curve_editor_plugin.cpp
-msgid "Flat0"
-msgstr ""
-
-#: editor/plugins/curve_editor_plugin.cpp
-msgid "Flat1"
-msgstr ""
+msgstr "Oppdater fra Scene"
 
 #: editor/plugins/curve_editor_plugin.cpp
 #, fuzzy
+msgid "Flat0"
+msgstr "Flat0"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Flat1"
+msgstr "Flat1"
+
+#: editor/plugins/curve_editor_plugin.cpp
 msgid "Ease in"
-msgstr "Fjern Utvalg"
+msgstr "Gli inn"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Ease out"
-msgstr ""
+msgstr "Gli ut"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
-msgstr ""
+msgstr "Smooth-steg"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Point"
-msgstr ""
+msgstr "Modifiser Kurvepunkt"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Tangent"
-msgstr ""
+msgstr "Modifiser Kurvetangent"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
@@ -3715,29 +3829,27 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add point"
-msgstr ""
+msgstr "Legg til punkt"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove point"
-msgstr "Fjern Funksjon"
+msgstr "Fjern punkt"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left linear"
-msgstr ""
+msgstr "Venstrelineær"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Right linear"
-msgstr ""
+msgstr "Høyrelineær"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load preset"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Curve Point"
-msgstr "Fjern Funksjon"
+msgstr "Fjern Kurvepunkt"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
@@ -3745,28 +3857,28 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr ""
+msgstr "Hold Shift for å endre tangenter individuelt"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr ""
+msgstr "Bak GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
-msgstr ""
+msgstr "Legg til/Fjern Farge-Rampe-Punkt"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
-msgstr ""
+msgstr "Modifiser Farge-Rampe"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
-msgstr ""
+msgstr "Element %d"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Items"
-msgstr ""
+msgstr "Elementer"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
@@ -3784,23 +3896,23 @@ msgstr ""
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create a new polygon from scratch."
-msgstr ""
+msgstr "Lag en ny polygon fra bunnen."
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Edit existing polygon:"
-msgstr ""
+msgstr "Rediger eksisterende polygon:"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "LMB: Move Point."
-msgstr ""
+msgstr "Venstreklikk: Flytt Punkt."
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Ctrl+LMB: Split Segment."
-msgstr ""
+msgstr "Ctrl+Venstreklikk: Splitt Segment."
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "RMB: Erase Point."
-msgstr ""
+msgstr "Høyreklikk: Slett Punkt."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -3816,7 +3928,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr ""
+msgstr "Dette virker ikke på sceneroten!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Shape"
@@ -3840,11 +3952,11 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
-msgstr ""
+msgstr "Kunne ikke lage omriss!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline"
-msgstr ""
+msgstr "Lag Omriss"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
@@ -3948,15 +4060,15 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "X-Axis"
-msgstr ""
+msgstr "X-Akse"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Y-Axis"
-msgstr ""
+msgstr "Y-Akse"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Z-Axis"
-msgstr ""
+msgstr "Z-Akse"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
@@ -3964,15 +4076,15 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
-msgstr ""
+msgstr "Tilfeldig Rotasjon:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Tilt:"
-msgstr ""
+msgstr "Tilfeldig Tilt:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Scale:"
-msgstr ""
+msgstr "Tilfeldig Skala:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate"
@@ -4016,11 +4128,11 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
-msgstr ""
+msgstr "Partisjonerer..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating contours..."
-msgstr ""
+msgstr "Lager konturer..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
@@ -4040,7 +4152,7 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "Ferdig!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
@@ -4065,7 +4177,7 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
-msgstr ""
+msgstr "Ingen piksler med gjennomsiktighet > 128 i bilde.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
@@ -4082,7 +4194,7 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr ""
+msgstr "Partikler"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -4159,7 +4271,7 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
-msgstr ""
+msgstr "Volum"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
@@ -4184,11 +4296,11 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point to Curve"
-msgstr ""
+msgstr "Legg til Punkt på Kurve"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
-msgstr ""
+msgstr "Flytt Punkt på Kurve"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
@@ -4201,50 +4313,50 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Select Points"
-msgstr ""
+msgstr "Velg Punkter"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Shift+Drag: Select Control Points"
-msgstr ""
+msgstr "Shift+Dra: Velg Kontrollpunkter"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Click: Add Point"
-msgstr ""
+msgstr "Klikk: Legg til Punkt"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
-msgstr ""
+msgstr "Høyreklikk: Fjern Punkt"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr ""
+msgstr "Velg Kontrollpunkter (Shift+Dra)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
-msgstr ""
+msgstr "Legg til Punkt (i tomt rom)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Segment (in curve)"
-msgstr ""
+msgstr "Split Segment (i kurve)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Delete Point"
-msgstr ""
+msgstr "Fjern Punkt"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Close Curve"
-msgstr ""
+msgstr "Lukk Kurve"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
-msgstr ""
+msgstr "Kurvepunkt #"
 
 #: editor/plugins/path_editor_plugin.cpp
 #, fuzzy
@@ -4292,31 +4404,31 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"
-msgstr ""
+msgstr "Flytt Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
-msgstr ""
+msgstr "Ctrl: Roter"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
-msgstr ""
+msgstr "Shift: Flytt Alle"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
-msgstr ""
+msgstr "Shift+Ctrl: Skaler"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Polygon"
-msgstr ""
+msgstr "Flytt Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Rotate Polygon"
-msgstr ""
+msgstr "Roter Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Scale Polygon"
-msgstr ""
+msgstr "Skaler Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4336,7 +4448,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
-msgstr ""
+msgstr "Fjern UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4349,24 +4461,24 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
-msgstr ""
+msgstr "Rutenett"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr ""
+msgstr "ERROR: Kunne ikke laste ressurs!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
-msgstr ""
+msgstr "Legg til Ressurs"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Rename Resource"
-msgstr ""
+msgstr "Gi nytt navn til Ressurs"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Resource"
-msgstr ""
+msgstr "Fjern Ressurs"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Resource clipboard is empty!"
@@ -4382,59 +4494,61 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr ""
+msgstr "Lim inn"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
-msgstr ""
+msgstr "Fjern Nylige Filer"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Close and save changes?\n"
 "\""
 msgstr ""
+"Lukk og lagre endringer?\n"
+"\""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
-msgstr ""
+msgstr "Error ved lasting av tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
-msgstr ""
+msgstr "Error ved lagring"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme"
-msgstr ""
+msgstr "Error ved importering av tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing"
-msgstr ""
+msgstr "Error ved importering"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr ""
+msgstr "Importer Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
-msgstr ""
+msgstr "Lagre Tema Som.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " Klassereferanse"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
-msgstr ""
+msgstr "Sorter"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 msgid "Move Up"
-msgstr ""
+msgstr "Flytt Opp"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 msgid "Move Down"
-msgstr ""
+msgstr "Flytt Ned"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -4503,12 +4617,12 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find.."
-msgstr ""
+msgstr "Finn.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "Finn neste"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
@@ -4525,7 +4639,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr ""
+msgstr "Fortsett"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -4561,7 +4675,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "Opprett skript"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -4592,7 +4706,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
-msgstr ""
+msgstr "Velg farge"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Case"
@@ -4613,13 +4727,13 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Klipp ut"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Lim inn"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -4711,11 +4825,11 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "Finn forrige"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Replace.."
-msgstr ""
+msgstr "Erstatt.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Function.."
@@ -5718,7 +5832,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid " "
-msgstr ""
+msgstr " "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."

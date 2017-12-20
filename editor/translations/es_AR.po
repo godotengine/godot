@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-11-29 03:50+0000\n"
+"PO-Revision-Date: 2017-11-30 15:50+0000\n"
 "Last-Translator: Diego López <diegodario21@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -247,7 +247,6 @@ msgid "Animation zoom."
 msgstr "Zoom de animación."
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Length (s):"
 msgstr "Duración (seg):"
 
@@ -329,9 +328,8 @@ msgid "Scale Ratio:"
 msgstr "Ratio de Escala:"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Call Functions in Which Node?"
-msgstr "Llamar Funciones en Cual Nodo?"
+msgstr "Llamar Funciones en Cuál Nodo?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -1148,9 +1146,8 @@ msgid "File Exists, Overwrite?"
 msgstr "El Archivo Existe, Sobreescribir?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Crear Carpeta"
+msgstr "Seleccionar Carpeta Actual"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1541,14 +1538,12 @@ msgstr ""
 "este workflow."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand all properties"
-msgstr "Expandir todos"
+msgstr "Expandir todas las propiedades"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Collapse all properties"
-msgstr "Colapsar todos"
+msgstr "Colapsar todas las propiedades"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2711,7 +2706,6 @@ msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Archivos"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle folder status as Favorite"
 msgstr "Act/Desact. estado de carpeta como Favorito"
 
@@ -3042,54 +3036,51 @@ msgstr "Copiar Animación"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Activar Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Selecciones:"
+msgstr "Direcciones"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
-msgstr "Pegar"
+msgstr "Pasado"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Future"
-msgstr "Características"
+msgstr "Futuro"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Profundidad"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 paso"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 pasos"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 pasos"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Solo Diferencias"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Forzar Modulado a Blanco"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Incluir Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5993,6 +5984,8 @@ msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"Actualmente no tenés ningun proyecto.\n"
+"Te gustaría explorar los ejemplos oficiales en la Biblioteca de Assets?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7186,13 +7179,12 @@ msgstr ""
 "documentacion sobre como usar yield correctamente!"
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"El nodo rindió (yielded), pero no retornó un estado de función en la primera "
-"memoria de trabajo."
+"Un nodo ejecutó un «yield» pero no devolvió un estado de función en la "
+"memoria de trabajo original."
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7249,7 +7241,7 @@ msgstr "El nombre no es un identificador válido:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr "El nombre ya esta en uso por otra func/var/señal:"
+msgstr "El nombre ya está en uso por otra función/variable/señal:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -7831,9 +7823,8 @@ msgid "Please Confirm..."
 msgstr "Confirmá, por favor..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select this Folder"
-msgstr "Seleccionar Método"
+msgstr "Seleccionar esta Carpeta"
 
 #: scene/gui/popup.cpp
 msgid ""

@@ -3,28 +3,33 @@
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# aelspire <aelspire@gmail.com>, 2017.
 # Aram Nap <xyphex.aram@gmail.com>, 2017.
 # Arjan219 <arjannugteren1@gmail.com>, 2017.
+# Christophe Swolfs <swolfschristophe@gmail.com>, 2017.
 # Cornee Traas <corneetraas@hotmail.com>, 2017.
 # Daeran Wereld <daeran@gmail.com>, 2017.
+# Dzejkop <jakubtrad@gmail.com>, 2017.
+# Maikel <maikel_martens_1@hotmail.com>, 2017.
 # Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
 # Uxilo <jmolendijk93@gmail.com>, 2017.
 # Wout Standaert <wout@blobkat.com>, 2017.
+# Zatherz <zatherz@linux.pl>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-24 20:45+0000\n"
-"Last-Translator: Daeran Wereld <daeran@gmail.com>\n"
+"PO-Revision-Date: 2017-12-20 15:43+0000\n"
+"Last-Translator: Christophe Swolfs <swolfschristophe@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.18\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1151,9 +1156,8 @@ msgid "File Exists, Overwrite?"
 msgstr "Bestand Bestaat, Overschrijven?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Map Maken"
+msgstr "Selecteer Huidige Map"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1499,17 +1503,16 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Dit bestand hoort bij een scene die geïmporteerd werd, dus het is niet "
-"bewerkbaar.\n"
-"Lees de documentatie over scenes importeren om deze workflow beter te "
-"begrijpen."
+"Dit bestand hoort bij een scene die geïmporteerd werd. Het is momenteel dus "
+"onbewerkbaar. Lees de documentatie over scenes importeren om deze workflow "
+"beter te begrijpen."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
-"Dit bestand hoort bij een scene die werd geïnstantieerd of overgeërfd.\n"
+"Dit bestand hoort bij een scene die  geïnstantieerd of overgeërfd werd.\n"
 "Aanpassingen zullen niet worden bijgehouden bij het opslaan van de huidige "
 "scene."
 
@@ -2384,7 +2387,6 @@ msgid "Did you forget the '_run' method?"
 msgstr "Ben je de '_run' methode vergeten?"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default (Same as Editor)"
 msgstr "Standaard (Dezelfde als Editor)"
 
@@ -2577,9 +2579,8 @@ msgid "Remove Template"
 msgstr "Verwijder Sjabloon"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select template file"
-msgstr "Verwijder geselecteerde bestanden?"
+msgstr "Selecteer sjabloonbestand"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -2701,9 +2702,8 @@ msgid "Instance"
 msgstr "Instantie"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Edit Dependencies.."
-msgstr "Afhankelijkheden aanpassen."
+msgstr "Afhankelijkheden aanpassen.."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
@@ -2757,9 +2757,8 @@ msgid "Remove from Group"
 msgstr "Verwijderen uit Groep"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import as Single Scene"
-msgstr "Scene aan het Updaten"
+msgstr "Importeer als Enkele Scene"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
@@ -2808,7 +2807,7 @@ msgstr "Scene Importeren.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
-msgstr ""
+msgstr "Aangepast script uitvoeren .."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2847,9 +2846,8 @@ msgid "Preset.."
 msgstr "Voorinstelling.."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Reimport"
-msgstr "Aan Het Herimporteren"
+msgstr "Herimporteer"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
@@ -2952,12 +2950,14 @@ msgid "Add Animation"
 msgstr "Voeg Animatie Toe"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "Meng Volgende Aangepast"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Wijzig Meng Tijd"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -3013,7 +3013,7 @@ msgstr "Animatie positie (in seconden)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "Schaal het afspelen van animaties globaal voor de Node."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
@@ -3058,7 +3058,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "\"Onion Skinning\" Inschakelen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -3072,27 +3072,27 @@ msgstr "Plakken"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "Toekomst"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Diepte"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 stap"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 stappen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 stappen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Alleen verschillen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
@@ -3100,7 +3100,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Inclusief Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3119,15 +3119,15 @@ msgstr "Foutmelding!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "Mengtijden:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Volgende (Auto wachtrij):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Cross-animatie mixtijden"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3157,23 +3157,25 @@ msgstr "Fade-Out (s):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend"
-msgstr ""
+msgstr "Vochtigheid vermenging ruis"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "Mengen"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Automatische herstart:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Restart (s):"
-msgstr ""
+msgstr "Herstart (en):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "Willekeurige herstart (en):"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
@@ -3186,7 +3188,7 @@ msgstr "Hoeveelheid:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend:"
-msgstr ""
+msgstr "Mengen"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 0:"
@@ -3206,7 +3208,7 @@ msgstr "Huidig:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "Voeg invoer toe"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Clear Auto-Advance"
@@ -3218,7 +3220,7 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Invoer verwijderen"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is valid."
@@ -3338,7 +3340,7 @@ msgstr "Ophalen:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving.."
-msgstr ""
+msgstr "Oplossen .."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -7849,11 +7851,11 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
-msgstr ""
+msgstr "Raw-modus"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Huidige kleur als een preset toevoegen"
 
 #: scene/gui/dialogs.cpp
 msgid "Cancel"
