@@ -498,6 +498,7 @@ bool SceneTree::idle(float p_time) {
 
 		if (use_font_oversampling) {
 			DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
+			DynamicFont::update_oversampling();
 		}
 
 		last_screen_size = win_size;

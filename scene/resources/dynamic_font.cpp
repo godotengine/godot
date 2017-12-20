@@ -620,6 +620,21 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	char_map[p_char] = chr;
 }
 
+bool DynamicFontAtSize::update_oversampling() {
+	if (oversampling == font_oversampling)
+		return false;
+	if (!valid)
+		return false;
+
+	FT_Done_FreeType(library);
+	textures.clear();
+	char_map.clear();
+	oversampling = font_oversampling;
+	_load();
+
+	return true;
+}
+
 DynamicFontAtSize::DynamicFontAtSize() {
 
 	valid = false;
@@ -919,15 +934,52 @@ void DynamicFont::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACING_SPACE);
 }
 
-DynamicFont::DynamicFont() {
+Mutex *DynamicFont::dynamic_font_mutex = NULL;
+
+SelfList<DynamicFont>::List DynamicFont::dynamic_fonts;
+
+DynamicFont::DynamicFont() :
+		font_list(this) {
 
 	spacing_top = 0;
 	spacing_bottom = 0;
 	spacing_char = 0;
 	spacing_space = 0;
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->lock();
+	dynamic_fonts.add(&font_list);
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->unlock();
 }
 
 DynamicFont::~DynamicFont() {
+
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->lock();
+	dynamic_fonts.remove(&font_list);
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->unlock();
+}
+
+void DynamicFont::initialize_dynamic_fonts() {
+	dynamic_font_mutex = Mutex::create();
+}
+
+void DynamicFont::finish_dynamic_fonts() {
+	memdelete(dynamic_font_mutex);
+	dynamic_font_mutex = NULL;
+}
+
+void DynamicFont::update_oversampling() {
+
+	SelfList<DynamicFont> *E = dynamic_fonts.first();
+	while (E) {
+
+		if (E->self()->data_at_size.is_valid() && E->self()->data_at_size->update_oversampling()) {
+			E->self()->emit_changed();
+		}
+		E = E->next();
+	}
 }
 
 /////////////////////////

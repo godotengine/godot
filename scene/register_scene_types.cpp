@@ -542,6 +542,8 @@ void register_scene_types() {
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
+	DynamicFont::initialize_dynamic_fonts();
+
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
 	ClassDB::register_class<StyleBoxTexture>();
@@ -620,6 +622,8 @@ void unregister_scene_types() {
 	memdelete(resource_loader_dynamic_font);
 	memdelete(resource_loader_stream_texture);
 	memdelete(resource_loader_theme);
+
+	DynamicFont::finish_dynamic_fonts();
 
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);
