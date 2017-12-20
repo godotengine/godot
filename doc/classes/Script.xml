@@ -19,6 +19,18 @@
 				Returns true if the script can be instanced.
 			</description>
 		</method>
+		<method name="get_base_script" qualifiers="const">
+			<return type="Script">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_instance_base_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_source_code" qualifiers="const">
 			<return type="String">
 			</return>
