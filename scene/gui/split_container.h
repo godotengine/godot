@@ -88,7 +88,7 @@ class HSplitContainer : public SplitContainer {
 
 public:
 	HSplitContainer() :
-			SplitContainer(false) { set_default_cursor_shape(CURSOR_HSPLIT); }
+			SplitContainer(false) {}
 };
 
 class VSplitContainer : public SplitContainer {
@@ -97,7 +97,7 @@ class VSplitContainer : public SplitContainer {
 
 public:
 	VSplitContainer() :
-			SplitContainer(true) { set_default_cursor_shape(CURSOR_VSPLIT); }
+			SplitContainer(true) {}
 };
 
 #endif // SPLIT_CONTAINER_H
