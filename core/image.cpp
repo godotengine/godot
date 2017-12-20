@@ -2287,6 +2287,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
 
+	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
+
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
 	BIND_ENUM_CONSTANT(FORMAT_L8); //luminance
@@ -2503,6 +2506,40 @@ String Image::get_format_name(Format p_format) {
 
 	ERR_FAIL_INDEX_V(p_format, FORMAT_MAX, String());
 	return format_names[p_format];
+}
+
+Error Image::load_png_from_buffer(const PoolVector<uint8_t> &p_array) {
+
+	int buffer_size = p_array.size();
+
+	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_png_mem_loader_func, ERR_INVALID_PARAMETER);
+
+	PoolVector<uint8_t>::Read r = p_array.read();
+
+	Ref<Image> image = _png_mem_loader_func(r.ptr(), buffer_size);
+	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
+
+	copy_internals_from(image);
+
+	return OK;
+}
+
+Error Image::load_jpg_from_buffer(const PoolVector<uint8_t> &p_array) {
+
+	int buffer_size = p_array.size();
+
+	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_jpg_mem_loader_func, ERR_INVALID_PARAMETER);
+
+	PoolVector<uint8_t>::Read r = p_array.read();
+
+	Ref<Image> image = _jpg_mem_loader_func(r.ptr(), buffer_size);
+	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
+
+	copy_internals_from(image);
+
+	return OK;
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {

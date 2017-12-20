@@ -296,6 +296,9 @@ public:
 	static void set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource));
 	static String get_format_name(Format p_format);
 
+	Error load_png_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
+
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
 
