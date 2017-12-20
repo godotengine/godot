@@ -345,18 +345,28 @@
 	</methods>
 	<members>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
+			If [code]true[/code] the caret (visual cursor) blinks.
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+			Duration (in seconds) of a caret's blinking cycle.
 		</member>
 		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
+			If [code]true[/code] the caret displays as a rectangle.
+			If [code]false[/code] the caret displays as a bar.
+		</member>
+		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret">
+			If [code]true[/code] a right click moves the cursor at the mouse position before displaying the context menu.
+			If [code]false[/code] the context menu disregards mouse location.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+			If [code]true[/code] a right click displays the context menu.
 		</member>
 		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
+			If [code]true[/code] the line containing the cursor is highlighted.
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 		</member>
@@ -364,6 +374,7 @@
 			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
+			If [code]true[/code] line numbers are displayed to the left of the text.
 		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
 		</member>
@@ -419,16 +430,22 @@
 			Search from end to beginning.
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
+			Cuts (Copies and clears) the selected text.
 		</constant>
 		<constant name="MENU_COPY" value="1" enum="MenuItems">
+			Copies the selected text.
 		</constant>
 		<constant name="MENU_PASTE" value="2" enum="MenuItems">
+			Pastes the clipboard text over the selected text (or at the cursor's position).
 		</constant>
 		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
+			Erases the whole [TextEdit] text.
 		</constant>
 		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
+			Selects the whole [TextEdit] text.
 		</constant>
 		<constant name="MENU_UNDO" value="5" enum="MenuItems">
+			Undoes the previous action.
 		</constant>
 		<constant name="MENU_MAX" value="6" enum="MenuItems">
 		</constant>

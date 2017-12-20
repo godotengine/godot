@@ -620,14 +620,36 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 
-		if (mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
+		if (mb->get_button_index() == BUTTON_RIGHT) {
 
 			int col, row;
 			TextEdit *tx = shader_editor->get_text_edit();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
 			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
-			bool have_selection = (tx->get_selection_text().length() > 0);
-			_make_context_menu(have_selection);
+			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+
+			if (tx->is_right_click_moving_caret()) {
+				if (tx->is_selection_active()) {
+
+					int from_line = tx->get_selection_from_line();
+					int to_line = tx->get_selection_to_line();
+					int from_column = tx->get_selection_from_column();
+					int to_column = tx->get_selection_to_column();
+
+					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
+						// Right click is outside the seleted text
+						tx->deselect();
+					}
+				}
+				if (!tx->is_selection_active()) {
+					tx->cursor_set_line(row, true, false);
+					tx->cursor_set_column(col);
+				}
+			}
+
+			if (!mb->is_pressed()) {
+				_make_context_menu(tx->is_selection_active());
+			}
 		}
 	}
 }
