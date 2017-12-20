@@ -3341,8 +3341,8 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	zoom = p_zoom;
 	Point2 ofs = p_position;
 	ofs = ofs / prev_zoom - ofs / zoom;
-	h_scroll->set_value(h_scroll->get_value() + ofs.x);
-	v_scroll->set_value(v_scroll->get_value() + ofs.y);
+	h_scroll->set_value(Math::round(h_scroll->get_value() + ofs.x));
+	v_scroll->set_value(Math::round(v_scroll->get_value() + ofs.y));
 
 	_update_scroll(0);
 	viewport->update();
