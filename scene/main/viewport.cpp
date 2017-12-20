@@ -2371,7 +2371,17 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		p_control->_modal_set_prev_focus_owner(0);
 
 	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus)) {
-		gui.mouse_focus->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		Ref<InputEventMouseButton> mb;
+		mb.instance();
+		mb->set_position(gui.mouse_focus->get_local_mouse_position());
+		mb->set_global_position(gui.mouse_focus->get_local_mouse_position());
+		mb->set_button_index(gui.mouse_focus_button);
+		mb->set_pressed(false);
+		gui.mouse_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
+
+		//if (gui.mouse_over == gui.mouse_focus) {
+		//	gui.mouse_focus->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		//}
 		gui.mouse_focus = NULL;
 	}
 
