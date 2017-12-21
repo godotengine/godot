@@ -67,17 +67,20 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 
 	int port = p_port;
 
-	int tries = 3;
+	const int tries = 6;
+	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+
 	tcp_client->connect_to_host(ip, port);
 
-	while (tries--) {
+	for (int i = 0; i < tries; i++) {
 
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			break;
 		} else {
 
-			OS::get_singleton()->delay_usec(1000000);
-			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in 1 sec.");
+			const int ms = waits[i];
+			OS::get_singleton()->delay_usec(ms * 1000);
+			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
 		};
 	};
 
