@@ -1808,13 +1808,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			pos = gui.focus_inv_xform.xform(pos);
 			mb->set_position(pos);
 
-			if (gui.mouse_focus->can_process()) {
-				_gui_call_input(gui.mouse_focus, mb);
-			}
+			Control *mouse_focus = gui.mouse_focus;
 
+			//disable mouse focus if needed before calling input, this makes popups on mouse press event work better, as the release will never be received otherwise
 			if (mb->get_button_index() == gui.mouse_focus_button) {
 				gui.mouse_focus = NULL;
 				gui.mouse_focus_button = -1;
+			}
+
+			if (mouse_focus->can_process()) {
+				_gui_call_input(mouse_focus, mb);
 			}
 
 			/*if (gui.drag_data.get_type()!=Variant::NIL && mb->get_button_index()==BUTTON_LEFT) {

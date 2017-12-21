@@ -165,20 +165,20 @@ BakedLightmap::BakeBeginFunc BakedLightmap::bake_begin_function = NULL;
 BakedLightmap::BakeStepFunc BakedLightmap::bake_step_function = NULL;
 BakedLightmap::BakeEndFunc BakedLightmap::bake_end_function = NULL;
 
-void BakedLightmap::set_bake_subdiv(Subdiv p_subdiv) {
-	bake_subdiv = p_subdiv;
+void BakedLightmap::set_bake_cell_size(float p_cell_size) {
+	bake_cell_size = p_cell_size;
 }
 
-BakedLightmap::Subdiv BakedLightmap::get_bake_subdiv() const {
-	return bake_subdiv;
+float BakedLightmap::get_bake_cell_size() const {
+	return bake_cell_size;
 }
 
-void BakedLightmap::set_capture_subdiv(Subdiv p_subdiv) {
-	capture_subdiv = p_subdiv;
+void BakedLightmap::set_capture_cell_size(float p_cell_size) {
+	capture_cell_size = p_cell_size;
 }
 
-BakedLightmap::Subdiv BakedLightmap::get_capture_subdiv() const {
-	return capture_subdiv;
+float BakedLightmap::get_capture_cell_size() const {
+	return capture_cell_size;
 }
 
 void BakedLightmap::set_extents(const Vector3 &p_extents) {
@@ -327,11 +327,29 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	Ref<BakedLightmapData> new_light_data;
 	new_light_data.instance();
 
-	static const int subdiv_value[SUBDIV_MAX] = { 8, 9, 10, 11 };
-
 	VoxelLightBaker baker;
 
-	baker.begin_bake(subdiv_value[bake_subdiv], AABB(-extents, extents * 2.0));
+	int bake_subdiv;
+	int capture_subdiv;
+	AABB bake_bounds;
+	{
+		bake_bounds = AABB(-extents, extents * 2.0);
+		int subdiv = nearest_power_of_2_templated(int(bake_bounds.get_longest_axis_size() / bake_cell_size));
+		bake_bounds.size[bake_bounds.get_longest_axis_size()] = subdiv * bake_cell_size;
+		bake_subdiv = nearest_shift(subdiv) + 1;
+
+		capture_subdiv = bake_subdiv;
+		float css = bake_cell_size;
+		while (css < capture_cell_size && capture_subdiv > 2) {
+			capture_subdiv--;
+			css *= 2.0;
+		}
+
+		print_line("bake subdiv: " + itos(bake_subdiv));
+		print_line("capture subdiv: " + itos(capture_subdiv));
+	}
+
+	baker.begin_bake(bake_subdiv, bake_bounds);
 
 	List<PlotMesh> mesh_list;
 	List<PlotLight> light_list;
@@ -510,19 +528,19 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		}
 	}
 
-	int csubdiv = subdiv_value[capture_subdiv];
 	AABB bounds = AABB(-extents, extents * 2);
-	new_light_data->set_cell_subdiv(csubdiv);
+	new_light_data->set_cell_subdiv(capture_subdiv);
 	new_light_data->set_bounds(bounds);
-	new_light_data->set_octree(baker.create_capture_octree(csubdiv));
+	new_light_data->set_octree(baker.create_capture_octree(capture_subdiv));
 	{
 
+		float bake_bound_size = bake_bounds.get_longest_axis_size();
 		Transform to_bounds;
-		to_bounds.basis.scale(Vector3(bounds.get_longest_axis_size(), bounds.get_longest_axis_size(), bounds.get_longest_axis_size()));
+		to_bounds.basis.scale(Vector3(bake_bound_size, bake_bound_size, bake_bound_size));
 		to_bounds.origin = bounds.position;
 
 		Transform to_grid;
-		to_grid.basis.scale(Vector3(1 << (csubdiv - 1), 1 << (csubdiv - 1), 1 << (csubdiv - 1)));
+		to_grid.basis.scale(Vector3(1 << (capture_subdiv - 1), 1 << (capture_subdiv - 1), 1 << (capture_subdiv - 1)));
 
 		Transform to_cell_space = to_grid * to_bounds.affine_inverse();
 		new_light_data->set_cell_space_transform(to_cell_space);
@@ -693,11 +711,11 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &BakedLightmap::set_light_data);
 	ClassDB::bind_method(D_METHOD("get_light_data"), &BakedLightmap::get_light_data);
 
-	ClassDB::bind_method(D_METHOD("set_bake_subdiv", "bake_subdiv"), &BakedLightmap::set_bake_subdiv);
-	ClassDB::bind_method(D_METHOD("get_bake_subdiv"), &BakedLightmap::get_bake_subdiv);
+	ClassDB::bind_method(D_METHOD("set_bake_cell_size", "bake_cell_size"), &BakedLightmap::set_bake_cell_size);
+	ClassDB::bind_method(D_METHOD("get_bake_cell_size"), &BakedLightmap::get_bake_cell_size);
 
-	ClassDB::bind_method(D_METHOD("set_capture_subdiv", "capture_subdiv"), &BakedLightmap::set_capture_subdiv);
-	ClassDB::bind_method(D_METHOD("get_capture_subdiv"), &BakedLightmap::get_capture_subdiv);
+	ClassDB::bind_method(D_METHOD("set_capture_cell_size", "capture_cell_size"), &BakedLightmap::set_capture_cell_size);
+	ClassDB::bind_method(D_METHOD("get_capture_cell_size"), &BakedLightmap::get_capture_cell_size);
 
 	ClassDB::bind_method(D_METHOD("set_bake_quality", "bake_quality"), &BakedLightmap::set_bake_quality);
 	ClassDB::bind_method(D_METHOD("get_bake_quality"), &BakedLightmap::get_bake_quality);
@@ -724,22 +742,19 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_bake"), &BakedLightmap::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_subdiv", PROPERTY_HINT_ENUM, "128,256,512,1024"), "set_bake_subdiv", "get_bake_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "capture_subdiv", PROPERTY_HINT_ENUM, "128,256,512"), "set_capture_subdiv", "get_capture_subdiv");
+	ADD_GROUP("Bake", "bake_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_bake_cell_size", "get_bake_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_bake_quality", "get_bake_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mode", PROPERTY_HINT_ENUM, "ConeTrace,RayTrace"), "set_bake_mode", "get_bake_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_energy", "get_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "is_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_energy", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_hdr"), "set_hdr", "is_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "bake_extents"), "set_extents", "get_extents");
+	ADD_GROUP("Capture", "capture_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "capture_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_capture_cell_size", "get_capture_cell_size");
+	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_path", PROPERTY_HINT_DIR), "set_image_path", "get_image_path");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "BakedIndirectLightData"), "set_light_data", "get_light_data");
-
-	BIND_ENUM_CONSTANT(SUBDIV_128);
-	BIND_ENUM_CONSTANT(SUBDIV_256);
-	BIND_ENUM_CONSTANT(SUBDIV_512);
-	BIND_ENUM_CONSTANT(SUBDIV_1024);
-	BIND_ENUM_CONSTANT(SUBDIV_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);
@@ -757,8 +772,9 @@ void BakedLightmap::_bind_methods() {
 BakedLightmap::BakedLightmap() {
 
 	extents = Vector3(10, 10, 10);
-	bake_subdiv = SUBDIV_256;
-	capture_subdiv = SUBDIV_128;
+	bake_cell_size = 0.1;
+	capture_cell_size = 0.25;
+
 	bake_quality = BAKE_QUALITY_MEDIUM;
 	bake_mode = BAKE_MODE_CONE_TRACE;
 	energy = 1;

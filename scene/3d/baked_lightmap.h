@@ -61,15 +61,6 @@ class BakedLightmap : public VisualInstance {
 	GDCLASS(BakedLightmap, VisualInstance);
 
 public:
-	enum Subdiv {
-		SUBDIV_128,
-		SUBDIV_256,
-		SUBDIV_512,
-		SUBDIV_1024,
-		SUBDIV_MAX
-
-	};
-
 	enum BakeQuality {
 		BAKE_QUALITY_LOW,
 		BAKE_QUALITY_MEDIUM,
@@ -95,8 +86,8 @@ public:
 	typedef void (*BakeEndFunc)();
 
 private:
-	Subdiv bake_subdiv;
-	Subdiv capture_subdiv;
+	float bake_cell_size;
+	float capture_cell_size;
 	Vector3 extents;
 	float propagation;
 	float energy;
@@ -148,11 +139,11 @@ public:
 	void set_light_data(const Ref<BakedLightmapData> &p_data);
 	Ref<BakedLightmapData> get_light_data() const;
 
-	void set_bake_subdiv(Subdiv p_subdiv);
-	Subdiv get_bake_subdiv() const;
+	void set_bake_cell_size(float p_cell_size);
+	float get_bake_cell_size() const;
 
-	void set_capture_subdiv(Subdiv p_subdiv);
-	Subdiv get_capture_subdiv() const;
+	void set_capture_cell_size(float p_cell_size);
+	float get_capture_cell_size() const;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
@@ -182,7 +173,6 @@ public:
 	BakedLightmap();
 };
 
-VARIANT_ENUM_CAST(BakedLightmap::Subdiv);
 VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
 VARIANT_ENUM_CAST(BakedLightmap::BakeMode);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
