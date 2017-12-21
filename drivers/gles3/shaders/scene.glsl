@@ -296,6 +296,48 @@ void main() {
 
 #endif
 
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+
+	vec3 binormal = normalize( cross(normal,tangent) * binormalf );
+#endif
+
+#if defined(ENABLE_UV_INTERP)
+	uv_interp = uv_attrib;
+#endif
+
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+	uv2_interp = uv2_attrib;
+#endif
+
+#if defined(USE_INSTANCING) && defined(ENABLE_INSTANCE_CUSTOM)
+	vec4 instance_custom = instance_custom_data;
+#else
+	vec4 instance_custom = vec4(0.0);
+#endif
+
+	highp mat4 local_projection = projection_matrix;
+
+//using world coordinates
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+
+	vertex = world_matrix * vertex;
+	normal = normalize((world_matrix * vec4(normal,0.0)).xyz);
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+
+	tangent = normalize((world_matrix * vec4(tangent,0.0)).xyz);
+	binormal = normalize((world_matrix * vec4(binormal,0.0)).xyz);
+#endif
+#endif
+
+	float roughness=0.0;
+
+//defines that make writing custom shaders easier
+#define projection_matrix local_projection
+#define world_transform world_matrix
+
+
 #ifdef USE_SKELETON
 	{
 		//skeleton transform
@@ -333,57 +375,13 @@ void main() {
 					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
 				) * bone_weights.w;
 
+		mat4 bone_matrix = transpose(mat4(m[0],m[1],m[2],vec4(0.0,0.0,0.0,1.0)));
 
-		vertex.xyz = vertex * m;
-
-		normal = vec4(normal,0.0) * m;
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-		tangent.xyz = vec4(tangent.xyz,0.0) * m;
-#endif
+		world_matrix = bone_matrix * world_matrix;
 	}
 #endif
 
-
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-
-	vec3 binormal = normalize( cross(normal,tangent) * binormalf );
-#endif
-
-#if defined(ENABLE_UV_INTERP)
-	uv_interp = uv_attrib;
-#endif
-
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-	uv2_interp = uv2_attrib;
-#endif
-
-#if defined(USE_INSTANCING) && defined(ENABLE_INSTANCE_CUSTOM)
-	vec4 instance_custom = instance_custom_data;
-#else
-	vec4 instance_custom = vec4(0.0);
-#endif
-
-	highp mat4 modelview = camera_inverse_matrix * world_matrix;
-	highp mat4 local_projection = projection_matrix;
-
-//using world coordinates
-#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-
-	vertex = world_matrix * vertex;
-	normal = normalize((world_matrix * vec4(normal,0.0)).xyz);
-
-#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-
-	tangent = normalize((world_matrix * vec4(tangent,0.0)).xyz);
-	binormal = normalize((world_matrix * vec4(binormal,0.0)).xyz);
-#endif
-#endif
-
-	float roughness=0.0;
-
-//defines that make writing custom shaders easier
-#define projection_matrix local_projection
-#define world_transform world_matrix
+	mat4 modelview = camera_inverse_matrix * world_matrix;
 {
 
 VERTEX_SHADER_CODE

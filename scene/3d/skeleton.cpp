@@ -180,6 +180,9 @@ void Skeleton::_notification(int p_what) {
 				rest_global_inverse_dirty = false;
 			}
 
+			Transform global_transform = get_global_transform();
+			Transform global_transform_inverse = global_transform.affine_inverse();
+
 			for (int i = 0; i < len; i++) {
 
 				Bone &b = bonesptr[i];
@@ -239,7 +242,9 @@ void Skeleton::_notification(int p_what) {
 					}
 				}
 
-				vs->skeleton_bone_set_transform(skeleton, i, b.pose_global * b.rest_global_inverse);
+				Transform transform = b.pose_global * b.rest_global_inverse;
+
+				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (transform * global_transform_inverse));
 
 				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
 
