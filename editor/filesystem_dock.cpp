@@ -147,7 +147,7 @@ void FileSystemDock::_notification(int p_what) {
 
 				if (low_height_mode) {
 
-					file_list_vb->hide();
+					tree->hide();
 					tree->set_v_size_flags(SIZE_EXPAND_FILL);
 					button_tree->show();
 				} else {
@@ -158,6 +158,7 @@ void FileSystemDock::_notification(int p_what) {
 						button_favorite->show();
 						_update_tree(true);
 					}
+					tree->ensure_cursor_is_visible();
 
 					if (!file_list_vb->is_visible()) {
 						file_list_vb->show();
@@ -345,11 +346,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 		_update_tree(true);
 		_update_files(false);
 	} else {
-		if (file_name.empty()) {
-			_go_to_tree();
-		} else {
-			_go_to_file_list();
-		}
+		_go_to_file_list();
 	}
 
 	if (!file_name.empty()) {
