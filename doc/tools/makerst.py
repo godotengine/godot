@@ -276,6 +276,15 @@ def make_type(t):
         return ':ref:`' + t + '<class_' + t.lower() + '>`'
     return t
 
+def make_enum(t):
+    global class_names
+    p = t.find(".")
+    if p >= 0:
+        c = t[0:p]
+        e = t[p+1:]
+        if c in class_names:
+            return ':ref:`' + e + '<enum_' + c.lower() + '_' + e.lower() + '>`'
+    return t
 
 def make_method(
         f,
@@ -470,7 +479,10 @@ def make_rst_class(node):
             # Leading two spaces necessary to prevent breaking the <ul>
             f.write("  .. _class_" + name + "_" + c.attrib['name'] + ":\n\n")
             s = '- '
-            s += make_type(c.attrib['type']) + ' '
+            if 'enum' in c.attrib:
+                s += make_enum(c.attrib['enum']) + ' '
+            else:
+                s += make_type(c.attrib['type']) + ' '
             s += '**' + c.attrib['name'] + '**'
             if c.text.strip() != '':
                 s += ' - ' + rstize_text(c.text.strip(), name)
@@ -478,9 +490,20 @@ def make_rst_class(node):
         f.write('\n')
 
     constants = node.find('constants')
+    consts = []
+    enum_names = set()
+    enums = []
     if constants != None and len(list(constants)) > 0:
-        f.write(make_heading('Numeric Constants', '-'))
         for c in list(constants):
+            if 'enum' in c.attrib:
+                enum_names.add(c.attrib['enum'])
+                enums.append(c)
+            else:
+                consts.append(c)
+    
+    if len(consts) > 0:
+        f.write(make_heading('Numeric Constants', '-'))
+        for c in list(consts):
             s = '- '
             s += '**' + c.attrib['name'] + '**'
             if 'value' in c.attrib:
@@ -488,6 +511,24 @@ def make_rst_class(node):
             if c.text.strip() != '':
                 s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
+        f.write('\n')
+    
+    if len(enum_names) > 0:
+        f.write(make_heading('Enums', '-'))
+        for e in enum_names:
+            f.write("  .. _enum_" + name + "_" + e + ":\n\n")
+            f.write("enum **" + e + "**\n\n")
+            for c in enums:
+                if c.attrib['enum'] != e:
+                    continue
+                s = '- '
+                s += '**' + c.attrib['name'] + '**'
+                if 'value' in c.attrib:
+                    s += ' = **' + c.attrib['value'] + '**'
+                if c.text.strip() != '':
+                    s += ' --- ' + rstize_text(c.text.strip(), name)
+                f.write(s + '\n')
+            f.write('\n')
         f.write('\n')
 
     descr = node.find('description')
