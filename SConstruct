@@ -411,9 +411,7 @@ if selected_platform in platform_list:
 
     methods.update_version(env.module_version_string)
 
-    suffix += env.module_version_string
-
-    env["PROGSUFFIX"] = suffix + env["PROGSUFFIX"]
+    env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
