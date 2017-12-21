@@ -192,6 +192,9 @@ void EditorSettingsDialog::_update_icons() {
 	shortcut_search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	clear_button->set_icon(get_icon("Close", "EditorIcons"));
 	shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
+
+	tabs->set_tab_icon(0, get_icon("Edit", "EditorIcons"));
+	tabs->set_tab_icon(1, get_icon("Keyboard", "EditorIcons"));
 }
 
 void EditorSettingsDialog::_update_shortcuts() {
@@ -396,7 +399,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tab_general = memnew(VBoxContainer);
 	tabs->add_child(tab_general);
-	tab_general->set_name(TTR("General"));
+	tab_general->set_name(" " + TTR("General"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -423,7 +426,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tab_shortcuts = memnew(VBoxContainer);
 	tabs->add_child(tab_shortcuts);
-	tab_shortcuts->set_name(TTR("Shortcuts"));
+	tab_shortcuts->set_name(" " + TTR("Shortcuts"));
 
 	hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
