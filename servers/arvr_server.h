@@ -68,6 +68,12 @@ public:
 		TRACKER_ANY = 0xff /* used by get_connected_trackers to return all types */
 	};
 
+	enum RotationMode {
+		RESET_FULL_ROTATION = 0, /* we reset the full rotation, regardless of how the HMD is oriented, we're looking dead ahead */
+		RESET_BUT_KEEP_TILT = 1, /* reset rotation but keep tilt. */
+		DONT_RESET_ROTATION = 2, /* don't reset the rotation, we will only center on position */
+	};
+
 private:
 	Vector<Ref<ARVRInterface> > interfaces;
 	Vector<ARVRPositionalTracker *> trackers;
@@ -77,8 +83,6 @@ private:
 	real_t world_scale; /* scale by which we multiply our tracker positions */
 	Transform world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform reference_frame; /* our reference frame */
-
-	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 
 protected:
 	static ARVRServer *singleton;
@@ -127,7 +131,7 @@ public:
 		and in the virtual world out of sync
 	*/
 	Transform get_reference_frame() const;
-	void center_on_hmd(bool p_ignore_tilt, bool p_keep_height);
+	void center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height);
 
 	/*
 		Interfaces are objects that 'glue' Godot to an AR or VR SDK such as the Oculus SDK, OpenVR, OpenHMD, etc.
@@ -150,9 +154,8 @@ public:
 	/*
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
 		They are created and managed by our active AR/VR interfaces.
-
-		Note that for trackers that
 	*/
+	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
 	void add_tracker(ARVRPositionalTracker *p_tracker);
 	void remove_tracker(ARVRPositionalTracker *p_tracker);
@@ -167,5 +170,6 @@ public:
 #define ARVR ARVRServer
 
 VARIANT_ENUM_CAST(ARVRServer::TrackerType);
+VARIANT_ENUM_CAST(ARVRServer::RotationMode);
 
 #endif

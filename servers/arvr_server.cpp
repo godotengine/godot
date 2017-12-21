@@ -43,7 +43,7 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &ARVRServer::get_world_scale);
 	ClassDB::bind_method(D_METHOD("set_world_scale"), &ARVRServer::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &ARVRServer::get_reference_frame);
-	ClassDB::bind_method(D_METHOD("center_on_hmd", "ignore_tilt", "keep_height"), &ARVRServer::center_on_hmd);
+	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &ARVRServer::center_on_hmd);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
 
@@ -62,6 +62,10 @@ void ARVRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_ANY_KNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY);
+
+	BIND_ENUM_CONSTANT(RESET_FULL_ROTATION);
+	BIND_ENUM_CONSTANT(RESET_BUT_KEEP_TILT);
+	BIND_ENUM_CONSTANT(DONT_RESET_ROTATION);
 
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING, "name")));
@@ -96,7 +100,7 @@ Transform ARVRServer::get_reference_frame() const {
 	return reference_frame;
 };
 
-void ARVRServer::center_on_hmd(bool p_ignore_tilt, bool p_keep_height) {
+void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	if (primary_interface != NULL) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();
@@ -105,7 +109,7 @@ void ARVRServer::center_on_hmd(bool p_ignore_tilt, bool p_keep_height) {
 		Transform new_reference_frame = primary_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, Transform());
 
 		// remove our tilt
-		if (p_ignore_tilt) {
+		if (p_rotation_mode == 1) {
 			// take the Y out of our Z
 			new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
 
@@ -114,6 +118,9 @@ void ARVRServer::center_on_hmd(bool p_ignore_tilt, bool p_keep_height) {
 
 			// and X is our cross reference
 			new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
+		} else if (p_rotation_mode == 2) {
+			// remove our rotation, we're only interesting in centering on position
+			new_reference_frame.basis = Basis();
 		};
 
 		// don't negate our height
@@ -229,8 +236,12 @@ bool ARVRServer::is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p
 };
 
 int ARVRServer::get_free_tracker_id_for_type(TrackerType p_tracker_type) {
-	// we start checking at 1, 0 means that it's not a controller..
-	int tracker_id = 1;
+	// We start checking at 1, 0 means that it's not a controller..
+	// Note that for controller we reserve:
+	// - 1 for the left hand controller and
+	// - 2 for the right hand controller
+	// so we start at 3 :)
+	int tracker_id = p_tracker_type == ARVRServer::TRACKER_CONTROLLER ? 3 : 1;
 
 	while (is_tracker_id_in_use_for_type(p_tracker_type, tracker_id)) {
 		// try the next one

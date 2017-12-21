@@ -231,7 +231,7 @@ void ARVRController::_notification(int p_what) {
 void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_controller_id", "controller_id"), &ARVRController::set_controller_id);
 	ClassDB::bind_method(D_METHOD("get_controller_id"), &ARVRController::get_controller_id);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_id", PROPERTY_HINT_RANGE, "1,32,1"), "set_controller_id", "get_controller_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_id", PROPERTY_HINT_RANGE, "0,32,1"), "set_controller_id", "get_controller_id");
 	ClassDB::bind_method(D_METHOD("get_controller_name"), &ARVRController::get_controller_name);
 
 	// passthroughs to information about our related joystick
@@ -251,7 +251,8 @@ void ARVRController::_bind_methods() {
 };
 
 void ARVRController::set_controller_id(int p_controller_id) {
-	// we don't check any bounds here, this controller may not yet be active and just be a place holder until it is.
+	// We don't check any bounds here, this controller may not yet be active and just be a place holder until it is.
+	// Note that setting this to 0 means this node is not bound to a controller yet.
 	controller_id = p_controller_id;
 };
 
@@ -420,7 +421,7 @@ void ARVRAnchor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_anchor_id", "anchor_id"), &ARVRAnchor::set_anchor_id);
 	ClassDB::bind_method(D_METHOD("get_anchor_id"), &ARVRAnchor::get_anchor_id);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_id"), "set_anchor_id", "get_anchor_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_id", PROPERTY_HINT_RANGE, "0,32,1"), "set_anchor_id", "get_anchor_id");
 	ClassDB::bind_method(D_METHOD("get_anchor_name"), &ARVRAnchor::get_anchor_name);
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &ARVRAnchor::get_is_active);
@@ -430,7 +431,8 @@ void ARVRAnchor::_bind_methods() {
 };
 
 void ARVRAnchor::set_anchor_id(int p_anchor_id) {
-	// we don't check any bounds here, this anchor may not yet be active and just be a place holder until it is.
+	// We don't check any bounds here, this anchor may not yet be active and just be a place holder until it is.
+	// Note that setting this to 0 means this node is not bound to an anchor yet.
 	anchor_id = p_anchor_id;
 };
 
