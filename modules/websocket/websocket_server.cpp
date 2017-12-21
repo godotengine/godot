@@ -2,11 +2,10 @@
 /*  websocket_server.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,9 +43,6 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "protocols", "gd_mp_api"), &WebSocketServer::listen, DEFVAL(PoolVector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &WebSocketServer::stop);
 	ClassDB::bind_method(D_METHOD("has_peer", "id"), &WebSocketServer::has_peer);
-	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketServer::get_peer_address);
-	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &WebSocketServer::get_peer_port);
-	ClassDB::bind_method(D_METHOD("disconnect_peer", "id"), &WebSocketServer::disconnect_peer);
 
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol")));

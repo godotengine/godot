@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  emws_peer.h                                                          */
+/*  websocket_peer.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                      GODOT WEBSOCKET MODULE                           */
@@ -26,59 +26,47 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef EMWSPEER_H
-#define EMWSPEER_H
-
-#ifdef JAVASCRIPT_ENABLED
+#ifndef WEBSOCKETPEER_H
+#define WEBSOCKETPEER_H
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/ring_buffer.h"
-#include "emscripten.h"
-#include "websocket_peer.h"
+#include "websocket_macros.h"
 
-class EMWSPeer : public WebSocketPeer {
+class WebSocketPeer : public PacketPeer {
 
-	GDCIIMPL(EMWSPeer, WebSocketPeer);
-
-private:
-	enum {
-		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
-	};
-
-	int peer_sock;
-	WriteMode write_mode;
-
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	RingBuffer<uint8_t> in_buffer;
-	int queue_count;
-	bool _was_string;
+	GDCLASS(WebSocketPeer, PacketPeer);
+	GDCICLASS(WebSocketPeer);
 
 public:
-	void read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string);
-	void set_sock(int sock);
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	virtual int get_max_packet_size() const { return PACKET_BUFFER_SIZE; };
+	enum WriteMode {
+		WRITE_MODE_TEXT,
+		WRITE_MODE_BINARY,
+	};
 
-	virtual void close();
-	virtual bool is_connected_to_host() const;
-	virtual IP_Address get_connected_host() const;
-	virtual uint16_t get_connected_port() const;
+protected:
+	static void _bind_methods();
 
-	virtual WriteMode get_write_mode() const;
-	virtual void set_write_mode(WriteMode p_mode);
-	virtual bool was_string_packet() const;
+public:
+	virtual int get_available_packet_count() const = 0;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
+	virtual int get_max_packet_size() const = 0;
 
-	void set_wsi(struct lws *wsi);
-	Error read_wsi(void *in, size_t len);
-	Error write_wsi();
+	virtual WriteMode get_write_mode() const = 0;
+	virtual void set_write_mode(WriteMode p_mode) = 0;
 
-	EMWSPeer();
-	~EMWSPeer();
+	virtual void close() = 0;
+
+	virtual bool is_connected_to_host() const = 0;
+	virtual IP_Address get_connected_host() const = 0;
+	virtual uint16_t get_connected_port() const = 0;
+	virtual bool was_string_packet() const = 0;
+
+	WebSocketPeer();
+	~WebSocketPeer();
 };
 
-#endif // JAVASCRIPT_ENABLED
-
-#endif // LSWPEER_H
+VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);
+#endif // WEBSOCKETPEER_H

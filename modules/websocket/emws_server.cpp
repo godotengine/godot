@@ -2,11 +2,10 @@
 /*  emws_server.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,19 +55,6 @@ PoolVector<String> EMWSServer::get_protocols() const {
 	PoolVector<String> out;
 
 	return out;
-}
-
-IP_Address EMWSServer::get_peer_address(int p_peer_id) const {
-
-	return IP_Address();
-}
-
-int EMWSServer::get_peer_port(int p_peer_id) const {
-
-	return 0;
-}
-
-void EMWSServer::disconnect_peer(int p_peer_id) {
 }
 
 EMWSServer::EMWSServer() {

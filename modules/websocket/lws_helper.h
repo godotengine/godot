@@ -2,11 +2,10 @@
 /*  lws_helper.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +28,6 @@
 /*************************************************************************/
 #ifndef LWS_HELPER_H
 #define LWS_HELPER_H
-
-#define LWS_BUF_SIZE 65536
-#define LWS_PACKET_SIZE LWS_BUF_SIZE
 
 #include "core/io/stream_peer.h"
 #include "core/os/os.h"
@@ -111,7 +107,7 @@ static bool _lws_poll(struct lws_context *context, _LWSRef *ref) {
 static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, PoolVector<String> p_names, _LWSRef **r_lws_ref) {
 	/* the input strings might go away after this call,
 	 * we need to copy them. Will clear them when
-	 * destroying the context */
+	 * detroying the context */
 	int i;
 	int len = p_names.size();
 	size_t data_size = sizeof(struct LWSPeer::PeerData);
@@ -127,7 +123,6 @@ static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, 
 
 	/* LWS protocol structs */
 	ref->lws_structs = (struct lws_protocols *)memalloc(sizeof(struct lws_protocols) * (len + 2));
-	memset(ref->lws_structs, 0, sizeof(struct lws_protocols) * (len + 2));
 
 	CharString strings = p_names.join(",").ascii();
 	int str_len = strings.length();
@@ -149,15 +144,13 @@ static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, 
 	structs_ptr[0].name = "http-only";
 	structs_ptr[0].callback = p_callback;
 	structs_ptr[0].per_session_data_size = data_size;
-	structs_ptr[0].rx_buffer_size = LWS_BUF_SIZE;
-	structs_ptr[0].tx_packet_size = LWS_PACKET_SIZE;
+	structs_ptr[0].rx_buffer_size = 0;
 	/* add user defined protocols */
 	for (i = 0; i < len; i++) {
 		structs_ptr[i + 1].name = (const char *)&names_ptr[pos];
 		structs_ptr[i + 1].callback = p_callback;
 		structs_ptr[i + 1].per_session_data_size = data_size;
-		structs_ptr[i + 1].rx_buffer_size = LWS_BUF_SIZE;
-		structs_ptr[i + 1].tx_packet_size = LWS_PACKET_SIZE;
+		structs_ptr[i + 1].rx_buffer_size = 0;
 		pos += pnr[i].ascii().length() + 1;
 		names_ptr[pos - 1] = '\0';
 	}
@@ -215,6 +208,6 @@ public:																\
 																\
 protected:
 
-/* clang-format on */
+	/* clang-format on */
 
 #endif // LWS_HELPER_H

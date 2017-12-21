@@ -2,11 +2,10 @@
 /*  lws_peer.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +30,6 @@
 
 #include "lws_peer.h"
 #include "core/io/ip.h"
-
-// Needed for socket_helpers on Android at least. UNIXes has it, just include if not windows
-#if !defined(WINDOWS_ENABLED)
-#include <netinet/in.h>
-#include <sys/socket.h>
-#endif
-
-#include "drivers/unix/socket_helpers.h"
 
 void LWSPeer::set_wsi(struct lws *p_wsi) {
 	wsi = p_wsi;
@@ -186,44 +177,12 @@ void LWSPeer::close() {
 
 IP_Address LWSPeer::get_connected_host() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), IP_Address());
-
-	IP_Address ip;
-	int port = 0;
-
-	struct sockaddr_storage addr;
-	socklen_t len = sizeof(addr);
-
-	int fd = lws_get_socket_fd(wsi);
-	ERR_FAIL_COND_V(fd == -1, IP_Address());
-
-	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
-	ERR_FAIL_COND_V(ret != 0, IP_Address());
-
-	_set_ip_addr_port(ip, port, &addr);
-
-	return ip;
+	return IP_Address();
 };
 
 uint16_t LWSPeer::get_connected_port() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), 0);
-
-	IP_Address ip;
-	int port = 0;
-
-	struct sockaddr_storage addr;
-	socklen_t len = sizeof(addr);
-
-	int fd = lws_get_socket_fd(wsi);
-	ERR_FAIL_COND_V(fd == -1, 0);
-
-	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
-	ERR_FAIL_COND_V(ret != 0, 0);
-
-	_set_ip_addr_port(ip, port, &addr);
-
-	return port;
+	return 1025;
 };
 
 LWSPeer::LWSPeer() {

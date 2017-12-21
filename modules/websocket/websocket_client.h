@@ -2,11 +2,10 @@
 /*  websocket_client.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,15 +40,11 @@ class WebSocketClient : public WebSocketMultiplayerPeer {
 
 protected:
 	Ref<WebSocketPeer> _peer;
-	bool verify_ssl;
 
 	static void _bind_methods();
 
 public:
 	Error connect_to_url(String p_url, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false);
-
-	void set_verify_ssl_enabled(bool p_verify_ssl);
-	bool is_verify_ssl_enabled() const;
 
 	virtual void poll() = 0;
 	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>()) = 0;

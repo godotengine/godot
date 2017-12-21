@@ -2,11 +2,10 @@
 /*  emws_peer.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,14 +147,12 @@ void EMWSPeer::close() {
 
 IP_Address EMWSPeer::get_connected_host() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(IP_Address());
+	return IP_Address();
 };
 
 uint16_t EMWSPeer::get_connected_port() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(0);
+	return 1025;
 };
 
 EMWSPeer::EMWSPeer() {
