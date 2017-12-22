@@ -4,7 +4,7 @@
 		A synchronization Semaphore.
 	</brief_description>
 	<description>
-		A synchronization Semaphore. Element used in multi-threadding. Initialized to zero on creation.
+		A synchronization Semaphore. Element used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +15,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [code]Semaphore[/code], allowing one more thread in.
+				Lowers the [code]Semaphore[/code], allowing one more thread in. Returns [OK] on success, [ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero.
+				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero. Returns [OK] on success, [ERR_BUSY] otherwise.
 			</description>
 		</method>
 	</methods>
