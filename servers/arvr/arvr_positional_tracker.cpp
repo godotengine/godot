@@ -62,13 +62,15 @@ void ARVRPositionalTracker::_bind_methods() {
 void ARVRPositionalTracker::set_type(ARVRServer::TrackerType p_type) {
 	if (type != p_type) {
 		type = p_type;
+		hand = ARVRPositionalTracker::TRACKER_HAND_UNKNOWN;
 
 		ARVRServer *arvr_server = ARVRServer::get_singleton();
 		ERR_FAIL_NULL(arvr_server);
 
 		// get a tracker id for our type
+		// note if this is a controller this will be 3 or higher but we may change it later.
 		tracker_id = arvr_server->get_free_tracker_id_for_type(p_type);
-	}
+	};
 };
 
 ARVRServer::TrackerType ARVRPositionalTracker::get_type() const {
@@ -156,7 +158,24 @@ ARVRPositionalTracker::TrackerHand ARVRPositionalTracker::get_hand() const {
 };
 
 void ARVRPositionalTracker::set_hand(const ARVRPositionalTracker::TrackerHand p_hand) {
-	hand = p_hand;
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
+	if (hand != p_hand) {
+		// we can only set this if we've previously set this to be a controller!!
+		ERR_FAIL_COND((type != ARVRServer::TRACKER_CONTROLLER) && (p_hand != ARVRPositionalTracker::TRACKER_HAND_UNKNOWN));
+
+		hand = p_hand;
+		if (hand == ARVRPositionalTracker::TRACKER_LEFT_HAND) {
+			if (!arvr_server->is_tracker_id_in_use_for_type(type, 1)) {
+				tracker_id = 1;
+			};
+		} else if (hand == ARVRPositionalTracker::TRACKER_RIGHT_HAND) {
+			if (!arvr_server->is_tracker_id_in_use_for_type(type, 2)) {
+				tracker_id = 2;
+			};
+		};
+	};
 };
 
 Transform ARVRPositionalTracker::get_transform(bool p_adjust_by_reference_frame) const {

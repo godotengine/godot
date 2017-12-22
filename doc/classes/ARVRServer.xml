@@ -14,7 +14,7 @@
 		<method name="center_on_hmd">
 			<return type="void">
 			</return>
-			<argument index="0" name="ignore_tilt" type="bool">
+			<argument index="0" name="rotation_mode" type="bool">
 			</argument>
 			<argument index="1" name="keep_height" type="bool">
 			</argument>
@@ -153,6 +153,15 @@
 		</constant>
 		<constant name="TRACKER_ANY" value="255" enum="TrackerType">
 			Used internally to select all trackers.
+		</constant>
+		<constant name="RESET_FULL_ROTATION" value="0" enum="RotationMode">
+			Fully reset the orientation of the HMD. Regardless of what direction the user is looking to in the real world. The user will look dead ahead in the virtual world.
+		</constant>
+		<constant name="RESET_BUT_KEEP_TILT" value="1" enum="RotationMode">
+			Resets the orientation but keeps the tilt of the device. So if we're looking down, we keep looking down but heading will be reset.
+		</constant>
+		<constant name="DONT_RESET_ROTATION" value="2" enum="RotationMode">
+			Does not reset the orientation of the HMD, only the position of the player gets centered.
 		</constant>
 	</constants>
 </class>
