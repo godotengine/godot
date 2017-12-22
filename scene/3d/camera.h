@@ -148,8 +148,6 @@ public:
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
-	void set_vaspect(bool p_vaspect);
-	bool get_vaspect() const;
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;
