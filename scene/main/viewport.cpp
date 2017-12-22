@@ -2036,6 +2036,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	Ref<InputEventGesture> gesture_event = p_event;
 	if (gesture_event.is_valid()) {
 
+		_gui_cancel_tooltip();
+
 		Size2 pos = gesture_event->get_position();
 
 		Control *over = _gui_find_control(pos);
