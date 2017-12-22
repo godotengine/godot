@@ -133,6 +133,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the speed scaling ratio of the current animation channel. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
