@@ -4,7 +4,7 @@
 		A synchronization Mutex.
 	</brief_description>
 	<description>
-		A synchronization Mutex. Element used in multi-threadding. Basically a binary [Semaphore]. Guarantees that only one thread has this lock, can be used to protect a critical section.
+		A synchronization Mutex. Element used to synchronize multiple [Thread]s. Basically a binary [Semaphore]. Guarantees that only one thread can ever acquire this lock at a time. Can be used to protect a critical section. Be careful to avoid deadlocks.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,14 +22,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Try locking this [code]Mutex[/code], does not block. Returns [OK] on success else [ERR_BUSY].
+				Try locking this [code]Mutex[/code], does not block. Returns [OK] on success, [ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="unlock">
 			<return type="void">
 			</return>
 			<description>
-				Unlock this [code]Mutex[/code], leaving it to others threads.
+				Unlock this [code]Mutex[/code], leaving it to other threads.
 			</description>
 		</method>
 	</methods>
