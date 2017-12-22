@@ -688,6 +688,7 @@ void ProjectManager::_update_project_buttons() {
 
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
+	show_btn->set_disabled(selected_list.size() < 1);
 	rename_btn->set_disabled(selected_list.size() < 1);
 }
 
@@ -1231,6 +1232,15 @@ void ProjectManager::_run_project() {
 	}
 }
 
+void ProjectManager::_show_project() {
+
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		OS::get_singleton()->shell_open(String("file://") + path);
+	}
+}
+
 void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects) {
 
 	List<String> subdirs;
@@ -1419,6 +1429,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_open_project_confirm", &ProjectManager::_open_project_confirm);
 	ClassDB::bind_method("_run_project", &ProjectManager::_run_project);
 	ClassDB::bind_method("_run_project_confirm", &ProjectManager::_run_project_confirm);
+	ClassDB::bind_method("_show_project", &ProjectManager::_show_project);
 	ClassDB::bind_method("_scan_projects", &ProjectManager::_scan_projects);
 	ClassDB::bind_method("_scan_begin", &ProjectManager::_scan_begin);
 	ClassDB::bind_method("_import_project", &ProjectManager::_import_project);
@@ -1570,6 +1581,12 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(run);
 	run->connect("pressed", this, "_run_project");
 	run_btn = run;
+
+	Button *show = memnew(Button);
+	show->set_text(TTR("Show"));
+	tree_vb->add_child(show);
+	show->connect("pressed", this, "_show_project");
+	show_btn = show;
 
 	tree_vb->add_child(memnew(HSeparator));
 
