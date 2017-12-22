@@ -285,6 +285,7 @@ private:
 
 	void _gui_input(Ref<InputEvent> p_event);
 	Item *_get_next_item(Item *p_item, bool p_free = false);
+	Item *_get_prev_item(Item *p_item, bool p_free = false);
 
 	Rect2 _get_text_rect();
 
@@ -334,7 +335,7 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
-	bool search(const String &p_string, bool p_from_selection = false);
+	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;

@@ -526,18 +526,7 @@ void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 void EditorHelp::_search(const String &) {
 
-	if (search->get_text() == "")
-		return;
-
-	String stext = search->get_text();
-	bool keep = prev_search == stext;
-
-	bool ret = class_desc->search(stext, keep);
-	if (!ret) {
-		class_desc->search(stext, false);
-	}
-
-	prev_search = stext;
+	find_bar->search_next();
 }
 
 void EditorHelp::_class_list_select(const String &p_select) {
@@ -598,14 +587,6 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
-
-	Ref<InputEventMouseButton> mb = p_input;
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1 && !mb->is_doubleclick()) {
-		class_desc->set_selection_enabled(false);
-		class_desc->set_selection_enabled(true);
-	}
-	set_focused();
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
@@ -1816,13 +1797,7 @@ void EditorHelp::scroll_to_section(int p_section_index) {
 
 void EditorHelp::popup_search() {
 
-	search_dialog->popup_centered(Size2(250, 80) * EDSCALE);
-	search->grab_focus();
-}
-
-void EditorHelp::_search_cbk() {
-
-	_search(search->get_text());
+	find_bar->popup_search();
 }
 
 String EditorHelp::get_class() {
@@ -1851,7 +1826,6 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
-	ClassDB::bind_method("_search_cbk", &EditorHelp::_search_cbk);
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
@@ -1863,6 +1837,10 @@ EditorHelp::EditorHelp() {
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
+	find_bar = memnew(FindBar);
+	add_child(find_bar);
+	find_bar->hide();
+
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1870,24 +1848,14 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
 
+	find_bar->set_rich_text_label(class_desc);
+
 	class_desc->set_selection_enabled(true);
 
 	scroll_locked = false;
 	select_locked = false;
-	set_process_unhandled_key_input(true);
+	//set_process_unhandled_key_input(true);
 	class_desc->hide();
-
-	search_dialog = memnew(ConfirmationDialog);
-	add_child(search_dialog);
-	VBoxContainer *search_vb = memnew(VBoxContainer);
-	search_dialog->add_child(search_vb);
-
-	search = memnew(LineEdit);
-	search_dialog->register_text_enter(search);
-	search_vb->add_margin_child(TTR("Search Text"), search);
-	search_dialog->get_ok()->set_text(TTR("Find"));
-	search_dialog->connect("confirmed", this, "_search_cbk");
-	search_dialog->set_hide_on_ok(false);
 }
 
 EditorHelp::~EditorHelp() {
@@ -1963,4 +1931,178 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
+}
+
+FindBar::FindBar() {
+
+	container = memnew(Control);
+	add_child(container);
+
+	container->set_clip_contents(true);
+	container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	hbc = memnew(HBoxContainer);
+	container->add_child(hbc);
+
+	vbc_search_text = memnew(VBoxContainer);
+	hbc->add_child(vbc_search_text);
+	vbc_search_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->set_anchor_and_margin(MARGIN_RIGHT, 1, 0);
+
+	search_text = memnew(LineEdit);
+	vbc_search_text->add_child(search_text);
+	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	search_text->connect("text_changed", this, "_search_text_changed");
+	search_text->connect("text_entered", this, "_search_text_entered");
+
+	find_prev = memnew(ToolButton);
+	hbc->add_child(find_prev);
+	find_prev->set_focus_mode(FOCUS_NONE);
+	find_prev->connect("pressed", this, "_search_prev");
+
+	find_next = memnew(ToolButton);
+	hbc->add_child(find_next);
+	find_next->set_focus_mode(FOCUS_NONE);
+	find_next->connect("pressed", this, "_search_next");
+
+	error_label = memnew(Label);
+	hbc->add_child(error_label);
+	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+
+	hide_button = memnew(TextureButton);
+	add_child(hide_button);
+	hide_button->set_focus_mode(FOCUS_NONE);
+	hide_button->set_expand(true);
+	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	hide_button->connect("pressed", this, "_hide_pressed");
+}
+
+void FindBar::popup_search() {
+	show();
+	search_text->grab_focus();
+	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
+}
+
+void FindBar::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_READY) {
+
+		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
+		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
+		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		set_process_unhandled_input(is_visible_in_tree());
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
+		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
+		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+	}
+}
+
+void FindBar::_bind_methods() {
+
+	ClassDB::bind_method("_unhandled_input", &FindBar::_unhandled_input);
+
+	ClassDB::bind_method("_search_text_changed", &FindBar::_search_text_changed);
+	ClassDB::bind_method("_search_text_entered", &FindBar::_search_text_entered);
+	ClassDB::bind_method("_search_next", &FindBar::search_next);
+	ClassDB::bind_method("_search_prev", &FindBar::search_prev);
+	ClassDB::bind_method("_hide_pressed", &FindBar::_hide_bar);
+
+	ADD_SIGNAL(MethodInfo("search"));
+}
+
+void FindBar::set_rich_text_label(RichTextLabel *p_rich_text_label) {
+
+	rich_text_label = p_rich_text_label;
+}
+
+bool FindBar::search_next() {
+
+	return _search();
+}
+
+bool FindBar::search_prev() {
+
+	return _search(true);
+}
+
+bool FindBar::_search(bool p_search_previous) {
+
+	String stext = search_text->get_text();
+	bool keep = prev_search == stext;
+
+	bool ret = rich_text_label->search(stext, keep, p_search_previous);
+	if (!ret) {
+		ret = rich_text_label->search(stext, false, p_search_previous);
+	}
+
+	prev_search = stext;
+
+	if (ret) {
+		set_error("");
+	} else {
+		set_error(stext.empty() ? "" : TTR("No Matches"));
+	}
+
+	return ret;
+}
+
+void FindBar::set_error(const String &p_label) {
+
+	error_label->set_text(p_label);
+}
+
+void FindBar::_hide_bar() {
+
+	if (search_text->has_focus())
+		rich_text_label->grab_focus();
+
+	hide();
+}
+
+void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+
+		if (k->is_pressed() && (rich_text_label->has_focus() || hbc->is_a_parent_of(get_focus_owner()))) {
+
+			bool accepted = true;
+
+			switch (k->get_scancode()) {
+
+				case KEY_ESCAPE: {
+
+					_hide_bar();
+				} break;
+				default: {
+
+					accepted = false;
+				} break;
+			}
+
+			if (accepted) {
+				accept_event();
+			}
+		}
+	}
+}
+
+void FindBar::_search_text_changed(const String &p_text) {
+
+	search_next();
+}
+
+void FindBar::_search_text_entered(const String &p_text) {
+
+	search_next();
 }
