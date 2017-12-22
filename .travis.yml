@@ -8,6 +8,7 @@ env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
+    - OPTIONS="verbose=yes progress=no openmp=no gdnative_wrapper=yes"
 
 cache:
   directories:
@@ -18,10 +19,10 @@ matrix:
     - env: STATIC_CHECKS=yes
       os: linux
       compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools OPTIONS="${OPTIONS} builtin_openssl=yes"
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang OPTIONS="${OPTIONS} builtin_openssl=yes"
       os: linux
       compiler: clang
     #- env: GODOT_TARGET=windows TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
@@ -90,5 +91,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no openmp=no gdnative_wrapper=yes;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $OPTIONS;
     fi
