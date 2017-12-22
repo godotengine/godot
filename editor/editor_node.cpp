@@ -3529,6 +3529,11 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 					splits[i]->hide();
 			}
 
+			if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+				right_hsplit->show();
+			else
+				right_hsplit->hide();
+
 			_edit_current();
 			_save_docks();
 		}
@@ -3805,7 +3810,11 @@ void EditorNode::_update_dock_slots_visibility() {
 			}
 		}
 		bottom_panel->show();
-		right_hsplit->show();
+
+		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+			right_hsplit->show();
+		else
+			right_hsplit->hide();
 	}
 }
 
@@ -3894,6 +3903,11 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		else
 			splits[i]->hide();
 	}
+
+	if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+		right_hsplit->show();
+	else
+		right_hsplit->hide();
 
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 
