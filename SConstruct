@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-
-EnsureSConsVersion(0, 98, 1)
-
+# -*- coding: utf-8 -*-
 
 import string
 import os
@@ -9,6 +7,13 @@ import os.path
 import glob
 import sys
 import methods
+
+if __name__ == "__main__":
+    print("This script can't be run directly, execute 'scons' in this directory")
+    print("For help, run 'scons -h'")
+    sys.exit(1)
+
+EnsureSConsVersion(0, 98, 1)
 
 # moved below to compensate with module version string
 # methods.update_version()
@@ -71,6 +76,7 @@ elif (os.name == "nt"):
 env_base = Environment(tools=custom_tools)
 if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
+
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults = global_defaults
@@ -356,7 +362,7 @@ if selected_platform in platform_list:
     if (env["target"] == "release"):
         if env["tools"]:
             print("Tools can only be built with targets 'debug' and 'release_debug'.")
-            sys.exit(255)
+            Exit(255)
         suffix += ".opt"
         env.Append(CCFLAGS=['-DNDEBUG'])
 
@@ -487,15 +493,18 @@ else:
     for x in platform_list:
         print("\t" + x)
     print("\nPlease run scons again with argument: platform=<string>")
+    Exit(1)
 
+if not 'env' in locals():
+    print("Environment not defined")
+    Exit(1)
 
 screen = sys.stdout
 node_count = 0
 node_count_max = 0
 node_count_interval = 1
 node_pruning = 8 # Number of nodes to process before prunning the cache
-if ('env' in locals()):
-    node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
 show_progress = env['progress']
 
 import time, math
