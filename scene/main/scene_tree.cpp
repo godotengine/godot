@@ -2325,7 +2325,11 @@ SceneTree::SceneTree() {
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
 
-	{ //load default fallback environment
+	Viewport::Usage usage = Viewport::Usage(int(GLOBAL_GET("rendering/quality/intended_usage/framebuffer_allocation")));
+	bool is_2d = (usage == Viewport::USAGE_2D || usage == Viewport::USAGE_2D_NO_SAMPLING);
+
+	if (!is_2d) {
+		//load default fallback environment
 		//get possible extensions
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
