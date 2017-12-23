@@ -215,6 +215,11 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
 		}
+
+		if (k->get_scancode() == KEY_R && k->get_command()) {
+			_menu_option_confirm(RUN_STOP, true);
+			_run(false);
+		}
 	}
 }
 
