@@ -340,7 +340,8 @@ void Node::move_child(Node *p_child, int p_pos) {
 		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 	for (const Map<StringName, GroupData>::Element *E = p_child->data.grouped.front(); E; E = E->next()) {
-		E->get().group->changed = true;
+		if (E->get().group)
+			E->get().group->changed = true;
 	}
 
 	data.blocked--;
