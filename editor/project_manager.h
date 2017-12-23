@@ -98,6 +98,7 @@ class ProjectManager : public Control {
 	void _scan_begin(const String &p_base);
 
 	void _load_recent_projects();
+	void _scan_scenes(DirAccess *p_da, HBoxContainer *p_scenes, int p_max, const Size2 &p_size);
 	void _on_project_created(const String &dir);
 	void _on_project_renamed();
 	void _update_scroll_position(const String &dir);

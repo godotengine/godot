@@ -682,8 +682,12 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 void ProjectManager::_update_project_buttons() {
 	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
 
-		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_childs->get_child(i));
-		item->update();
+		CanvasItem *hb = Object::cast_to<CanvasItem>(scroll_childs->get_child(i));
+		hb->update();
+
+		CanvasItem *details = Object::cast_to<CanvasItem>(hb->get_node(NodePath("project/details")));
+		if (details)
+			details->set_visible(selected_list.has(hb->get_meta("name")));
 	}
 
 	erase_btn->set_disabled(selected_list.size() < 1);
@@ -975,6 +979,9 @@ void ProjectManager::_load_recent_projects() {
 
 	Ref<Texture> favorite_icon = get_icon("Favorites", "EditorIcons");
 
+	Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
+	Size2 icon_size = Size2(default_icon->get_width(), default_icon->get_height());
+
 	for (List<ProjectItem>::Element *E = projects.front(); E; E = E->next()) {
 
 		ProjectItem &item = E->get();
@@ -1005,8 +1012,7 @@ void ProjectManager::_load_recent_projects() {
 				Error err = img->load(appicon.replace_first("res://", path + "/"));
 				if (err == OK) {
 
-					Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
-					img->resize(default_icon->get_width(), default_icon->get_height());
+					img->resize(icon_size.width, icon_size.height);
 					Ref<ImageTexture> it = memnew(ImageTexture);
 					it->create_from_image(img);
 					icon = it;
@@ -1035,21 +1041,18 @@ void ProjectManager::_load_recent_projects() {
 		hb->connect("gui_input", this, "_panel_input", varray(hb));
 		hb->add_constant_override("separation", 10 * EDSCALE);
 
+		VBoxContainer *vb = memnew(VBoxContainer);
+
 		VBoxContainer *favorite_box = memnew(VBoxContainer);
 		TextureButton *favorite = memnew(TextureButton);
 		favorite->set_normal_texture(favorite_icon);
 		if (!is_favorite)
 			favorite->set_modulate(Color(1, 1, 1, 0.2));
-		favorite->set_v_size_flags(SIZE_EXPAND);
 		favorite->connect("pressed", this, "_favorite_pressed", varray(hb));
 		favorite_box->add_child(favorite);
-		hb->add_child(favorite_box);
+		favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
+		favorite_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		TextureRect *tf = memnew(TextureRect);
-		tf->set_texture(icon);
-		hb->add_child(tf);
-
-		VBoxContainer *vb = memnew(VBoxContainer);
 		if (is_grayed)
 			vb->set_modulate(Color(0.5, 0.5, 0.5));
 		vb->set_name("project");
@@ -1058,17 +1061,70 @@ void ProjectManager::_load_recent_projects() {
 		Control *ec = memnew(Control);
 		ec->set_custom_minimum_size(Size2(0, 1));
 		vb->add_child(ec);
+
+		HBoxContainer *name_path = memnew(HBoxContainer);
+		name_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		vb->add_child(name_path);
+
+		HBoxContainer *filler1 = memnew(HBoxContainer);
+		name_path->add_child(filler1);
+		filler1->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
+
+		name_path->add_child(favorite_box);
+
 		Label *title = memnew(Label(project_name));
 		title->add_font_override("font", gui_base->get_font("title", "EditorFonts"));
 		title->add_color_override("font_color", font_color);
 		title->set_clip_text(true);
-		vb->add_child(title);
+		title->set_h_size_flags(SIZE_EXPAND_FILL);
+		name_path->add_child(title);
+
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
-		vb->add_child(fpath);
+		fpath->set_align(Label::ALIGN_RIGHT);
+		fpath->set_h_size_flags(SIZE_EXPAND_FILL);
+		fpath->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
+		name_path->add_child(fpath);
 		fpath->set_modulate(Color(1, 1, 1, 0.5));
 		fpath->add_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
+
+		HBoxContainer *filler2 = memnew(HBoxContainer);
+		name_path->add_child(filler2);
+		filler2->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
+
+		HBoxContainer *details = memnew(HBoxContainer);
+		details->set_name("details");
+		details->set_visible(false);
+		vb->add_child(details);
+
+		details->set_alignment(HBoxContainer::ALIGN_END);
+
+		HBoxContainer *filler3 = memnew(HBoxContainer);
+		details->add_child(filler3);
+		filler3->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
+
+		HBoxContainer *icon_box = memnew(HBoxContainer);
+		icon_box->set_custom_minimum_size(icon_size * EDSCALE);
+
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(icon);
+		icon_box->add_child(tf);
+
+		details->add_child(icon_box);
+
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		da->change_dir(path);
+		_scan_scenes(da, details, 7, icon_size);
+		memdelete(da);
+
+		HBoxContainer *filler4 = memnew(HBoxContainer);
+		details->add_child(filler4);
+		filler4->set_custom_minimum_size(Size2(16, 0) * EDSCALE);
+
+		VBoxContainer *vfiller = memnew(VBoxContainer);
+		vb->add_child(vfiller);
+		vfiller->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
 
 		scroll_childs->add_child(hb);
 	}
@@ -1085,6 +1141,56 @@ void ProjectManager::_load_recent_projects() {
 	EditorSettings::get_singleton()->save();
 
 	tabs->set_current_tab(0);
+}
+
+void ProjectManager::_scan_scenes(DirAccess *p_da, HBoxContainer *p_scenes, int p_max, const Size2 &p_size) {
+
+	if (p_scenes->get_child_count() >= p_max) {
+
+		return;
+	}
+
+	List<String> subdirs;
+	p_da->list_dir_begin();
+	String n = p_da->get_next();
+	while (n != String()) {
+		if (p_da->current_is_dir() && !n.begins_with(".")) {
+			subdirs.push_front(n);
+		} else if (n.ends_with(".tscn")) {
+
+			String s = p_da->get_current_dir() + "/" + n;
+
+			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+			String cache_base = s.md5_text();
+			cache_base = temp_path.plus_file("resthumb-" + cache_base);
+
+			Ref<Image> img = memnew(Image);
+			if (img->load(cache_base + ".png") == OK) {
+
+				img->resize(p_size.width, p_size.height);
+
+				Ref<ImageTexture> texture(memnew(ImageTexture));
+				texture->create_from_image(img);
+
+				TextureRect *tf = memnew(TextureRect);
+				tf->set_texture(texture);
+				p_scenes->add_child(tf);
+
+				if (p_scenes->get_child_count() >= p_max) {
+
+					return;
+				}
+			}
+		}
+		n = p_da->get_next();
+	}
+	p_da->list_dir_end();
+	for (List<String>::Element *E = subdirs.front(); E; E = E->next()) {
+
+		p_da->change_dir(E->get());
+		_scan_scenes(p_da, p_scenes, p_max, p_size);
+		p_da->change_dir("..");
+	}
 }
 
 void ProjectManager::_on_project_renamed() {
