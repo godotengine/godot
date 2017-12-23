@@ -264,6 +264,7 @@ RigidBodyBullet::RigidBodyBullet() :
 		can_sleep(true),
 		force_integration_callback(NULL),
 		isTransformChanged(false),
+		previousActiveState(true),
 		maxCollisionsDetection(0),
 		collisionsCount(0),
 		maxAreasWhereIam(10),
@@ -287,6 +288,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
 		areasWhereIam[i] = NULL;
 	}
+	btBody->setSleepingThresholds(0.2, 0.2);
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
@@ -337,7 +339,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 
 void RigidBodyBullet::dispatch_callbacks() {
 	/// The check isTransformChanged is necessary in order to call integrated forces only when the first transform is sent
-	if (btBody->isActive() && force_integration_callback && isTransformChanged) {
+	if (previousActiveState != btBody->isActive() && force_integration_callback && isTransformChanged) {
 
 		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
@@ -364,6 +366,8 @@ void RigidBodyBullet::dispatch_callbacks() {
 	/// Lock axis
 	btBody->setLinearVelocity(btBody->getLinearVelocity() * btBody->getLinearFactor());
 	btBody->setAngularVelocity(btBody->getAngularVelocity() * btBody->getAngularFactor());
+
+	previousActiveState = btBody->isActive();
 }
 
 void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
@@ -580,7 +584,8 @@ Variant RigidBodyBullet::get_state(PhysicsServer::BodyState p_state) const {
 void RigidBodyBullet::apply_central_impulse(const Vector3 &p_impulse) {
 	btVector3 btImpu;
 	G_TO_B(p_impulse, btImpu);
-	btBody->activate();
+	if (Vector3() != p_impulse)
+		btBody->activate();
 	btBody->applyCentralImpulse(btImpu);
 }
 
@@ -589,14 +594,16 @@ void RigidBodyBullet::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impul
 	btVector3 btPos;
 	G_TO_B(p_impulse, btImpu);
 	G_TO_B(p_pos, btPos);
-	btBody->activate();
+	if (Vector3() != p_impulse)
+		btBody->activate();
 	btBody->applyImpulse(btImpu, btPos);
 }
 
 void RigidBodyBullet::apply_torque_impulse(const Vector3 &p_impulse) {
 	btVector3 btImp;
 	G_TO_B(p_impulse, btImp);
-	btBody->activate();
+	if (Vector3() != p_impulse)
+		btBody->activate();
 	btBody->applyTorqueImpulse(btImp);
 }
 
@@ -605,28 +612,32 @@ void RigidBodyBullet::apply_force(const Vector3 &p_force, const Vector3 &p_pos) 
 	btVector3 btPos;
 	G_TO_B(p_force, btForce);
 	G_TO_B(p_pos, btPos);
-	btBody->activate();
+	if (Vector3() != p_force)
+		btBody->activate();
 	btBody->applyForce(btForce, btPos);
 }
 
 void RigidBodyBullet::apply_central_force(const Vector3 &p_force) {
 	btVector3 btForce;
 	G_TO_B(p_force, btForce);
-	btBody->activate();
+	if (Vector3() != p_force)
+		btBody->activate();
 	btBody->applyCentralForce(btForce);
 }
 
 void RigidBodyBullet::apply_torque(const Vector3 &p_torque) {
 	btVector3 btTorq;
 	G_TO_B(p_torque, btTorq);
-	btBody->activate();
+	if (Vector3() != p_torque)
+		btBody->activate();
 	btBody->applyTorque(btTorq);
 }
 
 void RigidBodyBullet::set_applied_force(const Vector3 &p_force) {
 	btVector3 btVec = btBody->getTotalTorque();
 
-	btBody->activate();
+	if (Vector3() != p_force)
+		btBody->activate();
 
 	btBody->clearForces();
 	btBody->applyTorque(btVec);
@@ -644,7 +655,8 @@ Vector3 RigidBodyBullet::get_applied_force() const {
 void RigidBodyBullet::set_applied_torque(const Vector3 &p_torque) {
 	btVector3 btVec = btBody->getTotalForce();
 
-	btBody->activate();
+	if (Vector3() != p_torque)
+		btBody->activate();
 
 	btBody->clearForces();
 	btBody->applyCentralForce(btVec);
@@ -711,7 +723,8 @@ bool RigidBodyBullet::is_continuous_collision_detection_enabled() const {
 void RigidBodyBullet::set_linear_velocity(const Vector3 &p_velocity) {
 	btVector3 btVec;
 	G_TO_B(p_velocity, btVec);
-	btBody->activate();
+	if (Vector3() != p_velocity)
+		btBody->activate();
 	btBody->setLinearVelocity(btVec);
 }
 
@@ -724,7 +737,8 @@ Vector3 RigidBodyBullet::get_linear_velocity() const {
 void RigidBodyBullet::set_angular_velocity(const Vector3 &p_velocity) {
 	btVector3 btVec;
 	G_TO_B(p_velocity, btVec);
-	btBody->activate();
+	if (Vector3() != p_velocity)
+		btBody->activate();
 	btBody->setAngularVelocity(btVec);
 }
 
@@ -832,6 +846,9 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 }
 
 void RigidBodyBullet::reload_space_override_modificator() {
+
+	if (!is_active())
+		return;
 
 	Vector3 newGravity(space->get_gravity_direction() * space->get_gravity_magnitude());
 	real_t newLinearDamp(linearDamp);
