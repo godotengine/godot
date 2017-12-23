@@ -223,7 +223,7 @@ IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
 	return IP_Address();
 }
 
-Array IP::get_resolve_addresses(ResolverID p_id) const {
+Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 
 	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, Array());
 
@@ -294,7 +294,7 @@ void IP::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item", "host", "ip_type"), &IP::resolve_hostname_queue_item, DEFVAL(IP::TYPE_ANY));
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_status", "id"), &IP::get_resolve_item_status);
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
-	ObjectTypeDB::bind_method(_MD("get_resolve_addresses", "id"), &IP::get_resolve_addresses);
+	ObjectTypeDB::bind_method(_MD("get_resolve_item_addresses", "id"), &IP::get_resolve_item_addresses);
 	ObjectTypeDB::bind_method(_MD("erase_resolve_item", "id"), &IP::erase_resolve_item);
 	ObjectTypeDB::bind_method(_MD("get_local_addresses"), &IP::_get_local_addresses);
 	ObjectTypeDB::bind_method(_MD("clear_cache"), &IP::clear_cache, DEFVAL(""));
