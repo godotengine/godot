@@ -207,6 +207,7 @@ private:
 	bool isScratchedSpaceOverrideModificator;
 
 	bool isTransformChanged;
+	bool previousActiveState; // Last check state
 
 	ForceIntegrationCallback *force_integration_callback;
 
