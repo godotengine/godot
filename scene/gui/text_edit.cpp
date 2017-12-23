@@ -2420,26 +2420,44 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						//simple unindent
 						int cc = cursor.column;
+
+						const int len = text[cursor.line].length();
+						const String &line = text[cursor.line];
+
+						int left = 0; // number of whitespace chars at beginning of line
+						while (left < len && (line[left] == '\t' || line[left] == ' '))
+							left++;
+						cc = MIN(cc, left);
+
+						while (cc < indent_size && cc < left && line[cc] == ' ')
+							cc++;
+
 						if (cc > 0 && cc <= text[cursor.line].length()) {
-							if (text[cursor.line][cursor.column - 1] == '\t') {
-								backspace_at_cursor();
+							if (text[cursor.line][cc - 1] == '\t') {
+								_remove_text(cursor.line, cc - 1, cursor.line, cc);
+								if (cursor.column >= left)
+									cursor_set_column(MAX(0, cursor.column - 1));
+								update();
 							} else {
-								if (cursor.column - indent_size >= 0) {
+								int n = 0;
 
-									bool unindent = true;
-									for (int i = 1; i <= indent_size; i++) {
-										if (text[cursor.line][cursor.column - i] != ' ') {
-											unindent = false;
-											break;
-										}
+								for (int i = 1; i <= MIN(cc, indent_size); i++) {
+									if (line[cc - i] != ' ') {
+										break;
 									}
+									n++;
+								}
 
-									if (unindent) {
-										_remove_text(cursor.line, cursor.column - indent_size, cursor.line, cursor.column);
-										cursor_set_column(cursor.column - indent_size);
-									}
+								if (n > 0) {
+									_remove_text(cursor.line, cc - n, cursor.line, cc);
+									if (cursor.column > left - n) // inside text?
+										cursor_set_column(MAX(0, cursor.column - n));
+									update();
 								}
 							}
+						} else if (cc == 0 && line.length() > 0 && line[0] == '\t') {
+							_remove_text(cursor.line, 0, cursor.line, 1);
+							update();
 						}
 					} else {
 						//simple indent
