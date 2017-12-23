@@ -115,6 +115,7 @@ protected:
 	bool ray_pickable;
 	btCollisionObject *bt_collision_object;
 	Vector3 body_scale;
+	bool force_shape_reset;
 	SpaceBullet *space;
 
 	VSet<RID> exceptions;
