@@ -782,14 +782,27 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	String link_color_text = title_color.to_html(false);
 
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
+
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(title_color);
-	class_desc->add_text(TTR("Class:") + " ");
+	class_desc->add_text(String(TTR("Class:")).replace(":", "") + " ");
 	class_desc->push_color(headline_color);
 	_add_text(p_class);
 	class_desc->pop();
 	class_desc->pop();
 	class_desc->pop();
+
+	if (cd.brief_description != "") {
+
+		class_desc->add_newline();
+		class_desc->push_color(text_color);
+		class_desc->push_font(doc_font);
+		_add_text(cd.brief_description);
+		class_desc->pop();
+		class_desc->pop();
+	}
+
+	class_desc->add_newline();
 	class_desc->add_newline();
 
 	if (cd.inherits != "") {
@@ -818,23 +831,24 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->add_newline();
 	}
 
+	bool found_inherited_by = false;
+
 	if (ClassDB::class_exists(cd.name)) {
 
-		bool found = false;
 		bool prev = false;
 
 		for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
 
 			if (E->get().inherits == cd.name) {
 
-				if (!found) {
+				if (!found_inherited_by) {
 					class_desc->push_color(title_color);
 					class_desc->push_font(doc_title_font);
 					class_desc->add_text(TTR("Inherited by:") + " ");
 					class_desc->pop();
 					class_desc->pop();
 
-					found = true;
+					found_inherited_by = true;
 					class_desc->push_font(doc_font);
 				}
 
@@ -849,36 +863,16 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			}
 		}
 
-		if (found)
+		if (found_inherited_by) {
 			class_desc->pop();
 
-		class_desc->add_newline();
+			class_desc->add_newline();
+			class_desc->add_newline();
+		}
 	}
 
-	class_desc->add_newline();
-	class_desc->add_newline();
-
-	if (cd.brief_description != "") {
-
-		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Brief Description:"));
-		class_desc->pop();
-		class_desc->pop();
-
-		//class_desc->add_newline();
+	if (cd.inherits != "" && !found_inherited_by)
 		class_desc->add_newline();
-		class_desc->push_color(text_color);
-		class_desc->push_font(doc_font);
-		class_desc->push_indent(1);
-		_add_text(cd.brief_description);
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->add_newline();
-	}
 
 	Set<String> skip_methods;
 	bool property_descr = false;
