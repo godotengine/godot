@@ -85,7 +85,7 @@ static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
 	return ip;
 };
 
-void IP_Unix::_resolve_hostname(List<IP_Address> & r_addresses, const String &p_hostname, Type p_type) const {
+void IP_Unix::_resolve_hostname(List<IP_Address> &r_addresses, const String &p_hostname, Type p_type) const {
 
 	struct addrinfo hints;
 	struct addrinfo *result;
@@ -105,12 +105,12 @@ void IP_Unix::_resolve_hostname(List<IP_Address> & r_addresses, const String &p_
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
 		ERR_PRINT("getaddrinfo failed!");
-		return ;
+		return;
 	};
 
 	if (result == NULL || result->ai_addr == NULL) {
 		ERR_PRINT("Invalid response from getaddrinfo");
-		return ;
+		return;
 	};
 
 	struct addrinfo *next = result;

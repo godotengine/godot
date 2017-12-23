@@ -82,8 +82,7 @@ struct _IP_ResolverPrivate {
 			if (queue[i].status != IP::RESOLVER_STATUS_WAITING)
 				continue;
 			IP::get_singleton()->_resolve_hostname(queue[i].response, queue[i].hostname, queue[i].type);
-			queue[i].status = queue[i].response.empty()
-				? IP::RESOLVER_STATUS_ERROR : IP::RESOLVER_STATUS_DONE;
+			queue[i].status = queue[i].response.empty() ? IP::RESOLVER_STATUS_ERROR : IP::RESOLVER_STATUS_DONE;
 		}
 	}
 
@@ -121,7 +120,7 @@ IP_Address IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
 		_resolve_hostname(res, p_hostname, p_type);
 		resolver->cache[key] = res;
 	}
-	resolver->mutex->unlock();		
+	resolver->mutex->unlock();
 
 	for (int i = 0; i < res.size(); ++i) {
 		if (res[i].is_valid()) {
@@ -140,7 +139,7 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 		_resolve_hostname(resolver->cache[key], p_hostname, p_type);
 	}
 
-	List<IP_Address> res = resolver->cache[key];	
+	List<IP_Address> res = resolver->cache[key];
 	resolver->mutex->unlock();
 
 	Array result;
