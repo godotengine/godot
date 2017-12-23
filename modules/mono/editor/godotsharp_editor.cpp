@@ -50,9 +50,9 @@ GodotSharpEditor *GodotSharpEditor::singleton = NULL;
 
 bool GodotSharpEditor::_create_project_solution() {
 
-	EditorProgress pr("create_csharp_solution", "Generating solution...", 2);
+	EditorProgress pr("create_csharp_solution", TTR("Generating solution..."), 2);
 
-	pr.step("Generating C# project...");
+	pr.step(TTR("Generating C# project..."));
 
 	String path = OS::get_singleton()->get_resource_dir();
 	String name = ProjectSettings::get_singleton()->get("application/config/name");
@@ -67,7 +67,7 @@ bool GodotSharpEditor::_create_project_solution() {
 		NETSolution solution(name);
 
 		if (!solution.set_path(path)) {
-			show_error_dialog("Failed to create solution.");
+			show_error_dialog(TTR("Failed to create solution."));
 			return false;
 		}
 
@@ -79,7 +79,7 @@ bool GodotSharpEditor::_create_project_solution() {
 		Error sln_error = solution.save();
 
 		if (sln_error != OK) {
-			show_error_dialog("Failed to save solution.");
+			show_error_dialog(TTR("Failed to save solution."));
 			return false;
 		}
 
@@ -89,13 +89,13 @@ bool GodotSharpEditor::_create_project_solution() {
 		if (!GodotSharpBuilds::make_api_sln(GodotSharpBuilds::API_EDITOR))
 			return false;
 
-		pr.step("Done");
+		pr.step(TTR("Done"));
 
 		// Here, after all calls to progress_task_step
 		call_deferred("_remove_create_sln_menu_option");
 
 	} else {
-		show_error_dialog("Failed to create C# project.");
+		show_error_dialog(TTR("Failed to create C# project."));
 	}
 
 	return true;
@@ -194,14 +194,14 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	error_dialog = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(error_dialog);
 
-	bottom_panel_btn = editor->add_bottom_panel_item("Mono", memnew(MonoBottomPanel(editor)));
+	bottom_panel_btn = editor->add_bottom_panel_item(TTR("Mono"), memnew(MonoBottomPanel(editor)));
 
 	godotsharp_builds = memnew(GodotSharpBuilds);
 
 	editor->add_child(memnew(MonoReloadNode));
 
 	menu_button = memnew(MenuButton);
-	menu_button->set_text("Mono");
+	menu_button->set_text(TTR("Mono"));
 	menu_popup = menu_button->get_popup();
 
 	String sln_path = GodotSharpDirs::get_project_sln_path();
@@ -209,7 +209,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
 		bottom_panel_btn->hide();
-		menu_popup->add_item("Create C# solution", MENU_CREATE_SLN);
+		menu_popup->add_item(TTR("Create C# solution"), MENU_CREATE_SLN);
 	}
 
 	menu_popup->connect("id_pressed", this, "_menu_option_pressed");

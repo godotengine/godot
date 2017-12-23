@@ -1435,7 +1435,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300));
 
-	button = editor->add_bottom_panel_item("AnimationTree", anim_tree_editor);
+	button = editor->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();
 }
 
