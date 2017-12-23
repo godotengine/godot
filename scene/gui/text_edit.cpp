@@ -42,14 +42,14 @@
 
 #define TAB_PIXELS
 
+inline bool _is_symbol(CharType c) {
+
+	return is_symbol(c);
+}
+
 static bool _is_text_char(CharType c) {
 
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
-}
-
-static bool _is_symbol(CharType c) {
-
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
 }
 
 static bool _is_whitespace(CharType c) {
@@ -1962,7 +1962,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				} else if (mb->is_doubleclick() && text[cursor.line].length()) {
 
-					//doubleclick select world
+					//doubleclick select word
 					selection.selecting_mode = Selection::MODE_WORD;
 					_update_selection_mode_word();
 					last_dblclk = OS::get_singleton()->get_ticks_msec();
@@ -5181,12 +5181,8 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	String s = text[row];
 	if (s.length() == 0)
 		return "";
-	int beg = CLAMP(col, 0, s.length());
-	int end = beg;
-
-	if (s[beg] > 32 || beg == s.length()) {
-
-		bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
+	int beg, end;
+	if (select_word(s, col, beg, end)) {
 
 		bool inside_quotes = false;
 		int qbegin = 0, qend = 0;
@@ -5205,16 +5201,6 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 			}
 		}
 
-		while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
-			beg--;
-		}
-		while (end < s.length() && s[end + 1] > 32 && (symbol == _is_symbol(s[end + 1]))) {
-			end++;
-		}
-
-		if (end < s.length())
-			end += 1;
-
 		return s.substr(beg, end - beg);
 	}
 
@@ -5231,22 +5217,8 @@ String TextEdit::get_tooltip(const Point2 &p_pos) const {
 	String s = text[row];
 	if (s.length() == 0)
 		return Control::get_tooltip(p_pos);
-	int beg = CLAMP(col, 0, s.length());
-	int end = beg;
-
-	if (s[beg] > 32 || beg == s.length()) {
-
-		bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
-
-		while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
-			beg--;
-		}
-		while (end < s.length() && s[end + 1] > 32 && (symbol == _is_symbol(s[end + 1]))) {
-			end++;
-		}
-
-		if (end < s.length())
-			end += 1;
+	int beg, end;
+	if (select_word(s, col, beg, end)) {
 
 		String tt = tooltip_obj->call(tooltip_func, s.substr(beg, end - beg), tooltip_ud);
 
