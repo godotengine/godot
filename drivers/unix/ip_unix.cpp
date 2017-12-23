@@ -116,7 +116,13 @@ void IP_Unix::_resolve_hostname(List<IP_Address> & r_addresses, const String &p_
 	struct addrinfo *next = result;
 
 	do {
-		r_addresses.push_back(_sockaddr2ip(next->ai_addr));
+		if (next->ai_addr == NULL) {
+			next = next->ai_next;
+			continue;
+		}
+		IP_Address ip = _sockaddr2ip(next->ai_addr);
+		if (!r_addresses.find(ip))
+			r_addresses.push_back(ip);
 		next = next->ai_next;
 	} while (next);
 
