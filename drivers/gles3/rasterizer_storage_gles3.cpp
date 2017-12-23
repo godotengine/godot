@@ -5334,6 +5334,14 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 	}
 	particles->emitting = p_emitting;
 }
+
+bool RasterizerStorageGLES3::particles_get_emitting(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+
+	return particles->emitting;
+}
+
 void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount) {
 
 	Particles *particles = particles_owner.getornull(p_particles);

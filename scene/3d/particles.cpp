@@ -42,8 +42,7 @@ PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
 void Particles::set_emitting(bool p_emitting) {
 
-	emitting = p_emitting;
-	VS::get_singleton()->particles_set_emitting(particles, emitting);
+	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
 void Particles::set_amount(int p_amount) {
@@ -63,7 +62,7 @@ void Particles::set_one_shot(bool p_one_shot) {
 
 	one_shot = p_one_shot;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
-	if (!one_shot && emitting)
+	if (!one_shot && is_emitting())
 		VisualServer::get_singleton()->particles_restart(particles);
 }
 
@@ -113,7 +112,7 @@ void Particles::set_speed_scale(float p_scale) {
 
 bool Particles::is_emitting() const {
 
-	return emitting;
+	return VS::get_singleton()->particles_get_emitting(particles);
 }
 int Particles::get_amount() const {
 

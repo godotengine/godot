@@ -35,8 +35,7 @@
 
 void Particles2D::set_emitting(bool p_emitting) {
 
-	emitting = p_emitting;
-	VS::get_singleton()->particles_set_emitting(particles, emitting);
+	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
 void Particles2D::set_amount(int p_amount) {
@@ -56,7 +55,7 @@ void Particles2D::set_one_shot(bool p_enable) {
 
 	one_shot = p_enable;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
-	if (!one_shot && emitting)
+	if (!one_shot && is_emitting())
 		VisualServer::get_singleton()->particles_restart(particles);
 }
 void Particles2D::set_pre_process_time(float p_time) {
@@ -134,7 +133,7 @@ void Particles2D::set_speed_scale(float p_scale) {
 
 bool Particles2D::is_emitting() const {
 
-	return emitting;
+	return VS::get_singleton()->particles_get_emitting(particles);
 }
 int Particles2D::get_amount() const {
 

@@ -57,7 +57,6 @@ public:
 private:
 	RID particles;
 
-	bool emitting;
 	bool one_shot;
 	int amount;
 	float lifetime;
