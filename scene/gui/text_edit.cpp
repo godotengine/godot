@@ -2544,21 +2544,18 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (cc == 0 && cursor.line > 0) {
 						cursor_set_line(cursor.line - 1);
 						cursor_set_column(text[cursor.line].length());
-						break;
+					} else {
+						while (cc > 0) {
+							bool ischar = _is_text_char(text[cursor.line][cc - 1]);
+
+							if (prev_char && !ischar)
+								break;
+
+							prev_char = ischar;
+							cc--;
+						}
+						cursor_set_column(cc);
 					}
-
-					while (cc > 0) {
-
-						bool ischar = _is_text_char(text[cursor.line][cc - 1]);
-
-						if (prev_char && !ischar)
-							break;
-
-						prev_char = ischar;
-						cc--;
-					}
-
-					cursor_set_column(cc);
 
 				} else if (cursor.column == 0) {
 
@@ -2608,20 +2605,17 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (cc == text[cursor.line].length() && cursor.line < text.size() - 1) {
 						cursor_set_line(cursor.line + 1);
 						cursor_set_column(0);
-						break;
+					} else {
+						while (cc < text[cursor.line].length()) {
+							bool ischar = _is_text_char(text[cursor.line][cc]);
+
+							if (prev_char && !ischar)
+								break;
+							prev_char = ischar;
+							cc++;
+						}
+						cursor_set_column(cc);
 					}
-
-					while (cc < text[cursor.line].length()) {
-
-						bool ischar = _is_text_char(text[cursor.line][cc]);
-
-						if (prev_char && !ischar)
-							break;
-						prev_char = ischar;
-						cc++;
-					}
-
-					cursor_set_column(cc);
 
 				} else if (cursor.column == text[cursor.line].length()) {
 
