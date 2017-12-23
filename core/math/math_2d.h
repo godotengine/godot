@@ -336,9 +336,10 @@ struct Rect2 {
 		g.size.height += p_by * 2;
 		return g;
 	}
+
 	inline Rect2 grow_margin(Margin p_margin, real_t p_amount) const {
 		Rect2 g = *this;
-		g.grow_individual((MARGIN_LEFT == p_margin) ? p_amount : 0,
+		g = g.grow_individual((MARGIN_LEFT == p_margin) ? p_amount : 0,
 				(MARGIN_TOP == p_margin) ? p_amount : 0,
 				(MARGIN_RIGHT == p_margin) ? p_amount : 0,
 				(MARGIN_BOTTOM == p_margin) ? p_amount : 0);
