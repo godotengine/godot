@@ -30,6 +30,8 @@
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
 
+#include "editor/code_editor.h"
+#include "editor/doc/doc_data.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
@@ -37,71 +39,10 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
-
-#include "editor/code_editor.h"
-#include "editor/doc/doc_data.h"
 #include "scene/main/timer.h"
 
-class EditorNode;
-
-class EditorHelpSearch : public ConfirmationDialog {
-
-	GDCLASS(EditorHelpSearch, ConfirmationDialog)
-
-	LineEdit *search_box;
-	Tree *search_options;
-	String base_type;
-
-	class IncrementalSearch;
-	Ref<IncrementalSearch> search;
-
-	void _update_search();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _confirmed();
-	void _text_changed(const String &p_newtext);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void popup();
-	void popup(const String &p_term);
-
-	EditorHelpSearch();
-};
-
-class EditorHelpIndex : public ConfirmationDialog {
-	GDCLASS(EditorHelpIndex, ConfirmationDialog);
-
-	LineEdit *search_box;
-	Tree *class_list;
-	HashMap<String, TreeItem *> tree_item_map;
-
-	void _tree_item_selected();
-	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _update_class_list();
-
-	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void select_class(const String &p_class);
-
-	void popup();
-
-	EditorHelpIndex();
-};
-
 class EditorHelp : public VBoxContainer {
+
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
