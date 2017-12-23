@@ -1050,6 +1050,10 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
+	while (p_enabled && !is_window_maximized()) {
+		// Wait for effective resizing (so the GLX context is too).
+	}
+
 	maximized = p_enabled;
 }
 
