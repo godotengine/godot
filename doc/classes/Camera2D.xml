@@ -4,7 +4,10 @@
 		Camera node for 2D scenes.
 	</brief_description>
 	<description>
-		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
+		To use this, you typically embed a [code]Camera2D[/code] node inside any node you want your view to follow (e.g. [code]/YourScene/YourPlayer/Camera2D[/code]). Then enable the property named "current" in your [code]Camera2D[/code] node and you're set.
+
+		The Camera2D node forces the screen (current layer) to scroll following the camera node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
+
 		This node is intended to be a simple helper to get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
 	</description>
 	<tutorials>
