@@ -188,6 +188,7 @@
 			<argument index="0" name="arg0" type="Vector2">
 			</argument>
 			<description>
+				Applies autotiling rules to the cell (and its adjacent cells) referenced by its grid-based X and Y coordinates.
 			</description>
 		</method>
 		<method name="update_bitmask_region">
@@ -198,6 +199,8 @@
 			<argument index="1" name="end" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Applies autotiling rules to the cells in the given region (specified by grid-based X and Y coordinates).
+				Calling with invalid (or missing) parameters applies autotiling rules for the entire TileMap.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
