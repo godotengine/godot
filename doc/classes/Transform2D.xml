@@ -4,7 +4,7 @@
 		2D Transformation. 3x2 matrix.
 	</brief_description>
 	<description>
-		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a two [Vector2] x, y and [Vector2] "origin". It is similar to a 3x2 matrix.
+		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of a two [Vector2] x, y and [Vector2] "origin". It is similar to a 3x2 matrix.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Transform">
 			</argument>
 			<description>
-				Constructs the [code]Transform2D[/code] from a 3D [Transform].
+				Constructs the transform from a 3D [Transform].
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -30,7 +30,7 @@
 			<argument index="2" name="origin" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [code]Transform2D[/code] from 3 [Vector2] consisting of rows x, y and origin.
+				Constructs the transform from 3 [Vector2]s representing x, y, and origin.
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -41,7 +41,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [code]Transform2D[/code] from rotation angle in radians and position [Vector2].
+				Constructs the transform from a given angle (in radians) and position.
 			</description>
 		</method>
 		<method name="affine_inverse">
@@ -57,7 +57,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms the given vector "v" by this transform basis (no translation).
+				Transforms the given vector by this transform's basis (no translation).
 			</description>
 		</method>
 		<method name="basis_xform_inv">
@@ -66,21 +66,21 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms the given vector "v" by this transform basis (no translation).
+				Inverse-transforms the given vector by this transform's basis (no translation).
 			</description>
 		</method>
 		<method name="get_origin">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the origin [Vector2] (translation).
+				Returns the transform's origin (translation).
 			</description>
 		</method>
 		<method name="get_rotation">
 			<return type="float">
 			</return>
 			<description>
-				Returns the rotation (in radians).
+				Returns the transform's rotation (in radians).
 			</description>
 		</method>
 		<method name="get_scale">
@@ -98,7 +98,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Interpolates the transform to other Transform2D by weight amount (0-1).
+				Returns a transform interpolated between this transform and another by a given weight (0-1).
 			</description>
 		</method>
 		<method name="inverse">
@@ -121,7 +121,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform by phi.
+				Rotates the transform by the given angle (in radians).
 			</description>
 		</method>
 		<method name="scaled">
@@ -130,7 +130,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Scales the transform by the specified 2D scaling factors.
+				Scales the transform by the given factor.
 			</description>
 		</method>
 		<method name="translated">
@@ -139,7 +139,7 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translates the transform by the specified offset.
+				Translates the transform by the given offset.
 			</description>
 		</method>
 		<method name="xform">
@@ -163,13 +163,13 @@
 	</methods>
 	<members>
 		<member name="origin" type="Vector2" setter="" getter="">
-			The translation offset of the transform.
+			The transform's translation offset.
 		</member>
 		<member name="x" type="Vector2" setter="" getter="">
-			The X axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The X axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="y" type="Vector2" setter="" getter="">
-			The Y axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The Y axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 	</members>
 	<constants>
