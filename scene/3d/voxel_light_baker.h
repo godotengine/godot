@@ -148,9 +148,12 @@ private:
 	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, float p_level, Vector3 &r_color, float &r_alpha);
 	_FORCE_INLINE_ Vector3 _voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture);
 	_FORCE_INLINE_ Vector3 _compute_pixel_light_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal, uint32_t *rng_state);
+	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
+
+	void _lightmap_bake_point(uint32_t p_x,	LightMap *p_line);
 
 public:
+
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
 	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
 	void begin_bake_light(BakeQuality p_quality = BAKE_QUALITY_MEDIUM, BakeMode p_bake_mode = BAKE_MODE_CONE_TRACE, float p_propagation = 0.85, float p_energy = 1);

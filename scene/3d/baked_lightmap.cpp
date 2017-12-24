@@ -772,8 +772,8 @@ void BakedLightmap::_bind_methods() {
 BakedLightmap::BakedLightmap() {
 
 	extents = Vector3(10, 10, 10);
-	bake_cell_size = 0.1;
-	capture_cell_size = 0.25;
+	bake_cell_size = 0.25;
+	capture_cell_size = 0.5;
 
 	bake_quality = BAKE_QUALITY_MEDIUM;
 	bake_mode = BAKE_MODE_CONE_TRACE;

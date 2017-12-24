@@ -1,5 +1,10 @@
 def can_build(platform):
-    return True
+    # Sorry guys, do not enable this unless you can figure out a way
+    # to get Opus to not do any memory allocation or system calls
+    # in the audio thread.
+    # Currently the implementation even reads files from the audio thread,
+    # and this is not how audio programming works.
+    return False
 
 def configure(env):
     pass

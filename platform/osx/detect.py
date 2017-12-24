@@ -82,9 +82,6 @@ def configure(env):
             env['RANLIB'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env['AS'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
             env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
-            if env['tools'] and env['openmp']:
-                env.Append(CPPFLAGS=['-fopenmp'])
-                env.Append(LINKFLAGS=['-fopenmp'])
 
     else: # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)

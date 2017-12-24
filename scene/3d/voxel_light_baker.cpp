@@ -30,11 +30,9 @@
 
 #include "voxel_light_baker.h"
 #include "os/os.h"
+#include "os/threaded_array_processor.h"
 
 #include <stdlib.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #define FINDMINMAX(x0, x1, x2, min, max) \
 	min = max = x0;                      \
@@ -1689,7 +1687,7 @@ _ALWAYS_INLINE_ uint32_t xorshift32(uint32_t *state) {
 	return x;
 }
 
-Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal, uint32_t *rng_state) {
+Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal) {
 
 	int samples_per_quality[3] = { 48, 128, 512 };
 
@@ -1711,8 +1709,7 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 	const Light *light = bake_light.ptr();
 	const Cell *cells = bake_cells.ptr();
 
-	// Prevent false sharing when running on OpenMP
-	uint32_t local_rng_state = *rng_state;
+	uint32_t local_rng_state = rand(); //needs to be fixed again
 
 	for (int i = 0; i < samples; i++) {
 
@@ -1796,8 +1793,28 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 	}
 
 	// Make sure we don't reset this thread's RNG state
-	*rng_state = local_rng_state;
+
 	return accum / samples;
+}
+
+void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
+
+
+	LightMap *pixel = &p_line[p_x];
+	if (pixel->pos == Vector3())
+		return;
+	//print_line("pos: " + pixel->pos + " normal " + pixel->normal);
+	switch (bake_mode) {
+		case BAKE_MODE_CONE_TRACE: {
+			pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
+		} break;
+		case BAKE_MODE_RAY_TRACE: {
+			pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal) * energy;
+		} break;
+			//	pixel->light = Vector3(1, 1, 1);
+			//}
+	}
+
 }
 
 Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
@@ -1862,53 +1879,10 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 		volatile int lines = 0;
 
 		// make sure our OS-level rng is seeded
-		srand(OS::get_singleton()->get_ticks_usec());
-
-		// setup an RNG state for each OpenMP thread
-		uint32_t threadcount = 1;
-		uint32_t threadnum = 0;
-#ifdef _OPENMP
-		threadcount = omp_get_max_threads();
-#endif
-		Vector<uint32_t> rng_states;
-		rng_states.resize(threadcount);
-		for (uint32_t i = 0; i < threadcount; i++) {
-			do {
-				rng_states[i] = rand();
-			} while (rng_states[i] == 0);
-		}
-		uint32_t *rng_states_p = rng_states.ptrw();
 
 		for (int i = 0; i < height; i++) {
 
-		//print_line("bake line " + itos(i) + " / " + itos(height));
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1) private(threadnum)
-#endif
-			for (int j = 0; j < width; j++) {
-
-#ifdef _OPENMP
-				threadnum = omp_get_thread_num();
-#endif
-
-				//if (i == 125 && j == 280) {
-
-				LightMap *pixel = &lightmap_ptr[i * width + j];
-				if (pixel->pos == Vector3())
-					continue; //unused, skipe
-
-				//print_line("pos: " + pixel->pos + " normal " + pixel->normal);
-				switch (bake_mode) {
-					case BAKE_MODE_CONE_TRACE: {
-						pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
-					} break;
-					case BAKE_MODE_RAY_TRACE: {
-						pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal, &rng_states_p[threadnum]) * energy;
-					} break;
-						//	pixel->light = Vector3(1, 1, 1);
-						//}
-				}
-			}
+			thread_process_array(width,this,&VoxelLightBaker::_lightmap_bake_point,&lightmap_ptr[i*width]);
 
 			lines = MAX(lines, i); //for multithread
 			if (p_bake_time_func) {
