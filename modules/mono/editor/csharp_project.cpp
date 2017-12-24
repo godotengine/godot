@@ -54,7 +54,7 @@ String generate_core_api_project(const String &p_dir, const Vector<String> &p_fi
 		ERR_FAIL_V(String());
 	}
 
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : "";
+	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
 String generate_editor_api_project(const String &p_dir, const String &p_core_dll_path, const Vector<String> &p_files) {
@@ -75,7 +75,7 @@ String generate_editor_api_project(const String &p_dir, const String &p_core_dll
 		ERR_FAIL_V(String());
 	}
 
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : "";
+	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
 String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files) {
@@ -96,7 +96,7 @@ String generate_game_project(const String &p_dir, const String &p_name, const Ve
 		ERR_FAIL_V(String());
 	}
 
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : "";
+	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {

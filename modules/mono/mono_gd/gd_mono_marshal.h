@@ -62,11 +62,18 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type);
 String mono_to_utf8_string(MonoString *p_mono_string);
 String mono_to_utf16_string(MonoString *p_mono_string);
 
-_FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
+_FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
 	if (sizeof(CharType) == 2)
 		return mono_to_utf16_string(p_mono_string);
 
 	return mono_to_utf8_string(p_mono_string);
+}
+
+_FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
+	if (p_mono_string == NULL)
+		return String();
+
+	return mono_string_to_godot_not_null(p_mono_string);
 }
 
 _FORCE_INLINE_ MonoString *mono_from_utf8_string(const String &p_string) {
