@@ -103,6 +103,6 @@ StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 	stylebox_editor->set_custom_minimum_size(Size2(0, 250));
 
 	//p_node->get_viewport()->add_child(stylebox_editor);
-	button = p_node->add_bottom_panel_item("StyleBox", stylebox_editor);
+	button = p_node->add_bottom_panel_item(TTR("StyleBox"), stylebox_editor);
 	button->hide();
 }

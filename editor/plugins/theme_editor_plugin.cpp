@@ -934,6 +934,6 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor->set_custom_minimum_size(Size2(0, 200));
 
 	//p_node->get_viewport()->add_child(theme_editor);
-	button = editor->add_bottom_panel_item("Theme", theme_editor);
+	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();
 }

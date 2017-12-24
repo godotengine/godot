@@ -314,7 +314,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	autotile_editor->side_panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	autotile_editor->side_panel->set_custom_minimum_size(Size2(200, 0));
 	autotile_editor->side_panel->hide();
-	autotile_button = p_node->add_bottom_panel_item("Autotiles", autotile_editor);
+	autotile_button = p_node->add_bottom_panel_item(TTR("Autotiles"), autotile_editor);
 	autotile_button->hide();
 }
 
@@ -387,7 +387,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 
 	tools[TOOL_SELECT] = memnew(ToolButton);
 	tool_containers[TOOLBAR_DUMMY]->add_child(tools[TOOL_SELECT]);
-	tools[TOOL_SELECT]->set_tooltip("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.");
+	tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 	tools[TOOL_SELECT]->set_toggle_mode(true);
 	tools[TOOL_SELECT]->set_button_group(tg);
 	tools[TOOL_SELECT]->set_pressed(true);
@@ -533,7 +533,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->show();
 			tool_containers[TOOLBAR_SHAPE]->hide();
 			tools[TOOL_SELECT]->set_pressed(true);
-			tools[TOOL_SELECT]->set_tooltip("LMB: set bit on.\nRMB: set bit off.");
+			tools[TOOL_SELECT]->set_tooltip(TTR("LMB: set bit on.\nRMB: set bit off."));
 			spin_priority->hide();
 		} break;
 		case EDITMODE_COLLISION:
@@ -542,7 +542,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_DUMMY]->show();
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->show();
-			tools[TOOL_SELECT]->set_tooltip("Select current edited sub-tile.");
+			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile."));
 			spin_priority->hide();
 		} break;
 		default: {
@@ -550,10 +550,10 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->hide();
 			if (edit_mode == EDITMODE_ICON) {
-				tools[TOOL_SELECT]->set_tooltip("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.");
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 				spin_priority->hide();
 			} else {
-				tools[TOOL_SELECT]->set_tooltip("Select sub-tile to change it's priority.");
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change it's priority."));
 				spin_priority->show();
 			}
 		} break;
