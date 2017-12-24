@@ -1376,7 +1376,7 @@ bool CSharpScript::_update_exports() {
 						hint_string = NATIVE_GDMONOCLASS_NAME(field_type.type_class);
 					} else {
 						hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
-						hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
+						hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
 					}
 
 					PropertyInfo prop_info = PropertyInfo(type, name, hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);

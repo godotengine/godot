@@ -39,6 +39,47 @@
 #include "ustring.h"
 
 class BindingsGenerator {
+
+	struct ConstantInterface {
+		String name;
+		int value;
+		const DocData::ConstantDoc *const_doc;
+
+		ConstantInterface() {}
+
+		ConstantInterface(const String &p_name, int p_value) {
+			name = p_name;
+			value = p_value;
+		}
+	};
+
+	struct EnumInterface {
+		StringName cname;
+		String prefix;
+		List<ConstantInterface> constants;
+
+		_FORCE_INLINE_ bool operator==(const EnumInterface &p_ienum) const {
+			return p_ienum.cname == cname;
+		}
+
+		EnumInterface() {}
+
+		EnumInterface(const StringName &p_cname) {
+			cname = p_cname;
+		}
+	};
+
+	struct PropertyInterface {
+		StringName cname;
+		String proxy_name;
+		int index;
+
+		StringName setter;
+		StringName getter;
+
+		const DocData::PropertyDoc *prop_doc;
+	};
+
 	struct ArgumentInterface {
 		enum DefaultParamMode {
 			CONSTANT,
@@ -46,7 +87,7 @@ class BindingsGenerator {
 			NULLABLE_REF
 		};
 
-		String type;
+		StringName type;
 		String name;
 		String default_argument;
 		DefaultParamMode def_param_mode;
@@ -58,6 +99,7 @@ class BindingsGenerator {
 
 	struct MethodInterface {
 		String name;
+		StringName cname;
 
 		/**
 		 * Name of the C# method
@@ -67,7 +109,7 @@ class BindingsGenerator {
 		/**
 		 * [TypeInterface::name] of the return type
 		 */
-		String return_type;
+		StringName return_type;
 
 		/**
 		 * Determines if the method has a variable number of arguments (VarArg)
@@ -103,7 +145,7 @@ class BindingsGenerator {
 		}
 
 		MethodInterface() {
-			return_type = "void";
+			return_type = NameCache::get_singleton().type_void;
 			is_vararg = false;
 			is_virtual = false;
 			requires_object_call = false;
@@ -118,11 +160,12 @@ class BindingsGenerator {
 		 * Also used to format [c_out].
 		 */
 		String name;
+		StringName cname;
 
 		/**
 		 * Identifier name of the base class.
 		 */
-		String base_name;
+		StringName base_name;
 
 		/**
 		 * Name of the C# class
@@ -256,23 +299,32 @@ class BindingsGenerator {
 
 		const DocData::ClassDoc *class_doc;
 
+		List<ConstantInterface> constants;
+		List<EnumInterface> enums;
+		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
 
-		const MethodInterface *find_method_by_name(const String &p_name) const {
-
+		const MethodInterface *find_method_by_name(const StringName &p_cname) const {
 			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
-				if (E->get().name == p_name)
+				if (E->get().cname == p_cname)
 					return &E->get();
 			}
 
 			return NULL;
 		}
 
-		static TypeInterface create_value_type(const String &p_name) {
-			TypeInterface itype;
+		const PropertyInterface *find_property_by_proxy_name(const String &p_proxy_name) const {
+			for (const List<PropertyInterface>::Element *E = properties.front(); E; E = E->next()) {
+				if (E->get().proxy_name == p_proxy_name)
+					return &E->get();
+			}
 
-			itype.name = p_name;
-			itype.proxy_name = p_name;
+			return NULL;
+		}
+
+	private:
+		static void _init_value_type(TypeInterface &itype) {
+			itype.proxy_name = itype.name;
 
 			itype.c_type = itype.name;
 			itype.c_type_in = "void*";
@@ -281,15 +333,31 @@ class BindingsGenerator {
 			itype.im_type_in = "ref " + itype.proxy_name;
 			itype.im_type_out = itype.proxy_name;
 			itype.class_doc = &EditorHelp::get_doc_data()->class_list[itype.proxy_name];
+		}
 
+	public:
+		static TypeInterface create_value_type(const String &p_name) {
+			TypeInterface itype;
+			itype.name = p_name;
+			itype.cname = StringName(p_name);
+			_init_value_type(itype);
 			return itype;
 		}
 
-		static TypeInterface create_object_type(const String &p_name, ClassDB::APIType p_api_type) {
+		static TypeInterface create_value_type(const StringName &p_name) {
+			TypeInterface itype;
+			itype.name = p_name.operator String();
+			itype.cname = p_name;
+			_init_value_type(itype);
+			return itype;
+		}
+
+		static TypeInterface create_object_type(const StringName &p_cname, ClassDB::APIType p_api_type) {
 			TypeInterface itype;
 
-			itype.name = p_name;
-			itype.proxy_name = p_name.begins_with("_") ? p_name.substr(1, p_name.length()) : p_name;
+			itype.name = p_cname;
+			itype.cname = p_cname;
+			itype.proxy_name = itype.name.begins_with("_") ? itype.name.substr(1, itype.name.length()) : itype.name;
 			itype.api_type = p_api_type;
 			itype.is_object_type = true;
 			itype.class_doc = &EditorHelp::get_doc_data()->class_list[itype.proxy_name];
@@ -297,9 +365,10 @@ class BindingsGenerator {
 			return itype;
 		}
 
-		static void create_placeholder_type(TypeInterface &r_itype, const String &p_name) {
-			r_itype.name = p_name;
-			r_itype.proxy_name = p_name;
+		static void create_placeholder_type(TypeInterface &r_itype, const StringName &p_cname) {
+			r_itype.name = p_cname;
+			r_itype.cname = p_cname;
+			r_itype.proxy_name = r_itype.name;
 
 			r_itype.c_type = r_itype.name;
 			r_itype.c_type_in = "MonoObject*";
@@ -359,11 +428,15 @@ class BindingsGenerator {
 
 	static bool verbose_output;
 
-	Map<String, TypeInterface> placeholder_types;
-	Map<String, TypeInterface> builtin_types;
-	Map<String, TypeInterface> obj_types;
+	Map<StringName, TypeInterface> placeholder_types;
+	Map<StringName, TypeInterface> builtin_types;
+	Map<StringName, TypeInterface> enum_types;
+	Map<StringName, TypeInterface> obj_types;
 
-	Map<String, String> extra_members;
+	List<EnumInterface> global_enums;
+	List<ConstantInterface> global_constants;
+
+	Map<StringName, String> extra_members;
 
 	List<InternalCall> method_icalls;
 	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
@@ -373,8 +446,41 @@ class BindingsGenerator {
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
+	struct NameCache {
+		StringName type_void;
+		StringName type_int;
+		StringName type_Array;
+		StringName type_Dictionary;
+		StringName type_Variant;
+		StringName type_VarArg;
+		StringName type_Object;
+		StringName type_Reference;
+		StringName enum_Error;
 
+		NameCache() {
+			type_void = StaticCString::create("void");
+			type_int = StaticCString::create("int");
+			type_Array = StaticCString::create("Array");
+			type_Dictionary = StaticCString::create("Dictionary");
+			type_Variant = StaticCString::create("Variant");
+			type_VarArg = StaticCString::create("VarArg");
+			type_Object = StaticCString::create("Object");
+			type_Reference = StaticCString::create("Reference");
+			enum_Error = StaticCString::create("Error");
+		}
+
+		static NameCache &get_singleton() {
+			static NameCache singleton;
+			return singleton;
+		}
+
+		NameCache(const NameCache &);
+		NameCache &operator=(const NameCache &);
+	};
+
+	const NameCache &name_cache;
+
+	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
 		const List<InternalCall>::Element *it = p_list.front();
 		while (it) {
 			if (it->get().name == p_name) return it;
@@ -392,11 +498,13 @@ class BindingsGenerator {
 		return p_type.name;
 	}
 
+	String _determine_enum_prefix(const EnumInterface &p_ienum);
+
 	void _generate_header_icalls();
 	void _generate_method_icalls(const TypeInterface &p_itype);
 
-	const TypeInterface *_get_type_by_name_or_null(const String &p_name);
-	const TypeInterface *_get_type_by_name_or_placeholder(const String &p_name);
+	const TypeInterface *_get_type_by_name_or_null(const StringName &p_cname);
+	const TypeInterface *_get_type_by_name_or_placeholder(const StringName &p_cname);
 
 	void _default_argument_from_variant(const Variant &p_var, ArgumentInterface &r_iarg);
 	void _populate_builtin_type(TypeInterface &r_type, Variant::Type vtype);
@@ -404,10 +512,14 @@ class BindingsGenerator {
 	void _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();
 
+	void _populate_global_constants();
+
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
-	Error _generate_cs_property(const TypeInterface &p_itype, const DocData::PropertyDoc &p_prop_doc, List<String> &p_output);
+	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_prop_doc, List<String> &p_output);
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output);
+
+	void _generate_global_constants(List<String> &p_output);
 
 	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, List<String> &p_output);
 

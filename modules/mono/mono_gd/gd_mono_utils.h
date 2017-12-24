@@ -97,7 +97,7 @@ struct MonoCache {
 
 	GDMonoClass *class_ExportAttribute;
 	GDMonoField *field_ExportAttribute_hint;
-	GDMonoField *field_ExportAttribute_hint_string;
+	GDMonoField *field_ExportAttribute_hintString;
 	GDMonoClass *class_ToolAttribute;
 	GDMonoClass *class_RemoteAttribute;
 	GDMonoClass *class_SyncAttribute;

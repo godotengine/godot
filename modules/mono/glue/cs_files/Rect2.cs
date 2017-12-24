@@ -109,14 +109,14 @@ namespace Godot
             return g;
         }
 
-        public Rect2 GrowMargin(int margin, float by)
+        public Rect2 GrowMargin(Margin margin, float by)
         {
             Rect2 g = this;
 
-            g.GrowIndividual((GD.MARGIN_LEFT == margin) ? by : 0,
-                    (GD.MARGIN_TOP == margin) ? by : 0,
-                    (GD.MARGIN_RIGHT == margin) ? by : 0,
-                    (GD.MARGIN_BOTTOM == margin) ? by : 0);
+            g.GrowIndividual((Margin.Left == margin) ? by : 0,
+                    (Margin.Top == margin) ? by : 0,
+                    (Margin.Right == margin) ? by : 0,
+                    (Margin.Bottom == margin) ? by : 0);
 
             return g;
         }
