@@ -490,8 +490,9 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 			return unbox<double>(p_obj);
 
 		case MONO_TYPE_STRING: {
-			String str = mono_string_to_godot((MonoString *)p_obj);
-			return str;
+			if (p_obj == NULL)
+				return Variant(); // NIL
+			return mono_string_to_godot_not_null((MonoString *)p_obj);
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {

@@ -290,7 +290,7 @@ int GDMonoField::get_int_value(MonoObject *p_object) {
 
 String GDMonoField::get_string_value(MonoObject *p_object) {
 	MonoObject *val = get_value(p_object);
-	return val ? GDMonoMarshal::mono_string_to_godot((MonoString *)val) : String();
+	return GDMonoMarshal::mono_string_to_godot((MonoString *)val);
 }
 
 bool GDMonoField::has_attribute(GDMonoClass *p_attr_class) {
