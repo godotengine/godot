@@ -2950,43 +2950,51 @@ Size2 Tree::get_minimum_size() const {
 	return Size2(1, 1);
 }
 
-TreeItem *Tree::create_item(TreeItem *p_parent) {
+TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 
 	ERR_FAIL_COND_V(blocked > 0, NULL);
 
-	TreeItem *ti = memnew(TreeItem(this));
-
-	ERR_FAIL_COND_V(!ti, NULL);
-	ti->cells.resize(columns.size());
+	TreeItem *ti = NULL;
 
 	if (p_parent) {
 
-		/* Always append at the end */
+		// Append or insert a new item to the given parent.
+		ti = memnew(TreeItem(this));
+		ERR_FAIL_COND_V(!ti, NULL);
+		ti->cells.resize(columns.size());
 
-		TreeItem *last = 0;
+		TreeItem *prev = NULL;
 		TreeItem *c = p_parent->childs;
+		int idx = 0;
 
 		while (c) {
-
-			last = c;
+			if (idx++ == p_idx) {
+				ti->next = c;
+				break;
+			}
+			prev = c;
 			c = c->next;
 		}
 
-		if (last) {
-
-			last->next = ti;
-		} else {
-
+		if (prev)
+			prev->next = ti;
+		else
 			p_parent->childs = ti;
-		}
 		ti->parent = p_parent;
 
 	} else {
 
-		if (root)
-			ti->childs = root;
+		if (!root) {
+			// No root exists, make the given item the new root.
+			ti = memnew(TreeItem(this));
+			ERR_FAIL_COND_V(!ti, NULL);
+			ti->cells.resize(columns.size());
 
-		root = ti;
+			root = ti;
+		} else {
+			// Root exists, append or insert to root.
+			ti = create_item(root, p_idx);
+		}
 	}
 
 	return ti;
@@ -3723,7 +3731,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_scroll_moved"), &Tree::_scroll_moved);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
-	ClassDB::bind_method(D_METHOD("create_item", "parent"), &Tree::_create_item, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_root"), &Tree::get_root);
 	ClassDB::bind_method(D_METHOD("set_column_min_width", "column", "min_width"), &Tree::set_column_min_width);
