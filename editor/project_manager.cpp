@@ -715,6 +715,12 @@ void ProjectManager::_update_project_buttons() {
 
 		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_children->get_child(i));
 		item->update();
+
+		Button *show = Object::cast_to<Button>(item->get_node(NodePath("project/path_box/show")));
+		if (show) {
+			String current = item->get_meta("name");
+			show->set_visible(selected_list.has(current));
+		}
 	}
 
 	erase_btn->set_disabled(selected_list.size() < 1);
@@ -1094,9 +1100,26 @@ void ProjectManager::_load_recent_projects() {
 		title->add_color_override("font_color", font_color);
 		title->set_clip_text(true);
 		vb->add_child(title);
+
+		HBoxContainer *path_hb = memnew(HBoxContainer);
+		path_hb->set_name("path_box");
+		path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		vb->add_child(path_hb);
+
+		Button *show = memnew(Button);
+		show->set_name("show");
+		show->set_icon(get_icon("Filesystem", "EditorIcons"));
+		show->set_flat(true);
+		show->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(show);
+		show->connect("pressed", this, "_show_project", varray(path));
+		show->set_tooltip(TTR("Show In File Manager"));
+		show->set_visible(false);
+
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
-		vb->add_child(fpath);
+		path_hb->add_child(fpath);
+		fpath->set_h_size_flags(SIZE_EXPAND_FILL);
 		fpath->set_modulate(Color(1, 1, 1, 0.5));
 		fpath->add_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
@@ -1126,7 +1149,7 @@ void ProjectManager::_on_project_created(const String &dir) {
 	bool has_already = false;
 	for (int i = 0; i < scroll_children->get_child_count(); i++) {
 		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
+		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path_box/path")));
 		if (fpath->get_text() == dir) {
 			has_already = true;
 			break;
@@ -1144,7 +1167,7 @@ void ProjectManager::_on_project_created(const String &dir) {
 void ProjectManager::_update_scroll_position(const String &dir) {
 	for (int i = 0; i < scroll_children->get_child_count(); i++) {
 		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
-		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
+		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path_box/path")));
 		if (fpath->get_text() == dir) {
 			last_clicked = hb->get_meta("name");
 			selected_list.clear();
@@ -1260,6 +1283,11 @@ void ProjectManager::_run_project() {
 	} else {
 		_run_project_confirm();
 	}
+}
+
+void ProjectManager::_show_project(const String &p_path) {
+
+	OS::get_singleton()->shell_open(String("file://") + p_path);
 }
 
 void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects) {
@@ -1450,6 +1478,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_open_project_confirm", &ProjectManager::_open_project_confirm);
 	ClassDB::bind_method("_run_project", &ProjectManager::_run_project);
 	ClassDB::bind_method("_run_project_confirm", &ProjectManager::_run_project_confirm);
+	ClassDB::bind_method("_show_project", &ProjectManager::_show_project);
 	ClassDB::bind_method("_scan_projects", &ProjectManager::_scan_projects);
 	ClassDB::bind_method("_scan_begin", &ProjectManager::_scan_begin);
 	ClassDB::bind_method("_import_project", &ProjectManager::_import_project);
