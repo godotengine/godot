@@ -2904,7 +2904,7 @@ Viewport::Viewport() {
 	gui.canvas_sort_index = 0;
 
 	msaa = MSAA_DISABLED;
-	hdr = false;
+	hdr = true;
 
 	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
