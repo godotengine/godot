@@ -39,33 +39,32 @@ void ColorPicker::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			//sample->set_texture(get_icon("color_sample"));
+
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_icon("add_preset"));
 
 			_update_controls();
 		} break;
-
 		case NOTIFICATION_ENTER_TREE: {
+
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_icon("add_preset"));
 
 			_update_color();
 		} break;
-
 		case NOTIFICATION_PARENTED: {
+
 			for (int i = 0; i < 4; i++)
 				set_margin((Margin)i, get_constant("margin"));
 		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			Popup *p = Object::cast_to<Popup>(get_parent());
 			if (p)
 				p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
 		} break;
-
 		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+
 			if (screen != NULL) {
 				if (screen->is_visible()) {
 					screen->hide();
@@ -523,7 +522,6 @@ ColorPicker::ColorPicker() :
 	add_child(hb_edit);
 
 	w_edit = memnew(Control);
-	//w_edit->set_ignore_mouse(false);
 	w_edit->set_custom_minimum_size(Size2(get_constant("h_width"), 0));
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -589,7 +587,6 @@ ColorPicker::ColorPicker() :
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	_update_controls();
-	//_update_color();
 	updating = false;
 
 	set_pick_color(Color(1, 1, 1));
@@ -599,7 +596,6 @@ ColorPicker::ColorPicker() :
 
 	preset = memnew(TextureRect);
 	bbc->add_child(preset);
-	//preset->set_ignore_mouse(false);
 	preset->connect("gui_input", this, "_preset_input");
 	preset->connect("draw", this, "_update_presets");
 
@@ -660,11 +656,13 @@ bool ColorPickerButton::is_editing_alpha() const {
 	return picker->is_editing_alpha();
 }
 
-ColorPicker *ColorPickerButton::get_picker() {
+ColorPicker *ColorPickerButton::get_picker() const {
+
 	return picker;
 }
 
-PopupPanel *ColorPickerButton::get_popup() {
+PopupPanel *ColorPickerButton::get_popup() const {
+
 	return popup;
 }
 
