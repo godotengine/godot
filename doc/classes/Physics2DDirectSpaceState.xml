@@ -17,8 +17,8 @@
 			<argument index="0" name="shape" type="Physics2DShapeQueryParameters">
 			</argument>
 			<description>
-				Check whether the shape can travel to a point. If it can, the method will return an array with two floats: The first is the distance the shape can move in that direction without colliding, and the second is the distance at which it will collide.
-				If the shape can not move, the array will be empty.
+				Checks how far the shape can travel toward a point. Note that both the shape and the motion are supplied through a [Physics2DShapeQueryParameters] object. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
+				If the shape can not move, the array will be empty ([code]dir.empty()==true[/code]).
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -38,16 +38,15 @@
 			<argument index="0" name="shape" type="Physics2DShapeQueryParameters">
 			</argument>
 			<description>
-				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. If it collides with more than a shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
-				pointo: Place where the shapes intersect.
-				normal: Normal of the object at the point where the shapes intersect.
-				shape: Shape index within the object against which the shape intersected.
-				metadata: Metadata of the shape against which the shape intersected. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-				collider_id: Id of the object against which the shape intersected.
-				collider: Object against which the shape intersected.
-				rid: [RID] of the object against which the shape intersected.
-				linear_velocity: The movement vector of the object the shape intersected, if it was a body. If it was an area, it is (0,0).
-				If the shape did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
+				Checks the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. If it collides with more than one shape, the nearest one is selected. Note that this method does not take into account the [code]motion[/code] property of the object. The returned object is a dictionary containing the following fields:
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]point[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				If the shape did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
 			</description>
 		</method>
 		<method name="intersect_point">
@@ -63,11 +62,11 @@
 			</argument>
 			<description>
 				Check whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
-				shape: Shape index within the object the point is in.
-				metadata: Metadata of the shape the point is in. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-				collider_id: Id of the object the point is in.
-				collider: Object the point is inside of.
-				rid: [RID] of the object the point is in.
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
 				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
 			</description>
 		</method>
@@ -84,14 +83,14 @@
 			</argument>
 			<description>
 				Intersect a ray in a given space. The returned object is a dictionary with the following fields:
-				position: Place where ray is stopped.
-				normal: Normal of the object at the point where the ray was stopped.
-				shape: Shape index within the object against which the ray was stopped.
-				metadata: Metadata of the shape against which the ray was stopped. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-				collider_id: Id of the object against which the ray was stopped.
-				collider: Object against which the ray was stopped.
-				rid: [RID] of the object against which the ray was stopped.
-				If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]position[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				If the ray did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
 				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
 			</description>
 		</method>
@@ -103,12 +102,12 @@
 			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
-				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
-				shape: Shape index within the object the shape intersected.
-				metadata: Metadata of the shape intersected by the shape given through the [Physics2DShapeQueryParameters]. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-				collider_id: Id of the object the shape intersected.
-				collider: Object the shape intersected.
-				rid: [RID] of the object the shape intersected.
+				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. Note that this method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the second parameter, to reduce the processing time.
 			</description>
 		</method>
