@@ -335,6 +335,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 	easing_draw->hide();
 	spinbox->hide();
 	slider->hide();
+	menu->clear();
+	menu->set_size(Size2(1, 1) * EDSCALE);
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
 
@@ -413,7 +415,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			} else if (hint == PROPERTY_HINT_ENUM) {
 
-				menu->clear();
 				Vector<String> options = hint_text.split(",");
 				for (int i = 0; i < options.size(); i++) {
 					if (options[i].find(":") != -1) {
@@ -494,7 +495,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				easing_draw->show();
 				set_size(Size2(200, 150) * EDSCALE);
 			} else if (hint == PROPERTY_HINT_FLAGS) {
-				menu->clear();
 				Vector<String> flags = hint_text.split(",");
 				for (int i = 0; i < flags.size(); i++) {
 					String flag = flags[i];
@@ -536,7 +536,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				config_action_buttons(names);
 			} else if (hint == PROPERTY_HINT_ENUM) {
 
-				menu->clear();
 				Vector<String> options = hint_text.split(",");
 				for (int i = 0; i < options.size(); i++) {
 					menu->add_item(options[i], i);
@@ -868,9 +867,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			if (hint != PROPERTY_HINT_RESOURCE_TYPE)
 				break;
-
-			menu->clear();
-			menu->set_size(Size2(1, 1) * EDSCALE);
 
 			if (p_name == "script" && hint_text == "Script" && Object::cast_to<Node>(owner)) {
 				menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
