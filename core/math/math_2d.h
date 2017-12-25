@@ -187,6 +187,70 @@ _FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
+_FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
+
+	return Vector2(x + p_v.x, y + p_v.y);
+}
+_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
+
+	x += p_v.x;
+	y += p_v.y;
+}
+_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
+
+	return Vector2(x - p_v.x, y - p_v.y);
+}
+_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
+
+	x -= p_v.x;
+	y -= p_v.y;
+}
+
+_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
+
+	return Vector2(x * p_v1.x, y * p_v1.y);
+};
+
+_FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
+
+	return Vector2(x * rvalue, y * rvalue);
+};
+_FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
+
+	x *= rvalue;
+	y *= rvalue;
+};
+
+_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
+
+	return Vector2(x / p_v1.x, y / p_v1.y);
+};
+
+_FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
+
+	return Vector2(x / rvalue, y / rvalue);
+};
+
+_FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
+
+	x /= rvalue;
+	y /= rvalue;
+};
+
+_FORCE_INLINE_ Vector2 Vector2::operator-() const {
+
+	return Vector2(-x, -y);
+}
+
+_FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
+
+	return x == p_vec2.x && y == p_vec2.y;
+}
+_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
+
+	return x != p_vec2.x || y != p_vec2.y;
+}
+
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 
 	Vector2 res = *this;
