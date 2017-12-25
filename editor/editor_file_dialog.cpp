@@ -54,7 +54,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		//_update_icons
+		// update icons
 		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -65,7 +65,6 @@ void EditorFileDialog::_notification(int p_what) {
 
 		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
-		fav_rm->set_icon(get_icon("Remove", "EditorIcons"));
 
 	} else if (p_what == NOTIFICATION_PROCESS) {
 
@@ -80,10 +79,6 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_timeout = 0.1;
 			}
 		}
-	} else if (p_what == NOTIFICATION_DRAW) {
-
-		//RID ci = get_canvas_item();
-		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	} else if (p_what == NOTIFICATION_POPUP_HIDE) {
 
 		set_process_unhandled_input(false);
@@ -95,7 +90,7 @@ void EditorFileDialog::_notification(int p_what) {
 			set_show_hidden_files(show_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
-		//_update_icons
+		// update icons
 		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -106,7 +101,6 @@ void EditorFileDialog::_notification(int p_what) {
 
 		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
-		fav_rm->set_icon(get_icon("Remove", "EditorIcons"));
 		// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
 		invalidate();
 	}
@@ -260,7 +254,6 @@ void EditorFileDialog::_post_popup() {
 				name = name.get_file() + "/";
 			}
 
-			//print_line("file: "+name);
 			recent->add_item(name, folder);
 			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
 		}
@@ -316,7 +309,7 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 		return;
 
 	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
-	//print_line("want file "+p_path);
+
 	set_process(true);
 	preview_waiting = true;
 	preview_wheel_timeout = 0;
@@ -376,7 +369,7 @@ void EditorFileDialog::_action_pressed() {
 		bool valid = false;
 
 		if (filter->get_selected() == filter->get_item_count() - 1) {
-			valid = true; //match none
+			valid = true; // match none
 		} else if (filters.size() > 1 && filter->get_selected() == 0) {
 			// match all filters
 			for (int i = 0; i < filters.size(); i++) {
@@ -777,14 +770,12 @@ void EditorFileDialog::update_file_list() {
 		}
 
 		if (match) {
-			//TreeItem *ti=tree->create_item(root);
-			//ti->set_text(0,files.front()->get());
+
 			item_list->add_item(files.front()->get());
 
 			if (get_icon_func) {
 
 				Ref<Texture> icon = get_icon_func(cdir.plus_file(files.front()->get()));
-				//ti->set_icon(0,icon);
 				if (display_mode == DISPLAY_THUMBNAILS) {
 
 					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
@@ -794,11 +785,6 @@ void EditorFileDialog::update_file_list() {
 				}
 			}
 
-			if (mode == MODE_OPEN_DIR) {
-				//disabled mode?
-				//ti->set_custom_color(0,get_color("files_disabled"));
-				//ti->set_selectable(0,false);
-			}
 			Dictionary d;
 			d["name"] = files.front()->get();
 			d["dir"] = false;
@@ -807,7 +793,6 @@ void EditorFileDialog::update_file_list() {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
 			}
 			d["path"] = fullpath;
-			//ti->set_metadata(0,d);
 			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
 
 			if (file->get_text() == files.front()->get())
@@ -838,11 +823,6 @@ void EditorFileDialog::update_file_list() {
 			break;
 		}
 	}
-	// ??
-	/*
-	if (tree->get_root() && tree->get_root()->get_children())
-		tree->get_root()->get_children()->select(0);
-	*/
 
 	files.clear();
 }
@@ -916,7 +896,6 @@ void EditorFileDialog::set_current_dir(const String &p_dir) {
 	dir_access->change_dir(p_dir);
 	update_dir();
 	invalidate();
-	//_push_history();
 }
 void EditorFileDialog::set_current_file(const String &p_file) {
 
@@ -1191,7 +1170,6 @@ void EditorFileDialog::_update_favorites() {
 			name = name.get_file() + "/";
 		}
 
-		//print_line("file: "+name);
 		favorites->add_item(name, star);
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
 
@@ -1442,6 +1420,8 @@ bool EditorFileDialog::is_overwrite_warning_disabled() const {
 
 EditorFileDialog::EditorFileDialog() {
 
+	set_resizable(true);
+
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
 	local_history_pos = 0;
@@ -1499,6 +1479,8 @@ EditorFileDialog::EditorFileDialog() {
 	Ref<ButtonGroup> view_mode_group;
 	view_mode_group.instance();
 
+	pathhb->add_child(memnew(VSeparator));
+
 	mode_thumbnails = memnew(ToolButton);
 	mode_thumbnails->connect("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
@@ -1528,8 +1510,13 @@ EditorFileDialog::EditorFileDialog() {
 	vbc->add_child(list_hb);
 	list_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	VSplitContainer *vsc = memnew(VSplitContainer);
+	list_hb->add_child(vsc);
+
 	VBoxContainer *fav_vb = memnew(VBoxContainer);
-	list_hb->add_child(fav_vb);
+	vsc->add_child(fav_vb);
+	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+	fav_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	HBoxContainer *fav_hb = memnew(HBoxContainer);
 	fav_vb->add_child(fav_hb);
 	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
@@ -1540,23 +1527,23 @@ EditorFileDialog::EditorFileDialog() {
 	fav_down = memnew(ToolButton);
 	fav_hb->add_child(fav_down);
 	fav_down->connect("pressed", this, "_favorite_move_down");
-	fav_rm = memnew(ToolButton);
-	fav_hb->add_child(fav_rm);
-	fav_rm->hide(); // redundant
 
-	MarginContainer *fav_mv = memnew(MarginContainer);
-	fav_vb->add_child(fav_mv);
-	fav_mv->set_v_size_flags(SIZE_EXPAND_FILL);
 	favorites = memnew(ItemList);
-	fav_mv->add_child(favorites);
+	fav_vb->add_child(favorites);
+	favorites->set_v_size_flags(SIZE_EXPAND_FILL);
 	favorites->connect("item_selected", this, "_favorite_selected");
 
+	VBoxContainer *rec_vb = memnew(VBoxContainer);
+	vsc->add_child(rec_vb);
+	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+	rec_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	recent = memnew(ItemList);
-	fav_vb->add_margin_child(TTR("Recent:"), recent, true);
+	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->connect("item_selected", this, "_recent_selected");
 
 	VBoxContainer *item_vb = memnew(VBoxContainer);
 	list_hb->add_child(item_vb);
+	item_vb->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
 
 	HBoxContainer *preview_hb = memnew(HBoxContainer);
 	preview_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1599,7 +1586,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_clip_text(true); //too many extensions overflow it
+	filter->set_clip_text(true); // too many extensions overflow it
 	filename_hbc->add_child(filter);
 	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_vb->add_child(filename_hbc);
@@ -1609,7 +1596,6 @@ EditorFileDialog::EditorFileDialog() {
 	_update_drives();
 
 	connect("confirmed", this, "_action_pressed");
-	//cancel->connect("pressed", this,"_cancel_pressed");
 	item_list->connect("item_selected", this, "_item_selected", varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", this, "_item_db_selected", varray());
 	item_list->connect("nothing_selected", this, "_items_clear_selection");
@@ -1643,7 +1629,6 @@ EditorFileDialog::EditorFileDialog() {
 	exterr->set_text(TTR("Must use a valid extension."));
 	add_child(exterr);
 
-	//update_file_list();
 	update_filters();
 	update_dir();
 
