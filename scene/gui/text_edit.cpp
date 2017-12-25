@@ -5528,7 +5528,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hiding_enabled", "enable"), &TextEdit::set_hiding_enabled);
 	ClassDB::bind_method(D_METHOD("is_hiding_enabled"), &TextEdit::is_hiding_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_as_hidden", "line", "enable"), &TextEdit::set_line_as_hidden);
-	ClassDB::bind_method(D_METHOD("is_line_hidden"), &TextEdit::is_line_hidden);
+	ClassDB::bind_method(D_METHOD("is_line_hidden", "line"), &TextEdit::is_line_hidden);
 	ClassDB::bind_method(D_METHOD("fold_all_lines"), &TextEdit::fold_all_lines);
 	ClassDB::bind_method(D_METHOD("unhide_all_lines"), &TextEdit::unhide_all_lines);
 	ClassDB::bind_method(D_METHOD("fold_line", "line"), &TextEdit::fold_line);
