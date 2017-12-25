@@ -153,13 +153,14 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	if (!equal || p_interp_delta == 0 || is_freelook_active() || is_orthogonal != orthogonal) {
 
 		camera->set_global_transform(to_camera_transform(camera_cursor));
-		update_transform_gizmo_view();
 
 		if (orthogonal) {
 			//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
 			camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
 		} else
 			camera->set_perspective(get_fov(), get_znear(), get_zfar());
+
+		update_transform_gizmo_view();
 	}
 }
 
