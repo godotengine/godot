@@ -85,6 +85,8 @@ public:
 
 	void remove_item(int p_idx);
 
+	PopupMenu *get_popup() const;
+
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
 	OptionButton();
