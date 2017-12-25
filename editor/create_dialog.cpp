@@ -267,7 +267,6 @@ void CreateDialog::_update_search() {
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
 			//there are custom types based on this... cool.
-			//print_line("there are custom types");
 
 			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
 			for (int i = 0; i < ct.size(); i++) {
@@ -630,31 +629,44 @@ CreateDialog::CreateDialog() {
 
 	set_resizable(true);
 
-	HSplitContainer *hbc = memnew(HSplitContainer);
+	HSplitContainer *hsc = memnew(HSplitContainer);
+	add_child(hsc);
 
-	add_child(hbc);
+	VSplitContainer *vsc = memnew(VSplitContainer);
+	hsc->add_child(vsc);
 
-	VBoxContainer *lvbc = memnew(VBoxContainer);
-	hbc->add_child(lvbc);
-	lvbc->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
+	{
+		VBoxContainer *lvbc = memnew(VBoxContainer);
+		vsc->add_child(lvbc);
+		lvbc->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+		lvbc->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	favorites = memnew(Tree);
-	lvbc->add_margin_child(TTR("Favorites:"), favorites, true);
-	favorites->set_hide_root(true);
-	favorites->set_hide_folding(true);
-	favorites->connect("cell_selected", this, "_favorite_selected");
-	favorites->connect("item_activated", this, "_favorite_activated");
-	favorites->set_drag_forwarding(this);
+		favorites = memnew(Tree);
+		lvbc->add_margin_child(TTR("Favorites:"), favorites, true);
+		favorites->set_hide_root(true);
+		favorites->set_hide_folding(true);
+		favorites->connect("cell_selected", this, "_favorite_selected");
+		favorites->connect("item_activated", this, "_favorite_activated");
+		favorites->set_drag_forwarding(this);
+	}
 
-	recent = memnew(Tree);
-	lvbc->add_margin_child(TTR("Recent:"), recent, true);
-	recent->set_hide_root(true);
-	recent->set_hide_folding(true);
-	recent->connect("cell_selected", this, "_history_selected");
-	recent->connect("item_activated", this, "_history_activated");
+	{
+		VBoxContainer *lvbc = memnew(VBoxContainer);
+		vsc->add_child(lvbc);
+		lvbc->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+		lvbc->set_v_size_flags(SIZE_EXPAND_FILL);
+
+		recent = memnew(Tree);
+		lvbc->add_margin_child(TTR("Recent:"), recent, true);
+		recent->set_hide_root(true);
+		recent->set_hide_folding(true);
+		recent->connect("cell_selected", this, "_history_selected");
+		recent->connect("item_activated", this, "_history_activated");
+	}
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	hbc->add_child(vbc);
+	hsc->add_child(vbc);
+	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_box = memnew(LineEdit);
@@ -676,7 +688,6 @@ CreateDialog::CreateDialog() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
 	search_options->connect("cell_selected", this, "_item_selected");
-	//search_options->set_hide_root(true);
 	base_type = "Object";
 	preferred_search_result_type = "";
 

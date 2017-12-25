@@ -1460,7 +1460,6 @@ void ProjectSettingsEditor::_update_translations() {
 					t2->set_editable(1, true);
 					t2->set_metadata(1, path);
 					int idx = langs.find(locale);
-					//print_line("find " + locale + " at " + itos(idx));
 					if (idx < 0)
 						idx = 0;
 
@@ -1709,7 +1708,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	add = memnew(Button);
 	hbc->add_child(add);
-	add->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 	add->set_text(TTR("Add"));
 	add->set_disabled(true);
 	add->connect("pressed", this, "_action_add");
