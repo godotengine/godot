@@ -47,6 +47,7 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"RGBA8",
 	"RGBA4444",
 	"RGBA5551",
+	"RGB10A2",
 	"RFloat", //float
 	"RGFloat",
 	"RGBFloat",
@@ -112,6 +113,7 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGBA8: return 4;
 		case FORMAT_RGBA4444: return 2;
 		case FORMAT_RGBA5551: return 2;
+		case FORMAT_RGB10A2: return 4;
 		case FORMAT_RF:
 			return 4; //float
 		case FORMAT_RGF: return 8;
@@ -1978,6 +1980,15 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			float a = ((u >> 15) & 0x1) / 1.0;
 			return Color(r, g, b, a);
 		} break;
+		case FORMAT_RGB10A2: {
+
+			uint32_t u = ((uint32_t *)ptr)[ofs];
+			float r = (u & 0x3FF) / 1023.0;
+			float g = ((u >> 10) & 0x3FF) / 1023.0;
+			float b = ((u >> 20) & 0x3FF) / 1023.0;
+			float a = ((u >> 30) & 0x3) / 3.0;
+			return Color(r, g, b, a);
+		} break;
 		case FORMAT_RF: {
 
 			float r = ((float *)ptr)[ofs];
@@ -2121,6 +2132,18 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 			rgba |= uint16_t(p_color.a > 0.5 ? 1 : 0) << 15;
 
 			((uint16_t *)ptr)[ofs] = rgba;
+
+		} break;
+		case FORMAT_RGB10A2: {
+
+			uint32_t rgba = 0;
+
+			rgba = uint32_t(CLAMP(p_color.r * 1023.0, 0, 1023));
+			rgba |= uint32_t(CLAMP(p_color.g * 1023.0, 0, 1023)) << 10;
+			rgba |= uint32_t(CLAMP(p_color.b * 1023.0, 0, 1023)) << 20;
+			rgba |= uint32_t(CLAMP(p_color.a * 3.0, 0, 3)) << 30;
+
+			((uint32_t *)ptr)[ofs] = rgba;
 
 		} break;
 		case FORMAT_RF: {
@@ -2300,6 +2323,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_RGBA8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA4444);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA5551);
+	BIND_ENUM_CONSTANT(FORMAT_RGB10A2);
 	BIND_ENUM_CONSTANT(FORMAT_RF); //float
 	BIND_ENUM_CONSTANT(FORMAT_RGF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBF);
