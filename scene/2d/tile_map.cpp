@@ -1527,7 +1527,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
 	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
 
-	ClassDB::bind_method(D_METHOD("update_bitmask_area"), &TileMap::update_bitmask_area);
+	ClassDB::bind_method(D_METHOD("update_bitmask_area", "position"), &TileMap::update_bitmask_area);
 	ClassDB::bind_method(D_METHOD("update_bitmask_region", "start", "end"), &TileMap::update_bitmask_region, DEFVAL(Vector2()), DEFVAL(Vector2()));
 
 	ClassDB::bind_method(D_METHOD("_set_tile_data"), &TileMap::_set_tile_data);
