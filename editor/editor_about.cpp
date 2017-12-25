@@ -145,7 +145,7 @@ EditorAbout::EditorAbout() {
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
-	dev_sections.push_back(TTR("Project Manager"));
+	dev_sections.push_back(TTR("Project Manager ")); // " " appended to distinguish between 'project supervisor' and 'project list'
 	dev_sections.push_back(TTR("Developers"));
 	const char **dev_src[] = { dev_founders, dev_lead, dev_manager, dev_names };
 	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 1));
