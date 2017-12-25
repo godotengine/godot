@@ -33,6 +33,9 @@
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
+	if (disable_shortcuts)
+		return;
+
 	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
 
 		if (!get_parent() || !is_visible_in_tree() || is_disabled())
@@ -98,14 +101,22 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &MenuButton::_get_items);
+	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &MenuButton::set_disable_shortcuts);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_items", "_get_items");
 
 	ADD_SIGNAL(MethodInfo("about_to_show"));
 }
+
+void MenuButton::set_disable_shortcuts(bool p_disabled) {
+
+	disable_shortcuts = p_disabled;
+}
+
 MenuButton::MenuButton() {
 
 	set_flat(true);
+	set_disable_shortcuts(false);
 	set_enabled_focus_mode(FOCUS_NONE);
 	popup = memnew(PopupMenu);
 	popup->hide();
