@@ -2582,8 +2582,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tabs_visible(false);
+	tab_container->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	script_split->add_child(tab_container);
-
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
