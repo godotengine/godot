@@ -386,8 +386,6 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 void AnimationTreePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "base_path"));
-	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "master_player"));
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK));
 }
 
