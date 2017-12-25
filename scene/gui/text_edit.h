@@ -246,6 +246,7 @@ class TextEdit : public Control {
 	bool draw_caret;
 	bool window_has_focus;
 	bool block_caret;
+	bool right_click_moves_caret;
 
 	bool setting_row;
 	bool wrap;
@@ -480,6 +481,9 @@ public:
 
 	void cursor_set_block_mode(const bool p_enable);
 	bool cursor_is_block_mode() const;
+
+	void set_right_click_moves_caret(bool p_enable);
+	bool is_right_click_moving_caret() const;
 
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;

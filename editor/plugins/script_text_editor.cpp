@@ -1396,48 +1396,70 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 
-		if (mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
+		if (mb->get_button_index() == BUTTON_RIGHT) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
 			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
-			bool have_selection = (tx->get_selection_text().length() > 0);
-			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
+
+			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+			bool has_color = (tx->get_word_at_pos(mpos) == "Color");
 			int fold_state = 0;
 			bool can_fold = tx->can_fold(row);
 			bool is_folded = tx->is_folded(row);
-			if (have_color) {
 
-				String line = tx->get_line(row);
-				color_line = row;
-				int begin = 0;
-				int end = 0;
-				bool valid = false;
-				for (int i = col; i < line.length(); i++) {
-					if (line[i] == '(') {
-						begin = i;
-						continue;
-					} else if (line[i] == ')') {
-						end = i + 1;
-						valid = true;
-						break;
+			if (tx->is_right_click_moving_caret()) {
+				if (tx->is_selection_active()) {
+
+					int from_line = tx->get_selection_from_line();
+					int to_line = tx->get_selection_to_line();
+					int from_column = tx->get_selection_from_column();
+					int to_column = tx->get_selection_to_column();
+
+					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
+						// Right click is outside the seleted text
+						tx->deselect();
 					}
 				}
-				if (valid) {
-					color_args = line.substr(begin, end - begin);
-					String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
-					Vector<float> color = stripped.split_floats(",");
-					if (color.size() > 2) {
-						float alpha = color.size() > 3 ? color[3] : 1.0f;
-						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
-					}
-					color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
-				} else {
-					have_color = false;
+				if (!tx->is_selection_active()) {
+					tx->cursor_set_line(row, true, false);
+					tx->cursor_set_column(col);
 				}
 			}
-			_make_context_menu(have_selection, have_color, can_fold, is_folded);
+
+			if (!mb->is_pressed()) {
+				if (has_color) {
+					String line = tx->get_line(row);
+					color_line = row;
+					int begin = 0;
+					int end = 0;
+					bool valid = false;
+					for (int i = col; i < line.length(); i++) {
+						if (line[i] == '(') {
+							begin = i;
+							continue;
+						} else if (line[i] == ')') {
+							end = i + 1;
+							valid = true;
+							break;
+						}
+					}
+					if (valid) {
+						color_args = line.substr(begin, end - begin);
+						String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
+						Vector<float> color = stripped.split_floats(",");
+						if (color.size() > 2) {
+							float alpha = color.size() > 3 ? color[3] : 1.0f;
+							color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
+						}
+						color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
+					} else {
+						has_color = false;
+					}
+				}
+				_make_context_menu(tx->is_selection_active(), has_color, can_fold, is_folded);
+			}
 		}
 	}
 }

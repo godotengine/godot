@@ -1973,6 +1973,31 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
 
+				_reset_caret_blink_timer();
+
+				int row, col;
+				update_line_scroll_pos();
+				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
+
+				if (is_right_click_moving_caret()) {
+					if (is_selection_active()) {
+
+						int from_line = get_selection_from_line();
+						int to_line = get_selection_to_line();
+						int from_column = get_selection_from_column();
+						int to_column = get_selection_to_column();
+
+						if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
+							// Right click is outside the seleted text
+							deselect();
+						}
+					}
+					if (!is_selection_active()) {
+						cursor_set_line(row, true, false);
+						cursor_set_column(col);
+					}
+				}
+
 				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 				menu->set_size(Vector2(1, 1));
 				menu->popup();
@@ -3706,6 +3731,14 @@ void TextEdit::cursor_set_block_mode(const bool p_enable) {
 
 bool TextEdit::cursor_is_block_mode() const {
 	return block_caret;
+}
+
+void TextEdit::set_right_click_moves_caret(bool p_enable) {
+	right_click_moves_caret = p_enable;
+}
+
+bool TextEdit::is_right_click_moving_caret() const {
+	return right_click_moves_caret;
 }
 
 void TextEdit::_v_scroll_input() {
@@ -5457,6 +5490,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_set_block_mode", "enable"), &TextEdit::cursor_set_block_mode);
 	ClassDB::bind_method(D_METHOD("cursor_is_block_mode"), &TextEdit::cursor_is_block_mode);
 
+	ClassDB::bind_method(D_METHOD("set_right_click_moves_caret", "enable"), &TextEdit::set_right_click_moves_caret);
+	ClassDB::bind_method(D_METHOD("is_right_click_moving_caret"), &TextEdit::is_right_click_moving_caret);
+
 	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
 	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
 
@@ -5540,6 +5576,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.1"), "cursor_set_blink_speed", "cursor_get_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_moving_by_right_click"), "set_right_click_moves_caret", "is_right_click_moving_caret");
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
@@ -5617,6 +5654,7 @@ TextEdit::TextEdit() {
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
+	right_click_moves_caret = true;
 
 	idle_detect = memnew(Timer);
 	add_child(idle_detect);
