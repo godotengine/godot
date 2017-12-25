@@ -972,6 +972,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
+
+	Color default_node_color = Color(mv2, mv2, mv2);
+	theme->set_color("title_color", "GraphNode", default_node_color);
+	default_node_color.a = 0.7;
+	theme->set_color("close_color", "GraphNode", default_node_color);
+
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
