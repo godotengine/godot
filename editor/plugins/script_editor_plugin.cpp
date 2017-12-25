@@ -132,7 +132,7 @@ public:
 				I = I->next();
 			}
 
-			if (O != E) { //should never heppane..
+			if (O != E) { //should never happen..
 				cached.erase(O);
 			}
 		}
@@ -234,7 +234,6 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", this, "_text_changed");
@@ -256,8 +255,6 @@ ScriptEditor *ScriptEditor::script_editor = NULL;
 /*** SCRIPT EDITOR ******/
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
-
-	//ScriptEditorBase *se=Object::cast_to<ScriptEditorBase>(_se);
 
 	String val = debugger->get_var_value(p_text);
 	if (val != String()) {
@@ -551,8 +548,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 			idx = history[history_pos].control->get_index();
 		}
 		tab_container->set_current_tab(idx);
-
-		//script_list->select(idx);
 	}
 
 	_update_history_arrows();
@@ -698,7 +693,6 @@ void ScriptEditor::_reload_scripts() {
 		uint64_t last_date = script->get_last_modified_time();
 		uint64_t date = FileAccess::get_modified_time(script->get_path());
 
-		//printf("last date: %lli vs date: %lli\n",last_date,date);
 		if (last_date == date) {
 			continue;
 		}
@@ -776,7 +770,6 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 			uint64_t last_date = script->get_last_modified_time();
 			uint64_t date = FileAccess::get_modified_time(script->get_path());
 
-			//printf("last date: %lli vs date: %lli\n",last_date,date);
 			if (last_date != date) {
 
 				TreeItem *ti = disk_changed_list->create_item(r);
@@ -786,7 +779,6 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 					need_ask = true;
 				}
 				need_reload = true;
-				//r->set_metadata(0,);
 			}
 		}
 	}
@@ -1205,9 +1197,6 @@ void ScriptEditor::_notification(int p_what) {
 			_update_modified_scripts_for_external_editor();
 		} break;
 
-		case NOTIFICATION_PROCESS: {
-		} break;
-
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
@@ -1367,18 +1356,9 @@ void ScriptEditor::ensure_select_current() {
 
 			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
-
-			//edit_menu->show();
-			//search_menu->show();
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(current);
-
-		if (eh) {
-			//edit_menu->hide();
-			//search_menu->hide();
-			//script_search_menu->show();
-		}
 	}
 
 	_update_selected_editor_menu();
@@ -1823,12 +1803,8 @@ void ScriptEditor::save_all_scripts() {
 		if (script.is_valid())
 			se->apply_code();
 
-		if (script->get_path() != "" && script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
-			//external script, save it
-
-			editor->save_resource(script);
-			//ResourceSaver::save(script->get_path(),script);
-		}
+		if (script->get_path() != "" && script->get_path().find("local://") == -1 && script->get_path().find("::") == -1)
+			editor->save_resource(script); //external script, save it
 	}
 
 	_update_script_names();
@@ -1886,7 +1862,6 @@ void ScriptEditor::_editor_stop() {
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args) {
 
-	//print_line("add callback! hohoho"); kinda sad to remove this
 	ERR_FAIL_COND(!p_obj);
 	Ref<Script> script = p_obj->get_script();
 	ERR_FAIL_COND(!script.is_valid());
@@ -1980,8 +1955,6 @@ void ScriptEditor::_script_split_dragged(float) {
 }
 
 Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-
-	// return Variant(); // return this if drag disabled
 
 	Node *cur_node = tab_container->get_child(tab_container->get_current_tab());
 
@@ -2202,9 +2175,6 @@ void ScriptEditor::_make_script_list_context_menu() {
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(selected));
-	if (eh) {
-		// nothing
-	}
 
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
@@ -2588,10 +2558,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	list_split->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 100)); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 90)); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
-	//list_split->set_split_offset(500);
 	_sort_list_on_update = true;
 	script_list->connect("gui_input", this, "_script_list_gui_input");
 	script_list->set_allow_rmb_select(true);
@@ -2603,12 +2572,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);
-	members_overview->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	help_overview = memnew(ItemList);
 	list_split->add_child(help_overview);
-	help_overview->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
+	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
@@ -2762,7 +2731,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	{
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
-		//disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew(Label);
 		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
