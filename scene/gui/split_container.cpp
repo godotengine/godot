@@ -61,7 +61,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 
 void SplitContainer::_resort() {
 
-	/** First pass, determine minimum size AND amount of stretchable elements */
+	/* First pass, determine minimum size AND amount of stretchable elements */
 
 	int axis = vertical ? 1 : 0;
 
@@ -114,10 +114,8 @@ void SplitContainer::_resort() {
 	Size2 ms_second = second->get_combined_minimum_size();
 
 	if (vertical) {
-
 		minimum = ms_first.height + ms_second.height;
 	} else {
-
 		minimum = ms_first.width + ms_second.width;
 	}
 
@@ -141,12 +139,10 @@ void SplitContainer::_resort() {
 		} else if (expand_first_mode) {
 
 			middle_sep = get_size()[axis] - ms_second[axis] - sep;
-
 		} else {
 
 			middle_sep = ms_first[axis];
 		}
-
 	} else if (ratiomode) {
 
 		int first_ratio = first->get_stretch_ratio();
@@ -160,23 +156,19 @@ void SplitContainer::_resort() {
 			expand_ofs = (available * (1.0 - ratio));
 
 		middle_sep = ms_first[axis] + available * ratio + expand_ofs;
-
 	} else if (expand_first_mode) {
 
 		if (expand_ofs > 0)
 			expand_ofs = 0;
-
-		if (expand_ofs < -available)
+		else if (expand_ofs < -available)
 			expand_ofs = -available;
 
 		middle_sep = get_size()[axis] - ms_second[axis] - sep + expand_ofs;
-
 	} else {
 
 		if (expand_ofs < 0)
 			expand_ofs = 0;
-
-		if (expand_ofs > available)
+		else if (expand_ofs > available)
 			expand_ofs = available;
 
 		middle_sep = ms_first[axis] + expand_ofs;
@@ -187,7 +179,6 @@ void SplitContainer::_resort() {
 		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_size().width, middle_sep)));
 		int sofs = middle_sep + sep;
 		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
-
 	} else {
 
 		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
@@ -246,10 +237,12 @@ void SplitContainer::_notification(int p_what) {
 			_resort();
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
+
 			mouse_inside = true;
 			update();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
+
 			mouse_inside = false;
 			update();
 		} break;
@@ -260,22 +253,17 @@ void SplitContainer::_notification(int p_what) {
 
 			if (collapsed || (!mouse_inside && get_constant("autohide")))
 				return;
+
 			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_constant("separation") : 0;
 			Ref<Texture> tex = get_icon("grabber");
 			Size2 size = get_size();
-			if (vertical) {
+			if (dragger_visibility == DRAGGER_VISIBLE) {
 
-				//draw_style_box( get_stylebox("bg"), Rect2(0,middle_sep,get_size().width,sep));
-				if (dragger_visibility == DRAGGER_VISIBLE)
+				if (vertical)
 					draw_texture(tex, Point2i((size.x - tex->get_width()) / 2, middle_sep + (sep - tex->get_height()) / 2));
-
-			} else {
-
-				//draw_style_box( get_stylebox("bg"), Rect2(middle_sep,0,sep,get_size().height));
-				if (dragger_visibility == DRAGGER_VISIBLE)
+				else
 					draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 			}
-
 		} break;
 	}
 }
@@ -292,11 +280,13 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == BUTTON_LEFT) {
 
 			if (mb->is_pressed()) {
+
 				int sep = get_constant("separation");
 
 				if (vertical) {
 
 					if (mb->get_position().y > middle_sep && mb->get_position().y < middle_sep + sep) {
+
 						dragging = true;
 						drag_from = mb->get_position().y;
 						drag_ofs = expand_ofs;
@@ -304,6 +294,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 
 					if (mb->get_position().x > middle_sep && mb->get_position().x < middle_sep + sep) {
+
 						dragging = true;
 						drag_from = mb->get_position().x;
 						drag_ofs = expand_ofs;
@@ -318,36 +309,31 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid()) {
+	if (mm.is_valid() && dragging) {
 
-		if (dragging) {
-
-			expand_ofs = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
-			queue_sort();
-			emit_signal("dragged", get_split_offset());
-		}
+		expand_ofs = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
+		queue_sort();
+		emit_signal("dragged", get_split_offset());
 	}
 }
 
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
 
-	if (collapsed)
-		return Control::get_cursor_shape(p_pos);
-
 	if (dragging)
 		return (vertical ? CURSOR_VSIZE : CURSOR_HSIZE);
 
-	int sep = get_constant("separation");
+	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
-	if (vertical) {
+		int sep = get_constant("separation");
 
-		if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep) {
-			return CURSOR_VSIZE;
-		}
-	} else {
+		if (vertical) {
 
-		if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep) {
-			return CURSOR_HSIZE;
+			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
+				return CURSOR_VSIZE;
+		} else {
+
+			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
+				return CURSOR_HSIZE;
 		}
 	}
 
@@ -358,6 +344,7 @@ void SplitContainer::set_split_offset(int p_offset) {
 
 	if (expand_ofs == p_offset)
 		return;
+
 	expand_ofs = p_offset;
 	queue_sort();
 }
@@ -371,6 +358,7 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 
 	if (collapsed == p_collapsed)
 		return;
+
 	collapsed = p_collapsed;
 	queue_sort();
 }
