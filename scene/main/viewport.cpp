@@ -2302,7 +2302,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	*/
 
 	if (gui.key_focus == p_control)
-		gui.key_focus = NULL;
+		_gui_remove_focus();
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
