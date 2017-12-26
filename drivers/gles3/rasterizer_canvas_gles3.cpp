@@ -1086,19 +1086,22 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				}
 			}
 
-			if (shader_ptr && shader_ptr != shader_cache) {
+			if (shader_ptr) {
 
 				if (shader_ptr->canvas_item.uses_screen_texture && !state.canvas_texscreen_used) {
 					//copy if not copied before
 					_copy_texscreen(Rect2());
 				}
 
-				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
-				}
+				if (shader_ptr != shader_cache) {
 
-				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
-				state.canvas_shader.bind();
+					if (shader_ptr->canvas_item.uses_time) {
+						VisualServerRaster::redraw_request();
+					}
+
+					state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
+					state.canvas_shader.bind();
+				}
 
 				if (material_ptr->ubo_id) {
 					glBindBufferBase(GL_UNIFORM_BUFFER, 2, material_ptr->ubo_id);
