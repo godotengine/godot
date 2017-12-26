@@ -22,8 +22,11 @@ if env['xaudio2']:
     SConscript("xaudio2/SCsub")
 
 # Graphics drivers
-SConscript('gles3/SCsub')
-SConscript('gl_context/SCsub')
+if (env["platform"] != "server"):
+    SConscript('gles3/SCsub')
+    SConscript('gl_context/SCsub')
+else:
+    SConscript('dummy/SCsub')
 
 # Core dependencies
 SConscript("png/SCsub")
