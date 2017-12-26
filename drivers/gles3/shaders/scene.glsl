@@ -1615,7 +1615,7 @@ void main() {
 
 	float alpha = 1.0;
 
-#ifdef METERIAL_DOUBLESIDED
+#if defined(DO_SIDE_CHECK)
 	float side=float(gl_FrontFacing)*2.0-1.0;
 #else
 	float side=1.0;
