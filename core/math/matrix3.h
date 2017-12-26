@@ -75,6 +75,9 @@ public:
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	Basis rotated(const Vector3 &p_axis, real_t p_phi) const;
 
+	void rotate_local(const Vector3 &p_axis, real_t p_phi);
+	Basis rotated_local(const Vector3 &p_axis, real_t p_phi) const;
+
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
 

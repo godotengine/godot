@@ -1799,7 +1799,6 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 
 void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 
-
 	LightMap *pixel = &p_line[p_x];
 	if (pixel->pos == Vector3())
 		return;
@@ -1814,7 +1813,6 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 			//	pixel->light = Vector3(1, 1, 1);
 			//}
 	}
-
 }
 
 Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
@@ -1882,7 +1880,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		for (int i = 0; i < height; i++) {
 
-			thread_process_array(width,this,&VoxelLightBaker::_lightmap_bake_point,&lightmap_ptr[i*width]);
+			thread_process_array(width, this, &VoxelLightBaker::_lightmap_bake_point, &lightmap_ptr[i * width]);
 
 			lines = MAX(lines, i); //for multithread
 			if (p_bake_time_func) {

@@ -311,6 +311,15 @@ void Basis::rotate(const Vector3 &p_axis, real_t p_phi) {
 	*this = rotated(p_axis, p_phi);
 }
 
+void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
+
+	*this = rotated_local(p_axis, p_phi);
+}
+Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
+
+	return (*this) * Basis(p_axis, p_phi);
+}
+
 Basis Basis::rotated(const Vector3 &p_euler) const {
 	return Basis(p_euler) * (*this);
 }
