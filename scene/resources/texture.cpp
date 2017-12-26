@@ -707,6 +707,8 @@ Ref<Image> StreamTexture::get_data() const {
 }
 
 void StreamTexture::set_flags(uint32_t p_flags) {
+	flags = p_flags;
+	VS::get_singleton()->texture_set_flags(texture, flags);
 }
 
 void StreamTexture::reload_from_file() {
