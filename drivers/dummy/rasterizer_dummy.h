@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  rasterizer_dummy.h                                                   */
+/*  rasterizer.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #define RASTERIZER_DUMMY_H
 
 #include "camera_matrix.h"
-#include "scene/resources/mesh.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -67,7 +66,7 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {}
 
@@ -118,109 +117,21 @@ public:
 class RasterizerStorageDummy : public RasterizerStorage {
 public:
 	/* TEXTURE API */
-	struct DummyTexture : public RID_Data {
-		int width;
-		int height;
-		uint32_t flags;
-		Image::Format format;
-		Ref<Image> image;
-		String path;
-	};
 
-	struct DummySurface {
-		uint32_t format;
-		VS::PrimitiveType primitive;
-		PoolVector<uint8_t> array;
-		int vertex_count;
-		PoolVector<uint8_t> index_array;
-		int index_count;
-		AABB aabb;
-		Vector<PoolVector<uint8_t> > blend_shapes;
-		Vector<AABB> bone_aabbs;
-	};
-
-	struct DummyMesh : public RID_Data {
-		Vector<DummySurface> surfaces;
-		int blend_shape_count;
-		VS::BlendShapeMode blend_shape_mode;
-	};
-
-	mutable RID_Owner<DummyTexture> texture_owner;
-	mutable RID_Owner<DummyMesh> mesh_owner;
-
-	RID texture_create() {
-
-		DummyTexture *texture = memnew(DummyTexture);
-		ERR_FAIL_COND_V(!texture, RID());
-		return texture_owner.make_rid(texture);
-	}
-	void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->width = p_width;
-		t->height = p_height;
-		t->flags = p_flags;
-		t->format = p_format;
-		t->image = Ref<Image>(memnew(Image));
-		t->image->create(p_width, p_height, false, p_format);
-	}
-	void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->width = p_image->get_width();
-		t->height = p_image->get_height();
-		t->format = p_image->get_format();
-		t->image->create(t->width, t->height, false, t->format, p_image->get_data());
-	}
-
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, VS::CubeMapSide p_cube_side) {
-		DummyTexture *t = texture_owner.get(p_texture);
-
-		ERR_FAIL_COND(!t);
-		ERR_FAIL_COND(t->format != p_image->get_format());
-		ERR_FAIL_COND(p_image.is_null());
-		ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
-		ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
-		ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > t->width || dst_y + src_h > t->height);
-
-		t->image->blit_rect(p_image, Rect2(src_x, src_y, src_w, src_h), Vector2(dst_x, dst_y));
-	}
-
-	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, Ref<Image>());
-		return t->image;
-	}
-	void texture_set_flags(RID p_texture, uint32_t p_flags) {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->flags = p_flags;
-	}
-	uint32_t texture_get_flags(RID p_texture) const {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, 0);
-		return t->flags;
-	}
-	Image::Format texture_get_format(RID p_texture) const {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, Image::FORMAT_RGB8);
-		return t->format;
-	}
+	RID texture_create() { return RID(); }
+	void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {}
+	void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) {}
+	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const { return NULL; }
+	void texture_set_flags(RID p_texture, uint32_t p_flags) {}
+	uint32_t texture_get_flags(RID p_texture) const { return 0; }
+	Image::Format texture_get_format(RID p_texture) const { return Image::FORMAT_RGB8; }
 	uint32_t texture_get_texid(RID p_texture) const { return 0; }
 	uint32_t texture_get_width(RID p_texture) const { return 0; }
 	uint32_t texture_get_height(RID p_texture) const { return 0; }
 	void texture_set_size_override(RID p_texture, int p_width, int p_height) {}
 
-	void texture_set_path(RID p_texture, const String &p_path) {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND(!t);
-		t->path = p_path;
-	}
-	String texture_get_path(RID p_texture) const {
-		DummyTexture *t = texture_owner.getornull(p_texture);
-		ERR_FAIL_COND_V(!t, String());
-		return t->path;
-	}
+	void texture_set_path(RID p_texture, const String &p_path) {}
+	String texture_get_path(RID p_texture) const { return ""; }
 
 	void texture_set_shrink_all_x2_on_set_data(bool p_enable) {}
 
@@ -235,7 +146,6 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
-	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */
 
@@ -276,128 +186,39 @@ public:
 
 	/* MESH API */
 
-	RID mesh_create() {
-		DummyMesh *mesh = memnew(DummyMesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-		mesh->blend_shape_count = 0;
-		mesh->blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
-		return mesh_owner.make_rid(mesh);
-	}
+	RID mesh_create() { return RID(); }
 
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
+	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {}
 
-		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
-		s->format = p_format;
-		s->primitive = p_primitive;
-		s->array = p_array;
-		s->vertex_count = p_vertex_count;
-		s->index_array = p_index_array;
-		s->index_count = p_index_count;
-		s->aabb = p_aabb;
-		s->blend_shapes = p_blend_shapes;
-		s->bone_aabbs = p_bone_aabbs;
-	}
+	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {}
+	int mesh_get_blend_shape_count(RID p_mesh) const { return 0; }
 
-	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_count = p_amount;
-	}
-	int mesh_get_blend_shape_count(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->blend_shape_count;
-	}
-
-	void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_mode = p_mode;
-	}
-	VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::BLEND_SHAPE_MODE_NORMALIZED);
-		return m->blend_shape_mode;
-	}
+	void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {}
+	VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const { return VS::BLEND_SHAPE_MODE_NORMALIZED; }
 
 	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const { return RID(); }
 
-	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].vertex_count;
-	}
-	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].index_count;
-	}
+	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const { return 0; }
+	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const { return 0; }
 
 	PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
-
-		return m->surfaces[p_surface].array;
+		PoolVector<uint8_t> p;
+		return p;
 	}
-	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
+	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {}
 
-		return m->surfaces[p_surface].index_array;
-	}
+	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const { return 0; }
+	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const { return VS::PRIMITIVE_POINTS; }
 
-	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
+	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const { return AABB(); }
+	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const { return Vector<PoolVector<uint8_t> >(); }
+	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const { return Vector<AABB>(); }
 
-		return m->surfaces[p_surface].format;
-	}
-	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::PRIMITIVE_POINTS);
-
-		return m->surfaces[p_surface].primitive;
-	}
-
-	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, AABB());
-
-		return m->surfaces[p_surface].aabb;
-	}
-	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<PoolVector<uint8_t> >());
-
-		return m->surfaces[p_surface].blend_shapes;
-	}
-	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<AABB>());
-
-		return m->surfaces[p_surface].bone_aabbs;
-	}
-
-	void mesh_remove_surface(RID p_mesh, int p_index) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		ERR_FAIL_COND(p_index >= m->surfaces.size());
-
-		m->surfaces.remove(p_index);
-	}
-	int mesh_get_surface_count(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->surfaces.size();
-	}
+	void mesh_remove_surface(RID p_mesh, int p_index) {}
+	int mesh_get_surface_count(RID p_mesh) const { return 0; }
 
 	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {}
 	AABB mesh_get_custom_aabb(RID p_mesh) const { return AABB(); }
@@ -409,23 +230,19 @@ public:
 
 	virtual RID multimesh_create() { return RID(); }
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
+	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) {}
 	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
 	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
 
 	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
-
-	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const {}
+	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {}
+	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const {}
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
@@ -452,7 +269,6 @@ public:
 
 	RID skeleton_create() { return RID(); }
 	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) {}
-	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {}
 	int skeleton_get_bone_count(RID p_skeleton) const { return 0; }
 	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {}
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
@@ -493,7 +309,7 @@ public:
 	VS::LightType light_get_type(RID p_light) const { return VS::LIGHT_OMNI; }
 	AABB light_get_aabb(RID p_light) const { return AABB(); }
 	float light_get_param(RID p_light, VS::LightParam p_param) { return 0.0; }
-	Color light_get_color(RID p_light) { return Color(); }
+	Color light_get_color(RID p_light) {}
 	uint64_t light_get_version(RID p_light) const { return 0; }
 
 	/* PROBE API */
@@ -514,7 +330,7 @@ public:
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const { return AABB(); }
-	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const { return VisualServer::REFLECTION_PROBE_UPDATE_ONCE; }
+	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const {}
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const { return 0; }
 	Vector3 reflection_probe_get_extents(RID p_probe) const { return Vector3(); }
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const { return Vector3(); }
@@ -574,70 +390,14 @@ public:
 	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
 
 	/* LIGHTMAP CAPTURE */
-	struct Instantiable : public RID_Data {
 
-		SelfList<RasterizerScene::InstanceBase>::List instance_list;
-
-		_FORCE_INLINE_ void instance_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_material_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_material_changed();
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_remove_deps() {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
-				instances->self()->base_removed();
-				instances = next;
-			}
-		}
-
-		Instantiable() {}
-		virtual ~Instantiable() {
-		}
-	};
-
-	struct LightmapCapture : public Instantiable {
-
-		PoolVector<LightmapCaptureOctree> octree;
-		AABB bounds;
-		Transform cell_xform;
-		int cell_subdiv;
-		float energy;
-		LightmapCapture() {
-			energy = 1.0;
-			cell_subdiv = 1;
-		}
-	};
-
-	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
+	RID lightmap_capture_create() { return RID(); }
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
 	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
-	RID lightmap_capture_create() {
-		LightmapCapture *capture = memnew(LightmapCapture);
-		return lightmap_capture_data_owner.make_rid(capture);
-	}
 	PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
-		return PoolVector<uint8_t>();
+		PoolVector<uint8_t> p;
+		return p;
 	}
 	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
 	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
@@ -645,11 +405,7 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, NULL);
-		return &capture->octree;
-	}
+	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {}
 
 	/* PARTICLES */
 
@@ -681,7 +437,6 @@ public:
 
 	void particles_set_emission_transform(RID p_particles, const Transform &p_transform) {}
 
-	bool particles_get_emitting(RID p_particles) { return false; }
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
 
@@ -704,26 +459,10 @@ public:
 	RID canvas_light_occluder_create() { return RID(); }
 	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
 
-	VS::InstanceType get_base_type(RID p_rid) const {
-		if (mesh_owner.owns(p_rid)) {
-			return VS::INSTANCE_MESH;
-		}
+	VS::InstanceType get_base_type(RID p_rid) const {}
+	bool free(RID p_rid) {}
 
-		return VS::INSTANCE_NONE;
-	}
-
-	bool free(RID p_rid) {
-
-		if (texture_owner.owns(p_rid)) {
-			// delete the texture
-			DummyTexture *texture = texture_owner.get(p_rid);
-			texture_owner.free(p_rid);
-			memdelete(texture);
-		}
-		return true;
-	}
-
-	bool has_os_feature(const String &p_feature) const { return false; }
+	bool has_os_feature(const String &p_feature) const {}
 
 	void update_dirty_resources() {}
 
@@ -731,9 +470,9 @@ public:
 
 	void render_info_begin_capture() {}
 	void render_info_end_capture() {}
-	int get_captured_render_info(VS::RenderInfo p_info) { return 0; }
+	int get_captured_render_info(VS::RenderInfo p_info) {}
 
-	int get_render_info(VS::RenderInfo p_info) { return 0; }
+	int get_render_info(VS::RenderInfo p_info) {}
 
 	static RasterizerStorage *base_singleton;
 
@@ -750,7 +489,7 @@ public:
 	void canvas_begin(){};
 	void canvas_end(){};
 
-	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_transform){};
+	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light){};
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
 
 	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {}
@@ -777,7 +516,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
 
 	void initialize() {}
-	void begin_frame(double frame_step) {}
+	void begin_frame() {}
 	void set_current_render_target(RID p_render_target) {}
 	void restore_render_target() {}
 	void clear_render_target(const Color &p_color) {}
