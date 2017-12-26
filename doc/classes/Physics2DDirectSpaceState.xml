@@ -29,7 +29,7 @@
 			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
-				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
+				Checks the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
 			</description>
 		</method>
 		<method name="get_rest_info">
@@ -61,7 +61,7 @@
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
 			<description>
-				Check whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
+				Checks whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
@@ -82,7 +82,7 @@
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
 			<description>
-				Intersect a ray in a given space. The returned object is a dictionary with the following fields:
+				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
@@ -102,7 +102,7 @@
 			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
-				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. Note that this method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
+				Checks the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. Note that this method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
