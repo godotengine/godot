@@ -1150,7 +1150,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					glBindTexture(t->target, t->tex_id);
 				}
 
-			} else if (!shader_ptr) {
+			} else {
 				state.canvas_shader.set_custom_shader(0);
 				state.canvas_shader.bind();
 			}
