@@ -4344,7 +4344,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	additive_selection = false;
 
 	// Update the menus checkboxes
-	call_deferred("set_state", get_state());
+	set_state(get_state());
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = NULL;
