@@ -82,7 +82,6 @@ public:
 
 		container = memnew(VBoxContainer);
 		add_child(container);
-		//set_child_rect(container);
 
 		child_container = memnew(GridContainer);
 		child_container->set_columns(3);
@@ -432,7 +431,6 @@ Dictionary CanvasItemEditor::get_state() const {
 	Dictionary state;
 	state["zoom"] = zoom;
 	state["ofs"] = Point2(h_scroll->get_value(), v_scroll->get_value());
-	//state["ofs"]=-transform.get_origin();
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
 	state["snap_rotation_offset"] = snap_rotation_offset;
@@ -771,13 +769,12 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 		if (p_move_mode == MOVE_VIEW_BASE) {
 
-			// drag =  transform.affine_inverse().basis_xform(p_dir); // zoom sensitive
 			drag = canvas_item->get_global_transform_with_canvas().affine_inverse().basis_xform(drag);
 			Rect2 local_rect = canvas_item->_edit_get_rect();
 			local_rect.position += drag;
 			undo_redo->add_do_method(canvas_item, "_edit_set_rect", local_rect);
 
-		} else { // p_move_mode==MOVE_LOCAL_BASE || p_move_mode==MOVE_LOCAL_WITH_ROT
+		} else { // MOVE_LOCAL_BASE or MOVE_LOCAL_WITH_ROT
 
 			Node2D *node_2d = Object::cast_to<Node2D>(canvas_item);
 			if (node_2d) {
@@ -863,7 +860,7 @@ CanvasItem *CanvasItemEditor::_get_single_item() {
 			continue;
 
 		if (single_item)
-			return NULL; //morethan one
+			return NULL; //more than one
 
 		single_item = canvas_item;
 	};
@@ -1233,7 +1230,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -1291,7 +1288,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -2146,11 +2143,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 						E->get().pos = E->get().node->get_global_transform().get_origin();
 					}
 
-					{
-
-						final_xform.elements[2] += dto - dfrom; //final_xform.affine_inverse().basis_xform_inv(drag_vector);
-						//n2d->set_global_transform(final_xform);
-					}
+					final_xform.elements[2] += dto - dfrom;
 
 					CanvasItem *last = bone_ik_list.back()->get().node;
 					if (!last)
@@ -2161,15 +2154,12 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 					if ((leaf_pos.distance_to(root_pos)) > total_len) {
 						//oops dude you went too far
-						//print_line("TOO FAR!");
 						Vector2 rel = leaf_pos - root_pos;
 						rel = rel.normalized() * total_len;
 						leaf_pos = root_pos + rel;
 					}
 
 					bone_ik_list.front()->get().pos = leaf_pos;
-
-					//print_line("BONE IK LIST "+itos(bone_ik_list.size()));
 
 					if (bone_ik_list.size() > 2) {
 						int solver_iterations = 64;
@@ -2188,24 +2178,15 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 								if (E->next() == bone_ik_list.back()) {
 
-									//print_line("back");
-
 									Vector2 rel = E->get().pos - E->next()->get().pos;
-									//print_line("PREV "+E->get().pos);
 									Vector2 desired = E->next()->get().pos + rel.normalized() * len;
-									//print_line("DESIRED "+desired);
 									E->get().pos = E->get().pos.linear_interpolate(desired, solver_k);
-									//print_line("POST "+E->get().pos);
-
 								} else if (E == bone_ik_list.front()) {
+
 									//only adjust parent
-									//print_line("front");
 									Vector2 rel = E->next()->get().pos - E->get().pos;
-									//print_line("PREV "+E->next()->get().pos);
 									Vector2 desired = E->get().pos + rel.normalized() * len;
-									//print_line("DESIRED "+desired);
 									E->next()->get().pos = E->next()->get().pos.linear_interpolate(desired, solver_k);
-									//print_line("POST "+E->next()->get().pos);
 								} else {
 
 									Vector2 rel = E->next()->get().pos - E->get().pos;
@@ -2214,7 +2195,6 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 									rel *= 0.5;
 									E->next()->get().pos = cen + rel;
 									E->get().pos = cen - rel;
-									//print_line("mid");
 								}
 							}
 						}
@@ -3148,9 +3128,8 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	drag = DRAG_NONE;
 
 	// Clear the selection
-	editor_selection->clear(); //_clear_canvas_items();
+	editor_selection->clear();
 	editor_selection->add_node(p_canvas_item);
-	//_add_canvas_item(p_canvas_item);
 	viewport->update();
 	viewport_base->update();
 }
@@ -3239,14 +3218,11 @@ void CanvasItemEditor::_update_scrollbars() {
 		ofs.x = h_scroll->get_value();
 	}
 
-	//transform=Matrix32();
 	transform.elements[2] = -ofs * zoom;
 
 	editor->get_scene_root()->set_global_canvas_transform(transform);
 
 	updating_scroll = false;
-
-	//transform.scale_basis(Vector2(zoom,zoom));
 }
 
 void CanvasItemEditor::_update_scroll(float) {
@@ -3257,8 +3233,6 @@ void CanvasItemEditor::_update_scroll(float) {
 	Point2 ofs;
 	ofs.x = h_scroll->get_value();
 	ofs.y = v_scroll->get_value();
-
-	//current_window->set_scroll(-ofs);
 
 	transform = Transform2D();
 
@@ -3927,7 +3901,6 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			continue;
 
 		// counting invisible items, for now
-		//if (!canvas_item->is_visible_in_tree()) continue;
 		++count;
 
 		Rect2 item_rect = canvas_item->_edit_get_rect();
@@ -4221,7 +4194,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Show Grid"), KEY_G), SHOW_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show helpers"), KEY_H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show rulers"), KEY_R), SHOW_RULERS);
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(SHOW_RULERS), true);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show guides"), KEY_Y), SHOW_GUIDES);
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(SHOW_GUIDES), true);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
@@ -4334,7 +4309,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	skeleton_show_bones = true;
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	box_selecting = false;
-	//zoom=0.5;
 	singleton = this;
 
 	set_process_unhandled_key_input(true);
