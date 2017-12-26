@@ -109,7 +109,6 @@ private:
 	float idle_process_time;
 	bool accept_quit;
 	bool quit_on_go_back;
-	uint32_t last_id;
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint;
@@ -130,6 +129,7 @@ private:
 
 	bool use_font_oversampling;
 	int64_t current_frame;
+	int64_t current_event;
 	int node_count;
 
 #ifdef TOOLS_ENABLED
@@ -335,8 +335,6 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_root() const { return root; }
 
-	uint32_t get_last_event_id() const;
-
 	void call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
 	void set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value);
@@ -412,6 +410,7 @@ public:
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 
 	int64_t get_frame() const;
+	int64_t get_event_count() const;
 
 	int get_node_count() const;
 

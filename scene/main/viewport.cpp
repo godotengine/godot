@@ -184,7 +184,6 @@ Viewport::GUI::GUI() {
 	key_focus = NULL;
 	mouse_over = NULL;
 
-	cancelled_input_ID = 0;
 	tooltip = NULL;
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
@@ -1620,9 +1619,6 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	if (p_event->get_id() == gui.cancelled_input_ID) {
-		return;
-	}
 	//?
 	/*
 	if (!is_visible()) {
@@ -1752,7 +1748,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_input(gui.mouse_focus, mb);
 			}
 
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
 			get_tree()->set_input_as_handled();
 
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
@@ -1825,7 +1820,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data=Variant(); //always clear
 			}*/
 
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
 			get_tree()->set_input_as_handled();
 		}
 	}

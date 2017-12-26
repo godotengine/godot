@@ -391,13 +391,12 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_event)))
 		return; //avoid joy input on editor
 
+	current_event++;
 	root_lock++;
-	//last_id=p_event.ID;
 
 	input_handled = false;
 
 	Ref<InputEvent> ev = p_event;
-	ev->set_id(++last_id); //this should work better
 
 	MainLoop::input_event(ev);
 
@@ -941,11 +940,6 @@ void SceneMainLoop::_update_listener_2d() {
 }
 */
 
-uint32_t SceneTree::get_last_event_id() const {
-
-	return last_id;
-}
-
 Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	r_error.error = Variant::CallError::CALL_OK;
@@ -993,6 +987,10 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Variant::
 int64_t SceneTree::get_frame() const {
 
 	return current_frame;
+}
+int64_t SceneTree::get_event_count() const {
+
+	return current_event;
 }
 
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
@@ -2287,9 +2285,10 @@ SceneTree::SceneTree() {
 	tree_version = 1;
 	physics_process_time = 1;
 	idle_process_time = 1;
-	last_id = 1;
+
 	root = NULL;
 	current_frame = 0;
+	current_event = 0;
 	tree_changed_name = "tree_changed";
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";

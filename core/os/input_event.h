@@ -144,16 +144,12 @@ enum JoystickList {
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource)
 
-	uint32_t id;
 	int device;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_id(uint32_t p_id);
-	uint32_t get_id() const;
-
 	void set_device(int p_device);
 	int get_device() const;
 

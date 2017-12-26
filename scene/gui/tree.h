@@ -359,7 +359,7 @@ private:
 	LineEdit *text_editor;
 	HSlider *value_editor;
 	bool updating_value_editor;
-	uint32_t focus_in_id;
+	int64_t focus_in_id;
 	PopupMenu *popup_menu;
 
 	Vector<ColumnInfo> columns;

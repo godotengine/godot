@@ -32,14 +32,6 @@
 #include "input_map.h"
 #include "os/keyboard.h"
 
-void InputEvent::set_id(uint32_t p_id) {
-	id = p_id;
-}
-
-uint32_t InputEvent::get_id() const {
-	return id;
-}
-
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 }
@@ -99,9 +91,6 @@ bool InputEvent::is_action_type() const {
 
 void InputEvent::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_id", "id"), &InputEvent::set_id);
-	ClassDB::bind_method(D_METHOD("get_id"), &InputEvent::get_id);
-
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
@@ -125,7 +114,6 @@ void InputEvent::_bind_methods() {
 
 InputEvent::InputEvent() {
 
-	id = 0;
 	device = 0;
 }
 
@@ -441,7 +429,6 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
 
-	mb->set_id(get_id());
 	mb->set_device(get_device());
 
 	mb->set_modifiers_from_event(this);
@@ -557,7 +544,6 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	Ref<InputEventMouseMotion> mm;
 	mm.instance();
 
-	mm->set_id(get_id());
 	mm->set_device(get_device());
 
 	mm->set_modifiers_from_event(this);
@@ -764,7 +750,6 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 
 	Ref<InputEventScreenTouch> st;
 	st.instance();
-	st->set_id(get_id());
 	st->set_device(get_device());
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
@@ -845,7 +830,6 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 
 	sd.instance();
 
-	sd->set_id(get_id());
 	sd->set_device(get_device());
 
 	sd->set_index(index);
@@ -968,7 +952,6 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instance();
 
-	ev->set_id(get_id());
 	ev->set_device(get_device());
 	ev->set_modifiers_from_event(this);
 
@@ -1006,7 +989,6 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 	Ref<InputEventPanGesture> ev;
 	ev.instance();
 
-	ev->set_id(get_id());
 	ev->set_device(get_device());
 	ev->set_modifiers_from_event(this);
 
