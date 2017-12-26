@@ -1878,6 +1878,7 @@ void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_rever
 		else
 			glEnable(GL_CULL_FACE);
 
+		state.scene_shader.set_conditional(SceneShaderGLES3::MATERIAL_DOUBLESIDED, p_disabled);
 		state.cull_disabled = p_disabled;
 	}
 
