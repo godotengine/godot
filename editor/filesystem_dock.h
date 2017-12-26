@@ -178,6 +178,7 @@ private:
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) const;
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
+	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
 
 	void _make_dir_confirm();
 	void _rename_operation_confirm();

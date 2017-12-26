@@ -834,6 +834,58 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	memdelete(da);
 }
 
+void FileSystemDock::_update_resource_paths_after_move(const Map<String, String> &p_renames) const {
+
+	//Rename all resources loaded, be it subresources or actual resources
+	List<Ref<Resource> > cached;
+	ResourceCache::get_cached_resources(&cached);
+
+	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+
+		Ref<Resource> r = E->get();
+
+		String base_path = r->get_path();
+		String extra_path;
+		int sep_pos = r->get_path().find("::");
+		if (sep_pos >= 0) {
+			extra_path = base_path.substr(sep_pos, base_path.length());
+			base_path = base_path.substr(0, sep_pos);
+		}
+
+		if (p_renames.has(base_path)) {
+			base_path = p_renames[base_path];
+		}
+
+		r->set_path(base_path + extra_path);
+	}
+
+	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+
+		String path;
+		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+			if (!get_tree()->get_edited_scene_root())
+				continue;
+
+			path = get_tree()->get_edited_scene_root()->get_filename();
+		} else {
+
+			path = EditorNode::get_editor_data().get_scene_path(i);
+		}
+
+		if (p_renames.has(path)) {
+			path = p_renames[path];
+		}
+
+		if (i == EditorNode::get_editor_data().get_edited_scene()) {
+
+			get_tree()->get_edited_scene_root()->set_filename(path);
+		} else {
+
+			EditorNode::get_editor_data().set_scene_path(i, path);
+		}
+	}
+}
+
 void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &p_renames) const {
 	//The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
@@ -910,6 +962,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> renames;
 	_try_move_item(to_rename, new_path, renames);
 	_update_dependencies_after_move(renames);
+	_update_resource_paths_after_move(renames);
 
 	//Rescan everything
 	print_line("call rescan!");
@@ -959,6 +1012,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
 	}
 
 	_update_dependencies_after_move(renames);
+	_update_resource_paths_after_move(renames);
+
 	print_line("call rescan!");
 	_rescan();
 }

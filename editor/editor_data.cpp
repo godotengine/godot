@@ -701,6 +701,15 @@ String EditorData::get_scene_title(int p_idx) const {
 	return name;
 }
 
+void EditorData::set_scene_path(int p_idx, const String &p_path) {
+
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+
+	if (!edited_scene[p_idx].root)
+		return;
+	edited_scene[p_idx].root->set_filename(p_path);
+}
+
 String EditorData::get_scene_path(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
