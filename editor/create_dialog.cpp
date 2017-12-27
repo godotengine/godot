@@ -635,34 +635,30 @@ CreateDialog::CreateDialog() {
 	VSplitContainer *vsc = memnew(VSplitContainer);
 	hsc->add_child(vsc);
 
-	{
-		VBoxContainer *lvbc = memnew(VBoxContainer);
-		vsc->add_child(lvbc);
-		lvbc->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-		lvbc->set_v_size_flags(SIZE_EXPAND_FILL);
+	VBoxContainer *fav_vb = memnew(VBoxContainer);
+	vsc->add_child(fav_vb);
+	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+	fav_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		favorites = memnew(Tree);
-		lvbc->add_margin_child(TTR("Favorites:"), favorites, true);
-		favorites->set_hide_root(true);
-		favorites->set_hide_folding(true);
-		favorites->connect("cell_selected", this, "_favorite_selected");
-		favorites->connect("item_activated", this, "_favorite_activated");
-		favorites->set_drag_forwarding(this);
-	}
+	favorites = memnew(Tree);
+	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
+	favorites->set_hide_root(true);
+	favorites->set_hide_folding(true);
+	favorites->connect("cell_selected", this, "_favorite_selected");
+	favorites->connect("item_activated", this, "_favorite_activated");
+	favorites->set_drag_forwarding(this);
 
-	{
-		VBoxContainer *lvbc = memnew(VBoxContainer);
-		vsc->add_child(lvbc);
-		lvbc->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-		lvbc->set_v_size_flags(SIZE_EXPAND_FILL);
+	VBoxContainer *rec_vb = memnew(VBoxContainer);
+	vsc->add_child(rec_vb);
+	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
+	rec_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		recent = memnew(Tree);
-		lvbc->add_margin_child(TTR("Recent:"), recent, true);
-		recent->set_hide_root(true);
-		recent->set_hide_folding(true);
-		recent->connect("cell_selected", this, "_history_selected");
-		recent->connect("item_activated", this, "_history_activated");
-	}
+	recent = memnew(Tree);
+	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
+	recent->set_hide_root(true);
+	recent->set_hide_folding(true);
+	recent->connect("cell_selected", this, "_history_selected");
+	recent->connect("item_activated", this, "_history_activated");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	hsc->add_child(vbc);
