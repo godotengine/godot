@@ -94,15 +94,17 @@ public:
 		bool resizable;
 		bool borderless_window;
 		bool maximized;
+		bool always_on_top;
 		bool use_vsync;
 		float get_aspect() const { return (float)width / (float)height; }
-		VideoMode(int p_width = 1024, int p_height = 600, bool p_fullscreen = false, bool p_resizable = true, bool p_borderless_window = false, bool p_maximized = false, bool p_use_vsync = false) {
+		VideoMode(int p_width = 1024, int p_height = 600, bool p_fullscreen = false, bool p_resizable = true, bool p_borderless_window = false, bool p_maximized = false, bool p_always_on_top = false, bool p_use_vsync = false) {
 			width = p_width;
 			height = p_height;
 			fullscreen = p_fullscreen;
 			resizable = p_resizable;
 			borderless_window = p_borderless_window;
 			maximized = p_maximized;
+			always_on_top = p_always_on_top;
 			use_vsync = p_use_vsync;
 		}
 	};
@@ -192,6 +194,8 @@ public:
 	virtual bool is_window_minimized() const { return false; }
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
+	virtual void set_window_always_on_top(bool p_enabled) {}
+	virtual bool is_window_always_on_top() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
 

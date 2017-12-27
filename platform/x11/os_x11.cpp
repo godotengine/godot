@@ -334,6 +334,11 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		XFree(xsh);
 	}
 
+	if (current_videomode.always_on_top) {
+		current_videomode.always_on_top = false;
+		set_window_always_on_top(true);
+	}
+
 	AudioDriverManager::initialize(p_audio_driver);
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
@@ -781,6 +786,22 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	}
 }
 
+void OS_X11::set_wm_above(bool p_enabled) {
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
+
+	XClientMessageEvent xev;
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.window = x11_window;
+	xev.message_type = wm_state;
+	xev.format = 32;
+	xev.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+	xev.data.l[1] = wm_above;
+	xev.data.l[3] = 1;
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
+}
+
 int OS_X11::get_screen_count() const {
 	// Using Xinerama Extension
 	int event_base, error_base;
@@ -975,7 +996,19 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
+	if (current_videomode.fullscreen == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.always_on_top) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
 	set_wm_fullscreen(p_enabled);
+	if (!p_enabled && !current_videomode.always_on_top) {
+		// Restore
+		set_window_maximized(false);
+	}
+
 	current_videomode.fullscreen = p_enabled;
 }
 
@@ -1183,6 +1216,27 @@ bool OS_X11::is_window_maximized() const {
 
 	XFree(data);
 	return retval;
+}
+
+void OS_X11::set_window_always_on_top(bool p_enabled) {
+	if (is_window_always_on_top() == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.fullscreen) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
+	set_wm_above(p_enabled);
+	if (!p_enabled && !current_videomode.fullscreen) {
+		// Restore
+		set_window_maximized(false);
+	}
+
+	current_videomode.always_on_top = p_enabled;
+}
+
+bool OS_X11::is_window_always_on_top() const {
+	return current_videomode.always_on_top;
 }
 
 void OS_X11::set_borderless_window(bool p_borderless) {
