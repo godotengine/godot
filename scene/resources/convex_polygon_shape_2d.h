@@ -42,6 +42,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_point_cloud(const Vector<Vector2> &p_points);
 	void set_points(const Vector<Vector2> &p_points);
 	Vector<Vector2> get_points() const;

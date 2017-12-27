@@ -30,6 +30,21 @@
 #include "shape_line_2d.h"
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
+
+bool LineShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	Vector2 point = get_d() * get_normal();
+	Vector2 l[2][2] = { { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 }, { point, point + get_normal() * 30 } };
+
+	for (int i = 0; i < 2; i++) {
+		Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, l[i]);
+		if (p_point.distance_to(closest) < p_tolerance)
+			return true;
+	}
+
+	return false;
+}
+
 void LineShape2D::_update_shape() {
 
 	Array arr;

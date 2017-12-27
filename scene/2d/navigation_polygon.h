@@ -43,6 +43,9 @@ class NavigationPolygon : public Resource {
 	Vector<Polygon> polygons;
 	Vector<PoolVector<Vector2> > outlines;
 
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty;
+
 protected:
 	static void _bind_methods();
 
@@ -53,6 +56,9 @@ protected:
 	Array _get_outlines() const;
 
 public:
+	Rect2 _edit_get_rect() const;
+	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_vertices(const PoolVector<Vector2> &p_vertices);
 	PoolVector<Vector2> get_vertices() const;
 
@@ -93,6 +99,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 

@@ -32,6 +32,51 @@
 #include "engine.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_scale.h"
+#endif
+
+Rect2 Path2D::_edit_get_rect() const {
+
+	if (curve->get_point_count() == 0)
+		return Rect2(0, 0, 0, 0);
+
+	Rect2 aabb = Rect2(curve->get_point_position(0), Vector2(0, 0));
+
+	for (int i = 0; i < curve->get_point_count(); i++) {
+
+		for (int j = 0; j <= 8; j++) {
+
+			real_t frac = j / 8.0;
+			Vector2 p = curve->interpolate(i, frac);
+			aabb.expand_to(p);
+		}
+	}
+
+	return aabb;
+}
+
+bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	for (int i = 0; i < curve->get_point_count(); i++) {
+		Vector2 s[2];
+		s[0] = curve->get_point_position(i);
+
+		for (int j = 1; j <= 8; j++) {
+			real_t frac = j / 8.0;
+			s[1] = curve->interpolate(i, frac);
+
+			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, s);
+			if (p.distance_to(p_point) <= p_tolerance)
+				return true;
+
+			s[0] = s[1];
+		}
+	}
+
+	return false;
+}
+
 void Path2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
@@ -41,6 +86,13 @@ void Path2D::_notification(int p_what) {
 			return;
 		}
 
+#if TOOLS_ENABLED
+		const float line_width = 2 * EDSCALE;
+#else
+		const float line_width = 2;
+#endif
+		const Color color = Color(0.5, 0.6, 1.0, 0.7);
+
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
 			Vector2 prev_p = curve->get_point_position(i);
@@ -49,7 +101,7 @@ void Path2D::_notification(int p_what) {
 
 				real_t frac = j / 8.0;
 				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, Color(0.5, 0.6, 1.0, 0.7), 2);
+				draw_line(prev_p, p, color, line_width);
 				prev_p = p;
 			}
 		}

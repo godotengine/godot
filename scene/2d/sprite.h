@@ -54,6 +54,8 @@ class Sprite : public Node2D {
 	int vframes;
 	int hframes;
 
+	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const;
+
 protected:
 	void _notification(int p_what);
 
@@ -65,6 +67,7 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 	virtual Rect2 _edit_get_rect() const;
 
 	void set_texture(const Ref<Texture> &p_texture);

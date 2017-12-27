@@ -44,6 +44,8 @@ protected:
 	Shape2D(const RID &p_rid);
 
 public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return true; }
+
 	void set_custom_solver_bias(real_t p_bias);
 	real_t get_custom_solver_bias() const;
 

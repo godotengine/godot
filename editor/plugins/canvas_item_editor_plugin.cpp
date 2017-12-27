@@ -612,6 +612,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	if (Object::cast_to<Viewport>(p_node))
 		return;
 
+	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
 
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
@@ -630,9 +631,12 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	if (c && c->is_visible_in_tree() && !c->has_meta("_edit_lock_") && !Object::cast_to<CanvasLayer>(c)) {
 
 		Rect2 rect = c->_edit_get_rect();
-		Point2 local_pos = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse().xform(p_pos);
+		Transform2D to_local = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse();
+		Point2 local_pos = to_local.xform(p_pos);
+		const real_t local_grab_distance = (to_local.xform(p_pos + Vector2(grab_distance, 0)) - local_pos).length();
+		Rect2 local_pos_rect = Rect2(local_pos, Vector2(0, 0)).grow(local_grab_distance);
 
-		if (rect.has_point(local_pos)) {
+		if (rect.intersects(local_pos_rect) && c->_edit_is_selected_on_click(local_pos, local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(c);
 
 			_SelectResult res;

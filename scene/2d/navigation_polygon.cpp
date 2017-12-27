@@ -35,9 +35,50 @@
 
 #include "thirdparty/misc/triangulator.h"
 
+Rect2 NavigationPolygon::_edit_get_rect() const {
+
+	if (rect_cache_dirty) {
+		item_rect = Rect2();
+		bool first = true;
+
+		for (int i = 0; i < outlines.size(); i++) {
+			const PoolVector<Vector2> &outline = outlines[i];
+			const int outline_size = outline.size();
+			if (outline_size < 3)
+				continue;
+			PoolVector<Vector2>::Read p = outline.read();
+			for (int j = 0; j < outline_size; j++) {
+				if (first) {
+					item_rect = Rect2(p[j], Vector2(0, 0));
+					first = false;
+				} else {
+					item_rect.expand_to(p[j]);
+				}
+			}
+		}
+
+		rect_cache_dirty = false;
+	}
+	return item_rect;
+}
+
+bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	for (int i = 0; i < outlines.size(); i++) {
+		const PoolVector<Vector2> &outline = outlines[i];
+		const int outline_size = outline.size();
+		if (outline_size < 3)
+			continue;
+		if (Geometry::is_point_in_polygon(p_point, Variant(outline)))
+			return true;
+	}
+	return false;
+}
+
 void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 
 	vertices = p_vertices;
+	rect_cache_dirty = true;
 }
 
 PoolVector<Vector2> NavigationPolygon::get_vertices() const {
@@ -70,6 +111,7 @@ void NavigationPolygon::_set_outlines(const Array &p_array) {
 	for (int i = 0; i < p_array.size(); i++) {
 		outlines[i] = p_array[i];
 	}
+	rect_cache_dirty = true;
 }
 
 Array NavigationPolygon::_get_outlines() const {
@@ -93,6 +135,7 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 void NavigationPolygon::add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index) {
 
 	outlines.insert(p_index, p_outline);
+	rect_cache_dirty = true;
 }
 
 int NavigationPolygon::get_polygon_count() const {
@@ -112,6 +155,7 @@ void NavigationPolygon::clear_polygons() {
 void NavigationPolygon::add_outline(const PoolVector<Vector2> &p_outline) {
 
 	outlines.push_back(p_outline);
+	rect_cache_dirty = true;
 }
 
 int NavigationPolygon::get_outline_count() const {
@@ -122,12 +166,14 @@ int NavigationPolygon::get_outline_count() const {
 void NavigationPolygon::set_outline(int p_idx, const PoolVector<Vector2> &p_outline) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
 	outlines[p_idx] = p_outline;
+	rect_cache_dirty = true;
 }
 
 void NavigationPolygon::remove_outline(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, outlines.size());
 	outlines.remove(p_idx);
+	rect_cache_dirty = true;
 }
 
 PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
@@ -138,6 +184,7 @@ PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
 void NavigationPolygon::clear_outlines() {
 
 	outlines.clear();
+	rect_cache_dirty = true;
 }
 void NavigationPolygon::make_polygons_from_outlines() {
 
@@ -269,7 +316,8 @@ void NavigationPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_outlines", "_get_outlines");
 }
 
-NavigationPolygon::NavigationPolygon() {
+NavigationPolygon::NavigationPolygon() :
+		rect_cache_dirty(true) {
 }
 
 void NavigationPolygonInstance::set_enabled(bool p_enabled) {
@@ -310,6 +358,16 @@ bool NavigationPolygonInstance::is_enabled() const {
 }
 
 /////////////////////////////
+
+Rect2 NavigationPolygonInstance::_edit_get_rect() const {
+
+	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();
+}
+
+bool NavigationPolygonInstance::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	return navpoly.is_valid() ? navpoly->_edit_is_selected_on_click(p_point, p_tolerance) : false;
+}
 
 void NavigationPolygonInstance::_notification(int p_what) {
 

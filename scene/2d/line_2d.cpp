@@ -48,6 +48,32 @@ Line2D::Line2D() :
 	_round_precision = 8;
 }
 
+Rect2 Line2D::_edit_get_rect() const {
+
+	if (_points.size() == 0)
+		return Rect2(0, 0, 0, 0);
+	Vector2 d = Vector2(_width, _width);
+	Rect2 aabb = Rect2(_points[0] - d, 2 * d);
+	for (int i = 1; i < _points.size(); i++) {
+		aabb.expand_to(_points[i] - d);
+		aabb.expand_to(_points[i] + d);
+	}
+	return aabb;
+}
+
+bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	const real_t d = _width / 2 + p_tolerance;
+	PoolVector<Vector2>::Read points = _points.read();
+	for (int i = 0; i < _points.size() - 1; i++) {
+		Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
+		if (p.distance_to(p_point) <= d)
+			return true;
+	}
+
+	return false;
+}
+
 void Line2D::set_points(const PoolVector<Vector2> &p_points) {
 	_points = p_points;
 	update();

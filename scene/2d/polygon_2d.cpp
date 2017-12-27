@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "polygon_2d.h"
+#include "core/math/geometry.h"
 
 Rect2 Polygon2D::_edit_get_rect() const {
 
@@ -42,11 +43,15 @@ Rect2 Polygon2D::_edit_get_rect() const {
 			else
 				item_rect.expand_to(pos);
 		}
-		item_rect = item_rect.grow(20);
 		rect_cache_dirty = false;
 	}
 
 	return item_rect;
+}
+
+bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
 }
 
 void Polygon2D::_edit_set_pivot(const Point2 &p_pivot) {
