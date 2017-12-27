@@ -1062,12 +1062,8 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
-
 	if (current_videomode.fullscreen == p_enabled)
 		return;
-
-	if (layered_window)
-		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled && current_videomode.always_on_top) {
 		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
@@ -1286,6 +1282,27 @@ bool OS_X11::is_window_maximized() const {
 
 	XFree(data);
 	return retval;
+}
+
+void OS_X11::set_window_always_on_top(bool p_enabled) {
+	if (is_window_always_on_top() == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.fullscreen) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
+	set_wm_above(p_enabled);
+	if (!p_enabled && !current_videomode.fullscreen) {
+		// Restore
+		set_window_maximized(false);
+	}
+
+	current_videomode.always_on_top = p_enabled;
+}
+
+bool OS_X11::is_window_always_on_top() const {
+	return current_videomode.always_on_top;
 }
 
 void OS_X11::set_borderless_window(bool p_borderless) {
