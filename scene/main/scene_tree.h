@@ -325,7 +325,7 @@ public:
 		NOTIFICATION_TRANSFORM_CHANGED = 29
 	};
 
-	enum CallGroupFlags {
+	enum GroupCallFlags {
 		GROUP_CALL_DEFAULT = 0,
 		GROUP_CALL_REVERSE = 1,
 		GROUP_CALL_REALTIME = 2,
@@ -466,6 +466,6 @@ public:
 
 VARIANT_ENUM_CAST(SceneTree::StretchMode);
 VARIANT_ENUM_CAST(SceneTree::StretchAspect);
-VARIANT_ENUM_CAST(SceneTree::CallGroupFlags);
+VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
 
 #endif

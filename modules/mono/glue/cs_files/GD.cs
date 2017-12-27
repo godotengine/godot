@@ -2,10 +2,8 @@ using System;
 
 namespace Godot
 {
-    public static class GD
+    public static partial class GD
     {
-        /*{GodotGlobalConstants}*/
-
         public static object Bytes2Var(byte[] bytes)
         {
             return NativeCalls.godot_icall_Godot_bytes2var(bytes);

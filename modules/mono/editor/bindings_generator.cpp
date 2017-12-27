@@ -108,7 +108,7 @@ const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in 
 
 bool BindingsGenerator::verbose_output = false;
 
-static String snake_to_pascal_case(const String &p_identifier) {
+static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
 
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
@@ -118,6 +118,10 @@ static String snake_to_pascal_case(const String &p_identifier) {
 
 		if (part.length()) {
 			part[0] = _find_upper(part[0]);
+			if (p_input_is_upper) {
+				for (int j = 1; j < part.length(); j++)
+					part[j] = _find_lower(part[j]);
+			}
 			ret += part;
 		} else {
 			if (i == 0 || i == (parts.size() - 1)) {
@@ -137,7 +141,7 @@ static String snake_to_pascal_case(const String &p_identifier) {
 	return ret;
 }
 
-static String snake_to_camel_case(const String &p_identifier) {
+static String snake_to_camel_case(const String &p_identifier, bool p_input_is_upper = false) {
 
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
@@ -146,8 +150,13 @@ static String snake_to_camel_case(const String &p_identifier) {
 		String part = parts[i];
 
 		if (part.length()) {
-			if (i != 0)
+			if (i != 0) {
 				part[0] = _find_upper(part[0]);
+			}
+			if (p_input_is_upper) {
+				for (int j = i != 0 ? 1 : 0; j < part.length(); j++)
+					part[j] = _find_lower(part[j]);
+			}
 			ret += part;
 		} else {
 			if (i == 0 || i == (parts.size() - 1)) {
@@ -165,6 +174,25 @@ static String snake_to_camel_case(const String &p_identifier) {
 	}
 
 	return ret;
+}
+
+String BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
+
+	CRASH_COND(p_ienum.constants.empty());
+
+	const List<ConstantInterface>::Element *front = p_ienum.constants.front();
+	int candidate_len = front->get().name.length();
+
+	for (const List<ConstantInterface>::Element *E = front->next(); E; E = E->next()) {
+		int j = 0;
+		for (j = 0; j < candidate_len && j < E->get().name.length(); j++) {
+			if (front->get().name[j] != E->get().name[j])
+				break;
+		}
+		candidate_len = j;
+	}
+
+	return front->get().name.substr(0, candidate_len);
 }
 
 void BindingsGenerator::_generate_header_icalls() {
@@ -220,7 +248,7 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 		const TypeInterface *return_type = _get_type_by_name_or_placeholder(imethod.return_type);
 
 		String im_sig = "IntPtr " CS_PARAM_METHODBIND ", IntPtr " CS_PARAM_INSTANCE;
-		String im_unique_sig = imethod.return_type + ",IntPtr,IntPtr";
+		String im_unique_sig = imethod.return_type.operator String() + ",IntPtr,IntPtr";
 
 		// Get arguments information
 		int i = 0;
@@ -256,6 +284,129 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 	}
 }
 
+void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
+
+	// Constants (in partial GD class)
+
+	p_output.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	p_output.push_back(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
+
+	for (const List<ConstantInterface>::Element *E = global_constants.front(); E; E = E->next()) {
+		const ConstantInterface &iconstant = E->get();
+
+		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+			p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+
+			Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+
+			for (int i = 0; i < description_lines.size(); i++) {
+				String description_line = description_lines[i].strip_edges();
+				if (description_line.size()) {
+					p_output.push_back(INDENT2 "/// ");
+					p_output.push_back(description_line.xml_escape());
+					p_output.push_back("\n");
+				}
+			}
+
+			p_output.push_back(INDENT2 "/// </summary>");
+		}
+
+		p_output.push_back(MEMBER_BEGIN "public const int ");
+		p_output.push_back(iconstant.name);
+		p_output.push_back(" = ");
+		p_output.push_back(itos(iconstant.value));
+		p_output.push_back(";");
+	}
+
+	if (!global_constants.empty())
+		p_output.push_back("\n");
+
+	p_output.push_back(INDENT1 CLOSE_BLOCK); // end of GD class
+
+	// Enums
+
+	for (List<EnumInterface>::Element *E = global_enums.front(); E; E = E->next()) {
+		const EnumInterface &ienum = E->get();
+
+		CRASH_COND(ienum.constants.empty());
+
+		String enum_proxy_name = ienum.cname.operator String();
+
+		bool enum_in_static_class = false;
+
+		if (enum_proxy_name.find(".") > 0) {
+			enum_in_static_class = true;
+			String enum_class_name = enum_proxy_name.get_slicec('.', 0);
+			enum_proxy_name = enum_proxy_name.get_slicec('.', 1);
+
+			CRASH_COND(enum_class_name != "Variant"); // Hard-coded...
+
+			if (verbose_output) {
+				WARN_PRINTS("Declaring global enum `" + enum_proxy_name + "` inside static class `" + enum_class_name + "`");
+			}
+
+			p_output.push_back("\n" INDENT1 "public static partial class ");
+			p_output.push_back(enum_class_name);
+			p_output.push_back("\n" INDENT1 OPEN_BLOCK);
+		}
+
+		p_output.push_back("\n" INDENT1 "public enum ");
+		p_output.push_back(enum_proxy_name);
+		p_output.push_back("\n" INDENT1 OPEN_BLOCK);
+
+		for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
+			const ConstantInterface &iconstant = E->get();
+
+			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+				p_output.push_back(INDENT2 "/// <summary>\n");
+
+				Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+
+				for (int i = 0; i < description_lines.size(); i++) {
+					String description_line = description_lines[i].strip_edges();
+					if (description_line.size()) {
+						p_output.push_back(INDENT2 "/// ");
+						p_output.push_back(description_line.xml_escape());
+						p_output.push_back("\n");
+					}
+				}
+
+				p_output.push_back(INDENT2 "/// </summary>\n");
+			}
+
+			String constant_name = iconstant.name;
+
+			if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
+				constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
+			}
+
+			if (constant_name[0] >= '0' && constant_name[0] <= '9') {
+				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
+				// so we make the prefix one word shorter in those cases.
+				int i = 0;
+				for (i = ienum.prefix.length() - 1; i >= 0; i--) {
+					if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
+						break;
+				}
+				constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
+			}
+
+			p_output.push_back(INDENT2);
+			p_output.push_back(constant_name);
+			p_output.push_back(" = ");
+			p_output.push_back(itos(iconstant.value));
+			p_output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+		}
+
+		p_output.push_back(INDENT1 CLOSE_BLOCK);
+
+		if (enum_in_static_class)
+			p_output.push_back(INDENT1 CLOSE_BLOCK);
+	}
+
+	p_output.push_back(CLOSE_BLOCK); // end of namespace
+}
+
 Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bool p_verbose_output) {
 
 	verbose_output = p_verbose_output;
@@ -282,7 +433,19 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 	if (!solution.set_path(p_output_dir))
 		return ERR_FILE_NOT_FOUND;
 
-	for (Map<String, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
+	// Generate source file for global scope constants and enums
+	{
+		List<String> constants_source;
+		_generate_global_constants(constants_source);
+		String output_file = path_join(core_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
+		Error save_err = _save_file(output_file, constants_source);
+		if (save_err != OK)
+			return save_err;
+
+		compile_items.push_back(output_file);
+	}
+
+	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
 		const TypeInterface &itype = E->get();
 
 		if (itype.api_type == ClassDB::API_EDITOR)
@@ -314,49 +477,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 #undef GENERATE_BUILTIN_TYPE
 
-	// Generate source for GlobalConstants
-
-	String constants_source;
-	int global_constants_count = GlobalConstants::get_global_constant_count();
-
-	if (global_constants_count > 0) {
-		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
-
-		ERR_EXPLAIN("Could not find `@GlobalScope` in DocData");
-		ERR_FAIL_COND_V(!match, ERR_BUG);
-
-		const DocData::ClassDoc &global_scope_doc = match->value();
-
-		for (int i = 0; i < global_constants_count; i++) {
-			const DocData::ConstantDoc &const_doc = global_scope_doc.constants[i];
-
-			if (i > 0)
-				constants_source += MEMBER_BEGIN;
-
-			if (const_doc.description.size()) {
-				constants_source += "/// <summary>\n";
-
-				Vector<String> description_lines = const_doc.description.split("\n");
-
-				for (int i = 0; i < description_lines.size(); i++) {
-					if (description_lines[i].size()) {
-						constants_source += INDENT2 "/// ";
-						constants_source += description_lines[i].strip_edges().xml_escape();
-						constants_source += "\n";
-					}
-				}
-
-				constants_source += INDENT2 "/// </summary>" MEMBER_BEGIN;
-			}
-
-			constants_source += "public const int ";
-			constants_source += GlobalConstants::get_global_constant_name(i);
-			constants_source += " = ";
-			constants_source += itos(GlobalConstants::get_global_constant_value(i));
-			constants_source += ";";
-		}
-	}
-
 	// Generate sources from compressed files
 
 	Map<String, CompressedFile> compressed_files;
@@ -371,19 +491,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 		Vector<uint8_t> data;
 		data.resize(file_data.uncompressed_size);
 		Compression::decompress(data.ptrw(), file_data.uncompressed_size, file_data.data, file_data.compressed_size, Compression::MODE_DEFLATE);
-
-		if (file_name.get_basename() == BINDINGS_GLOBAL_SCOPE_CLASS) {
-			// GD.cs must be formatted to include the generated global constants
-			String data_str = String::utf8(reinterpret_cast<const char *>(data.ptr()), data.size());
-
-			Dictionary format_keys;
-			format_keys["GodotGlobalConstants"] = constants_source;
-			data_str = data_str.format(format_keys, "/*{_}*/");
-
-			CharString data_utf8 = data_str.utf8();
-			data.resize(data_utf8.length());
-			copymem(data.ptrw(), reinterpret_cast<const uint8_t *>(data_utf8.get_data()), data_utf8.length());
-		}
 
 		FileAccessRef file = FileAccess::open(output_file, FileAccess::WRITE);
 		ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
@@ -470,7 +577,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 	if (!solution.set_path(p_output_dir))
 		return ERR_FILE_NOT_FOUND;
 
-	for (Map<String, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
+	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
 		const TypeInterface &itype = E->get();
 
 		if (itype.api_type != ClassDB::API_EDITOR)
@@ -543,7 +650,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 // e.g.: warning CS0108: 'SpriteBase3D.FLAG_MAX' hides inherited member 'GeometryInstance.FLAG_MAX'. Use the new keyword if hiding was intended.
 Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const String &p_output_file) {
 
-	bool is_derived_type = itype.base_name.length();
+	bool is_derived_type = itype.base_name != StringName();
 
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
@@ -569,9 +676,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		Vector<String> description_lines = class_doc->description.split("\n");
 
 		for (int i = 0; i < description_lines.size(); i++) {
-			if (description_lines[i].size()) {
+			String description_line = description_lines[i].strip_edges();
+			if (description_line.size()) {
 				output.push_back(INDENT1 "/// ");
-				output.push_back(description_lines[i].strip_edges().xml_escape());
+				output.push_back(description_line.xml_escape());
 				output.push_back("\n");
 			}
 		}
@@ -592,7 +700,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.push_back(obj_types[itype.base_name].proxy_name);
 		output.push_back("\n");
 	} else {
-		ERR_PRINTS("Base type '" + itype.base_name + "' does not exist, for class " + itype.name);
+		ERR_PRINTS("Base type '" + itype.base_name.operator String() + "' does not exist, for class " + itype.name);
 		return ERR_INVALID_DATA;
 	}
 
@@ -602,18 +710,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Add constants
 
-		for (int i = 0; i < class_doc->constants.size(); i++) {
-			const DocData::ConstantDoc &const_doc = class_doc->constants[i];
+		for (const List<ConstantInterface>::Element *E = itype.constants.front(); E; E = E->next()) {
+			const ConstantInterface &iconstant = E->get();
 
-			if (const_doc.description.size()) {
+			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-				Vector<String> description_lines = const_doc.description.split("\n");
+				Vector<String> description_lines = iconstant.const_doc->description.split("\n");
 
 				for (int i = 0; i < description_lines.size(); i++) {
-					if (description_lines[i].size()) {
+					String description_line = description_lines[i].strip_edges();
+					if (description_line.size()) {
 						output.push_back(INDENT2 "/// ");
-						output.push_back(description_lines[i].strip_edges().xml_escape());
+						output.push_back(description_line.xml_escape());
 						output.push_back("\n");
 					}
 				}
@@ -622,24 +731,84 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output.push_back(MEMBER_BEGIN "public const int ");
-			output.push_back(const_doc.name);
+			output.push_back(iconstant.name);
 			output.push_back(" = ");
-			output.push_back(const_doc.value);
+			output.push_back(itos(iconstant.value));
 			output.push_back(";");
 		}
 
-		if (class_doc->constants.size())
+		if (itype.constants.size())
+			output.push_back("\n");
+
+		// Add enums
+
+		for (const List<EnumInterface>::Element *E = itype.enums.front(); E; E = E->next()) {
+			const EnumInterface &ienum = E->get();
+
+			ERR_FAIL_COND_V(ienum.constants.empty(), ERR_BUG);
+
+			output.push_back(MEMBER_BEGIN "public enum ");
+			output.push_back(ienum.cname.operator String());
+			output.push_back(MEMBER_BEGIN OPEN_BLOCK);
+
+			for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
+				const ConstantInterface &iconstant = E->get();
+
+				if (iconstant.const_doc && iconstant.const_doc->description.size()) {
+					output.push_back(INDENT3 "/// <summary>\n");
+
+					Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+
+					for (int i = 0; i < description_lines.size(); i++) {
+						String description_line = description_lines[i].strip_edges();
+						if (description_line.size()) {
+							output.push_back(INDENT3 "/// ");
+							output.push_back(description_line.xml_escape());
+							output.push_back("\n");
+						}
+					}
+
+					output.push_back(INDENT3 "/// </summary>\n");
+				}
+
+				String constant_name = iconstant.name;
+
+				if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
+					constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
+				}
+
+				if (constant_name[0] >= '0' && constant_name[0] <= '9') {
+					// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
+					// so we make the prefix one word shorter in those cases.
+					int i = 0;
+					for (i = ienum.prefix.length() - 1; i >= 0; i--) {
+						if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
+							break;
+					}
+					constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
+				}
+
+				output.push_back(INDENT3);
+				output.push_back(constant_name);
+				output.push_back(" = ");
+				output.push_back(itos(iconstant.value));
+				output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+			}
+
+			output.push_back(INDENT2 CLOSE_BLOCK);
+		}
+
+		if (itype.enums.size())
 			output.push_back("\n");
 
 		// Add properties
 
-		const Vector<DocData::PropertyDoc> &properties = class_doc->properties;
-
-		for (int i = 0; i < properties.size(); i++) {
-			const DocData::PropertyDoc &prop_doc = properties[i];
-			Error prop_err = _generate_cs_property(itype, prop_doc, output);
+		for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
+			const PropertyInterface &iprop = E->get();
+			Error prop_err = _generate_cs_property(itype, iprop, output);
 			if (prop_err != OK) {
-				ERR_EXPLAIN("Failed to generate property '" + prop_doc.name + "' for class '" + itype.name + "'");
+				ERR_EXPLAIN("Failed to generate property '" + iprop.cname.operator String() +
+							"' for class '" + itype.name + "'");
 				ERR_FAIL_V(prop_err);
 			}
 		}
@@ -766,14 +935,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 										  " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
 										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
-			Map<String, TypeInterface>::Element *array_itype = builtin_types.find("Array");
+			Map<StringName, TypeInterface>::Element *array_itype = builtin_types.find(name_cache.type_Array);
 
 			if (!array_itype) {
 				ERR_PRINT("BUG: Array type interface not found!");
 				return ERR_BUG;
 			}
 
-			Map<String, TypeInterface>::Element *object_itype = obj_types.find("Object");
+			Map<StringName, TypeInterface>::Element *object_itype = obj_types.find("Object");
 
 			if (!object_itype) {
 				ERR_PRINT("BUG: Object type interface not found!");
@@ -787,7 +956,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
-	Map<String, String>::Element *extra_member = extra_members.find(itype.name);
+	Map<StringName, String>::Element *extra_member = extra_members.find(itype.cname);
 	if (extra_member)
 		output.push_back(extra_member->get());
 
@@ -820,43 +989,39 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	return _save_file(p_output_file, output);
 }
 
-Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInterface &p_itype, const DocData::PropertyDoc &p_prop_doc, List<String> &p_output) {
+Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInterface &p_itype, const PropertyInterface &p_iprop, List<String> &p_output) {
 
-	const MethodInterface *setter = p_itype.find_method_by_name(p_prop_doc.setter);
+	const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
 
 	// Search it in base types too
 	const TypeInterface *current_type = &p_itype;
-	while (!setter && current_type->base_name.length()) {
-		Map<String, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
+	while (!setter && current_type->base_name != StringName()) {
+		Map<StringName, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_NULL_V(base_match, ERR_BUG);
 		current_type = &base_match->get();
-		setter = current_type->find_method_by_name(p_prop_doc.setter);
+		setter = current_type->find_method_by_name(p_iprop.setter);
 	}
 
-	const MethodInterface *getter = p_itype.find_method_by_name(p_prop_doc.getter);
+	const MethodInterface *getter = p_itype.find_method_by_name(p_iprop.getter);
 
 	// Search it in base types too
 	current_type = &p_itype;
-	while (!getter && current_type->base_name.length()) {
-		Map<String, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
+	while (!getter && current_type->base_name != StringName()) {
+		Map<StringName, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
 		ERR_FAIL_NULL_V(base_match, ERR_BUG);
 		current_type = &base_match->get();
-		getter = current_type->find_method_by_name(p_prop_doc.getter);
+		getter = current_type->find_method_by_name(p_iprop.getter);
 	}
 
 	ERR_FAIL_COND_V(!setter && !getter, ERR_BUG);
 
-	bool is_valid = false;
-	int prop_index = ClassDB::get_property_index(p_itype.name, p_prop_doc.name, &is_valid);
-	ERR_FAIL_COND_V(!is_valid, ERR_BUG);
-
 	if (setter) {
-		int setter_argc = prop_index != -1 ? 2 : 1;
+		int setter_argc = p_iprop.index != -1 ? 2 : 1;
 		ERR_FAIL_COND_V(setter->arguments.size() != setter_argc, ERR_BUG);
 	}
 
 	if (getter) {
-		int getter_argc = prop_index != -1 ? 1 : 0;
+		int getter_argc = p_iprop.index != -1 ? 1 : 0;
 		ERR_FAIL_COND_V(getter->arguments.size() != getter_argc, ERR_BUG);
 	}
 
@@ -864,18 +1029,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		ERR_FAIL_COND_V(getter->return_type != setter->arguments.back()->get().type, ERR_BUG);
 	}
 
-	// Let's not trust PropertyDoc::type
-	String proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
+	StringName proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
 	const TypeInterface *prop_itype = _get_type_by_name_or_null(proptype_name);
-	if (!prop_itype) {
-		// Try with underscore prefix
-		prop_itype = _get_type_by_name_or_null("_" + proptype_name);
-	}
+	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
 
-	ERR_FAIL_NULL_V(prop_itype, ERR_BUG);
-
-	String prop_proxy_name = escape_csharp_keyword(snake_to_pascal_case(p_prop_doc.name));
+	String prop_proxy_name = escape_csharp_keyword(snake_to_pascal_case(p_iprop.cname));
 
 	// Prevent property and enclosing type from sharing the same name
 	if (prop_proxy_name == p_itype.proxy_name) {
@@ -887,15 +1046,16 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		prop_proxy_name += "_";
 	}
 
-	if (p_prop_doc.description.size()) {
+	if (p_iprop.prop_doc && p_iprop.prop_doc->description.size()) {
 		p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-		Vector<String> description_lines = p_prop_doc.description.split("\n");
+		Vector<String> description_lines = p_iprop.prop_doc->description.split("\n");
 
 		for (int i = 0; i < description_lines.size(); i++) {
-			if (description_lines[i].size()) {
+			String description_line = description_lines[i].strip_edges();
+			if (description_line.size()) {
 				p_output.push_back(INDENT2 "/// ");
-				p_output.push_back(description_lines[i].strip_edges().xml_escape());
+				p_output.push_back(description_line.xml_escape());
 				p_output.push_back("\n");
 			}
 		}
@@ -917,16 +1077,34 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.push_back(INDENT3 "get\n" OPEN_BLOCK_L3);
 		p_output.push_back("return ");
 		p_output.push_back(getter->proxy_name + "(");
-		if (prop_index != -1)
-			p_output.push_back(itos(prop_index));
+		if (p_iprop.index != -1) {
+			const ArgumentInterface &idx_arg = getter->arguments.front()->get();
+			if (idx_arg.type != name_cache.type_int) {
+				// Assume the index parameter is an enum
+				const TypeInterface *idx_arg_type = _get_type_by_name_or_null(idx_arg.type);
+				CRASH_COND(idx_arg_type == NULL);
+				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
+			} else {
+				p_output.push_back(itos(p_iprop.index));
+			}
+		}
 		p_output.push_back(");\n" CLOSE_BLOCK_L3);
 	}
 
 	if (setter) {
 		p_output.push_back(INDENT3 "set\n" OPEN_BLOCK_L3);
 		p_output.push_back(setter->proxy_name + "(");
-		if (prop_index != -1)
-			p_output.push_back(itos(prop_index) + ", ");
+		if (p_iprop.index != -1) {
+			const ArgumentInterface &idx_arg = setter->arguments.front()->get();
+			if (idx_arg.type != name_cache.type_int) {
+				// Assume the index parameter is an enum
+				const TypeInterface *idx_arg_type = _get_type_by_name_or_null(idx_arg.type);
+				CRASH_COND(idx_arg_type == NULL);
+				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
+			} else {
+				p_output.push_back(itos(p_iprop.index) + ", ");
+			}
+		}
 		p_output.push_back("value);\n" CLOSE_BLOCK_L3);
 	}
 
@@ -1033,9 +1211,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			Vector<String> description_lines = p_imethod.method_doc->description.split("\n");
 
 			for (int i = 0; i < description_lines.size(); i++) {
-				if (description_lines[i].size()) {
+				String description_line = description_lines[i].strip_edges();
+				if (description_line.size()) {
 					p_output.push_back(INDENT2 "/// ");
-					p_output.push_back(description_lines[i].strip_edges().xml_escape());
+					p_output.push_back(description_line.xml_escape());
 					p_output.push_back("\n");
 				}
 			}
@@ -1069,7 +1248,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.is_virtual) {
 			// Godot virtual method must be overridden, therefore we return a default value by default.
 
-			if (return_type->name == "void") {
+			if (return_type->cname == name_cache.type_void) {
 				p_output.push_back("return;\n" CLOSE_BLOCK_L2);
 			} else {
 				p_output.push_back("return default(");
@@ -1108,7 +1287,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.arguments.size())
 			p_output.push_back(cs_in_statements);
 
-		if (return_type->name == "void") {
+		if (return_type->cname == name_cache.type_void) {
 			p_output.push_back(im_call);
 		} else if (return_type->cs_out.empty()) {
 			p_output.push_back("return " + im_call);
@@ -1142,7 +1321,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	generated_icall_funcs.clear();
 
-	for (Map<String, TypeInterface>::Element *type_elem = obj_types.front(); type_elem; type_elem = type_elem->next()) {
+	for (Map<StringName, TypeInterface>::Element *type_elem = obj_types.front(); type_elem; type_elem = type_elem->next()) {
 		const TypeInterface &itype = type_elem->get();
 
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
@@ -1295,7 +1474,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 	if (p_imethod.is_virtual)
 		return OK; // Ignore
 
-	bool ret_void = p_imethod.return_type == "void";
+	bool ret_void = p_imethod.return_type == name_cache.type_void;
 
 	const TypeInterface *return_type = _get_type_by_name_or_placeholder(p_imethod.return_type);
 
@@ -1447,14 +1626,19 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 	return OK;
 }
 
-const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_null(const String &p_name) {
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_null(const StringName &p_cname) {
 
-	const Map<String, TypeInterface>::Element *match = builtin_types.find(p_name);
+	const Map<StringName, TypeInterface>::Element *match = builtin_types.find(p_cname);
 
 	if (match)
 		return &match->get();
 
-	match = obj_types.find(p_name);
+	match = obj_types.find(p_cname);
+
+	if (match)
+		return &match->get();
+
+	match = enum_types.find(p_cname);
 
 	if (match)
 		return &match->get();
@@ -1462,24 +1646,27 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_
 	return NULL;
 }
 
-const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_placeholder(const String &p_name) {
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_placeholder(const StringName &p_cname) {
 
-	const TypeInterface *found = _get_type_by_name_or_null(p_name);
+	const TypeInterface *found = _get_type_by_name_or_null(p_cname);
 
 	if (found)
 		return found;
 
-	ERR_PRINTS(String() + "Type not found. Creating placeholder: " + p_name);
+	ERR_PRINTS(String() + "Type not found. Creating placeholder: " + p_cname.operator String());
 
-	const Map<String, TypeInterface>::Element *match = placeholder_types.find(p_name);
+	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_cname);
 
 	if (match)
 		return &match->get();
 
 	TypeInterface placeholder;
-	TypeInterface::create_placeholder_type(placeholder, p_name);
+	TypeInterface::create_placeholder_type(placeholder, p_cname);
 
-	return &placeholder_types.insert(placeholder.name, placeholder)->get();
+	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
+}
+
+static void _create_constant_interface_from(const StringName &p_constant, const DocData::ClassDoc &p_classdoc) {
 }
 
 void BindingsGenerator::_populate_object_type_interfaces() {
@@ -1489,8 +1676,6 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
 	class_list.sort_custom<StringName::AlphCompare>();
-
-	StringName refclass_name = String("Reference");
 
 	while (class_list.size()) {
 		StringName type_cname = class_list.front()->get();
@@ -1502,20 +1687,22 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			continue;
 		}
 
+		if (!ClassDB::is_class_exposed(type_cname)) {
+			if (verbose_output)
+				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not exposed");
+			class_list.pop_front();
+			continue;
+		}
+
+		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(type_cname);
+
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
 		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
-		itype.is_reference = ClassDB::is_parent_class(type_cname, refclass_name);
+		itype.is_reference = ClassDB::is_parent_class(type_cname, name_cache.type_Reference);
 		itype.memory_own = itype.is_reference;
-
-		if (!ClassDB::is_class_exposed(type_cname)) {
-			if (verbose_output)
-				WARN_PRINTS("Ignoring type " + String(type_cname) + " because it's not exposed");
-			class_list.pop_front();
-			continue;
-		}
 
 		itype.c_out = "\treturn ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
@@ -1529,6 +1716,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.cs_type = itype.proxy_name;
 		itype.im_type_in = "IntPtr";
 		itype.im_type_out = itype.proxy_name;
+
+		// Populate methods
 
 		List<MethodInfo> virtual_method_list;
 		ClassDB::get_virtual_methods(type_cname, &virtual_method_list, true);
@@ -1547,6 +1736,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			MethodInterface imethod;
 			imethod.name = method_info.name;
+			imethod.cname = imethod.name;
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL)
 				imethod.is_virtual = true;
@@ -1570,12 +1760,12 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					// The method Object.free is registered as a virtual method, but without the virtual flag.
 					// This is because this method is not supposed to be overridden, but called.
 					// We assume the return type is void.
-					imethod.return_type = "void";
+					imethod.return_type = name_cache.type_void;
 
 					// Actually, more methods like this may be added in the future,
 					// which could actually will return something differnet.
 					// Let's put this to notify us if that ever happens.
-					if (itype.name != "Object" || imethod.name != "free") {
+					if (itype.cname != name_cache.type_Object || imethod.name != "free") {
 						if (verbose_output) {
 							WARN_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
 										"We only expected Object.free, but found " +
@@ -1585,22 +1775,21 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				} else {
 					ERR_PRINTS("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
 				}
-			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
-				//imethod.return_type = return_info.class_name;
-				imethod.return_type = "int";
+			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) { // TODO redundant?
+				imethod.return_type = return_info.class_name;
 			} else if (return_info.class_name != StringName()) {
 				imethod.return_type = return_info.class_name;
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-				imethod.return_type = "Variant";
+				imethod.return_type = name_cache.type_Variant;
 			} else if (return_info.type == Variant::NIL) {
-				imethod.return_type = "void";
+				imethod.return_type = name_cache.type_void;
 			} else {
 				imethod.return_type = Variant::get_type_name(return_info.type);
 			}
 
-			if (!itype.requires_collections && imethod.return_type == "Dictionary")
+			if (!itype.requires_collections && imethod.return_type == name_cache.type_Dictionary)
 				itype.requires_collections = true;
 
 			for (int i = 0; i < argc; i++) {
@@ -1609,22 +1798,21 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = arginfo.name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
-					//iarg.type = arginfo.class_name;
-					iarg.type = "int";
+				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) { // TODO redundant?
+					iarg.type = arginfo.class_name;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type = arginfo.class_name;
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
-					iarg.type = "Variant";
+					iarg.type = name_cache.type_Variant;
 				} else {
 					iarg.type = Variant::get_type_name(arginfo.type);
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (!itype.requires_collections && iarg.type == "Dictionary")
+				if (!itype.requires_collections && iarg.type == name_cache.type_Dictionary)
 					itype.requires_collections = true;
 
 				if (m && m->has_default_argument(i)) {
@@ -1636,7 +1824,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			if (imethod.is_vararg) {
 				ArgumentInterface ivararg;
-				ivararg.type = "VarArg";
+				ivararg.type = name_cache.type_VarArg;
 				ivararg.name = "@args";
 				imethod.add_argument(ivararg);
 			}
@@ -1679,7 +1867,128 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			}
 		}
 
-		obj_types.insert(itype.name, itype);
+		// Populate properties
+
+		List<PropertyInfo> property_list;
+		ClassDB::get_property_list(type_cname, &property_list, true);
+		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+			const PropertyInfo &property = E->get();
+
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
+				continue;
+
+			PropertyInterface iprop;
+			iprop.cname = property.name;
+			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
+			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
+			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
+
+			bool valid = false;
+			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
+			ERR_FAIL_COND(!valid);
+
+			// Prevent property and enclosing type from sharing the same name
+			if (iprop.proxy_name == itype.proxy_name) {
+				if (verbose_output) {
+					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
+								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
+				}
+
+				iprop.proxy_name += "_";
+			}
+
+			iprop.prop_doc = NULL;
+
+			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
+				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
+
+				if (prop_doc.name == iprop.cname) {
+					iprop.prop_doc = &prop_doc;
+					break;
+				}
+			}
+
+			itype.properties.push_back(iprop);
+		}
+
+		// Populate enums and constants
+
+		List<String> constant_list;
+		ClassDB::get_integer_constant_list(type_cname, &constant_list, true);
+
+		const HashMap<StringName, List<StringName> > &enum_map = class_info->enum_map;
+		const StringName *k = NULL;
+
+		while ((k = enum_map.next(k))) {
+			StringName enum_proxy_cname = *k;
+			String enum_proxy_name = enum_proxy_cname.operator String();
+			if (itype.find_property_by_proxy_name(enum_proxy_cname)) {
+				// We have several conflicts between enums and PascalCase properties,
+				// so we append 'Enum' to the enum name in those cases.
+				enum_proxy_name += "Enum";
+				enum_proxy_cname = StringName(enum_proxy_name);
+			}
+			EnumInterface ienum(enum_proxy_cname);
+			const List<StringName> &constants = enum_map.get(*k);
+			for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+				int *value = class_info->constant_map.getptr(E->get());
+				ERR_FAIL_NULL(value);
+				constant_list.erase(E->get().operator String());
+
+				ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+
+				iconstant.const_doc = NULL;
+				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
+					const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
+
+					if (const_doc.name == iconstant.name) {
+						iconstant.const_doc = &const_doc;
+						break;
+					}
+				}
+
+				ienum.constants.push_back(iconstant);
+			}
+
+			ienum.prefix = _determine_enum_prefix(ienum);
+
+			itype.enums.push_back(ienum);
+
+			TypeInterface enum_itype;
+			enum_itype.name = itype.name + "." + String(*k);
+			enum_itype.cname = StringName(enum_itype.name);
+			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
+			enum_itype.c_arg_in = "&%s";
+			enum_itype.c_type = "int";
+			enum_itype.c_type_in = "int";
+			enum_itype.c_type_out = "int";
+			enum_itype.cs_type = enum_itype.proxy_name;
+			enum_itype.im_type_in = enum_itype.proxy_name;
+			enum_itype.im_type_out = enum_itype.proxy_name;
+			enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[enum_itype.proxy_name];
+			enum_types.insert(enum_itype.cname, enum_itype);
+		}
+
+		for (const List<String>::Element *E = constant_list.front(); E; E = E->next()) {
+			int *value = class_info->constant_map.getptr(E->get());
+			ERR_FAIL_NULL(value);
+
+			ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+
+			iconstant.const_doc = NULL;
+			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
+				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
+
+				if (const_doc.name == iconstant.name) {
+					iconstant.const_doc = &const_doc;
+					break;
+				}
+			}
+
+			itype.constants.push_back(iconstant);
+		}
+
+		obj_types.insert(itype.cname, itype);
 
 		class_list.pop_front();
 	}
@@ -1704,7 +2013,10 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.default_argument = bool(p_val) ? "true" : "false";
 			break;
 		case Variant::INT:
-			break; // Keep it
+			if (r_iarg.type != name_cache.type_int) {
+				r_iarg.default_argument = "(%s)" + r_iarg.default_argument;
+			}
+			break;
 		case Variant::REAL:
 #ifndef REAL_T_IS_DOUBLE
 			r_iarg.default_argument += "f";
@@ -1762,7 +2074,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 		default: {}
 	}
 
-	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type == "Variant" && r_iarg.default_argument != "null")
+	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type == name_cache.type_Variant && r_iarg.default_argument != "null")
 		r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 }
 
@@ -1774,7 +2086,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #define INSERT_STRUCT_TYPE(m_type, m_type_in)                                                         \
 	{                                                                                                 \
-		itype = TypeInterface::create_value_type(#m_type);                                            \
+		itype = TypeInterface::create_value_type(String(#m_type));                                    \
 		itype.c_in = "\tMARSHALLED_IN(" #m_type ", %1, %1_in);\n";                                    \
 		itype.c_out = "\tMARSHALLED_OUT(" #m_type ", %1, ret_out)\n"                                  \
 					  "\treturn mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(%2), ret_out);\n"; \
@@ -1783,7 +2095,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.cs_in = "ref %s";                                                                       \
 		itype.cs_out = "return (" #m_type ")%0;";                                                     \
 		itype.im_type_out = "object";                                                                 \
-		builtin_types.insert(#m_type, itype);                                                         \
+		builtin_types.insert(itype.cname, itype);                                                     \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, "real_t*")
@@ -1799,22 +2111,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #undef INSERT_STRUCT_TYPE
 
-#define INSERT_PRIMITIVE_TYPE(m_type)                      \
-	{                                                      \
-		itype = TypeInterface::create_value_type(#m_type); \
-		itype.c_arg_in = "&%s";                            \
-		itype.c_type_in = #m_type;                         \
-		itype.c_type_out = #m_type;                        \
-		itype.im_type_in = #m_type;                        \
-		itype.im_type_out = #m_type;                       \
-		builtin_types.insert(#m_type, itype);              \
+#define INSERT_PRIMITIVE_TYPE(m_type)                              \
+	{                                                              \
+		itype = TypeInterface::create_value_type(String(#m_type)); \
+		itype.c_arg_in = "&%s";                                    \
+		itype.c_type_in = #m_type;                                 \
+		itype.c_type_out = #m_type;                                \
+		itype.im_type_in = #m_type;                                \
+		itype.im_type_out = #m_type;                               \
+		builtin_types.insert(itype.cname, itype);                  \
 	}
 
 	INSERT_PRIMITIVE_TYPE(bool)
 	//INSERT_PRIMITIVE_TYPE(int)
 
 	// int
-	itype = TypeInterface::create_value_type("int");
+	itype = TypeInterface::create_value_type(String("int"));
 	itype.c_arg_in = "&%s_in";
 	//* ptrcall only supports int64_t and uint64_t
 	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
@@ -1825,7 +2137,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_out = itype.name;
 	itype.im_type_in = itype.name;
 	itype.im_type_out = itype.name;
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 #undef INSERT_PRIMITIVE_TYPE
 
@@ -1836,6 +2148,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 #else
 	itype.name = "float";
 #endif
+	itype.cname = itype.name;
 	itype.proxy_name = itype.name;
 	itype.c_arg_in = "&%s_in";
 	//* ptrcall only supports double
@@ -1848,11 +2161,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 	// String
 	itype = TypeInterface();
 	itype.name = "String";
+	itype.cname = itype.name;
 	itype.proxy_name = "string";
 	itype.c_in = "\t%0 %1_in = " C_METHOD_MONOSTR_TO_GODOT "(%1);\n";
 	itype.c_out = "\treturn " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
@@ -1863,11 +2177,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 	// NodePath
 	itype = TypeInterface();
 	itype.name = "NodePath";
+	itype.cname = itype.name;
 	itype.proxy_name = "NodePath";
 	itype.c_out = "\treturn memnew(NodePath(%1));\n";
 	itype.c_type = itype.name;
@@ -1879,16 +2194,17 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	_populate_builtin_type(itype, Variant::NODE_PATH);
-	extra_members.insert(itype.name, MEMBER_BEGIN "public NodePath() : this(string.Empty) {}\n" MEMBER_BEGIN "public NodePath(string path)\n" OPEN_BLOCK_L2
-												  "this." BINDINGS_PTR_FIELD " = NativeCalls.godot_icall_NodePath_Ctor(path);\n" CLOSE_BLOCK_L2
-														  MEMBER_BEGIN "public static implicit operator NodePath(string from)\n" OPEN_BLOCK_L2 "return new NodePath(from);\n" CLOSE_BLOCK_L2
-																  MEMBER_BEGIN "public static implicit operator string(NodePath from)\n" OPEN_BLOCK_L2
-												  "return NativeCalls." ICALL_PREFIX "NodePath_operator_String(NodePath." CS_SMETHOD_GETINSTANCE "(from));\n" CLOSE_BLOCK_L2);
-	builtin_types.insert(itype.name, itype);
+	extra_members.insert(itype.cname, MEMBER_BEGIN "public NodePath() : this(string.Empty) {}\n" MEMBER_BEGIN "public NodePath(string path)\n" OPEN_BLOCK_L2
+												   "this." BINDINGS_PTR_FIELD " = NativeCalls.godot_icall_NodePath_Ctor(path);\n" CLOSE_BLOCK_L2
+														   MEMBER_BEGIN "public static implicit operator NodePath(string from)\n" OPEN_BLOCK_L2 "return new NodePath(from);\n" CLOSE_BLOCK_L2
+																   MEMBER_BEGIN "public static implicit operator string(NodePath from)\n" OPEN_BLOCK_L2
+												   "return NativeCalls." ICALL_PREFIX "NodePath_operator_String(NodePath." CS_SMETHOD_GETINSTANCE "(from));\n" CLOSE_BLOCK_L2);
+	builtin_types.insert(itype.cname, itype);
 
 	// RID
 	itype = TypeInterface();
 	itype.name = "RID";
+	itype.cname = itype.name;
 	itype.proxy_name = "RID";
 	itype.c_out = "\treturn memnew(RID(%1));\n";
 	itype.c_type = itype.name;
@@ -1900,13 +2216,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	_populate_builtin_type(itype, Variant::_RID);
-	extra_members.insert(itype.name, MEMBER_BEGIN "internal RID()\n" OPEN_BLOCK_L2
-												  "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" CLOSE_BLOCK_L2);
-	builtin_types.insert(itype.name, itype);
+	extra_members.insert(itype.cname, MEMBER_BEGIN "internal RID()\n" OPEN_BLOCK_L2
+												   "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" CLOSE_BLOCK_L2);
+	builtin_types.insert(itype.cname, itype);
 
 	// Variant
 	itype = TypeInterface();
 	itype.name = "Variant";
+	itype.cname = itype.name;
 	itype.proxy_name = "object";
 	itype.c_in = "\t%0 %1_in = " C_METHOD_MANAGED_TO_VARIANT "(%1);\n";
 	itype.c_out = "\treturn " C_METHOD_MANAGED_FROM_VARIANT "(%1);\n";
@@ -1917,11 +2234,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = "object";
 	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 	// VarArg (fictitious type to represent variable arguments)
 	itype = TypeInterface();
 	itype.name = "VarArg";
+	itype.cname = itype.name;
 	itype.proxy_name = "object[]";
 	itype.c_in = "\t%0 %1_in = " C_METHOD_MONOARRAY_TO(Array) "(%1);\n";
 	itype.c_arg_in = "&%s_in";
@@ -1929,12 +2247,13 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_in = "MonoArray*";
 	itype.cs_type = "params object[]";
 	itype.im_type_in = "object[]";
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 #define INSERT_ARRAY_FULL(m_name, m_type, m_proxy_t)                          \
 	{                                                                         \
 		itype = TypeInterface();                                              \
 		itype.name = #m_name;                                                 \
+		itype.cname = itype.name;                                             \
 		itype.proxy_name = #m_proxy_t "[]";                                   \
 		itype.c_in = "\t%0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
 		itype.c_out = "\treturn " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";  \
@@ -1971,6 +2290,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Dictionary
 	itype = TypeInterface();
 	itype.name = "Dictionary";
+	itype.cname = itype.name;
 	itype.proxy_name = "Dictionary<object, object>";
 	itype.c_in = "\t%0 %1_in = " C_METHOD_MANAGED_TO_DICT "(%1);\n";
 	itype.c_out = "\treturn " C_METHOD_MANAGED_FROM_DICT "(%1);\n";
@@ -1981,11 +2301,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 
 	// void (fictitious type to represent the return type of methods that do not return anything)
 	itype = TypeInterface();
 	itype.name = "void";
+	itype.cname = itype.name;
 	itype.proxy_name = itype.name;
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type;
@@ -1993,21 +2314,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.name, itype);
-
-	// Error
-	itype = TypeInterface();
-	itype.name = "Error";
-	itype.proxy_name = "Error";
-	itype.c_type = itype.name;
-	itype.c_type_in = itype.c_type;
-	itype.c_type_out = itype.c_type;
-	itype.cs_type = itype.proxy_name;
-	itype.cs_in = "(int)%0";
-	itype.cs_out = "return (Error)%s;";
-	itype.im_type_in = "int";
-	itype.im_type_out = "int";
-	builtin_types.insert(itype.name, itype);
+	builtin_types.insert(itype.cname, itype);
 }
 
 void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::Type vtype) {
@@ -2024,6 +2331,7 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 		MethodInterface imethod;
 
 		imethod.name = mi.name;
+		imethod.cname = imethod.name;
 		imethod.proxy_name = mi.name;
 
 		for (int i = 0; i < mi.arguments.size(); i++) {
@@ -2033,11 +2341,11 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 			iarg.name = pi.name;
 
 			if (pi.type == Variant::NIL)
-				iarg.type = "Variant";
+				iarg.type = name_cache.type_Variant;
 			else
 				iarg.type = Variant::get_type_name(pi.type);
 
-			if (!r_itype.requires_collections && iarg.type == "Dictionary")
+			if (!r_itype.requires_collections && iarg.type == name_cache.type_Dictionary)
 				r_itype.requires_collections = true;
 
 			if ((mi.default_arguments.size() - mi.arguments.size() + i) >= 0)
@@ -2048,12 +2356,12 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 
 		if (mi.return_val.type == Variant::NIL) {
 			if (mi.return_val.name != "")
-				imethod.return_type = "Variant";
+				imethod.return_type = name_cache.type_Variant;
 		} else {
 			imethod.return_type = Variant::get_type_name(mi.return_val.type);
 		}
 
-		if (!r_itype.requires_collections && imethod.return_type == "Dictionary")
+		if (!r_itype.requires_collections && imethod.return_type == name_cache.type_Dictionary)
 			r_itype.requires_collections = true;
 
 		if (r_itype.class_doc) {
@@ -2069,15 +2377,113 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 	}
 }
 
-BindingsGenerator::BindingsGenerator() {
+void BindingsGenerator::_populate_global_constants() {
+
+	int global_constants_count = GlobalConstants::get_global_constant_count();
+
+	if (global_constants_count > 0) {
+		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
+
+		ERR_EXPLAIN("Could not find `@GlobalScope` in DocData");
+		CRASH_COND(!match);
+
+		const DocData::ClassDoc &global_scope_doc = match->value();
+
+		for (int i = 0; i < global_constants_count; i++) {
+
+			String constant_name = GlobalConstants::get_global_constant_name(i);
+
+			const DocData::ConstantDoc *const_doc = NULL;
+			for (int i = 0; i < global_scope_doc.constants.size(); i++) {
+				const DocData::ConstantDoc &curr_const_doc = global_scope_doc.constants[i];
+
+				if (curr_const_doc.name == constant_name) {
+					const_doc = &curr_const_doc;
+					break;
+				}
+			}
+
+			int constant_value = GlobalConstants::get_global_constant_value(i);
+			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
+
+			ConstantInterface iconstant(snake_to_pascal_case(constant_name, true), constant_value);
+			iconstant.const_doc = const_doc;
+
+			if (enum_name != StringName()) {
+				EnumInterface ienum(enum_name);
+				List<EnumInterface>::Element *match = global_enums.find(ienum);
+				if (match) {
+					match->get().constants.push_back(iconstant);
+				} else {
+					ienum.constants.push_back(iconstant);
+					global_enums.push_back(ienum);
+				}
+			} else {
+				global_constants.push_back(iconstant);
+			}
+		}
+
+		for (List<EnumInterface>::Element *E = global_enums.front(); E; E = E->next()) {
+			EnumInterface &ienum = E->get();
+
+			TypeInterface enum_itype;
+			enum_itype = TypeInterface::create_value_type(ienum.cname);
+			enum_itype.c_arg_in = "&%s";
+			enum_itype.c_type = "int";
+			enum_itype.c_type_in = "int";
+			enum_itype.c_type_out = "int";
+			enum_itype.im_type_in = enum_itype.name;
+			enum_itype.im_type_out = enum_itype.name;
+			enum_types.insert(enum_itype.cname, enum_itype);
+
+			ienum.prefix = _determine_enum_prefix(ienum);
+
+			// HARDCODED
+			if (ienum.cname == name_cache.enum_Error) {
+				if (!ienum.prefix.empty()) { // Just in case it ever changes
+					ERR_PRINTS("Prefix for enum 'Error' is not empty");
+				}
+
+				ienum.prefix = "Err";
+			}
+		}
+	}
+
+	// HARDCODED
+	List<StringName> hardcoded_enums;
+	hardcoded_enums.push_back("Vector3.Axis");
+	for (List<StringName>::Element *E = hardcoded_enums.front(); E; E = E->next()) {
+		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
+		// Here, we are assuming core types do not begin with underscore
+		TypeInterface enum_itype;
+		enum_itype = TypeInterface::create_value_type(E->get());
+		enum_itype.c_arg_in = "&%s";
+		enum_itype.c_type = "int";
+		enum_itype.c_type_in = "int";
+		enum_itype.c_type_out = "int";
+		enum_itype.im_type_in = enum_itype.name;
+		enum_itype.im_type_out = enum_itype.name;
+		enum_types.insert(enum_itype.cname, enum_itype);
+	}
+}
+
+BindingsGenerator::BindingsGenerator() :
+		name_cache(NameCache::get_singleton()) {
 
 	EditorHelp::generate_doc();
 
+	enum_types.clear();
+
 	_populate_object_type_interfaces();
 	_populate_builtin_type_interfaces();
+
+	_populate_global_constants();
+
+	// Populate internal calls (after populating type interfaces and global constants)
+
 	_generate_header_icalls();
 
-	for (Map<String, TypeInterface>::Element *E = obj_types.front(); E; E = E->next())
+	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next())
 		_generate_method_icalls(E->get());
 
 	_generate_method_icalls(builtin_types["NodePath"]);

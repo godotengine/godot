@@ -313,7 +313,7 @@ GodotSharpBuilds *GodotSharpBuilds::singleton = NULL;
 void GodotSharpBuilds::build_exit_callback(const MonoBuildInfo &p_build_info, int p_exit_code) {
 
 	BuildProcess *match = builds.getptr(p_build_info);
-	ERR_FAIL_COND(!match);
+	ERR_FAIL_NULL(match);
 
 	BuildProcess &bp = *match;
 	bp.on_exit(p_exit_code);
