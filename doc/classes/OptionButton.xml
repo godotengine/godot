@@ -91,6 +91,13 @@
 				Return the text of the item at index "idx".
 			</description>
 		</method>
+		<method name="get_popup" qualifiers="const">
+			<return type="PopupMenu">
+			</return>
+			<description>
+				Return the [PopupMenu] contained in this button.
+			</description>
+		</method>
 		<method name="get_selected_id" qualifiers="const">
 			<return type="int">
 			</return>
