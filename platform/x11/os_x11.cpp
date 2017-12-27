@@ -716,16 +716,6 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) con
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
-	if (p_enabled && !get_borderless_window()) {
-		// remove decorations if the window is not already borderless
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-	}
-
 	if (p_enabled && !is_window_resizable()) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		XSizeHints *xsh;
@@ -1216,6 +1206,27 @@ bool OS_X11::is_window_maximized() const {
 
 	XFree(data);
 	return retval;
+}
+
+void OS_X11::set_window_always_on_top(bool p_enabled) {
+	if (is_window_always_on_top() == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.fullscreen) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
+	set_wm_above(p_enabled);
+	if (!p_enabled && !current_videomode.fullscreen) {
+		// Restore
+		set_window_maximized(false);
+	}
+
+	current_videomode.always_on_top = p_enabled;
+}
+
+bool OS_X11::is_window_always_on_top() const {
+	return current_videomode.always_on_top;
 }
 
 void OS_X11::set_window_always_on_top(bool p_enabled) {
