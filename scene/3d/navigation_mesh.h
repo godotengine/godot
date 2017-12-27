@@ -164,7 +164,21 @@ class NavigationMeshInstance : public Spatial {
 
 	GDCLASS(NavigationMeshInstance, Spatial);
 
+public:
+	enum BakeSelectionMode {
+		// select meshes for baking that are child of the NavigationMeshInstnace
+		BAKE_SELECTION_MODE_NAVMESH_CHILDREN = 0,
+		// select meshes and their children(recusive) for baking that have the are in the specified group
+		BAKE_SELECTION_MODE_GROUPS_WITH_CHILDREN,
+		// select only those meshes that are in the specified group (and not their children automatically)
+		BAKE_SELECTION_MODE_GROUPS_EXPLICIT
+	};
+
+private:
 	bool enabled;
+	BakeSelectionMode bake_selection_mode;
+	StringName navmesh_groupname;
+
 	int nav_id;
 	Navigation *navigation;
 	Ref<NavigationMesh> navmesh;
@@ -178,6 +192,12 @@ protected:
 public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_bake_selection_mode(int p_value);
+	int get_bake_selection_mode() const;
+
+	void set_navmesh_groupname(const StringName &name);
+	StringName get_navmesh_groupname();
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;

@@ -494,6 +494,23 @@ bool NavigationMeshInstance::is_enabled() const {
 	return enabled;
 }
 
+void NavigationMeshInstance::set_bake_selection_mode(int p_value) {
+	ERR_FAIL_COND(p_value > BAKE_SELECTION_MODE_GROUPS_EXPLICIT);
+	bake_selection_mode = static_cast<BakeSelectionMode>(p_value);
+}
+
+int NavigationMeshInstance::get_bake_selection_mode() const {
+	return static_cast<int>(bake_selection_mode);
+}
+
+void NavigationMeshInstance::set_navmesh_groupname(const StringName &name) {
+	navmesh_groupname = name;
+}
+
+StringName NavigationMeshInstance::get_navmesh_groupname() {
+	return navmesh_groupname;
+}
+
 /////////////////////////////
 
 void NavigationMeshInstance::_notification(int p_what) {
@@ -606,15 +623,27 @@ String NavigationMeshInstance::get_configuration_warning() const {
 }
 
 void NavigationMeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationMeshInstance::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationMeshInstance::get_navigation_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshInstance::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_bake_selection_mode", "bake_mode_type"), &NavigationMeshInstance::set_bake_selection_mode);
+	ClassDB::bind_method(D_METHOD("get_bake_selection_mode"), &NavigationMeshInstance::get_bake_selection_mode);
+
+	ClassDB::bind_method(D_METHOD("set_navmesh_groupname", "navmesh_groupname"), &NavigationMeshInstance::set_navmesh_groupname);
+	ClassDB::bind_method(D_METHOD("get_navmesh_groupname"), &NavigationMeshInstance::get_navmesh_groupname);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+
+	BIND_CONSTANT(BAKE_SELECTION_MODE_NAVMESH_CHILDREN);
+	BIND_CONSTANT(BAKE_SELECTION_MODE_GROUPS_WITH_CHILDREN);
+	BIND_CONSTANT(BAKE_SELECTION_MODE_GROUPS_EXPLICIT);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "selection_mode", PROPERTY_HINT_ENUM, "navmesh children,group with children,group explicit"), "set_bake_selection_mode", "get_bake_selection_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "navmesh_groupname"), "set_navmesh_groupname", "get_navmesh_groupname");
 }
 
 NavigationMeshInstance::NavigationMeshInstance() {
@@ -623,5 +652,7 @@ NavigationMeshInstance::NavigationMeshInstance() {
 	navigation = NULL;
 	nav_id = -1;
 	enabled = true;
+	bake_selection_mode = BAKE_SELECTION_MODE_NAVMESH_CHILDREN;
+	navmesh_groupname = "navmesh";
 	set_notify_transform(true);
 }

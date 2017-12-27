@@ -15,6 +15,10 @@
 		</member>
 		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
 		</member>
+		<member name="bakemode_type" type="int" setter="set_bake_mode_type" getter="get_bake_mode_type">
+		</member>
+		<member name="groupname" type="StringName" setter="set_navmesh_groupname" getter="get_navmesh_groupname">
+		</member>
 	</members>
 	<constants>
 	</constants>

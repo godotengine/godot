@@ -44,7 +44,7 @@ class NavigationMeshGenerator {
 protected:
 	static void _add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies);
 	static void _add_mesh(const Ref<Mesh> &p_mesh, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices);
-	static void _parse_geometry(const Transform &p_base_inverse, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices);
+	static void _parse_geometry(const Transform &p_base_inverse, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int bake_selection_mode = NavigationMeshInstance::BAKE_SELECTION_MODE_NAVMESH_CHILDREN, Set<Node *> *_processedList = 0, const StringName &navmesh_groupname = "navmesh");
 
 	static void _convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh);
 	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, EditorProgress *ep,
