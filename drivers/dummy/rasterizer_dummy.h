@@ -117,21 +117,77 @@ public:
 class RasterizerStorageDummy : public RasterizerStorage {
 public:
 	/* TEXTURE API */
+	struct DummyTexture : public RID_Data {
+		int width;
+		int height;
+		uint32_t flags;
+		Image::Format format;
+		Ref<Image> image;
+		String path;
+	};
 
-	RID texture_create() { return RID(); }
-	void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {}
-	void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) {}
-	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const { return NULL; }
-	void texture_set_flags(RID p_texture, uint32_t p_flags) {}
-	uint32_t texture_get_flags(RID p_texture) const { return 0; }
-	Image::Format texture_get_format(RID p_texture) const { return Image::FORMAT_RGB8; }
+	mutable RID_Owner<DummyTexture> texture_owner;
+
+	RID texture_create() {
+
+		DummyTexture *texture = memnew(DummyTexture);
+		ERR_FAIL_COND_V(!texture, RID());
+		return texture_owner.make_rid(texture);
+	}
+	void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->width = p_width;
+		t->height = p_height;
+		t->flags = p_flags;
+		t->format = p_format;
+		t->image = Ref<Image>(memnew(Image));
+		t->image->create(p_width, p_height, false, p_format);
+	}
+	void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->width = p_image->get_width();
+		t->height = p_image->get_height();
+		t->format = p_image->get_format();
+		t->image->create(t->width, t->height, false, t->format, p_image->get_data());
+	}
+
+	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND_V(!t, Ref<Image>());
+		return t->image;
+	}
+	void texture_set_flags(RID p_texture, uint32_t p_flags) {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->flags = p_flags;
+	}
+	uint32_t texture_get_flags(RID p_texture) const {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND_V(!t, 0);
+		return t->flags;
+	}
+	Image::Format texture_get_format(RID p_texture) const {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND_V(!t, Image::FORMAT_RGB8);
+		return t->format;
+	}
 	uint32_t texture_get_texid(RID p_texture) const { return 0; }
 	uint32_t texture_get_width(RID p_texture) const { return 0; }
 	uint32_t texture_get_height(RID p_texture) const { return 0; }
 	void texture_set_size_override(RID p_texture, int p_width, int p_height) {}
 
-	void texture_set_path(RID p_texture, const String &p_path) {}
-	String texture_get_path(RID p_texture) const { return ""; }
+	void texture_set_path(RID p_texture, const String &p_path) {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->path = p_path;
+	}
+	String texture_get_path(RID p_texture) const {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND_V(!t, String());
+		return t->path;
+	}
 
 	void texture_set_shrink_all_x2_on_set_data(bool p_enable) {}
 
@@ -460,7 +516,15 @@ public:
 	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
 
 	VS::InstanceType get_base_type(RID p_rid) const {}
-	bool free(RID p_rid) {}
+	bool free(RID p_rid) {
+
+		if (texture_owner.owns(p_rid)) {
+			// delete the texture
+			DummyTexture *texture = texture_owner.get(p_rid);
+			texture_owner.free(p_rid);
+			memdelete(texture);
+		}
+	}
 
 	bool has_os_feature(const String &p_feature) const {}
 
