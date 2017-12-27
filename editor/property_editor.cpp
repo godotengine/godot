@@ -3346,7 +3346,7 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::VECTOR2: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
@@ -3355,7 +3355,7 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::RECT2: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
@@ -3364,7 +3364,7 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::VECTOR3: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
@@ -3374,13 +3374,13 @@ void PropertyEditor::update_tree() {
 			case Variant::TRANSFORM2D:
 			case Variant::BASIS: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 			} break;
 			case Variant::TRANSFORM: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
@@ -3389,7 +3389,7 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::PLANE: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
@@ -3398,7 +3398,7 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::AABB: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, "AABB");
 				if (show_type_icons)
@@ -3407,7 +3407,7 @@ void PropertyEditor::update_tree() {
 
 			case Variant::QUAT: {
 
-				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM_NUMERIC);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
