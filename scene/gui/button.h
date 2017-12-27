@@ -56,13 +56,14 @@ private:
 	float _internal_margin[4];
 
 protected:
-	virtual Size2 get_minimum_size() const;
 	void _set_internal_margin(Margin p_margin, float p_value);
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	//
+
+	virtual Size2 get_minimum_size() const;
 
 	void set_text(const String &p_text);
 	String get_text() const;

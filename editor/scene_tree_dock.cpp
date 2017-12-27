@@ -1360,6 +1360,7 @@ void SceneTreeDock::_create() {
 		editor_data->get_undo_redo().commit_action();
 		editor->push_item(c);
 		editor_selection->clear();
+		editor_selection->add_node(child);
 		if (Object::cast_to<Control>(c)) {
 			//make editor more comfortable, so some controls don't appear super shrunk
 			Control *ct = Object::cast_to<Control>(c);
