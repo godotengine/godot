@@ -1138,6 +1138,9 @@ void AnimationTreePlayer::transition_node_set_input_count(const StringName &p_no
 
 	n->inputs.resize(p_inputs);
 	n->input_data.resize(p_inputs);
+
+	_clear_cycle_test();
+
 	last_error = _cycle_test(out_name);
 }
 void AnimationTreePlayer::transition_node_set_input_auto_advance(const StringName &p_node, int p_input, bool p_auto_advance) {
@@ -1358,6 +1361,8 @@ void AnimationTreePlayer::remove_node(const StringName &p_node) {
 
 	node_map.erase(p_node);
 
+	_clear_cycle_test();
+
 	// compute last error again, just in case
 	last_error = _cycle_test(out_name);
 	dirty_caches = true;
@@ -1385,6 +1390,14 @@ AnimationTreePlayer::ConnectError AnimationTreePlayer::_cycle_test(const StringN
 	return CONNECT_OK;
 }
 
+// Use this function to not alter next complete _cycle_test().
+void AnimationTreePlayer::_clear_cycle_test() {
+	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {
+		NodeBase *nb = E->get();
+		nb->cycletest = false;
+	}
+}
+
 Error AnimationTreePlayer::connect_nodes(const StringName &p_src_node, const StringName &p_dst_node, int p_dst_input) {
 
 	ERR_FAIL_COND_V(!node_map.has(p_src_node), ERR_INVALID_PARAMETER);
@@ -1409,11 +1422,7 @@ Error AnimationTreePlayer::connect_nodes(const StringName &p_src_node, const Str
 
 	dst->inputs[p_dst_input].node = p_src_node;
 
-	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {
-
-		NodeBase *nb = E->get();
-		nb->cycletest = false;
-	}
+	_clear_cycle_test();
 
 	last_error = _cycle_test(out_name);
 	if (last_error) {
