@@ -504,6 +504,7 @@ public:
 	virtual RID particles_create() = 0;
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
+	virtual bool particles_get_emitting(RID p_particles) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;

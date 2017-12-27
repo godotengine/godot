@@ -1206,6 +1206,7 @@ public:
 	virtual RID particles_create();
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting);
+	virtual bool particles_get_emitting(RID p_particles);
 	virtual void particles_set_amount(RID p_particles, int p_amount);
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime);
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot);
