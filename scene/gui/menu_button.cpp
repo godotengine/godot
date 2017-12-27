@@ -63,25 +63,10 @@ void MenuButton::pressed() {
 
 void MenuButton::_gui_input(Ref<InputEvent> p_event) {
 
-	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==BUTTON_LEFT) {
-		clicked=p_event->is_pressed();
-	}
-	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible_in_tree()) {
-
-		Point2 gt = Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
-		gt = get_global_transform().xform(gt);
-		Point2 lt = popup->get_transform().affine_inverse().xform(gt);
-		if (popup->has_point(lt)) {
-			//print_line("HAS POINT!!!");
-			popup->call_deferred("grab_click_focus");
-		}
-
-	}*/
-
 	BaseButton::_gui_input(p_event);
 }
 
-PopupMenu *MenuButton::get_popup() {
+PopupMenu *MenuButton::get_popup() const {
 
 	return popup;
 }

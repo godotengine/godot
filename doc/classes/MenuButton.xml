@@ -11,7 +11,7 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_popup">
+		<method name="get_popup" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>

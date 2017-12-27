@@ -11,14 +11,14 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_picker">
+		<method name="get_picker" qualifiers="const">
 			<return type="ColorPicker">
 			</return>
 			<description>
 				Returns the [code]ColorPicker[/code] that this [code]ColorPickerButton[/code] toggles.
 			</description>
 		</method>
-		<method name="get_popup">
+		<method name="get_popup" qualifiers="const">
 			<return type="PopupPanel">
 			</return>
 			<description>
