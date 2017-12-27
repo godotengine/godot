@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_server.h"
-
-#include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
-#include "drivers/dummy/texture_loader_dummy.h"
 #include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "main/main.h"
 
@@ -51,16 +50,12 @@ const char *OS_Server::get_video_driver_name(int p_driver) const {
 }
 
 int OS_Server::get_audio_driver_count() const {
-	return 1;
+	return 0;
 }
 
 const char *OS_Server::get_audio_driver_name(int p_driver) const {
 
-	return "Dummy";
-}
-
-int OS_Server::get_current_video_driver() const {
-	return video_driver_index;
+	return "";
 }
 
 void OS_Server::initialize_core() {
@@ -70,15 +65,13 @@ void OS_Server::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+void OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
 	main_loop = NULL;
 
 	RasterizerDummy::make_current();
-
-	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
 
 	visual_server = memnew(VisualServerRaster);
 	visual_server->init();
@@ -90,13 +83,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	power_manager = memnew(PowerX11);
 
 	_ensure_user_data_dir();
-
-	resource_loader_dummy = memnew(ResourceFormatDummyTexture);
-	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
-
-	return OK;
 }
-
 void OS_Server::finalize() {
 
 	if (main_loop)
@@ -109,8 +96,6 @@ void OS_Server::finalize() {
 	memdelete(input);
 
 	memdelete(power_manager);
-
-	memdelete(resource_loader_dummy);
 
 	args.clear();
 }
@@ -189,9 +174,6 @@ void OS_Server::move_window_to_foreground() {
 }
 
 void OS_Server::set_cursor_shape(CursorShape p_shape) {
-}
-
-void OS_Server::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 }
 
 OS::PowerState OS_Server::get_power_state() {
