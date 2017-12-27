@@ -173,11 +173,12 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
 	Ref<DynamicFont> df_text_editor_status_code;
-	df_output_code.instance();
-	df_output_code->set_size(14 * EDSCALE);
-	df_output_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
-	df_output_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
-	df_output_code->set_font_data(dfmono);
-	MAKE_FALLBACKS(df_output_code);
-	p_theme->set_font("status_source", "EditorFonts", df_output_code);
+	df_text_editor_status_code.instance();
+	df_text_editor_status_code->set_size(14 * EDSCALE);
+	df_text_editor_status_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
+	df_text_editor_status_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
+	df_text_editor_status_code->set_font_data(dfmono);
+	MAKE_FALLBACKS(df_text_editor_status_code);
+
+	p_theme->set_font("status_source", "EditorFonts", df_text_editor_status_code);
 }
