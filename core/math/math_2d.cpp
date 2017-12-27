@@ -102,69 +102,6 @@ Vector2 Vector2::cross(real_t p_other) const {
 	return Vector2(p_other * y, -p_other * x);
 }
 
-Vector2 Vector2::operator+(const Vector2 &p_v) const {
-
-	return Vector2(x + p_v.x, y + p_v.y);
-}
-void Vector2::operator+=(const Vector2 &p_v) {
-
-	x += p_v.x;
-	y += p_v.y;
-}
-Vector2 Vector2::operator-(const Vector2 &p_v) const {
-
-	return Vector2(x - p_v.x, y - p_v.y);
-}
-void Vector2::operator-=(const Vector2 &p_v) {
-
-	x -= p_v.x;
-	y -= p_v.y;
-}
-
-Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-
-	return Vector2(x * p_v1.x, y * p_v1.y);
-};
-
-Vector2 Vector2::operator*(const real_t &rvalue) const {
-
-	return Vector2(x * rvalue, y * rvalue);
-};
-void Vector2::operator*=(const real_t &rvalue) {
-
-	x *= rvalue;
-	y *= rvalue;
-};
-
-Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-
-	return Vector2(x / p_v1.x, y / p_v1.y);
-};
-
-Vector2 Vector2::operator/(const real_t &rvalue) const {
-
-	return Vector2(x / rvalue, y / rvalue);
-};
-
-void Vector2::operator/=(const real_t &rvalue) {
-
-	x /= rvalue;
-	y /= rvalue;
-};
-
-Vector2 Vector2::operator-() const {
-
-	return Vector2(-x, -y);
-}
-
-bool Vector2::operator==(const Vector2 &p_vec2) const {
-
-	return x == p_vec2.x && y == p_vec2.y;
-}
-bool Vector2::operator!=(const Vector2 &p_vec2) const {
-
-	return x != p_vec2.x || y != p_vec2.y;
-}
 Vector2 Vector2::floor() const {
 
 	return Vector2(Math::floor(x), Math::floor(y));
