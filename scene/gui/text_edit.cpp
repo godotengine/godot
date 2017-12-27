@@ -1695,10 +1695,9 @@ void TextEdit::indent_right() {
 
 	// fix selection and cursor being off by one on the last line
 	if (is_selection_active()) {
-		selection.to_column++;
-		selection.from_column++;
+		select(selection.from_line, selection.from_column + 1, selection.to_line, selection.to_column + 1);
 	}
-	cursor.column++;
+	cursor_set_column(cursor.column + 1, false);
 	end_complex_operation();
 	update();
 }
@@ -1737,14 +1736,9 @@ void TextEdit::indent_left() {
 
 	// fix selection and cursor being off by one on the last line
 	if (is_selection_active() && last_line_text != get_line(end_line)) {
-		if (selection.to_column > 0)
-			selection.to_column--;
-		if (selection.from_column > 0)
-			selection.from_column--;
+		select(selection.from_line, selection.from_column - 1, selection.to_line, selection.to_column - 1);
 	}
-	if (cursor.column > 0) {
-		cursor.column--;
-	}
+	cursor_set_column(cursor.column - 1, false);
 	end_complex_operation();
 	update();
 }
@@ -4201,11 +4195,15 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 		p_from_line = text.size() - 1;
 	if (p_from_column >= text[p_from_line].length())
 		p_from_column = text[p_from_line].length();
+	if (p_from_column < 0)
+		p_from_column = 0;
 
 	if (p_to_line >= text.size())
 		p_to_line = text.size() - 1;
 	if (p_to_column >= text[p_to_line].length())
 		p_to_column = text[p_to_line].length();
+	if (p_to_column < 0)
+		p_to_column = 0;
 
 	selection.from_line = p_from_line;
 	selection.from_column = p_from_column;
