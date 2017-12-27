@@ -1050,8 +1050,15 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
+	// Wait for max 1 second for effective resizing (so the GLX context is too).
+	int i = 0;
 	while (p_enabled && !is_window_maximized()) {
-		// Wait for effective resizing (so the GLX context is too).
+		if (i >= 100) {
+			WARN_PRINT("Unable to resize window to full screen.");
+			break;
+		}
+		usleep(10000); // 0.01 seconds
+		i++;
 	}
 
 	maximized = p_enabled;
