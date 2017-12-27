@@ -279,6 +279,29 @@ struct NaturalNoCaseComparator {
 	}
 };
 
+template <typename L, typename R>
+_FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
+
+	while (true) {
+
+		if (*l_ptr == 0 && *r_ptr == 0)
+			return false;
+		else if (*l_ptr == 0)
+			return true;
+		else if (*r_ptr == 0)
+			return false;
+		else if (*l_ptr < *r_ptr)
+			return true;
+		else if (*l_ptr > *r_ptr)
+			return false;
+
+		l_ptr++;
+		r_ptr++;
+	}
+
+	CRASH_COND(true); // unreachable
+}
+
 /* end of namespace */
 
 //tool translate

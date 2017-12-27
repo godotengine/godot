@@ -64,26 +64,7 @@ bool CharString::operator<(const CharString &p_right) const {
 		return p_right.length() != 0;
 	}
 
-	const char *this_str = get_data();
-	const char *that_str = p_right.get_data();
-	while (true) {
-
-		if (*that_str == 0 && *this_str == 0)
-			return false; //this can't be equal, sadly
-		else if (*this_str == 0)
-			return true; //if this is empty, and the other one is not, then we're less.. I think?
-		else if (*that_str == 0)
-			return false; //otherwise the other one is smaller..
-		else if (*this_str < *that_str) //more than
-			return true;
-		else if (*this_str > *that_str) //less than
-			return false;
-
-		this_str++;
-		that_str++;
-	}
-
-	return false; //should never reach here anyway
+	return is_str_less(get_data(), p_right.get_data());
 }
 
 const char *CharString::get_data() const {
@@ -372,25 +353,7 @@ bool String::operator<(const CharType *p_str) const {
 	if (empty())
 		return true;
 
-	const CharType *this_str = c_str();
-	while (true) {
-
-		if (*p_str == 0 && *this_str == 0)
-			return false; //this can't be equal, sadly
-		else if (*this_str == 0)
-			return true; //if this is empty, and the other one is not, then we're less.. I think?
-		else if (*p_str == 0)
-			return false; //otherwise the other one is smaller..
-		else if (*this_str < *p_str) //more than
-			return true;
-		else if (*this_str > *p_str) //less than
-			return false;
-
-		this_str++;
-		p_str++;
-	}
-
-	return false; //should never reach here anyway
+	return is_str_less(c_str(), p_str);
 }
 
 bool String::operator<=(const String &p_str) const {
@@ -405,25 +368,7 @@ bool String::operator<(const char *p_str) const {
 	if (empty())
 		return true;
 
-	const CharType *this_str = c_str();
-	while (true) {
-
-		if (*p_str == 0 && *this_str == 0)
-			return false; //this can't be equal, sadly
-		else if (*this_str == 0)
-			return true; //if this is empty, and the other one is not, then we're less.. I think?
-		else if (*p_str == 0)
-			return false; //otherwise the other one is smaller..
-		else if (*this_str < *p_str) //more than
-			return true;
-		else if (*this_str > *p_str) //less than
-			return false;
-
-		this_str++;
-		p_str++;
-	}
-
-	return false; //should never reach here anyway
+	return is_str_less(c_str(), p_str);
 }
 
 bool String::operator<(const String &p_str) const {
