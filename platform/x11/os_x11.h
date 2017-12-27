@@ -200,6 +200,8 @@ protected:
 
 	void _window_changed(XEvent *xevent);
 
+	bool is_window_maximize_allowed();
+
 public:
 	virtual String get_name();
 
