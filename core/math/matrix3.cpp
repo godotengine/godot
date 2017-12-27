@@ -228,10 +228,22 @@ void Basis::scale(const Vector3 &p_scale) {
 }
 
 Basis Basis::scaled(const Vector3 &p_scale) const {
-
 	Basis m = *this;
 	m.scale(p_scale);
 	return m;
+}
+
+void Basis::scale_local(const Vector3 &p_scale) {
+	// performs a scaling in object-local coordinate system:
+	// M -> (M.S.Minv).M = M.S.
+	*this = scaled_local(p_scale);
+}
+
+Basis Basis::scaled_local(const Vector3 &p_scale) const {
+	Basis b;
+	b.set_scale(p_scale);
+
+	return (*this) * b;
 }
 
 void Basis::set_scale(const Vector3 &p_scale) {
@@ -312,7 +324,8 @@ void Basis::rotate(const Vector3 &p_axis, real_t p_phi) {
 }
 
 void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
-
+	// performs a rotation in object-local coordinate system:
+	// M -> (M.R.Minv).M = M.R.
 	*this = rotated_local(p_axis, p_phi);
 }
 Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
