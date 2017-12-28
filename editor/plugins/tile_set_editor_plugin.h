@@ -33,7 +33,7 @@
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
 class AutotileEditorHelper;
@@ -70,7 +70,7 @@ class AutotileEditor : public Control {
 		SHAPE_CREATE_FROM_BITMASK,
 		SHAPE_CREATE_FROM_NOT_BITMASK,
 		SHAPE_KEEP_INSIDE_TILE,
-		SHAPE_SNAP_TO_BITMASK_GRID,
+		SHAPE_GRID_SNAP,
 		ZOOM_OUT,
 		ZOOM_1,
 		ZOOM_IN,
@@ -78,7 +78,7 @@ class AutotileEditor : public Control {
 	};
 
 	Ref<TileSet> tile_set;
-	Ref<ConcavePolygonShape2D> edited_collision_shape;
+	Ref<ConvexPolygonShape2D> edited_collision_shape;
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
 
@@ -91,9 +91,20 @@ class AutotileEditor : public Control {
 	Button *tool_editmode[EDITMODE_MAX];
 	HBoxContainer *tool_containers[TOOLBAR_MAX];
 	HBoxContainer *toolbar;
+	HBoxContainer *hb_grid;
 	ToolButton *tools[TOOL_MAX];
 	SpinBox *spin_priority;
+	SpinBox *sb_step_y;
+	SpinBox *sb_step_x;
+	SpinBox *sb_off_y;
+	SpinBox *sb_off_x;
+	SpinBox *sb_sep_y;
+	SpinBox *sb_sep_x;
 	EditMode edit_mode;
+
+	Vector2 snap_step;
+	Vector2 snap_offset;
+	Vector2 snap_separation;
 
 	bool creating_shape;
 	int dragging_point;
@@ -119,9 +130,16 @@ private:
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
 	void _on_tool_clicked(int p_tool);
 	void _on_priority_changed(float val);
+	void _on_grid_snap_toggled(bool p_val);
+	void _set_snap_step_x(float p_val);
+	void _set_snap_step_y(float p_val);
+	void _set_snap_off_x(float p_val);
+	void _set_snap_off_y(float p_val);
+	void _set_snap_sep_x(float p_val);
+	void _set_snap_sep_y(float p_val);
 
 	void draw_highlight_tile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
-	void draw_grid(const Vector2 &size, int spacing);
+	void draw_grid_snap();
 	void draw_polygon_shapes();
 	void close_shape(const Vector2 &shape_anchor);
 	Vector2 snap_point(const Vector2 &point);
