@@ -198,6 +198,58 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 }
 
+void GridMap::set_collision_layer(uint32_t p_layer) {
+
+	collision_layer = p_layer;
+	_reset_physic_bodies_collision_filters();
+}
+
+uint32_t GridMap::get_collision_layer() const {
+
+	return collision_layer;
+}
+
+void GridMap::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask = p_mask;
+	_reset_physic_bodies_collision_filters();
+}
+
+uint32_t GridMap::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void GridMap::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool GridMap::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
+void GridMap::set_collision_layer_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_layer();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_layer(mask);
+}
+
+bool GridMap::get_collision_layer_bit(int p_bit) const {
+
+	return get_collision_layer() & (1 << p_bit);
+}
+
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 
 	if (!theme.is_null())
@@ -311,6 +363,8 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 		g->dirty = true;
 		g->static_body = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
+		PhysicsServer::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
+		PhysicsServer::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		SceneTree *st = SceneTree::get_singleton();
 
 		if (st && st->is_debugging_collisions_hint()) {
@@ -575,6 +629,13 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	return false;
 }
 
+void GridMap::_reset_physic_bodies_collision_filters() {
+	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
+		PhysicsServer::get_singleton()->body_set_collision_layer(E->get()->static_body, collision_layer);
+		PhysicsServer::get_singleton()->body_set_collision_mask(E->get()->static_body, collision_mask);
+	}
+}
+
 void GridMap::_octant_enter_world(const OctantKey &p_key) {
 
 	ERR_FAIL_COND(!octant_map.has(p_key));
@@ -815,6 +876,18 @@ void GridMap::_update_octants_callback() {
 
 void GridMap::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &GridMap::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &GridMap::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &GridMap::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &GridMap::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &GridMap::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &GridMap::get_collision_mask_bit);
+
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
+
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &GridMap::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &GridMap::get_theme);
 
@@ -854,6 +927,10 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
+
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 }
@@ -1066,6 +1143,9 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 }
 
 GridMap::GridMap() {
+
+	collision_layer = 1;
+	collision_mask = 1;
 
 	cell_size = Vector3(2, 2, 2);
 	octant_size = 8;
