@@ -320,7 +320,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	List<String> to_check;
 
+	String source_file;
 	String source_md5;
+	Vector<String> dest_files;
+	String dest_md5;
 
 	while (true) {
 
@@ -346,8 +349,16 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				for (int i = 0; i < fa.size(); i++) {
 					to_check.push_back(fa[i]);
 				}
-			} else if (!p_only_imported_files && assign == "source_md5") {
-				source_md5 = value;
+			} else if (!p_only_imported_files) {
+				if (assign == "source_md5") {
+					source_md5 = value;
+				} else if (assign == "source_file") {
+					source_file = value;
+				} else if (assign == "dest_md5") {
+					dest_md5 = value;
+				} else if (assign == "dest_files") {
+					dest_files = value;
+				}
 			}
 
 		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
@@ -366,6 +377,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check source md5 matching
 	if (!p_only_imported_files) {
+
+		if (source_file != String() && source_file != p_path) {
+			return true; //file was moved, reimport
+		}
+
 		if (source_md5 == String()) {
 			return true; //lacks md5, so just reimport
 		}
@@ -373,6 +389,13 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		String md5 = FileAccess::get_md5(p_path);
 		if (md5 != source_md5) {
 			return true;
+		}
+
+		if (dest_files.size() && dest_md5 != String()) {
+			md5 = FileAccess::get_multiple_md5(dest_files);
+			if (md5 != dest_md5) {
+				return true;
+			}
 		}
 	}
 
@@ -1388,6 +1411,8 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}
 
+	Vector<String> dest_paths;
+
 	if (err == OK) {
 
 		if (importer->get_save_extension() == "") {
@@ -1399,10 +1424,12 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 				String path = base_path.c_escape() + "." + E->get() + "." + importer->get_save_extension();
 
 				f->store_line("path." + E->get() + "=\"" + path + "\"");
+				dest_paths.push_back(path);
 			}
 		} else {
-
-			f->store_line("path=\"" + base_path + "." + importer->get_save_extension() + "\"");
+			String path = base_path + "." + importer->get_save_extension();
+			f->store_line("path=\"" + path + "\"");
+			dest_paths.push_back(path);
 		}
 
 	} else {
@@ -1418,6 +1445,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		Array genf;
 		for (List<String>::Element *E = gen_files.front(); E; E = E->next()) {
 			genf.push_back(E->get());
+			dest_paths.push_back(E->get());
 		}
 
 		String value;
@@ -1426,7 +1454,17 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		f->store_line("");
 	}
 
+	f->store_line("source_file=" + Variant(p_file).get_construct_string());
 	f->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"\n");
+
+	if (dest_paths.size()) {
+		Array dp;
+		for (int i = 0; i < dest_paths.size(); i++) {
+			dp.push_back(dest_paths[i]);
+		}
+		f->store_line("dest_files=" + Variant(dp).get_construct_string());
+		f->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+	}
 
 	f->store_line("[params]");
 	f->store_line("");

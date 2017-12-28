@@ -155,6 +155,7 @@ public:
 
 	static String get_md5(const String &p_file);
 	static String get_sha256(const String &p_file);
+	static String get_multiple_md5(const Vector<String> &p_file);
 
 	static Vector<uint8_t> get_file_as_array(const String &p_path);
 
