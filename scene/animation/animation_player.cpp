@@ -548,12 +548,14 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished
-				end_notify = true;
+				end_reached = true;
+				end_notify = cd.pos < len; // Notify only if not already at the end
 			}
 
 			if (backwards && cd.pos >= 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
 				//playback finished
-				end_notify = true;
+				end_reached = true;
+				end_notify = cd.pos > 0; // Notify only if not already at the beginning
 			}
 		}
 
@@ -680,24 +682,26 @@ void AnimationPlayer::_animation_process(float p_delta) {
 
 	if (playback.current.from) {
 
+		end_reached = false;
 		end_notify = false;
 		_animation_process2(p_delta);
 		_animation_update_transforms();
-		if (end_notify) {
+		if (end_reached) {
 			if (queued.size()) {
 				String old = playback.assigned;
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
-				end_notify = false;
-				emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
+				if (end_notify)
+					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
 				//stop();
 				playing = false;
 				_set_process(false);
-				end_notify = false;
-				emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
+				if (end_notify)
+					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
 			}
+			end_reached = false;
 		}
 
 	} else {
@@ -957,7 +961,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	c.current.speed_scale = p_custom_scale;
 	c.assigned = p_name;
 
-	if (!end_notify)
+	if (!end_reached)
 		queued.clear();
 	_set_process(true); // always process when starting an animation
 	playing = true;
@@ -1363,6 +1367,7 @@ AnimationPlayer::AnimationPlayer() {
 	cache_update_size = 0;
 	cache_update_prop_size = 0;
 	speed_scale = 1;
+	end_reached = false;
 	end_notify = false;
 	animation_process_mode = ANIMATION_PROCESS_IDLE;
 	processing = false;
