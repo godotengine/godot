@@ -3119,6 +3119,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 void TextEdit::_scroll_up(real_t p_delta) {
 
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta))
+		scrolling = false;
+
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll - p_delta);
 	} else {
@@ -3129,14 +3132,21 @@ void TextEdit::_scroll_up(real_t p_delta) {
 		if (target_v_scroll <= 0) {
 			target_v_scroll = 0;
 		}
-		scrolling = true;
-		set_physics_process(true);
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+			v_scroll->set_value(target_v_scroll);
+		} else {
+			scrolling = true;
+			set_physics_process(true);
+		}
 	} else {
 		v_scroll->set_value(target_v_scroll);
 	}
 }
 
 void TextEdit::_scroll_down(real_t p_delta) {
+
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta))
+		scrolling = false;
 
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll + p_delta);
@@ -3154,8 +3164,13 @@ void TextEdit::_scroll_down(real_t p_delta) {
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
-		scrolling = true;
-		set_physics_process(true);
+
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+			v_scroll->set_value(target_v_scroll);
+		} else {
+			scrolling = true;
+			set_physics_process(true);
+		}
 	} else {
 		v_scroll->set_value(target_v_scroll);
 	}
