@@ -187,6 +187,7 @@ private:
 
 	List<StringName> queued;
 
+	bool end_reached;
 	bool end_notify;
 
 	String autoplay;
