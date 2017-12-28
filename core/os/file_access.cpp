@@ -569,6 +569,37 @@ String FileAccess::get_md5(const String &p_file) {
 	return ret;
 }
 
+String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
+
+	MD5_CTX md5;
+	MD5Init(&md5);
+
+	for (int i = 0; i < p_file.size(); i++) {
+		FileAccess *f = FileAccess::open(p_file[i], READ);
+		ERR_CONTINUE(!f);
+
+		unsigned char step[32768];
+
+		while (true) {
+
+			int br = f->get_buffer(step, 32768);
+			if (br > 0) {
+
+				MD5Update(&md5, step, br);
+			}
+			if (br < 4096)
+				break;
+		}
+		memdelete(f);
+	}
+
+	MD5Final(&md5);
+
+	String ret = String::md5(md5.digest);
+
+	return ret;
+}
+
 String FileAccess::get_sha256(const String &p_file) {
 
 	FileAccess *f = FileAccess::open(p_file, READ);

@@ -46,7 +46,7 @@ StringBuffer &StringBuffer::append(const char *p_str) {
 	reserve(string_length + len + 1);
 
 	CharType *buf = current_buffer_ptr();
-	for (const char *c_ptr = p_str; c_ptr; ++c_ptr) {
+	for (const char *c_ptr = p_str; *c_ptr; ++c_ptr) {
 		buf[string_length++] = *c_ptr;
 	}
 	return *this;
