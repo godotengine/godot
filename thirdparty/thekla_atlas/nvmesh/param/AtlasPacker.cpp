@@ -467,7 +467,11 @@ void AtlasPacker::packCharts(int quality, float texelsPerUnit, bool blockAligned
                     nvDebug("origin: %f %f\n", origin.x, origin.y);
                     nvDebug("majorAxis: %f %f\n", majorAxis.x, majorAxis.y);
                     nvDebug("minorAxis: %f %f\n", minorAxis.x, minorAxis.y);
-                    nvDebugBreak();
+                    // -- GODOT start --
+                    //nvDebugBreak();
+                    m_atlas->setFailed();
+                    return;
+                    // -- GODOT end --
                 }
                 //nvCheck(tmp.x >= 0 && tmp.y >= 0);
 

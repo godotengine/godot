@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
+#include "error_macros.h"
 #include "thirdparty/thekla_atlas/thekla/thekla_atlas.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y);
@@ -73,6 +75,11 @@ bool thekla_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	delete[] input_mesh.face_array;
 	delete[] input_mesh.vertex_array;
+
+	if (output == NULL) {
+		ERR_PRINT("could not generate atlas output mesh");
+		return false;
+	}
 
 	if (err != Thekla::Atlas_Error_Success) {
 		printf("error with atlas\n");
