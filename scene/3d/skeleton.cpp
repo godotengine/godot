@@ -243,7 +243,6 @@ void Skeleton::_notification(int p_what) {
 				}
 
 				Transform transform = b.pose_global * b.rest_global_inverse;
-
 				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (transform * global_transform_inverse));
 
 				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {

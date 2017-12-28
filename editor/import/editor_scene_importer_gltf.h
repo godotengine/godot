@@ -52,18 +52,29 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Transform xform;
 		String name;
-		Node *godot_node;
-		int godot_bone_index;
+		//Node *godot_node;
+		//int godot_bone_index;
 
 		int mesh;
 		int camera;
 		int skin;
-		int skeleton_skin;
-		int child_of_skeleton; // put as children of skeleton
-		Vector<int> skeleton_children; //skeleton put as children of this
+		//int skeleton_skin;
+		//int child_of_skeleton; // put as children of skeleton
+		//Vector<int> skeleton_children; //skeleton put as children of this
 
-		int joint_skin;
-		int joint_bone;
+		struct Joint {
+			int skin;
+			int bone;
+			int godot_bone_index;
+
+			Joint() {
+				skin = -1;
+				bone = -1;
+				godot_bone_index = -1;
+			}
+		};
+
+		Vector<Joint> joints;
 
 		//keep them for animation
 		Vector3 translation;
@@ -71,17 +82,15 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector3 scale;
 
 		Vector<int> children;
+		Vector<Node *> godot_nodes;
 
 		GLTFNode() {
-			godot_node = NULL;
-			godot_bone_index = -1;
-			joint_skin = -1;
-			joint_bone = -1;
-			child_of_skeleton = -1;
-			skeleton_skin = -1;
+			//			child_of_skeleton = -1;
+			//			skeleton_skin = -1;
 			mesh = -1;
 			camera = -1;
 			parent = -1;
+			skin = -1;
 			scale = Vector3(1, 1, 1);
 		}
 	};
@@ -235,7 +244,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Vector<GLTFAnimation> animations;
 
-		Map<int, Vector<int> > skin_users; //cache skin users
+		//Map<int, Vector<int> > skin_users; //cache skin users
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -269,7 +278,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, int p_accessor, bool p_for_vertex);
 
-	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, int p_parent_bone);
+	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, const Vector<int> &p_parent_bones);
 	void _generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons);
 	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons);
 
