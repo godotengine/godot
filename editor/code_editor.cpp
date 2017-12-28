@@ -1251,7 +1251,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	error = memnew(Label);
 	status_bar->add_child(error);
-	error->set_clip_text(true); //do not change, or else very long errors can push the whole container to the right
+	error->set_autowrap(true);
 	error->set_valign(Label::VALIGN_CENTER);
 	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
