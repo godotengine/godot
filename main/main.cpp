@@ -755,8 +755,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
-		init_maximized = true;
-		video_mode.maximized = true;
+		if (!init_windowed) {
+			init_maximized = true;
+			video_mode.maximized = true;
+		}
 		use_custom_res = false;
 	}
 
