@@ -562,6 +562,7 @@ Skeleton::Skeleton() {
 	rest_global_inverse_dirty = true;
 	dirty = false;
 	skeleton = VisualServer::get_singleton()->skeleton_create();
+	set_notify_transform(true);
 }
 
 Skeleton::~Skeleton() {
