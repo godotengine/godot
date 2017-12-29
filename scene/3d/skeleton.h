@@ -57,6 +57,8 @@ class Skeleton : public Spatial {
 		bool custom_pose_enable;
 		Transform custom_pose;
 
+		Transform transform_final;
+
 		List<uint32_t> nodes_bound;
 
 		Bone() {
