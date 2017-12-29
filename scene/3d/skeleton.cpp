@@ -153,6 +153,9 @@ void Skeleton::_notification(int p_what) {
 		case NOTIFICATION_EXIT_WORLD: {
 
 		} break;
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			_make_dirty();
+		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 
 			VisualServer *vs = VisualServer::get_singleton();
