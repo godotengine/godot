@@ -309,9 +309,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	/* and now we have it all.  initialize decoders */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
-		printf("Ogg logical stream %lx is Theora %dx%d %.02f fps",
-				to.serialno, ti.pic_width, ti.pic_height,
-				(double)ti.fps_numerator / ti.fps_denominator);
 		px_fmt = ti.pixel_fmt;
 		switch (ti.pixel_fmt) {
 			case TH_PF_420: printf(" 4:2:0 video\n"); break;
@@ -322,9 +319,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				printf(" video\n  (UNKNOWN Chroma sampling!)\n");
 				break;
 		}
-		if (ti.pic_width != ti.frame_width || ti.pic_height != ti.frame_height)
-			printf("  Frame content is %dx%d with offset (%d,%d).\n",
-					ti.frame_width, ti.frame_height, ti.pic_x, ti.pic_y);
 		th_decode_ctl(td, TH_DECCTL_GET_PPLEVEL_MAX, &pp_level_max,
 				sizeof(pp_level_max));
 		pp_level = 0;
@@ -351,10 +345,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	if (vorbis_p) {
 		vorbis_synthesis_init(&vd, &vi);
 		vorbis_block_init(&vd, &vb);
-		fprintf(stderr, "Ogg logical stream %lx is Vorbis %d channel %ld Hz audio.\n",
-				vo.serialno, vi.channels, vi.rate);
 		//_setup(vi.channels, vi.rate);
-
 	} else {
 		/* tear down the partial vorbis setup */
 		vorbis_info_clear(&vi);
