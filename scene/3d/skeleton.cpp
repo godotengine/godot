@@ -155,6 +155,9 @@ void Skeleton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
+			if (dirty)
+				break; //will be eventually updated
+
 			//if moved, just update transforms
 			VisualServer *vs = VisualServer::get_singleton();
 			Bone *bonesptr = &bones[0];
