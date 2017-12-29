@@ -75,20 +75,33 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value, bool
 		return true;
 	}
 
+	bool changed = false;
+
 	if (p_value.get_type() == Variant::NIL) {
-		props.erase(p_name);
+		if (props.has(p_name)) {
+			props.erase(p_name);
+			changed = true;
+		}
 	} else {
-		if (props.has(p_name))
-			props[p_name].variant = p_value;
-		else
+		if (props.has(p_name)) {
+			if (p_value != props[p_name].variant) {
+				props[p_name].variant = p_value;
+				changed = true;
+			}
+		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
+			changed = true;
+		}
 
 		if (save_changed_setting) {
-			props[p_name].save = true;
+			if (props[p_name].save != true) {
+				props[p_name].save = true;
+				changed = true;
+			}
 		}
 	}
 
-	if (p_emit_signal) {
+	if (changed && p_emit_signal) {
 		emit_signal("settings_changed");
 	}
 	return true;
