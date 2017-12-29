@@ -216,7 +216,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
-				Disables a given shape in this area if [code]disable is true[/code]
+				Disables a given shape in an area.
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -638,7 +638,7 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables one way collision on body if [code]enable is true[/code].
+				Enables one way collision on body if [code]enable[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
@@ -651,7 +651,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
-				Disables shape in body if [code]disable is true[/code].
+				Disables shape in body if [code]disable[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_metadata">
