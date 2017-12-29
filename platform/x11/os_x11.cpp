@@ -2332,7 +2332,7 @@ void OS_X11::set_context(int p_context) {
 			classHint->res_name = (char *)"Godot_Editor";
 		if (p_context == CONTEXT_PROJECTMAN)
 			classHint->res_name = (char *)"Godot_ProjectList";
-		classHint->res_class = (char *)"Godot";
+		classHint->res_class = (char *)"Godot_Editor";
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
 	}
