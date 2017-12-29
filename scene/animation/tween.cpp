@@ -561,57 +561,50 @@ void Tween::_tween_process(float p_delta) {
 			data.finish = true;
 		}
 
-		switch (data.type) {
-			case INTER_PROPERTY:
-			case INTER_METHOD: {
-				Variant result = _run_equation(data);
-				emit_signal("tween_step", object, NodePath(Vector<StringName>(), data.key, false), data.elapsed, result);
-				_apply_tween_value(data, result);
-				if (data.finish)
-					_apply_tween_value(data, data.final_val);
-			} break;
+		if (data.type == INTER_CALLBACK) {
+			if (data.finish) {
+				if (data.call_deferred) {
 
-			case INTER_CALLBACK:
-				if (data.finish) {
-					if (data.call_deferred) {
-
-						switch (data.args) {
-							case 0:
-								object->call_deferred(data.key[0]);
-								break;
-							case 1:
-								object->call_deferred(data.key[0], data.arg[0]);
-								break;
-							case 2:
-								object->call_deferred(data.key[0], data.arg[0], data.arg[1]);
-								break;
-							case 3:
-								object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2]);
-								break;
-							case 4:
-								object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3]);
-								break;
-							case 5:
-								object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
-								break;
-						}
-					} else {
-						Variant::CallError error;
-						Variant *arg[5] = {
-							&data.arg[0],
-							&data.arg[1],
-							&data.arg[2],
-							&data.arg[3],
-							&data.arg[4],
-						};
-						object->call(data.key[0], (const Variant **)arg, data.args, error);
+					switch (data.args) {
+						case 0:
+							object->call_deferred(data.key[0]);
+							break;
+						case 1:
+							object->call_deferred(data.key[0], data.arg[0]);
+							break;
+						case 2:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1]);
+							break;
+						case 3:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2]);
+							break;
+						case 4:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3]);
+							break;
+						case 5:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
+							break;
 					}
+				} else {
+					Variant::CallError error;
+					Variant *arg[5] = {
+						&data.arg[0],
+						&data.arg[1],
+						&data.arg[2],
+						&data.arg[3],
+						&data.arg[4],
+					};
+					object->call(data.key[0], (const Variant **)arg, data.args, error);
 				}
-				break;
-			default: {}
+			}
+		} else {
+			Variant result = _run_equation(data);
+			emit_signal("tween_step", object, NodePath(Vector<StringName>(), data.key, false), data.elapsed, result);
+			_apply_tween_value(data, result);
 		}
 
 		if (data.finish) {
+			_apply_tween_value(data, data.final_val);
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 			// not repeat mode, remove completed action
 			if (!repeat)
