@@ -693,4 +693,9 @@ if "platform" in env and env["platform"] == "uwp":
     env.Append(CPPPATH=[thirdparty_dir])
     env.Append(CPPFLAGS=['-DOPENSSL_ENABLED'])
 
+# Msvc Intellisense needs to know openssl is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_openssl['CPPPATH'])
+    env.Append(CPPFLAGS=env_openssl['CPPFLAGS'])
+
 Export('env')

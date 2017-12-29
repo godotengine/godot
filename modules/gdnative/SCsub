@@ -12,6 +12,13 @@ gdn_env.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cp
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
+# Msvc Intellisense needs to know gdn is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=gdn_env['CPPPATH'])
+    env.Append(CPPFLAGS=gdn_env['CPPFLAGS'])
+
+Export('env')
+
 SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 

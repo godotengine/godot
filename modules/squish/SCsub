@@ -27,3 +27,10 @@ if env['builtin_squish']:
 
 # Godot source files
 env_squish.add_source_files(env.modules_sources, "*.cpp")
+
+# Msvc Intellisense needs to know squish is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_squish['CPPPATH'])
+    env.Append(CPPFLAGS=env_squish['CPPFLAGS'])
+
+Export('env')

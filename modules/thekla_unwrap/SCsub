@@ -69,6 +69,12 @@ if env['builtin_thekla_atlas']:
         else:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
             env.Append(LIBS=["dbghelp"])
+    # Msvc Intellisense needs to know thekla_unwrap is available, pass to main env
+    if "platform" in env and env["platform"] == "windows":
+        env.Append(CPPPATH=env_thekla_unwrap['CPPPATH'])
+        env.Append(CPPFLAGS=env_thekla_unwrap['CPPFLAGS'])
         
 # Godot source files
 env_thekla_unwrap.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env')

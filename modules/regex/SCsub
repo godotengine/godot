@@ -51,3 +51,10 @@ if env['builtin_pcre2']:
         env_pcre2.Append(CPPFLAGS=["-DPCRE2_CODE_UNIT_WIDTH=" + width])
     pcre2_builtin("16")
     pcre2_builtin("32")
+
+    # Msvc Intellisense needs to know regex is available, pass to main env
+    if "platform" in env and env["platform"] == "windows":
+        env.Append(CPPPATH=env_regex['CPPPATH'])
+        env.Append(CPPFLAGS=env_regex['CPPFLAGS'])
+
+    Export('env')

@@ -128,5 +128,12 @@ if env['builtin_libwebp']:
     env_webp.add_source_files(env.modules_sources, thirdparty_sources)
     env_webp.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "src/"])
 
+    # Msvc Intellisense needs to know webp is available, pass to main env
+    if "platform" in env and env["platform"] == "windows":
+        env.Append(CPPPATH=env_webp['CPPPATH'])
+        env.Append(CPPFLAGS=env_webp['CPPFLAGS'])
+    
+    Export('env')
+
 # Godot source files
 env_webp.add_source_files(env.modules_sources, "*.cpp")

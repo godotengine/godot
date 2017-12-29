@@ -30,5 +30,10 @@ if env['builtin_libvpx']:
     Export('env_webm')
     SConscript("libvpx/SCsub")
 
+# Msvc Intellisense needs to know webm is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_webm['CPPPATH'])
+    env.Append(CPPFLAGS=env_webm['CPPFLAGS'])
+
 # Godot source files
 env_webm.add_source_files(env.modules_sources, "*.cpp")

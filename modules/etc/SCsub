@@ -40,3 +40,10 @@ if (not env_etc.msvc):
 # GCC and Clang
 if '-ffast-math' in env_etc['CCFLAGS']:
 	env_etc['CCFLAGS'].remove('-ffast-math')
+
+# Msvc Intellisense needs to know etc is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_etc['CPPPATH'])
+    env.Append(CPPFLAGS=env_etc['CPPFLAGS'])
+
+Export('env')
