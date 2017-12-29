@@ -39,7 +39,7 @@ public:
 
 		RID parent; // canvas it belongs to
 		List<Item *>::Element *E;
-		int z;
+		int z_index;
 		bool z_relative;
 		bool sort_y;
 		Color modulate;
@@ -53,7 +53,7 @@ public:
 		Item() {
 			children_order_dirty = true;
 			E = NULL;
-			z = 0;
+			z_index = 0;
 			modulate = Color(1, 1, 1, 1);
 			self_modulate = Color(1, 1, 1, 1);
 			sort_y = false;
@@ -187,7 +187,7 @@ public:
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
-	void canvas_item_set_z(RID p_item, int p_z);
+	void canvas_item_set_z_index(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect);
 

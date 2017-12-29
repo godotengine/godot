@@ -131,7 +131,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
-				set_z(VS::CANVAS_ITEM_Z_MAX - 1);
+				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
 			}*/
 
 		} break;

@@ -637,7 +637,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 
 			_SelectResult res;
 			res.item = c;
-			res.z = node ? node->get_z() : 0;
+			res.z_index = node ? node->get_z_index() : 0;
 			res.has_z = node;
 			r_items.push_back(res);
 		}

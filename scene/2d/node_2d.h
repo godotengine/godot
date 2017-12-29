@@ -39,7 +39,7 @@ class Node2D : public CanvasItem {
 	Point2 pos;
 	float angle;
 	Size2 _scale;
-	int z;
+	int z_index;
 	bool z_relative;
 
 	Transform2D _mat;
@@ -96,8 +96,8 @@ public:
 	void set_global_rotation_degrees(float p_degrees);
 	void set_global_scale(const Size2 &p_scale);
 
-	void set_z(int p_z);
-	int get_z() const;
+	void set_z_index(int p_z);
+	int get_z_index() const;
 
 	void look_at(const Vector2 &p_pos);
 	float get_angle_to(const Vector2 &p_pos) const;
