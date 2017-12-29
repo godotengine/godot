@@ -6943,6 +6943,10 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		glDeleteTextures(1, &cls->distance);
 		canvas_light_shadow_owner.free(p_rid);
 		memdelete(cls);
+	} else if (particles_owner.owns(p_rid)) {
+		Particles *particles = particles_owner.get(p_rid);
+		particles_owner.free(p_rid);
+		memdelete(particles);
 	} else {
 		return false;
 	}
