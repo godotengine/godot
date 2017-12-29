@@ -37,7 +37,7 @@
 #include "print_string.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dontclear) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 
 	recent->clear();
 
@@ -89,11 +89,12 @@ void CreateDialog::popup_create(bool p_dontclear) {
 		popup_centered_ratio();
 	}
 
-	if (p_dontclear)
+	if (p_dont_clear) {
 		search_box->select_all();
-	else {
+	} else {
 		search_box->clear();
 	}
+
 	search_box->grab_focus();
 
 	_update_search();
@@ -104,8 +105,19 @@ void CreateDialog::popup_create(bool p_dontclear) {
 	if (enable_rl) {
 		search_options->add_constant_override("draw_relationship_lines", 1);
 		search_options->add_color_override("relationship_line_color", rl_color);
-	} else
+	} else {
 		search_options->add_constant_override("draw_relationship_lines", 0);
+	}
+
+	is_replace_mode = p_replace_mode;
+
+	if (p_replace_mode) {
+		set_title(vformat(TTR("Change %s Type"), base_type));
+		get_ok()->set_text(TTR("Change"));
+	} else {
+		set_title(vformat(TTR("Create New %s"), base_type));
+		get_ok()->set_text(TTR("Create"));
+	}
 }
 
 void CreateDialog::_text_changed(const String &p_newtext) {
@@ -369,7 +381,11 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String &p_base) {
 
 	base_type = p_base;
-	set_title(vformat(TTR("Create New %s"), p_base));
+	if (is_replace_mode)
+		set_title(vformat(TTR("Change %s Type"), p_base));
+	else
+		set_title(vformat(TTR("Create New %s"), p_base));
+
 	_update_search();
 }
 
@@ -624,6 +640,8 @@ void CreateDialog::_bind_methods() {
 
 CreateDialog::CreateDialog() {
 
+	is_replace_mode = false;
+
 	ClassDB::get_class_list(&type_list);
 	type_list.sort_custom<StringName::AlphCompare>();
 
@@ -678,7 +696,6 @@ CreateDialog::CreateDialog() {
 	search_box->connect("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Create"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
