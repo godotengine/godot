@@ -41,7 +41,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
-void post_process_preview(Ref<Image> p_image) {
+static void post_process_preview(Ref<Image> p_image) {
 
 	if (p_image->get_format() != Image::FORMAT_RGBA8)
 		p_image->convert(Image::FORMAT_RGBA8);
@@ -523,6 +523,15 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) const {
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
+	if (EditorSettings::get_singleton()->get("text_editor/theme/color_theme") == "Adaptive") {
+		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
+
+		bg_color = tm->get_color("text_editor/theme/background_color", "Editor");
+		keyword_color = tm->get_color("text_editor/theme/keyword_color", "Editor");
+		text_color = tm->get_color("text_editor/theme/text_color", "Editor");
+		symbol_color = tm->get_color("text_editor/theme/symbol_color", "Editor");
+	}
+
 	img->lock();
 
 	if (bg_color.a == 0)
@@ -682,7 +691,7 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) const {
 	}
 
 	imgdata = PoolVector<uint8_t>::Write();
-	//post_process_preview(img);
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;
