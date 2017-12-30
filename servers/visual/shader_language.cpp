@@ -334,6 +334,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 						while (true) {
 							if (GETCHAR(0) == '\n') {
+								tk_line++;
 								char_idx++;
 								break;
 							}
