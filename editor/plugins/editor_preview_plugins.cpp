@@ -30,6 +30,7 @@
 
 #include "editor_preview_plugins.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "io/file_access_memory.h"
@@ -39,7 +40,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
-void post_process_preview(Ref<Image> p_image) {
+static void post_process_preview(Ref<Image> p_image) {
 
 	if (p_image->get_format() != Image::FORMAT_RGBA8)
 		p_image->convert(Image::FORMAT_RGBA8);
@@ -122,6 +123,7 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from) {
 	}
 
 	img->resize(width, height);
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
@@ -194,6 +196,7 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from) {
 	}
 
 	img->resize(width, height);
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
@@ -235,6 +238,7 @@ Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_
 
 		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
+		post_process_preview(img);
 		ptex->create_from_image(img, 0);
 		return ptex;
 
@@ -290,6 +294,7 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from) {
 		thumbnail_size *= EDSCALE;
 		img->convert(Image::FORMAT_RGBA8);
 		img->resize(thumbnail_size, thumbnail_size);
+		post_process_preview(img);
 		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 		ptex->create_from_image(img, 0);
 		return ptex;
@@ -458,18 +463,35 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 	img->create(thumbnail_size, thumbnail_size, 0, Image::FORMAT_RGBA8);
 
 	Color bg_color = EditorSettings::get_singleton()->get("text_editor/highlighting/background_color");
-	bg_color.a = 1.0;
 	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
+	if (EditorSettings::get_singleton()->get("text_editor/theme/color_theme") == "Adaptive") {
+		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
+
+		bg_color = tm->get_color("text_editor/theme/background_color", "Editor");
+		keyword_color = tm->get_color("text_editor/theme/keyword_color", "Editor");
+		text_color = tm->get_color("text_editor/theme/text_color", "Editor");
+		symbol_color = tm->get_color("text_editor/theme/symbol_color", "Editor");
+	}
+
 	img->lock();
+
+	if (bg_color.a == 0)
+		bg_color = Color(0, 0, 0, 0);
+	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size; j++) {
 			img->set_pixel(i, j, bg_color);
 		}
 	}
+
+	const int x0 = thumbnail_size / 8;
+	const int y0 = thumbnail_size / 8;
+	const int available_height = thumbnail_size - 2 * y0;
+	col = x0;
 
 	bool prev_is_text = false;
 	bool in_keyword = false;
@@ -503,8 +525,8 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 
 				Color ul = color;
 				ul.a *= 0.5;
-				img->set_pixel(col, line * 2, bg_color.blend(ul));
-				img->set_pixel(col, line * 2 + 1, color);
+				img->set_pixel(col, y0 + line * 2, bg_color.blend(ul));
+				img->set_pixel(col, y0 + line * 2 + 1, color);
 
 				prev_is_text = _is_text_char(c);
 			}
@@ -514,9 +536,9 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 			in_keyword = false;
 
 			if (c == '\n') {
-				col = 0;
+				col = x0;
 				line++;
-				if (line >= thumbnail_size / 2)
+				if (line >= available_height / 2)
 					break;
 			} else if (c == '\t') {
 				col += 3;
@@ -526,6 +548,8 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 	}
 
 	img->unlock();
+
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
@@ -794,6 +818,7 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 	}
 
 	imgdata = PoolVector<uint8_t>::Write();
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>( memnew( ImageTexture));
 	ptex->create_from_image(Image(w,h,0,Image::FORMAT_RGB8,img),0);
@@ -863,6 +888,7 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) {
 	thumbnail_size *= EDSCALE;
 	img->convert(Image::FORMAT_RGBA8);
 	img->resize(thumbnail_size, thumbnail_size);
+	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	ptex->create_from_image(img, 0);
