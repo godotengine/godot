@@ -333,7 +333,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	autotile_list = memnew(ItemList);
 	autotile_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	autotile_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	autotile_list->set_custom_minimum_size(Size2(02, 200));
+	autotile_list->set_custom_minimum_size(Size2(10, 200));
 	autotile_list->connect("item_selected", this, "_on_autotile_selected");
 	split->add_child(autotile_list);
 
@@ -531,7 +531,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 
 	main_vb->add_child(toolbar);
 
-	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll = memnew(ScrollContainer);
 	main_vb->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1095,6 +1095,16 @@ void AutotileEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				}
 			} break;
 		}
+
+		//Drag Middle Mouse
+		if (mm.is_valid()) {
+			if (mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
+
+				Vector2 dragged(mm->get_relative().x, mm->get_relative().y);
+				scroll->set_h_scroll(scroll->get_h_scroll() - dragged.x * workspace->get_scale().x);
+				scroll->set_v_scroll(scroll->get_v_scroll() - dragged.y * workspace->get_scale().x);
+			}
+		}
 	}
 }
 
@@ -1453,10 +1463,19 @@ void AutotileEditor::close_shape(const Vector2 &shape_anchor) {
 			Ref<ConvexPolygonShape2D> shape = memnew(ConvexPolygonShape2D);
 
 			Vector<Vector2> segments;
+			float p_total = 0;
 
 			for (int i = 0; i < current_shape.size(); i++) {
 				segments.push_back(current_shape[i] - shape_anchor);
+
+				if (i != current_shape.size() - 1)
+					p_total += ((current_shape[i + 1].x - current_shape[i].x) * (-current_shape[i + 1].y + (-current_shape[i].y)));
+				else
+					p_total += ((current_shape[0].x - current_shape[i].x) * (-current_shape[0].y + (-current_shape[i].y)));
 			}
+
+			if (p_total < 0)
+				segments.invert();
 
 			shape->set_points(segments);
 
