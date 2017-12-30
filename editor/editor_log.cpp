@@ -65,7 +65,9 @@ void EditorLog::_notification(int p_what) {
 		Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
 			df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
-			log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+			if (log != NULL) {
+				log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+			}
 		}
 	}
 

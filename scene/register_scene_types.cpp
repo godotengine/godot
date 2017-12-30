@@ -220,31 +220,17 @@ void register_scene_types() {
 	resource_loader_theme = memnew(ResourceFormatLoaderTheme);
 	ResourceLoader::add_resource_format_loader(resource_loader_theme);
 
-	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String theme_path = GLOBAL_DEF("gui/theme/custom", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String font_path = GLOBAL_DEF("gui/theme/custom_font", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	resource_saver_text = memnew(ResourceFormatSaverText);
+	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
 
-	bool has_theme = false;
-	if (theme_path != String()) {
-		Ref<Theme> theme = ResourceLoader::load(theme_path);
-		if (theme.is_valid()) {
-			Theme::set_default(theme);
-			has_theme = true;
-		} else {
-			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
-		}
-	}
+	resource_loader_text = memnew(ResourceFormatLoaderText);
+	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
 
-	if (!has_theme) {
-		Ref<Font> font;
-		if (font_path != String()) {
-			font = ResourceLoader::load(font_path);
-		}
-		make_default_theme(default_theme_hidpi, font);
-	}
+	resource_saver_shader = memnew(ResourceFormatSaverShader);
+	ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
+
+	resource_loader_shader = memnew(ResourceFormatLoaderShader);
+	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -604,23 +590,41 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	resource_saver_text = memnew(ResourceFormatSaverText);
-	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
-
-	resource_loader_text = memnew(ResourceFormatLoaderText);
-	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
-
-	resource_saver_shader = memnew(ResourceFormatSaverShader);
-	ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
-
-	resource_loader_shader = memnew(ResourceFormatLoaderShader);
-	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
-
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+	}
+
+	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String theme_path = GLOBAL_DEF("gui/theme/custom", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String font_path = GLOBAL_DEF("gui/theme/custom_font", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	Ref<Font> font;
+	if (font_path != String()) {
+		font = ResourceLoader::load(font_path);
+		if (!font.is_valid()) {
+			ERR_PRINTS("Error loading custom font '" + font_path + "'");
+		}
+	}
+
+	// Always make the default theme to avoid invalid default font/icon/style in the given theme
+	make_default_theme(default_theme_hidpi, font);
+
+	if (theme_path != String()) {
+		Ref<Theme> theme = ResourceLoader::load(theme_path);
+		if (theme.is_valid()) {
+			Theme::set_default(theme);
+			if (font.is_valid()) {
+				Theme::set_default_font(font);
+			}
+		} else {
+			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
+		}
 	}
 }
 
