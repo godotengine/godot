@@ -168,6 +168,131 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 	return dst_addr;
 }
 
+bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptParser::ComprehensionNode *p_comprehension, int p_array_pos, int p_loop, int p_stack_level) {
+
+	int slevel = p_stack_level;
+
+	const int append = codegen.get_name_map_pos(StringName("append"));
+	Vector<GDScriptParser::IdentifierNode *> ids = p_comprehension->ids[p_loop];
+	const bool unpack = ids.size() > 1;
+
+	int iter_stack_pos = slevel;
+	int iterator_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	if (unpack) {
+		slevel += ids.size();
+	}
+	int counter_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	int container_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	codegen.alloc_stack(slevel);
+
+	codegen.push_stack_identifiers();
+	if (!unpack) {
+		codegen.add_stack_identifier(ids[0]->name, iter_stack_pos);
+	} else {
+		for (int i = 0; i < ids.size(); i++) {
+			codegen.add_stack_identifier(ids[i]->name, iter_stack_pos + 1 + i);
+		}
+	}
+
+	int initial = _parse_expression(codegen, p_comprehension->containers[p_loop], slevel, false);
+	if (initial < 0)
+		return false;
+
+	//assign container
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN);
+	codegen.opcodes.push_back(container_pos);
+	codegen.opcodes.push_back(initial);
+
+	//begin loop
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_ITERATE_BEGIN);
+	codegen.opcodes.push_back(counter_pos);
+	codegen.opcodes.push_back(container_pos);
+	codegen.opcodes.push_back(codegen.opcodes.size() + 4);
+	codegen.opcodes.push_back(iterator_pos);
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP); //skip code for next
+	codegen.opcodes.push_back(codegen.opcodes.size() + 8);
+	//break loop
+	int break_pos = codegen.opcodes.size();
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP); //skip code for next
+	codegen.opcodes.push_back(0); //skip code for next
+	//next loop
+	int continue_pos = codegen.opcodes.size();
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_ITERATE);
+	codegen.opcodes.push_back(counter_pos);
+	codegen.opcodes.push_back(container_pos);
+	codegen.opcodes.push_back(break_pos);
+	codegen.opcodes.push_back(iterator_pos);
+
+	if (p_loop == p_comprehension->ids.size() - 1) {
+		int element_pos = _parse_expression(codegen, p_comprehension->expr, slevel);
+
+		if (element_pos < 0)
+			return false;
+
+		if (element_pos & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+			slevel++;
+			codegen.alloc_stack(slevel);
+		}
+
+		if (unpack) {
+			for (int i = 0; i < ids.size(); i++) {
+				Variant index = i;
+				int index_stack_level;
+
+				if (!codegen.constant_map.has(index)) {
+					index_stack_level = codegen.constant_map.size();
+					codegen.constant_map[index] = index_stack_level;
+				} else {
+					index_stack_level = codegen.constant_map[index];
+				}
+
+				codegen.opcodes.push_back(GDScriptFunction::OPCODE_GET);
+				codegen.opcodes.push_back(iterator_pos);
+				codegen.opcodes.push_back(index_stack_level | (GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS));
+				codegen.opcodes.push_back((iter_stack_pos + 1 + i) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS));
+			}
+		}
+
+		int else_addr;
+		if (p_comprehension->cond) {
+
+			int cond = _parse_expression(codegen, p_comprehension->cond, slevel, false);
+			if (cond < 0)
+				return false;
+
+			codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF_NOT);
+			codegen.opcodes.push_back(cond);
+			else_addr = codegen.opcodes.size();
+			codegen.opcodes.push_back(0); // temporary
+		}
+
+		codegen.alloc_call(1);
+
+		codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL);
+		codegen.opcodes.push_back(1);
+		codegen.opcodes.push_back(p_array_pos);
+		codegen.opcodes.push_back(append);
+		codegen.opcodes.push_back(element_pos);
+		codegen.opcodes.push_back(-1); // return, not read
+
+		if (p_comprehension->cond) {
+			codegen.opcodes[else_addr] = codegen.opcodes.size();
+		}
+
+	} else {
+		if (!_parse_comprehension(codegen, p_comprehension, p_array_pos, p_loop + 1, slevel))
+			return false;
+	}
+
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
+	codegen.opcodes.push_back(continue_pos);
+	codegen.opcodes[break_pos + 1] = codegen.opcodes.size();
+
+	codegen.pop_stack_identifiers();
+
+	return true;
+}
+
 int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer) {
 
 	switch (p_expression->type) {
@@ -375,6 +500,23 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			codegen.opcodes.push_back(dst_addr); // append the stack level as destination address of the opcode
 			codegen.alloc_stack(p_stack_level);
 			return dst_addr;
+
+		} break;
+		case GDScriptParser::Node::TYPE_COMPREHENSION: {
+
+			const GDScriptParser::ComprehensionNode *cn = static_cast<const GDScriptParser::ComprehensionNode *>(p_expression);
+			ERR_FAIL_COND_V(cn->ids.empty(), -1);
+
+			int slevel = p_stack_level;
+			int array_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+			codegen.opcodes.push_back(GDScriptFunction::OPCODE_CONSTRUCT_ARRAY);
+			codegen.opcodes.push_back(0);
+			codegen.opcodes.push_back(array_pos);
+
+			if (!_parse_comprehension(codegen, cn, array_pos, 0, slevel))
+				return -1;
+
+			return array_pos;
 
 		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
