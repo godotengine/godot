@@ -225,7 +225,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 
 				mouse_over = i;
-				emit_signal("id_focused", i);
 				update();
 				accept_event();
 				break;
@@ -245,7 +244,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 
 				mouse_over = i;
-				emit_signal("id_focused", i);
 				update();
 				accept_event();
 				break;
