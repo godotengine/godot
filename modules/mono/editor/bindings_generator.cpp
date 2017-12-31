@@ -1717,6 +1717,51 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.im_type_in = "IntPtr";
 		itype.im_type_out = itype.proxy_name;
 
+		List<PropertyInfo> property_list;
+		ClassDB::get_property_list(type_cname, &property_list, true);
+
+		// Populate properties
+
+		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+			const PropertyInfo &property = E->get();
+
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
+				continue;
+
+			PropertyInterface iprop;
+			iprop.cname = property.name;
+			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
+			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
+			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
+
+			bool valid = false;
+			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
+			ERR_FAIL_COND(!valid);
+
+			// Prevent property and enclosing type from sharing the same name
+			if (iprop.proxy_name == itype.proxy_name) {
+				if (verbose_output) {
+					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
+								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
+				}
+
+				iprop.proxy_name += "_";
+			}
+
+			iprop.prop_doc = NULL;
+
+			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
+				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
+
+				if (prop_doc.name == iprop.cname) {
+					iprop.prop_doc = &prop_doc;
+					break;
+				}
+			}
+
+			itype.properties.push_back(iprop);
+		}
+
 		// Populate methods
 
 		List<MethodInfo> virtual_method_list;
@@ -1851,12 +1896,10 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
-				const Vector<DocData::PropertyDoc> &properties = itype.class_doc->properties;
+				for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
+					const PropertyInterface &iprop = E->get();
 
-				for (int i = 0; i < properties.size(); i++) {
-					const DocData::PropertyDoc &prop_doc = properties[i];
-
-					if (prop_doc.getter == imethod.name || prop_doc.setter == imethod.name) {
+					if (iprop.setter == imethod.name || iprop.getter == imethod.name) {
 						imethod.is_internal = true;
 						itype.methods.push_back(imethod);
 						break;
@@ -1865,50 +1908,6 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			} else {
 				itype.methods.push_back(imethod);
 			}
-		}
-
-		// Populate properties
-
-		List<PropertyInfo> property_list;
-		ClassDB::get_property_list(type_cname, &property_list, true);
-		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
-			const PropertyInfo &property = E->get();
-
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
-				continue;
-
-			PropertyInterface iprop;
-			iprop.cname = property.name;
-			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
-			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
-			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
-
-			bool valid = false;
-			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
-			ERR_FAIL_COND(!valid);
-
-			// Prevent property and enclosing type from sharing the same name
-			if (iprop.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
-				}
-
-				iprop.proxy_name += "_";
-			}
-
-			iprop.prop_doc = NULL;
-
-			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
-				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
-
-				if (prop_doc.name == iprop.cname) {
-					iprop.prop_doc = &prop_doc;
-					break;
-				}
-			}
-
-			itype.properties.push_back(iprop);
 		}
 
 		// Populate enums and constants
