@@ -3213,7 +3213,7 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 							continue;
 						}
 						memdelete(instanced_scene);
-					} else if (type == "Mesh" || "ArrayMesh" || "PrimitiveMesh") {
+					} else if (type == "Mesh" || type == "ArrayMesh" || type == "PrimitiveMesh") {
 						Ref<Mesh> mesh = ResourceLoader::load(files[i]);
 						if (!mesh.is_valid()) {
 							continue;
