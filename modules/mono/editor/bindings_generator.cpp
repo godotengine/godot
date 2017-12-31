@@ -200,7 +200,7 @@ void BindingsGenerator::_generate_header_icalls() {
 	core_custom_icalls.clear();
 
 	core_custom_icalls.push_back(InternalCall(ICALL_GET_METHODBIND, "IntPtr", "string type, string method"));
-	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "IntPtr ptr"));
+	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "object obj, IntPtr ptr"));
 
 	core_custom_icalls.push_back(InternalCall(ICALL_CONNECT_SIGNAL_AWAITER, "Error",
 			"IntPtr source, string signal, IntPtr target, " CS_CLASS_SIGNALAWAITER " awaiter"));
@@ -931,8 +931,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
 										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
 										  " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
-										  "(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD
-										  " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "(this, " BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" INDENT3
 										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
 			Map<StringName, TypeInterface>::Element *array_itype = builtin_types.find(name_cache.type_Array);

@@ -53,9 +53,11 @@
 	}                                                  \
 	Object *m_instance = ci->creation_func();
 
-void godot_icall_Object_Dtor(Object *ptr) {
-	ERR_FAIL_NULL(ptr);
-	_GodotSharp::get_singleton()->queue_dispose(ptr);
+void godot_icall_Object_Dtor(MonoObject *obj, Object *ptr) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(ptr == NULL);
+#endif
+	_GodotSharp::get_singleton()->queue_dispose(obj, ptr);
 }
 
 // -- ClassDB --

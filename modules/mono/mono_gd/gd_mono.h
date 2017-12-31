@@ -215,7 +215,7 @@ public:
 	bool is_finalizing_domain();
 	bool is_domain_loaded();
 
-	void queue_dispose(Object *p_object);
+	void queue_dispose(MonoObject *p_mono_object, Object *p_object);
 	void queue_dispose(NodePath *p_node_path);
 	void queue_dispose(RID *p_rid);
 
