@@ -190,7 +190,11 @@ def configure(env):
 
         if (env["use_lto"]):
             env.Append(CCFLAGS=['/GL'])
-            env.Append(LINKFLAGS=['/LTCG'])
+            env.Append(ARFLAGS=['/LTCG'])
+            if env["progress"]:
+                env.Append(LINKFLAGS=['/LTCG:STATUS'])
+            else:
+                env.Append(LINKFLAGS=['/LTCG'])
 
         env.Append(CCFLAGS=["/I" + p for p in os.getenv("INCLUDE").split(";")])
         env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
