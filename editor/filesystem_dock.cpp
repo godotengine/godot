@@ -819,7 +819,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_line("Duplicating " + old_path + " -> " + new_path);
-	Error err = da->copy(old_path, new_path);
+	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
@@ -980,10 +980,12 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	}
 
-	String old_path = to_duplicate.path.ends_with("/") ? to_duplicate.path.substr(0, to_duplicate.path.length() - 1) : to_rename.path;
-	String new_path = old_path.get_base_dir().plus_file(new_name);
-	if (old_path == new_path) {
-		return;
+	String new_path;
+	String base_dir = to_duplicate.path.get_base_dir();
+	if (to_duplicate.is_file) {
+		new_path = base_dir.plus_file(new_name);
+	} else {
+		new_path = base_dir.substr(0, base_dir.find_last("/")) + "/" + new_name;
 	}
 
 	//Present a more user friendly warning for name conflict
@@ -995,7 +997,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	}
 	memdelete(da);
 
-	_try_duplicate_item(to_duplicate, new_name);
+	_try_duplicate_item(to_duplicate, new_path);
 
 	//Rescan everything
 	print_line("call rescan!");
