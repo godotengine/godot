@@ -164,6 +164,14 @@ String AudioStreamOGGVorbis::get_stream_name() const {
 	return ""; //return stream_name;
 }
 
+void AudioStreamOGGVorbis::clear_data() {
+	if (data) {
+		AudioServer::get_singleton()->audio_data_free(data);
+		data = NULL;
+		data_len = 0;
+	}
+}
+
 void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 
 	int src_data_len = p_data.size();
@@ -208,6 +216,9 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 
 			length = stb_vorbis_stream_length_in_seconds(ogg_stream);
 			stb_vorbis_close(ogg_stream);
+
+			// free any existing data
+			clear_data();
 
 			data = AudioServer::get_singleton()->audio_data_alloc(src_data_len, src_datar.ptr());
 			data_len = src_data_len;
@@ -274,4 +285,8 @@ AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 	loop_offset = 0;
 	decode_mem_size = 0;
 	loop = false;
+}
+
+AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {
+	clear_data();
 }
