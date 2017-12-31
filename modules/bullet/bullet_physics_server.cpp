@@ -121,7 +121,7 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 			shape = bulletnew(RayShapeBullet);
 		} break;
 		case SHAPE_CUSTOM:
-		defaul:
+		default:
 			ERR_FAIL_V(RID());
 			break;
 	}
