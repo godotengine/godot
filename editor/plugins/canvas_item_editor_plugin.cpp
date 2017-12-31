@@ -3464,7 +3464,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
-				if (!canvas_item || !canvas_item->is_visible_in_tree())
+				if (!canvas_item || !canvas_item->is_inside_tree())
 					continue;
 
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
@@ -3482,7 +3482,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
-				if (!canvas_item || !canvas_item->is_visible_in_tree())
+				if (!canvas_item || !canvas_item->is_inside_tree())
 					continue;
 
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
@@ -3502,7 +3502,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
-				if (!canvas_item || !canvas_item->is_visible_in_tree())
+				if (!canvas_item || !canvas_item->is_inside_tree())
 					continue;
 
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
@@ -3520,7 +3520,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
-				if (!canvas_item || !canvas_item->is_visible_in_tree())
+				if (!canvas_item || !canvas_item->is_inside_tree())
 					continue;
 
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
