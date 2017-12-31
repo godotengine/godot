@@ -4405,10 +4405,11 @@ void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_current_path());
 	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
+	Vector<String> just_copy = String("ttf,otf").split(",");
 	for (int i = 0; i < p_files.size(); i++) {
 
 		String from = p_files[i];
-		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from)) {
+		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) < 0)) {
 			continue;
 		}
 		String to = to_path.plus_file(from.get_file());
