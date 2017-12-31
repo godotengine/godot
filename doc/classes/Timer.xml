@@ -15,20 +15,21 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the time left for timeout in seconds if the timer is active, 0 otherwise.
+				Returns the timer's remaining time in seconds. Returns 0 if the timer is inactive.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return if the timer is paused or not.
+				Returns [code]true[/code] if the timer is paused.
 			</description>
 		</method>
 		<method name="is_stopped" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the timer is stopped.
 			</description>
 		</method>
 		<method name="set_paused">
@@ -37,14 +38,15 @@
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
-				Set whether the timer is paused or not. A paused timer will be inactive until it is unpaused again.
+				Pauses the timer. If [code]paused[/code] is [code]true[/code], the timer will not process until it is started or unpaused again, even if [method start] is called.
 			</description>
 		</method>
 		<method name="start">
 			<return type="void">
 			</return>
 			<description>
-				Start the Timer.
+				Starts the timer. This also resets the remaining time to [code]wait_time[/code].
+				Note: this method will not resume a paused timer. See [method set_paused].
 			</description>
 		</method>
 		<method name="stop">
