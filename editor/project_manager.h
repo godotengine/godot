@@ -47,6 +47,7 @@ class ProjectManager : public Control {
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
+	Button *show_btn;
 
 	FileDialog *scan_dir;
 
@@ -88,6 +89,7 @@ class ProjectManager : public Control {
 	void _new_project();
 	void _rename_project();
 	void _erase_project();
+	void _show_project();
 	void _erase_project_confirm();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
