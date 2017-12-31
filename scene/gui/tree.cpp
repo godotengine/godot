@@ -2061,11 +2061,298 @@ void Tree::popup_select(int p_option) {
 	item_edited(popup_edited_item_col, popup_edited_item);
 }
 
+void Tree::_go_left() {
+	if (selected_col == 0) {
+		if (selected_item->get_children() != NULL && !selected_item->is_collapsed()) {
+			selected_item->set_collapsed(true);
+		} else {
+			if (columns.size() == 1) { // goto parent with one column
+				TreeItem *parent = selected_item->get_parent();
+				if (selected_item != get_root() && parent && parent->is_selectable(selected_col) && !(hide_root && parent == get_root())) {
+					select_single_item(parent, get_root(), selected_col);
+				}
+			} else if (selected_item->get_prev_visible()) {
+				selected_col = columns.size() - 1;
+				_go_up(); // go to upper column if possible
+			}
+		}
+	} else {
+		if (select_mode == SELECT_MULTI) {
+			selected_col--;
+			emit_signal("cell_selected");
+		} else {
+
+			selected_item->select(selected_col - 1);
+		}
+	}
+	update();
+	accept_event();
+	ensure_cursor_is_visible();
+}
+
+void Tree::_go_right() {
+	if (selected_col == (columns.size() - 1)) {
+		if (selected_item->get_children() != NULL && selected_item->is_collapsed()) {
+			selected_item->set_collapsed(false);
+		} else if (selected_item->get_next_visible()) {
+			selected_item->select(0);
+			_go_down();
+			return;
+		}
+	} else {
+		if (select_mode == SELECT_MULTI) {
+			selected_col++;
+			emit_signal("cell_selected");
+		} else {
+
+			selected_item->select(selected_col + 1);
+		}
+	}
+	update();
+	ensure_cursor_is_visible();
+	accept_event();
+}
+
+void Tree::_go_up() {
+	TreeItem *prev = NULL;
+	if (!selected_item) {
+		prev = get_last_item();
+		selected_col = 0;
+	} else {
+
+		prev = selected_item->get_prev_visible();
+		if (last_keypress != 0) {
+			//incr search next
+			int col;
+			prev = _search_item_text(prev, incr_search, &col, true, true);
+			if (!prev) {
+				accept_event();
+				return;
+			}
+		}
+	}
+
+	if (select_mode == SELECT_MULTI) {
+
+		if (!prev)
+			return;
+		selected_item = prev;
+		emit_signal("cell_selected");
+		update();
+	} else {
+
+		int col = selected_col < 0 ? 0 : selected_col;
+		while (prev && !prev->cells[col].selectable)
+			prev = prev->get_prev_visible();
+		if (!prev)
+			return; // do nothing..
+		prev->select(col);
+	}
+
+	ensure_cursor_is_visible();
+	accept_event();
+}
+
+void Tree::_go_down() {
+	TreeItem *next = NULL;
+	if (!selected_item) {
+
+		next = hide_root ? root->get_next_visible() : root;
+		selected_item = 0;
+	} else {
+
+		next = selected_item->get_next_visible();
+
+		if (last_keypress != 0) {
+			//incr search next
+			int col;
+			next = _search_item_text(next, incr_search, &col, true);
+			if (!next) {
+				accept_event();
+				return;
+			}
+		}
+	}
+
+	if (select_mode == SELECT_MULTI) {
+
+		if (!next) {
+			return;
+		}
+
+		selected_item = next;
+		emit_signal("cell_selected");
+		update();
+	} else {
+
+		int col = selected_col < 0 ? 0 : selected_col;
+
+		while (next && !next->cells[col].selectable)
+			next = next->get_next_visible();
+		if (!next) {
+			return; // do nothing..
+		}
+		next->select(col);
+	}
+
+	ensure_cursor_is_visible();
+	accept_event();
+}
+
 void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid()) {
+	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
+			return;
+		}
+		if (k.is_valid() && k->get_alt()) {
+			selected_item->set_collapsed(false);
+			TreeItem *next = selected_item->get_children();
+			while (next && next != selected_item->next) {
+				next->set_collapsed(false);
+				next = next->get_next_visible();
+			}
+		} else {
+			_go_right();
+		}
+	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		if (!selected_item || select_mode == SELECT_ROW || selected_col < 0) {
+			return;
+		}
+
+		if (k.is_valid() && k->get_alt()) {
+			selected_item->set_collapsed(true);
+			TreeItem *next = selected_item->get_children();
+			while (next && next != selected_item->next) {
+				next->set_collapsed(true);
+				next = next->get_next_visible();
+			}
+		} else {
+			_go_left();
+		}
+
+	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		_go_up();
+
+	} else if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		_go_down();
+
+	} else if (p_event->is_action("ui_page_down") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		TreeItem *next = NULL;
+		if (!selected_item)
+			return;
+		next = selected_item;
+
+		for (int i = 0; i < 10; i++) {
+
+			TreeItem *_n = next->get_next_visible();
+			if (_n) {
+				next = _n;
+			} else {
+
+				return;
+			}
+		}
+		if (next == selected_item)
+			return;
+
+		if (select_mode == SELECT_MULTI) {
+
+			selected_item = next;
+			emit_signal("cell_selected");
+			update();
+		} else {
+
+			while (next && !next->cells[selected_col].selectable)
+				next = next->get_next_visible();
+			if (!next) {
+				return; // do nothing..
+			}
+			next->select(selected_col);
+		}
+
+		ensure_cursor_is_visible();
+	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
+
+		if (!cursor_can_exit_tree) accept_event();
+
+		TreeItem *prev = NULL;
+		if (!selected_item)
+			return;
+		prev = selected_item;
+
+		for (int i = 0; i < 10; i++) {
+
+			TreeItem *_n = prev->get_prev_visible();
+			if (_n) {
+				prev = _n;
+			} else {
+
+				return;
+			}
+		}
+		if (prev == selected_item)
+			return;
+
+		if (select_mode == SELECT_MULTI) {
+
+			selected_item = prev;
+			emit_signal("cell_selected");
+			update();
+		} else {
+
+			while (prev && !prev->cells[selected_col].selectable)
+				prev = prev->get_prev_visible();
+			if (!prev) {
+				return; // do nothing..
+			}
+			prev->select(selected_col);
+		}
+		ensure_cursor_is_visible();
+	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+
+		if (selected_item) {
+			//bring up editor if possible
+			if (!edit_selected()) {
+				emit_signal("item_activated");
+				incr_search.clear();
+			}
+		}
+		accept_event();
+	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
+
+		if (select_mode == SELECT_MULTI) {
+			if (!selected_item)
+				return;
+			if (selected_item->is_selected(selected_col)) {
+				selected_item->deselect(selected_col);
+				emit_signal("multi_selected", selected_item, selected_col, false);
+			} else if (selected_item->is_selectable(selected_col)) {
+				selected_item->select(selected_col);
+				emit_signal("multi_selected", selected_item, selected_col, true);
+			}
+		}
+		accept_event();
+	}
+
+	if (k.is_valid()) { // Incremental search
 
 		if (!k->is_pressed())
 			return;
@@ -2077,306 +2364,15 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		if (hide_root && !root->get_next_visible())
 			return;
 
-		switch (k->get_scancode()) {
-#define EXIT_BREAK                                 \
-	{                                              \
-		if (!cursor_can_exit_tree) accept_event(); \
-		break;                                     \
-	}
-			case KEY_RIGHT: {
-				bool dobreak = true;
+		if (k->get_unicode() > 0) {
 
-				//TreeItem *next = NULL;
-				if (!selected_item)
-					break;
-				if (select_mode == SELECT_ROW) {
-					EXIT_BREAK;
-				}
-				if (selected_col > (columns.size() - 1)) {
-					EXIT_BREAK;
-				}
-				if (k->get_alt()) {
-					selected_item->set_collapsed(false);
-					TreeItem *next = selected_item->get_children();
-					while (next && next != selected_item->next) {
-						next->set_collapsed(false);
-						next = next->get_next_visible();
-					}
-				} else if (selected_col == (columns.size() - 1)) {
-					if (selected_item->get_children() != NULL && selected_item->is_collapsed()) {
-						selected_item->set_collapsed(false);
-					} else {
-						selected_col = 0;
-						dobreak = false; // fall through to key_down
-					}
-				} else {
-					if (select_mode == SELECT_MULTI) {
-						selected_col++;
-						emit_signal("cell_selected");
-					} else {
+			_do_incr_search(String::chr(k->get_unicode()));
+			accept_event();
 
-						selected_item->select(selected_col + 1);
-					}
-				}
-				update();
-				ensure_cursor_is_visible();
-				accept_event();
-				if (dobreak) {
-					break;
-				}
-			}
-			case KEY_DOWN: {
-
-				TreeItem *next = NULL;
-				if (!selected_item) {
-
-					next = hide_root ? root->get_next_visible() : root;
-					selected_item = 0;
-				} else {
-
-					next = selected_item->get_next_visible();
-
-					//if (diff < uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000))) {
-					if (last_keypress != 0) {
-						//incr search next
-						int col;
-						next = _search_item_text(next, incr_search, &col, true);
-						if (!next) {
-							accept_event();
-							return;
-						}
-					}
-				}
-
-				if (select_mode == SELECT_MULTI) {
-
-					if (!next)
-						EXIT_BREAK;
-
-					selected_item = next;
-					emit_signal("cell_selected");
-					update();
-				} else {
-
-					int col = selected_col < 0 ? 0 : selected_col;
-
-					while (next && !next->cells[col].selectable)
-						next = next->get_next_visible();
-					if (!next)
-						EXIT_BREAK; // do nothing..
-					next->select(col);
-				}
-
-				ensure_cursor_is_visible();
-				accept_event();
-
-			} break;
-			case KEY_LEFT: {
-				bool dobreak = true;
-
-				//TreeItem *next = NULL;
-				if (!selected_item)
-					break;
-				if (select_mode == SELECT_ROW) {
-					EXIT_BREAK;
-				}
-				if (selected_col < 0) {
-					EXIT_BREAK;
-				}
-				if (k->get_alt()) {
-					selected_item->set_collapsed(true);
-					TreeItem *next = selected_item->get_children();
-					while (next && next != selected_item->next) {
-						next->set_collapsed(true);
-						next = next->get_next_visible();
-					}
-				} else if (selected_col == 0) {
-					if (selected_item->get_children() != NULL && !selected_item->is_collapsed()) {
-						selected_item->set_collapsed(true);
-					} else {
-						if (columns.size() == 1) { // goto parent with one column
-							TreeItem *parent = selected_item->get_parent();
-							if (selected_item != get_root() && parent && parent->is_selectable(selected_col) && !(hide_root && parent == get_root())) {
-								select_single_item(parent, get_root(), selected_col);
-							}
-						} else {
-							selected_col = columns.size() - 1;
-							dobreak = false; // fall through to key_up
-						}
-					}
-				} else {
-					if (select_mode == SELECT_MULTI) {
-						selected_col--;
-						emit_signal("cell_selected");
-					} else {
-
-						selected_item->select(selected_col - 1);
-					}
-				}
-				update();
-				accept_event();
-				ensure_cursor_is_visible();
-
-				if (dobreak) {
-					break;
-				}
-			}
-			case KEY_UP: {
-
-				TreeItem *prev = NULL;
-				if (!selected_item) {
-					prev = get_last_item();
-					selected_col = 0;
-				} else {
-
-					prev = selected_item->get_prev_visible();
-					if (last_keypress != 0) {
-						//incr search next
-						int col;
-						prev = _search_item_text(prev, incr_search, &col, true, true);
-						if (!prev) {
-							accept_event();
-							return;
-						}
-					}
-				}
-
-				if (select_mode == SELECT_MULTI) {
-
-					if (!prev)
-						break;
-					selected_item = prev;
-					emit_signal("cell_selected");
-					update();
-				} else {
-
-					int col = selected_col < 0 ? 0 : selected_col;
-					while (prev && !prev->cells[col].selectable)
-						prev = prev->get_prev_visible();
-					if (!prev)
-						break; // do nothing..
-					prev->select(col);
-				}
-
-				ensure_cursor_is_visible();
-				accept_event();
-
-			} break;
-			case KEY_PAGEDOWN: {
-
-				TreeItem *next = NULL;
-				if (!selected_item)
-					break;
-				next = selected_item;
-
-				for (int i = 0; i < 10; i++) {
-
-					TreeItem *_n = next->get_next_visible();
-					if (_n) {
-						next = _n;
-					} else {
-
-						break;
-					}
-				}
-				if (next == selected_item)
-					break;
-
-				if (select_mode == SELECT_MULTI) {
-
-					selected_item = next;
-					emit_signal("cell_selected");
-					update();
-				} else {
-
-					while (next && !next->cells[selected_col].selectable)
-						next = next->get_next_visible();
-					if (!next)
-						EXIT_BREAK; // do nothing..
-					next->select(selected_col);
-				}
-
-				ensure_cursor_is_visible();
-			} break;
-			case KEY_PAGEUP: {
-
-				TreeItem *prev = NULL;
-				if (!selected_item)
-					break;
-				prev = selected_item;
-
-				for (int i = 0; i < 10; i++) {
-
-					TreeItem *_n = prev->get_prev_visible();
-					if (_n) {
-						prev = _n;
-					} else {
-
-						break;
-					}
-				}
-				if (prev == selected_item)
-					break;
-
-				if (select_mode == SELECT_MULTI) {
-
-					selected_item = prev;
-					emit_signal("cell_selected");
-					update();
-				} else {
-
-					while (prev && !prev->cells[selected_col].selectable)
-						prev = prev->get_prev_visible();
-					if (!prev)
-						EXIT_BREAK; // do nothing..
-					prev->select(selected_col);
-				}
-
-				ensure_cursor_is_visible();
-
-			} break;
-			case KEY_F2:
-			case KEY_ENTER:
-			case KEY_KP_ENTER: {
-
-				if (selected_item) {
-					//bring up editor if possible
-					if (!edit_selected()) {
-						emit_signal("item_activated");
-						incr_search.clear();
-					}
-				}
-				accept_event();
-
-			} break;
-			case KEY_SPACE: {
-				if (select_mode == SELECT_MULTI) {
-					if (!selected_item)
-						break;
-					if (selected_item->is_selected(selected_col)) {
-						selected_item->deselect(selected_col);
-						emit_signal("multi_selected", selected_item, selected_col, false);
-					} else if (selected_item->is_selectable(selected_col)) {
-						selected_item->select(selected_col);
-						emit_signal("multi_selected", selected_item, selected_col, true);
-					}
-				}
-				accept_event();
-
-			} break;
-			default: {
-
-				if (k->get_unicode() > 0) {
-
-					_do_incr_search(String::chr(k->get_unicode()));
-					accept_event();
-
-					return;
-				} else {
-					if (k->get_scancode() != KEY_SHIFT)
-						last_keypress = 0;
-				}
-			} break;
+			return;
+		} else {
+			if (k->get_scancode() != KEY_SHIFT)
+				last_keypress = 0;
 		}
 	}
 

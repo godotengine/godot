@@ -507,6 +507,10 @@ private:
 	ValueEvaluator *evaluator;
 
 	int _count_selected_items(TreeItem *p_from) const;
+	void _go_left();
+	void _go_right();
+	void _go_down();
+	void _go_up();
 
 protected:
 	static void _bind_methods();
