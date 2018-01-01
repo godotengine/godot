@@ -613,7 +613,7 @@ void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 
 	Ref<InputEventMouseButton> mb = p_input;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1 && !mb->is_doubleclick()) {
 		class_desc->set_selection_enabled(false);
 		class_desc->set_selection_enabled(true);
 	}
