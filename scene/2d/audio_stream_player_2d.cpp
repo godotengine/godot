@@ -50,11 +50,7 @@ void AudioStreamPlayer2D::_mix_audio() {
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
-	if (stream_paused_fade_out) {
-		// Short fadeout ramp
-		buffer_size = MIN(buffer_size, 128);
-	}
-
+	//mix
 	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//write all outputs
