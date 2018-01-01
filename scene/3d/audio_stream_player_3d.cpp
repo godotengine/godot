@@ -27,18 +27,18 @@ void AudioStreamPlayer3D::_mix_audio() {
 	//mix
 	if (output_count > 0 || out_of_range_mode == OUT_OF_RANGE_MIX) {
 
-		float pitch_scale = 0.0;
+		float output_pitch_scale = 0.0;
 		if (output_count) {
 			//used for doppler, not realistic but good enough
 			for (int i = 0; i < output_count; i++) {
-				pitch_scale += outputs[i].pitch_scale;
+				output_pitch_scale += outputs[i].pitch_scale;
 			}
-			pitch_scale /= float(output_count);
+			output_pitch_scale /= float(output_count);
 		} else {
-			pitch_scale = 1.0;
+			output_pitch_scale = 1.0;
 		}
 
-		stream_playback->mix(buffer, pitch_scale, buffer_size);
+		stream_playback->mix(buffer, pitch_scale * output_pitch_scale, buffer_size);
 	}
 
 	//write all outputs
@@ -577,6 +577,13 @@ float AudioStreamPlayer3D::get_max_db() const {
 	return max_db;
 }
 
+void AudioStreamPlayer3D::set_pitch_scale(float p_pitch_scale) {
+	pitch_scale = p_pitch_scale;
+}
+float AudioStreamPlayer3D::get_pitch_scale() const {
+	return pitch_scale;
+}
+
 void AudioStreamPlayer3D::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
@@ -802,6 +809,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_db", "max_db"), &AudioStreamPlayer3D::set_max_db);
 	ClassDB::bind_method(D_METHOD("get_max_db"), &AudioStreamPlayer3D::get_max_db);
 
+	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer3D::set_pitch_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer3D::get_pitch_scale);
+
 	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer3D::play, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer3D::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer3D::stop);
@@ -855,6 +865,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.1"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,32,0.01"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_RANGE, "0,65536,1"), "set_max_distance", "get_max_distance");
@@ -891,6 +902,7 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	unit_size = 1;
 	attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	max_db = 3;
+	pitch_scale = 1.0;
 	autoplay = false;
 	setseek = -1;
 	active = false;

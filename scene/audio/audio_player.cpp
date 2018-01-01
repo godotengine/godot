@@ -44,7 +44,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	}
 
 	//mix
-	stream_playback->mix(buffer, 1.0, buffer_size);
+	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//multiply volume interpolating to avoid clicks if this changes
 	float target_volume = p_fadeout ? -80.0 : volume_db;
@@ -176,6 +176,13 @@ float AudioStreamPlayer::get_volume_db() const {
 	return volume_db;
 }
 
+void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
+	pitch_scale = p_pitch_scale;
+}
+float AudioStreamPlayer::get_pitch_scale() const {
+	return pitch_scale;
+}
+
 void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
@@ -296,6 +303,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);
+
 	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer::play, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer::stop);
@@ -319,6 +329,7 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,32,0.01"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
@@ -334,6 +345,7 @@ void AudioStreamPlayer::_bind_methods() {
 AudioStreamPlayer::AudioStreamPlayer() {
 
 	mix_volume_db = 0;
+	pitch_scale = 1.0;
 	volume_db = 0;
 	autoplay = false;
 	setseek = -1;
