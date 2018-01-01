@@ -403,12 +403,12 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 		_search(p_path->get_subdir(i), matches, p_max_items);
 	}
 
-	String match = search_box->get_text();
+	String match = search_box->get_text().to_lower();
 
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (file.find(match) != -1) {
+		if (file.to_lower().find(match) != -1) {
 
 			FileInfo fi;
 			fi.name = file;
