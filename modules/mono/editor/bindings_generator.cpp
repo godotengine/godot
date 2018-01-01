@@ -108,6 +108,8 @@ const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in 
 
 bool BindingsGenerator::verbose_output = false;
 
+BindingsGenerator *BindingsGenerator::singleton = NULL;
+
 static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
 
 	String ret;
@@ -200,7 +202,7 @@ void BindingsGenerator::_generate_header_icalls() {
 	core_custom_icalls.clear();
 
 	core_custom_icalls.push_back(InternalCall(ICALL_GET_METHODBIND, "IntPtr", "string type, string method"));
-	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "IntPtr ptr"));
+	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "object obj, IntPtr ptr"));
 
 	core_custom_icalls.push_back(InternalCall(ICALL_CONNECT_SIGNAL_AWAITER, "Error",
 			"IntPtr source, string signal, IntPtr target, " CS_CLASS_SIGNALAWAITER " awaiter"));
@@ -931,8 +933,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
 										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
 										  " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
-										  "(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD
-										  " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "(this, " BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" INDENT3
 										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
 			Map<StringName, TypeInterface>::Element *array_itype = builtin_types.find(name_cache.type_Array);
@@ -2466,8 +2468,7 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
-BindingsGenerator::BindingsGenerator() :
-		name_cache(NameCache::get_singleton()) {
+void BindingsGenerator::initialize() {
 
 	EditorHelp::generate_doc();
 
@@ -2509,7 +2510,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton().generate_glue(path_elem->get()) != OK)
+				if (get_singleton()->generate_glue(path_elem->get()) != OK)
 					ERR_PRINT("Mono glue generation failed");
 				elem = elem->next();
 			} else {
@@ -2523,7 +2524,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton().generate_cs_core_project(path_elem->get()) != OK)
+				if (get_singleton()->generate_cs_core_project(path_elem->get()) != OK)
 					ERR_PRINT("Generation of solution and C# project for the Core API failed");
 				elem = elem->next();
 			} else {
@@ -2538,7 +2539,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 
 			if (path_elem) {
 				if (path_elem->next()) {
-					if (get_singleton().generate_cs_editor_project(path_elem->get(), path_elem->next()->get()) != OK)
+					if (get_singleton()->generate_cs_editor_project(path_elem->get(), path_elem->next()->get()) != OK)
 						ERR_PRINT("Generation of solution and C# project for the Editor API failed");
 					elem = path_elem->next();
 				} else {
