@@ -45,6 +45,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 		buffer_size = MIN(buffer_size, 128);
 	}
 
+	//mix
 	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//multiply volume interpolating to avoid clicks if this changes
