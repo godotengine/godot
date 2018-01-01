@@ -1009,10 +1009,10 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 		case TreeItem::ALIGN_LEFT:
 			break; //do none
 		case TreeItem::ALIGN_CENTER:
-			rect.position.x = MAX(0, (rect.size.width - w) / 2);
+			rect.position.x += MAX(0, (rect.size.width - w) / 2);
 			break; //do none
 		case TreeItem::ALIGN_RIGHT:
-			rect.position.x = MAX(0, (rect.size.width - w));
+			rect.position.x += MAX(0, (rect.size.width - w));
 			break; //do none
 	}
 
