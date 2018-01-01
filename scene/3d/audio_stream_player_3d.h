@@ -106,6 +106,7 @@ private:
 	float unit_db;
 	float unit_size;
 	float max_db;
+	float pitch_scale;
 	bool autoplay;
 	StringName bus;
 
@@ -152,6 +153,9 @@ public:
 
 	void set_max_db(float p_boost);
 	float get_max_db() const;
+
+	void set_pitch_scale(float p_pitch_scale);
+	float get_pitch_scale() const;
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);
