@@ -299,8 +299,8 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		NativePlatformConfig platform_uwp;
 		platform_uwp.name = "Windows Universal";
 		platform_uwp.entries.push_back("arm");
-		platform_uwp.entries.push_back("x86");
-		platform_uwp.entries.push_back("x64");
+		platform_uwp.entries.push_back("32");
+		platform_uwp.entries.push_back("64");
 		platform_uwp.library_extension = "*.dll";
 		platforms["UWP"] = platform_uwp;
 

@@ -1024,6 +1024,17 @@ public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 		r_features->push_back("s3tc");
 		r_features->push_back("etc");
+		switch ((int)p_preset->get("architecture/target")) {
+			case EditorExportUWP::ARM: {
+				r_features->push_back("arm");
+			} break;
+			case EditorExportUWP::X86: {
+				r_features->push_back("32");
+			} break;
+			case EditorExportUWP::X64: {
+				r_features->push_back("64");
+			} break;
+		}
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
