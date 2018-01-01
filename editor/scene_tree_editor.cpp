@@ -197,23 +197,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			emit_signal("open_script", script);
 
 	} else if (p_id == BUTTON_VISIBILITY) {
-
-		if (n->is_type("Spatial")) {
-
-			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action(TTR("Toggle Spatial Visible"));
-			undo_redo->add_do_method(n, "_set_visible_", !v);
-			undo_redo->add_undo_method(n, "_set_visible_", v);
-			undo_redo->commit_action();
-		} else if (n->is_type("CanvasItem")) {
-
-			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
-			undo_redo->add_do_method(n, v ? "hide" : "show");
-			undo_redo->add_undo_method(n, v ? "show" : "hide");
-			undo_redo->commit_action();
-		}
-
+		undo_redo->create_action(TTR("Toggle Visible"));
+		undo_redo->add_do_method(this, "toggle_visible", n);
+		undo_redo->add_undo_method(this, "toggle_visible", n);
+		undo_redo->commit_action();
 	} else if (p_id == BUTTON_LOCK) {
 
 		if (n->is_type("CanvasItem")) {
@@ -256,6 +243,37 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		NodeDock::singleton->get_parent()->call("set_current_tab", NodeDock::singleton->get_index());
 		NodeDock::singleton->show_groups();
+	}
+}
+
+void SceneTreeEditor::_toggle_visible(Node *p_node) {
+	if (p_node->is_type("Spatial")) {
+		bool v = bool(p_node->call("is_visible"));
+		p_node->call("set_visible", !v);
+	}
+	else if (p_node->is_type("CanvasItem")) {
+		bool v = bool(p_node->call("is_visible"));
+		if (v) {
+			p_node->call("hide");
+		}
+		else {
+			p_node->call("show");
+		}
+	}
+}
+
+void SceneTreeEditor::toggle_visible(Node *p_node) {
+	_toggle_visible(p_node);
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	if (selection.size() > 1) {
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			Node *nv = E->get();
+			ERR_FAIL_COND(!nv);
+			if (nv == p_node) {
+				continue;
+			}
+			_toggle_visible(nv);
+		}
 	}
 }
 
@@ -1062,6 +1080,8 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_subscene_option", &SceneTreeEditor::_subscene_option);
 	ObjectTypeDB::bind_method("_rmb_select", &SceneTreeEditor::_rmb_select);
 	ObjectTypeDB::bind_method("_warning_changed", &SceneTreeEditor::_warning_changed);
+	ObjectTypeDB::bind_method("_toggle_visible", &SceneTreeEditor::_toggle_visible);
+	ObjectTypeDB::bind_method("toggle_visible", &SceneTreeEditor::toggle_visible);
 
 	ObjectTypeDB::bind_method("_node_script_changed", &SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed", &SceneTreeEditor::_node_visibility_changed);
