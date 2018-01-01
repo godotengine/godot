@@ -56,8 +56,8 @@ class PackedDataContainer : public Resource {
 	Variant _iter_next_ofs(const Array &p_iter, uint32_t p_offset);
 	Variant _iter_get_ofs(const Variant &p_iter, uint32_t p_offset);
 
-	Variant _iter_init(const Array &p_iter);
-	Variant _iter_next(const Array &p_iter);
+	Variant _iter_init();
+	Variant _iter_next(const Variant &p_iter);
 	Variant _iter_get(const Variant &p_iter);
 
 	friend class PackedDataContainerRef;
@@ -91,8 +91,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Variant _iter_init(const Array &p_iter);
-	Variant _iter_next(const Array &p_iter);
+	Variant _iter_init();
+	Variant _iter_next(const Variant &p_iter);
 	Variant _iter_get(const Variant &p_iter);
 	bool _is_dictionary() const;
 

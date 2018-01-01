@@ -347,18 +347,25 @@ PoolVector<uint8_t> PackedDataContainer::_get_data() const {
 	return data;
 }
 
-Variant PackedDataContainer::_iter_init(const Array &p_iter) {
+Variant PackedDataContainer::_iter_init() {
 
-	return _iter_init_ofs(p_iter, 0);
+	Array arr;
+	arr.push_back(Variant());
+	if (_iter_init_ofs(arr, 0)) {
+		return arr;
+	} else {
+		return Variant();
+	}
 }
 
-Variant PackedDataContainer::_iter_next(const Array &p_iter) {
+Variant PackedDataContainer::_iter_next(const Variant &p_iter) {
 
 	return _iter_next_ofs(p_iter, 0);
 }
 Variant PackedDataContainer::_iter_get(const Variant &p_iter) {
 
-	return _iter_get_ofs(p_iter, 0);
+	Array arr = p_iter;
+	return _iter_get_ofs(arr[0], 0);
 }
 
 void PackedDataContainer::_bind_methods() {
@@ -381,18 +388,25 @@ PackedDataContainer::PackedDataContainer() {
 
 //////////////////
 
-Variant PackedDataContainerRef::_iter_init(const Array &p_iter) {
+Variant PackedDataContainerRef::_iter_init() {
 
-	return from->_iter_init_ofs(p_iter, offset);
+	Array arr;
+	arr.push_back(Variant());
+	if (from->_iter_init_ofs(arr, offset)) {
+		return arr;
+	} else {
+		return Variant();
+	}
 }
 
-Variant PackedDataContainerRef::_iter_next(const Array &p_iter) {
+Variant PackedDataContainerRef::_iter_next(const Variant &p_iter) {
 
 	return from->_iter_next_ofs(p_iter, offset);
 }
 Variant PackedDataContainerRef::_iter_get(const Variant &p_iter) {
 
-	return from->_iter_get_ofs(p_iter, offset);
+	Array arr = p_iter;
+	return from->_iter_get_ofs(arr[0], offset);
 }
 
 bool PackedDataContainerRef::_is_dictionary() const {
