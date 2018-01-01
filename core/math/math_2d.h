@@ -303,22 +303,31 @@ struct Rect2 {
 
 	inline real_t distance_to(const Vector2 &p_point) const {
 
-		real_t dist = 1e20;
+		real_t dist;
+		bool inside = true;
 
 		if (p_point.x < position.x) {
-			dist = MIN(dist, position.x - p_point.x);
+			real_t d = position.x - p_point.x;
+			dist = inside ? d : MIN(dist, d);
+			inside = false;
 		}
 		if (p_point.y < position.y) {
-			dist = MIN(dist, position.y - p_point.y);
+			real_t d = position.y - p_point.y;
+			dist = inside ? d : MIN(dist, d);
+			inside = false;
 		}
 		if (p_point.x >= (position.x + size.x)) {
-			dist = MIN(p_point.x - (position.x + size.x), dist);
+			real_t d = p_point.x - (position.x + size.x);
+			dist = inside ? d : MIN(dist, d);
+			inside = false;
 		}
 		if (p_point.y >= (position.y + size.y)) {
-			dist = MIN(p_point.y - (position.y + size.y), dist);
+			real_t d = p_point.y - (position.y + size.y);
+			dist = inside ? d : MIN(dist, d);
+			inside = false;
 		}
 
-		if (dist == 1e20)
+		if (inside)
 			return 0;
 		else
 			return dist;
