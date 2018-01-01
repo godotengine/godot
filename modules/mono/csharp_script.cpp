@@ -124,6 +124,14 @@ void CSharpLanguage::finish() {
 
 	finalizing = true;
 
+#ifdef TOOLS_ENABLED
+	// Must be here, to avoid StringName leaks
+	if (BindingsGenerator::singleton) {
+		memdelete(BindingsGenerator::singleton);
+		BindingsGenerator::singleton = NULL;
+	}
+#endif
+
 	// Release gchandle bindings before finalizing mono runtime
 	gchandle_bindings.clear();
 
