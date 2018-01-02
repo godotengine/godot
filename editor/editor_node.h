@@ -220,6 +220,7 @@ private:
 	//main tabs
 
 	Tabs *scene_tabs;
+	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
 	int tab_closing;

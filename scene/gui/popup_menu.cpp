@@ -530,6 +530,11 @@ void PopupMenu::_notification(int p_what) {
 			}
 
 		} break;
+		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+
+			if (hide_on_window_lose_focus)
+				hide();
+		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
 
 			grab_focus();
@@ -1249,6 +1254,16 @@ float PopupMenu::get_submenu_popup_delay() const {
 	return submenu_timer->get_wait_time();
 }
 
+void PopupMenu::set_hide_on_window_lose_focus(bool p_enabled) {
+
+	hide_on_window_lose_focus = p_enabled;
+}
+
+bool PopupMenu::is_hide_on_window_lose_focus() const {
+
+	return hide_on_window_lose_focus;
+}
+
 String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 
 	int over = _get_mouse_over(p_pos);
@@ -1353,6 +1368,10 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_submenu_popup_delay", "seconds"), &PopupMenu::set_submenu_popup_delay);
 	ClassDB::bind_method(D_METHOD("get_submenu_popup_delay"), &PopupMenu::get_submenu_popup_delay);
+
+	ClassDB::bind_method(D_METHOD("set_hide_on_window_lose_focus", "enable"), &PopupMenu::set_hide_on_window_lose_focus);
+	ClassDB::bind_method(D_METHOD("is_hide_on_window_lose_focus"), &PopupMenu::is_hide_on_window_lose_focus);
+
 	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
