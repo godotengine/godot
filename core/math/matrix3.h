@@ -103,6 +103,9 @@ public:
 	void scale(const Vector3 &p_scale);
 	Basis scaled(const Vector3 &p_scale) const;
 
+	void scale_local(const Vector3 &p_scale);
+	Basis scaled_local(const Vector3 &p_scale) const;
+
 	void set_scale(const Vector3 &p_scale);
 	Vector3 get_scale() const;
 	Vector3 get_signed_scale() const;
