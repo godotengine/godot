@@ -2418,20 +2418,9 @@ void ScriptEditor::_make_script_list_context_menu() {
 		}
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
-
-		Ref<Script> scr = se->get_edited_resource();
-		if (scr != NULL) {
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
-			if (!scr.is_null() && scr->is_tool()) {
-				context_menu->add_separator();
-				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
-			}
-		}
-	} else {
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+		context_menu->add_separator();
 	}
 
-	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), WINDOW_MOVE_DOWN);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
@@ -2936,28 +2925,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
-	overview_vbox = memnew(VBoxContainer);
-	overview_vbox->set_custom_minimum_size(Size2(0, 90));
-	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	list_split->add_child(overview_vbox);
-	buttons_hbox = memnew(HBoxContainer);
-	overview_vbox->add_child(buttons_hbox);
-
-	filename = memnew(Label);
-	filename->set_clip_text(true);
-	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
-	buttons_hbox->add_child(filename);
-
-	members_overview_alphabeta_sort_button = memnew(ToolButton);
-	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
-	members_overview_alphabeta_sort_button->set_toggle_mode(true);
-	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
-	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
-
-	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
-
 	members_overview = memnew(ItemList);
 	overview_vbox->add_child(members_overview);
 
@@ -3039,6 +3006,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu = memnew(MenuButton);
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
+	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
