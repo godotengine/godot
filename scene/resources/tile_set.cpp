@@ -307,6 +307,7 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture> &p_texture) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].texture = p_texture;
+	_change_notify("texture");
 	emit_changed();
 }
 
@@ -684,7 +685,7 @@ Ref<NavigationPolygon> TileSet::tile_get_navigation_polygon(int p_id) const {
 	return tile_map[p_id].navigation_polygon;
 }
 
-const Map<Vector2, Ref<OccluderPolygon2D> > &TileSet::autotile_get_light_oclusion_map(int p_id) const {
+const Map<Vector2, Ref<OccluderPolygon2D> > &TileSet::autotile_get_light_occluder_map(int p_id) const {
 
 	static Map<Vector2, Ref<OccluderPolygon2D> > dummy;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);

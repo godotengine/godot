@@ -200,7 +200,7 @@ public:
 
 	void autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord);
 	Ref<OccluderPolygon2D> autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<OccluderPolygon2D> > &autotile_get_light_oclusion_map(int p_id) const;
+	const Map<Vector2, Ref<OccluderPolygon2D> > &autotile_get_light_occluder_map(int p_id) const;
 
 	void tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_navigation_polygon_offset(int p_id) const;
