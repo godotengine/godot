@@ -309,7 +309,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	/* and now we have it all.  initialize decoders */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
-		
 		px_fmt = ti.pixel_fmt;
 		switch (ti.pixel_fmt) {
 			case TH_PF_420: printf(" 4:2:0 video\n"); break;
@@ -320,7 +319,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				printf(" video\n  (UNKNOWN Chroma sampling!)\n");
 				break;
 		}
-		
 		th_decode_ctl(td, TH_DECCTL_GET_PPLEVEL_MAX, &pp_level_max,
 				sizeof(pp_level_max));
 		pp_level = 0;
@@ -349,7 +347,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		vorbis_block_init(&vd, &vb);
 		
 		//_setup(vi.channels, vi.rate);
-
 	} else {
 		/* tear down the partial vorbis setup */
 		vorbis_info_clear(&vi);
