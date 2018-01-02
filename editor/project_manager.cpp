@@ -1039,9 +1039,9 @@ void ProjectManager::_load_recent_projects() {
 		favorite->set_normal_texture(favorite_icon);
 		if (!is_favorite)
 			favorite->set_modulate(Color(1, 1, 1, 0.2));
-		favorite->set_v_size_flags(SIZE_EXPAND);
 		favorite->connect("pressed", this, "_favorite_pressed", varray(hb));
 		favorite_box->add_child(favorite);
+		favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
 		hb->add_child(favorite_box);
 
 		TextureRect *tf = memnew(TextureRect);
