@@ -1027,6 +1027,15 @@ void ScriptEditor::_menu_option(int p_option) {
 			case FILE_COPY_PATH: {
 				_copy_script_path();
 			} break;
+			case SHOW_IN_FILE_SYSTEM: {
+				ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
+				Ref<Script> script = se->get_edited_script();
+				FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+				file_system_dock->navigate_to_path(script->get_path());
+				// Ensure that the FileSystem dock is visible.
+				TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
+				tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
@@ -2164,7 +2173,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
-
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
 		Ref<Script> scr = se->get_edited_script();
 		if (!scr.is_null() && scr->is_tool()) {
 			context_menu->add_separator();
@@ -2613,6 +2622,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show In File System")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
