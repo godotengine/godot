@@ -47,6 +47,7 @@ class ProjectManager : public Control {
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
+	Button *show_btn;
 
 	FileDialog *scan_dir;
 
@@ -84,6 +85,7 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_project();
 	void _open_project_confirm();
+	void _show_project();
 	void _import_project();
 	void _new_project();
 	void _rename_project();
@@ -96,6 +98,7 @@ class ProjectManager : public Control {
 	void _scan_begin(const String &p_base);
 
 	void _load_recent_projects();
+	void _scan_scenes(DirAccess *p_da, HBoxContainer *p_scenes, int p_max, const Size2 &p_size);
 	void _on_project_created(const String &dir);
 	void _on_project_renamed();
 	void _update_scroll_position(const String &dir);
