@@ -1192,7 +1192,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 
 String ItemList::get_tooltip(const Point2 &p_pos) const {
 
-	int closest = get_item_at_position(p_pos);
+	int closest = get_item_at_position(p_pos, true);
 
 	if (closest != -1) {
 		if (!items[closest].tooltip_enabled) {
