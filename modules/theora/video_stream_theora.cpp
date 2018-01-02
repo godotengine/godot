@@ -345,7 +345,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	if (vorbis_p) {
 		vorbis_synthesis_init(&vd, &vi);
 		vorbis_block_init(&vd, &vb);
-		
 		//_setup(vi.channels, vi.rate);
 	} else {
 		/* tear down the partial vorbis setup */
