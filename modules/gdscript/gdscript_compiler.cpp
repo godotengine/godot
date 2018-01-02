@@ -172,9 +172,10 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 
 	int slevel = p_stack_level;
 
-	const int append = codegen.get_name_map_pos(StringName("append"));
+	const int n_loops = p_comprehension->ids.size();
 	Vector<GDScriptParser::IdentifierNode *> ids = p_comprehension->ids[p_loop];
 	const bool unpack = ids.size() > 1;
+	const bool try_prealloc = n_loops == 1 && !p_comprehension->cond;
 
 	int iter_stack_pos = slevel;
 	int iterator_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
@@ -183,6 +184,10 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 	}
 	int counter_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
 	int container_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	int build_index_pos = 0;
+	if (try_prealloc) {
+		build_index_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	}
 	codegen.alloc_stack(slevel);
 
 	codegen.push_stack_identifiers();
@@ -197,6 +202,13 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 	int initial = _parse_expression(codegen, p_comprehension->containers[p_loop], slevel, false);
 	if (initial < 0)
 		return false;
+
+	//assign index for OPCODE_BUILD_COMPREHENSION
+	if (build_index_pos != 0) {
+		codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN);
+		codegen.opcodes.push_back(build_index_pos);
+		codegen.opcodes.push_back(codegen.get_constant_pos(0));
+	}
 
 	//assign container
 	codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN);
@@ -223,7 +235,7 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 	codegen.opcodes.push_back(break_pos);
 	codegen.opcodes.push_back(iterator_pos);
 
-	if (p_loop == p_comprehension->ids.size() - 1) {
+	if (p_loop == n_loops - 1) {
 		int element_pos = _parse_expression(codegen, p_comprehension->expr, slevel);
 
 		if (element_pos < 0)
@@ -236,15 +248,7 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 
 		if (unpack) {
 			for (int i = 0; i < ids.size(); i++) {
-				Variant index = i;
-				int index_stack_level;
-
-				if (!codegen.constant_map.has(index)) {
-					index_stack_level = codegen.constant_map.size();
-					codegen.constant_map[index] = index_stack_level;
-				} else {
-					index_stack_level = codegen.constant_map[index];
-				}
+				const int index_stack_level = codegen.get_constant_pos(i);
 
 				codegen.opcodes.push_back(GDScriptFunction::OPCODE_GET);
 				codegen.opcodes.push_back(iterator_pos);
@@ -268,12 +272,11 @@ bool GDScriptCompiler::_parse_comprehension(CodeGen &codegen, const GDScriptPars
 
 		codegen.alloc_call(1);
 
-		codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL);
-		codegen.opcodes.push_back(1);
+		codegen.opcodes.push_back(GDScriptFunction::OPCODE_BUILD_COMPREHENSION);
 		codegen.opcodes.push_back(p_array_pos);
-		codegen.opcodes.push_back(append);
 		codegen.opcodes.push_back(element_pos);
-		codegen.opcodes.push_back(-1); // return, not read
+		codegen.opcodes.push_back(build_index_pos);
+		codegen.opcodes.push_back(container_pos);
 
 		if (p_comprehension->cond) {
 			codegen.opcodes[else_addr] = codegen.opcodes.size();
