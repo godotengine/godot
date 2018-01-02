@@ -410,7 +410,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
-		item->set_checked(2, info.is_singleton);
+		item->set_checked(2, global);
 		item->add_button(3, get_icon("FileList", "EditorIcons"), BUTTON_OPEN);
 		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
 		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
@@ -830,7 +830,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_column_min_width(2, 80 * EDSCALE);
 
 	tree->set_column_expand(3, false);
-	tree->set_column_min_width(3, 80 * EDSCALE);
+	tree->set_column_min_width(3, 120);
 
 	tree->connect("cell_selected", this, "_autoload_selected");
 	tree->connect("item_edited", this, "_autoload_edited");
