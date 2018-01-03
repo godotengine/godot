@@ -1686,6 +1686,45 @@ void ScriptEditorDebugger::_clear_remote_objects() {
 	remote_objects.clear();
 }
 
+void ScriptEditorDebugger::_clear_errors_list() {
+
+	error_list->clear();
+	error_count = 0;
+	_notification(NOTIFICATION_PROCESS);
+}
+
+// Right click on specific file(s) or folder(s).
+void ScriptEditorDebugger::_error_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
+
+	item_menu->clear();
+	item_menu->set_size(Size2(1, 1));
+
+	// Allow specific actions only on one item.
+	bool single_item_selected = error_list->get_selected_items().size() == 1;
+
+	if (single_item_selected) {
+		item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
+	}
+
+	if (item_menu->get_item_count() > 0) {
+		item_menu->set_position(error_list->get_global_position() + p_pos);
+		item_menu->popup();
+	}
+}
+
+void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
+
+	switch (p_option) {
+
+		case ITEM_MENU_COPY_ERROR: {
+			String title = error_list->get_item_text(error_list->get_current());
+			String desc = error_list->get_item_tooltip(error_list->get_current());
+
+			OS::get_singleton()->set_clipboard(title + "\n----------\n" + desc);
+		} break;
+	}
+}
+
 void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_stack_dump_frame_selected"), &ScriptEditorDebugger::_stack_dump_frame_selected);
@@ -1705,6 +1744,10 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_error_stack_selected"), &ScriptEditorDebugger::_error_stack_selected);
 	ClassDB::bind_method(D_METHOD("_profiler_activate"), &ScriptEditorDebugger::_profiler_activate);
 	ClassDB::bind_method(D_METHOD("_profiler_seeked"), &ScriptEditorDebugger::_profiler_seeked);
+	ClassDB::bind_method(D_METHOD("_clear_errors_list"), &ScriptEditorDebugger::_clear_errors_list);
+
+	ClassDB::bind_method(D_METHOD("_error_list_item_rmb_selected"), &ScriptEditorDebugger::_error_list_item_rmb_selected);
+	ClassDB::bind_method(D_METHOD("_item_menu_id_pressed"), &ScriptEditorDebugger::_item_menu_id_pressed);
 
 	ClassDB::bind_method(D_METHOD("_paused"), &ScriptEditorDebugger::_paused);
 
@@ -1829,9 +1872,31 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		error_split = memnew(HSplitContainer);
 		VBoxContainer *errvb = memnew(VBoxContainer);
+		HBoxContainer *errhb = memnew(HBoxContainer);
 		errvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		Label *velb = memnew(Label(TTR("Errors:")));
+		velb->set_h_size_flags(SIZE_EXPAND_FILL);
+		errhb->add_child(velb);
+
+		clearbutton = memnew(Button);
+		clearbutton->set_text(TTR("Clear"));
+		clearbutton->connect("pressed", this, "_clear_errors_list");
+		errhb->add_child(clearbutton);
+		errvb->add_child(errhb);
+
 		error_list = memnew(ItemList);
-		errvb->add_margin_child(TTR("Errors:"), error_list, true);
+		error_list->set_v_size_flags(SIZE_EXPAND_FILL);
+		error_list->set_h_size_flags(SIZE_EXPAND_FILL);
+		error_list->connect("item_rmb_selected", this, "_error_list_item_rmb_selected");
+		error_list->set_allow_rmb_select(true);
+		error_list->set_autoscroll_to_bottom(true);
+
+		item_menu = memnew(PopupMenu);
+		item_menu->connect("id_pressed", this, "_item_menu_id_pressed");
+		error_list->add_child(item_menu);
+
+		errvb->add_child(error_list);
+
 		error_split->add_child(errvb);
 
 		errvb = memnew(VBoxContainer);
