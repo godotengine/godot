@@ -148,7 +148,7 @@ protected:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();

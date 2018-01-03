@@ -976,7 +976,7 @@ static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplay
 	displays_arrangement_dirty = true;
 }
 
-void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
@@ -1013,7 +1013,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 						backing:NSBackingStoreBuffered
 						  defer:NO];
 
-	ERR_FAIL_COND(window_object == nil);
+	ERR_FAIL_COND(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
 
@@ -1100,11 +1100,11 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 #undef ADD_ATTR2
 
 	pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	ERR_FAIL_COND(pixelFormat == nil);
+	ERR_FAIL_COND(pixelFormat == nil, ERR_UNAVAILABLE);
 
 	context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
 
-	ERR_FAIL_COND(context == nil);
+	ERR_FAIL_COND(context == nil, ERR_UNAVAILABLE);
 
 	[context setView:window_view];
 
@@ -1148,6 +1148,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	_ensure_user_data_dir();
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
+
+	return OK;
 }
 
 void OS_OSX::finalize() {

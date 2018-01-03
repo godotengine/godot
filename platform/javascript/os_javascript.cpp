@@ -419,7 +419,7 @@ void send_notification(int notif) {
 }
 }
 
-void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	print_line("Init OS");
 
@@ -429,7 +429,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	attributes.antialias = false;
 	attributes.majorVersion = 2;
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
-	ERR_FAIL_COND(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS);
+	ERR_FAIL_COND(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	video_mode = p_desired;
 	// can't fulfil fullscreen request due to browser security
@@ -507,6 +507,8 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 #undef EM_CHECK
 
 	visual_server->init();
+
+	return OK;
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {

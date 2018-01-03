@@ -121,7 +121,7 @@ protected:
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;
-	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;

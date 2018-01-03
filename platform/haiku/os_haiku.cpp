@@ -79,7 +79,7 @@ const char *OS_Haiku::get_video_driver_name(int p_driver) const {
 	return "GLES3";
 }
 
-void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = NULL;
 	current_video_mode = p_desired;
 
@@ -114,7 +114,7 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 
-	ERR_FAIL_COND(!visual_server);
+	ERR_FAIL_COND(!visual_server, ERR_UNAVAILABLE);
 
 	// TODO: enable multithreaded VS
 	/*
@@ -132,6 +132,8 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	AudioDriverManager::initialize(p_audio_driver);
 
 	power_manager = memnew(PowerHaiku);
+
+	return OK;
 }
 
 void OS_Haiku::finalize() {

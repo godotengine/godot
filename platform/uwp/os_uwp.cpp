@@ -194,7 +194,7 @@ void OSUWP::screen_size_changed() {
 	gl_context->reset();
 };
 
-void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
 	outside = true;
@@ -297,6 +297,8 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 		display_request->RequestActive();
 
 	set_keep_screen_on(GLOBAL_DEF("display/window/keep_screen_on", true));
+
+	return OK;
 }
 
 void OSUWP::set_clipboard(const String &p_text) {

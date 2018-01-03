@@ -929,7 +929,7 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
 
-void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
 	outside = true;
@@ -975,7 +975,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	if (!RegisterClassExW(&wc)) {
 		MessageBox(NULL, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return; // Return
+		return ERR_UNAVAILABLE;
 	}
 
 	pre_fs_valid = true;
@@ -1045,7 +1045,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		RECT rect;
 		if (!GetClientRect(hWnd, &rect)) {
 			MessageBoxW(NULL, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
-			return; // Return FALSE
+			return ERR_UNAVAILABLE;
 		};
 		video_mode.width = rect.right;
 		video_mode.height = rect.bottom;
@@ -1063,7 +1063,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 				NULL, NULL, hInstance, NULL);
 		if (!hWnd) {
 			MessageBoxW(NULL, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
-			return; // Return FALSE
+			return ERR_UNAVAILABLE;
 		}
 	};
 
@@ -1127,6 +1127,8 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		SetForegroundWindow(hWnd); // Slightly Higher Priority
 		SetFocus(hWnd); // Sets Keyboard Focus To
 	}
+
+	return OK;
 }
 
 void OS_Windows::set_clipboard(const String &p_text) {
