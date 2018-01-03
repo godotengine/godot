@@ -9,7 +9,7 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2018 Juan Linietsky, Ariel Manzur./string>
+	<string>(c) 2007-2018 Juan Linietsky, Ariel Manzur.</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -25,7 +25,7 @@
 	<key>CFBundleVersion</key>
 	<string>3.0-dev</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2018 Juan Linietsky, Ariel Manzur./string>
+	<string>© 2007-2018 Juan Linietsky, Ariel Manzur.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.9.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
