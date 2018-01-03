@@ -1135,16 +1135,5 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 		theme = create_editor_theme(p_theme);
 	}
 
-	String global_font = EditorSettings::get_singleton()->get("interface/editor/custom_font");
-	if (global_font != "") {
-		Ref<Font> fnt = ResourceLoader::load(global_font);
-		if (fnt.is_valid()) {
-			if (!theme.is_valid()) {
-				theme.instance();
-			}
-			theme->set_default_theme_font(fnt);
-		}
-	}
-
 	return theme;
 }
