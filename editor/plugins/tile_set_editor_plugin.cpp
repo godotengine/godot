@@ -333,7 +333,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	autotile_list = memnew(ItemList);
 	autotile_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	autotile_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	autotile_list->set_custom_minimum_size(Size2(02, 200));
+	autotile_list->set_custom_minimum_size(Size2(10, 200));
 	autotile_list->connect("item_selected", this, "_on_autotile_selected");
 	split->add_child(autotile_list);
 
@@ -531,7 +531,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 
 	main_vb->add_child(toolbar);
 
-	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll = memnew(ScrollContainer);
 	main_vb->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -619,6 +619,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->show();
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile."));
+			current_shape = PoolVector2Array();
 			spin_priority->hide();
 		} break;
 		default: {
@@ -1061,20 +1062,43 @@ void AutotileEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							} else {
 								int t_id = get_current_tile();
 								if (t_id >= 0) {
-									Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(t_id);
-									for (int i = 0; i < sd.size(); i++) {
-										if (sd[i].autotile_coord == edited_shape_coord) {
-											Ref<ConvexPolygonShape2D> shape = sd[i].shape;
+									if (edit_mode == EDITMODE_COLLISION) {
+										Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(t_id);
+										for (int i = 0; i < sd.size(); i++) {
+											if (sd[i].autotile_coord == edited_shape_coord) {
+												Ref<ConvexPolygonShape2D> shape = sd[i].shape;
 
-											if (!shape.is_null()) {
-												sd.remove(i);
-												tile_set->tile_set_shapes(get_current_tile(), sd);
-												edited_collision_shape = Ref<Shape2D>();
-												current_shape.resize(0);
-												workspace->update();
+												if (!shape.is_null()) {
+													sd.remove(i);
+													tile_set->tile_set_shapes(get_current_tile(), sd);
+													edited_collision_shape = Ref<Shape2D>();
+													workspace->update();
+												}
+												break;
 											}
-											break;
 										}
+									} else if (edit_mode == EDITMODE_OCCLUSION) {
+										Map<Vector2, Ref<OccluderPolygon2D> > map = tile_set->autotile_get_light_oclusion_map(t_id);
+										for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = map.front(); E; E = E->next()) {
+											if (E->key() == edited_shape_coord) {
+												tile_set->autotile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+												break;
+											}
+										}
+
+										edited_occlusion_shape = Ref<OccluderPolygon2D>();
+										workspace->update();
+									} else if (edit_mode == EDITMODE_NAVIGATION) {
+										Map<Vector2, Ref<NavigationPolygon> > map = tile_set->autotile_get_navigation_map(t_id);
+										for (Map<Vector2, Ref<NavigationPolygon> >::Element *E = map.front(); E; E = E->next()) {
+											if (E->key() == edited_shape_coord) {
+												tile_set->autotile_set_navigation_polygon(t_id, Ref<NavigationPolygon>(), edited_shape_coord);
+												break;
+											}
+										}
+
+										edited_navigation_shape = Ref<NavigationPolygon>();
+										workspace->update();
 									}
 								}
 
@@ -1094,6 +1118,16 @@ void AutotileEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 					}
 				}
 			} break;
+		}
+
+		//Drag Middle Mouse
+		if (mm.is_valid()) {
+			if (mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
+
+				Vector2 dragged(mm->get_relative().x, mm->get_relative().y);
+				scroll->set_h_scroll(scroll->get_h_scroll() - dragged.x * workspace->get_scale().x);
+				scroll->set_v_scroll(scroll->get_v_scroll() - dragged.y * workspace->get_scale().x);
+			}
 		}
 	}
 }
@@ -1453,10 +1487,19 @@ void AutotileEditor::close_shape(const Vector2 &shape_anchor) {
 			Ref<ConvexPolygonShape2D> shape = memnew(ConvexPolygonShape2D);
 
 			Vector<Vector2> segments;
+			float p_total = 0;
 
 			for (int i = 0; i < current_shape.size(); i++) {
 				segments.push_back(current_shape[i] - shape_anchor);
+
+				if (i != current_shape.size() - 1)
+					p_total += ((current_shape[i + 1].x - current_shape[i].x) * (-current_shape[i + 1].y + (-current_shape[i].y)));
+				else
+					p_total += ((current_shape[0].x - current_shape[i].x) * (-current_shape[0].y + (-current_shape[i].y)));
 			}
+
+			if (p_total < 0)
+				segments.invert();
 
 			shape->set_points(segments);
 

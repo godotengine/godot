@@ -86,6 +86,7 @@ class AutotileEditor : public Control {
 
 	int current_item_index;
 	Sprite *preview;
+	ScrollContainer *scroll;
 	Control *workspace_container;
 	Control *workspace;
 	Button *tool_editmode[EDITMODE_MAX];
