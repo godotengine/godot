@@ -89,33 +89,50 @@ private:
 	String created_folder_path;
 
 	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS) {
+
 		msg->set_text(p_msg);
-		if (p_msg == "") {
-			status_btn->set_icon(get_icon("StatusSuccess", "EditorIcons"));
-			return;
-		}
-		msg->hide();
+		Ref<Texture> current_icon = status_btn->get_icon();
+
 		switch (p_type) {
-			case MESSAGE_ERROR:
+
+			case MESSAGE_ERROR: {
+
 				msg->add_color_override("font_color", get_color("error_color", "Editor"));
-				status_btn->set_icon(get_icon("StatusError", "EditorIcons"));
-				msg->show();
-				break;
-			case MESSAGE_WARNING:
+				Ref<Texture> new_icon = get_icon("StatusError", "EditorIcons");
+				if (current_icon != new_icon) {
+
+					status_btn->set_icon(new_icon);
+					msg->show();
+				}
+			} break;
+			case MESSAGE_WARNING: {
+
 				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
-				status_btn->set_icon(get_icon("StatusWarning", "EditorIcons"));
-				break;
-			case MESSAGE_SUCCESS:
+				Ref<Texture> new_icon = get_icon("StatusWarning", "EditorIcons");
+				if (current_icon != new_icon) {
+
+					status_btn->set_icon(new_icon);
+					if (current_icon != get_icon("StatusSuccess", "EditorIcons"))
+						msg->hide();
+				}
+			} break;
+			case MESSAGE_SUCCESS: {
+
 				msg->add_color_override("font_color", get_color("success_color", "Editor"));
-				status_btn->set_icon(get_icon("StatusSuccess", "EditorIcons"));
-				break;
+				Ref<Texture> new_icon = get_icon("StatusSuccess", "EditorIcons");
+				if (current_icon != new_icon) {
+
+					status_btn->set_icon(new_icon);
+					msg->hide();
+				}
+			} break;
 		}
+
+		set_size(Size2(500, 0) * EDSCALE);
 	}
 
 	String _test_path() {
 
-		set_message(" ");
-		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		String valid_path;
 		if (d->change_dir(project_path->get_text()) == OK) {
@@ -127,6 +144,7 @@ private:
 		if (valid_path == "") {
 			set_message(TTR("The path does not exist."), MESSAGE_ERROR);
 			memdelete(d);
+			get_ok()->set_disabled(true);
 			return "";
 		}
 
@@ -136,6 +154,7 @@ private:
 
 				set_message(TTR("Please choose a 'project.godot' file."), MESSAGE_ERROR);
 				memdelete(d);
+				get_ok()->set_disabled(true);
 				return "";
 			}
 
@@ -155,19 +174,22 @@ private:
 			d->list_dir_end();
 
 			if (!is_empty) {
+
 				set_message(TTR("Your project will be created in a non empty folder (you might want to create a new folder)."), MESSAGE_WARNING);
-			}
-
-		} else {
-
-			if (d->file_exists("project.godot")) {
-
-				set_message(TTR("Please choose a folder that does not contain a 'project.godot' file."), MESSAGE_ERROR);
 				memdelete(d);
-				return "";
+				get_ok()->set_disabled(false);
+				return valid_path;
 			}
+
+		} else if (d->file_exists("project.godot")) {
+
+			set_message(TTR("Please choose a folder that does not contain a 'project.godot' file."), MESSAGE_ERROR);
+			memdelete(d);
+			get_ok()->set_disabled(true);
+			return "";
 		}
 
+		set_message(TTR("That's a BINGO!"));
 		memdelete(d);
 		get_ok()->set_disabled(false);
 		return valid_path;
@@ -213,7 +235,6 @@ private:
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		set_message(" "); // just so it does not disappear
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -242,21 +263,32 @@ private:
 
 	void _create_folder() {
 
-		if (project_name->get_text() == "" || created_folder_path != "") {
+		if (project_name->get_text() == "" || created_folder_path != "")
 			return;
-		}
 
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
+
 			if (!d->dir_exists(project_name->get_text())) {
+
 				if (d->make_dir(project_name->get_text()) == OK) {
+
 					d->change_dir(project_name->get_text());
 					project_path->set_text(d->get_current_dir());
 					created_folder_path = d->get_current_dir();
 					create_dir->set_disabled(true);
+				} else {
+
+					dialog_error->set_text(TTR("Couldn't create folder."));
+					dialog_error->popup_centered_minsize();
 				}
+			} else {
+
+				dialog_error->set_text(TTR("There is already a folder in this path with the specified name."));
+				dialog_error->popup_centered_minsize();
 			}
 		}
+
 		memdelete(d);
 	}
 
@@ -337,6 +369,7 @@ private:
 					if (!pkg) {
 
 						dialog_error->set_text(TTR("Error opening package file, not in zip format."));
+						dialog_error->popup_centered_minsize();
 						return;
 					}
 
@@ -448,7 +481,10 @@ private:
 	}
 
 	void _toggle_message() {
+
 		msg->set_visible(!msg->is_visible());
+		if (!msg->is_visible())
+			set_size(Size2(500, 0) * EDSCALE);
 	}
 
 	void cancel_pressed() {
@@ -457,6 +493,15 @@ private:
 
 		project_path->clear();
 		project_name->clear();
+
+		if (status_btn->get_icon() == get_icon("StatusError", "EditorIcons"))
+			msg->show();
+	}
+
+	void _notification(int p_what) {
+
+		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
+			_remove_created_folder();
 	}
 
 protected:
@@ -558,7 +603,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered(Size2(500, 125) * EDSCALE);
+		popup_centered(Size2(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -610,7 +655,6 @@ public:
 		pphb->add_child(browse);
 
 		msg = memnew(Label);
-		msg->set_text(TTR("That's a BINGO!"));
 		msg->set_align(Label::ALIGN_CENTER);
 		msg->hide();
 		vb->add_child(msg);
@@ -652,19 +696,20 @@ struct ProjectItem {
 
 void ProjectManager::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 
-		Engine::get_singleton()->set_editor_hint(false);
+			Engine::get_singleton()->set_editor_hint(false);
+		} break;
+		case NOTIFICATION_READY: {
 
-	} else if (p_what == NOTIFICATION_READY) {
+			if (scroll_childs->get_child_count() == 0)
+				open_templates->popup_centered_minsize();
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		if (scroll_childs->get_child_count() == 0) {
-			open_templates->popup_centered_minsize();
-		}
-
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
-		set_process_unhandled_input(is_visible_in_tree());
+			set_process_unhandled_input(is_visible_in_tree());
+		} break;
 	}
 }
 
@@ -1214,7 +1259,6 @@ void ProjectManager::_run_project_confirm() {
 		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 		ERR_FAIL_COND(err);
 	}
-	//get_scene()->quit(); do not quit
 }
 
 void ProjectManager::_run_project() {
@@ -1556,9 +1600,6 @@ ProjectManager::ProjectManager() {
 	scroll_childs->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->add_child(scroll_childs);
 
-	//HBoxContainer *hb = memnew( HBoxContainer );
-	//vb->add_child(hb);
-
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));
 	tree_vb->add_child(open);
@@ -1663,7 +1704,7 @@ ProjectManager::ProjectManager() {
 	cancel->connect("pressed", this, "_exit_dialog");
 	vb->add_child(cc);
 
-	//
+	//////////////////////////////////////////////////////////////
 
 	language_restart_ask = memnew(ConfirmationDialog);
 	language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
@@ -1772,12 +1813,9 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 }
 
 void ProjectListFilter::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
 
-		} break;
-	}
+	if (p_what == NOTIFICATION_ENTER_TREE)
+		clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
 }
 
 void ProjectListFilter::_bind_methods() {
