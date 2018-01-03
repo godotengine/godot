@@ -40,7 +40,7 @@ class RingBuffer {
 	int write_pos;
 	int size_mask;
 
-	inline int inc(int &p_var, int p_size) {
+	inline int inc(int &p_var, int p_size) const {
 		int ret = p_var;
 		p_var += p_size;
 		p_var = p_var & size_mask;
@@ -50,7 +50,7 @@ class RingBuffer {
 public:
 	T read() {
 		ERR_FAIL_COND_V(space_left() < 1, T());
-		return data[inc(read_pos, 1)];
+		return data.ptr()[inc(read_pos, 1)];
 	};
 
 	int read(T *p_buf, int p_size, bool p_advance = true) {
@@ -63,8 +63,9 @@ public:
 			int end = pos + to_read;
 			end = MIN(end, size());
 			int total = end - pos;
+			const T *read = data.ptr();
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = data[pos + i];
+				p_buf[dst++] = read[pos + i];
 			};
 			to_read -= total;
 			pos = 0;
@@ -75,7 +76,7 @@ public:
 		return p_size;
 	};
 
-	int copy(T *p_buf, int p_offset, int p_size) {
+	int copy(T *p_buf, int p_offset, int p_size) const {
 
 		int left = data_left();
 		if ((p_offset + p_size) > left) {
@@ -101,7 +102,7 @@ public:
 		return p_size;
 	};
 
-	int find(const T &t, int p_offset, int p_max_size) {
+	int find(const T &t, int p_offset, int p_max_size) const {
 
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
@@ -164,7 +165,7 @@ public:
 		return p_size;
 	};
 
-	inline int space_left() {
+	inline int space_left() const {
 		int left = read_pos - write_pos;
 		if (left < 0) {
 			return size() + left - 1;
@@ -174,11 +175,11 @@ public:
 		};
 		return left - 1;
 	};
-	inline int data_left() {
+	inline int data_left() const {
 		return size() - space_left() - 1;
 	};
 
-	inline int size() {
+	inline int size() const {
 		return data.size();
 	};
 
