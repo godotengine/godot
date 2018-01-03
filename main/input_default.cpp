@@ -497,26 +497,16 @@ bool InputDefault::is_emulating_touchscreen() const {
 	return emulate_touch;
 }
 
-void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p_hotspot) {
-	/* no longer supported, leaving this for reference to anyone who might want to implement hardware cursors
+void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
 	if (custom_cursor == p_cursor)
 		return;
 
 	custom_cursor = p_cursor;
 
-	if (p_cursor.is_null()) {
-		set_mouse_mode(MOUSE_MODE_VISIBLE);
-		//removed, please insist us to implement hardare cursors
-		//VisualServer::get_singleton()->cursor_set_visible(false);
-	} else {
-		Ref<AtlasTexture> atex = custom_cursor;
-		Rect2 region = atex.is_valid() ? atex->get_region() : Rect2();
-		set_mouse_mode(MOUSE_MODE_HIDDEN);
-		VisualServer::get_singleton()->cursor_set_visible(true);
-		VisualServer::get_singleton()->cursor_set_texture(custom_cursor->get_rid(), p_hotspot, 0, region);
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
-	}
-	*/
+	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
 
 void InputDefault::set_mouse_in_window(bool p_in_window) {

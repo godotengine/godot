@@ -2205,6 +2205,48 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 	current_cursor = p_shape;
 }
 
+void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	if (p_cursor.is_valid()) {
+		Ref<Texture> texture = p_cursor;
+		Ref<Image> image = texture->get_data();
+
+		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+
+		// Create the cursor structure
+		XcursorImage *cursor_image = XcursorImageCreate(texture->get_width(), texture->get_height());
+		XcursorUInt image_size = 32 * 32;
+		XcursorDim size = sizeof(XcursorPixel) * image_size;
+
+		cursor_image->version = 1;
+		cursor_image->size = size;
+		cursor_image->xhot = p_hotspot.x;
+		cursor_image->yhot = p_hotspot.y;
+
+		// allocate memory to contain the whole file
+		cursor_image->pixels = (XcursorPixel *)malloc(size);
+
+		image->lock();
+
+		for (XcursorPixel index = 0; index < image_size; index++) {
+			int column_index = floor(index / 32);
+			int row_index = index % 32;
+
+			*(cursor_image->pixels + index) = image->get_pixel(row_index, column_index).to_argb32();
+		}
+
+		image->unlock();
+
+		ERR_FAIL_COND(cursor_image->pixels == NULL);
+
+		// Save it for a further usage
+		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
+
+		if (p_shape == CURSOR_ARROW) {
+			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
+		}
+	}
+}
+
 void OS_X11::release_rendering_thread() {
 
 	context_gl->release_current();

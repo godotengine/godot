@@ -1107,7 +1107,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (cursor.is_valid()) {
 			//print_line("loaded ok");
 			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
-			Input::get_singleton()->set_custom_mouse_cursor(cursor, hotspot);
+			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
 #ifdef TOOLS_ENABLED
