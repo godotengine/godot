@@ -84,6 +84,7 @@ class ScriptEditorDebugger : public Control {
 	HSplitContainer *error_split;
 	ItemList *error_list;
 	ItemList *error_stack;
+	TextEdit *error_details;
 	Tree *inspect_scene_tree;
 
 	int error_count;

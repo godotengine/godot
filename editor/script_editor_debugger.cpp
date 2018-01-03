@@ -678,7 +678,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String time = String("%d:%02d:%02d:%04d").sprintf(vals, &e);
 		String txt = time + " - " + (err[8].is_zero() ? String(err[7]) : String(err[8]));
 
-		String tooltip = TTR("Type:") + String(warning ? TTR("Warning") : TTR("Error"));
+		String tooltip = TTR("Type:") + " " + String(warning ? TTR("Warning") : TTR("Error"));
 		tooltip += "\n" + TTR("Description:") + " " + String(err[8]);
 		tooltip += "\n" + TTR("Time:") + " " + time;
 		tooltip += "\nC " + TTR("Error:") + " " + String(err[7]);
@@ -1622,6 +1622,8 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 		error_stack->set_item_metadata(error_stack->get_item_count() - 1, md);
 		error_stack->set_item_tooltip(error_stack->get_item_count() - 1, TTR("File:") + " " + String(st[i]) + "\n" + TTR("Line:") + " " + itos(line));
 	}
+
+	error_details->set_text(error_list->get_item_tooltip(p_idx));
 }
 
 void ScriptEditorDebugger::_error_stack_selected(int p_idx) {
@@ -1828,11 +1830,25 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	{ //errors
 
 		error_split = memnew(HSplitContainer);
+
+		VSplitContainer *error_vsplit = memnew(VSplitContainer);
+		error_vsplit->set_h_size_flags(SIZE_EXPAND_FILL);
+		error_vsplit->set_stretch_ratio(3);
+		error_split->add_child(error_vsplit);
+
 		VBoxContainer *errvb = memnew(VBoxContainer);
-		errvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		errvb->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_list = memnew(ItemList);
 		errvb->add_margin_child(TTR("Errors:"), error_list, true);
-		error_split->add_child(errvb);
+		error_vsplit->add_child(errvb);
+
+		errvb = memnew(VBoxContainer);
+		errvb->set_v_size_flags(SIZE_EXPAND_FILL);
+		errvb->set_stretch_ratio(2);
+		error_details = memnew(TextEdit);
+		error_details->set_readonly(true);
+		errvb->add_margin_child(TTR("Details:"), error_details, true);
+		error_vsplit->add_child(errvb);
 
 		errvb = memnew(VBoxContainer);
 		errvb->set_h_size_flags(SIZE_EXPAND_FILL);
