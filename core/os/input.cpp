@@ -81,12 +81,31 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("warp_mouse_pos", "to"), &Input::warp_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("action_press", "action"), &Input::action_press);
 	ObjectTypeDB::bind_method(_MD("action_release", "action"), &Input::action_release);
-	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor", "image:Texture", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor", "image:Texture", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 	ObjectTypeDB::bind_method(_MD("parse_input_event", "event"), &Input::parse_input_event);
 
 	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_CONSTANT(MOUSE_MODE_CAPTURED);
+
+	// Those constants are used to change the mouse texture for given cursor shapes
+	BIND_CONSTANT(CURSOR_ARROW);
+	BIND_CONSTANT(CURSOR_IBEAM);
+	BIND_CONSTANT(CURSOR_POINTING_HAND);
+	BIND_CONSTANT(CURSOR_CROSS);
+	BIND_CONSTANT(CURSOR_WAIT);
+	BIND_CONSTANT(CURSOR_BUSY);
+	BIND_CONSTANT(CURSOR_DRAG);
+	BIND_CONSTANT(CURSOR_CAN_DROP);
+	BIND_CONSTANT(CURSOR_FORBIDDEN);
+	BIND_CONSTANT(CURSOR_VSIZE);
+	BIND_CONSTANT(CURSOR_HSIZE);
+	BIND_CONSTANT(CURSOR_BDIAGSIZE);
+	BIND_CONSTANT(CURSOR_FDIAGSIZE);
+	BIND_CONSTANT(CURSOR_MOVE);
+	BIND_CONSTANT(CURSOR_VSPLIT);
+	BIND_CONSTANT(CURSOR_HSPLIT);
+	BIND_CONSTANT(CURSOR_HELP);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
 }

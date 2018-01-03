@@ -105,7 +105,7 @@ class InputDefault : public Input {
 	SpeedTrack mouse_speed_track;
 	Map<int, Joystick> joy_names;
 	int fallback_mapping;
-	RES custom_cursor;
+	RES custom_cursors[CURSOR_MAX] = { NULL };
 
 public:
 	enum HatMask {
@@ -214,8 +214,7 @@ public:
 	void set_emulate_touch(bool p_emulate);
 	virtual bool is_emulating_touchscreen() const;
 
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p_hotspot = Vector2());
-	virtual void set_mouse_in_window(bool p_in_window);
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	void parse_mapping(String p_mapping);
 	uint32_t joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed);

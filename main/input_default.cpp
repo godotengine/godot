@@ -415,9 +415,6 @@ void InputDefault::set_mouse_pos(const Point2 &p_posf) {
 
 	mouse_speed_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
-	if (custom_cursor.is_valid()) {
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
-	}
 }
 
 Point2 InputDefault::get_mouse_pos() const {
@@ -497,37 +494,13 @@ bool InputDefault::is_emulating_touchscreen() const {
 	return emulate_touch;
 }
 
-void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p_hotspot) {
-	if (custom_cursor == p_cursor)
+void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	if (custom_cursors[p_shape] == p_cursor)
 		return;
 
-	custom_cursor = p_cursor;
+	custom_cursors[p_shape] = p_cursor;
 
-	if (p_cursor.is_null()) {
-		set_mouse_mode(MOUSE_MODE_VISIBLE);
-		VisualServer::get_singleton()->cursor_set_visible(false);
-	} else {
-		Ref<AtlasTexture> atex = custom_cursor;
-		Rect2 region = atex.is_valid() ? atex->get_region() : Rect2();
-		set_mouse_mode(MOUSE_MODE_HIDDEN);
-		VisualServer::get_singleton()->cursor_set_visible(true);
-		VisualServer::get_singleton()->cursor_set_texture(custom_cursor->get_rid(), p_hotspot, 0, region);
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
-	}
-}
-
-void InputDefault::set_mouse_in_window(bool p_in_window) {
-
-	if (custom_cursor.is_valid()) {
-
-		if (p_in_window) {
-			set_mouse_mode(MOUSE_MODE_HIDDEN);
-			VisualServer::get_singleton()->cursor_set_visible(true);
-		} else {
-			set_mouse_mode(MOUSE_MODE_VISIBLE);
-			VisualServer::get_singleton()->cursor_set_visible(false);
-		}
-	}
+	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape) p_shape, p_hotspot);
 }
 
 // from github.com/gabomdq/SDL_GameControllerDB

@@ -142,7 +142,6 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	};
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -323,6 +322,11 @@ bool OS_Android::can_draw() const {
 void OS_Android::set_cursor_shape(CursorShape p_shape) {
 
 	//android really really really has no mouse.. how amazing..
+}
+
+void OS_Android::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape,  const Vector2 &p_hotspot) {
+
+	// Since android has no mouse, we do not need to change its texture (how amazing !)
 }
 
 void OS_Android::main_loop_begin() {

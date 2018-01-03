@@ -42,6 +42,7 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+#include "scene/resources/texture.h"
 
 #include "globals.h"
 #include "io/marshalls.h"
@@ -359,8 +360,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			outside = true;
 			if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-			if (input)
-				input->set_mouse_in_window(false);
 
 		} break;
 		case WM_MOUSEMOVE: {
@@ -370,8 +369,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-				if (input)
-					input->set_mouse_in_window(true);
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
@@ -1937,8 +1934,122 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 		IDC_HELP
 	};
 
-	SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
+	if (cursors[p_shape] != NULL) {
+		SetCursor(cursors[p_shape]);
+	} else {
+		SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
+	}
+
 	cursor_shape = p_shape;
+}
+
+void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){
+	if (p_cursor.is_valid()) {
+		Ref<ImageTexture> texture = p_cursor;
+		Image image = texture->get_data();
+
+		UINT image_size = 32 * 32;
+		UINT size = sizeof(UINT) * image_size;
+
+		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+
+		// Create the BITMAP with alpha channel
+		COLORREF *buffer = (COLORREF *)malloc(sizeof(COLORREF) * image_size);
+
+		for (UINT index = 0; index < image_size; index++) {
+			int column_index = floor(index / 32);
+			int row_index = index % 32;
+
+			Color pcColor = image.get_pixel(row_index, column_index);
+			*(buffer + index) = image.get_pixel(row_index, column_index).to_ARGB32();
+		}
+
+		// Using 4 channels, so 4 * 8 bits
+		HBITMAP bitmap = CreateBitmap(32, 32, 1, 4 * 8, buffer);
+		COLORREF clrTransparent = -1;
+
+		// Create the AND and XOR masks for the bitmap
+		HBITMAP hAndMask = NULL;
+		HBITMAP hXorMask = NULL;
+
+		GetMaskBitmaps(bitmap, clrTransparent, hAndMask, hXorMask);
+
+		if (NULL == hAndMask || NULL == hXorMask) {
+			return;
+		}
+
+		// Finally, create the icon
+		ICONINFO iconinfo = {0};
+		iconinfo.fIcon = FALSE;
+		iconinfo.xHotspot = p_hotspot.x;
+		iconinfo.yHotspot = p_hotspot.y;
+		iconinfo.hbmMask = hAndMask;
+		iconinfo.hbmColor = hXorMask;
+
+		cursors[p_shape] = CreateIconIndirect(&iconinfo);
+
+		if (p_shape == CURSOR_ARROW) {
+			SetCursor(cursors[p_shape]);
+		}
+
+		if (hAndMask != NULL) {
+			DeleteObject(hAndMask);
+		}
+
+		if (hXorMask != NULL) {
+		  DeleteObject(hXorMask);
+		}
+	}
+}
+
+void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap) {
+
+	// Get the system display DC
+	HDC hDC = GetDC(NULL);
+
+	// Create helper DC
+	HDC hMainDC = CreateCompatibleDC(hDC);
+	HDC hAndMaskDC = CreateCompatibleDC(hDC);
+	HDC hXorMaskDC = CreateCompatibleDC(hDC);
+
+	// Get the dimensions of the source bitmap
+	BITMAP bm;
+	GetObject(hSourceBitmap, sizeof(BITMAP), &bm);
+
+	// Create the mask bitmaps
+	hAndMaskBitmap = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight); // color
+	hXorMaskBitmap = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight); // color
+
+	// Release the system display DC
+	ReleaseDC(NULL, hDC);
+
+	// Select the bitmaps to helper DC
+	HBITMAP hOldMainBitmap = (HBITMAP)SelectObject(hMainDC, hSourceBitmap);
+	HBITMAP hOldAndMaskBitmap = (HBITMAP)SelectObject(hAndMaskDC, hAndMaskBitmap);
+	HBITMAP hOldXorMaskBitmap = (HBITMAP)SelectObject(hXorMaskDC, hXorMaskBitmap);
+
+	// Assign the monochrome AND mask bitmap pixels so that a pixels of the source bitmap
+	// with 'clrTransparent' will be white pixels of the monochrome bitmap
+	SetBkColor(hMainDC, clrTransparent);
+	BitBlt(hAndMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCCOPY);
+
+	// Assign the color XOR mask bitmap pixels so that a pixels of the source bitmap
+	// with 'clrTransparent' will be black and rest the pixels same as corresponding
+	// pixels of the source bitmap
+	SetBkColor(hXorMaskDC, RGB(0, 0, 0));
+	SetTextColor(hXorMaskDC, RGB(255, 255, 255));
+	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hAndMaskDC, 0, 0, SRCCOPY);
+	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0,0, SRCAND);
+
+	// Deselect bitmaps from the helper DC
+	SelectObject(hMainDC, hOldMainBitmap);
+	SelectObject(hAndMaskDC, hOldAndMaskBitmap);
+	SelectObject(hXorMaskDC, hOldXorMaskBitmap);
+
+	// Delete the helper DC
+	DeleteDC(hXorMaskDC);
+	DeleteDC(hAndMaskDC);
+	DeleteDC(hMainDC);
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {

@@ -30,7 +30,6 @@
 #include "dvector.h"
 #include "math_funcs.h"
 #include "print_string.h"
-#include "servers/visual/default_mouse_cursor.xpm"
 #include "set.h"
 
 #include "image.h"
@@ -50,23 +49,6 @@ MainLoop *test() {
 		int_map[i]=num;
 	}
 	*/
-
-	{
-
-		//		static const int size = 16;
-		Image img;
-		img.create(default_mouse_cursor_xpm);
-
-		{
-			for (int i = 0; i < 8; i++) {
-
-				Image mipmap;
-				//img.make_mipmap(mipmap);
-				img = mipmap;
-				if (img.get_width() <= 4) break;
-			};
-		};
-	};
 
 #if 0
 	Set<int> set;

@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server_raster.h"
-#include "default_mouse_cursor.xpm"
 #include "globals.h"
 #include "io/marshalls.h"
 #include "os/os.h"
@@ -4068,38 +4067,6 @@ void VisualServerRaster::canvas_item_material_set_shading_mode(RID p_material, C
 
 /******** CANVAS *********/
 
-void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor) {
-	VS_CHANGED;
-	ERR_FAIL_INDEX(p_cursor, MAX_CURSORS);
-
-	cursors[p_cursor].rot = p_rotation;
-};
-
-void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region) {
-	VS_CHANGED;
-	ERR_FAIL_INDEX(p_cursor, MAX_CURSORS);
-
-	cursors[p_cursor].texture = p_texture;
-	cursors[p_cursor].center = p_center_offset;
-	cursors[p_cursor].region = p_region;
-};
-
-void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor) {
-	VS_CHANGED;
-	ERR_FAIL_INDEX(p_cursor, MAX_CURSORS);
-
-	cursors[p_cursor].visible = p_visible;
-};
-
-void VisualServerRaster::cursor_set_pos(const Point2 &p_pos, int p_cursor) {
-
-	ERR_FAIL_INDEX(p_cursor, MAX_CURSORS);
-	if (cursors[p_cursor].pos == p_pos)
-		return;
-	VS_CHANGED;
-	cursors[p_cursor].pos = p_pos;
-};
-
 void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
 
 	black_margin[MARGIN_LEFT] = p_left;
@@ -6925,24 +6892,6 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 	rasterizer->canvas_begin();
 	rasterizer->canvas_begin_rect(Matrix32());
 
-	for (int i = 0; i < MAX_CURSORS; i++) {
-
-		if (!cursors[i].visible) {
-
-			continue;
-		};
-
-		RID tex = cursors[i].texture ? cursors[i].texture : default_cursor_texture;
-		ERR_CONTINUE(!tex);
-		if (cursors[i].region.has_no_area()) {
-			Point2 size(texture_get_width(tex), texture_get_height(tex));
-			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos - cursors[i].center, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
-		} else {
-			Point2 size = cursors[i].region.size;
-			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos - cursors[i].center, size), Rasterizer::CANVAS_RECT_REGION, cursors[i].region, tex, Color(1, 1, 1, 1));
-		}
-	};
-
 	if (black_image[MARGIN_LEFT].is_valid()) {
 		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_LEFT]), rasterizer->texture_get_height(black_image[MARGIN_LEFT]));
 		rasterizer->canvas_draw_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h), 0, Rect2(0, 0, sz.x, sz.y), black_image[MARGIN_LEFT], Color(1, 1, 1));
@@ -7085,11 +7034,6 @@ void VisualServerRaster::init() {
 	for (int i = 0; i < 4; i++)
 		black_margin[i] = 0;
 
-	Image img;
-	img.create(default_mouse_cursor_xpm);
-	//img.convert(Image::FORMAT_RGB);
-	default_cursor_texture = texture_create_from_image(img, 0);
-
 	aabb_random_points.resize(GLOBAL_DEF("render/aabb_random_points", 16));
 	for (int i = 0; i < aabb_random_points.size(); i++)
 		aabb_random_points[i] = Vector3(Math::random(0, 1), Math::random(0, 1), Math::random(0, 1));
@@ -7116,7 +7060,6 @@ void VisualServerRaster::_clean_up_owner(RID_OwnerBase *p_owner, String p_type) 
 
 void VisualServerRaster::finish() {
 
-	free(default_cursor_texture);
 	if (test_cube.is_valid())
 		free(test_cube);
 

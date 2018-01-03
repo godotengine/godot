@@ -771,6 +771,13 @@ void OSWinrt::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
+void OSWinrt::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape,  const Vector2 &p_hotspot) {
+
+	// FIXME:
+	// Not implemented, some work needs to be done for this one
+	// Might be a good source: https://stackoverflow.com/questions/43793745/set-custom-mouse-cursor-on-windows-10-universal-app-uwp
+}
+
 Error OSWinrt::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
 
 	return FAILED;

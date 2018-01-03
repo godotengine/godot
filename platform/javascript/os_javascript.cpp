@@ -439,7 +439,6 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
 
 	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -684,6 +683,10 @@ bool OS_JavaScript::can_draw() const {
 void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 
 	//javascript really really really has no mouse.. how amazing..
+}
+
+void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
 }
 
 void OS_JavaScript::main_loop_begin() {

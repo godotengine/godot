@@ -136,7 +136,6 @@ void OSBB10::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
 
 	audio_driver = memnew(AudioDriverBB10);
 	audio_driver->set_singleton();
@@ -283,6 +282,11 @@ bool OSBB10::can_draw() const {
 void OSBB10::set_cursor_shape(CursorShape p_shape) {
 
 	//android really really really has no mouse.. how amazing..
+}
+
+void OSBB10::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape,  const Vector2 &p_hotspot) {
+
+	// Since BlackBerry 10 has no mouse, we do not need to change its texture (how amazing !)
 }
 
 void OSBB10::handle_screen_event(bps_event_t *event) {
