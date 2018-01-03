@@ -961,11 +961,35 @@ void ItemList::_notification(int p_what) {
 		Vector2 base_ofs = bg->get_offset();
 		base_ofs.y -= int(scroll_bar->get_value());
 
-		Rect2 clip(Point2(), size - bg->get_minimum_size() + Vector2(0, scroll_bar->get_value()));
+		const Rect2 clip(-base_ofs, size); // visible frame, don't need to draw outside of there
 
-		for (int i = 0; i < items.size(); i++) {
+		int first_item_visible;
+		{
+			// do a binary search to find the first item whose rect reaches below clip.position.y
+			int lo = 0;
+			int hi = items.size();
+			while (lo < hi) {
+				const int mid = (lo + hi) / 2;
+				const Rect2 &rcache = items[mid].rect_cache;
+				if (rcache.position.y + rcache.size.y < clip.position.y) {
+					lo = mid + 1;
+				} else {
+					hi = mid;
+				}
+			}
+			// we might have ended up with column 2, or 3, ..., so let's find the first column
+			while (lo > 0 && items[lo - 1].rect_cache.position.y == items[lo].rect_cache.position.y) {
+				lo -= 1;
+			}
+			first_item_visible = lo;
+		}
+
+		for (int i = first_item_visible; i < items.size(); i++) {
 
 			Rect2 rcache = items[i].rect_cache;
+
+			if (rcache.position.y > clip.position.y + clip.size.y)
+				break; // done
 
 			if (!clip.intersects(rcache))
 				continue;
@@ -1138,8 +1162,28 @@ void ItemList::_notification(int p_what) {
 			}
 		}
 
-		for (int i = 0; i < separators.size(); i++) {
-			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), Vector2(width, base_ofs.y + separators[i]), guide_color);
+		int first_visible_separator = 0;
+		{
+			// do a binary search to find the first separator that is below clip_position.y
+			int lo = 0;
+			int hi = separators.size();
+			while (lo < hi) {
+				const int mid = (lo + hi) / 2;
+				if (separators[mid] < clip.position.y) {
+					lo = mid + 1;
+				} else {
+					hi = mid;
+				}
+			}
+			first_visible_separator = lo;
+		}
+
+		for (int i = first_visible_separator; i < separators.size(); i++) {
+			if (separators[i] > clip.position.y + clip.size.y)
+				break; // done
+
+			const int y = base_ofs.y + separators[i];
+			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), y), Vector2(width, y), guide_color);
 		}
 	}
 }
