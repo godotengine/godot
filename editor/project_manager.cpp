@@ -504,7 +504,7 @@ void ProjectManager::_update_project_buttons() {
 		has_runnable_scene = true;
 		break;
 	}
-
+	show_btn->set_disabled(selected_list.size() < 1);
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
 	run_btn->set_disabled(!has_runnable_scene);
@@ -1105,6 +1105,22 @@ void ProjectManager::_erase_project() {
 	erase_ask->popup_centered_minsize();
 }
 
+void ProjectManager::_show_project() {
+	if (selected_list.size() == 0)
+		return;
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		String conf = path + "/engine.cfg";
+		if (!FileAccess::exists(conf)) {
+			multi_open_ask->set_text(TTR("Can't show project"));
+			multi_open_ask->popup_centered_minsize();
+			return;
+		}
+		OS::get_singleton()->shell_open(String("file://") + path);
+	}
+}
+
 void ProjectManager::_exit_dialog() {
 
 	get_tree()->quit();
@@ -1177,6 +1193,7 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_new_project", &ProjectManager::_new_project);
 	ObjectTypeDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ObjectTypeDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ObjectTypeDB::bind_method("_show_project", &ProjectManager::_show_project);
 	ObjectTypeDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
 	ObjectTypeDB::bind_method("_load_recent_projects", &ProjectManager::_load_recent_projects);
 	ObjectTypeDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
@@ -1336,6 +1353,12 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(erase);
 	erase->connect("pressed", this, "_erase_project");
 	erase_btn = erase;
+
+	Button *showinfilemanager = memnew(Button);
+	showinfilemanager->set_text(TTR("Show In File Manager"));
+	tree_vb->add_child(showinfilemanager);
+	showinfilemanager->connect("pressed", this, "_show_project");
+	show_btn = showinfilemanager;
 
 	tree_vb->add_spacer();
 
