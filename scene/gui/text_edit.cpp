@@ -2725,6 +2725,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					_scroll_lines_down();
 					break;
 				}
+
+				{
 #else
 				if (k->get_command() && k->get_alt()) {
 					_scroll_lines_down();
@@ -2733,9 +2735,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (k->get_command())
 					cursor_set_line(text.size() - 1, true, false);
-				else
+				else {
 #endif
-				cursor_set_line(cursor_get_line() + num_lines_from(CLAMP(cursor.line + 1, 0, text.size() - 1), 1), true, false);
+					if (!is_last_visible_line(cursor.line)) {
+						cursor_set_line(cursor_get_line() + num_lines_from(CLAMP(cursor.line + 1, 0, text.size() - 1), 1), true, false);
+					} else {
+						cursor_set_line(text.size() - 1);
+						cursor_set_column(get_line(cursor.line).length(), true);
+					}
+				}
 
 				if (k->get_shift())
 					_post_shift_selection();
@@ -4582,6 +4590,24 @@ int TextEdit::num_lines_from(int p_line_from, int unhidden_amount) const {
 		}
 	}
 	return num_total;
+}
+
+bool TextEdit::is_last_visible_line(int p_line) const {
+
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+
+	if (p_line == text.size() - 1)
+		return true;
+
+	if (!is_hiding_enabled())
+		return false;
+
+	for (int i = p_line + 1; i < text.size(); i++) {
+		if (!is_line_hidden(i))
+			return false;
+	}
+
+	return true;
 }
 
 int TextEdit::get_indent_level(int p_line) const {
