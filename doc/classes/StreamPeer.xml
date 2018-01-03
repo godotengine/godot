@@ -105,7 +105,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get an unsigned 16 bit value from the stream.
+				Get an unsigned 64 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u8">
