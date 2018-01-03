@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "editor_log.h"
 
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "scene/gui/center_container.h"
 #include "scene/resources/dynamic_font.h"
@@ -154,6 +155,7 @@ EditorLog::EditorLog() {
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
+	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
 	clearbutton->connect("pressed", this, "_clear_request");
 
 	log = memnew(RichTextLabel);
