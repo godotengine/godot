@@ -129,15 +129,21 @@ static ObjectID safe_get_instance_id(const Variant &p_v) {
 void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
 
 	packet_peer_stream->put_var(p_name);
+
+	Variant var = p_variable;
+	if (p_variable.get_type() == Variant::OBJECT && !ObjectDB::instance_validate(p_variable)) {
+		var = Variant();
+	}
+
 	int len = 0;
-	Error err = encode_variant(p_variable, NULL, len);
+	Error err = encode_variant(var, NULL, len);
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant");
 
 	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
 		packet_peer_stream->put_var(Variant());
 	} else {
-		packet_peer_stream->put_var(p_variable);
+		packet_peer_stream->put_var(var);
 	}
 }
 
