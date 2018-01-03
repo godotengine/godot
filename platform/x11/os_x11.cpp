@@ -100,7 +100,7 @@ void OS_X11::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	long im_event_mask = 0;
 	last_button_state = 0;
@@ -123,21 +123,24 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
 
+	if (!x11_display) {
+		ERR_PRINT("X11 Display is not available");
+		return ERR_UNAVAILABLE;
+	}
+
 	char *modifiers = NULL;
 	Bool xkb_dar = False;
-	if (x11_display) {
-		XAutoRepeatOn(x11_display);
-		xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, NULL);
+	XAutoRepeatOn(x11_display);
+	xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, NULL);
 
-		// Try to support IME if detectable auto-repeat is supported
-		if (xkb_dar == True) {
+	// Try to support IME if detectable auto-repeat is supported
+	if (xkb_dar == True) {
 
 #ifdef X_HAVE_UTF8_STRING
-			// Xutf8LookupString will be used later instead of XmbLookupString before
-			// the multibyte sequences can be converted to unicode string.
-			modifiers = XSetLocaleModifiers("");
+		// Xutf8LookupString will be used later instead of XmbLookupString before
+		// the multibyte sequences can be converted to unicode string.
+		modifiers = XSetLocaleModifiers("");
 #endif
-		}
 	}
 
 	if (modifiers == NULL) {
@@ -331,8 +334,8 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	ERR_FAIL_COND(!visual_server);
-	ERR_FAIL_COND(x11_window == 0);
+	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(x11_window == 0, ERR_UNAVAILABLE);
 
 	XSetWindowAttributes new_attr;
 

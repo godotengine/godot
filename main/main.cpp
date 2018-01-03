@@ -983,7 +983,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
 	}
 
-	OS::get_singleton()->initialize(video_mode, video_driver_idx, audio_driver_idx);
+	Error err = OS::get_singleton()->initialize(video_mode, video_driver_idx, audio_driver_idx);
+	if (err != OK) {
+		return err;
+	}
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}

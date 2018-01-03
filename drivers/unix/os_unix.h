@@ -55,7 +55,7 @@ protected:
 
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
-	//virtual void initialize(int p_video_driver,int p_audio_driver);
+	//virtual Error initialize(int p_video_driver,int p_audio_driver);
 
 	virtual void finalize_core();
 

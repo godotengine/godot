@@ -120,7 +120,7 @@ void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 	gl_extensions = p_gl_extensions;
 }
 
-void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	use_gl2 = p_video_driver != 1;
 
@@ -146,6 +146,8 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	input->set_fallback_mapping("Default Android Gamepad");
 
 	//power_manager = memnew(power_android);
+
+	return OK;
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
