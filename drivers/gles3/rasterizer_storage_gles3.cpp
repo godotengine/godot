@@ -193,13 +193,6 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
 
 		} break;
-		case Image::FORMAT_RGB10A2: {
-
-			r_gl_internal_format = GL_RGB10_A2;
-			r_gl_format = GL_RGBA;
-			r_gl_type = GL_UNSIGNED_INT_2_10_10_10_REV;
-
-		} break;
 		case Image::FORMAT_RF: {
 
 			r_gl_internal_format = GL_R32F;
@@ -6097,7 +6090,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			color_internal_format = GL_RGB10_A2;
 			color_format = GL_RGBA;
 			color_type = GL_UNSIGNED_INT_2_10_10_10_REV;
-			image_format = Image::FORMAT_RGB10A2;
+			image_format = Image::FORMAT_RGBA8;
 		} else {
 
 			color_internal_format = GL_RGBA8;
