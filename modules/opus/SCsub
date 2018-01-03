@@ -221,3 +221,10 @@ if not stub:
 else:
     # Module files
     env_opus.add_source_files(env.modules_sources, "stub/register_types.cpp")
+
+# Msvc Intellisense needs to know opus is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_opus['CPPPATH'])
+    env.Append(CPPFLAGS=env_opus['CPPFLAGS'])
+
+Export('env')

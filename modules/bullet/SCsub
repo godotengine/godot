@@ -192,4 +192,9 @@ env_bullet.add_source_files(env.modules_sources, bullet_sources)
 # Godot source files
 env_bullet.add_source_files(env.modules_sources, "*.cpp")
 
+# Msvc Intellisense needs to know bullet is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_bullet['CPPPATH'])
+    env.Append(CPPFLAGS=env_bullet['CPPFLAGS'])
+
 Export('env')

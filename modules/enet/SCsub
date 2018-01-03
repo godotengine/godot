@@ -25,4 +25,11 @@ if env['builtin_enet']:
     env_enet.Append(CPPPATH=[thirdparty_dir])
     env_enet.Append(CPPFLAGS=["-DGODOT_ENET"])
 
+    # Msvc Intellisense needs to know enet is available, pass to main env
+    if "platform" in env and env["platform"] == "windows":
+        env.Append(CPPPATH=env_enet['CPPPATH'])
+        env.Append(CPPFLAGS=env_enet['CPPFLAGS'])
+
 env_enet.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env')

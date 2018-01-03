@@ -22,3 +22,10 @@ env_pvr.Append(CPPPATH=[thirdparty_dir])
 
 # Godot source files
 env_pvr.add_source_files(env.modules_sources, "*.cpp")
+
+# Msvc Intellisense needs to know pvr is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_pvr['CPPPATH'])
+    env.Append(CPPFLAGS=env_pvr['CPPFLAGS'])
+
+Export('env')

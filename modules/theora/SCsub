@@ -78,6 +78,14 @@ if env['builtin_libtheora']:
         env_theora.Append(CPPPATH=["#thirdparty/libogg"])
     if env['builtin_libvorbis']:
         env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
+    
+    # Msvc Intellisense needs to know theora is available, pass to main env
+    if "platform" in env and env["platform"] == "windows":
+        env.Append(CPPPATH=env_theora['CPPPATH'])
+        env.Append(CPPFLAGS=env_theora['CPPFLAGS'])
+    
+    Export('env')
 
 # Godot source files
 env_theora.add_source_files(env.modules_sources, "*.cpp")
+

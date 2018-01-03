@@ -18,3 +18,11 @@ env_jpg.Append(CPPPATH=[thirdparty_dir])
 
 # Godot's own source files
 env_jpg.add_source_files(env.modules_sources, "*.cpp")
+
+# Msvc Intellisense needs to know jpg is available, pass to main env
+if "platform" in env and env["platform"] == "windows":
+    env.Append(CPPPATH=env_jpg['CPPPATH'])
+    env.Append(CPPFLAGS=env_jpg['CPPFLAGS'])
+
+Export('env')
+
