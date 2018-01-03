@@ -204,6 +204,14 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(owner->cast_to<Node>());
 
 				} break;
+				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
+					RES r = v;
+					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+					file_system_dock->navigate_to_path(r->get_path());
+					// Ensure that the FileSystem dock is visible.
+					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
+					tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+				} break;
 				default: {
 
 					ERR_FAIL_COND(inheritors_array.empty());
@@ -712,6 +720,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				if (r.is_valid() && r->get_path().is_resource_file() && r->get_import_metadata().is_valid()) {
 					menu->add_separator();
 					menu->add_icon_item(get_icon("ReloadSmall", "EditorIcons"), TTR("Re-Import"), OBJ_MENU_REIMPORT);
+				}
+				if (r.is_valid() && r->get_path().is_resource_file()) {
+					menu->add_separator();
+					menu->add_item(TTR("Show in File System"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
 				/*if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->set_item_tooltip(1,r->get_path());
