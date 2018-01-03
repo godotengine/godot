@@ -1822,10 +1822,18 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (mb->is_pressed()) {
 
 			if (mb->get_button_index() == BUTTON_WHEEL_UP && !mb->get_command()) {
-				_scroll_up(3 * mb->get_factor());
+				if (mb->get_shift()) {
+					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
+				} else {
+					_scroll_up(3 * mb->get_factor());
+				}
 			}
 			if (mb->get_button_index() == BUTTON_WHEEL_DOWN && !mb->get_command()) {
-				_scroll_down(3 * mb->get_factor());
+				if (mb->get_shift()) {
+					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
+				} else {
+					_scroll_down(3 * mb->get_factor());
+				}
 			}
 			if (mb->get_button_index() == BUTTON_WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
