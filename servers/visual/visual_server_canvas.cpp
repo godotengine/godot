@@ -102,9 +102,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	}
 
 	if (ci->z_relative)
-		p_z = CLAMP(p_z + ci->z, VS::CANVAS_ITEM_Z_MIN, VS::CANVAS_ITEM_Z_MAX);
+		p_z = CLAMP(p_z + ci->z_index, VS::CANVAS_ITEM_Z_MIN, VS::CANVAS_ITEM_Z_MAX);
 	else
-		p_z = ci->z;
+		p_z = ci->z_index;
 
 	for (int i = 0; i < child_item_count; i++) {
 
@@ -805,14 +805,14 @@ void VisualServerCanvas::canvas_item_set_sort_children_by_y(RID p_item, bool p_e
 
 	canvas_item->sort_y = p_enable;
 }
-void VisualServerCanvas::canvas_item_set_z(RID p_item, int p_z) {
+void VisualServerCanvas::canvas_item_set_z_index(RID p_item, int p_z) {
 
 	ERR_FAIL_COND(p_z < VS::CANVAS_ITEM_Z_MIN || p_z > VS::CANVAS_ITEM_Z_MAX);
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	canvas_item->z = p_z;
+	canvas_item->z_index = p_z;
 }
 void VisualServerCanvas::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) {
 

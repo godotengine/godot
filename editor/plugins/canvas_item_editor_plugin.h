@@ -252,10 +252,10 @@ class CanvasItemEditor : public VBoxContainer {
 	struct _SelectResult {
 
 		CanvasItem *item;
-		float z;
+		float z_index;
 		bool has_z;
 		_FORCE_INLINE_ bool operator<(const _SelectResult &p_rr) const {
-			return has_z && p_rr.has_z ? p_rr.z < z : p_rr.has_z;
+			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
 	};
 

@@ -157,7 +157,7 @@
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
 		</member>
-		<member name="z" type="int" setter="set_z" getter="get_z">
+		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index">
 			Z-index. Controls the order in which the nodes render. A node with a higher Z-index will display in front of others.
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative">
