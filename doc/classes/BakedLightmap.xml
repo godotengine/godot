@@ -27,38 +27,28 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_cell_size" type="float" setter="set_bake_cell_size" getter="get_bake_cell_size">
+		</member>
+		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy">
+		</member>
+		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents">
+		</member>
+		<member name="bake_hdr" type="bool" setter="set_hdr" getter="is_hdr">
+		</member>
 		<member name="bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="BakedLightmap.BakeMode">
+		</member>
+		<member name="bake_propagation" type="float" setter="set_propagation" getter="get_propagation">
 		</member>
 		<member name="bake_quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality">
 		</member>
-		<member name="bake_subdiv" type="int" setter="set_bake_subdiv" getter="get_bake_subdiv" enum="BakedLightmap.Subdiv">
-		</member>
-		<member name="capture_subdiv" type="int" setter="set_capture_subdiv" getter="get_capture_subdiv" enum="BakedLightmap.Subdiv">
-		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy">
-		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
-		</member>
-		<member name="hdr" type="bool" setter="set_hdr" getter="is_hdr">
+		<member name="capture_cell_size" type="float" setter="set_capture_cell_size" getter="get_capture_cell_size">
 		</member>
 		<member name="image_path" type="String" setter="set_image_path" getter="get_image_path">
 		</member>
 		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data">
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
-		</member>
 	</members>
 	<constants>
-		<constant name="SUBDIV_128" value="0" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_256" value="1" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_512" value="2" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_1024" value="3" enum="Subdiv">
-		</constant>
-		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
-		</constant>
 		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
 		</constant>
 		<constant name="BAKE_QUALITY_MEDIUM" value="1" enum="BakeQuality">

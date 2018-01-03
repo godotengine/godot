@@ -150,9 +150,6 @@
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
 			The horizontal (Y) offset of the Camear viewport.
 		</member>
-		<member name="vaspect" type="bool" setter="set_vaspect" getter="get_vaspect">
-			A boolean representation of [member keep_aspect] in which [code]true[/code] is equivalent to [code]KEEP_WIDTH[/code].
-		</member>
 	</members>
 	<constants>
 		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="Projection">

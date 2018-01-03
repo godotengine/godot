@@ -93,6 +93,14 @@
 		<constant name="MARGIN_BOTTOM" value="3" enum="Margin">
 			Bottom margin, used usually for [Control] or [StyleBox] derived classes.
 		</constant>
+		<constant name="CORNER_TOP_LEFT" value="0" enum="Corner">
+		</constant>
+		<constant name="CORNER_TOP_RIGHT" value="1" enum="Corner">
+		</constant>
+		<constant name="CORNER_BOTTOM_RIGHT" value="2" enum="Corner">
+		</constant>
+		<constant name="CORNER_BOTTOM_LEFT" value="3" enum="Corner">
+		</constant>
 		<constant name="VERTICAL" value="1" enum="Orientation">
 			General vertical alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
@@ -1384,6 +1392,58 @@
 		</constant>
 		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
 			Marker for end of type constants.
+		</constant>
+		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_NOT_EQUAL" value="1" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_LESS" value="2" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_LESS_EQUAL" value="3" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_GREATER" value="4" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_GREATER_EQUAL" value="5" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_ADD" value="6" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_SUBTRACT" value="7" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_MULTIPLY" value="8" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_DIVIDE" value="9" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_NEGATE" value="10" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_POSITIVE" value="11" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_MODULE" value="12" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_STRING_CONCAT" value="13" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_SHIFT_LEFT" value="14" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_SHIFT_RIGHT" value="15" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_BIT_AND" value="16" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_BIT_OR" value="17" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_BIT_XOR" value="18" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_BIT_NEGATE" value="19" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_AND" value="20" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_OR" value="21" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_XOR" value="22" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_NOT" value="23" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_IN" value="24" enum="Variant.Operator">
+		</constant>
+		<constant name="OP_MAX" value="25" enum="Variant.Operator">
 		</constant>
 	</constants>
 </class>

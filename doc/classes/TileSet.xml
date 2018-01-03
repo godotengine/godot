@@ -39,7 +39,7 @@
 		<method name="autotile_get_bitmask_mode" qualifiers="const">
 			<return type="int" enum="TileSet.BitmaskMode">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
 			</description>
@@ -47,9 +47,9 @@
 		<method name="autotile_set_bitmask_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="int" enum="TileSet.BitmaskMode">
+			<argument index="1" name="mode" type="int" enum="TileSet.BitmaskMode">
 			</argument>
 			<description>
 			</description>

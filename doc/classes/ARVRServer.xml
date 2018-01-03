@@ -14,7 +14,7 @@
 		<method name="center_on_hmd">
 			<return type="void">
 			</return>
-			<argument index="0" name="rotation_mode" type="bool">
+			<argument index="0" name="rotation_mode" type="int" enum="ARVRServer.RotationMode">
 			</argument>
 			<argument index="1" name="keep_height" type="bool">
 			</argument>

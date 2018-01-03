@@ -1135,6 +1135,12 @@
 		<constant name="JOINT_DAMPED_SPRING" value="2" enum="JointType">
 			Constant to create damped spring joints.
 		</constant>
+		<constant name="JOINT_PARAM_BIAS" value="0" enum="JointParam">
+		</constant>
+		<constant name="JOINT_PARAM_MAX_BIAS" value="1" enum="JointParam">
+		</constant>
+		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
+		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
 			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>

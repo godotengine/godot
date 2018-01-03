@@ -213,7 +213,7 @@
 		<method name="is_line_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 			</description>

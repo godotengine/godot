@@ -34,26 +34,6 @@
 				Returns the current [World] resource this Spatial node is registered to.
 			</description>
 		</method>
-		<method name="rotate_object_local">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
-			<description>
-				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in object-local coordinate system.
-			</description>
-		</method>
-		<method name="scale_object_local">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
-			<description>
-				Scales the local transformation by given 3D scale factors in object-local coordinate system.
-			</description>
-		</method>
 		<method name="global_rotate">
 			<return type="void">
 			</return>
@@ -63,6 +43,14 @@
 			</argument>
 			<description>
 				Rotates the global (world) transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in global coordinate system.
+			</description>
+		</method>
+		<method name="global_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="global_translate">
@@ -151,6 +139,17 @@
 				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians.
 			</description>
 		</method>
+		<method name="rotate_object_local">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="angle" type="float">
+			</argument>
+			<description>
+				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in object-local coordinate system.
+			</description>
+		</method>
 		<method name="rotate_x">
 			<return type="void">
 			</return>
@@ -176,6 +175,15 @@
 			</argument>
 			<description>
 				Rotates the local transformation around the Z axis by angle in radians.
+			</description>
+		</method>
+		<method name="scale_object_local">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+				Scales the local transformation by given 3D scale factors in object-local coordinate system.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -262,6 +270,14 @@
 			</argument>
 			<description>
 				Changes the node's position by given offset [Vector3].
+			</description>
+		</method>
+		<method name="translate_object_local">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="update_gizmo">

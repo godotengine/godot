@@ -275,7 +275,7 @@
 			</return>
 			<argument index="0" name="image" type="Resource">
 			</argument>
-			<argument index="1" name="cursor_shape" type="int" default="CURSOR_ARROW">
+			<argument index="1" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
@@ -349,6 +349,40 @@
 			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
+		</constant>
+		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 		</constant>
 	</constants>
 </class>
