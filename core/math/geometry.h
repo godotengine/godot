@@ -512,6 +512,9 @@ public:
 
 		return true;
 	}
+
+	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
+
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
 
 		Vector2 p = p_point - p_segment[0];

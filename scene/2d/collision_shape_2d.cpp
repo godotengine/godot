@@ -163,6 +163,14 @@ Rect2 CollisionShape2D::_edit_get_rect() const {
 	return rect;
 }
 
+bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	if (!shape.is_valid())
+		return false;
+
+	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
+}
+
 String CollisionShape2D::get_configuration_warning() const {
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {

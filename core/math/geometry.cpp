@@ -30,6 +30,17 @@
 #include "geometry.h"
 #include "print_string.h"
 
+bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
+
+	Vector<int> indices = Geometry::triangulate_polygon(p_polygon);
+	for (int j = 0; j + 3 <= indices.size(); j += 3) {
+		int i1 = indices[j], i2 = indices[j + 1], i3 = indices[j + 2];
+		if (Geometry::is_point_in_triangle(p_point, p_polygon[i1], p_polygon[i2], p_polygon[i3]))
+			return true;
+	}
+	return false;
+}
+
 void Geometry::MeshData::optimize_vertices() {
 
 	Map<int, int> vtx_remap;

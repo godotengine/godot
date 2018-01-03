@@ -52,6 +52,7 @@ protected:
 
 public:
 	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
 	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;

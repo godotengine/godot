@@ -47,6 +47,40 @@ bool Sprite::_edit_use_pivot() const {
 	return true;
 }
 
+void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
+
+	Size2 s;
+	r_filter_clip = false;
+
+	if (region) {
+
+		s = region_rect.size;
+		r_src_rect = region_rect;
+		r_filter_clip = region_filter_clip;
+	} else {
+		s = Size2(texture->get_size());
+		s = s / Size2(hframes, vframes);
+
+		r_src_rect.size = s;
+		r_src_rect.position.x += float(frame % hframes) * s.x;
+		r_src_rect.position.y += float(frame / hframes) * s.y;
+	}
+
+	Point2 ofs = offset;
+	if (centered)
+		ofs -= s / 2;
+	if (Engine::get_singleton()->get_use_pixel_snap()) {
+		ofs = ofs.floor();
+	}
+
+	r_dst_rect = Rect2(ofs, s);
+
+	if (hflip)
+		r_dst_rect.size.x = -r_dst_rect.size.x;
+	if (vflip)
+		r_dst_rect.size.y = -r_dst_rect.size.y;
+}
+
 void Sprite::_notification(int p_what) {
 
 	switch (p_what) {
@@ -63,38 +97,9 @@ void Sprite::_notification(int p_what) {
 			break;
 			*/
 
-			Size2 s;
-			Rect2 src_rect;
-			bool filter_clip = false;
-
-			if (region) {
-
-				s = region_rect.size;
-				src_rect = region_rect;
-				filter_clip = region_filter_clip;
-			} else {
-				s = Size2(texture->get_size());
-				s = s / Size2(hframes, vframes);
-
-				src_rect.size = s;
-				src_rect.position.x += float(frame % hframes) * s.x;
-				src_rect.position.y += float(frame / hframes) * s.y;
-			}
-
-			Point2 ofs = offset;
-			if (centered)
-				ofs -= s / 2;
-			if (Engine::get_singleton()->get_use_pixel_snap()) {
-				ofs = ofs.floor();
-			}
-
-			Rect2 dst_rect(ofs, s);
-
-			if (hflip)
-				dst_rect.size.x = -dst_rect.size.x;
-			if (vflip)
-				dst_rect.size.y = -dst_rect.size.y;
-
+			Rect2 src_rect, dst_rect;
+			bool filter_clip;
+			_get_rects(src_rect, dst_rect, filter_clip);
 			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, filter_clip);
 
 		} break;
@@ -255,6 +260,30 @@ void Sprite::set_hframes(int p_amount) {
 int Sprite::get_hframes() const {
 
 	return hframes;
+}
+
+bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	if (texture.is_null())
+		return false;
+
+	Rect2 src_rect, dst_rect;
+	bool filter_clip;
+	_get_rects(src_rect, dst_rect, filter_clip);
+
+	if (!dst_rect.has_point(p_point))
+		return false;
+
+	Vector2 q = ((p_point - dst_rect.position) / dst_rect.size) * src_rect.size + src_rect.position;
+
+	Ref<Image> image = texture->get_data();
+	ERR_FAIL_COND_V(image.is_null(), false);
+
+	image->lock();
+	const Color c = image->get_pixel((int)q.x, (int)q.y);
+	image->unlock();
+
+	return c.a > 0.01;
 }
 
 Rect2 Sprite::_edit_get_rect() const {

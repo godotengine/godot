@@ -44,6 +44,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_a(const Vector2 &p_a);
 	void set_b(const Vector2 &p_b);
 

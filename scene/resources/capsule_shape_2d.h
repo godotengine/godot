@@ -39,11 +39,14 @@ class CapsuleShape2D : public Shape2D {
 	real_t radius;
 
 	void _update_shape();
+	Vector<Vector2> _get_points() const;
 
 protected:
 	static void _bind_methods();
 
 public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_height(real_t p_height);
 	real_t get_height() const;
 
