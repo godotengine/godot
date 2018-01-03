@@ -173,7 +173,7 @@ Error PacketPeerStream::_poll_buffer() const {
 
 	int read = 0;
 	ERR_FAIL_COND_V(input_buffer.size() < ring_buffer.space_left(), ERR_UNAVAILABLE);
-	Error err = peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read);
+	Error err = peer->get_partial_data(&input_buffer[0], ring_buffer.space_left(), read);
 	if (err)
 		return err;
 	if (read == 0)
