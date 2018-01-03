@@ -1050,11 +1050,57 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	while (p_enabled && !is_window_maximized()) {
-		// Wait for effective resizing (so the GLX context is too).
+	if (is_window_maximize_allowed()) {
+		while (p_enabled && !is_window_maximized()) {
+			// Wait for effective resizing (so the GLX context is too).
+		}
 	}
 
 	maximized = p_enabled;
+}
+
+bool OS_X11::is_window_maximize_allowed() {
+	Atom property = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = NULL;
+
+	int result = XGetWindowProperty(
+			x11_display,
+			x11_window,
+			property,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+
+	if (result == Success) {
+		Atom *atoms = (Atom *)data;
+		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
+		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		bool found_wm_act_max_horz = false;
+		bool found_wm_act_max_vert = false;
+
+		for (unsigned int i = 0; i < len; i++) {
+			if (atoms[i] == wm_act_max_horz)
+				found_wm_act_max_horz = true;
+			if (atoms[i] == wm_act_max_vert)
+				found_wm_act_max_vert = true;
+
+			if (found_wm_act_max_horz || found_wm_act_max_vert)
+				return true;
+		}
+		XFree(atoms);
+	}
+
+	return false;
 }
 
 bool OS_X11::is_window_maximized() const {
