@@ -880,6 +880,7 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::_get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
+	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
 
@@ -923,7 +924,15 @@ void EditorSelection::update() {
 	if (!changed)
 		return;
 	changed = false;
+	if (!emitted) {
+		emitted = true;
+		call_deferred("_emit_change");
+	}
+}
+
+void EditorSelection::_emit_change() {
 	emit_signal("selection_changed");
+	emitted = false;
 }
 
 List<Node *> &EditorSelection::get_selected_node_list() {
@@ -947,6 +956,7 @@ void EditorSelection::clear() {
 }
 EditorSelection::EditorSelection() {
 
+	emitted = false;
 	changed = false;
 	nl_changed = false;
 }
