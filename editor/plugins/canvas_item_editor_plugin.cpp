@@ -3990,6 +3990,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
+	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
@@ -4348,7 +4349,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	additive_selection = false;
 
 	// Update the menus checkboxes
-	set_state(get_state());
+	call_deferred("set_state", get_state());
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = NULL;
