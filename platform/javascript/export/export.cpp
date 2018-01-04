@@ -277,7 +277,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		splash.instance();
 		Error err = splash->load(splash_path);
 		if (err) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image.");
+			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image."));
 			splash.unref();
 		}
 	}
