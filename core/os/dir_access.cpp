@@ -293,7 +293,7 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 	return full;
 }
 
-Error DirAccess::copy(String p_from, String p_to, int chmod_flags) {
+Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
@@ -330,9 +330,9 @@ Error DirAccess::copy(String p_from, String p_to, int chmod_flags) {
 		fdst->store_8(fsrc->get_8());
 	}
 
-	if (err == OK && chmod_flags != -1) {
+	if (err == OK && p_chmod_flags != -1) {
 		fdst->close();
-		err = fdst->_chmod(p_to, chmod_flags);
+		err = fdst->_chmod(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
 		if (err == ERR_UNAVAILABLE)
 			err = OK;
