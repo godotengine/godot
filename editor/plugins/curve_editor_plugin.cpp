@@ -347,7 +347,8 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 				_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LINEAR), is_linear);
 
 			} else {
-				_context_menu->add_separator();
+				if (_selected_point > 0 || _selected_point + 1 < _curve_ref->get_point_count())
+					_context_menu->add_separator();
 
 				if (_selected_point > 0) {
 					_context_menu->add_check_item(TTR("Left linear"), CONTEXT_LEFT_LINEAR);
@@ -367,6 +368,7 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 
 	_context_menu->add_submenu_item(TTR("Load preset"), _presets_menu->get_name());
 
+	_context_menu->set_size(Size2(0, 0));
 	_context_menu->popup();
 }
 
@@ -566,7 +568,6 @@ static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 			Vector2 prev_pos = a;
 
 			float len = b.x - a.x;
-			//float step = 4.f / view_size.x;
 
 			for (float x = step; x < len; x += step) {
 				pos.x = a.x + x;
@@ -693,24 +694,6 @@ void CurveEditor::_draw() {
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(curve, 4.f / view_size.x, plot_func);
-
-	/*// TEST draw baked curve
-	{
-		Vector2 pos = Vector2(0, curve.interpolate_baked(0));
-		Vector2 prev_pos = pos;
-
-		float len = 1.0;
-		float step = 4.f / view_size.x;
-
-		for(float x = step; x < len; x += step) {
-			pos.x = x;
-			pos.y = curve.interpolate_baked(x);
-			draw_line(get_point_view_pos(prev_pos), get_point_view_pos(pos), Color(0,1,0));
-			prev_pos = pos;
-		}
-
-		draw_line(get_point_view_pos(prev_pos), get_point_view_pos(Vector2(1, curve.interpolate_baked(1))), Color(0,1,0));
-	}//*/
 
 	// Draw points
 
