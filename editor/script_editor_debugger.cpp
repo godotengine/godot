@@ -678,47 +678,47 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String time = String("%d:%02d:%02d:%04d").sprintf(vals, &e);
 		String txt = err[8].is_zero() ? String(err[7]) : String(err[8]);
 
-        TreeItem *r = error_tree->get_root();
-        if (r == nullptr) {
-            r = error_tree->create_item();
-        }
-        TreeItem *error = error_tree->create_item(r);
-        error->set_collapsed(true);
+		TreeItem *r = error_tree->get_root();
+		if (r == nullptr) {
+			r = error_tree->create_item();
+		}
+		TreeItem *error = error_tree->create_item(r);
+		error->set_collapsed(true);
 
-        error->set_icon(0, get_icon(warning ? "Warning" : "Error", "EditorIcons"));
-        error->set_text(0, time);
-        error->set_text_align(0, TreeItem::ALIGN_LEFT);
+		error->set_icon(0, get_icon(warning ? "Warning" : "Error", "EditorIcons"));
+		error->set_text(0, time);
+		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
-        error->set_text(1, txt);
+		error->set_text(1, txt);
 
-        TreeItem *c_info = error_tree->create_item(error);
-        c_info->set_text(0, "<" + TTR("C Source") + ">");
-        c_info->set_text(1, String(err[5]) + ":" + String(err[6]) + " @ " + String(err[4]) + "()");
-        c_info->set_text_align(0, TreeItem::ALIGN_LEFT);
+		TreeItem *c_info = error_tree->create_item(error);
+		c_info->set_text(0, "<" + TTR("C Source") + ">");
+		c_info->set_text(1, String(err[5]) + ":" + String(err[6]) + " @ " + String(err[4]) + "()");
+		c_info->set_text_align(0, TreeItem::ALIGN_LEFT);
 
 		int scc = p_data[1];
 
-        for (int i = 0; i < scc; i += 2) {
-            String script = p_data[2 + i];
-            int line = p_data[3 + i];
+		for (int i = 0; i < scc; i += 2) {
+			String script = p_data[2 + i];
+			int line = p_data[3 + i];
 
-            TreeItem *stack_trace = error_tree->create_item(error);
-            Array meta;
-            meta.push_back(script);
-            meta.push_back(line);
-            stack_trace->set_metadata(0, meta);
+			TreeItem *stack_trace = error_tree->create_item(error);
+			Array meta;
+			meta.push_back(script);
+			meta.push_back(line);
+			stack_trace->set_metadata(0, meta);
 
-            if (i == 0) {
-                stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
-                stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
-            }
+			if (i == 0) {
+				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
+				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
+			}
 
-            stack_trace->set_text(1, script.get_file() + ":" + itos(line));
-        }
+			stack_trace->set_text(1, script.get_file() + ":" + itos(line));
+		}
 
-        TreeItem *copy = error_tree->create_item(error);
-        copy->add_button(0, get_icon("CopyNodePath", "EditorIcons"), -1, false, TTR("Copy to clipboard."));
-        copy->set_text(1, TTR("Copy to clipboard."));
+		TreeItem *copy = error_tree->create_item(error);
+		copy->add_button(0, get_icon("CopyNodePath", "EditorIcons"), -1, false, TTR("Copy to clipboard."));
+		copy->set_text(1, TTR("Copy to clipboard."));
 
 		error_count++;
 		/*
@@ -1045,7 +1045,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					inspect_scene_tree->clear();
 					le_set->set_disabled(true);
 					le_clear->set_disabled(false);
-                    error_tree->clear();
+					error_tree->clear();
 					error_count = 0;
 					profiler_signature.clear();
 					//live_edit_root->set_text("/root");
@@ -1627,50 +1627,50 @@ void ScriptEditorDebugger::reload_scripts() {
 }
 
 void ScriptEditorDebugger::_error_activated() {
-    TreeItem *selected = error_tree->get_selected();
+	TreeItem *selected = error_tree->get_selected();
 
-    TreeItem *ci = selected->get_children();
-    if (ci != nullptr) {
-        selected->set_collapsed( !selected->is_collapsed() );
-    }
+	TreeItem *ci = selected->get_children();
+	if (ci != nullptr) {
+		selected->set_collapsed( !selected->is_collapsed() );
+	}
 }
 
 void ScriptEditorDebugger::_error_selected() {
-    TreeItem *selected = error_tree->get_selected();
+	TreeItem *selected = error_tree->get_selected();
 
-    Array meta = selected->get_metadata(0);
+	Array meta = selected->get_metadata(0);
 
-    if (meta.size() == 0) {
-        return;
-    }
+	if (meta.size() == 0) {
+		return;
+	}
 
-    Ref<Script> s = ResourceLoader::load(meta[0]);
-    emit_signal("goto_script_line", s, int(meta[1]) - 1);
+	Ref<Script> s = ResourceLoader::load(meta[0]);
+	emit_signal("goto_script_line", s, int(meta[1]) - 1);
 }
 
 void ScriptEditorDebugger::_error_button_pressed(Object* p_item, int p_column, int p_id) {
-    TreeItem *ti = Object::cast_to<TreeItem>(p_item)->get_parent();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item)->get_parent();
 
-    String type;
+	String type;
 
-    if (ti->get_icon(0) == get_icon("Warning", "EditorIcons")) {
-        type = "W ";
-    } else if(ti->get_icon(0) == get_icon("Error", "EditorIcons")) {
-        type = "E ";
-    }
+	if (ti->get_icon(0) == get_icon("Warning", "EditorIcons")) {
+		type = "W ";
+	} else if(ti->get_icon(0) == get_icon("Error", "EditorIcons")) {
+		type = "E ";
+	}
 
-    String text = ti->get_text(0) + "        ";
-    int rpad_len = text.length();
+	String text = ti->get_text(0) + "        ";
+	int rpad_len = text.length();
 
-    text = type + text + ti->get_text(1) + "\n";
+	text = type + text + ti->get_text(1) + "\n";
 
-    TreeItem *ci = ti->get_children();
-    while (ci && ci->get_next()) {
-        text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-        ci = ci->get_next();
-    }
+	TreeItem *ci = ti->get_children();
+	while (ci && ci->get_next()) {
+		text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+		ci = ci->get_next();
+	}
 
-    OS::get_singleton()->set_clipboard(text);
+	OS::get_singleton()->set_clipboard(text);
 }
 
 void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
@@ -1866,18 +1866,18 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ //errors
-        error_tree = memnew(Tree);
-        error_tree->set_columns(2);
+		error_tree = memnew(Tree);
+		error_tree->set_columns(2);
 
-        error_tree->set_column_expand(0, false);
-        error_tree->set_column_min_width(0, 140);
+		error_tree->set_column_expand(0, false);
+		error_tree->set_column_min_width(0, 140);
 
-        error_tree->set_column_expand(1, true);
+		error_tree->set_column_expand(1, true);
 
-        error_tree->set_select_mode(Tree::SELECT_ROW);
-        error_tree->set_hide_root(true);
-        error_tree->set_h_size_flags(SIZE_EXPAND_FILL);
-        error_tree->set_name(TTR("Errors"));
+		error_tree->set_select_mode(Tree::SELECT_ROW);
+		error_tree->set_hide_root(true);
+		error_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+		error_tree->set_name(TTR("Errors"));
 		tabs->add_child(error_tree);
 	}
 

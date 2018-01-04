@@ -81,7 +81,7 @@ class ScriptEditorDebugger : public Control {
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<ObjectID> unfold_cache;
 
-    Tree *error_tree;
+	Tree *error_tree;
 	Tree *inspect_scene_tree;
 
 	int error_count;
