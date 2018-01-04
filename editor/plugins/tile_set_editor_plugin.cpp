@@ -238,16 +238,16 @@ void TileSetEditor::_bind_methods() {
 
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
-	MenuButton *options = memnew(MenuButton);
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
-	options->set_position(Point2(1, 1));
-	options->set_text(TTR("Tile Set"));
-	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create from Scene"), MENU_OPTION_CREATE_FROM_SCENE);
-	options->get_popup()->add_item(TTR("Merge from Scene"), MENU_OPTION_MERGE_FROM_SCENE);
-	options->get_popup()->connect("id_pressed", this, "_menu_cbk");
+	menu = memnew(MenuButton);
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(menu);
+	menu->hide();
+	menu->set_text(TTR("Tile Set"));
+	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
+	menu->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);
+	menu->get_popup()->add_separator();
+	menu->get_popup()->add_item(TTR("Create from Scene"), MENU_OPTION_CREATE_FROM_SCENE);
+	menu->get_popup()->add_item(TTR("Merge from Scene"), MENU_OPTION_MERGE_FROM_SCENE);
+	menu->get_popup()->connect("id_pressed", this, "_menu_cbk");
 	editor = p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
@@ -283,6 +283,7 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		tileset_editor->show();
+		tileset_editor->menu->show();
 		autotile_button->show();
 		autotile_editor->side_panel->show();
 		if (autotile_button->is_pressed()) {
@@ -290,6 +291,7 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 		}
 	} else {
 		tileset_editor->hide();
+		tileset_editor->menu->hide();
 		autotile_editor->side_panel->hide();
 		autotile_editor->hide();
 		autotile_button->hide();
