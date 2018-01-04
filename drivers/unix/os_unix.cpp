@@ -362,7 +362,20 @@ String OS_Unix::get_locale() const {
 }
 
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
+
+	String path = p_path;
+
+	if (!FileAccess::exists(path)) {
+		//this code exists so gdnative can load .so files from within the executable path
+		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+	}
+
+	if (!FileAccess::exists(path)) {
+		//this code exists so gdnative can load .so files from a standard unix location
+		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
+	}
+
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	if (!p_library_handle) {
 		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 		ERR_FAIL_V(ERR_CANT_OPEN);

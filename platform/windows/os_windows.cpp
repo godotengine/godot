@@ -1633,6 +1633,13 @@ void OS_Windows::_update_window_style(bool repaint) {
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 
+	String path = p_path;
+
+	if (!FileAccess::exists(path)) {
+		//this code exists so gdnative can load .dll files from within the executable path
+		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+	}
+
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
 
@@ -1643,10 +1650,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	DLL_DIRECTORY_COOKIE cookie;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory(p_path.get_base_dir().c_str());
+		cookie = add_dll_directory(path.get_base_dir().c_str());
 	}
 
-	p_library_handle = (void *)LoadLibraryExW(p_path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW(path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 
 	if (p_also_set_library_path && has_dll_directory_api) {
 		remove_dll_directory(cookie);

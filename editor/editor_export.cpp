@@ -1361,7 +1361,19 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 	String pck_path = p_path.get_basename() + ".pck";
 
-	return save_pack(p_preset, pck_path);
+	Vector<SharedObject> so_files;
+
+	err = save_pack(p_preset, pck_path, &so_files);
+
+	if (err != OK || so_files.empty())
+		return err;
+	//if shared object files, copy them
+	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (int i = 0; i < so_files.size(); i++) {
+		da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+	}
+	memdelete(da);
+	return OK;
 }
 
 void EditorExportPlatformPC::set_extension(const String &p_extension, const String &p_feature_key) {
