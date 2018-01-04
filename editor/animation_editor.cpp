@@ -1533,7 +1533,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
 
 				int idx = E->key().track;
-				int i = idx - v_scroll->get_value();
+				int i = idx - Math::floor(v_scroll->get_value());
 				if (i < 0 || i >= fit)
 					continue;
 				int y = h + i * h + sep;
