@@ -238,11 +238,8 @@ void TileSetEditor::_bind_methods() {
 
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
-	Panel *panel = memnew(Panel);
-	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	add_child(panel);
 	MenuButton *options = memnew(MenuButton);
-	panel->add_child(options);
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->set_position(Point2(1, 1));
 	options->set_text(TTR("Tile Set"));
 	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
@@ -345,7 +342,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	helper = memnew(AutotileEditorHelper(this));
 	property_editor->edit(helper);
 
-	// Editor
+	//Editor
 
 	dragging_point = -1;
 	creating_shape = false;
@@ -420,8 +417,6 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_DELETE]);
-	//tools[SHAPE_CREATE_FROM_NOT_BITMASKED] = memnew(ToolButton);
-	//tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_CREATE_FROM_NOT_BITMASKED]);
 	tool_containers[TOOLBAR_SHAPE]->add_change_receptor(memnew(VSeparator));
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
