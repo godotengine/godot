@@ -38,7 +38,7 @@ void GDMonoField::set_value_raw(MonoObject *p_object, void *p_ptr) {
 	mono_field_set_value(p_object, mono_field, &p_ptr);
 }
 
-void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
+void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_value) {
 #define SET_FROM_STRUCT_AND_BREAK(m_type)                \
 	{                                                    \
 		const m_type &val = p_value.operator ::m_type(); \
@@ -138,7 +138,7 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 			if (tclass == CACHED_CLASS(Plane))
 				SET_FROM_STRUCT_AND_BREAK(Plane);
 
-			if (mono_class_is_enum(tclass->get_raw()))
+			if (mono_class_is_enum(tclass->get_mono_ptr()))
 				SET_FROM_PRIMITIVE(signed int);
 
 			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + tclass->get_name());
@@ -264,7 +264,7 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			if (CACHED_RAW_MONO_CLASS(Dictionary) == type.type_class->get_raw()) {
+			if (CACHED_RAW_MONO_CLASS(Dictionary) == type.type_class->get_mono_ptr()) {
 				MonoObject *managed = GDMonoMarshal::Dictionary_to_mono_object(p_value.operator Dictionary());
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
@@ -278,6 +278,10 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 
 #undef SET_FROM_STRUCT_AND_BREAK
 #undef SET_FROM_PRIMITIVE
+}
+
+MonoObject *GDMonoField::get_value(MonoObject *p_object) {
+	return mono_field_get_value_object(mono_domain_get(), mono_field, p_object);
 }
 
 bool GDMonoField::get_bool_value(MonoObject *p_object) {
@@ -302,7 +306,7 @@ bool GDMonoField::has_attribute(GDMonoClass *p_attr_class) {
 	if (!attributes)
 		return false;
 
-	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_raw());
+	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 MonoObject *GDMonoField::get_attribute(GDMonoClass *p_attr_class) {
@@ -314,12 +318,12 @@ MonoObject *GDMonoField::get_attribute(GDMonoClass *p_attr_class) {
 	if (!attributes)
 		return NULL;
 
-	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_raw());
+	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 void GDMonoField::fetch_attributes() {
 	ERR_FAIL_COND(attributes != NULL);
-	attributes = mono_custom_attrs_from_field(owner->get_raw(), get_raw());
+	attributes = mono_custom_attrs_from_field(owner->get_mono_ptr(), mono_field);
 	attrs_fetched = true;
 }
 
@@ -327,26 +331,26 @@ bool GDMonoField::is_static() {
 	return mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_STATIC;
 }
 
-GDMono::MemberVisibility GDMonoField::get_visibility() {
+GDMonoClassMember::Visibility GDMonoField::get_visibility() {
 	switch (mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_FIELD_ACCESS_MASK) {
 		case MONO_FIELD_ATTR_PRIVATE:
-			return GDMono::PRIVATE;
+			return GDMonoClassMember::PRIVATE;
 		case MONO_FIELD_ATTR_FAM_AND_ASSEM:
-			return GDMono::PROTECTED_AND_INTERNAL;
+			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_FIELD_ATTR_ASSEMBLY:
-			return GDMono::INTERNAL;
+			return GDMonoClassMember::INTERNAL;
 		case MONO_FIELD_ATTR_FAMILY:
-			return GDMono::PROTECTED;
+			return GDMonoClassMember::PROTECTED;
 		case MONO_FIELD_ATTR_PUBLIC:
-			return GDMono::PUBLIC;
+			return GDMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMono::PRIVATE);
+			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
 	}
 }
 
-GDMonoField::GDMonoField(MonoClassField *p_raw_field, GDMonoClass *p_owner) {
+GDMonoField::GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner) {
 	owner = p_owner;
-	mono_field = p_raw_field;
+	mono_field = p_mono_field;
 	name = mono_field_get_name(mono_field);
 	MonoType *field_type = mono_field_get_type(mono_field);
 	type.type_encoding = mono_type_get_type(field_type);

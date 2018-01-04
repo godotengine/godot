@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_field.h                                                      */
+/*  gd_mono_class_member.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,49 +27,41 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GDMONOFIELD_H
-#define GDMONOFIELD_H
+#ifndef GD_MONO_CLASS_MEMBER_H
+#define GD_MONO_CLASS_MEMBER_H
 
-#include "gd_mono.h"
-#include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
 
-class GDMonoField : public GDMonoClassMember {
+#include <mono/metadata/object.h>
 
-	GDMonoClass *owner;
-	MonoClassField *mono_field;
-
-	StringName name;
-	ManagedType type;
-
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
-
+class GDMonoClassMember {
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_FIELD; }
+	enum Visibility {
+		PRIVATE,
+		PROTECTED_AND_INTERNAL, // FAM_AND_ASSEM
+		INTERNAL, // ASSEMBLY
+		PROTECTED, // FAMILY
+		PUBLIC
+	};
 
-	virtual StringName get_name() { return name; }
+	enum MemberType {
+		MEMBER_TYPE_FIELD,
+		MEMBER_TYPE_PROPERTY,
+		MEMBER_TYPE_METHOD
+	};
 
-	virtual bool is_static();
-	virtual Visibility get_visibility();
+	virtual ~GDMonoClassMember() {}
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class);
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
-	void fetch_attributes();
+	virtual MemberType get_member_type() = 0;
 
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
+	virtual StringName get_name() = 0;
 
-	void set_value_raw(MonoObject *p_object, void *p_ptr);
-	void set_value_from_variant(MonoObject *p_object, const Variant &p_value);
+	virtual bool is_static() = 0;
 
-	_FORCE_INLINE_ MonoObject *get_value(MonoObject *p_object);
+	virtual Visibility get_visibility() = 0;
 
-	bool get_bool_value(MonoObject *p_object);
-	int get_int_value(MonoObject *p_object);
-	String get_string_value(MonoObject *p_object);
-
-	GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner);
-	~GDMonoField();
+	virtual bool has_attribute(GDMonoClass *p_attr_class) = 0;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) = 0;
 };
 
-#endif // GDMONOFIELD_H
+#endif // GD_MONO_CLASS_MEMBER_H

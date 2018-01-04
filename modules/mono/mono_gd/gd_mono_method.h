@@ -31,13 +31,13 @@
 #define GD_MONO_METHOD_H
 
 #include "gd_mono.h"
+#include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
 
-class GDMonoMethod {
+class GDMonoMethod : public GDMonoClassMember {
 
 	StringName name;
 
-	bool is_instance;
 	int params_count;
 	ManagedType return_type;
 	Vector<ManagedType> param_types;
@@ -53,9 +53,18 @@ class GDMonoMethod {
 	MonoMethod *mono_method;
 
 public:
-	_FORCE_INLINE_ StringName get_name() { return name; }
+	virtual MemberType get_member_type() { return MEMBER_TYPE_METHOD; }
 
-	_FORCE_INLINE_ bool is_static() { return !is_instance; }
+	virtual StringName get_name() { return name; }
+
+	virtual bool is_static();
+
+	virtual Visibility get_visibility();
+
+	virtual bool has_attribute(GDMonoClass *p_attr_class);
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
+	virtual void fetch_attributes();
+
 	_FORCE_INLINE_ int get_parameters_count() { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() { return return_type; }
 
@@ -64,10 +73,6 @@ public:
 	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoObject **r_exc = NULL);
 	MonoObject *invoke(MonoObject *p_object, MonoObject **r_exc = NULL);
 	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoObject **r_exc = NULL);
-
-	bool has_attribute(GDMonoClass *p_attr_class);
-	MonoObject *get_attribute(GDMonoClass *p_attr_class);
-	void fetch_attributes();
 
 	String get_full_name(bool p_signature = false) const;
 	String get_full_name_no_class() const;

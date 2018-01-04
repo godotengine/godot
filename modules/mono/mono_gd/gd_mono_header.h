@@ -34,8 +34,10 @@
 
 class GDMonoAssembly;
 class GDMonoClass;
-class GDMonoMethod;
+class GDMonoClassMember;
 class GDMonoField;
+class GDMonoProperty;
+class GDMonoMethod;
 
 struct ManagedType {
 	int type_encoding;

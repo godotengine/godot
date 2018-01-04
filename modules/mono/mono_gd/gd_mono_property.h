@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_field.h                                                      */
+/*  gd_mono_property.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,17 +27,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GDMONOFIELD_H
-#define GDMONOFIELD_H
+#ifndef GD_MONO_PROPERTY_H
+#define GD_MONO_PROPERTY_H
 
 #include "gd_mono.h"
 #include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
 
-class GDMonoField : public GDMonoClassMember {
+class GDMonoProperty : public GDMonoClassMember {
 
 	GDMonoClass *owner;
-	MonoClassField *mono_field;
+	MonoProperty *mono_property;
 
 	StringName name;
 	ManagedType type;
@@ -46,7 +46,7 @@ class GDMonoField : public GDMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_FIELD; }
+	virtual MemberType get_member_type() { return MEMBER_TYPE_PROPERTY; }
 
 	virtual StringName get_name() { return name; }
 
@@ -57,19 +57,21 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
 	void fetch_attributes();
 
+	bool has_getter();
+	bool has_setter();
+
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
-	void set_value_raw(MonoObject *p_object, void *p_ptr);
-	void set_value_from_variant(MonoObject *p_object, const Variant &p_value);
-
-	_FORCE_INLINE_ MonoObject *get_value(MonoObject *p_object);
+	void set_value(MonoObject *p_object, MonoObject *p_value, MonoObject **r_exc = NULL);
+	void set_value(MonoObject *p_object, void **p_params, MonoObject **r_exc = NULL);
+	MonoObject *get_value(MonoObject *p_object, MonoObject **r_exc = NULL);
 
 	bool get_bool_value(MonoObject *p_object);
 	int get_int_value(MonoObject *p_object);
 	String get_string_value(MonoObject *p_object);
 
-	GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner);
-	~GDMonoField();
+	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
+	~GDMonoProperty();
 };
 
-#endif // GDMONOFIELD_H
+#endif // GD_MONO_PROPERTY_H

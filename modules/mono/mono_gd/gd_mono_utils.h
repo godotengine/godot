@@ -166,12 +166,14 @@ MonoDomain *create_domain(const String &p_friendly_name);
 
 String get_exception_name_and_message(MonoObject *p_ex);
 
+void print_unhandled_exception(MonoObject *p_ex);
+
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL)))
 
 #define CACHED_CLASS(m_class) (GDMonoUtils::mono_cache.class_##m_class)
-#define CACHED_CLASS_RAW(m_class) (GDMonoUtils::mono_cache.class_##m_class->get_raw())
+#define CACHED_CLASS_RAW(m_class) (GDMonoUtils::mono_cache.class_##m_class->get_mono_ptr())
 #define CACHED_NS_CLASS(m_ns, m_class) (GDMonoUtils::mono_cache.class_##m_ns##_##m_class)
 #define CACHED_RAW_MONO_CLASS(m_class) (GDMonoUtils::mono_cache.rawclass_##m_class)
 #define CACHED_FIELD(m_class, m_field) (GDMonoUtils::mono_cache.field_##m_class##_##m_field)

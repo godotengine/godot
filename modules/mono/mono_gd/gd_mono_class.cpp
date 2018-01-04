@@ -35,7 +35,7 @@
 
 MonoType *GDMonoClass::get_raw_type(GDMonoClass *p_class) {
 
-	return mono_class_get_type(p_class->get_raw());
+	return mono_class_get_type(p_class->get_mono_ptr());
 }
 
 bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
@@ -74,7 +74,7 @@ Vector<MonoClassField *> GDMonoClass::get_enum_fields() {
 
 	void *iter = NULL;
 	MonoClassField *raw_field = NULL;
-	while ((raw_field = mono_class_get_fields(get_raw(), &iter)) != NULL) {
+	while ((raw_field = mono_class_get_fields(get_mono_ptr(), &iter)) != NULL) {
 		uint32_t field_flags = mono_field_get_flags(raw_field);
 
 		// Enums have an instance field named value__ which holds the value of the enum.
@@ -105,7 +105,7 @@ bool GDMonoClass::has_attribute(GDMonoClass *p_attr_class) {
 	if (!attributes)
 		return false;
 
-	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_raw());
+	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 MonoObject *GDMonoClass::get_attribute(GDMonoClass *p_attr_class) {
@@ -120,14 +120,14 @@ MonoObject *GDMonoClass::get_attribute(GDMonoClass *p_attr_class) {
 	if (!attributes)
 		return NULL;
 
-	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_raw());
+	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 void GDMonoClass::fetch_attributes() {
 
 	ERR_FAIL_COND(attributes != NULL);
 
-	attributes = mono_custom_attrs_from_class(get_raw());
+	attributes = mono_custom_attrs_from_class(get_mono_ptr());
 	attrs_fetched = true;
 }
 
@@ -140,7 +140,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 	void *iter = NULL;
 	MonoMethod *raw_method = NULL;
-	while ((raw_method = mono_class_get_methods(get_raw(), &iter)) != NULL) {
+	while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
 		StringName name = mono_method_get_name(raw_method);
 
 		GDMonoMethod *method = get_method(raw_method, name);
@@ -334,7 +334,7 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 
 	void *iter = NULL;
 	MonoClassField *raw_field = NULL;
-	while ((raw_field = mono_class_get_fields(get_raw(), &iter)) != NULL) {
+	while ((raw_field = mono_class_get_fields(mono_class, &iter)) != NULL) {
 		StringName name = mono_field_get_name(raw_field);
 
 		Map<StringName, GDMonoField *>::Element *match = fields.find(name);
@@ -353,6 +353,54 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 	return fields_list;
 }
 
+GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
+
+	Map<StringName, GDMonoProperty *>::Element *result = properties.find(p_name);
+
+	if (result)
+		return result->value();
+
+	if (properties_fetched)
+		return NULL;
+
+	MonoProperty *raw_property = mono_class_get_property_from_name(mono_class, String(p_name).utf8().get_data());
+
+	if (raw_property) {
+		GDMonoProperty *property = memnew(GDMonoProperty(raw_property, this));
+		properties.insert(p_name, property);
+
+		return property;
+	}
+
+	return NULL;
+}
+
+const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
+
+	if (properties_fetched)
+		return properties_list;
+
+	void *iter = NULL;
+	MonoProperty *raw_property = NULL;
+	while ((raw_property = mono_class_get_properties(mono_class, &iter)) != NULL) {
+		StringName name = mono_property_get_name(raw_property);
+
+		Map<StringName, GDMonoProperty *>::Element *match = properties.find(name);
+
+		if (match) {
+			properties_list.push_back(match->get());
+		} else {
+			GDMonoProperty *property = memnew(GDMonoProperty(raw_property, this));
+			properties.insert(name, property);
+			properties_list.push_back(property);
+		}
+	}
+
+	properties_fetched = true;
+
+	return properties_list;
+}
+
 GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly) {
 
 	namespace_name = p_namespace;
@@ -365,6 +413,7 @@ GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name
 
 	methods_fetched = false;
 	fields_fetched = false;
+	properties_fetched = false;
 }
 
 GDMonoClass::~GDMonoClass() {
@@ -374,6 +423,10 @@ GDMonoClass::~GDMonoClass() {
 	}
 
 	for (Map<StringName, GDMonoField *>::Element *E = fields.front(); E; E = E->next()) {
+		memdelete(E->value());
+	}
+
+	for (Map<StringName, GDMonoProperty *>::Element *E = properties.front(); E; E = E->next()) {
 		memdelete(E->value());
 	}
 

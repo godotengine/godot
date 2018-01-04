@@ -112,14 +112,6 @@ public:
 #endif
 #endif
 
-	enum MemberVisibility {
-		PRIVATE,
-		PROTECTED_AND_INTERNAL, // FAM_AND_ASSEM
-		INTERNAL, // ASSEMBLY
-		PROTECTED, // FAMILY
-		PUBLIC
-	};
-
 	static GDMono *get_singleton() { return singleton; }
 
 	// Do not use these, unless you know what you're doing
