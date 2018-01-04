@@ -4135,6 +4135,7 @@ void PropertyEditor::_bind_methods() {
 	ClassDB::bind_method("_resource_preview_done", &PropertyEditor::_resource_preview_done);
 	ClassDB::bind_method("refresh", &PropertyEditor::refresh);
 	ClassDB::bind_method("_draw_transparency", &PropertyEditor::_draw_transparency);
+	ClassDB::bind_method("edit", &PropertyEditor::edit);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);
