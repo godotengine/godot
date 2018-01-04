@@ -1013,7 +1013,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 						backing:NSBackingStoreBuffered
 						  defer:NO];
 
-	ERR_FAIL_COND(window_object == nil, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
 
@@ -1100,11 +1100,11 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 #undef ADD_ATTR2
 
 	pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	ERR_FAIL_COND(pixelFormat == nil, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(pixelFormat == nil, ERR_UNAVAILABLE);
 
 	context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
 
-	ERR_FAIL_COND(context == nil, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(context == nil, ERR_UNAVAILABLE);
 
 	[context setView:window_view];
 
