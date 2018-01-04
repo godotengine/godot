@@ -81,10 +81,7 @@ class ScriptEditorDebugger : public Control {
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<ObjectID> unfold_cache;
 
-	HSplitContainer *error_split;
-	ItemList *error_list;
-	ItemList *error_stack;
-	TextEdit *error_details;
+    Tree *error_tree;
 	Tree *inspect_scene_tree;
 
 	int error_count;
@@ -166,8 +163,9 @@ class ScriptEditorDebugger : public Control {
 	void _method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
-	void _error_selected(int p_idx);
-	void _error_stack_selected(int p_idx);
+	void _error_selected();
+	void _error_activated();
+	void _error_button_pressed(Object* p_item, int p_column, int p_id);
 
 	void _profiler_activate(bool p_enable);
 	void _profiler_seeked();
