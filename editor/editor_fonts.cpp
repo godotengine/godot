@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,12 +77,27 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
-	m_name->set_font_data(DefaultFont);                         \
+	if (CustomFont.is_valid()) {                                \
+		m_name->set_font_data(CustomFont);                      \
+		m_name->add_fallback(DefaultFont);                      \
+	} else {                                                    \
+		m_name->set_font_data(DefaultFont);                     \
+	}                                                           \
 	m_name->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);    \
 	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE); \
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
+	/* Custom font */
+
+	String custom_font = EditorSettings::get_singleton()->get("interface/editor/custom_font");
+	Ref<DynamicFontData> CustomFont;
+	if (custom_font.length() > 0) {
+		CustomFont.instance();
+		CustomFont->set_font_path(custom_font);
+		CustomFont->set_force_autohinter(true); //just looks better..i think?
+	}
+
 	/* Droid Sans */
 
 	Ref<DynamicFontData> DefaultFont;

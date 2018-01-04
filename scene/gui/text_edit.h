@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -433,6 +433,7 @@ public:
 	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int unhidden_amount) const;
+	bool is_last_visible_line(int p_line) const;
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
 	void fold_line(int p_line);

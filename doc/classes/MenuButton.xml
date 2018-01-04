@@ -18,6 +18,14 @@
 				Return the [PopupMenu] contained in this button.
 			</description>
 		</method>
+		<method name="set_disable_shortcuts">
+			<return type="void">
+			</return>
+			<argument index="0" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="about_to_show">

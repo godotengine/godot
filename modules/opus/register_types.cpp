@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,12 @@
 static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader = NULL;
 
 void register_opus_types() {
-    // Sorry guys, do not enable this unless you can figure out a way
-    // to get Opus to not do any memory allocation or system calls
-    // in the audio thread.
-    // Currently the implementation even reads files from the audio thread,
-    // and this is not how audio programming works.
- 
+	// Sorry guys, do not enable this unless you can figure out a way
+	// to get Opus to not do any memory allocation or system calls
+	// in the audio thread.
+	// Currently the implementation even reads files from the audio thread,
+	// and this is not how audio programming works.
+
 	//opus_stream_loader = memnew(ResourceFormatLoaderAudioStreamOpus);
 	//ResourceLoader::add_resource_format_loader(opus_stream_loader);
 	//ClassDB::register_class<AudioStreamOpus>();

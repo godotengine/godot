@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,17 +158,23 @@ public:
 
 	Transform get_relative_transform(const Node *p_parent) const;
 
-	void rotate(const Vector3 &p_normal, float p_radians);
-	void rotate_x(float p_radians);
-	void rotate_y(float p_radians);
-	void rotate_z(float p_radians);
+	void rotate(const Vector3 &p_axis, float p_angle);
+	void rotate_x(float p_angle);
+	void rotate_y(float p_angle);
+	void rotate_z(float p_angle);
 	void translate(const Vector3 &p_offset);
 	void scale(const Vector3 &p_ratio);
-	void global_rotate(const Vector3 &p_normal, float p_radians);
+
+	void rotate_object_local(const Vector3 &p_axis, float p_angle);
+	void scale_object_local(const Vector3 &p_scale);
+	void translate_object_local(const Vector3 &p_offset);
+
+	void global_rotate(const Vector3 &p_axis, float p_angle);
+	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
-	void look_at(const Vector3 &p_target, const Vector3 &p_up_normal);
-	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up_normal);
+	void look_at(const Vector3 &p_target, const Vector3 &p_up);
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up);
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;

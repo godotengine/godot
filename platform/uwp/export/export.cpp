@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1024,6 +1024,17 @@ public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 		r_features->push_back("s3tc");
 		r_features->push_back("etc");
+		switch ((int)p_preset->get("architecture/target")) {
+			case EditorExportUWP::ARM: {
+				r_features->push_back("arm");
+			} break;
+			case EditorExportUWP::X86: {
+				r_features->push_back("32");
+			} break;
+			case EditorExportUWP::X64: {
+				r_features->push_back("64");
+			} break;
+		}
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {

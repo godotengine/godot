@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,17 +67,20 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 
 	int port = p_port;
 
-	int tries = 3;
+	const int tries = 6;
+	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+
 	tcp_client->connect_to_host(ip, port);
 
-	while (tries--) {
+	for (int i = 0; i < tries; i++) {
 
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			break;
 		} else {
 
-			OS::get_singleton()->delay_usec(1000000);
-			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in 1 sec.");
+			const int ms = waits[i];
+			OS::get_singleton()->delay_usec(ms * 1000);
+			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
 		};
 	};
 
@@ -126,15 +129,21 @@ static ObjectID safe_get_instance_id(const Variant &p_v) {
 void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
 
 	packet_peer_stream->put_var(p_name);
+
+	Variant var = p_variable;
+	if (p_variable.get_type() == Variant::OBJECT && !ObjectDB::instance_validate(p_variable)) {
+		var = Variant();
+	}
+
 	int len = 0;
-	Error err = encode_variant(p_variable, NULL, len);
+	Error err = encode_variant(var, NULL, len);
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant");
 
 	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
 		packet_peer_stream->put_var(Variant());
 	} else {
-		packet_peer_stream->put_var(p_variable);
+		packet_peer_stream->put_var(var);
 	}
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -403,12 +403,12 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 		_search(p_path->get_subdir(i), matches, p_max_items);
 	}
 
-	String match = search_box->get_text();
+	String match = search_box->get_text().to_lower();
 
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (file.find(match) != -1) {
+		if (file.to_lower().find(match) != -1) {
 
 			FileInfo fi;
 			fi.name = file;
@@ -819,7 +819,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_line("Duplicating " + old_path + " -> " + new_path);
-	Error err = da->copy(old_path, new_path);
+	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
@@ -980,10 +980,12 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	}
 
-	String old_path = to_duplicate.path.ends_with("/") ? to_duplicate.path.substr(0, to_duplicate.path.length() - 1) : to_rename.path;
-	String new_path = old_path.get_base_dir().plus_file(new_name);
-	if (old_path == new_path) {
-		return;
+	String new_path;
+	String base_dir = to_duplicate.path.get_base_dir();
+	if (to_duplicate.is_file) {
+		new_path = base_dir.plus_file(new_name);
+	} else {
+		new_path = base_dir.substr(0, base_dir.find_last("/")) + "/" + new_name;
 	}
 
 	//Present a more user friendly warning for name conflict
@@ -995,7 +997,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	}
 	memdelete(da);
 
-	_try_duplicate_item(to_duplicate, new_name);
+	_try_duplicate_item(to_duplicate, new_path);
 
 	//Rescan everything
 	print_line("call rescan!");

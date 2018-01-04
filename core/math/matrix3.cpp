@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -228,10 +228,22 @@ void Basis::scale(const Vector3 &p_scale) {
 }
 
 Basis Basis::scaled(const Vector3 &p_scale) const {
-
 	Basis m = *this;
 	m.scale(p_scale);
 	return m;
+}
+
+void Basis::scale_local(const Vector3 &p_scale) {
+	// performs a scaling in object-local coordinate system:
+	// M -> (M.S.Minv).M = M.S.
+	*this = scaled_local(p_scale);
+}
+
+Basis Basis::scaled_local(const Vector3 &p_scale) const {
+	Basis b;
+	b.set_scale(p_scale);
+
+	return (*this) * b;
 }
 
 void Basis::set_scale(const Vector3 &p_scale) {
@@ -312,7 +324,8 @@ void Basis::rotate(const Vector3 &p_axis, real_t p_phi) {
 }
 
 void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
-
+	// performs a rotation in object-local coordinate system:
+	// M -> (M.R.Minv).M = M.R.
 	*this = rotated_local(p_axis, p_phi);
 }
 Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {

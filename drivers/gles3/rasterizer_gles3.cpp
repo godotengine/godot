@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -338,6 +338,15 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
+#if 1
+
+	Size2 win_size = OS::get_singleton()->get_window_size();
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+#else
 	canvas->canvas_begin();
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
@@ -350,6 +359,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();
+#endif
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,7 +167,7 @@ class CSharpInstance : public ScriptInstance {
 	bool base_ref;
 	bool ref_dying;
 
-	void _ml_call_reversed(GDMonoClass *klass, const StringName &p_method, const Variant **p_args, int p_argcount);
+	void _ml_call_reversed(MonoObject *p_mono_object, GDMonoClass *klass, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 	void _reference_owner_unsafe();
 	void _unreference_owner_unsafe();
@@ -175,6 +175,8 @@ class CSharpInstance : public ScriptInstance {
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle);
+
+	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 public:
 	MonoObject *get_mono_object() const;
@@ -192,13 +194,14 @@ public:
 
 	void mono_object_disposed();
 
-	void refcount_incremented();
-	bool refcount_decremented();
+	virtual void refcount_incremented();
+	virtual bool refcount_decremented();
 
-	RPCMode get_rpc_mode(const StringName &p_method) const;
-	RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	virtual void notification(int p_notification);
+	void call_notification_no_check(MonoObject *p_mono_object, int p_notification);
 
 	virtual Ref<Script> get_script() const;
 
@@ -214,6 +217,8 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class CSharpInstance;
 
 	static CSharpLanguage *singleton;
+
+	bool finalizing;
 
 	GDMono *gdmono;
 	SelfList<CSharpScript>::List script_list;

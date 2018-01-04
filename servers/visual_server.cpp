@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1611,7 +1611,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_set_transform", "item", "transform"), &VisualServer::canvas_item_add_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_clip_ignore", "item", "ignore"), &VisualServer::canvas_item_add_clip_ignore);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_sort_children_by_y", "item", "enabled"), &VisualServer::canvas_item_set_sort_children_by_y);
-	ClassDB::bind_method(D_METHOD("canvas_item_set_z", "item", "z"), &VisualServer::canvas_item_set_z);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_z_index", "item", "z_index"), &VisualServer::canvas_item_set_z_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_as_relative_to_parent", "item", "enabled"), &VisualServer::canvas_item_set_z_as_relative_to_parent);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_copy_to_backbuffer", "item", "enabled", "rect"), &VisualServer::canvas_item_set_copy_to_backbuffer);
 	ClassDB::bind_method(D_METHOD("canvas_item_clear", "item"), &VisualServer::canvas_item_clear);

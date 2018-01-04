@@ -535,7 +535,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads a resource from the filesystem located at 'path'. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				Loads a resource from the filesystem located at [code]path[/code]. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = load("res://main.tscn")
@@ -866,9 +866,10 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns sign of [code]s[/code] -1 or 1.
+				Returns the sign of [code]s[/code]: -1 or 1. Returns 0 if [code]s[/code] is 0.
 				[codeblock]
 				sign(-6) # returns -1
+				sign(0)  # returns 0
 				sign(6)  # returns 1
 				[/codeblock]
 			</description>

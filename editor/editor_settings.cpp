@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http:/www.godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,20 +75,33 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value, bool
 		return true;
 	}
 
+	bool changed = false;
+
 	if (p_value.get_type() == Variant::NIL) {
-		props.erase(p_name);
+		if (props.has(p_name)) {
+			props.erase(p_name);
+			changed = true;
+		}
 	} else {
-		if (props.has(p_name))
-			props[p_name].variant = p_value;
-		else
+		if (props.has(p_name)) {
+			if (p_value != props[p_name].variant) {
+				props[p_name].variant = p_value;
+				changed = true;
+			}
+		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
+			changed = true;
+		}
 
 		if (save_changed_setting) {
-			props[p_name].save = true;
+			if (props[p_name].save != true) {
+				props[p_name].save = true;
+				changed = true;
+			}
 		}
 	}
 
-	if (p_emit_signal) {
+	if (changed && p_emit_signal) {
 		emit_signal("settings_changed");
 	}
 	return true;
@@ -264,7 +277,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/source_font_size", 14);
 	hints["interface/editor/source_font_size"] = PropertyInfo(Variant::INT, "interface/editor/source_font_size", PROPERTY_HINT_RANGE, "8,96,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_font", "");
-	hints["interface/editor/custom_font"] = PropertyInfo(Variant::STRING, "interface/editor/custom_font", PROPERTY_HINT_GLOBAL_FILE, "*.font,*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/custom_font"] = PropertyInfo(Variant::STRING, "interface/editor/custom_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/dim_amount", 0.6f);
 	hints["interface/editor/dim_amount"] = PropertyInfo(Variant::REAL, "interface/editor/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
@@ -310,7 +323,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/scene_tabs/show_script_button", false);
 
 	_initial_set("text_editor/theme/color_theme", "Adaptive");
-	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default");
+	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
 
 	_initial_set("text_editor/theme/line_spacing", 4);
 
@@ -1141,13 +1154,13 @@ void EditorSettings::load_favorites() {
 }
 
 void EditorSettings::list_text_editor_themes() {
-	String themes = "Adaptive,Default";
+	String themes = "Adaptive,Default,Custom";
 	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (file != String()) {
-			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default" && file.get_basename().to_lower() != "adaptive") {
+			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default" && file.get_basename().to_lower() != "adaptive" && file.get_basename().to_lower() != "custom") {
 				themes += "," + file.get_basename();
 			}
 			file = d->get_next();
@@ -1159,7 +1172,7 @@ void EditorSettings::list_text_editor_themes() {
 }
 
 void EditorSettings::load_text_editor_theme() {
-	if (get("text_editor/theme/color_theme") == "Default" || get("text_editor/theme/color_theme") == "Adaptive") {
+	if (get("text_editor/theme/color_theme") == "Default" || get("text_editor/theme/color_theme") == "Adaptive" || get("text_editor/theme/color_theme") == "Custom") {
 		_load_default_text_editor_theme(); // sorry for "Settings changed" console spam
 		return;
 	}
@@ -1216,7 +1229,7 @@ bool EditorSettings::save_text_editor_theme() {
 
 	String p_file = get("text_editor/theme/color_theme");
 
-	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive") {
+	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive" || p_file.get_file().to_lower() == "custom") {
 		return false;
 	}
 	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
@@ -1228,7 +1241,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		p_file += ".tet";
 	}
 
-	if (p_file.get_file().to_lower() == "default.tet" || p_file.get_file().to_lower() == "adaptive.tet") {
+	if (p_file.get_file().to_lower() == "default.tet" || p_file.get_file().to_lower() == "adaptive.tet" || p_file.get_file().to_lower() == "custom.tet") {
 		return false;
 	}
 	if (_save_text_editor_theme(p_file)) {

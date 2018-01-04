@@ -216,7 +216,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
-				Disables a given shape in this area if [code]disable is true[/code]
+				Disables a given shape in an area.
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -638,7 +638,7 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables one way collision on body if [code]enable is true[/code].
+				Enables one way collision on body if [code]enable[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
@@ -651,7 +651,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
-				Disables shape in body if [code]disable is true[/code].
+				Disables shape in body if [code]disable[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_metadata">
@@ -1134,6 +1134,12 @@
 		</constant>
 		<constant name="JOINT_DAMPED_SPRING" value="2" enum="JointType">
 			Constant to create damped spring joints.
+		</constant>
+		<constant name="JOINT_PARAM_BIAS" value="0" enum="JointParam">
+		</constant>
+		<constant name="JOINT_PARAM_MAX_BIAS" value="1" enum="JointParam">
+		</constant>
+		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
 			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.

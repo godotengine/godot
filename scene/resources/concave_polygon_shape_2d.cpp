@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,23 @@
 
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
+
+bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	PoolVector<Vector2> s = get_segments();
+	int len = s.size();
+	if (len == 0 || (len % 2) == 1)
+		return false;
+
+	PoolVector<Vector2>::Read r = s.read();
+	for (int i = 0; i < len; i += 2) {
+		Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, &r[i]);
+		if (p_point.distance_to(closest) < p_tolerance)
+			return true;
+	}
+
+	return false;
+}
 
 void ConcavePolygonShape2D::set_segments(const PoolVector<Vector2> &p_segments) {
 

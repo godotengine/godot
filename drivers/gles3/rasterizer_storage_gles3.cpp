@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -6943,6 +6943,10 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		glDeleteTextures(1, &cls->distance);
 		canvas_light_shadow_owner.free(p_rid);
 		memdelete(cls);
+	} else if (particles_owner.owns(p_rid)) {
+		Particles *particles = particles_owner.get(p_rid);
+		particles_owner.free(p_rid);
+		memdelete(particles);
 	} else {
 		return false;
 	}

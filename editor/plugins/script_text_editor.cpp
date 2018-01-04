@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,72 +75,36 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	text_edit->clear_colors();
 
-	Color background_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
-	Color completion_background_color = EDITOR_DEF("text_editor/highlighting/completion_background_color", Color(0, 0, 0, 0));
-	Color completion_selected_color = EDITOR_DEF("text_editor/highlighting/completion_selected_color", Color::html("434244"));
-	Color completion_existing_color = EDITOR_DEF("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"));
-	Color completion_scroll_color = EDITOR_DEF("text_editor/highlighting/completion_scroll_color", Color::html("ffffff"));
-	Color completion_font_color = EDITOR_DEF("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"));
-	Color text_color = EDITOR_DEF("text_editor/highlighting/text_color", Color(0, 0, 0));
-	Color line_number_color = EDITOR_DEF("text_editor/highlighting/line_number_color", Color(0, 0, 0));
-	Color caret_color = EDITOR_DEF("text_editor/highlighting/caret_color", Color(0, 0, 0));
-	Color caret_background_color = EDITOR_DEF("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
-	Color text_selected_color = EDITOR_DEF("text_editor/highlighting/text_selected_color", Color(1, 1, 1));
-	Color selection_color = EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1));
-	Color brace_mismatch_color = EDITOR_DEF("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
-	Color current_line_color = EDITOR_DEF("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
-	Color line_length_guideline_color = EDITOR_DEF("text_editor/highlighting/line_length_guideline_color", Color(0, 0, 0));
-	Color word_highlighted_color = EDITOR_DEF("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
-	Color number_color = EDITOR_DEF("text_editor/highlighting/number_color", Color(0.9, 0.6, 0.0, 2));
-	Color function_color = EDITOR_DEF("text_editor/highlighting/function_color", Color(0.4, 0.6, 0.8));
-	Color member_variable_color = EDITOR_DEF("text_editor/highlighting/member_variable_color", Color(0.9, 0.3, 0.3));
-	Color mark_color = EDITOR_DEF("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
-	Color breakpoint_color = EDITOR_DEF("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
-	Color code_folding_color = EDITOR_DEF("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
-	Color search_result_color = EDITOR_DEF("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
-	Color search_result_border_color = EDITOR_DEF("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
-	Color symbol_color = EDITOR_DEF("text_editor/highlighting/symbol_color", Color::hex(0x005291ff));
-	Color keyword_color = EDITOR_DEF("text_editor/highlighting/keyword_color", Color(0.5, 0.0, 0.2));
-	Color basetype_color = EDITOR_DEF("text_editor/highlighting/base_type_color", Color(0.3, 0.3, 0.0));
-	Color type_color = EDITOR_DEF("text_editor/highlighting/engine_type_color", Color(0.0, 0.2, 0.4));
-	Color comment_color = EDITOR_DEF("text_editor/highlighting/comment_color", Color::hex(0x797e7eff));
-	Color string_color = EDITOR_DEF("text_editor/highlighting/string_color", Color::hex(0x6b6f00ff));
-
-	// Adapt
-	if (EditorSettings::get_singleton()->get("text_editor/theme/color_theme") == "Adaptive") {
-		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
-
-		symbol_color = tm->get_color("text_editor/theme/symbol_color", "Editor");
-		keyword_color = tm->get_color("text_editor/theme/keyword_color", "Editor");
-		basetype_color = tm->get_color("text_editor/theme/basetype_color", "Editor");
-		type_color = tm->get_color("text_editor/theme/type_color", "Editor");
-		comment_color = tm->get_color("text_editor/theme/comment_color", "Editor");
-		string_color = tm->get_color("text_editor/theme/string_color", "Editor");
-		background_color = tm->get_color("text_editor/theme/background_color", "Editor");
-		completion_background_color = tm->get_color("text_editor/theme/completion_background_color", "Editor");
-		completion_selected_color = tm->get_color("text_editor/theme/completion_selected_color", "Editor");
-		completion_existing_color = tm->get_color("text_editor/theme/completion_existing_color", "Editor");
-		completion_scroll_color = tm->get_color("text_editor/theme/completion_scroll_color", "Editor");
-		completion_font_color = tm->get_color("text_editor/theme/completion_font_color", "Editor");
-		text_color = tm->get_color("text_editor/theme/text_color", "Editor");
-		line_number_color = tm->get_color("text_editor/theme/line_number_color", "Editor");
-		caret_color = tm->get_color("text_editor/theme/caret_color", "Editor");
-		caret_background_color = tm->get_color("text_editor/theme/caret_background_color", "Editor");
-		text_selected_color = tm->get_color("text_editor/theme/text_selected_color", "Editor");
-		selection_color = tm->get_color("text_editor/theme/selection_color", "Editor");
-		brace_mismatch_color = tm->get_color("text_editor/theme/brace_mismatch_color", "Editor");
-		current_line_color = tm->get_color("text_editor/theme/current_line_color", "Editor");
-		line_length_guideline_color = tm->get_color("text_editor/theme/line_length_guideline_color", "Editor");
-		word_highlighted_color = tm->get_color("text_editor/theme/word_highlighted_color", "Editor");
-		number_color = tm->get_color("text_editor/theme/number_color", "Editor");
-		function_color = tm->get_color("text_editor/theme/function_color", "Editor");
-		member_variable_color = tm->get_color("text_editor/theme/member_variable_color", "Editor");
-		mark_color = tm->get_color("text_editor/theme/mark_color", "Editor");
-		breakpoint_color = tm->get_color("text_editor/theme/breakpoint_color", "Editor");
-		code_folding_color = tm->get_color("text_editor/theme/code_folding_color", "Editor");
-		search_result_color = tm->get_color("text_editor/theme/search_result_color", "Editor");
-		search_result_border_color = tm->get_color("text_editor/theme/search_result_border_color", "Editor");
-	}
+	Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
+	Color completion_background_color = EDITOR_GET("text_editor/highlighting/completion_background_color");
+	Color completion_selected_color = EDITOR_GET("text_editor/highlighting/completion_selected_color");
+	Color completion_existing_color = EDITOR_GET("text_editor/highlighting/completion_existing_color");
+	Color completion_scroll_color = EDITOR_GET("text_editor/highlighting/completion_scroll_color");
+	Color completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
+	Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
+	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
+	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
+	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
+	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
+	Color selection_color = EDITOR_GET("text_editor/highlighting/selection_color");
+	Color brace_mismatch_color = EDITOR_GET("text_editor/highlighting/brace_mismatch_color");
+	Color current_line_color = EDITOR_GET("text_editor/highlighting/current_line_color");
+	Color line_length_guideline_color = EDITOR_GET("text_editor/highlighting/line_length_guideline_color");
+	Color word_highlighted_color = EDITOR_GET("text_editor/highlighting/word_highlighted_color");
+	Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
+	Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
+	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
+	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
+	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
+	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
+	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
+	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
+	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
+	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+	Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 
 	text_edit->add_color_override("background_color", background_color);
 	text_edit->add_color_override("completion_background_color", completion_background_color);

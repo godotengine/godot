@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,9 +101,10 @@ struct _VariantCall {
 				const Variant *newargs[VARIANT_ARG_MAX];
 				for (int i = 0; i < p_argcount; i++)
 					newargs[i] = p_args[i];
-				int defargcount = def_argcount;
+				// fill in any remaining parameters with defaults
+				int first_default_arg = arg_count - def_argcount;
 				for (int i = p_argcount; i < arg_count; i++)
-					newargs[i] = &default_args[defargcount - (i - p_argcount) - 1]; //default arguments
+					newargs[i] = &default_args[i - first_default_arg];
 #ifdef DEBUG_ENABLED
 				if (!verify_arguments(newargs, r_error))
 					return;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -815,7 +815,35 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 							}
 						}
 					}
+				} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
 
+					//doubleclick: select word
+					int line = 0;
+					Item *item = NULL;
+					bool outside;
+
+					_find_click(main, b->get_position(), &item, &line, &outside);
+
+					while (item && item->type != ITEM_TEXT) {
+
+						item = _get_next_item(item, true);
+					}
+
+					if (item && item->type == ITEM_TEXT) {
+
+						String itext = static_cast<ItemText *>(item)->text;
+
+						int beg, end;
+						if (select_word(itext, line, beg, end)) {
+
+							selection.from = item;
+							selection.to = item;
+							selection.from_char = beg;
+							selection.to_char = end - 1;
+							selection.active = true;
+							update();
+						}
+					}
 				} else if (!b->is_pressed()) {
 
 					selection.click = NULL;

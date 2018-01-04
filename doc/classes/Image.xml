@@ -314,6 +314,22 @@
 				Loads an image from file [code]path[/code].
 			</description>
 		</method>
+		<method name="load_jpg_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_png_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="lock">
 			<return type="void">
 			</return>

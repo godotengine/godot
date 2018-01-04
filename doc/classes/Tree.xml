@@ -41,6 +41,8 @@
 			</return>
 			<argument index="0" name="parent" type="Object" default="null">
 			</argument>
+			<argument index="1" name="idx" type="int" default="-1">
+			</argument>
 			<description>
 				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the root's last child, or it'll the be the root itself if the tree is empty.
 			</description>

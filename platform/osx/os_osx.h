@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
+#include <AppKit/NSCursor.h>
 #include <ApplicationServices/ApplicationServices.h>
 
 #undef CursorShape
@@ -86,6 +87,7 @@ public:
 	id context;
 
 	CursorShape cursor_shape;
+	NSCursor *cursors[CURSOR_MAX] = { NULL };
 	MouseMode mouse_mode;
 
 	String title;
@@ -137,6 +139,7 @@ public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);

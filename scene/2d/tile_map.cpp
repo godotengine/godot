@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -336,7 +336,7 @@ void TileMap::_update_dirty_quadrants() {
 					debug_canvas_item = vs->canvas_item_create();
 					vs->canvas_item_set_parent(debug_canvas_item, canvas_item);
 					vs->canvas_item_set_z_as_relative_to_parent(debug_canvas_item, false);
-					vs->canvas_item_set_z(debug_canvas_item, VS::CANVAS_ITEM_Z_MAX - 1);
+					vs->canvas_item_set_z_index(debug_canvas_item, VS::CANVAS_ITEM_Z_MAX - 1);
 					q.canvas_items.push_back(debug_canvas_item);
 					prev_debug_canvas_item = debug_canvas_item;
 				}

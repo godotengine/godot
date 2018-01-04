@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,7 +131,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
-				set_z(VS::CANVAS_ITEM_Z_MAX - 1);
+				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
 			}*/
 
 		} break;
@@ -246,6 +246,11 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
 
 	return aabb;
+}
+
+bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
 }
 
 String CollisionPolygon2D::get_configuration_warning() const {

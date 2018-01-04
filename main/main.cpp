@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,8 +178,8 @@ static String get_full_version_string() {
 void Main::print_help(const char *p_binary) {
 
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - https://godotengine.org");
-	OS::get_singleton()->print("(c) 2007-2017 Juan Linietsky, Ariel Manzur.\n");
-	OS::get_singleton()->print("(c) 2014-2017 Godot Engine contributors.\n");
+	OS::get_singleton()->print("(c) 2007-2018 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2018 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -755,8 +755,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
-		init_maximized = true;
-		video_mode.maximized = true;
+		if (!init_windowed) {
+			init_maximized = true;
+			video_mode.maximized = true;
+		}
 		use_custom_res = false;
 	}
 
@@ -1105,7 +1107,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (cursor.is_valid()) {
 			//print_line("loaded ok");
 			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
-			Input::get_singleton()->set_custom_mouse_cursor(cursor, hotspot);
+			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
 #ifdef TOOLS_ENABLED

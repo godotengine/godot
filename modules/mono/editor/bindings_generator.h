@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,7 +145,7 @@ class BindingsGenerator {
 		}
 
 		MethodInterface() {
-			return_type = NameCache::get_singleton().type_void;
+			return_type = BindingsGenerator::get_singleton()->name_cache.type_void;
 			is_vararg = false;
 			is_virtual = false;
 			requires_object_call = false;
@@ -469,16 +469,11 @@ class BindingsGenerator {
 			enum_Error = StaticCString::create("Error");
 		}
 
-		static NameCache &get_singleton() {
-			static NameCache singleton;
-			return singleton;
-		}
-
 		NameCache(const NameCache &);
 		NameCache &operator=(const NameCache &);
 	};
 
-	const NameCache &name_cache;
+	NameCache name_cache;
 
 	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
 		const List<InternalCall>::Element *it = p_list.front();
@@ -525,18 +520,26 @@ class BindingsGenerator {
 
 	Error _save_file(const String &path, const List<String> &content);
 
-	BindingsGenerator();
+	BindingsGenerator() {}
 
 	BindingsGenerator(const BindingsGenerator &);
 	BindingsGenerator &operator=(const BindingsGenerator &);
+
+	friend class CSharpLanguage;
+	static BindingsGenerator *singleton;
 
 public:
 	Error generate_cs_core_project(const String &p_output_dir, bool p_verbose_output = true);
 	Error generate_cs_editor_project(const String &p_output_dir, const String &p_core_dll_path, bool p_verbose_output = true);
 	Error generate_glue(const String &p_output_dir);
 
-	static BindingsGenerator &get_singleton() {
-		static BindingsGenerator singleton;
+	void initialize();
+
+	_FORCE_INLINE_ static BindingsGenerator *get_singleton() {
+		if (!singleton) {
+			singleton = memnew(BindingsGenerator);
+			singleton->initialize();
+		}
 		return singleton;
 	}
 

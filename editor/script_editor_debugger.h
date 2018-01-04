@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,10 @@ class ScriptEditorDebugger : public Control {
 		MESSAGE_SUCCESS,
 	};
 
+	enum ItemMenu {
+		ITEM_MENU_COPY_ERROR,
+	};
+
 	AcceptDialog *msgdialog;
 
 	Button *debugger_button;
@@ -85,6 +89,8 @@ class ScriptEditorDebugger : public Control {
 	ItemList *error_list;
 	ItemList *error_stack;
 	Tree *inspect_scene_tree;
+	Button *clearbutton;
+	PopupMenu *item_menu;
 
 	int error_count;
 	int last_error_count;
@@ -175,6 +181,10 @@ class ScriptEditorDebugger : public Control {
 
 	void _set_remote_object(ObjectID p_id, ScriptEditorDebuggerInspectedObject *p_obj);
 	void _clear_remote_objects();
+	void _clear_errors_list();
+
+	void _error_list_item_rmb_selected(int p_item, const Vector2 &p_pos);
+	void _item_menu_id_pressed(int p_option);
 
 protected:
 	void _notification(int p_what);

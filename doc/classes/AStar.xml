@@ -171,7 +171,7 @@
 		<method name="get_point_connections">
 			<return type="PoolIntArray">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
 				Returns an array with the ids of the points that form the connect with the given point.

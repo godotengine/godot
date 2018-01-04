@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -605,7 +605,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (src->has_method(*index)) {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' ?";
+						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
 					} else {
 						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
 					}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -703,7 +703,7 @@ bool _GodotSharp::is_domain_loaded() {
 		call_deferred("_dispose_callback");   \
 	}
 
-void _GodotSharp::queue_dispose(Object *p_object) {
+void _GodotSharp::queue_dispose(MonoObject *p_mono_object, Object *p_object) {
 
 	if (GDMonoUtils::is_main_thread() && !GDMono::get_singleton()->is_finalizing_scripts_domain()) {
 		_dispose_object(p_object);
@@ -711,6 +711,13 @@ void _GodotSharp::queue_dispose(Object *p_object) {
 #ifndef NO_THREADS
 		queue_mutex->lock();
 #endif
+
+		// This is our last chance to invoke notification predelete (this is being called from the finalizer)
+		// We must use the MonoObject* passed by the finalizer, because the weak GC handle target returns NULL at this point
+		CSharpInstance *si = CAST_CSHARP_INSTANCE(p_object->get_script_instance());
+		if (si) {
+			si->call_notification_no_check(p_mono_object, Object::NOTIFICATION_PREDELETE);
+		}
 
 		ENQUEUE_FOR_DISPOSAL(obj_delete_queue, p_object);
 

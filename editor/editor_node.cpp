@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -3529,6 +3529,11 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 					splits[i]->hide();
 			}
 
+			if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+				right_hsplit->show();
+			else
+				right_hsplit->hide();
+
 			_edit_current();
 			_save_docks();
 		}
@@ -3805,7 +3810,11 @@ void EditorNode::_update_dock_slots_visibility() {
 			}
 		}
 		bottom_panel->show();
-		right_hsplit->show();
+
+		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+			right_hsplit->show();
+		else
+			right_hsplit->hide();
 	}
 }
 
@@ -3894,6 +3903,11 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		else
 			splits[i]->hide();
 	}
+
+	if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+		right_hsplit->show();
+	else
+		right_hsplit->hide();
 
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 
@@ -4405,10 +4419,11 @@ void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_current_path());
 	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
+	Vector<String> just_copy = String("ttf,otf").split(",");
 	for (int i = 0; i < p_files.size(); i++) {
 
 		String from = p_files[i];
-		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from)) {
+		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) != -1)) {
 			continue;
 		}
 		String to = to_path.plus_file(from.get_file());

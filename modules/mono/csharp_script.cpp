@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,6 +122,16 @@ void CSharpLanguage::init() {
 
 void CSharpLanguage::finish() {
 
+	finalizing = true;
+
+#ifdef TOOLS_ENABLED
+	// Must be here, to avoid StringName leaks
+	if (BindingsGenerator::singleton) {
+		memdelete(BindingsGenerator::singleton);
+		BindingsGenerator::singleton = NULL;
+	}
+#endif
+
 	// Release gchandle bindings before finalizing mono runtime
 	gchandle_bindings.clear();
 
@@ -129,6 +139,8 @@ void CSharpLanguage::finish() {
 		memdelete(gdmono);
 		gdmono = NULL;
 	}
+
+	finalizing = false;
 }
 
 void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
@@ -742,6 +754,8 @@ CSharpLanguage::CSharpLanguage() {
 	ERR_FAIL_COND(singleton);
 	singleton = this;
 
+	finalizing = false;
+
 	gdmono = NULL;
 
 #ifdef NO_THREADS
@@ -798,12 +812,9 @@ void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
 	ERR_FAIL_NULL_V(mono_object, NULL);
 
 	// Tie managed to unmanaged
-	bool strong_handle = true;
 	Reference *ref = Object::cast_to<Reference>(p_object);
 
 	if (ref) {
-		strong_handle = false;
-
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
@@ -812,8 +823,7 @@ void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
 		ref->reference();
 	}
 
-	Ref<MonoGCHandle> gchandle = strong_handle ? MonoGCHandle::create_strong(mono_object) :
-												 MonoGCHandle::create_weak(mono_object);
+	Ref<MonoGCHandle> gchandle = MonoGCHandle::create_strong(mono_object);
 
 #ifndef NO_THREADS
 	script_bind_lock->lock();
@@ -838,27 +848,38 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 		return;
 	}
 
+	if (finalizing)
+		return; // inside CSharpLanguage::finish(), all the gchandle bindings are released there
+
 #ifndef NO_THREADS
 	script_bind_lock->lock();
 #endif
 
-	gchandle_bindings.erase((Map<Object *, Ref<MonoGCHandle> >::Element *)p_data);
+	Map<Object *, Ref<MonoGCHandle> >::Element *data = (Map<Object *, Ref<MonoGCHandle> >::Element *)p_data;
+
+	// Set the native instance field to IntPtr.Zero, if not yet garbage collected
+	MonoObject *mono_object = data->value()->get_target();
+	if (mono_object) {
+		CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, NULL);
+	}
+
+	gchandle_bindings.erase(data);
 
 #ifndef NO_THREADS
 	script_bind_lock->unlock();
 #endif
 }
 
-void CSharpInstance::_ml_call_reversed(GDMonoClass *klass, const StringName &p_method, const Variant **p_args, int p_argcount) {
+void CSharpInstance::_ml_call_reversed(MonoObject *p_mono_object, GDMonoClass *p_klass, const StringName &p_method, const Variant **p_args, int p_argcount) {
 
-	GDMonoClass *base = klass->get_parent_class();
+	GDMonoClass *base = p_klass->get_parent_class();
 	if (base && base != script->native)
-		_ml_call_reversed(base, p_method, p_args, p_argcount);
+		_ml_call_reversed(p_mono_object, base, p_method, p_args, p_argcount);
 
-	GDMonoMethod *method = klass->get_method(p_method, p_argcount);
+	GDMonoMethod *method = p_klass->get_method(p_method, p_argcount);
 
 	if (method) {
-		method->invoke(get_mono_object(), p_args);
+		method->invoke(p_mono_object, p_args);
 	}
 }
 
@@ -1020,7 +1041,6 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 
 	MonoObject *mono_object = get_mono_object();
 
-	ERR_EXPLAIN("Reference has been garbage collected?");
 	ERR_FAIL_NULL_V(mono_object, Variant());
 
 	if (!script.is_valid())
@@ -1054,23 +1074,34 @@ void CSharpInstance::call_multilevel(const StringName &p_method, const Variant *
 	if (script.is_valid()) {
 		MonoObject *mono_object = get_mono_object();
 
-		GDMonoClass *top = script->script_class;
+		ERR_FAIL_NULL(mono_object);
 
-		while (top && top != script->native) {
-			GDMonoMethod *method = top->get_method(p_method, p_argcount);
+		_call_multilevel(mono_object, p_method, p_args, p_argcount);
+	}
+}
 
-			if (method)
-				method->invoke(mono_object, p_args);
+void CSharpInstance::_call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
 
-			top = top->get_parent_class();
-		}
+	GDMonoClass *top = script->script_class;
+
+	while (top && top != script->native) {
+		GDMonoMethod *method = top->get_method(p_method, p_argcount);
+
+		if (method)
+			method->invoke(p_mono_object, p_args);
+
+		top = top->get_parent_class();
 	}
 }
 
 void CSharpInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
 
 	if (script.is_valid()) {
-		_ml_call_reversed(script->script_class, p_method, p_args, p_argcount);
+		MonoObject *mono_object = get_mono_object();
+
+		ERR_FAIL_NULL(mono_object);
+
+		_ml_call_reversed(mono_object, script->script_class, p_method, p_args, p_argcount);
 	}
 }
 
@@ -1118,7 +1149,7 @@ void CSharpInstance::refcount_incremented() {
 
 	Reference *ref_owner = Object::cast_to<Reference>(owner);
 
-	if (ref_owner->reference_get_count() > 1) { // Remember the managed side holds a reference, hence 1 instead of 0 here
+	if (ref_owner->reference_get_count() > 1) { // The managed side also holds a reference, hence 1 instead of 0
 		// The reference count was increased after the managed side was the only one referencing our owner.
 		// This means the owner is being referenced again by the unmanaged side,
 		// so the owner must hold the managed side alive again to avoid it from being GCed.
@@ -1138,7 +1169,7 @@ bool CSharpInstance::refcount_decremented() {
 
 	int refcount = ref_owner->reference_get_count();
 
-	if (refcount == 1) { // Remember the managed side holds a reference, hence 1 instead of 0 here
+	if (refcount == 1) { // The managed side also holds a reference, hence 1 instead of 0
 		// If owner owner is no longer referenced by the unmanaged side,
 		// the managed instance takes responsibility of deleting the owner when GCed.
 
@@ -1207,10 +1238,25 @@ ScriptInstance::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variab
 
 void CSharpInstance::notification(int p_notification) {
 
+	MonoObject *mono_object = get_mono_object();
+
+	if (p_notification == Object::NOTIFICATION_PREDELETE) {
+		if (mono_object != NULL) { // otherwise it was collected, and the finalizer already called NOTIFICATION_PREDELETE
+			call_notification_no_check(mono_object, p_notification);
+			// Set the native instance field to IntPtr.Zero
+			CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, NULL);
+		}
+		return;
+	}
+
+	call_notification_no_check(mono_object, p_notification);
+}
+
+void CSharpInstance::call_notification_no_check(MonoObject *p_mono_object, int p_notification) {
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
-	call_multilevel(CACHED_STRING_NAME(_notification), args, 1);
+	_call_multilevel(p_mono_object, CACHED_STRING_NAME(_notification), args, 1);
 }
 
 Ref<Script> CSharpInstance::get_script() const {

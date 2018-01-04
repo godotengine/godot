@@ -12,11 +12,11 @@
 		<method name="can_drop_data_fw" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="Vector2">
+			<argument index="0" name="point" type="Vector2">
 			</argument>
-			<argument index="1" name="arg1" type="Variant">
+			<argument index="1" name="data" type="Variant">
 			</argument>
-			<argument index="2" name="arg2" type="Control">
+			<argument index="2" name="from" type="Control">
 			</argument>
 			<description>
 			</description>
@@ -24,11 +24,11 @@
 		<method name="drop_data_fw">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="Vector2">
+			<argument index="0" name="point" type="Vector2">
 			</argument>
-			<argument index="1" name="arg1" type="Variant">
+			<argument index="1" name="data" type="Variant">
 			</argument>
-			<argument index="2" name="arg2" type="Control">
+			<argument index="2" name="from" type="Control">
 			</argument>
 			<description>
 			</description>
@@ -43,9 +43,9 @@
 		<method name="get_drag_data_fw">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="arg0" type="Vector2">
+			<argument index="0" name="point" type="Vector2">
 			</argument>
-			<argument index="1" name="arg1" type="Control">
+			<argument index="1" name="from" type="Control">
 			</argument>
 			<description>
 			</description>

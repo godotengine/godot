@@ -28,13 +28,6 @@
 				Returns a [String] representation of the event.
 			</description>
 		</method>
-		<method name="get_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the event's ID.
-			</description>
-		</method>
 		<method name="is_action" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -81,14 +74,6 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if this input event is pressed. Not relevant for the event types [code]MOUSE_MOTION[/code], [code]SCREEN_DRAG[/code] or [code]NONE[/code].
-			</description>
-		</method>
-		<method name="set_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="shortcut_match" qualifiers="const">

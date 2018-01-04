@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,8 @@ protected:
 	Shape2D(const RID &p_rid);
 
 public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return true; }
+
 	void set_custom_solver_bias(real_t p_bias);
 	real_t get_custom_solver_bias() const;
 

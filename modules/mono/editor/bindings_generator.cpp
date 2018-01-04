@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,8 @@ const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in 
 
 bool BindingsGenerator::verbose_output = false;
 
+BindingsGenerator *BindingsGenerator::singleton = NULL;
+
 static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
 
 	String ret;
@@ -200,7 +202,7 @@ void BindingsGenerator::_generate_header_icalls() {
 	core_custom_icalls.clear();
 
 	core_custom_icalls.push_back(InternalCall(ICALL_GET_METHODBIND, "IntPtr", "string type, string method"));
-	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "IntPtr ptr"));
+	core_custom_icalls.push_back(InternalCall(ICALL_OBJECT_DTOR, "void", "object obj, IntPtr ptr"));
 
 	core_custom_icalls.push_back(InternalCall(ICALL_CONNECT_SIGNAL_AWAITER, "Error",
 			"IntPtr source, string signal, IntPtr target, " CS_CLASS_SIGNALAWAITER " awaiter"));
@@ -931,8 +933,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
 										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
 										  " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
-										  "(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD
-										  " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "(this, " BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" INDENT3
 										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
 			Map<StringName, TypeInterface>::Element *array_itype = builtin_types.find(name_cache.type_Array);
@@ -1717,6 +1719,51 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.im_type_in = "IntPtr";
 		itype.im_type_out = itype.proxy_name;
 
+		List<PropertyInfo> property_list;
+		ClassDB::get_property_list(type_cname, &property_list, true);
+
+		// Populate properties
+
+		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+			const PropertyInfo &property = E->get();
+
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
+				continue;
+
+			PropertyInterface iprop;
+			iprop.cname = property.name;
+			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
+			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
+			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
+
+			bool valid = false;
+			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
+			ERR_FAIL_COND(!valid);
+
+			// Prevent property and enclosing type from sharing the same name
+			if (iprop.proxy_name == itype.proxy_name) {
+				if (verbose_output) {
+					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
+								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
+				}
+
+				iprop.proxy_name += "_";
+			}
+
+			iprop.prop_doc = NULL;
+
+			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
+				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
+
+				if (prop_doc.name == iprop.cname) {
+					iprop.prop_doc = &prop_doc;
+					break;
+				}
+			}
+
+			itype.properties.push_back(iprop);
+		}
+
 		// Populate methods
 
 		List<MethodInfo> virtual_method_list;
@@ -1851,12 +1898,10 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
-				const Vector<DocData::PropertyDoc> &properties = itype.class_doc->properties;
+				for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
+					const PropertyInterface &iprop = E->get();
 
-				for (int i = 0; i < properties.size(); i++) {
-					const DocData::PropertyDoc &prop_doc = properties[i];
-
-					if (prop_doc.getter == imethod.name || prop_doc.setter == imethod.name) {
+					if (iprop.setter == imethod.name || iprop.getter == imethod.name) {
 						imethod.is_internal = true;
 						itype.methods.push_back(imethod);
 						break;
@@ -1865,50 +1910,6 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			} else {
 				itype.methods.push_back(imethod);
 			}
-		}
-
-		// Populate properties
-
-		List<PropertyInfo> property_list;
-		ClassDB::get_property_list(type_cname, &property_list, true);
-		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
-			const PropertyInfo &property = E->get();
-
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
-				continue;
-
-			PropertyInterface iprop;
-			iprop.cname = property.name;
-			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
-			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
-			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
-
-			bool valid = false;
-			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
-			ERR_FAIL_COND(!valid);
-
-			// Prevent property and enclosing type from sharing the same name
-			if (iprop.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
-				}
-
-				iprop.proxy_name += "_";
-			}
-
-			iprop.prop_doc = NULL;
-
-			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
-				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
-
-				if (prop_doc.name == iprop.cname) {
-					iprop.prop_doc = &prop_doc;
-					break;
-				}
-			}
-
-			itype.properties.push_back(iprop);
 		}
 
 		// Populate enums and constants
@@ -2467,8 +2468,7 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
-BindingsGenerator::BindingsGenerator() :
-		name_cache(NameCache::get_singleton()) {
+void BindingsGenerator::initialize() {
 
 	EditorHelp::generate_doc();
 
@@ -2510,7 +2510,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton().generate_glue(path_elem->get()) != OK)
+				if (get_singleton()->generate_glue(path_elem->get()) != OK)
 					ERR_PRINT("Mono glue generation failed");
 				elem = elem->next();
 			} else {
@@ -2524,7 +2524,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton().generate_cs_core_project(path_elem->get()) != OK)
+				if (get_singleton()->generate_cs_core_project(path_elem->get()) != OK)
 					ERR_PRINT("Generation of solution and C# project for the Core API failed");
 				elem = elem->next();
 			} else {
@@ -2539,7 +2539,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 
 			if (path_elem) {
 				if (path_elem->next()) {
-					if (get_singleton().generate_cs_editor_project(path_elem->get(), path_elem->next()->get()) != OK)
+					if (get_singleton()->generate_cs_editor_project(path_elem->get(), path_elem->next()->get()) != OK)
 						ERR_PRINT("Generation of solution and C# project for the Editor API failed");
 					elem = path_elem->next();
 				} else {

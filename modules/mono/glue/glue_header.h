@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,9 +53,11 @@
 	}                                                  \
 	Object *m_instance = ci->creation_func();
 
-void godot_icall_Object_Dtor(Object *ptr) {
-	ERR_FAIL_NULL(ptr);
-	_GodotSharp::get_singleton()->queue_dispose(ptr);
+void godot_icall_Object_Dtor(MonoObject *obj, Object *ptr) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(ptr == NULL);
+#endif
+	_GodotSharp::get_singleton()->queue_dispose(obj, ptr);
 }
 
 // -- ClassDB --

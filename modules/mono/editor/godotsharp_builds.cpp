@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -238,12 +238,12 @@ bool GodotSharpBuilds::make_api_sln(GodotSharpBuilds::APIType p_api_type) {
 #error "How am I supposed to generate the bindings?"
 #endif
 
-		BindingsGenerator &gen = BindingsGenerator::get_singleton();
+		BindingsGenerator *gen = BindingsGenerator::get_singleton();
 		bool gen_verbose = OS::get_singleton()->is_stdout_verbose();
 
 		Error err = p_api_type == API_CORE ?
-							gen.generate_cs_core_project(api_sln_dir, gen_verbose) :
-							gen.generate_cs_editor_project(api_sln_dir, core_api_assembly, gen_verbose);
+							gen->generate_cs_core_project(api_sln_dir, gen_verbose) :
+							gen->generate_cs_editor_project(api_sln_dir, core_api_assembly, gen_verbose);
 
 		if (err != OK) {
 			show_build_error_dialog("Failed to generate " + api_name + " solution. Error: " + itos(err));

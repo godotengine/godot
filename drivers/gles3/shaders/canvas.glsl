@@ -42,7 +42,7 @@ uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
 
 
-out mediump vec2 uv_interp;
+out highp vec2 uv_interp;
 out mediump vec4 color_interp;
 
 #ifdef USE_NINEPATCH
@@ -207,7 +207,7 @@ uniform mediump sampler2D color_texture; // texunit:0
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:1
 
-in mediump vec2 uv_interp;
+in highp vec2 uv_interp;
 in mediump vec4 color_interp;
 
 

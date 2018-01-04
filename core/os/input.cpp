@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,13 +84,31 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse_position", "to"), &Input::warp_mouse_position);
 	ClassDB::bind_method(D_METHOD("action_press", "action"), &Input::action_press);
 	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
-	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
+
+	BIND_ENUM_CONSTANT(CURSOR_ARROW);
+	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
+	BIND_ENUM_CONSTANT(CURSOR_POINTING_HAND);
+	BIND_ENUM_CONSTANT(CURSOR_CROSS);
+	BIND_ENUM_CONSTANT(CURSOR_WAIT);
+	BIND_ENUM_CONSTANT(CURSOR_BUSY);
+	BIND_ENUM_CONSTANT(CURSOR_DRAG);
+	BIND_ENUM_CONSTANT(CURSOR_CAN_DROP);
+	BIND_ENUM_CONSTANT(CURSOR_FORBIDDEN);
+	BIND_ENUM_CONSTANT(CURSOR_VSIZE);
+	BIND_ENUM_CONSTANT(CURSOR_HSIZE);
+	BIND_ENUM_CONSTANT(CURSOR_BDIAGSIZE);
+	BIND_ENUM_CONSTANT(CURSOR_FDIAGSIZE);
+	BIND_ENUM_CONSTANT(CURSOR_MOVE);
+	BIND_ENUM_CONSTANT(CURSOR_VSPLIT);
+	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
+	BIND_ENUM_CONSTANT(CURSOR_HELP);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
 }
