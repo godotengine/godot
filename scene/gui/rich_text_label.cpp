@@ -371,18 +371,19 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									cw = tab_size * font->get_char_size(' ').width;
 								}
 
-								if (underline) {
-									Color uc = color;
-									uc.a *= 0.5;
-									int uy = y + lh - fh + ascent + 2;
-									float underline_width = 1.0;
-#ifdef TOOLS_ENABLED
-									underline_width *= EDSCALE;
-#endif
-									VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + pofs, uy), p_ofs + Point2(align_ofs + pofs + cw, uy), uc, underline_width);
-								}
 								ofs += cw;
 							}
+						}
+
+						if (underline) {
+							Color uc = color;
+							uc.a *= 0.5;
+							int uy = y + lh - fh + ascent + 2;
+							float underline_width = 1.0;
+#ifdef TOOLS_ENABLED
+							underline_width *= EDSCALE;
+#endif
+							VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + wofs, uy), p_ofs + Point2(align_ofs + wofs + w, uy), uc, underline_width);
 						}
 					}
 
