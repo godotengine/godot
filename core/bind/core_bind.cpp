@@ -2459,7 +2459,13 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 	Array ret;
 
 	for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
+#ifdef DEBUG_METHODS_ENABLED
 		ret.push_back(E->get().operator Dictionary());
+#else
+		Dictionary dict;
+		dict["name"] = E->get().name;
+		ret.push_back(dict);
+#endif
 	}
 
 	return ret;
