@@ -245,6 +245,14 @@ if ARGUMENTS.get('gdnative_wrapper', False):
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
+    if gd_wrapper_env['use_lto']:
+        if not env.msvc:
+            gd_wrapper_env.Append(CCFLAGS=['--no-lto'])
+            gd_wrapper_env.Append(LINKFLAGS=['--no-lto'])
+        else:
+            gd_wrapper_env.Append(CCFLAGS=['/GL-'])
+            gd_wrapper_env.Append(LINKFLAGS=['/LTCG:OFF'])
+
     if not env.msvc:
         gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
 
