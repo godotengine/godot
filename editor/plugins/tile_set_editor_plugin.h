@@ -32,16 +32,64 @@
 
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/plugins/texture_region_editor_plugin.h"
 #include "scene/2d/sprite.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
-class AutotileEditorHelper;
-class AutotileEditor : public Control {
+class TileSetEditorHelper : public Object {
+
+	friend class TileSetEditor;
+	GDCLASS(TileSetEditorHelper, Object);
+
+	Ref<TileSet> tile_set;
+	TileSetEditor *tileset_editor;
+
+public:
+	void set_tileset(const Ref<TileSet> &p_tileset);
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	TileSetEditorHelper(TileSetEditor *p_tileset_editor);
+};
+
+class TileSetEditor : public Control {
+	//Tileset Menu
+	friend class TileSetEditorPlugin;
+	GDCLASS(TileSetEditor, Control);
+
+	Ref<TileSet> tileset;
+
+	EditorNode *editor;
+	MenuButton *menu;
+	ConfirmationDialog *cd;
+	EditorNameDialog *nd;
+	AcceptDialog *err_dialog;
+
+	enum {
+
+		MENU_OPTION_ADD_ITEM,
+		MENU_OPTION_REMOVE_ITEM,
+		MENU_OPTION_CREATE_FROM_SCENE,
+		MENU_OPTION_MERGE_FROM_SCENE
+	};
+
+	int option;
+	void _menu_cbk(int p_option);
+	void _menu_confirm();
+	void _name_dialog_confirm(const String &name);
+
+	static void _import_node(Node *p_node, Ref<TileSet> p_library);
+	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
+
+	//Tileset Editor
 
 	friend class TileSetEditorPlugin;
-	friend class AutotileEditorHelper;
-	GDCLASS(AutotileEditor, Control);
+	friend class TileSetEditorHelper;
+	friend class TextureRegionEditor;
 
 	enum EditMode {
 		EDITMODE_ICON,
@@ -53,14 +101,14 @@ class AutotileEditor : public Control {
 		EDITMODE_MAX
 	};
 
-	enum AutotileToolbars {
+	enum TileSetEditorToolbar {
 		TOOLBAR_DUMMY,
 		TOOLBAR_BITMASK,
 		TOOLBAR_SHAPE,
 		TOOLBAR_MAX
 	};
 
-	enum AutotileTools {
+	enum TileSetEditorTools {
 		TOOL_SELECT,
 		BITMASK_COPY,
 		BITMASK_PASTE,
@@ -77,12 +125,13 @@ class AutotileEditor : public Control {
 		TOOL_MAX
 	};
 
-	Ref<TileSet> tile_set;
+	Control *tileset_bottom_panel;
+
 	Ref<ConvexPolygonShape2D> edited_collision_shape;
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
 
-	EditorNode *editor;
+	TextureRegionEditor *texture_region_editor;
 
 	int current_item_index;
 	Sprite *preview;
@@ -114,18 +163,15 @@ class AutotileEditor : public Control {
 	Map<Vector2, uint16_t> bitmask_map_copy;
 
 	Control *side_panel;
-	ItemList *autotile_list;
+	ItemList *tileset_list;
 	PropertyEditor *property_editor;
-	AutotileEditorHelper *helper;
+	TileSetEditorHelper *helper;
 
-	AutotileEditor(EditorNode *p_editor);
-
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
+	ToolButton *texture_region_button;
+	ToolButton *tileset_bottom_panel_button;
 
 private:
-	void _on_autotile_selected(int p_index);
+	void _on_tileset_selected(int p_index);
 	void _on_edit_mode_changed(int p_edit_mode);
 	void _on_workspace_draw();
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
@@ -145,63 +191,19 @@ private:
 	void close_shape(const Vector2 &shape_anchor);
 	Vector2 snap_point(const Vector2 &point);
 
-	void edit(Object *p_node);
+	void init_tileset_bottom_panel(EditorNode *p_editor);
+	void init_tileset_side_panel(EditorNode *p_editor);
+
 	int get_current_tile();
-};
-
-class AutotileEditorHelper : public Object {
-
-	friend class AutotileEditor;
-	GDCLASS(AutotileEditorHelper, Object);
-
-	Ref<TileSet> tile_set;
-	AutotileEditor *autotile_editor;
-
-public:
-	void set_tileset(const Ref<TileSet> &p_tileset);
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	AutotileEditorHelper(AutotileEditor *p_autotile_editor);
-};
-
-class TileSetEditor : public Control {
-
-	friend class TileSetEditorPlugin;
-	GDCLASS(TileSetEditor, Control);
-
-	Ref<TileSet> tileset;
-
-	EditorNode *editor;
-	MenuButton *menu;
-	ConfirmationDialog *cd;
-	EditorNameDialog *nd;
-	AcceptDialog *err_dialog;
-
-	enum {
-
-		MENU_OPTION_ADD_ITEM,
-		MENU_OPTION_REMOVE_ITEM,
-		MENU_OPTION_CREATE_FROM_SCENE,
-		MENU_OPTION_MERGE_FROM_SCENE
-	};
-
-	int option;
-	void _menu_cbk(int p_option);
-	void _menu_confirm();
-	void _name_dialog_confirm(const String &name);
-
-	static void _import_node(Node *p_node, Ref<TileSet> p_library);
-	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	void edit(const Ref<TileSet> &p_tileset);
+	void update_item();
 	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml, bool p_merge = true);
 
 	TileSetEditor(EditorNode *p_editor);
@@ -212,10 +214,7 @@ class TileSetEditorPlugin : public EditorPlugin {
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;
-	AutotileEditor *autotile_editor;
 	EditorNode *editor;
-
-	ToolButton *autotile_button;
 
 public:
 	virtual String get_name() const { return "TileSet"; }
