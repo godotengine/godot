@@ -2352,8 +2352,6 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						last_keypress = 0;
 				}
 			} break;
-
-				last_keypress = 0;
 		}
 	}
 

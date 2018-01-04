@@ -122,7 +122,6 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
-	AudioDriver *driver;
 	int failed_driver = -1;
 
 	// Check if there is a selected driver
