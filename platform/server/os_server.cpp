@@ -67,7 +67,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
 
-	ERR_FAIL_COND(!visual_server, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 
 	visual_server->init();
 
@@ -77,6 +77,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	return OK;
 }
+
 void OS_Server::finalize() {
 
 	if (main_loop)

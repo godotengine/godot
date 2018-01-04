@@ -114,7 +114,7 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 
-	ERR_FAIL_COND(!visual_server, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 
 	// TODO: enable multithreaded VS
 	/*
