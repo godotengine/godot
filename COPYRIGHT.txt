@@ -91,13 +91,6 @@ Comment: BlackBerry NDK-Samples
 Copyright: 2011-2013, Research In Motion Limited.
 License: Apache-2.0
 
-Files: ./platform/uwp/export/export.cpp
-Comment: fb-util-for-appx
-Copyright: 2016, Facebook, Inc. All rights reserved.
-  2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors.
-License: BSD-3-clause and Expat
-
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.h
