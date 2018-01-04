@@ -90,5 +90,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no openmp=no;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no openmp=no gdnative_wrapper=yes;
     fi

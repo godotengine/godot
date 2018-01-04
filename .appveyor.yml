@@ -28,4 +28,4 @@ before_build:
   - SET "SCONS_CACHE=%SCONS_CACHE_ROOT%\master"
 
 build_script:
-- scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% verbose=yes progress=no
+- scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% verbose=yes progress=no gdnative_wrapper=yes
