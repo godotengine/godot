@@ -514,7 +514,7 @@ void DependencyRemoveDialog::ok_pressed() {
 		print_line("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:\n") + to_delete[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + to_delete[i] + "\n");
 		}
 	}
 

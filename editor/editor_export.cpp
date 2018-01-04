@@ -1347,7 +1347,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	}
 
 	if (template_path != String() && !FileAccess::exists(template_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Template file not found:\n") + template_path);
+		EditorNode::get_singleton()->show_warning(TTR("Template file not found:") + "\n" + template_path);
 		return ERR_FILE_NOT_FOUND;
 	}
 
