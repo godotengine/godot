@@ -1101,6 +1101,7 @@ void ProjectManager::_load_recent_projects() {
 		hb->add_child(vb);
 		Control *ec = memnew(Control);
 		ec->set_custom_minimum_size(Size2(0, 1));
+		ec->set_mouse_filter(MOUSE_FILTER_PASS);
 		vb->add_child(ec);
 		Label *title = memnew(Label(project_name));
 		title->add_font_override("font", gui_base->get_font("title", "EditorFonts"));
