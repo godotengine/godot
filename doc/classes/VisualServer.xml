@@ -504,17 +504,6 @@
 				Sets if the canvas item (including its children) is visible.
 			</description>
 		</method>
-		<method name="canvas_item_set_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="z" type="int">
-			</argument>
-			<description>
-				Sets the [CanvasItem]'s z order position.
-			</description>
-		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
 			<return type="void">
 			</return>
@@ -523,7 +512,18 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If this is enabled, the z-position of the parent will be added to the childrens z-position.
+				If this is enabled, the z-index of the parent will be added to the children's z-index.
+			</description>
+		</method>
+		<method name="canvas_item_set_z_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="z_index" type="int">
+			</argument>
+			<description>
+				Sets the [CanvasItem]'s z-index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">

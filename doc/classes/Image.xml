@@ -446,67 +446,65 @@
 		</constant>
 		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGB10A2" value="8" enum="Format">
+		<constant name="FORMAT_RF" value="8" enum="Format">
 		</constant>
-		<constant name="FORMAT_RF" value="9" enum="Format">
+		<constant name="FORMAT_RGF" value="9" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGF" value="10" enum="Format">
+		<constant name="FORMAT_RGBF" value="10" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBF" value="11" enum="Format">
+		<constant name="FORMAT_RGBAF" value="11" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBAF" value="12" enum="Format">
+		<constant name="FORMAT_RH" value="12" enum="Format">
 		</constant>
-		<constant name="FORMAT_RH" value="13" enum="Format">
+		<constant name="FORMAT_RGH" value="13" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGH" value="14" enum="Format">
+		<constant name="FORMAT_RGBH" value="14" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBH" value="15" enum="Format">
+		<constant name="FORMAT_RGBAH" value="15" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBAH" value="16" enum="Format">
+		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBE9995" value="17" enum="Format">
+		<constant name="FORMAT_DXT1" value="17" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT1" value="18" enum="Format">
+		<constant name="FORMAT_DXT3" value="18" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT3" value="19" enum="Format">
+		<constant name="FORMAT_DXT5" value="19" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT5" value="20" enum="Format">
+		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGTC_R" value="21" enum="Format">
+		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGTC_RG" value="22" enum="Format">
+		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBA" value="23" enum="Format">
+		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBF" value="24" enum="Format">
+		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBFU" value="25" enum="Format">
+		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC2" value="26" enum="Format">
+		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC2A" value="27" enum="Format">
+		<constant name="FORMAT_PVRTC4" value="27" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC4" value="28" enum="Format">
+		<constant name="FORMAT_PVRTC4A" value="28" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC4A" value="29" enum="Format">
+		<constant name="FORMAT_ETC" value="29" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC" value="30" enum="Format">
+		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_R11" value="31" enum="Format">
+		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_R11S" value="32" enum="Format">
+		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RG11" value="33" enum="Format">
+		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RG11S" value="34" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8" value="35" enum="Format">
+		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGBA8" value="36" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8A1" value="37" enum="Format">
-		</constant>
-		<constant name="FORMAT_MAX" value="38" enum="Format">
+		<constant name="FORMAT_MAX" value="37" enum="Format">
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
 		</constant>
