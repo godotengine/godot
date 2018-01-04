@@ -298,7 +298,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		args.push_back(0);
 
 #ifdef __FreeBSD__
-		if (p_path.find("/")) {
+		if (p_path.find("/") != -1) {
 			// exec name contains path so use it
 			execv(p_path.utf8().get_data(), &args[0]);
 		} else {

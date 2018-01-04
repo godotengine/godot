@@ -232,7 +232,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	String path = file_path->get_text();
 	String extension = "";
 	if (path != "") {
-		if (path.find(".") >= 0) {
+		if (path.find(".") != -1) {
 			extension = path.get_extension();
 		}
 
@@ -359,16 +359,14 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
-	if (p.find("/") || p.find("\\")) {
-		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (d->change_dir(p.get_base_dir()) != OK) {
-			_msg_path_valid(false, TTR("Invalid base path"));
-			memdelete(d);
-			_update_dialog();
-			return;
-		}
+	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (d->change_dir(p.get_base_dir()) != OK) {
+		_msg_path_valid(false, TTR("Invalid base path"));
 		memdelete(d);
+		_update_dialog();
+		return;
 	}
+	memdelete(d);
 
 	/* Does file already exist */
 

@@ -4423,7 +4423,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 	for (int i = 0; i < p_files.size(); i++) {
 
 		String from = p_files[i];
-		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) < 0)) {
+		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) != -1)) {
 			continue;
 		}
 		String to = to_path.plus_file(from.get_file());
