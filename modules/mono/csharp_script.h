@@ -104,6 +104,8 @@ class CSharpScript : public Script {
 	void _clear();
 
 	bool _update_exports();
+	bool _get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
@@ -177,6 +179,8 @@ class CSharpInstance : public ScriptInstance {
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle);
 
 	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
+
+	RPCMode _member_get_rpc_mode(GDMonoClassMember *p_member) const;
 
 public:
 	MonoObject *get_mono_object() const;

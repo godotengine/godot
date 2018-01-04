@@ -198,7 +198,7 @@ void update_godot_api_cache() {
 		CACHE_RAW_MONO_CLASS_AND_CHECK(Dictionary, mono_class_from_mono_type(dict_type));
 	}
 
-	MonoObject *task_scheduler = mono_object_new(SCRIPTS_DOMAIN, GODOT_API_CLASS(GodotTaskScheduler)->get_raw());
+	MonoObject *task_scheduler = mono_object_new(SCRIPTS_DOMAIN, GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
 	mono_runtime_object_init(task_scheduler);
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
 }
@@ -298,7 +298,7 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 		ERR_FAIL_V(NULL);
 	}
 
-	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, p_class->get_raw());
+	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, NULL);
 
 	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, p_object);
@@ -364,4 +364,10 @@ String get_exception_name_and_message(MonoObject *p_ex) {
 
 	return res;
 }
+
+void print_unhandled_exception(MonoObject *p_ex) {
+	ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_ex).utf8());
+	mono_print_unhandled_exception(p_ex);
+}
+
 } // namespace GDMonoUtils

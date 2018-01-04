@@ -913,19 +913,23 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
+	MonoObject *mono_object = get_mono_object();
+	ERR_FAIL_NULL_V(mono_object, false);
+
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
 		GDMonoField *field = script->script_class->get_field(p_name);
 
 		if (field) {
-			MonoObject *mono_object = get_mono_object();
+			field->set_value_from_variant(mono_object, p_value);
+			return true;
+		}
 
-			ERR_EXPLAIN("Reference has been garbage collected?");
-			ERR_FAIL_NULL_V(mono_object, false);
+		GDMonoProperty *property = script->script_class->get_property(p_name);
 
-			field->set_value(mono_object, p_value);
-
+		if (property) {
+			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value));
 			return true;
 		}
 
@@ -934,16 +938,15 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	// Call _set
 
-	Variant name = p_name;
-	const Variant *args[2] = { &name, &p_value };
-
-	MonoObject *mono_object = get_mono_object();
 	top = script->script_class;
 
 	while (top && top != script->native) {
 		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_set), 2);
 
 		if (method) {
+			Variant name = p_name;
+			const Variant *args[2] = { &name, &p_value };
+
 			MonoObject *ret = method->invoke(mono_object, args);
 
 			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret) == true)
@@ -960,31 +963,49 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
+	MonoObject *mono_object = get_mono_object();
+	ERR_FAIL_NULL_V(mono_object, false);
+
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
 		GDMonoField *field = top->get_field(p_name);
 
 		if (field) {
-			MonoObject *mono_object = get_mono_object();
-
-			ERR_EXPLAIN("Reference has been garbage collected?");
-			ERR_FAIL_NULL_V(mono_object, false);
-
 			MonoObject *value = field->get_value(mono_object);
 			r_ret = GDMonoMarshal::mono_object_to_variant(value, field->get_type());
 			return true;
 		}
 
-		// Call _get
+		GDMonoProperty *property = top->get_property(p_name);
 
+		if (property) {
+			MonoObject *exc = NULL;
+			MonoObject *value = property->get_value(mono_object, &exc);
+			if (exc) {
+				r_ret = Variant();
+				GDMonoUtils::print_unhandled_exception(exc);
+			} else {
+				r_ret = GDMonoMarshal::mono_object_to_variant(value, property->get_type());
+			}
+			return true;
+		}
+
+		top = top->get_parent_class();
+	}
+
+	// Call _get
+
+	top = script->script_class;
+
+	while (top && top != script->native) {
 		GDMonoMethod *method = top->get_method(CACHED_STRING_NAME(_get), 1);
 
 		if (method) {
 			Variant name = p_name;
 			const Variant *args[1] = { &name };
 
-			MonoObject *ret = method->invoke(get_mono_object(), args);
+			MonoObject *ret = method->invoke(mono_object, args);
 
 			if (ret) {
 				r_ret = GDMonoMarshal::mono_object_to_variant(ret);
@@ -1186,6 +1207,20 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
+ScriptInstance::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *p_member) const {
+
+	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
+		return RPC_MODE_REMOTE;
+	if (p_member->has_attribute(CACHED_CLASS(SyncAttribute)))
+		return RPC_MODE_SYNC;
+	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute)))
+		return RPC_MODE_MASTER;
+	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
+		return RPC_MODE_SLAVE;
+
+	return RPC_MODE_DISABLED;
+}
+
 ScriptInstance::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method) const {
 
 	GDMonoClass *top = script->script_class;
@@ -1193,17 +1228,8 @@ ScriptInstance::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method)
 	while (top && top != script->native) {
 		GDMonoMethod *method = top->get_method(p_method);
 
-		if (method) { // TODO should we reject static methods?
-			// TODO cache result
-			if (method->has_attribute(CACHED_CLASS(RemoteAttribute)))
-				return RPC_MODE_REMOTE;
-			if (method->has_attribute(CACHED_CLASS(SyncAttribute)))
-				return RPC_MODE_SYNC;
-			if (method->has_attribute(CACHED_CLASS(MasterAttribute)))
-				return RPC_MODE_MASTER;
-			if (method->has_attribute(CACHED_CLASS(SlaveAttribute)))
-				return RPC_MODE_SLAVE;
-		}
+		if (method && !method->is_static())
+			return _member_get_rpc_mode(method);
 
 		top = top->get_parent_class();
 	}
@@ -1218,17 +1244,13 @@ ScriptInstance::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variab
 	while (top && top != script->native) {
 		GDMonoField *field = top->get_field(p_variable);
 
-		if (field) { // TODO should we reject static fields?
-			// TODO cache result
-			if (field->has_attribute(CACHED_CLASS(RemoteAttribute)))
-				return RPC_MODE_REMOTE;
-			if (field->has_attribute(CACHED_CLASS(SyncAttribute)))
-				return RPC_MODE_SYNC;
-			if (field->has_attribute(CACHED_CLASS(MasterAttribute)))
-				return RPC_MODE_MASTER;
-			if (field->has_attribute(CACHED_CLASS(SlaveAttribute)))
-				return RPC_MODE_SLAVE;
-		}
+		if (field && !field->is_static())
+			return _member_get_rpc_mode(field);
+
+		GDMonoProperty *property = top->get_property(p_variable);
+
+		if (property && !property->is_static())
+			return _member_get_rpc_mode(property);
 
 		top = top->get_parent_class();
 	}
@@ -1353,7 +1375,7 @@ bool CSharpScript::_update_exports() {
 		// We are creating a temporary new instance of the class here to get the default value
 		// TODO Workaround. Should be replaced with IL opcodes analysis
 
-		MonoObject *tmp_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_raw());
+		MonoObject *tmp_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_mono_ptr());
 
 		if (tmp_object) {
 			CACHED_FIELD(GodotObject, ptr)->set_value_raw(tmp_object, tmp_object); // FIXME WTF is this workaround
@@ -1376,65 +1398,55 @@ bool CSharpScript::_update_exports() {
 		GDMonoClass *top = script_class;
 
 		while (top && top != native) {
+			PropertyInfo prop_info;
+			bool exported;
+
 			const Vector<GDMonoField *> &fields = top->get_all_fields();
 
 			for (int i = fields.size() - 1; i >= 0; i--) {
 				GDMonoField *field = fields[i];
 
-				if (field->is_static()) {
-					if (field->has_attribute(CACHED_CLASS(ExportAttribute)))
-						ERR_PRINTS("Cannot export field because it is static: " + top->get_full_name() + "." + field->get_name());
-					continue;
-				}
+				if (_get_member_export(top, field, prop_info, exported)) {
+					StringName name = field->get_name();
 
-				String name = field->get_name();
-				StringName cname = name;
+					if (exported) {
+						member_info[name] = prop_info;
+						exported_members_cache.push_front(prop_info);
 
-				if (member_info.has(cname))
-					continue;
-
-				ManagedType field_type = field->get_type();
-				Variant::Type type = GDMonoMarshal::managed_to_variant_type(field_type);
-
-				if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
-					// Field has Export attribute
-					MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
-
-					PropertyHint hint;
-					String hint_string;
-
-					if (type == Variant::NIL) {
-						ERR_PRINTS("Unknown type of exported field: " + top->get_full_name() + "." + field->get_name());
-						continue;
-					} else if (type == Variant::INT && field_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(field_type.type_class->get_raw())) {
-						type = Variant::INT;
-						hint = PROPERTY_HINT_ENUM;
-
-						Vector<MonoClassField *> fields = field_type.type_class->get_enum_fields();
-
-						for (int i = 0; i < fields.size(); i++) {
-							if (i > 0)
-								hint_string += ",";
-							hint_string += mono_field_get_name(fields[i]);
+						if (tmp_object) {
+							exported_members_defval_cache[name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
 						}
-					} else if (type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(field_type.type_class)) {
-						hint = PROPERTY_HINT_RESOURCE_TYPE;
-						hint_string = NATIVE_GDMONOCLASS_NAME(field_type.type_class);
 					} else {
-						hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
-						hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+						member_info[name] = prop_info;
 					}
+				}
+			}
 
-					PropertyInfo prop_info = PropertyInfo(type, name, hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
+			const Vector<GDMonoProperty *> &properties = top->get_all_properties();
 
-					member_info[cname] = prop_info;
-					exported_members_cache.push_front(prop_info);
+			for (int i = properties.size() - 1; i >= 0; i--) {
+				GDMonoProperty *property = properties[i];
 
-					if (tmp_object) {
-						exported_members_defval_cache[cname] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+				if (_get_member_export(top, property, prop_info, exported)) {
+					StringName name = property->get_name();
+
+					if (exported) {
+						member_info[name] = prop_info;
+						exported_members_cache.push_front(prop_info);
+
+						if (tmp_object) {
+							MonoObject *exc = NULL;
+							MonoObject *ret = property->get_value(tmp_object, &exc);
+							if (exc) {
+								exported_members_defval_cache[name] = Variant();
+								GDMonoUtils::print_unhandled_exception(exc);
+							} else {
+								exported_members_defval_cache[name] = GDMonoMarshal::mono_object_to_variant(ret);
+							}
+						}
+					} else {
+						member_info[name] = prop_info;
 					}
-				} else {
-					member_info[cname] = PropertyInfo(type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 				}
 			}
 
@@ -1456,6 +1468,77 @@ bool CSharpScript::_update_exports() {
 	return changed;
 #endif
 	return false;
+}
+
+bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
+
+	StringName name = p_member->get_name();
+
+	if (p_member->is_static()) {
+		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
+			ERR_PRINTS("Cannot export member because it is static: " + p_class->get_full_name() + "." + name.operator String());
+		return false;
+	}
+
+	if (member_info.has(name))
+		return false;
+
+	ManagedType type;
+
+	if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_FIELD) {
+		type = static_cast<GDMonoField *>(p_member)->get_type();
+	} else if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
+		type = static_cast<GDMonoProperty *>(p_member)->get_type();
+	} else {
+		CRASH_NOW();
+	}
+
+	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
+
+	if (p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
+		if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
+			GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
+			if (!property->has_getter() || !property->has_setter()) {
+				ERR_PRINTS("Cannot export property because it does not provide a getter or a setter: " + p_class->get_full_name() + "." + name.operator String());
+				return false;
+			}
+		}
+
+		MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+
+		PropertyHint hint;
+		String hint_string;
+
+		if (variant_type == Variant::NIL) {
+			ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
+			return false;
+		} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
+			variant_type = Variant::INT;
+			hint = PROPERTY_HINT_ENUM;
+
+			Vector<MonoClassField *> fields = type.type_class->get_enum_fields();
+
+			for (int i = 0; i < fields.size(); i++) {
+				if (i > 0)
+					hint_string += ",";
+				hint_string += mono_field_get_name(fields[i]);
+			}
+		} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
+			hint = PROPERTY_HINT_RESOURCE_TYPE;
+			hint_string = NATIVE_GDMONOCLASS_NAME(type.type_class);
+		} else {
+			hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
+			hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+		}
+
+		r_prop_info = PropertyInfo(variant_type, name.operator String(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
+		r_exported = true;
+	} else {
+		r_prop_info = PropertyInfo(variant_type, name.operator String(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
+		r_exported = false;
+	}
+
+	return true;
 }
 
 void CSharpScript::_clear() {
@@ -1626,7 +1709,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_raw());
+	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_mono_ptr());
 
 	if (!mono_object) {
 		instance->script = Ref<CSharpScript>();

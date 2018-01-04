@@ -62,7 +62,7 @@ MonoDevelopInstance::MonoDevelopInstance(const String &p_solution) {
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Editor", "MonoDevelopInstance");
 
-	MonoObject *obj = mono_object_new(TOOLS_DOMAIN, klass->get_raw());
+	MonoObject *obj = mono_object_new(TOOLS_DOMAIN, klass->get_mono_ptr());
 
 	GDMonoMethod *ctor = klass->get_method(".ctor", 1);
 	MonoObject *ex = NULL;

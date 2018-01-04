@@ -38,6 +38,7 @@
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"
 #include "gd_mono_method.h"
+#include "gd_mono_property.h"
 #include "gd_mono_utils.h"
 
 class GDMonoClass {
@@ -84,6 +85,10 @@ class GDMonoClass {
 	Map<StringName, GDMonoField *> fields;
 	Vector<GDMonoField *> fields_list;
 
+	bool properties_fetched;
+	Map<StringName, GDMonoProperty *> properties;
+	Vector<GDMonoProperty *> properties_list;
+
 	friend class GDMonoAssembly;
 	GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly);
 
@@ -95,7 +100,7 @@ public:
 	_FORCE_INLINE_ StringName get_namespace() const { return namespace_name; }
 	_FORCE_INLINE_ StringName get_name() const { return class_name; }
 
-	_FORCE_INLINE_ MonoClass *get_raw() const { return mono_class; }
+	_FORCE_INLINE_ MonoClass *get_mono_ptr() const { return mono_class; }
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
 	String get_full_name() const;
@@ -123,6 +128,9 @@ public:
 
 	GDMonoField *get_field(const StringName &p_name);
 	const Vector<GDMonoField *> &get_all_fields();
+
+	GDMonoProperty *get_property(const StringName &p_name);
+	const Vector<GDMonoProperty *> &get_all_properties();
 
 	~GDMonoClass();
 };
