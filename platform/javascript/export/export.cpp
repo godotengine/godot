@@ -174,14 +174,14 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 
 	if (template_path != String() && !FileAccess::exists(template_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Template file not found:\n") + template_path);
+		EditorNode::get_singleton()->show_warning(TTR("Template file not found:") + "\n" + template_path);
 		return ERR_FILE_NOT_FOUND;
 	}
 
 	String pck_path = p_path.get_basename() + ".pck";
 	Error error = save_pack(p_preset, pck_path);
 	if (error != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:\n") + pck_path);
+		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
 		return error;
 	}
 
@@ -191,12 +191,12 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	if (!pkg) {
 
-		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:\n") + template_path);
+		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:") + "\n" + template_path);
 		return ERR_FILE_NOT_FOUND;
 	}
 
 	if (unzGoToFirstFile(pkg) != UNZ_OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid export template:\n") + template_path);
+		EditorNode::get_singleton()->show_warning(TTR("Invalid export template:") + "\n" + template_path);
 		unzClose(pkg);
 		return ERR_FILE_CORRUPT;
 	}
@@ -238,7 +238,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		String dst = p_path.get_base_dir().plus_file(file);
 		FileAccess *f = FileAccess::open(dst, FileAccess::WRITE);
 		if (!f) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:\n") + dst);
+			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + dst);
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
@@ -252,7 +252,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		FileAccess *f = FileAccess::open(custom_html, FileAccess::READ);
 		if (!f) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:\n") + custom_html);
+			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
 			return ERR_FILE_CANT_READ;
 		}
 		Vector<uint8_t> buf;
@@ -263,7 +263,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (!f) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:\n") + p_path);
+			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
 			return ERR_FILE_CANT_WRITE;
 		}
 		f->store_buffer(buf.ptr(), buf.size());
@@ -277,7 +277,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		splash.instance();
 		Error err = splash->load(splash_path);
 		if (err) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:\n") + splash_path + "\nUsing default boot splash image");
+			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image.");
 			splash.unref();
 		}
 	}
@@ -286,7 +286,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 	String png_path = p_path.get_base_dir().plus_file(p_path.get_file().get_basename() + ".png");
 	if (splash->save_png(png_path) != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:\n") + png_path);
+		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + png_path);
 		return ERR_FILE_CANT_WRITE;
 	}
 	return OK;
