@@ -1247,8 +1247,8 @@ PopupMenu::PopupMenu() {
 	set_hide_on_multistate_item_selection(false);
 
 	submenu_timer = memnew(Timer);
-	submenu_timer->set_wait_time(0.3);
-	submenu_timer->set_one_shot(true);
+	submenu_timer->set_time_interval(0.3);
+	submenu_timer->set_repeat(false);
 	submenu_timer->connect("timeout", this, "_submenu_timeout");
 	add_child(submenu_timer);
 }

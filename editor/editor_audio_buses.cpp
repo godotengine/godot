@@ -1150,8 +1150,8 @@ EditorAudioBuses::EditorAudioBuses() {
 	bus_scroll->add_child(bus_hb);
 
 	save_timer = memnew(Timer);
-	save_timer->set_wait_time(0.8);
-	save_timer->set_one_shot(true);
+	save_timer->set_time_interval(0.8);
+	save_timer->set_repeat(false);
 	add_child(save_timer);
 	save_timer->connect("timeout", this, "_server_save");
 

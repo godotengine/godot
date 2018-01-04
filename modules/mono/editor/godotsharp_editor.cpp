@@ -272,8 +272,8 @@ MonoReloadNode::MonoReloadNode() {
 
 	reload_timer = memnew(Timer);
 	add_child(reload_timer);
-	reload_timer->set_one_shot(false);
-	reload_timer->set_wait_time(EDITOR_DEF("mono/assembly_watch_interval_sec", 0.5));
+	reload_timer->set_repeat(true);
+	reload_timer->set_time_interval(EDITOR_DEF("mono/assembly_watch_interval_sec", 0.5));
 	reload_timer->connect("timeout", this, "_reload_timer_timeout");
 	reload_timer->start();
 }

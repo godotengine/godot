@@ -1169,7 +1169,7 @@ void ScriptEditor::_notification(int p_what) {
 			{
 				float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 				if (autosave_time > 0) {
-					autosave_timer->set_wait_time(autosave_time);
+					autosave_timer->set_time_interval(autosave_time);
 					autosave_timer->start();
 				} else {
 					autosave_timer->stop();
@@ -1917,7 +1917,7 @@ void ScriptEditor::_editor_settings_changed() {
 
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 	if (autosave_time > 0) {
-		autosave_timer->set_wait_time(autosave_time);
+		autosave_timer->set_time_interval(autosave_time);
 		autosave_timer->start();
 	} else {
 		autosave_timer->stop();
@@ -2767,7 +2767,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debugger->connect("breaked", this, "_breaked");
 
 	autosave_timer = memnew(Timer);
-	autosave_timer->set_one_shot(false);
+	autosave_timer->set_repeat(true);
 	add_child(autosave_timer);
 
 	grab_focus_block = false;

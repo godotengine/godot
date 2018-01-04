@@ -3753,12 +3753,12 @@ void TextEdit::cursor_set_blink_enabled(const bool p_enabled) {
 }
 
 float TextEdit::cursor_get_blink_speed() const {
-	return caret_blink_timer->get_wait_time();
+	return caret_blink_timer->get_time_interval();
 }
 
 void TextEdit::cursor_set_blink_speed(const float p_speed) {
 	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_timer->set_wait_time(p_speed);
+	caret_blink_timer->set_time_interval(p_speed);
 }
 
 void TextEdit::cursor_set_block_mode(const bool p_enable) {
@@ -5682,20 +5682,20 @@ TextEdit::TextEdit() {
 	caret_blink_enabled = false;
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
-	caret_blink_timer->set_wait_time(0.65);
+	caret_blink_timer->set_time_interval(0.65);
 	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
 	right_click_moves_caret = true;
 
 	idle_detect = memnew(Timer);
 	add_child(idle_detect);
-	idle_detect->set_one_shot(true);
-	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
+	idle_detect->set_repeat(false);
+	idle_detect->set_time_interval(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
 	idle_detect->connect("timeout", this, "_push_current_op");
 
 	click_select_held = memnew(Timer);
 	add_child(click_select_held);
-	click_select_held->set_wait_time(0.05);
+	click_select_held->set_time_interval(0.05);
 	click_select_held->connect("timeout", this, "_click_selection_held");
 
 	current_op.type = TextOperation::TYPE_NONE;

@@ -52,8 +52,8 @@ void Timer::_notification(int p_what) {
 			time_left -= get_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
-					time_left += wait_time;
+				if (repeat)
+					time_left += time_interval;
 				else
 					stop();
 
@@ -67,8 +67,8 @@ void Timer::_notification(int p_what) {
 			time_left -= get_physics_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
-					time_left += wait_time;
+				if (repeat)
+					time_left += time_interval;
 				else
 					stop();
 				emit_signal("timeout");
@@ -78,23 +78,23 @@ void Timer::_notification(int p_what) {
 	}
 }
 
-void Timer::set_wait_time(float p_time) {
+void Timer::set_time_interval(float p_time) {
 	ERR_EXPLAIN("time should be greater than zero.");
 	ERR_FAIL_COND(p_time <= 0);
-	wait_time = p_time;
+	time_interval = p_time;
 }
-float Timer::get_wait_time() const {
+float Timer::get_time_interval() const {
 
-	return wait_time;
+	return time_interval;
 }
 
-void Timer::set_one_shot(bool p_one_shot) {
+void Timer::set_repeat(bool p_repeat) {
 
-	one_shot = p_one_shot;
+	repeat = p_repeat;
 }
-bool Timer::is_one_shot() const {
+bool Timer::is_repeat() const {
 
-	return one_shot;
+	return repeat;
 }
 
 void Timer::set_autostart(bool p_start) {
@@ -107,7 +107,7 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start() {
-	time_left = wait_time;
+	time_left = time_interval;
 	_set_process(true);
 }
 
@@ -175,11 +175,11 @@ void Timer::_set_process(bool p_process, bool p_force) {
 
 void Timer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_wait_time", "time_sec"), &Timer::set_wait_time);
-	ClassDB::bind_method(D_METHOD("get_wait_time"), &Timer::get_wait_time);
+	ClassDB::bind_method(D_METHOD("set_time_interval", "time_sec"), &Timer::set_time_interval);
+	ClassDB::bind_method(D_METHOD("get_time_interval"), &Timer::get_time_interval);
 
-	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &Timer::set_one_shot);
-	ClassDB::bind_method(D_METHOD("is_one_shot"), &Timer::is_one_shot);
+	ClassDB::bind_method(D_METHOD("set_repeat", "enable"), &Timer::set_repeat);
+	ClassDB::bind_method(D_METHOD("is_repeat"), &Timer::is_repeat);
 
 	ClassDB::bind_method(D_METHOD("set_autostart", "enable"), &Timer::set_autostart);
 	ClassDB::bind_method(D_METHOD("has_autostart"), &Timer::has_autostart);
@@ -200,8 +200,8 @@ void Timer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeout"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_mode", "get_timer_process_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01"), "set_wait_time", "get_wait_time");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_interval", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01"), "set_time_interval", "get_time_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "repeat"), "set_repeat", "is_repeat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
@@ -211,8 +211,8 @@ void Timer::_bind_methods() {
 Timer::Timer() {
 	timer_process_mode = TIMER_PROCESS_IDLE;
 	autostart = false;
-	wait_time = 1;
-	one_shot = false;
+	time_interval = 1;
+	repeat = true;
 	time_left = -1;
 	processing = false;
 	paused = false;

@@ -1034,8 +1034,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	update_timer = memnew(Timer);
 	update_timer->connect("timeout", this, "_update_tree");
-	update_timer->set_one_shot(true);
-	update_timer->set_wait_time(0.5);
+	update_timer->set_repeat(false);
+	update_timer->set_time_interval(0.5);
 	add_child(update_timer);
 
 	script_types = memnew(List<StringName>);

@@ -4,7 +4,7 @@
 		A countdown timer.
 	</brief_description>
 	<description>
-		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one shot" mode.
+		Emit a signal at specified interval either once or repeatedly.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -61,14 +61,14 @@
 		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart">
 			If [code]true[/code], Timer will automatically start when entering the scene tree. Default value: [code]false[/code].
 		</member>
-		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot">
-			If [code]true[/code], Timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
+		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat">
+			If [code]true[/code], Timer will restart when reaching 0. If [code]false[/code], Timer will stop. Default value: [code]true[/code].
 		</member>
 		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode">
 			Processing mode. Uses TIMER_PROCESS_* constants as value.
 		</member>
-		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
-			Wait time in seconds.
+		<member name="time_interval" type="float" setter="set_time_interval" getter="get_time_interval">
+			Timer interval in seconds.
 		</member>
 	</members>
 	<signals>
