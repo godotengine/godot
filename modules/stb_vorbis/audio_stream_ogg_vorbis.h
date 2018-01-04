@@ -93,6 +93,7 @@ class AudioStreamOGGVorbis : public AudioStream {
 	float length;
 	bool loop;
 	float loop_offset;
+	void clear_data();
 
 protected:
 	static void _bind_methods();
@@ -111,6 +112,7 @@ public:
 	PoolVector<uint8_t> get_data() const;
 
 	AudioStreamOGGVorbis();
+	virtual ~AudioStreamOGGVorbis();
 };
 
 #endif
