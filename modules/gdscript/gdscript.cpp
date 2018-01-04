@@ -1495,24 +1495,17 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 	return current;
 }
 
-struct GDScriptDepSort {
-
-	//must support sorting so inheritance works properly (parent must be reloaded first)
-	bool operator()(const Ref<GDScript> &A, const Ref<GDScript> &B) const {
-
-		if (A == B)
-			return false; //shouldn't happen but..
-		const GDScript *I = B->get_base().ptr();
-		while (I) {
-			if (I == A.ptr()) {
-				// A is a base of B
-				return true;
-			}
-
-			I = I->get_base().ptr();
+struct GDScriptDependencySort {
+	bool operator()(const Ref<GDScript> &script_a, const Ref<GDScript> &script_b) const {
+		//script_a will be sorted before script_b if the number of steps up to the root of the inheritance tree is lower.
+		//This ensures inherited scripts are sorted after their bases, and is transitive.
+		Ref<GDScript> base_a = script_a;
+		Ref<GDScript> base_b = script_b;
+		while (base_a.is_valid() && base_b.is_valid()) {
+			base_a = base_a->get_base();
+			base_b = base_b->get_base();
 		}
-
-		return false; //not a base
+		return base_a.is_null();
 	}
 };
 
@@ -1541,7 +1534,7 @@ void GDScriptLanguage::reload_all_scripts() {
 
 	//as scripts are going to be reloaded, must proceed without locking here
 
-	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+	scripts.sort_custom<GDScriptDependencySort>(); //update in inheritance dependency order
 
 	for (List<Ref<GDScript> >::Element *E = scripts.front(); E; E = E->next()) {
 
@@ -1581,7 +1574,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	//as scripts are going to be reloaded, must proceed without locking here
 
-	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+	scripts.sort_custom<GDScriptDependencySort>(); //update in inheritance dependency order
 
 	for (List<Ref<GDScript> >::Element *E = scripts.front(); E; E = E->next()) {
 
