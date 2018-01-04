@@ -752,7 +752,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
 		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
-		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
 
@@ -772,7 +772,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
 			err = da->rename(old_path + ".import", new_path + ".import");
 			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Error moving:\n") + old_path + ".import\n");
+				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".import\n");
 			}
 		}
 
@@ -796,7 +796,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			print_line("  Remap: " + changed_paths[i] + " -> " + p_renames[changed_paths[i]]);
 		}
 	} else {
-		EditorNode::get_singleton()->add_io_error(TTR("Error moving:\n") + old_path + "\n");
+		EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + "\n");
 	}
 	memdelete(da);
 }
@@ -813,7 +813,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
 		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
-		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
 
@@ -825,11 +825,11 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
 			err = da->copy(old_path + ".import", new_path + ".import");
 			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + ".import\n");
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
 			}
 		}
 	} else {
-		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + "\n");
+		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + "\n");
 	}
 	memdelete(da);
 }
@@ -901,7 +901,7 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 			if (ResourceLoader::get_resource_type(file) == "PackedScene")
 				editor->reload_scene(file);
 		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:\n") + remaps[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:") + "\n" + remaps[i] + "\n");
 		}
 	}
 }
