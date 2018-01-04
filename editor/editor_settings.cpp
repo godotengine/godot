@@ -1329,7 +1329,43 @@ Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
+struct ShortCutMapping {
+	const char *path;
+	uint32_t keycode;
+};
+
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
+
+#ifdef OSX_ENABLED
+	static const ShortCutMapping macos_mappings[] = {
+		{ "editor/play", KEY_MASK_CMD | KEY_B },
+		{ "editor/play_scene", KEY_MASK_CMD | KEY_R },
+		{ "editor/pause_scene", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_Y },
+		{ "editor/stop", KEY_MASK_CMD | KEY_PERIOD },
+		{ "editor/play_custom_scene", KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_R },
+		{ "editor/editor_2d", KEY_MASK_ALT | KEY_1 },
+		{ "editor/editor_3d", KEY_MASK_ALT | KEY_2 },
+		{ "editor/editor_script", KEY_MASK_ALT | KEY_3 },
+		{ "editor/editor_help", KEY_MASK_ALT | KEY_SPACE },
+		{ "editor/fullscreen_mode", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_F },
+		{ "editor/distraction_free_mode", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_D },
+		{ "script_text_editor/contextual_help", KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE },
+		{ "script_text_editor/find_next", KEY_MASK_CMD | KEY_G },
+		{ "script_text_editor/find_previous", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G },
+		{ "script_text_editor/toggle_breakpoint", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B }
+	};
+
+	if (p_keycode == KEY_DELETE) {
+		p_keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+	} else {
+		for (int i = 0; i < sizeof(macos_mappings) / sizeof(ShortCutMapping); i++) {
+			if (p_path == macos_mappings[i].path) {
+				p_keycode = macos_mappings[i].keycode;
+				break;
+			}
+		}
+	}
+#endif
 
 	Ref<InputEventKey> ie;
 	if (p_keycode) {

@@ -99,10 +99,28 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 
 @implementation GodotApplication
 
-// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
-// This works around an AppKit bug, where key up events while holding
-// down the command key don't get sent to the key window.
 - (void)sendEvent:(NSEvent *)event {
+
+	// special case handling of command-period, which is traditionally a special
+	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
+	if ([event type] == NSKeyDown) {
+		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
+
+			Ref<InputEventKey> k;
+			k.instance();
+
+			get_key_modifier_state([event modifierFlags], k);
+			k->set_pressed(true);
+			k->set_scancode(KEY_PERIOD);
+			k->set_echo([event isARepeat]);
+
+			OS_OSX::singleton->push_input(k);
+		}
+	}
+
+	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
+	// This works around an AppKit bug, where key up events while holding
+	// down the command key don't get sent to the key window.
 	if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask))
 		[[self keyWindow] sendEvent:event];
 	else
