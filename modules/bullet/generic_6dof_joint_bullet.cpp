@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  generic_6dof_joint_bullet.cpp                                        */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,10 +29,16 @@
 /*************************************************************************/
 
 #include "generic_6dof_joint_bullet.h"
-#include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"
+
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
+
+#include <BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h>
+
+/**
+	@author AndreaCatania
+*/
 
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA) :
 		JointBullet() {

@@ -27,6 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#ifndef VIDEO_STREAM_WEBM_H
+#define VIDEO_STREAM_WEBM_H
+
 #include "io/resource_loader.h"
 #include "scene/resources/video_stream.h"
 
@@ -122,3 +126,5 @@ public:
 	String get_file();
 	virtual void set_audio_track(int p_track);
 };
+
+#endif // VIDEO_STREAM_WEBM_H

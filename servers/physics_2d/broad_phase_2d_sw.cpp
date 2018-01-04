@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "broad_phase_2d_sw.h"
 
 BroadPhase2DSW::CreateFunction BroadPhase2DSW::create_func = NULL;

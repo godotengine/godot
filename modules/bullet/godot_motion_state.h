@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_motion_state.h                                                 */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,8 +31,13 @@
 #ifndef GODOT_MOTION_STATE_H
 #define GODOT_MOTION_STATE_H
 
-#include "LinearMath/btMotionState.h"
 #include "rigid_body_bullet.h"
+
+#include <LinearMath/btMotionState.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class RigidBodyBullet;
 

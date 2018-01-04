@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "file_access_compressed.h"
 #include "print_string.h"
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {

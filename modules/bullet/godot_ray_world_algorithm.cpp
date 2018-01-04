@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_ray_world_algorithm.cpp                                        */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,9 +29,15 @@
 /*************************************************************************/
 
 #include "godot_ray_world_algorithm.h"
-#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+
 #include "btRayShape.h"
 #include "collision_object_bullet.h"
+
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+
+/**
+	@author AndreaCatania
+*/
 
 GodotRayWorldAlgorithm::CreateFunc::CreateFunc(const btDiscreteDynamicsWorld *world) :
 		m_world(world) {}

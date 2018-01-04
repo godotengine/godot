@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gi_probe_editor_plugin.h                                             */
+/*  gi_probe_editor_plugin.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gi_probe_editor_plugin.h"
 
 void GIProbeEditorPlugin::_bake() {

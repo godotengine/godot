@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  color_ramp_edit.cpp                                                  */
+/*  gradient_edit.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gradient_edit.h"
 #include "os/keyboard.h"
 

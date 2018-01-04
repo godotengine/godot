@@ -8,8 +8,6 @@
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
-/* Author: George Marques <george@gmarqu.es>                             */
-/*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
 /* "Software"), to deal in the Software without restriction, including   */
@@ -38,6 +36,10 @@
 #include "scene/resources/audio_stream.h"
 
 #include <opus/opusfile.h>
+
+/**
+	@author George Marques <george@gmarqu.es>
+*/
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 

@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  bullet_physics_server.cpp                                            */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,7 +29,7 @@
 /*************************************************************************/
 
 #include "bullet_physics_server.h"
-#include "LinearMath/btVector3.h"
+
 #include "bullet_utilities.h"
 #include "class_db.h"
 #include "cone_twist_joint_bullet.h"
@@ -41,7 +40,14 @@
 #include "pin_joint_bullet.h"
 #include "shape_bullet.h"
 #include "slider_joint_bullet.h"
+
+#include <LinearMath/btVector3.h>
+
 #include <assert.h>
+
+/**
+	@author AndreaCatania
+*/
 
 #define CreateThenReturnRID(owner, ridData) \
 	RID rid = owner.make_rid(ridData);      \

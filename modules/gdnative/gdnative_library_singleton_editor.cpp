@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gdnative_library_singleton_editor.cpp                               */
+/*  gdnative_library_singleton_editor.cpp                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef TOOLS_ENABLED
 #include "gdnative_library_singleton_editor.h"
 #include "gdnative.h"

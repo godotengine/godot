@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  collision_object_bullet.h                                            */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,12 +31,17 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
-#include "LinearMath/btTransform.h"
 #include "core/vset.h"
 #include "object.h"
 #include "shape_owner_bullet.h"
 #include "transform.h"
 #include "vector3.h"
+
+#include <LinearMath/btTransform.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class AreaBullet;
 class ShapeBullet;

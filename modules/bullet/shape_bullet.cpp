@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  shape_bullet.cpp                                                     */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,14 +29,20 @@
 /*************************************************************************/
 
 #include "shape_bullet.h"
-#include "BulletCollision/CollisionShapes/btConvexPointCloudShape.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
-#include "btBulletCollisionCommon.h"
+
 #include "btRayShape.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "shape_owner_bullet.h"
+
+#include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <btBulletCollisionCommon.h>
+
+/**
+	@author AndreaCatania
+*/
 
 ShapeBullet::ShapeBullet() {}
 

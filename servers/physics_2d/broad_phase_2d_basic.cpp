@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "broad_phase_2d_basic.h"
 
 BroadPhase2DBasic::ID BroadPhase2DBasic::create(CollisionObject2DSW *p_object_, int p_subindex) {

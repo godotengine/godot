@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  bullet_utilities.h                                                   */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -31,6 +30,10 @@
 
 #ifndef BULLET_UTILITIES_H
 #define BULLET_UTILITIES_H
+
+/**
+	@author AndreaCatania
+*/
 
 #pragma once
 

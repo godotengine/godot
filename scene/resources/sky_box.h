@@ -27,8 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef Sky_H
-#define Sky_H
+
+#ifndef SKY_BOX_H
+#define SKY_BOX_H
 
 #include "os/thread.h"
 #include "scene/resources/texture.h"
@@ -195,4 +196,4 @@ public:
 
 VARIANT_ENUM_CAST(ProceduralSky::TextureSize)
 
-#endif // Sky_H
+#endif // SKY_BOX_H

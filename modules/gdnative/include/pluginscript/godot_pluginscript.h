@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_nativescript.h                                                 */
+/*  godot_pluginscript.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GODOT_PLUGINSCRIPT_H
 #define GODOT_PLUGINSCRIPT_H
 

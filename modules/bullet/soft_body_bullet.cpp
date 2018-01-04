@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  soft_body_bullet.cpp                                                 */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,11 +29,15 @@
 /*************************************************************************/
 
 #include "soft_body_bullet.h"
+
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "scene/3d/immediate_geometry.h"
 #include "space_bullet.h"
 
-#include "scene/3d/immediate_geometry.h"
+/**
+	@author AndreaCatania
+*/
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),

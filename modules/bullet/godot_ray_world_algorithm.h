@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_ray_world_algorithm.h                                          */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,9 +31,13 @@
 #ifndef GODOT_RAY_WORLD_ALGORITHM_H
 #define GODOT_RAY_WORLD_ALGORITHM_H
 
-#include "BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h"
-#include "BulletCollision/CollisionDispatch/btCollisionCreateFunc.h"
-#include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
+#include <BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h>
+#include <BulletCollision/CollisionDispatch/btCollisionCreateFunc.h>
+#include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class btDiscreteDynamicsWorld;
 

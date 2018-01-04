@@ -8,8 +8,6 @@
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
-/* Author: Mariano Suligoy                                               */
-/*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
 /* "Software"), to deal in the Software without restriction, including   */
@@ -40,6 +38,10 @@
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+
+/**
+	@author Mariano Suligoy
+*/
 
 class TextureRegionEditor : public Control {
 

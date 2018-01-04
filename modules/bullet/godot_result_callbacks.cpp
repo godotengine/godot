@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_result_callbacks.cpp                                           */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,9 +29,14 @@
 /*************************************************************************/
 
 #include "godot_result_callbacks.h"
+
 #include "bullet_types_converter.h"
 #include "collision_object_bullet.h"
 #include "rigid_body_bullet.h"
+
+/**
+	@author AndreaCatania
+*/
 
 bool GodotFilterCallback::test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask) {
 	return body0_collision_layer & body1_collision_mask || body1_collision_layer & body0_collision_mask;

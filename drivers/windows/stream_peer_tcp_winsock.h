@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_winsock.h                                                */
+/*  stream_peer_tcp_winsock.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef WINDOWS_ENABLED
 
 #ifndef STREAM_PEER_TCP_WINSOCK_H

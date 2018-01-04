@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 static const int _bi_font_doc_code_font_height = 19;
 static const int _bi_font_doc_code_font_ascent = 15;
 static const int _bi_font_doc_code_font_charcount = 193;

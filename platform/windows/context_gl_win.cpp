@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008

@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  collision_object_bullet.cpp                                          */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,13 +29,19 @@
 /*************************************************************************/
 
 #include "collision_object_bullet.h"
+
 #include "area_bullet.h"
-#include "btBulletCollisionCommon.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "shape_bullet.h"
 #include "space_bullet.h"
+
+#include <btBulletCollisionCommon.h>
+
+/**
+	@author AndreaCatania
+*/
 
 #define enableDynamicAabbTree true
 #define initialChildCapacity 1

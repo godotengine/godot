@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CUBE_GRID_THEME_EDITOR_PLUGIN_H
 #define CUBE_GRID_THEME_EDITOR_PLUGIN_H
 

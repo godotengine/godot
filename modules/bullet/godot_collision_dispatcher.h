@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_collision_dispatcher.h                                         */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -33,7 +32,12 @@
 #define GODOT_COLLISION_DISPATCHER_H
 
 #include "int_types.h"
+
 #include <btBulletDynamicsCommon.h>
+
+/**
+	@author AndreaCatania
+*/
 
 /// This class is required to implement custom collision behaviour in the narrowphase
 class GodotCollisionDispatcher : public btCollisionDispatcher {

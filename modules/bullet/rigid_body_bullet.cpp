@@ -1,10 +1,9 @@
 /*************************************************************************/
-/*  body_bullet.cpp                                                      */
-/*  Author: AndreaCatania                                                */
+/*  rigid_body_bullet.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,17 +29,24 @@
 /*************************************************************************/
 
 #include "rigid_body_bullet.h"
-#include "BulletCollision/CollisionDispatch/btGhostObject.h"
-#include "BulletCollision/CollisionShapes/btConvexPointCloudShape.h"
-#include "BulletDynamics/Dynamics/btRigidBody.h"
-#include "btBulletCollisionCommon.h"
+
 #include "btRayShape.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "godot_motion_state.h"
 #include "joint_bullet.h"
+
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <btBulletCollisionCommon.h>
+
 #include <assert.h>
+
+/**
+	@author AndreaCatania
+*/
 
 BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = NULL;
 

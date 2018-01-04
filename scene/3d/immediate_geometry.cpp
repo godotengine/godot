@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "immediate_geometry.h"
 
 void ImmediateGeometry::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture) {

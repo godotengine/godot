@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  godot_collision_dispatcher.cpp                                       */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,7 +29,12 @@
 /*************************************************************************/
 
 #include "godot_collision_dispatcher.h"
+
 #include "collision_object_bullet.h"
+
+/**
+	@author AndreaCatania
+*/
 
 const int GodotCollisionDispatcher::CASTED_TYPE_AREA = static_cast<int>(CollisionObjectBullet::TYPE_AREA);
 

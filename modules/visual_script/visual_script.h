@@ -27,8 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VSCRIPT_H
-#define VSCRIPT_H
+
+#ifndef VISUAL_SCRIPT_H
+#define VISUAL_SCRIPT_H
 
 #include "os/thread.h"
 #include "script_language.h"
@@ -617,4 +618,4 @@ static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
 	return node;
 }
 
-#endif // VSCRIPT_H
+#endif // VISUAL_SCRIPT_H

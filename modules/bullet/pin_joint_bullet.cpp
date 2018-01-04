@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  pin_joint_bullet.cpp                                                 */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,9 +29,15 @@
 /*************************************************************************/
 
 #include "pin_joint_bullet.h"
-#include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
+
 #include "bullet_types_converter.h"
 #include "rigid_body_bullet.h"
+
+#include <BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h>
+
+/**
+	@author AndreaCatania
+*/
 
 PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b) :
 		JointBullet() {

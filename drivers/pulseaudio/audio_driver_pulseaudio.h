@@ -27,12 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "servers/audio_server.h"
 
 #ifdef PULSEAUDIO_ENABLED
 
+#ifndef AUDIO_DRIVER_PULSEAUDIO_H
+#define AUDIO_DRIVER_PULSEAUDIO_H
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "servers/audio_server.h"
 
 #include <pulse/simple.h>
 
@@ -78,4 +81,6 @@ public:
 	~AudioDriverPulseAudio();
 };
 
-#endif
+#endif // AUDIO_DRIVER_PULSEAUDIO_H
+
+#endif // PULSEAUDIO_ENABLED

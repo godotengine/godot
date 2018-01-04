@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  bullet_types_converter.cpp                                           */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,6 +31,10 @@
 #pragma once
 
 #include "bullet_types_converter.h"
+
+/**
+	@author AndreaCatania
+*/
 
 // ++ BULLET to GODOT ++++++++++
 void B_TO_G(btVector3 const &inVal, Vector3 &outVal) {

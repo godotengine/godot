@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  check_button.cpp                                                     */
+/*  check_box.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "check_box.h"
 
 #include "servers/visual_server.h"

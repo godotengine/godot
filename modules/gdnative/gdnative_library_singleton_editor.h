@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gdnative_library_singleton_editor.h                                 */
+/*  gdnative_library_singleton_editor.h                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GD_NATIVE_LIBRARY_EDITOR_H
 #define GD_NATIVE_LIBRARY_EDITOR_H
 

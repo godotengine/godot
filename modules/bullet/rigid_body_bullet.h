@@ -1,10 +1,9 @@
 /*************************************************************************/
-/*  body_bullet.h                                                        */
-/*  Author: AndreaCatania                                                */
+/*  rigid_body_bullet.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,10 +31,15 @@
 #ifndef BODYBULLET_H
 #define BODYBULLET_H
 
-#include "BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h"
-#include "LinearMath/btTransform.h"
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
+
+#include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
+#include <LinearMath/btTransform.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class AreaBullet;
 class SpaceBullet;

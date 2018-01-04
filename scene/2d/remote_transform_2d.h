@@ -27,6 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#ifndef REMOTE_TRANSFORM_2D_H
+#define REMOTE_TRANSFORM_2D_H
+
 #include "scene/2d/node_2d.h"
 
 class RemoteTransform2D : public Node2D {
@@ -69,3 +73,5 @@ public:
 
 	RemoteTransform2D();
 };
+
+#endif // REMOTE_TRANSFORM_2D_H

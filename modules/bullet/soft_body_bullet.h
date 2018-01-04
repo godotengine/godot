@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  soft_body_bullet.h                                                   */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,14 +31,16 @@
 #ifndef SOFT_BODY_BULLET_H
 #define SOFT_BODY_BULLET_H
 
+#include "collision_object_bullet.h"
+#include "scene/resources/material.h" // TODO remove this please
+
 #ifdef None
 /// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
 #undef None
 #define x11_None 0L
 #endif
 
-#include "BulletSoftBody/btSoftBodyHelpers.h"
-#include "collision_object_bullet.h"
+#include <BulletSoftBody/btSoftBodyHelpers.h>
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -47,7 +48,9 @@
 #define None 0L
 #endif
 
-#include "scene/resources/material.h" // TODO remove thsi please
+/**
+	@author AndreaCatania
+*/
 
 struct SoftShapeData {};
 struct TrimeshSoftShapeData : public SoftShapeData {

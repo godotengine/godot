@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  space_bullet.h                                                       */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -32,16 +31,21 @@
 #ifndef SPACE_BULLET_H
 #define SPACE_BULLET_H
 
-#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"
-#include "BulletCollision/BroadphaseCollision/btOverlappingPairCache.h"
-#include "LinearMath/btScalar.h"
-#include "LinearMath/btTransform.h"
-#include "LinearMath/btVector3.h"
 #include "core/variant.h"
 #include "core/vector.h"
 #include "godot_result_callbacks.h"
 #include "rid_bullet.h"
 #include "servers/physics_server.h"
+
+#include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
+#include <BulletCollision/BroadphaseCollision/btOverlappingPairCache.h>
+#include <LinearMath/btScalar.h>
+#include <LinearMath/btTransform.h>
+#include <LinearMath/btVector3.h>
+
+/**
+	@author AndreaCatania
+*/
 
 class AreaBullet;
 class btBroadphaseInterface;

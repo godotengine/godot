@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  graph_edit.cpp                                                       */
+/*  graph_edit.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 

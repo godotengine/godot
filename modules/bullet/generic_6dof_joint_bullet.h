@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  generic_6dof_joint_bullet.h                                          */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -33,6 +32,10 @@
 #define GENERIC_6DOF_JOINT_BULLET_H
 
 #include "joint_bullet.h"
+
+/**
+	@author AndreaCatania
+*/
 
 class RigidBodyBullet;
 

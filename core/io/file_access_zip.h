@@ -27,10 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef MINIZIP_ENABLED
 
-#ifndef FILE_ACCESS_Zip_H
-#define FILE_ACCESS_Zip_H
+#ifndef FILE_ACCESS_ZIP_H
+#define FILE_ACCESS_ZIP_H
 
 #include "core/io/file_access_pack.h"
 #include "map.h"
@@ -120,4 +121,4 @@ public:
 
 #endif // FILE_ACCESS_ZIP_H
 
-#endif
+#endif // MINIZIP_ENABLED

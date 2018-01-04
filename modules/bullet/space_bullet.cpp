@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  space_bullet.cpp                                                     */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,14 +29,7 @@
 /*************************************************************************/
 
 #include "space_bullet.h"
-#include "BulletCollision/CollisionDispatch/btCollisionObject.h"
-#include "BulletCollision/CollisionDispatch/btGhostObject.h"
-#include "BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h"
-#include "BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h"
-#include "BulletCollision/NarrowPhaseCollision/btPointCollector.h"
-#include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
-#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
-#include "btBulletDynamicsCommon.h"
+
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
@@ -48,7 +40,21 @@
 #include "servers/physics_server.h"
 #include "soft_body_bullet.h"
 #include "ustring.h"
+
+#include <BulletCollision/CollisionDispatch/btCollisionObject.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h>
+#include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
+#include <BulletCollision/NarrowPhaseCollision/btPointCollector.h>
+#include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
+#include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
+#include <btBulletDynamicsCommon.h>
+
 #include <assert.h>
+
+/**
+	@author AndreaCatania
+*/
 
 BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_space) :
 		PhysicsDirectSpaceState(),

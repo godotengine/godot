@@ -1,10 +1,9 @@
 /*************************************************************************/
 /*  slider_joint_bullet.cpp                                              */
-/*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -30,10 +29,16 @@
 /*************************************************************************/
 
 #include "slider_joint_bullet.h"
-#include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
+
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
+
+#include <BulletDynamics/ConstraintSolver/btSliderConstraint.h>
+
+/**
+	@author AndreaCatania
+*/
 
 SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
 		JointBullet() {
