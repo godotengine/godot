@@ -57,7 +57,8 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		collisionsEnabled(true),
 		m_isStatic(false),
 		bt_collision_object(NULL),
-		body_scale(1., 1., 1.) {}
+		body_scale(1., 1., 1.),
+		force_shape_reset(false) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping
@@ -88,6 +89,7 @@ btVector3 CollisionObjectBullet::get_bt_body_scale() const {
 }
 
 void CollisionObjectBullet::on_body_scale_changed() {
+	force_shape_reset = true;
 }
 
 void CollisionObjectBullet::destroyBulletCollisionObject() {
@@ -289,15 +291,27 @@ void RigidCollisionObjectBullet::on_shape_changed(const ShapeBullet *const p_sha
 
 void RigidCollisionObjectBullet::on_shapes_changed() {
 	int i;
+
 	// Remove all shapes, reverse order for performance reason (Array resize)
 	for (i = compoundShape->getNumChildShapes() - 1; 0 <= i; --i) {
 		compoundShape->removeChildShapeByIndex(i);
 	}
 
-	// Insert all shapes
 	ShapeWrapper *shpWrapper;
-	const int size = shapes.size();
-	for (i = 0; i < size; ++i) {
+	const int shapes_size = shapes.size();
+
+	// Reset shape if required
+	if (force_shape_reset) {
+		for (i = 0; i < shapes_size; ++i) {
+			shpWrapper = &shapes[i];
+			bulletdelete(shpWrapper->bt_shape);
+		}
+		force_shape_reset = false;
+	}
+
+	// Insert all shapes
+
+	for (i = 0; i < shapes_size; ++i) {
 		shpWrapper = &shapes[i];
 		if (shpWrapper->active) {
 			if (!shpWrapper->bt_shape) {
