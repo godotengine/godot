@@ -38,6 +38,8 @@
 #include "servers/visual/visual_server_raster.h"
 #include "version_generated.gen.h"
 
+#include <mach-o/dyld.h>
+
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #include <IOKit/IOCFPlugIn.h>
@@ -48,6 +50,7 @@
 #include <os/log.h>
 #endif
 
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <libproc.h>
 #include <stdio.h>
@@ -1256,6 +1259,28 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	// Display it, then release
 	[window runModal];
 	[window release];
+}
+
+Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+
+	String path = p_path;
+
+	if (!FileAccess::exists(path)) {
+		//this code exists so gdnative can load .dylib files from within the executable path
+		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+	}
+
+	if (!FileAccess::exists(path)) {
+		//this code exists so gdnative can load .dylib files from a standard macOS location
+		path = get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file());
+	}
+
+	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
 }
 
 void OS_OSX::set_cursor_shape(CursorShape p_shape) {
