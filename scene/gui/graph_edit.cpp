@@ -92,11 +92,6 @@ void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const
 	}
 }
 
-bool GraphEdit::clips_input() const {
-
-	return true;
-}
-
 void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 
 	*r_connections = connections;
@@ -1274,5 +1269,6 @@ GraphEdit::GraphEdit() {
 
 	setting_scroll_ofs = false;
 	just_disconected = false;
+	set_clips_input(true);
 	set_clip_contents(true);
 }
