@@ -632,6 +632,7 @@
 			Distance between the node's top edge and its parent container, based on [member anchor_top].
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
+			Controls whether the control will be able to receive mouse button input events through [Control._gui_input] and how these events should be handled. Use one of the [code]MOUSE_FILTER_*[/code] constants. See the constants to learn what each does.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
 		</member>
@@ -869,10 +870,13 @@
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
+			The control will receive mouse button input events through [method Control._gui_input] if clicked on. These events are automatically marked as handled and they will not propogate further to other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
+			The control will receive mouse button input events through [method Control._gui_input] if clicked on. If this control does not handle the event, the parent control (if any) will be considered for a mouse click, and so on until there is no more parent control to potentially handle it. Even if no control handled it at all, the event will still be handled automatically.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
+			The control will not receive mouse button input events through [method Control._gui_input] and will not block other controls from receiving these events. These events will also not be handled automatically.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 		</constant>
