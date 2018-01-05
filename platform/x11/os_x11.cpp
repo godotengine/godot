@@ -523,6 +523,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			_window_changed(&xevent);
 		}
 	}
+
+	return OK;
 }
 
 void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
