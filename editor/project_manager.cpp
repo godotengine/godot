@@ -735,6 +735,7 @@ void ProjectManager::_update_project_buttons() {
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
 	rename_btn->set_disabled(selected_list.size() < 1);
+	show_btn->set_disabled(selected_list.size() < 1);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -1377,6 +1378,23 @@ void ProjectManager::_erase_project() {
 	erase_ask->popup_centered_minsize();
 }
 
+void ProjectManager::_show_project() {
+	if (selected_list.size() == 0)
+		return;
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		String conf = path + "/project.godot";
+		if (!FileAccess::exists(conf)) {
+			dialog_error->set_text(TTR("Can't show project"));
+			dialog_error->popup_centered_minsize();
+			return;
+		}
+		OS::get_singleton()->shell_open(String("file://") + path);
+		//print_line("Path:"+path);
+	}
+}
+
 void ProjectManager::_language_selected(int p_id) {
 
 	String lang = language_btn->get_item_metadata(p_id);
@@ -1472,6 +1490,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_show_project", &ProjectManager::_show_project);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
@@ -1652,6 +1671,12 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(erase);
 	erase->connect("pressed", this, "_erase_project");
 	erase_btn = erase;
+
+	Button *showinfilemanager = memnew(Button);
+	showinfilemanager->set_text(TTR("Show Folder"));
+	tree_vb->add_child(showinfilemanager);
+	showinfilemanager->connect("pressed", this, "_show_project");
+	show_btn = showinfilemanager;
 
 	tree_vb->add_spacer();
 
