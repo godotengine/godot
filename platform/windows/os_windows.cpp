@@ -416,6 +416,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			/*mm->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
 			mm->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
