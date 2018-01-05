@@ -1476,9 +1476,9 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds,vec
 		return;
 	}
 
-	//vec3 blendv = probe_pos/bounds * 2.0 - 1.0;
-	//float blend = 1.001-max(blendv.x,max(blendv.y,blendv.z));
-	float blend=1.0;
+	vec3 blendv = abs(probe_pos/bounds * 2.0 - 1.0);
+	float blend = 1.001-max(blendv.x,max(blendv.y,blendv.z));
+	//float blend=1.0;
 
 	float max_distance = length(bounds);
 
