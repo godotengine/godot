@@ -33,6 +33,7 @@
 #include "core/variant.h"
 // core/variant.h before to avoid compile errors with MSVC
 #include "core/dictionary.h"
+#include "core/dictionary_iterator.h"
 #include "core/io/json.h"
 
 #ifdef __cplusplus

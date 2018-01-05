@@ -82,6 +82,13 @@
 				Return the list of values in the [code]Dictionary[/code].
 			</description>
 		</method>
+		<method name="values">
+			<return type="Array">
+			</return>
+			<description>
+				Return an iterator over the key/value pairs in [code]Dictionary[/code].
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
