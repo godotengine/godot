@@ -190,6 +190,7 @@ uint8_t FileAccessWindows::get_8() const {
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
+		b = '\0';
 	};
 
 	return b;

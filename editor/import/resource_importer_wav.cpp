@@ -387,8 +387,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			Vector<float> new_data;
 			new_data.resize((last - first + 1) * format_channels);
-			for (int i = first * format_channels; i <= last * format_channels; i++) {
+			for (int i = first * format_channels; i < (last + 1) * format_channels; i++) {
 				new_data[i - first * format_channels] = data[i];
+				setc++;
 			}
 
 			data = new_data;
