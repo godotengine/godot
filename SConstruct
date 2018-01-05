@@ -189,10 +189,12 @@ opts.Add(BoolVariable('builtin_zlib', "Use the builtin zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the builtin zstd library", True))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 
-# Environment setup
+# Compilation environment setup
 opts.Add("CXX", "C++ compiler")
 opts.Add("CC", "C compiler")
-opts.Add("CCFLAGS", "Custom flags for the C and C++ compilers")
+opts.Add("LINK", "Linker")
+opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
+opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 

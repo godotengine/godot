@@ -265,7 +265,7 @@ def configure(env):
         env['CXX'] = mingw_prefix + "g++"
         env['AR'] = mingw_prefix + "gcc-ar"
         env['RANLIB'] = mingw_prefix + "gcc-ranlib"
-        env['LD'] = mingw_prefix + "g++"
+        env['LINK'] = mingw_prefix + "g++"
         env["x86_libtheora_opt_gcc"] = True
 
         if env['use_lto']:
