@@ -910,18 +910,24 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
 					PoolVector<float>::Write w = weights.write();
-					for (int i = 0; i < wc; i += 4) {
+
+					//PoolVector<int> v = array[Mesh::ARRAY_BONES];
+					//PoolVector<int>::Read r = v.read();
+
+					for (int j = 0; j < wc; j += 4) {
 						float total = 0.0;
-						total += w[i + 0];
-						total += w[i + 1];
-						total += w[i + 2];
-						total += w[i + 3];
+						total += w[j + 0];
+						total += w[j + 1];
+						total += w[j + 2];
+						total += w[j + 3];
 						if (total > 0.0) {
-							w[i + 0] /= total;
-							w[i + 1] /= total;
-							w[i + 2] /= total;
-							w[i + 3] /= total;
+							w[j + 0] /= total;
+							w[j + 1] /= total;
+							w[j + 2] /= total;
+							w[j + 3] /= total;
 						}
+
+						//print_line(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
 					}
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
@@ -1368,6 +1374,10 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			//state.nodes[skeleton]->skeleton_skin = state.skins.size();
 			print_line("setting skeleton skin to" + itos(skeleton));
 			skin.skeleton = skeleton;
+			if (!state.skeleton_nodes.has(skeleton)) {
+				state.skeleton_nodes[skeleton] = Vector<int>();
+			}
+			state.skeleton_nodes[skeleton].push_back(i);
 		}
 
 		if (d.has("name")) {
@@ -1671,7 +1681,8 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 		//move skeleton around and place it on node, as the node _is_ a skeleton.
 		Skeleton *s = skeletons[n->skin];
-		mi->set_skeleton_path(mi->get_path_to(s));
+		state.paths_to_skeleton[mi] = s;
+		//move it later, as skeleton may be moved around first
 	}
 
 #if 0
@@ -1685,15 +1696,26 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 #endif
 	for (int i = 0; i < n->children.size(); i++) {
 		if (state.nodes[n->children[i]]->joints.size()) {
-			_generate_bone(state, n->children[i], skeletons, Vector<int>());
+			_generate_bone(state, n->children[i], skeletons, Vector<int>(), node);
 		} else {
 			_generate_node(state, n->children[i], node, p_owner, skeletons);
 		}
 	}
 }
 
-void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, const Vector<int> &p_parent_bones) {
+void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, const Vector<int> &p_parent_bones, Node *p_parent_node) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
+
+	if (state.skeleton_nodes.has(p_node)) {
+		//reparent skeletons to proper place
+		Vector<int> nodes = state.skeleton_nodes[p_node];
+		for (int i = 0; i < nodes.size(); i++) {
+			Node *owner = skeletons[i]->get_owner();
+			skeletons[i]->get_parent()->remove_child(skeletons[i]);
+			p_parent_node->add_child(skeletons[i]);
+			skeletons[i]->set_owner(owner);
+		}
+	}
 
 	GLTFNode *n = state.nodes[p_node];
 	Vector<int> parent_bones;
@@ -1714,7 +1736,7 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 	}
 
 	for (int i = 0; i < n->children.size(); i++) {
-		_generate_bone(state, n->children[i], skeletons, parent_bones);
+		_generate_bone(state, n->children[i], skeletons, parent_bones, p_parent_node);
 	}
 }
 
@@ -2030,10 +2052,16 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	}
 	for (int i = 0; i < state.root_nodes.size(); i++) {
 		if (state.nodes[state.root_nodes[i]]->joints.size()) {
-			_generate_bone(state, state.root_nodes[i], skeletons, Vector<int>());
+			_generate_bone(state, state.root_nodes[i], skeletons, Vector<int>(), root);
 		} else {
 			_generate_node(state, state.root_nodes[i], root, root, skeletons);
 		}
+	}
+
+	for (Map<Node *, Skeleton *>::Element *E = state.paths_to_skeleton.front(); E; E = E->next()) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(E->key());
+		ERR_CONTINUE(!mi);
+		mi->set_skeleton_path(mi->get_path_to(E->get()));
 	}
 
 	for (int i = 0; i < skeletons.size(); i++) {
