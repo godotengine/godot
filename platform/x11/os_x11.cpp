@@ -263,33 +263,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
-		// needed for lxde/openbox, possibly others
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		XMapRaised(x11_display, x11_window);
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
-
-		// code for netwm-compliants
-		XEvent xev;
-		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
-
-		memset(&xev, 0, sizeof(xev));
-		xev.type = ClientMessage;
-		xev.xclient.window = x11_window;
-		xev.xclient.message_type = wm_state;
-		xev.xclient.format = 32;
-		xev.xclient.data.l[0] = 1;
-		xev.xclient.data.l[1] = fullscreen;
-		xev.xclient.data.l[2] = 0;
-
-		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+		set_wm_fullscreen(true);
 	}
 
 	// disable resizable window
@@ -702,21 +676,34 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		XFree(xsh);
 	}
 
-	// Using EWMH -- Extened Window Manager Hints
+	// needed for lxde/openbox, possibly others
+	Hints hints;
+	Atom property;
+	hints.flags = 2;
+	hints.decorations = 0;
+	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+	XMapRaised(x11_display, x11_window);
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+	XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+
+	// code for netwm-compliants
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-	Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+	Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
 
 	memset(&xev, 0, sizeof(xev));
 	xev.type = ClientMessage;
 	xev.xclient.window = x11_window;
 	xev.xclient.message_type = wm_state;
 	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
-	xev.xclient.data.l[1] = wm_fullscreen;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = fullscreen;
 	xev.xclient.data.l[2] = 0;
 
-	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+
 	XFlush(x11_display);
 
 	if (!p_enabled && !is_window_resizable()) {
