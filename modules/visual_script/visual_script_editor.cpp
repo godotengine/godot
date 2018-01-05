@@ -1329,10 +1329,6 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void VisualScriptEditor::_generic_search() {
-	new_connect_node_select->select_from_visual_script(String(""), false);
-}
-
 void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> key = p_event;
