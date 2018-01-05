@@ -861,6 +861,8 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 			class_name = ClassDB::get_parent_class_nocheck(class_name);
 		}
 
+		class_name = type;
+
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
 		if (parent)
@@ -868,8 +870,6 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 		else
 			theme_owner = NULL;
 	}
-
-	class_name = type;
 
 	while (class_name != StringName()) {
 		if (Theme::get_default()->has_stylebox(p_name, class_name))
@@ -2155,6 +2155,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	data.theme = p_theme;
 	if (!p_theme.is_null()) {
 
+		data.theme_owner = this;
 		_propagate_theme_changed(this, this);
 	} else {
 
