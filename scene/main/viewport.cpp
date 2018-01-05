@@ -679,6 +679,20 @@ void Viewport::_notification(int p_what) {
 			}
 
 		} break;
+		case SceneTree::NOTIFICATION_WM_FOCUS_OUT: {
+			if (gui.mouse_focus) {
+				//if mouse is being pressed, send a release event
+				Ref<InputEventMouseButton> mb;
+				mb.instance();
+				mb->set_position(gui.mouse_focus->get_local_mouse_position());
+				mb->set_global_position(gui.mouse_focus->get_local_mouse_position());
+				mb->set_button_index(gui.mouse_focus_button);
+				mb->set_pressed(false);
+				Control *c = gui.mouse_focus;
+				gui.mouse_focus = NULL;
+				c->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
+			}
+		} break;
 	}
 }
 
@@ -2377,12 +2391,9 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		mb->set_global_position(gui.mouse_focus->get_local_mouse_position());
 		mb->set_button_index(gui.mouse_focus_button);
 		mb->set_pressed(false);
-		gui.mouse_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
-
-		//if (gui.mouse_over == gui.mouse_focus) {
-		//	gui.mouse_focus->notification(Control::NOTIFICATION_MOUSE_EXIT);
-		//}
+		Control *c = gui.mouse_focus;
 		gui.mouse_focus = NULL;
+		c->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
 	}
 
 	return gui.modal_stack.back();
