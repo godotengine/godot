@@ -1021,7 +1021,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 		current_option = -1;
 		accept->get_ok()->set_text(TTR("I see.."));
-		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."));
+		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
 		accept->popup_centered_minsize();
 		return;
 	}
@@ -1029,6 +1029,13 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	// force creation of node path cache
 	// (hacky but needed for the tree to update properly)
 	Node *dummy_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
+	if (!dummy_scene) {
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see.."));
+		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
+		accept->popup_centered_minsize();
+		return;
+	}
 	memdelete(dummy_scene);
 
 	int flg = 0;
