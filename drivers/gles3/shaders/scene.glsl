@@ -445,8 +445,7 @@ VERTEX_SHADER_CODE
 	vtx.z=(distance/shadow_dual_paraboloid_render_zfar);
 	vtx.z=vtx.z * 2.0 - 1.0;
 
-	vertex.xyz=vtx;
-	vertex.w=1.0;
+	vertex_interp = vtx;
 
 
 #else
