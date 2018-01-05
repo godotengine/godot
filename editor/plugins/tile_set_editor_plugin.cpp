@@ -340,6 +340,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	property_editor = memnew(PropertyEditor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	property_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	property_editor->set_custom_minimum_size(Size2(10, 70));
 	split->add_child(property_editor);
 
 	helper = memnew(AutotileEditorHelper(this));
