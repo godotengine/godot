@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "filesystem_dock.h"
 
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "io/resource_loader.h"
@@ -1636,6 +1637,23 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 	call_deferred("_update_import_dock");
 }
 
+void FileSystemDock::_files_gui_input(Ref<InputEvent> p_event) {
+
+	if (get_viewport()->get_modal_stack_top())
+		return; //ignore because of modal window
+
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
+			_file_option(FILE_DUPLICATE);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
+			_file_option(FILE_COPY_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
+			_file_option(FILE_REMOVE);
+		}
+	}
+}
+
 void FileSystemDock::_file_selected() {
 
 	import_dock_needs_update = true;
@@ -1692,6 +1710,7 @@ void FileSystemDock::_update_import_dock() {
 
 void FileSystemDock::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_files_gui_input"), &FileSystemDock::_files_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
 	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
 	ClassDB::bind_method(D_METHOD("_favorites_pressed"), &FileSystemDock::_favorites_pressed);
@@ -1737,6 +1756,10 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	set_name("FileSystem");
 	editor = p_editor;
 	path = "res://";
+
+	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	add_child(toolbar_hbc);
@@ -1844,6 +1867,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
 	files->connect("item_rmb_selected", this, "_files_list_rmb_select");
+	files->connect("gui_input", this, "_files_gui_input");
 	files->connect("item_selected", this, "_file_selected");
 	files->connect("multi_selected", this, "_file_multi_selected");
 	files->connect("rmb_clicked", this, "_rmb_pressed");
