@@ -1648,7 +1648,7 @@ void main() {
 
 #if defined(ENABLE_NORMALMAP)
 
-	vec3 normalmap = vec3(0.0);
+	vec3 normalmap = vec3(0.5);
 #endif
 
 	float normaldepth=1.0;
