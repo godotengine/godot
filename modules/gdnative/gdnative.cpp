@@ -38,9 +38,12 @@
 
 #include "scene/main/scene_tree.h"
 
-const String init_symbol = "gdnative_init";
-const String terminate_symbol = "gdnative_terminate";
-const String default_symbol_prefix = "godot_";
+static const String init_symbol = "gdnative_init";
+static const String terminate_symbol = "gdnative_terminate";
+static const String default_symbol_prefix = "godot_";
+static const bool default_singleton = false;
+static const bool default_load_once = true;
+static const bool default_reloadable = true;
 
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
@@ -51,6 +54,9 @@ GDNativeLibrary::GDNativeLibrary() {
 	config_file.instance();
 
 	symbol_prefix = default_symbol_prefix;
+	load_once = default_load_once;
+	singleton = default_singleton;
+	reloadable = default_reloadable;
 
 	if (GDNativeLibrary::loaded_libraries == NULL) {
 		GDNativeLibrary::loaded_libraries = memnew((Map<String, Vector<Ref<GDNative> > >));
@@ -69,14 +75,17 @@ void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("should_load_once"), &GDNativeLibrary::should_load_once);
 	ClassDB::bind_method(D_METHOD("is_singleton"), &GDNativeLibrary::is_singleton);
 	ClassDB::bind_method(D_METHOD("get_symbol_prefix"), &GDNativeLibrary::get_symbol_prefix);
+	ClassDB::bind_method(D_METHOD("is_reloadable"), &GDNativeLibrary::is_reloadable);
 
 	ClassDB::bind_method(D_METHOD("set_load_once", "load_once"), &GDNativeLibrary::set_load_once);
 	ClassDB::bind_method(D_METHOD("set_singleton", "singleton"), &GDNativeLibrary::set_singleton);
 	ClassDB::bind_method(D_METHOD("set_symbol_prefix", "symbol_prefix"), &GDNativeLibrary::set_symbol_prefix);
+	ClassDB::bind_method(D_METHOD("set_reloadable", "reloadable"), &GDNativeLibrary::set_reloadable);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "symbol_prefix"), "set_symbol_prefix", "get_symbol_prefix");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "reloadable"), "set_reloadable", "is_reloadable");
 }
 
 GDNative::GDNative() {
@@ -318,9 +327,10 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 		*r_error = err;
 	}
 
-	lib->set_singleton(config->get_value("general", "singleton", false));
-	lib->set_load_once(config->get_value("general", "load_once", true));
+	lib->set_singleton(config->get_value("general", "singleton", default_singleton));
+	lib->set_load_once(config->get_value("general", "load_once", default_load_once));
 	lib->set_symbol_prefix(config->get_value("general", "symbol_prefix", default_symbol_prefix));
+	lib->set_reloadable(config->get_value("general", "reloadable", default_reloadable));
 
 	String entry_lib_path;
 	{
@@ -389,6 +399,7 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 }
 
 void GDNativeLibraryResourceLoader::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->clear();
 	p_extensions->push_back("gdnlib");
 }
 
@@ -416,6 +427,7 @@ Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_reso
 	config->set_value("general", "singleton", lib->is_singleton());
 	config->set_value("general", "load_once", lib->should_load_once());
 	config->set_value("general", "symbol_prefix", lib->get_symbol_prefix());
+	config->set_value("general", "reloadable", lib->is_reloadable());
 
 	return config->save(p_path);
 }
@@ -426,6 +438,7 @@ bool GDNativeLibraryResourceSaver::recognize(const RES &p_resource) const {
 
 void GDNativeLibraryResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 	if (Object::cast_to<GDNativeLibrary>(*p_resource) != NULL) {
+		p_extensions->clear();
 		p_extensions->push_back("gdnlib");
 	}
 }
