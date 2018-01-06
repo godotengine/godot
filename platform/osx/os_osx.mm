@@ -58,25 +58,34 @@
 #include <unistd.h>
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
+#define NSEventMaskAny NSAnyEventMask
+#define NSEventTypeKeyDown NSKeyDown
+#define NSEventTypeKeyUp NSKeyUp
+#define NSEventModifierFlagShift NSShiftKeyMask
+#define NSEventModifierFlagCommand NSCommandKeyMask
+#define NSEventModifierFlagControl NSControlKeyMask
+#define NSEventModifierFlagOption NSAlternateKeyMask
+#define NSWindowStyleMaskTitled NSTitledWindowMask
+#define NSWindowStyleMaskResizable NSResizableWindowMask
+#define NSWindowStyleMaskMiniaturizable NSMiniaturizableWindowMask
+#define NSWindowStyleMaskClosable NSClosableWindowMask
 #define NSWindowStyleMaskBorderless NSBorderlessWindowMask
 #endif
 
 static NSRect convertRectToBacking(NSRect contentRect) {
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
 		return [OS_OSX::singleton->window_view convertRectToBacking:contentRect];
 	else
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 		return contentRect;
 }
 
 static void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> state) {
 
-	state->set_shift((p_osx_state & NSShiftKeyMask));
-	state->set_control((p_osx_state & NSControlKeyMask));
-	state->set_alt((p_osx_state & NSAlternateKeyMask));
-	state->set_metakey((p_osx_state & NSCommandKeyMask));
+	state->set_shift((p_osx_state & NSEventModifierFlagShift));
+	state->set_control((p_osx_state & NSEventModifierFlagControl));
+	state->set_alt((p_osx_state & NSEventModifierFlagOption));
+	state->set_metakey((p_osx_state & NSEventModifierFlagCommand));
 }
 
 static int mouse_x = 0;
@@ -104,7 +113,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 
 	// special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
-	if ([event type] == NSKeyDown) {
+	if ([event type] == NSEventTypeKeyDown) {
 		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
 
 			Ref<InputEventKey> k;
@@ -122,7 +131,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
 	// This works around an AppKit bug, where key up events while holding
 	// down the command key don't get sent to the key window.
-	if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask))
+	if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
 		[[self keyWindow] sendEvent:event];
 	else
 		[super sendEvent:event];
@@ -188,7 +197,6 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	return NO;
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
 	OS_OSX::singleton->zoomed = true;
 }
@@ -196,7 +204,6 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
 	OS_OSX::singleton->zoomed = false;
 }
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
 	if (!OS_OSX::singleton)
@@ -390,8 +397,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)cancelComposition {
 	[self unmarkText];
-	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-	[currentInputManager markedTextAbandoned:self];
+	NSTextInputContext *currentInputContext = [NSTextInputContext currentInputContext];
+	[currentInputContext discardMarkedText];
 }
 
 - (void)insertText:(id)aString {
@@ -420,8 +427,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	NSCharacterSet *ctrlChars = [NSCharacterSet controlCharacterSet];
 	NSCharacterSet *wsnlChars = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	if ([characters rangeOfCharacterFromSet:ctrlChars].length && [characters rangeOfCharacterFromSet:wsnlChars].length == 0) {
-		NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-		[currentInputManager markedTextAbandoned:self];
+		NSTextInputContext *currentInputContext = [NSTextInputContext currentInputContext];
+		[currentInputContext discardMarkedText];
 		[self cancelComposition];
 		return;
 	}
@@ -507,7 +514,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 }
 
 - (void)mouseDown:(NSEvent *)event {
-	if (([event modifierFlags] & NSControlKeyMask)) {
+	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 	} else {
@@ -808,29 +815,29 @@ static int translateKey(unsigned int key) {
 	int mod = [event modifierFlags];
 
 	if (key == 0x36 || key == 0x37) {
-		if (mod & NSCommandKeyMask) {
-			mod &= ~NSCommandKeyMask;
+		if (mod & NSEventModifierFlagCommand) {
+			mod &= ~NSEventModifierFlagCommand;
 			k->set_pressed(true);
 		} else {
 			k->set_pressed(false);
 		}
 	} else if (key == 0x38 || key == 0x3c) {
-		if (mod & NSShiftKeyMask) {
-			mod &= ~NSShiftKeyMask;
+		if (mod & NSEventModifierFlagShift) {
+			mod &= ~NSEventModifierFlagShift;
 			k->set_pressed(true);
 		} else {
 			k->set_pressed(false);
 		}
 	} else if (key == 0x3a || key == 0x3d) {
-		if (mod & NSAlternateKeyMask) {
-			mod &= ~NSAlternateKeyMask;
+		if (mod & NSEventModifierFlagOption) {
+			mod &= ~NSEventModifierFlagOption;
 			k->set_pressed(true);
 		} else {
 			k->set_pressed(false);
 		}
 	} else if (key == 0x3b || key == 0x3e) {
-		if (mod & NSControlKeyMask) {
-			mod &= ~NSControlKeyMask;
+		if (mod & NSEventModifierFlagControl) {
+			mod &= ~NSEventModifierFlagControl;
 			k->set_pressed(true);
 		} else {
 			k->set_pressed(false);
@@ -890,7 +897,6 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
 		deltaX = [event scrollingDeltaX];
 		deltaY = [event scrollingDeltaY];
@@ -899,9 +905,7 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 			deltaX *= 0.03;
 			deltaY *= 0.03;
 		}
-	} else
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED
-	{
+	} else {
 		deltaX = [event deltaX];
 		deltaY = [event deltaY];
 	}
@@ -1005,7 +1009,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	if (p_desired.borderless_window) {
 		styleMask = NSWindowStyleMaskBorderless;
 	} else {
-		styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (p_desired.resizable ? NSResizableWindowMask : 0);
+		styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (p_desired.resizable ? NSWindowStyleMaskResizable : 0);
 	}
 
 	window_object = [[GodotWindow alloc]
@@ -1743,9 +1747,8 @@ float OS_OSX::_display_scale(id screen) const {
 		if ([screen respondsToSelector:@selector(backingScaleFactor)]) {
 			return fmax(1.0, [screen backingScaleFactor]);
 		}
-	} else {
-		return 1.0;
 	}
+	return 1.0;
 }
 
 Point2 OS_OSX::get_native_window_position() const {
@@ -1820,21 +1823,12 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 void OS_OSX::set_window_fullscreen(bool p_enabled) {
 
 	if (zoomed != p_enabled) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 		[window_object toggleFullScreen:nil];
-#else
-		[window_object performZoom:nil];
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 	}
 	zoomed = p_enabled;
 };
 
 bool OS_OSX::is_window_fullscreen() const {
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-	if ([window_object respondsToSelector:@selector(isZoomed)])
-		return [window_object isZoomed];
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	return zoomed;
 };
@@ -1842,14 +1836,14 @@ bool OS_OSX::is_window_fullscreen() const {
 void OS_OSX::set_window_resizable(bool p_enabled) {
 
 	if (p_enabled)
-		[window_object setStyleMask:[window_object styleMask] | NSResizableWindowMask];
+		[window_object setStyleMask:[window_object styleMask] | NSWindowStyleMaskResizable];
 	else
-		[window_object setStyleMask:[window_object styleMask] & ~NSResizableWindowMask];
+		[window_object setStyleMask:[window_object styleMask] & ~NSWindowStyleMaskResizable];
 };
 
 bool OS_OSX::is_window_resizable() const {
 
-	return [window_object styleMask] & NSResizableWindowMask;
+	return [window_object styleMask] & NSWindowStyleMaskResizable;
 };
 
 void OS_OSX::set_window_minimized(bool p_enabled) {
@@ -1904,7 +1898,7 @@ void OS_OSX::set_borderless_window(bool p_borderless) {
 	if (p_borderless) {
 		[window_object setStyleMask:NSWindowStyleMaskBorderless];
 	} else {
-		[window_object setStyleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask];
+		[window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
 
 		// Force update of the window styles
 		NSRect frameRect = [window_object frame];
@@ -2028,7 +2022,7 @@ void OS_OSX::process_events() {
 
 	while (true) {
 		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSAnyEventMask
+				nextEventMatchingMask:NSEventMaskAny
 							untilDate:[NSDate distantPast]
 							   inMode:NSDefaultRunLoopMode
 							  dequeue:YES];
@@ -2220,7 +2214,7 @@ OS_OSX::OS_OSX() {
 	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
 	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-	[menu_item setKeyEquivalentModifierMask:(NSAlternateKeyMask | NSCommandKeyMask)];
+	[menu_item setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
 
 	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
 
