@@ -2017,6 +2017,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 				top->_modal_stack_remove();
 				top->hide();
+				// Close modal, set input as handled
+				get_tree()->set_input_as_handled();
+				return;
 			}
 		}
 
