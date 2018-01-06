@@ -6906,6 +6906,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 
 		// delete the texture
 		GIProbe *gi_probe = gi_probe_owner.get(p_rid);
+		gi_probe->instance_remove_deps();
 
 		gi_probe_owner.free(p_rid);
 		memdelete(gi_probe);
@@ -6921,6 +6922,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 
 		// delete the texture
 		LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get(p_rid);
+		lightmap_capture->instance_remove_deps();
 
 		gi_probe_owner.free(p_rid);
 		memdelete(lightmap_capture);

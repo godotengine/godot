@@ -659,7 +659,6 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
-	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
 
 	if (instance->lightmap_capture) {
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
@@ -3298,6 +3297,7 @@ bool VisualServerScene::free(RID p_rid) {
 
 		Instance *instance = instance_owner.get(p_rid);
 
+		instance_set_use_lightmap(p_rid, RID(), RID());
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());
