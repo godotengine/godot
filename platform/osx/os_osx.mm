@@ -74,10 +74,7 @@
 
 static NSRect convertRectToBacking(NSRect contentRect) {
 
-	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
-		return [OS_OSX::singleton->window_view convertRectToBacking:contentRect];
-	else
-		return contentRect;
+	return [OS_OSX::singleton->window_view convertRectToBacking:contentRect];
 }
 
 static void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> state) {
@@ -897,17 +894,12 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
-	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
-		deltaX = [event scrollingDeltaX];
-		deltaY = [event scrollingDeltaY];
+	deltaX = [event scrollingDeltaX];
+	deltaY = [event scrollingDeltaY];
 
-		if ([event hasPreciseScrollingDeltas]) {
-			deltaX *= 0.03;
-			deltaY *= 0.03;
-		}
-	} else {
-		deltaX = [event deltaX];
-		deltaY = [event deltaY];
+	if ([event hasPreciseScrollingDeltas]) {
+		deltaX *= 0.03;
+		deltaY *= 0.03;
 	}
 
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
@@ -1034,7 +1026,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	window_size.width = p_desired.width * displayScale;
 	window_size.height = p_desired.height * displayScale;
 
-	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6 && displayScale > 1.0) {
+	if (displayScale > 1.0) {
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
 		//if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -1046,8 +1038,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	[window_object setAcceptsMouseMovedEvents:YES];
 	[window_object center];
 
-	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
-		[window_object setRestorable:NO];
+	[window_object setRestorable:NO];
 
 	unsigned int attributeCount = 0;
 
@@ -1207,34 +1198,42 @@ public:
 
 		switch (p_type) {
 			case ERR_WARNING:
-				os_log_info(OS_LOG_DEFAULT,
-						"WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.",
-						p_function, err_details, p_file, p_line);
+				if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_12) {
+					os_log_info(OS_LOG_DEFAULT,
+							"WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.",
+							p_function, err_details, p_file, p_line);
+				}
 				logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function,
 						err_details);
 				logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 			case ERR_SCRIPT:
-				os_log_error(OS_LOG_DEFAULT,
-						"SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-						p_function, err_details, p_file, p_line);
+				if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_12) {
+					os_log_error(OS_LOG_DEFAULT,
+							"SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+							p_function, err_details, p_file, p_line);
+				}
 				logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function,
 						err_details);
 				logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 			case ERR_SHADER:
-				os_log_error(OS_LOG_DEFAULT,
-						"SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-						p_function, err_details, p_file, p_line);
+				if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_12) {
+					os_log_error(OS_LOG_DEFAULT,
+							"SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+							p_function, err_details, p_file, p_line);
+				}
 				logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function,
 						err_details);
 				logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 			case ERR_ERROR:
 			default:
-				os_log_error(OS_LOG_DEFAULT,
-						"ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-						p_function, err_details, p_file, p_line);
+				if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_12) {
+					os_log_error(OS_LOG_DEFAULT,
+							"ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+							p_function, err_details, p_file, p_line);
+				}
 				logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
 				logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
@@ -1807,10 +1806,14 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 		CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
 		if (menuBarHeight != 0.f) {
 			size.y += menuBarHeight;
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= 101104
 		} else {
-			size.y += [[NSStatusBar systemStatusBar] thickness];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
+			if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_12) {
+#else
+			{
 #endif
+				size.y += [[NSStatusBar systemStatusBar] thickness];
+			}
 		}
 	}
 
