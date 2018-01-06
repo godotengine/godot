@@ -63,7 +63,7 @@ public:
 	void set_value_raw(MonoObject *p_object, void *p_ptr);
 	void set_value_from_variant(MonoObject *p_object, const Variant &p_value);
 
-	_FORCE_INLINE_ MonoObject *get_value(MonoObject *p_object);
+	MonoObject *get_value(MonoObject *p_object);
 
 	bool get_bool_value(MonoObject *p_object);
 	int get_int_value(MonoObject *p_object);
