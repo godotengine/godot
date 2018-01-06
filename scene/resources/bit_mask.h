@@ -39,7 +39,6 @@ class BitMap : public Resource {
 
 	GDCLASS(BitMap, Resource);
 	OBJ_SAVE_TYPE(BitMap);
-	RES_BASE_EXTENSION("pbm");
 
 	Vector<uint8_t> bitmask;
 	int width;

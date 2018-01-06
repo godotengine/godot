@@ -399,7 +399,6 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 }
 
 void GDNativeLibraryResourceLoader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->clear();
 	p_extensions->push_back("gdnlib");
 }
 
@@ -438,7 +437,6 @@ bool GDNativeLibraryResourceSaver::recognize(const RES &p_resource) const {
 
 void GDNativeLibraryResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 	if (Object::cast_to<GDNativeLibrary>(*p_resource) != NULL) {
-		p_extensions->clear();
 		p_extensions->push_back("gdnlib");
 	}
 }
