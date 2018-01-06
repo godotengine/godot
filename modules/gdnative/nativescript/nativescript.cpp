@@ -790,8 +790,13 @@ NativeScriptInstance::~NativeScriptInstance() {
 
 NativeScriptLanguage *NativeScriptLanguage::singleton;
 
-void NativeScriptLanguage::_unload_stuff() {
+void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *L = library_classes.front(); L; L = L->next()) {
+
+		if (p_reload && !library_gdnatives[L->key()]->get_library()->is_reloadable()) {
+			continue;
+		}
+
 		for (Map<StringName, NativeScriptDesc>::Element *C = L->get().front(); C; C = C->next()) {
 
 			// free property stuff first
@@ -1108,7 +1113,7 @@ void NativeReloadNode::_notification(int p_what) {
 #ifndef NO_THREADS
 			MutexLock lock(NSL->mutex);
 #endif
-			NSL->_unload_stuff();
+			NSL->_unload_stuff(true);
 			for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
 				Ref<GDNative> gdn = L->get();

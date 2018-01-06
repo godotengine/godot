@@ -205,7 +205,7 @@ class NativeScriptLanguage : public ScriptLanguage {
 private:
 	static NativeScriptLanguage *singleton;
 
-	void _unload_stuff();
+	void _unload_stuff(bool p_reload = false);
 
 #ifndef NO_THREADS
 	Mutex *mutex;
