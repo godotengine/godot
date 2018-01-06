@@ -95,7 +95,6 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Vector<Ref<Translation> > translations;
 	Map<String, Ref<ShortCut> > shortcuts;
 
 	String resource_path;
