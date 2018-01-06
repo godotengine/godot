@@ -350,7 +350,7 @@ $GODOT_HEAD_INCLUDE
 				};
 
 				function printError(text) {
-					if (!text.startsWith('**ERROR**: ')) {
+					if (!String.prototype.trim.call(text).startsWith('**ERROR**: ')) {
 						text = '**ERROR**: ' + text;
 					}
 					print(text);

@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
-			Module['ccall']('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
+			ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
 		});
 	);
 	/* clang-format on */
