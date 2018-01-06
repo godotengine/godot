@@ -111,7 +111,8 @@ private:
 	bool save_changed_setting;
 	bool optimize_save; //do not save stuff that came from config but was not set from engine
 
-	bool _set(const StringName &p_name, const Variant &p_value, bool p_emit_signal = true);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _set_only(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _initial_set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -146,7 +147,10 @@ public:
 	void raise_order(const String &p_setting);
 	void set_initial_value(const StringName &p_setting, const Variant &p_value);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
-		_set(p_setting, p_value, p_emit_signal);
+		if (p_emit_signal)
+			_set(p_setting, p_value);
+		else
+			_set_only(p_setting, p_value);
 	}
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
