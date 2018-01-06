@@ -5084,9 +5084,26 @@ void EditorNode::_bind_methods() {
 
 void EditorNode::_export_godot3_path(const String &p_path) {
 
+	// Prevent exporting within the current project folder
+	// Copied from ProjectExportDialog
+	String location = Globals::get_singleton()->globalize_path(p_path).replace("\\", "/");
+	while (true) {
+
+		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
+
+			accept->set_text(TTR("Please export outside the project folder!"));
+			accept->popup_centered_minsize();
+			return;
+		}
+		String nl = (location + "/..").simplify_path();
+		if (nl.find("/") == location.find_last("/"))
+			break;
+		location = nl;
+	}
+
 	Error err = export_godot3.export_godot3(p_path, export_godot3_dialog_convert_scripts->is_pressed());
 	if (err != OK) {
-		show_warning("Error exporting to Godot 3.0");
+		show_warning(TTR("Error exporting project to Godot 3.0."));
 	}
 }
 
