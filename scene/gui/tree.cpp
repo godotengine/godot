@@ -916,6 +916,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	if (p_item == root && hide_root)
 		return 0;
 
+	ERR_FAIL_COND_V(cache.font.is_null(), 0);
 	int height = cache.font->get_height();
 
 	for (int i = 0; i < columns.size(); i++) {
@@ -989,6 +990,8 @@ int Tree::get_item_height(TreeItem *p_item) const {
 
 void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color) {
 
+	ERR_FAIL_COND(cache.font.is_null());
+
 	Rect2i rect = p_rect;
 	Ref<Font> font = cache.font;
 	String text = p_cell.text;
@@ -1058,6 +1061,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		//draw separation.
 		//if (p_item->get_parent()!=root || !hide_root)
 
+		ERR_FAIL_COND_V(cache.font.is_null(), -1);
 		Ref<Font> font = cache.font;
 
 		int font_ascent = font->get_ascent();
@@ -2794,6 +2798,7 @@ void Tree::update_scrollbars() {
 
 int Tree::_get_title_button_height() const {
 
+	ERR_FAIL_COND_V(cache.font.is_null() || cache.title_button.is_null(), 0);
 	return show_column_titles ? cache.font->get_height() + cache.title_button->get_minimum_size().height : 0;
 }
 
