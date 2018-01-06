@@ -2003,7 +2003,7 @@ FRAGMENT_SHADER_CODE
 	}
 #ifndef USE_LIGHTMAP
 	if (ambient_accum.a>0.0) {
-		ambient_light+=ambient_accum.rgb/ambient_accum.a;
+		ambient_light=ambient_accum.rgb/ambient_accum.a;
 	}
 #endif
 
