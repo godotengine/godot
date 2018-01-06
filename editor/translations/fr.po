@@ -5,6 +5,7 @@
 #
 # Antoine Carrier <ac.g392@gmail.com>, 2017.
 # ARocherVj <a.rocher.vj@gmail.com>, 2017.
+# Arthur Templé <tuturtemple@gmail.com>, 2018.
 # Brice <bbric@free.fr>, 2016.
 # Chenebel Dorian <LoubiTek54@gmail.com>, 2016-2017.
 # derderder77 <derderder77380@gmail.com>, 2016.
@@ -34,8 +35,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-12-07 06:46+0000\n"
-"Last-Translator: LL <lu.lecocq@free.fr>\n"
+"PO-Revision-Date: 2018-01-06 13:19+0000\n"
+"Last-Translator: Arthur Templé <tuturtemple@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -54,9 +55,8 @@ msgid "All Selection"
 msgstr "Toute la sélection"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Animation Changer la valeur"
+msgstr "Changer l'heure de l'animation des images clés"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -67,9 +67,8 @@ msgid "Anim Change Transform"
 msgstr "Animation Changer la transformation"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Animation Changer la valeur"
+msgstr "Changer la valeur de l'animation des images clés"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -564,9 +563,8 @@ msgid "Connecting Signal:"
 msgstr "Connecter un signal :"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Connecter « %s » à « %s »"
+msgstr "Déconnecter « %s » de « %s »"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -582,9 +580,8 @@ msgid "Signals"
 msgstr "Signaux"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Créer un nouveau"
+msgstr "Créer un nouveau %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -957,7 +954,7 @@ msgstr "Supprimer l'effet"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1144,7 +1141,7 @@ msgstr "(vide)"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "(Non sauvegardé)"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -3181,7 +3178,7 @@ msgstr "seul les différence"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Forcer la modulation blanche"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
@@ -3510,16 +3507,24 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Ne peut pas déterminer un chemin de sauvegarde pour les images lightmap.\n"
+"Sauvegarder votre scène (pour que les images soient sauvegardées dans le "
+"même répertoire), ou choisissez un répertoire de sauvegarde à partir des "
+"propriétés BakedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Aucun mesh à transférer. Assurez-vous qu'ils contiennent un canal UV2 et que "
+"l'indicateur \"Bake Light\" est activé."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Échec de la création des images lightmap, assurez-vous que le chemin est "
+"accessible en écriture."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
@@ -3893,11 +3898,11 @@ msgstr "Mettre à jour depuis la scène"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat0"
-msgstr ""
+msgstr "Plat0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat1"
-msgstr ""
+msgstr "Plat1"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Ease in"
@@ -4041,19 +4046,19 @@ msgstr "Créer un maillage de navigation"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Le maillage contenu n'est pas de type ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "L'ouverture du UV a échoué, le maillage n'est peut-être pas multiple ?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Aucun maillage à déboguer."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "Le modèle n'a pas d'UV dans cette couche"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -4108,7 +4113,7 @@ msgstr "Affichage"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "Ouverture d'UV2 pour Lightmap/AO"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -5471,7 +5476,7 @@ msgstr "Paramètres"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Skeleton Gizmo visibility"
-msgstr ""
+msgstr "Visibilité squelette Gizmo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -6526,7 +6531,7 @@ msgstr "Nouveau script"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Nouveau %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
@@ -7143,7 +7148,7 @@ msgstr "Raccourcis"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Liaison"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7195,11 +7200,11 @@ msgstr "Changer les ampleurs de la sonde"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Sélectionnez la librairie dynamique pour cette entrée"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Sélectionnez les dépendances de la librairie pour cette entrée"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 #, fuzzy
@@ -7208,11 +7213,12 @@ msgstr "Supprimer point de courbe"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Double-cliquez pour créer une nouvelle entrée"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
 msgid "Platform:"
-msgstr ""
+msgstr "Platform:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 #, fuzzy
@@ -7225,8 +7231,9 @@ msgid "Dynamic Library"
 msgstr "Bibliothèque"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
+#, fuzzy
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Ajouter une entrée architecturale"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 #, fuzzy

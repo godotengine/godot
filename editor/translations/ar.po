@@ -10,7 +10,7 @@
 # Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016.
 # Mrwan Ashraf <mrwan.ashraf94@gmail.com>, 2017.
 # noureldin sharaf <sharaf.noureldin@yahoo.com>, 2017.
-# omar anwar aglan <omar.aglan91@yahoo.com>, 2017.
+# omar anwar aglan <omar.aglan91@yahoo.com>, 2017-2018.
 # OWs Tetra <owstetra@gmail.com>, 2017.
 # Rex_sa <asd1234567890m@gmail.com>, 2017.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
@@ -18,8 +18,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-20 15:42+0000\n"
-"Last-Translator: Rex_sa <asd1234567890m@gmail.com>\n"
+"PO-Revision-Date: 2018-01-06 13:19+0000\n"
+"Last-Translator: omar anwar aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.18\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -38,9 +38,8 @@ msgid "All Selection"
 msgstr "كُل المُحدد"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "قيمة تغيير التحريك"
+msgstr "تغيير وقت الإطار الرئيسي للحركة"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -51,9 +50,8 @@ msgid "Anim Change Transform"
 msgstr "تحويل تغيير التحريك"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "قيمة تغيير التحريك"
+msgstr "تغيير قيمة الإطار الأساسي للحركة"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -546,9 +544,8 @@ msgid "Connecting Signal:"
 msgstr "يوصل الإشارة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "وصل '%s' إلي '%s'"
+msgstr "قطع إتصال'%s' من '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -564,9 +561,8 @@ msgid "Signals"
 msgstr "الإشارات"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "إنشاء جديد"
+msgstr "إنشاء %s جديد"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -870,9 +866,8 @@ msgid "Rename Audio Bus"
 msgstr "إعادة تسمية بيوس الصوت"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "تبديل بيوس الصوت إلي فردي"
+msgstr "تغيير حجم صوت البيوس"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -2351,14 +2346,12 @@ msgid "Frame #:"
 msgstr "اطار #:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
-msgstr "الوقت:"
+msgstr "الوقت"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "نداء"
+msgstr "ندائات"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2499,7 +2492,6 @@ msgstr "لا يوجد إستجابة."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
 msgstr "فشل الطلب."
 
@@ -2547,7 +2539,6 @@ msgid "Connecting.."
 msgstr "جاري الإتصال..."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
 msgstr "لا يمكن الإتصال"
 
@@ -2642,9 +2633,8 @@ msgid "Error moving:\n"
 msgstr "خطأ في تحريك:\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:\n"
-msgstr "خطآ في التحميل:"
+msgstr "خطآ في التكرار\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
@@ -2679,14 +2669,12 @@ msgid "Renaming folder:"
 msgstr "إعادة تسمية مجلد:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "تكرير"
+msgstr "تكرير الملف:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "إعادة تسمية مجلد:"
+msgstr "تكرار مجلد:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2705,9 +2693,8 @@ msgid "Move To.."
 msgstr "تحريك إلي.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
-msgstr "فتح مشهد"
+msgstr "فتح مشهد (مشاهد)"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2722,9 +2709,8 @@ msgid "View Owners.."
 msgstr "أظهر المُلاك.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "تكرير"
+msgstr "تكرير..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -3110,7 +3096,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr "الاختلافات فقط"
+msgstr "الإختلافات فقط"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
@@ -3969,19 +3955,19 @@ msgstr "أنشئ ميش التنقل"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "الميش المتضمن ليس من النوع الميش المتعدد."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "نشر Unwrap فشل، الميش ربما لا يكون متعدد؟"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "لا ميش لتصحيحة."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "النموذج ليس لديه UV في هذا الطابق"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -4005,37 +3991,35 @@ msgstr "الميش"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
-msgstr ""
+msgstr "إنشاء جسم تراميش ثابت"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Static Body"
-msgstr ""
+msgstr "أنشئ جسم محدب ثابت"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr ""
+msgstr "إنشاء متصادم تراميش قريب"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Collision Sibling"
-msgstr ""
+msgstr "إنشاء متصادم محدب قريب"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
 msgstr "إنشاء شبكة الخطوط العريضة .."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
-msgstr "أظهر"
+msgstr "أظهر UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
-msgstr "أظهر"
+msgstr "أظهر UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "بسط UV2 من أجل خريطة الضوء/الإطباق المحيط"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4047,127 +4031,127 @@ msgstr "حجم الخطوط:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr ""
+msgstr "لا مصدر ميش تم تحديده (و لا ميش متعدد تم تحديده في العقدة)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr ""
+msgstr "لا مصدر ميش تم تحديده (و ميش المتعدد لا يحتوي علي ميش)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr ""
+msgstr "مصدر الميش خاطئ (المسار خاطئ)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr ""
+msgstr "مصدر الميش خاطئ (لييس ميش نموذجي)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr ""
+msgstr "مصدر الميش خاطئ (لا يحتوي علي مصادر للميش)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
-msgstr ""
+msgstr "لا مصدر للسطح تم تحديده."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr ""
+msgstr "مصدر السطح خاطئ (مسار خاطئ)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr ""
+msgstr "مصدر السطح خاطئ (لا شكل هندسي)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
-msgstr ""
+msgstr "مصدر السطح خاطئ (لا وجوه)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
-msgstr ""
+msgstr "الأب ليس لديه وجوه ثابته لكي تتزايد."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Couldn't map area."
-msgstr ""
+msgstr "لا يمكنه تخطيط المنطقة."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
-msgstr ""
+msgstr "حدد مصدر ميش:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
-msgstr ""
+msgstr "حدد السطح المستهدف:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate Surface"
-msgstr ""
+msgstr "تزويد السطح"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr ""
+msgstr "تزويد الميش المتعدد"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
-msgstr ""
+msgstr "السطح المستهدف:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
-msgstr ""
+msgstr "الميش المصدر:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "X-Axis"
-msgstr ""
+msgstr "محور-X"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Y-Axis"
-msgstr ""
+msgstr "محور-Y"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Z-Axis"
-msgstr ""
+msgstr "محور-Z"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr ""
+msgstr "ميش المحاور:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
-msgstr ""
+msgstr "دوران عشوائي:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Tilt:"
-msgstr ""
+msgstr "إمالة عشوائية:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Scale:"
-msgstr ""
+msgstr "حجم عشوائي:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate"
-msgstr ""
+msgstr "تكثير/تزويد"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake!"
-msgstr ""
+msgstr "طبخ!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake the navigation mesh.\n"
-msgstr ""
+msgstr "طبخ ميش المحاور.\n"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
-msgstr ""
+msgstr "إخلاء ميش المحاور."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "يُجهز الإعدادات..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "يحسب حجم الشبكة..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
-msgstr ""
+msgstr "إنشاء مجال الإرتفاع..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
@@ -4175,48 +4159,48 @@ msgstr "تعليم مثلثات التحرك.."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr ""
+msgstr "يبني مجال الإرتفاع المدمج..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
-msgstr ""
+msgstr "تقويض منطقة السير..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
-msgstr ""
+msgstr "تجزئة..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating contours..."
-msgstr ""
+msgstr "إنشاء المحيط..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
-msgstr ""
+msgstr "إنشاء نموذج الميش..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr ""
+msgstr "يحول إلي ميش التنقل المحلي..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr ""
+msgstr "منشئ تثبيت ميش التنقل:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
-msgstr ""
+msgstr "توزيع الأشكال الهندسية..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "تم!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
-msgstr ""
+msgstr "إنشاء مُضلع التنقل"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr ""
+msgstr "يُنشئ AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4618,9 +4602,8 @@ msgid "Soft Reload Script"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "نسخ المسار"
+msgstr "نسخ مسار الكود"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4809,9 +4792,8 @@ msgid "Clone Down"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "خط مطوي"
+msgstr "إلغاء/تفعيل طي الخط"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5258,9 +5240,8 @@ msgid "Local Space Mode (%s)"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "أكبس إلي الموجهات"
+msgstr "وضع الكبس (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5762,9 +5743,8 @@ msgid "Merge from scene?"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "مجموعة البلاط.."
+msgstr "مجموعة البلاط"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -7060,9 +7040,8 @@ msgid "Select dependencies of the library for this entry"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "مسح نقطة الإنحناء"
+msgstr "مسح المدخلة الحالية"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"

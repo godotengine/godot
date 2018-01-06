@@ -3,12 +3,12 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# George Tsiamasiotis <gtsiam@windowslive.com>, 2017.
+# George Tsiamasiotis <gtsiam@windowslive.com>, 2017-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-05 21:46+0000\n"
+"PO-Revision-Date: 2018-01-04 15:26+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -27,9 +27,8 @@ msgid "All Selection"
 msgstr "Επιλογή όλων"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Αλλαγή τιμής"
+msgstr "Anim Αλλαγή χρόνου στιγμιοτύπου"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -40,9 +39,8 @@ msgid "Anim Change Transform"
 msgstr "Anim Αλλαγή μετασχηματισμού (transform)"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Αλλαγή τιμής"
+msgstr "Anim Αλλαγή τιμής στιγμιοτύπου"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -537,9 +535,8 @@ msgid "Connecting Signal:"
 msgstr "Σύνδεση στο σήμα:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Σύνδεση του '%s' στο '%s'"
+msgstr "Αποσύνδεση του '%s' απο το '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -555,9 +552,8 @@ msgid "Signals"
 msgstr "Σήματα"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Δημιουργία νέου"
+msgstr "Δημιουργία νέου %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -862,9 +858,8 @@ msgid "Rename Audio Bus"
 msgstr "Μετονομασία διαύλου ήχου"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Εναλλαγή σόλο διαύλου ήχου"
+msgstr "Αλλαγή έντασης διαύλου ήχου"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -929,7 +924,7 @@ msgstr "Διαγραφή εφέ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Ήχος"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1106,13 +1101,12 @@ msgid "Updating scene.."
 msgstr "Ενημέρωση σκηνής.."
 
 #: editor/editor_data.cpp
-#, fuzzy
 msgid "[empty]"
-msgstr "(άδειο)"
+msgstr "[άδειο]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[μη αποθηκευμένο]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -2368,14 +2362,12 @@ msgid "Frame #:"
 msgstr "Καρέ #:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
-msgstr "Χρόνος:"
+msgstr "Χρόνος"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "Κλήση"
+msgstr "Κλήσεις"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2518,7 +2510,6 @@ msgstr "Δεν λήφθηκε απόκριση."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
 msgstr "Το αίτημα απέτυχε."
 
@@ -2566,9 +2557,8 @@ msgid "Connecting.."
 msgstr "Σύνδεση.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
-msgstr "Δεν ήταν δυνατή η σύνδεση"
+msgstr "Αδύνατη η σύνδεση"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
@@ -2664,9 +2654,8 @@ msgid "Error moving:\n"
 msgstr "Σφάλμα κατά την μετακίνηση:\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:\n"
-msgstr "Σφάλμα κατά την φόρτωση:"
+msgstr "Σφάλμα κατά τον διπλασιασμό:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
@@ -2701,14 +2690,12 @@ msgid "Renaming folder:"
 msgstr "Μετονομασία καταλόγου:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "Διπλασιασμός"
+msgstr "Διπλασιασμός αρχείου:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Μετονομασία καταλόγου:"
+msgstr "Διπλασιασμός καταλόγου:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2727,7 +2714,6 @@ msgid "Move To.."
 msgstr "Μετακίνηση σε"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
 msgstr "Άνοιγμα σκηνής"
 
@@ -2744,9 +2730,8 @@ msgid "View Owners.."
 msgstr "Προβολή ιδιοκτητών"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "Διπλασιασμός"
+msgstr "Αναπαραγωγή"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2845,14 +2830,12 @@ msgid "Importing Scene.."
 msgstr "Εισαγωγή σκηνής..."
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Μεταφορά στους χάρτες φωτός:"
+msgstr "Δημιουργία χαρτών φωτός"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh: "
-msgstr "Δημιουρία AABB"
+msgstr "Δημιουρία για πλέγμα: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3146,7 +3129,7 @@ msgstr "Εξανάγκασε τονισμό άσπρου"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "Συμπεριέλαβε μαραφέτια (3D)"
+msgstr "Συμπεριέλαβε τα μαραφέτια (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3472,21 +3455,28 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Δεν ήταν δυνατός ο προσδιορισμός διαδρομής για την αποθήκευση των χαρτών "
+"φωτός.\n"
+"Αποθηκεύστε την σκηνή σας (για να αποθηκευτούν οι εικόνες στον ίδιο "
+"κατάλογο), ή επιλέξτε μία διαδρομή από τις ιδιότητες του BakedLightMap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Δεν υπάρχουν πλέγματα για προετοιμασία. Σιγουρευτείτε πως περιέχουν κανάλι "
+"UV2 και πως η σημαία 'Bake Light' είναι ενεργοποιημένη."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Απέτυχε η δημιουργία του χάρτη φψτός, σιγουρευτείτε ότι η διαδρομή είναι "
+"εγγράψιμη."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Μεταφορά στους χάρτες φωτός:"
+msgstr "Προεπεξεργασία χαρτών φωτός"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -4001,19 +3991,19 @@ msgstr "Δημιουργία πλέγματος πλοήγησης"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Το περιεχόμενο πλέγμα δεν είναι τύπου ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "Το ξεδίπλωμα των UV απέτυχε, το πλέγμα μπορεί να μην είναι πολλαπλό?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Κανένα πλέγμα για αποσφαλμάτωση."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "Το μοντέλο δεν έχει UV σε αυτό το στρώμα"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -4056,18 +4046,16 @@ msgid "Create Outline Mesh.."
 msgstr "Δημιουργία πλέγματος περιγράμματος.."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
-msgstr "Κάμερα"
+msgstr "Εμφάνιση UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
-msgstr "Κάμερα"
+msgstr "Εμφάνιση UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "Ξεδίπλωμα UV2 για χάρτη φωτός / ΑΟ"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4181,7 +4169,7 @@ msgstr "Συμπλήρωση"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake!"
-msgstr "Προεπεξεργάσου!"
+msgstr "Προετοίμασε!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake the navigation mesh.\n"
@@ -4656,9 +4644,8 @@ msgid "Soft Reload Script"
 msgstr "Απλή επαναφόρτωση δεσμής ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "Αντιγραφή διαδρομής"
+msgstr "Αντιγραφή διαδρομής δεσμής ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4851,9 +4838,8 @@ msgid "Clone Down"
 msgstr "Κλωνοποίηση κάτω"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Ξεδίπλωμα γραμμής"
+msgstr "Δίπλωμα/Ξεδίπλωμα γραμμής"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5301,14 +5287,12 @@ msgid "Local Coords"
 msgstr "Τοπικές συντεταγμένες"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Local Space Mode (%s)"
-msgstr "Λειτουργία κλιμάκωσης (R)"
+msgstr "Λειτουργία τοπικού χώρου (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "Λειτουργία κουμπώματος:"
+msgstr "Λειτουργία κουμπώματος (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5425,7 +5409,7 @@ msgstr "Ρυθμίσεις"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Skeleton Gizmo visibility"
-msgstr ""
+msgstr "Ορατότητα μαραφετιών σκελετού"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5810,9 +5794,8 @@ msgid "Merge from scene?"
 msgstr "Συγχώνευση από σκηνή;"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "TileSet..."
+msgstr "Σύνολο πλακιδίων"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6226,9 +6209,8 @@ msgid "Joypad Button Index:"
 msgstr "Αριθμός κουμπιού Joypad:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Erase Input Action"
-msgstr "Διαγραφή συμβάντος ενέργειας εισόδου"
+msgstr "Διαγραφή ενέργειας εισόδου"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6476,7 +6458,7 @@ msgstr "Νεα δεσμή ενεργειών"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Νέο %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
@@ -6511,9 +6493,8 @@ msgid "On"
 msgstr "Ναι"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "[Empty]"
-msgstr "Προσθήκη άδειου"
+msgstr "[Άδειο]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
@@ -7099,7 +7080,7 @@ msgstr "Συντομεύσεις"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Σύνδεση"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7151,43 +7132,39 @@ msgstr "Αλλαγή διαστάσεων αισθητήρα"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Επιλέξτε μία δυναμική βιβλιοθήκη για αυτή την εγγραφή"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Επιλέξτε τις εξαρτήσεις της βιβλιοθήκης για αυτήν την εγγραφή"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Αφαίρεση σημείου καμπύλης"
+msgstr "Αφαίρεση τρέχουσας εγγραφής"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Διπλό κλικ για καινούγια εγγραφή"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
-msgstr ""
+msgstr "Πλατφόρμα:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Platform"
-msgstr "Αντιγραφή σε πλατφόρμα.."
+msgstr "Πλατφόρμα"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Dynamic Library"
-msgstr "Βιβλιοθήκη"
+msgstr "Δυναμική Βιβλιοθήκη"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Προσθέστε ένα πεδίο αρχιτεκτονικής"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "GDNativeLibrary"
-msgstr "GDNative"
+msgstr "Βιβλιοθήκη GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -7905,23 +7882,20 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "Το ARVROrigin απαιτεί έναν κόμβο ARVRCamera ως παιδί"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
-msgstr "Τοποθέτηση πλεγμάτων"
+msgstr "Τοποθέτηση πλεγμάτων: "
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Lights:"
-msgstr "Τοποθέτηση πλεγμάτων"
+msgstr "Τοποθέτηση φώτων:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
 msgstr "Ολοκλήρωση σχεδιαγράμματος"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Lighting Meshes: "
-msgstr "Τοποθέτηση πλεγμάτων"
+msgstr "Φώτηση πλεγμάτων: "
 
 #: scene/3d/collision_polygon.cpp
 msgid ""

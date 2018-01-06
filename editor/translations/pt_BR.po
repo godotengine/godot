@@ -15,7 +15,7 @@
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 # MalcomRF <malcomkbk@gmail.com>, 2017.
 # Marcus Correia <marknokalt@live.com>, 2017.
-# Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017.
+# Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
 # Renato Rotenberg <renato.rotenberg@gmail.com>, 2017.
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
@@ -24,8 +24,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2017-12-20 15:43+0000\n"
-"Last-Translator: Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>\n"
+"PO-Revision-Date: 2018-01-06 13:19+0000\n"
+"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
+"com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.18\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -44,9 +45,8 @@ msgid "All Selection"
 msgstr "Toda a Seleção"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Mudar Valor da Anim"
+msgstr "Alterar tempo de quadro-chave da animação"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -57,9 +57,8 @@ msgid "Anim Change Transform"
 msgstr "Mudar Transformação da Anim"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Mudar Valor da Anim"
+msgstr "Mudar valor de quadro-chave da animação"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -103,7 +102,7 @@ msgstr "Mudar Modo de Valor da Trilha"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr "Mudar Modo de Cobertura da Trilha de Animação"
+msgstr "Alterar Modo de Loop da Trilha de Animação"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -552,9 +551,8 @@ msgid "Connecting Signal:"
 msgstr "Conectando Sinal:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Conectar \"%s\" a \"%s\""
+msgstr "Desconectar '%s' do '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -570,9 +568,8 @@ msgid "Signals"
 msgstr "Sinais"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Criar Novo"
+msgstr "Criar Novo %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -877,9 +874,8 @@ msgid "Rename Audio Bus"
 msgstr "Renomear Canal de Áudio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Alternar Solo do Canal de Áudio"
+msgstr "Alternar Volume do Canal de Áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -944,7 +940,7 @@ msgstr "Excluir Efeito"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1122,13 +1118,12 @@ msgid "Updating scene.."
 msgstr "Atualizando Cena..."
 
 #: editor/editor_data.cpp
-#, fuzzy
 msgid "[empty]"
-msgstr "(vazio)"
+msgstr "[vazio]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[não salvo]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1702,7 +1697,7 @@ msgstr "Essa operação não pode ser realizada sem uma cena."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "Exportar Biblioteca de Meshes"
+msgstr "Exportar Biblioteca de Malhas"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
@@ -2108,7 +2103,7 @@ msgstr "Documentação Online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Perguntas e Respostas"
+msgstr "P&R"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -2301,7 +2296,7 @@ msgstr "Abrir o Editor anterior"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr "Criando Previsualizações da Mesh"
+msgstr "Criando Previsualizações das Malhas"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
@@ -2373,14 +2368,12 @@ msgid "Frame #:"
 msgstr "Frame nº:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
-msgstr "Tempo:"
+msgstr "Tempo"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "Chamar"
+msgstr "Chamadas"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2524,9 +2517,8 @@ msgstr "Sem resposta."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
-msgstr "Sol. Falhou."
+msgstr "Solicitação Falhou."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2572,9 +2564,8 @@ msgid "Connecting.."
 msgstr "Conectando.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
-msgstr "Não foi possível conectar"
+msgstr "Não foi Possível Conectar"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
@@ -2669,9 +2660,8 @@ msgid "Error moving:\n"
 msgstr "Erro ao mover:\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:\n"
-msgstr "Erro ao carregar:"
+msgstr "Erro ao duplicar:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
@@ -2706,14 +2696,12 @@ msgid "Renaming folder:"
 msgstr "Renomear pasta:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "Duplicar"
+msgstr "Duplicando arquivo:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Renomear pasta:"
+msgstr "Duplicando pasta:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2732,9 +2720,8 @@ msgid "Move To.."
 msgstr "Mover Para..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
-msgstr "Abrir Cena"
+msgstr "Abrir Cena(s)"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2749,9 +2736,8 @@ msgid "View Owners.."
 msgstr "Visualizar Proprietários..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "Duplicar"
+msgstr "Duplicar..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2848,14 +2834,12 @@ msgid "Importing Scene.."
 msgstr "Importando Cena..."
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Transferir para Mapas de Luz:"
+msgstr "Generando Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh: "
-msgstr "Gerando AABB"
+msgstr "Generando para a Malha: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3475,21 +3459,27 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Não foi possível determinar um caminho para salvar as imagens do lightmap.\n"
+"Salve sua cena (para que as imagens sejam salvas no mesmo diretório), ou "
+"escolha um caminho nas propriedades do BakedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Não há malhas para preparar. Certifique-se de que elas possuem um canal UV2 "
+"e que a propriedade \"Preparar Luz\" está habilitada."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Falha ao criar imagens do lightmap, certifique-se de que o caminho tem "
+"permissões de escrita."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Transferir para Mapas de Luz:"
+msgstr "Preparar Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3626,7 +3616,7 @@ msgstr "Modo Panorâmico"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggles snapping"
-msgstr "Alternar Encaixar"
+msgstr "Alternar Encaixamento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Snap"
@@ -4000,31 +3990,31 @@ msgstr "Criar Forma Convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr "Criar Mesh de Navegação"
+msgstr "Criar Malha de Navegação"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Malha contida não é do tipo ArrayMesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "Falha ao desembrulhar UV. A malha pode não ter múltiplas faces?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Nenhuma malha para depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "Modelo não tem uma UV nesta camada"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "Falta uma Mesh na MeshInstance!"
+msgstr "Falta uma Malha na MeshInstance!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr "Mesh não tem superfície para criar contornos dela!"
+msgstr "Malha não tem superfície para criar contornos dela!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4056,25 +4046,23 @@ msgstr "Criar Colisão Convexa Irmã"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
-msgstr "Criar Mesh de Contorno.."
+msgstr "Criar Malha de Contorno.."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
-msgstr "Visualizar"
+msgstr "Visualizar UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
-msgstr "Visualizar"
+msgstr "Visualizar UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "Desembrulhar UV2 para Lightmap/AO"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
-msgstr "Criar Mesh de Contorno"
+msgstr "Criar Malha de Contorno"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
@@ -4083,23 +4071,24 @@ msgstr "Tamanho do Contorno:"
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
-"Nenhuma mesh de origem especificada (e nenhuma MultiMesh definida no nó)."
+"Nenhuma malha de origem especificada (e nenhuma MultiMesh definida no nó)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "Nenhuma mesh de origem especificada (e MultiMesh contém nenhuma Mesh)."
+msgstr ""
+"Nenhuma malha de origem especificada (e MultiMesh contém nenhuma Malha)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr "Mesh de origem é inválida (Caminho inválido)."
+msgstr "Malha de origem é inválida (caminho inválido)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "Mesh de origem é inválida (não é uma MeshInstance)."
+msgstr "Malha de origem é inválida (não é uma MeshInstance)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "Mesh de origem é inválida (contém nenhum recurso de Mesh)."
+msgstr "Malha de origem é inválida (contém nenhum recurso de Mesh)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -4127,7 +4116,7 @@ msgstr "Não foi possível mapear área."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
-msgstr "Selecione uma Mesh de origem:"
+msgstr "Selecione uma Malha de origem:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
@@ -4147,7 +4136,7 @@ msgstr "Superfície Destino:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
-msgstr "Mesh de Origem:"
+msgstr "Malha de Origem:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "X-Axis"
@@ -4163,7 +4152,7 @@ msgstr "Eixo-Z"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr "Mesh acima do Eixo:"
+msgstr "Malha acima do Eixo:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
@@ -4187,11 +4176,11 @@ msgstr "Precalcular!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake the navigation mesh.\n"
-msgstr "Preparar a mesh de navegação.\n"
+msgstr "Preparar a malha de navegação.\n"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
-msgstr "Apagar a mesh de navegação."
+msgstr "Apagar a malha de navegação."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
@@ -4231,11 +4220,11 @@ msgstr "Criando polimalha..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr "Convertando para mesh de navegação nativa..."
+msgstr "Convertando para malha de navegação nativa..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuração do Gerador de Mesh de Navegação:"
+msgstr "Configuração do Gerador de Malha de Navegação:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -4331,7 +4320,7 @@ msgstr "Gerar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr "Criar Pontos de Emissão a Partir do Mesh"
+msgstr "Criar Pontos de Emissão a Partir da Malha"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
@@ -4657,9 +4646,8 @@ msgid "Soft Reload Script"
 msgstr "Recarregar Script (suave)"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "Copiar Caminho"
+msgstr "Copiar Caminho do Script"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4852,9 +4840,8 @@ msgid "Clone Down"
 msgstr "Clonar Abaixo"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Mostrar Linha"
+msgstr "Dobrar/Desdobrar Linha"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5019,7 +5006,7 @@ msgstr "Modificar Curve Map"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Input Name"
-msgstr "Alterar Nome de Entrada"
+msgstr "Alterar Nome da Entrada"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
@@ -5051,7 +5038,7 @@ msgstr "Erro: Vínculo de Conexão Cíclico"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Missing Input Connections"
-msgstr "Erro: Faltando Conexões de Entrada"
+msgstr "Erro: Faltando as Conexões da Entrada"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
@@ -5300,14 +5287,12 @@ msgid "Local Coords"
 msgstr "Coordenadas Locais"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Local Space Mode (%s)"
-msgstr "Modo Escala (R)"
+msgstr "Modo Espaço Local (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "Modo Snap:"
+msgstr "Modo Encaixe (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5424,7 +5409,7 @@ msgstr "Configurações"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Skeleton Gizmo visibility"
-msgstr ""
+msgstr "Visibilidade do Gizmo de Esqueleto"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5809,9 +5794,8 @@ msgid "Merge from scene?"
 msgstr "Fundir a partir de cena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "TileSet..."
+msgstr "Tile Set"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6145,11 +6129,11 @@ msgstr "A ação \"%s\" já existe!"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
-msgstr "Renomear Evento Ação de Entrada"
+msgstr "Renomear Evento de Ação de Entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
-msgstr "Adicionar Evento Ação de Entrada"
+msgstr "Adicionar Evento de Ação de Entrada"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Shift+"
@@ -6225,13 +6209,12 @@ msgid "Joypad Button Index:"
 msgstr "Índice de Botão do Joypad:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Erase Input Action"
-msgstr "Apagar Evento Ação de Entrada"
+msgstr "Apagar Ação de Entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
-msgstr "Apagar Evento Ação de Entrada"
+msgstr "Apagar Evento de Ação de Entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
@@ -6475,7 +6458,7 @@ msgstr "Novo Script"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Novo %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
@@ -6510,9 +6493,8 @@ msgid "On"
 msgstr "Ativo"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "[Empty]"
-msgstr "Adicionar Vazio"
+msgstr "[Vazio]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
@@ -7089,7 +7071,7 @@ msgstr "Atalhos"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "VInculamento"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7141,43 +7123,39 @@ msgstr "Alterar a Extensão da Sonda"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Selecione a biblioteca dinâmica para esta entrada"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Selecione as dependências da biblioteca para esta entrada"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Remover Ponto da Curva"
+msgstr "Remover a entrada atual"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Dê um clique duplo para criar uma nova entrada"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
-msgstr ""
+msgstr "Plataforma:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Platform"
-msgstr "Copiar para a Plataforma..."
+msgstr "Plataforma"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Dynamic Library"
-msgstr "Biblioteca"
+msgstr "Biblioteca Dinâmica"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Adicionar uma entrada de arquitetura"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "GDNativeLibrary"
-msgstr "GDNative"
+msgstr "GDNativeLibrary"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -7561,7 +7539,7 @@ msgstr "Script já tem uma função '%s'"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
-msgstr "Alterar Valor de Entrada"
+msgstr "Alterar Valor da Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -7890,23 +7868,20 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin necessita um nó ARVRCamera como filho"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
-msgstr "Planejando Malhas"
+msgstr "Planejando Malhas: "
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Lights:"
-msgstr "Planejando Malhas"
+msgstr "Planejando Luzes:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
 msgstr "Terminando de Plotar"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Lighting Meshes: "
-msgstr "Planejando Malhas"
+msgstr "Iluminando Malhas: "
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7962,7 +7937,7 @@ msgstr ""
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
-"Nada está visível porque as malhas não foram atribuídas a passes de desenho."
+"Nada está visível porque as meshes não foram atribuídas a passes de desenho."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -8050,8 +8025,8 @@ msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
 msgstr ""
-"O Ambiente Padrão como especificado nas Configurações de Projeto "
-"(Renderização - Viewport -> Ambiente Padrão)  não pôde ser carregado."
+"O Ambiente Padrão como especificado nas Configurações de Projeto (Rendering -"
+"> Environment -> Default Environment)  não pôde ser carregado."
 
 #: scene/main/viewport.cpp
 msgid ""

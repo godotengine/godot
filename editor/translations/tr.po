@@ -18,7 +18,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-04 20:50+0000\n"
+"PO-Revision-Date: 2018-01-06 13:19+0000\n"
 "Last-Translator: razah <icnikerazah@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -938,7 +938,7 @@ msgstr "Efekt'i Sil"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Ses"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1119,7 +1119,7 @@ msgstr "(boş)"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[kaydedilmemiş]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1971,7 +1971,7 @@ msgstr "Proje Listesine Çık"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "Kusur Ayıkla"
+msgstr "Hata Ayıklama"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"

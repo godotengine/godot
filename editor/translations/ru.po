@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-11-29 10:40+0000\n"
+"PO-Revision-Date: 2017-12-22 14:18+0000\n"
 "Last-Translator: ijet <my-ijet@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -38,9 +38,8 @@ msgid "All Selection"
 msgstr "Все выбранные элементы"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Изменить значение"
+msgstr "Изменить время ключевого кадра"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -51,9 +50,8 @@ msgid "Anim Change Transform"
 msgstr "Изменить положение"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Изменить значение"
+msgstr "Измененить значение ключевого кадра"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -460,7 +458,7 @@ msgstr "Сбросить приближение"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr "Стр:"
+msgstr "Строка:"
 
 #: editor/code_editor.cpp
 msgid "Col:"
@@ -546,9 +544,8 @@ msgid "Connecting Signal:"
 msgstr "Подключение сигнала:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Присоединить '%s' к '%s'"
+msgstr "Отключить '%s' от '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -564,9 +561,8 @@ msgid "Signals"
 msgstr "Сигналы"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Создать новый"
+msgstr "Создать %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -870,9 +866,8 @@ msgid "Rename Audio Bus"
 msgstr "Переименовать аудио шину"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Переключить аудио шину - соло"
+msgstr "Изменить громкость звуковой шины"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -937,7 +932,7 @@ msgstr "Удалить эффект"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Аудио"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1118,13 +1113,12 @@ msgid "Updating scene.."
 msgstr "Обновление сцены.."
 
 #: editor/editor_data.cpp
-#, fuzzy
 msgid "[empty]"
-msgstr "(пусто)"
+msgstr "[пусто]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[не сохранено]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -2366,14 +2360,12 @@ msgid "Frame #:"
 msgstr "Кадр #:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
-msgstr "Время:"
+msgstr "Время"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "Вызов"
+msgstr "Вызовы"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2516,9 +2508,8 @@ msgstr "Нет ответа."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
-msgstr "Запрос не прошёл."
+msgstr "Не удалось выполнить запрос."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2564,7 +2555,6 @@ msgid "Connecting.."
 msgstr "Подключение.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
 msgstr "Не удаётся подключиться"
 
@@ -2662,9 +2652,8 @@ msgid "Error moving:\n"
 msgstr "Ошибка перемещения:\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:\n"
-msgstr "Ошибка при загрузке:"
+msgstr "Ошибка дублирования:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:\n"
@@ -2699,14 +2688,12 @@ msgid "Renaming folder:"
 msgstr "Переименование папки:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "Дублировать"
+msgstr "Дублирование файла:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Переименование папки:"
+msgstr "Дублирование папки:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2725,9 +2712,8 @@ msgid "Move To.."
 msgstr "Переместить в.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
-msgstr "Открыть сцену"
+msgstr "Открыть сцену(ны)"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2742,9 +2728,8 @@ msgid "View Owners.."
 msgstr "Просмотреть владельцев.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "Дублировать"
+msgstr "Дублировать.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2841,14 +2826,12 @@ msgid "Importing Scene.."
 msgstr "Импортирование сцены.."
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Передача в карты освещения:"
+msgstr "Создание карт освещения"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh: "
-msgstr "Генерировать AABB"
+msgstr "Создание для полисетки: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3468,21 +3451,26 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Не удается определить путь для сохранения lightmap.\n"
+"Сохраните ваши сцены (чтобы изображения были сохранены в том же разделе), "
+"или выберите путь сохранения в свойствах BakedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Нет полисеток для запекания. Убедитесь, что они содержат канал UV2 и что "
+"флаг 'Запекание света' включен."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Сбой создания карты освещенности, убедитесь, что путь доступен для записи."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Передача в карты освещения:"
+msgstr "Запекать карты освещения"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3631,7 +3619,7 @@ msgstr "Параметры прилипания"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to grid"
-msgstr "Прилипание к сетке"
+msgstr "Привязка к сетке"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
@@ -3639,7 +3627,7 @@ msgstr "Использовать привязку вращения"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Настроить прилипание.."
+msgstr "Настроить привязку..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -3655,7 +3643,7 @@ msgstr "Интеллектуальная привязка"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to parent"
-msgstr "Привязать к родителю"
+msgstr "Привязка к родителю"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
@@ -3671,7 +3659,7 @@ msgstr "Привязка к другим узлам"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to guides"
-msgstr "Прилипание к сетке"
+msgstr "Привязка к направляющим"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3997,19 +3985,19 @@ msgstr "Создать полисетку навигации"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Полисетка не ArrayMesh типа."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "UV развертка не удалась, возможно у полисетки не односвязная форма?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Нет полисетки для отладки."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "У модели нет UV в этом слое"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -4052,18 +4040,16 @@ msgid "Create Outline Mesh.."
 msgstr "Создать полисетку обводки.."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
-msgstr "Обзор"
+msgstr "Просмотр UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
-msgstr "Обзор"
+msgstr "Просмотр UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "Развернуть UV2 для Lightmap/AO"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4075,11 +4061,11 @@ msgstr "Размер обводки:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Не указан источник полисетки (и мульти полисетка не указана в узле)."
+msgstr "Не указан источник полисетки (и MultiMesh не указана в узле)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "Не указана исходная полисетка (и в мульти полисетке нет полисетки)."
+msgstr "Не указана исходная полисетка (и в MultiMesh нет полисетки)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
@@ -4155,7 +4141,7 @@ msgstr "Ось Z"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr "Сетка до оси:"
+msgstr "Ось вверх полисетки:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
@@ -4223,11 +4209,11 @@ msgstr "Создание полисетки..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
-msgstr "Преобразование в собственную навигационную сетку..."
+msgstr "Преобразование в собственную навигационную полисетку..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr "Настройка генератора навигационной сетки:"
+msgstr "Настройка генератора навигационной полисетки:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -4244,7 +4230,7 @@ msgstr "Создать Navigation Polygon"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr "Генерировать AABB"
+msgstr "Создание AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4648,9 +4634,8 @@ msgid "Soft Reload Script"
 msgstr "Мягко перезагрузить скрипты"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "Копировать путь"
+msgstr "Копировать путь к скрипту"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4843,9 +4828,8 @@ msgid "Clone Down"
 msgstr "Копировать вниз"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Развернуть строку"
+msgstr "Свернуть/Развернуть строку"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5082,7 +5066,7 @@ msgstr "Масштаб: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Переводы: "
+msgstr "Перемещение: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -5291,14 +5275,12 @@ msgid "Local Coords"
 msgstr "Локальные координаты"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Local Space Mode (%s)"
-msgstr "Режим масштабирования (R)"
+msgstr "Режим локального пространства (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "Режим привязки:"
+msgstr "Режим привязки (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5415,7 +5397,7 @@ msgstr "Настройки"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Skeleton Gizmo visibility"
-msgstr ""
+msgstr "Видимость гизмо скелета"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5423,7 +5405,7 @@ msgstr "Параметры привязки"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "Привязка преобразований:"
+msgstr "Привязка перемещения:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
@@ -5455,7 +5437,7 @@ msgstr "Изменение преобразования"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
-msgstr "Смещение:"
+msgstr "Перемещение:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
@@ -5800,9 +5782,8 @@ msgid "Merge from scene?"
 msgstr "Слияние из сцены?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "Набор тайлов.."
+msgstr "Набор тайлов"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6206,7 +6187,6 @@ msgid "Joypad Button Index:"
 msgstr "Индекс кнопки джойстика:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Erase Input Action"
 msgstr "Удалить действие"
 
@@ -6456,7 +6436,7 @@ msgstr "Новый скрипт"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Новый %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
@@ -6491,9 +6471,8 @@ msgid "On"
 msgstr "Вкл"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "[Empty]"
-msgstr "Добавить пустоту"
+msgstr "[Пусто]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
@@ -7073,7 +7052,7 @@ msgstr "Горячие клавиши"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Привязка"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7125,43 +7104,39 @@ msgstr "Изменить Probe Extents"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Выберите динамическую библиотеку для этого поля"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Выберите зависимости библиотеки для этого поля"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Удалить точку кривой"
+msgstr "Удалить текущее поле"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Дважды щелкните, чтобы создать новое поле"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
-msgstr ""
+msgstr "Платформа:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Platform"
-msgstr "Скопировать на платформу.."
+msgstr "Платформа"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Dynamic Library"
-msgstr "Библиотека"
+msgstr "Динамическая библиотека"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Добавить поле архитектуры"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "GDNativeLibrary"
-msgstr "GDNative"
+msgstr "GDNative библиотека"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -7873,23 +7848,20 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin требует дочерний узел ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
-msgstr "Построение сетки"
+msgstr "Построение полисетки: "
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Lights:"
-msgstr "Построение сетки"
+msgstr "Построение Света:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
 msgstr "Завершение построения"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Lighting Meshes: "
-msgstr "Построение сетки"
+msgstr "Освещение полисетки: "
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7925,7 +7897,7 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr "Построение сетки"
+msgstr "Построение полисетки"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."

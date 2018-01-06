@@ -17,7 +17,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-20 15:43+0000\n"
+"PO-Revision-Date: 2018-01-06 13:19+0000\n"
 "Last-Translator: NoahDigital <taku_58@hotmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.18\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -381,47 +381,38 @@ msgid "Change Array Value"
 msgstr "配列の値を変更"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Go to Line"
 msgstr "行に移動"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line Number:"
 msgstr "行番号:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "No Matches"
 msgstr "一致なし"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d occurrence(s)."
 msgstr "%d 箇所を置換しました。"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replace"
 msgstr "置換"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replace All"
 msgstr "すべて置換"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Match Case"
 msgstr "大文字小文字を区別する"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Whole Words"
 msgstr "単語全体"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Selection Only"
 msgstr "選択範囲のみ"
 
@@ -440,12 +431,10 @@ msgid "Find"
 msgstr "検索"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Next"
 msgstr "次"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Not found!"
 msgstr "見つかりません!"
 
@@ -454,7 +443,6 @@ msgid "Replace By"
 msgstr "で置換する"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Case Sensitive"
 msgstr "大文字小文字を区別"
 
@@ -612,7 +600,7 @@ msgstr "シグナル"
 #: editor/create_dialog.cpp
 #, fuzzy
 msgid "Create New %s"
-msgstr "新規に生成"
+msgstr "%s を新規作成"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -649,7 +637,7 @@ msgstr "記述:"
 #: editor/dependency_editor.cpp
 #, fuzzy
 msgid "Search Replacement For:"
-msgstr "検索して置換"
+msgstr "検索して置換:"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -806,12 +794,12 @@ msgstr "消去"
 #: editor/dictionary_property_edit.cpp
 #, fuzzy
 msgid "Change Dictionary Key"
-msgstr "アニメーションの名前を変更:"
+msgstr "ディクショナリ キーの変更"
 
 #: editor/dictionary_property_edit.cpp
 #, fuzzy
 msgid "Change Dictionary Value"
-msgstr "配列の値を変更"
+msgstr "ディクショナリ 値の変更"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -829,7 +817,7 @@ msgstr "Godotエンジンに貢献した人々"
 #: editor/editor_about.cpp
 #, fuzzy
 msgid "Project Founders"
-msgstr "プロジェクトマネージャー"
+msgstr "プロジェクト創業者"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -960,9 +948,8 @@ msgid "Rename Audio Bus"
 msgstr "オーディオバス名を変更"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "オーディオバスをソロに切り替え"
+msgstr "オーディオバスのボリュームを変更"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1029,12 +1016,11 @@ msgstr "エフェクトを消去"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "オーディオ"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Audio Bus"
-msgstr "バスを追加する"
+msgstr "オーディオバスを追加"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
