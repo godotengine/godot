@@ -189,6 +189,26 @@ void PopupMenu::_submenu_timeout() {
 	submenu_over = -1;
 }
 
+void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
+
+	const float global_y = get_global_position().y;
+
+	int vseparation = get_constant("vseparation");
+	Ref<Font> font = get_font("font");
+
+	float dy = (vseparation + font->get_height()) * 3 * p_factor;
+	if (dy > 0 && global_y < 0)
+		dy = MIN(dy, -global_y - 1);
+	else if (dy < 0 && global_y + get_size().y > get_viewport_rect().size.y)
+		dy = -MIN(-dy, global_y + get_size().y - get_viewport_rect().size.y - 1);
+	set_position(get_position() + Vector2(0, dy));
+
+	Ref<InputEventMouseMotion> ie;
+	ie.instance();
+	ie->set_position(p_over - Vector2(0, dy));
+	_gui_input(ie);
+}
+
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
@@ -285,41 +305,11 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_WHEEL_DOWN: {
 
-				if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
-
-					int vseparation = get_constant("vseparation");
-					Ref<Font> font = get_font("font");
-
-					Point2 pos = get_position();
-					int s = (vseparation + font->get_height()) * 3;
-					pos.y -= (s * b->get_factor());
-					set_position(pos);
-
-					//update hover
-					Ref<InputEventMouseMotion> ie;
-					ie.instance();
-					ie->set_position(b->get_position() + Vector2(0, s));
-					_gui_input(ie);
-				}
+				_scroll(-b->get_factor(), b->get_position());
 			} break;
 			case BUTTON_WHEEL_UP: {
 
-				if (get_global_position().y < 0) {
-
-					int vseparation = get_constant("vseparation");
-					Ref<Font> font = get_font("font");
-
-					Point2 pos = get_position();
-					int s = (vseparation + font->get_height()) * 3;
-					pos.y += (s * b->get_factor());
-					set_position(pos);
-
-					//update hover
-					Ref<InputEventMouseMotion> ie;
-					ie.instance();
-					ie->set_position(b->get_position() - Vector2(0, s));
-					_gui_input(ie);
-				}
+				_scroll(b->get_factor(), b->get_position());
 			} break;
 			case BUTTON_LEFT: {
 
@@ -386,6 +376,11 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			mouse_over = over;
 			update();
 		}
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
 	}
 }
 
