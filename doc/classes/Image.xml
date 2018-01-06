@@ -395,6 +395,7 @@
 				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is locked. Example:
 				[codeblock]
 				var img = Image.new()
+				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
 				img.lock()
 				img.set_pixel(x, y, color) # Works
 				img.unlock()
