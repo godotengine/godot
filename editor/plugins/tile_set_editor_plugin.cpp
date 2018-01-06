@@ -629,7 +629,7 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings."));
 				spin_priority->hide();
 			} else {
-				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change it's priority."));
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its priority."));
 				spin_priority->show();
 			}
 		} break;
