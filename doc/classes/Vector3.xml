@@ -77,7 +77,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount (t).
+				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount (t). (t) should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -150,7 +150,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Linearly interpolates the vector to a given one (b), by the given amount (t).
+				Linearly interpolates the vector to a given one (b), by the given amount (t). (t) should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="max_axis">
