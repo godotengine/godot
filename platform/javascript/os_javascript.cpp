@@ -989,6 +989,7 @@ bool OS_JavaScript::is_userfs_persistent() const {
 }
 
 OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_user_data_dir_func) {
+
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;
 	gl_extensions = NULL;
@@ -1001,6 +1002,10 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_us
 
 	idbfs_available = false;
 	time_to_save_sync = -1;
+
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(StdLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS_JavaScript::~OS_JavaScript() {
