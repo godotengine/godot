@@ -3641,9 +3641,10 @@ void TextEdit::center_viewport_to_cursor() {
 	int visible_rows = get_visible_rows();
 	if (h_scroll->is_visible_in_tree())
 		visible_rows -= ((h_scroll->get_combined_minimum_size().height - 1) / get_row_height());
-
-	int max_ofs = text.size() - (scroll_past_end_of_file_enabled ? 1 : num_lines_from(text.size() - 1, -visible_rows));
-	cursor.line_ofs = CLAMP(cursor.line - num_lines_from(cursor.line - visible_rows / 2, -visible_rows / 2), 0, max_ofs);
+	if (text.size() >= visible_rows) {
+		int max_ofs = text.size() - (scroll_past_end_of_file_enabled ? 1 : MAX(num_lines_from(text.size() - 1, -visible_rows), 0));
+		cursor.line_ofs = CLAMP(cursor.line - num_lines_from(MAX(cursor.line - visible_rows / 2, 0), -visible_rows / 2), 0, max_ofs);
+	}
 	int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
 
 	if (cursor_x > (cursor.x_ofs + visible_width))
