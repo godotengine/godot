@@ -549,7 +549,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		} else {
 			type_icon = get_icon("ImportFail", ei);
 			big_icon = file_thumbnail_broken;
-			tooltip += TTR("\nStatus: Import of file failed. Please fix file and reimport manually.");
+			tooltip += "\n" + TTR("Status: Import of file failed. Please fix file and reimport manually.");
 		}
 
 		int item_index;
