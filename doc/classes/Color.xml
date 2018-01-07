@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate(color)) may accept values &gt; 1.
+		You can also create a color from standardised color names with [method @GDScript.ColorN].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -63,7 +64,7 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format.
+				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
 				The following string formats are supported:
 					[code]"#ff00ff00"[/code] - ARGB format with '#'
 					[code]"ff00ff00"[/code] - ARGB format
