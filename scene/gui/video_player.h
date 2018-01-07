@@ -50,7 +50,6 @@ class VideoPlayer : public Control {
 	Ref<VideoStream> stream;
 
 	int sp_get_channel_count() const;
-	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
 	bool mix(AudioFrame *p_buffer, int p_frames);
 
 	RID stream_rid;
@@ -69,7 +68,6 @@ class VideoPlayer : public Control {
 	bool expand;
 	bool loops;
 	int buffering_ms;
-	int server_mix_rate;
 	int audio_track;
 	int bus_index;
 
