@@ -51,6 +51,10 @@ gmon.out
 .cproject
 .settings/
 
+# Geany/geany-plugins files
+*.geany
+.geanyprj
+
 # Misc
 .DS_Store
 logs/
