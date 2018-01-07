@@ -1166,6 +1166,7 @@ void ScriptEditorDebugger::start() {
 	}
 
 	set_process(true);
+	breaked = false;
 }
 
 void ScriptEditorDebugger::pause() {
@@ -1177,6 +1178,7 @@ void ScriptEditorDebugger::unpause() {
 void ScriptEditorDebugger::stop() {
 
 	set_process(false);
+	breaked = false;
 
 	server->stop();
 
