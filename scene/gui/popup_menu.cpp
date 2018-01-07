@@ -305,11 +305,15 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_WHEEL_DOWN: {
 
-				_scroll(-b->get_factor(), b->get_position());
+				if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
+					_scroll(-b->get_factor(), b->get_position());
+				}
 			} break;
 			case BUTTON_WHEEL_UP: {
 
-				_scroll(b->get_factor(), b->get_position());
+				if (get_global_position().y < 0) {
+					_scroll(b->get_factor(), b->get_position());
+				}
 			} break;
 			case BUTTON_LEFT: {
 
@@ -380,7 +384,9 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
+		if (get_global_position().y + get_size().y > get_viewport_rect().size.y || get_global_position().y < 0) {
+			_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
+		}
 	}
 }
 
