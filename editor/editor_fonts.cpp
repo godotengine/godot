@@ -85,15 +85,38 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE); \
 	MAKE_FALLBACKS(m_name);
 
+#define MAKE_SOURCE_FONT(m_name, m_size)                        \
+	Ref<DynamicFont> m_name;                                    \
+	m_name.instance();                                          \
+	m_name->set_size(m_size);                                   \
+	if (CustomFontSource.is_valid()) {                          \
+		m_name->set_font_data(CustomFontSource);                \
+		m_name->add_fallback(dfmono);                           \
+	} else {                                                    \
+		m_name->set_font_data(dfmono);                          \
+	}                                                           \
+	m_name->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);    \
+	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE); \
+	MAKE_FALLBACKS(m_name);
+
 void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Custom font */
 
-	String custom_font = EditorSettings::get_singleton()->get("interface/editor/custom_font");
+	String custom_font = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<DynamicFontData> CustomFont;
 	if (custom_font.length() > 0) {
 		CustomFont.instance();
 		CustomFont->set_font_path(custom_font);
 		CustomFont->set_force_autohinter(true); //just looks better..i think?
+	}
+
+	/* Custom source code font */
+
+	String custom_font_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
+	Ref<DynamicFontData> CustomFontSource;
+	if (custom_font_source.length() > 0) {
+		CustomFontSource.instance();
+		CustomFontSource->set_font_path(custom_font_source);
 	}
 
 	/* Droid Sans */
@@ -135,7 +158,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	int default_font_size = int(EditorSettings::get_singleton()->get("interface/editor/font_size")) * EDSCALE;
+	int default_font_size = int(EditorSettings::get_singleton()->get("interface/editor/main_font_size")) * EDSCALE;
 	MAKE_DEFAULT_FONT(df, default_font_size);
 
 	p_theme->set_default_theme_font(df);
@@ -153,41 +176,15 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
-	Ref<DynamicFont> df_code;
-	df_code.instance();
-	df_code->set_size(int(EditorSettings::get_singleton()->get("interface/editor/source_font_size")) * EDSCALE);
-	df_code->set_font_data(dfmono);
-	MAKE_FALLBACKS(df_code);
-
+	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
-	Ref<DynamicFont> df_doc_code;
-	df_doc_code.instance();
-	df_doc_code->set_size(int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
-	df_doc_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
-	df_doc_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
-	df_doc_code->set_font_data(dfmono);
-	MAKE_FALLBACKS(df_doc_code);
-
+	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
-	Ref<DynamicFont> df_output_code;
-	df_output_code.instance();
-	df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
-	df_output_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
-	df_output_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
-	df_output_code->set_font_data(dfmono);
-	MAKE_FALLBACKS(df_output_code);
-
+	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
-	Ref<DynamicFont> df_text_editor_status_code;
-	df_text_editor_status_code.instance();
-	df_text_editor_status_code->set_size(14 * EDSCALE);
-	df_text_editor_status_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
-	df_text_editor_status_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
-	df_text_editor_status_code->set_font_data(dfmono);
-	MAKE_FALLBACKS(df_text_editor_status_code);
-
+	MAKE_SOURCE_FONT(df_text_editor_status_code, 14 * EDSCALE);
 	p_theme->set_font("status_source", "EditorFonts", df_text_editor_status_code);
 }
