@@ -992,13 +992,17 @@ void EditorSettings::raise_order(const String &p_setting) {
 	props[p_setting].order = ++last_order;
 }
 
-void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value) {
+void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool update_current) {
 
 	_THREAD_SAFE_METHOD_
 
 	if (!props.has(p_setting))
 		return;
-	_initial_set(p_setting, p_value);
+	props[p_setting].initial = p_value;
+	props[p_setting].has_default_value = true;
+	if (update_current) {
+		set(p_setting, p_value);
+	}
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
