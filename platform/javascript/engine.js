@@ -138,13 +138,17 @@
 			}
 
 			var actualCanvas = this.rtenv.canvas;
-			var context = false;
+			var testContext = false;
+			var testCanvas;
 			try {
-				context = actualCanvas.getContext('webgl2') || actualCanvas.getContext('experimental-webgl2');
+				testCanvas = document.createElement('canvas');
+				testContext = testCanvas.getContext('webgl2') || testCanvas.getContext('experimental-webgl2');
 			} catch (e) {}
-			if (!context) {
+			if (!testContext) {
 				throw new Error("WebGL 2 not available");
 			}
+			testCanvas = null;
+			testContext = null;
 
 			// canvas can grab focus on click
 			if (actualCanvas.tabIndex < 0) {
