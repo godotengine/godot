@@ -651,8 +651,8 @@ DynamicFontAtSize::~DynamicFontAtSize() {
 
 	if (valid) {
 		FT_Done_FreeType(library);
-		font->size_cache.erase(id);
 	}
+	font->size_cache.erase(id);
 }
 
 /////////////////////////
