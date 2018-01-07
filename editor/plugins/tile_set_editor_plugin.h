@@ -144,6 +144,7 @@ private:
 	void draw_grid_snap();
 	void draw_polygon_shapes();
 	void close_shape(const Vector2 &shape_anchor);
+	void select_coord(const Vector2 &coord);
 	Vector2 snap_point(const Vector2 &point);
 
 	void edit(Object *p_node);

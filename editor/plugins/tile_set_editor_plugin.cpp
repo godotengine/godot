@@ -618,8 +618,10 @@ void AutotileEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tool_containers[TOOLBAR_BITMASK]->hide();
 			tool_containers[TOOLBAR_SHAPE]->show();
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile."));
-			current_shape = PoolVector2Array();
 			spin_priority->hide();
+
+			current_shape = PoolVector2Array();
+			select_coord(edited_shape_coord);
 		} break;
 		default: {
 			tool_containers[TOOLBAR_DUMMY]->show();
@@ -931,50 +933,18 @@ void AutotileEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								edited_shape_coord = coord;
 								edited_occlusion_shape = tile_set->autotile_get_light_occluder(get_current_tile(), edited_shape_coord);
 								edited_navigation_shape = tile_set->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord);
-								shape_anchor = edited_shape_coord;
-								shape_anchor.x *= (size.x + spacing);
-								shape_anchor.y *= (size.y + spacing);
-								if (edit_mode == EDITMODE_OCCLUSION) {
-									current_shape.resize(0);
-									if (edited_occlusion_shape.is_valid()) {
-										for (int i = 0; i < edited_occlusion_shape->get_polygon().size(); i++) {
-											current_shape.push_back(edited_occlusion_shape->get_polygon()[i] + shape_anchor);
-										}
-									}
-								} else if (edit_mode == EDITMODE_NAVIGATION) {
-									current_shape.resize(0);
-									if (edited_navigation_shape.is_valid()) {
-										if (edited_navigation_shape->get_polygon_count() > 0) {
-											PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
-											for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
-												current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
-											}
-										}
+								Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
+								bool found_collision_shape = false;
+								for (int i = 0; i < sd.size(); i++) {
+									if (sd[i].autotile_coord == coord) {
+										edited_collision_shape = sd[i].shape;
+										found_collision_shape = true;
+										break;
 									}
 								}
-							} else {
-								if (edit_mode == EDITMODE_COLLISION) {
-									Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
-									for (int i = 0; i < sd.size(); i++) {
-										if (sd[i].autotile_coord == coord) {
-											Ref<ConvexPolygonShape2D> shape = sd[i].shape;
-											if (shape.is_valid()) {
-
-												Rect2 bounding_rect;
-												PoolVector2Array polygon;
-												bounding_rect.position = shape->get_points()[0];
-												for (int j = 0; j < shape->get_points().size(); j++) {
-													polygon.push_back(shape->get_points()[j] + shape_anchor);
-													bounding_rect.expand_to(shape->get_points()[j] + shape_anchor);
-												}
-												if (bounding_rect.has_point(mb->get_position())) {
-													current_shape = polygon;
-													edited_collision_shape = shape;
-												}
-											}
-										}
-									}
-								}
+								if (!found_collision_shape)
+									edited_collision_shape = Ref<ConvexPolygonShape2D>(NULL);
+								select_coord(edited_shape_coord);
 							}
 							workspace->update();
 						} else if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
@@ -1341,7 +1311,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_collision_shape) {
+					if (shape == edited_collision_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1391,7 +1361,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_occlusion_shape) {
+					if (shape == edited_occlusion_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1439,7 +1409,7 @@ void AutotileEditor::draw_polygon_shapes() {
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
-					if (shape == edited_navigation_shape) {
+					if (shape == edited_navigation_shape && current_shape.size() > 2) {
 						for (int j = 0; j < current_shape.size(); j++) {
 							polygon.push_back(current_shape[j]);
 							colors.push_back(c_bg);
@@ -1546,6 +1516,39 @@ void AutotileEditor::close_shape(const Vector2 &shape_anchor) {
 		edited_navigation_shape = shape;
 		tools[TOOL_SELECT]->set_pressed(true);
 		workspace->update();
+	}
+}
+
+void AutotileEditor::select_coord(const Vector2 &coord) {
+	int spacing = tile_set->autotile_get_spacing(get_current_tile());
+	Vector2 size = tile_set->autotile_get_size(get_current_tile());
+	Vector2 shape_anchor = coord;
+	shape_anchor.x *= (size.x + spacing);
+	shape_anchor.y *= (size.y + spacing);
+	if (edit_mode == EDITMODE_COLLISION) {
+		current_shape.resize(0);
+		if (edited_collision_shape.is_valid()) {
+			for (int j = 0; j < edited_collision_shape->get_points().size(); j++) {
+				current_shape.push_back(edited_collision_shape->get_points()[j] + shape_anchor);
+			}
+		}
+	} else if (edit_mode == EDITMODE_OCCLUSION) {
+		current_shape.resize(0);
+		if (edited_occlusion_shape.is_valid()) {
+			for (int i = 0; i < edited_occlusion_shape->get_polygon().size(); i++) {
+				current_shape.push_back(edited_occlusion_shape->get_polygon()[i] + shape_anchor);
+			}
+		}
+	} else if (edit_mode == EDITMODE_NAVIGATION) {
+		current_shape.resize(0);
+		if (edited_navigation_shape.is_valid()) {
+			if (edited_navigation_shape->get_polygon_count() > 0) {
+				PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+				for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
+					current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
+				}
+			}
+		}
 	}
 }
 
