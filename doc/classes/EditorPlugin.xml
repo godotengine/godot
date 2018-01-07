@@ -136,9 +136,7 @@
 		<method name="forward_canvas_gui_input" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="canvas_xform" type="Transform2D">
-			</argument>
-			<argument index="1" name="event" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
 			</description>

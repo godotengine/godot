@@ -31,6 +31,8 @@
 	<members>
 		<member name="load_once" type="bool" setter="set_load_once" getter="should_load_once">
 		</member>
+		<member name="reloadable" type="bool" setter="set_reloadable" getter="is_reloadable">
+		</member>
 		<member name="singleton" type="bool" setter="set_singleton" getter="is_singleton">
 		</member>
 		<member name="symbol_prefix" type="String" setter="set_symbol_prefix" getter="get_symbol_prefix">

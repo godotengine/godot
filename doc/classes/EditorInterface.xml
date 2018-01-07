@@ -76,6 +76,12 @@
 				Returns the [ScriptEditor].
 			</description>
 		</method>
+		<method name="get_selected_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
@@ -139,6 +145,14 @@
 			</argument>
 			<description>
 				Saves the scene as a file at [code]path[/code].
+			</description>
+		</method>
+		<method name="select_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_file" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
