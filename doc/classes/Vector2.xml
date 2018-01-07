@@ -92,7 +92,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this Vector and "b", using "pre_a" and "post_b" as handles, and returning the result at position "t".
+				Cubicly interpolates between this Vector and "b", using "pre_a" and "post_b" as handles, and returning the result at position "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -158,7 +158,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and "b", by amount "t".
+				Returns the result of the linear interpolation between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="normalized">
