@@ -393,42 +393,6 @@ void EditorNode::_fs_changed() {
 		E->get()->invalidate();
 	}
 
-	if (export_defer.preset != "") {
-		Ref<EditorExportPreset> preset;
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
-			preset = EditorExport::get_singleton()->get_export_preset(i);
-			if (preset->get_name() == export_defer.preset) {
-				break;
-			}
-			preset.unref();
-		}
-		if (preset.is_null()) {
-			String err = "Unknown export preset: " + export_defer.preset;
-			ERR_PRINT(err.utf8().get_data());
-		} else {
-			Ref<EditorExportPlatform> platform = preset->get_platform();
-			if (platform.is_null()) {
-				String err = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
-				ERR_PRINT(err.utf8().get_data());
-			} else {
-				// ensures export_project does not loop infinitely, because notifications may
-				// come during the export
-				export_defer.preset = "";
-				if (!preset->is_runnable() && (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip"))) {
-					if (export_defer.path.ends_with(".zip")) {
-						platform->save_zip(preset, export_defer.path);
-					} else if (export_defer.path.ends_with(".pck")) {
-						platform->save_pack(preset, export_defer.path);
-					}
-				} else {
-					platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
-				}
-			}
-		}
-
-		get_tree()->quit();
-	}
-
 	{
 		//reload changed resources
 		List<Ref<Resource> > changed;
@@ -465,6 +429,42 @@ void EditorNode::_fs_changed() {
 	}
 
 	_mark_unsaved_scenes();
+
+	if (export_defer.preset != "" && !EditorFileSystem::get_singleton()->is_scanning()) {
+		Ref<EditorExportPreset> preset;
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
+			preset = EditorExport::get_singleton()->get_export_preset(i);
+			if (preset->get_name() == export_defer.preset) {
+				break;
+			}
+			preset.unref();
+		}
+		if (preset.is_null()) {
+			String err = "Unknown export preset: " + export_defer.preset;
+			ERR_PRINT(err.utf8().get_data());
+		} else {
+			Ref<EditorExportPlatform> platform = preset->get_platform();
+			if (platform.is_null()) {
+				String err = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
+				ERR_PRINT(err.utf8().get_data());
+			} else {
+				// ensures export_project does not loop infinitely, because notifications may
+				// come during the export
+				export_defer.preset = "";
+				if (!preset->is_runnable() && (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip"))) {
+					if (export_defer.path.ends_with(".zip")) {
+						platform->save_zip(preset, export_defer.path);
+					} else if (export_defer.path.ends_with(".pck")) {
+						platform->save_pack(preset, export_defer.path);
+					}
+				} else {
+					platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
+				}
+			}
+		}
+
+		get_tree()->quit();
+	}
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
