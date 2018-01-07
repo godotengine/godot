@@ -87,7 +87,11 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	List<String> output_strings;
 	List<Message> messages;
+	int max_messages_per_frame;
+	int n_messages_dropped;
 	List<OutputError> errors;
+	int max_errors_per_frame;
+	int n_errors_dropped;
 
 	int max_cps;
 	int char_count;

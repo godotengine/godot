@@ -665,6 +665,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
+	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
+	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_frame", 10);
 
 	if (debug_mode == "remote") {
 

@@ -355,6 +355,13 @@ void ScriptDebuggerRemote::_get_output() {
 		locking = false;
 	}
 
+	if (n_messages_dropped > 0) {
+		Message msg;
+		msg.message = "Too many messages! " + String::num_int64(n_messages_dropped) + " messages were dropped.";
+		messages.push_back(msg);
+		n_messages_dropped = 0;
+	}
+
 	while (messages.size()) {
 		locking = true;
 		packet_peer_stream->put_var("message:" + messages.front()->get().message);
@@ -364,6 +371,20 @@ void ScriptDebuggerRemote::_get_output() {
 		}
 		messages.pop_front();
 		locking = false;
+	}
+
+	if (n_errors_dropped > 0) {
+		OutputError oe;
+		oe.error = "TOO_MANY_ERRORS";
+		oe.error_descr = "Too many errors! " + String::num_int64(n_errors_dropped) + " errors were dropped.";
+		oe.warning = false;
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		oe.hr = time / 3600000;
+		oe.min = (time / 60000) % 60;
+		oe.sec = (time / 1000) % 60;
+		oe.msec = time % 1000;
+		errors.push_back(oe);
+		n_errors_dropped = 0;
 	}
 
 	while (errors.size()) {
@@ -453,7 +474,11 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 
 	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
 
-		sdr->errors.push_back(oe);
+		if (sdr->errors.size() >= sdr->max_errors_per_frame) {
+			sdr->n_errors_dropped++;
+		} else {
+			sdr->errors.push_back(oe);
+		}
 	}
 
 	sdr->mutex->unlock();
@@ -891,10 +916,14 @@ void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_
 	mutex->lock();
 	if (!locking && tcp_client->is_connected_to_host()) {
 
-		Message msg;
-		msg.message = p_message;
-		msg.data = p_args;
-		messages.push_back(msg);
+		if (messages.size() >= max_messages_per_frame) {
+			n_messages_dropped++;
+		} else {
+			Message msg;
+			msg.message = p_message;
+			msg.data = p_args;
+			messages.push_back(msg);
+		}
 	}
 	mutex->unlock();
 }
@@ -1011,7 +1040,11 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		requested_quit(false),
 		mutex(Mutex::create()),
 		max_cps(GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second")),
+		max_messages_per_frame(GLOBAL_GET("network/limits/debugger_stdout/max_messages_per_frame")),
+		max_errors_per_frame(GLOBAL_GET("network/limits/debugger_stdout/max_errors_per_frame")),
 		char_count(0),
+		n_messages_dropped(0),
+		n_errors_dropped(0),
 		last_msec(0),
 		msec_count(0),
 		locking(false),
