@@ -1274,6 +1274,8 @@ def detect_modules():
     for x in files:
         if (not os.path.isdir(x)):
             continue
+        if (not os.path.exists(x + "/config.py")):
+            continue
         x = x.replace("modules/", "")  # rest of world
         x = x.replace("modules\\", "")  # win32
         module_list.append(x)
