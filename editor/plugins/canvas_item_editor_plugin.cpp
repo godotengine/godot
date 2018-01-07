@@ -340,7 +340,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		// Grid
 		Point2 offset = grid_offset;
 		if (snap_relative) {
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 			if (selection.size() == 1 && Object::cast_to<Node2D>(selection[0])) {
 				offset = Object::cast_to<Node2D>(selection[0])->get_global_position();
 			} else {
@@ -382,7 +382,7 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 			drag = DRAG_PIVOT;
 		} else if (set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
 			if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
-				List<Node *> &selection = editor_selection->get_selected_node_list();
+				List<Node *> selection = editor_selection->get_selected_node_list();
 				Vector2 mouse_pos = viewport->get_local_mouse_position();
 				if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
 					//just in case, make it work if over viewport
@@ -751,7 +751,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 	undo_redo->create_action(TTR("Move Action"), UndoRedo::MERGE_ENDS);
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -811,7 +811,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 	Rect2 r2;
 	r2.position = tl;
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -835,7 +835,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 
 int CanvasItemEditor::get_item_count() {
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	int ic = 0;
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -1002,7 +1002,7 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_anchor_handle_drag_type(const 
 
 void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1527,7 +1527,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 					bone_ik_list.clear();
 
 				} else {
-					List<Node *> &selection = editor_selection->get_selected_node_list();
+					List<Node *> selection = editor_selection->get_selected_node_list();
 
 					for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 						CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
@@ -1608,7 +1608,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 					} else {
 						undo_redo->create_action(TTR("Edit CanvasItem"));
 
-						List<Node *> &selection = editor_selection->get_selected_node_list();
+						List<Node *> selection = editor_selection->get_selected_node_list();
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1905,7 +1905,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		List<Node *> &selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_selected_node_list();
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 			CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->get());
@@ -2921,7 +2921,7 @@ void CanvasItemEditor::_draw_viewport() {
 	// hide/show buttons depending on the selection
 	bool all_locked = true;
 	bool all_group = true;
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 	if (selection.empty()) {
 		all_locked = false;
 		all_group = false;
@@ -2976,7 +2976,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
-		List<Node *> &selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_selected_node_list();
 
 		bool all_control = true;
 		bool has_control = false;
@@ -3277,7 +3277,7 @@ void CanvasItemEditor::_update_scroll(float) {
 }
 
 void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_preset) {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors and Margins"));
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -3321,7 +3321,7 @@ void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_p
 }
 
 void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors"));
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -3464,7 +3464,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		case LOCK_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3482,7 +3482,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case UNLOCK_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3502,7 +3502,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case GROUP_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3520,7 +3520,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case UNGROUP_SELECTED: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -3878,7 +3878,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SKELETON_SET_IK_CHAIN: {
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
