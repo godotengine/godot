@@ -108,6 +108,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -127,6 +128,7 @@ void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_A
 void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -149,6 +151,7 @@ void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT
 }
 void UndoRedo::add_do_property(Object *p_object, const String &p_property, const Variant &p_value) {
 
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -163,6 +166,7 @@ void UndoRedo::add_do_property(Object *p_object, const String &p_property, const
 }
 void UndoRedo::add_undo_property(Object *p_object, const String &p_property, const Variant &p_value) {
 
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -182,6 +186,7 @@ void UndoRedo::add_undo_property(Object *p_object, const String &p_property, con
 }
 void UndoRedo::add_do_reference(Object *p_object) {
 
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -194,6 +199,7 @@ void UndoRedo::add_do_reference(Object *p_object) {
 }
 void UndoRedo::add_undo_reference(Object *p_object) {
 
+	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
