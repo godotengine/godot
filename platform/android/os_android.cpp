@@ -444,25 +444,27 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				}
 				touch.clear();
 			}
-
 		} break;
-		case 3: { // add tuchi
+		case 3: { // add touch
 
-			ERR_FAIL_INDEX(p_pointer, p_points.size());
+			for (int i = 0; i < p_points.size(); i++) {
+				if (p_points[i].id == p_pointer) {
+					TouchPos tp = p_points[i];
+					touch.push_back(tp);
 
-			TouchPos tp = p_points[p_pointer];
-			touch.push_back(tp);
+					Ref<InputEventScreenTouch> ev;
+					ev.instance();
 
-			Ref<InputEventScreenTouch> ev;
-			ev.instance();
+					ev->set_index(tp.id);
+					ev->set_pressed(true);
+					ev->set_position(tp.pos);
+					input->parse_input_event(ev);
 
-			ev->set_index(tp.id);
-			ev->set_pressed(true);
-			ev->set_position(tp.pos);
-			input->parse_input_event(ev);
-
+					break;
+				}
+			}
 		} break;
-		case 4: {
+		case 4: { // remove touch
 
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
@@ -474,10 +476,10 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 					ev->set_position(touch[i].pos);
 					input->parse_input_event(ev);
 					touch.remove(i);
-					i--;
+
+					break;
 				}
 			}
-
 		} break;
 	}
 }

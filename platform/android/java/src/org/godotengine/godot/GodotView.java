@@ -110,7 +110,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-
+		super.onTouchEvent(event);
 		return activity.gotTouchEvent(event);
 	};
 
