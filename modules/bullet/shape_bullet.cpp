@@ -77,7 +77,7 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	ERR_FAIL_COND(!E);
+	if (!E) return;
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);
