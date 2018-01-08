@@ -1285,6 +1285,11 @@ void SceneTreeDock::_delete_confirm() {
 		editor->get_viewport_control()->update();
 
 	editor->push_item(NULL);
+
+	// Fixes the EditorHistory from still offering deleted notes
+	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	editor_history->cleanup_history();
+	EditorNode::get_singleton()->call("_prepare_history");
 }
 
 void SceneTreeDock::_selection_changed() {

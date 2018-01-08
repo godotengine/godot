@@ -38,7 +38,7 @@
 #include "project_settings.h"
 #include "scene/resources/packed_scene.h"
 
-void EditorHistory::_cleanup_history() {
+void EditorHistory::cleanup_history() {
 
 	for (int i = 0; i < history.size(); i++) {
 
@@ -48,8 +48,14 @@ void EditorHistory::_cleanup_history() {
 			if (!history[i].path[j].ref.is_null())
 				continue;
 
-			if (ObjectDB::get_instance(history[i].path[j].object))
-				continue; //has isntance, try next
+			Object *obj = ObjectDB::get_instance(history[i].path[j].object);
+			if (obj) {
+				Node *n = Object::cast_to<Node>(obj);
+				if (n && n->is_inside_tree())
+					continue;
+				if (!n) // Possibly still alive
+					continue;
+			}
 
 			if (j <= history[i].level) {
 				//before or equal level, complete fail
@@ -152,7 +158,7 @@ bool EditorHistory::is_at_end() const {
 
 bool EditorHistory::next() {
 
-	_cleanup_history();
+	cleanup_history();
 
 	if ((current + 1) < history.size())
 		current++;
@@ -164,7 +170,7 @@ bool EditorHistory::next() {
 
 bool EditorHistory::previous() {
 
-	_cleanup_history();
+	cleanup_history();
 
 	if (current > 0)
 		current--;
