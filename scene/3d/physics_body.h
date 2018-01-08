@@ -115,7 +115,7 @@ public:
 		MODE_KINEMATIC,
 	};
 
-private:
+protected:
 	bool can_sleep;
 	PhysicsDirectBodyState *state;
 	Mode mode;
@@ -178,9 +178,8 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
-	void _direct_state_changed(Object *p_state);
+	virtual void _direct_state_changed(Object *p_state);
 
-protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 

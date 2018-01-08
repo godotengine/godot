@@ -139,19 +139,12 @@ public:
 	VehicleWheel();
 };
 
-class VehicleBody : public PhysicsBody {
+class VehicleBody : public RigidBody {
 
-	GDCLASS(VehicleBody, PhysicsBody);
-
-	real_t mass;
-	real_t friction;
+	GDCLASS(VehicleBody, RigidBody);
 
 	float engine_force;
 	float brake;
-
-	Vector3 linear_velocity;
-	Vector3 angular_velocity;
-	bool ccd;
 
 	real_t m_pitchControl;
 	real_t m_steeringValue;
@@ -192,12 +185,6 @@ class VehicleBody : public PhysicsBody {
 	void _direct_state_changed(Object *p_state);
 
 public:
-	void set_mass(real_t p_mass);
-	real_t get_mass() const;
-
-	void set_friction(real_t p_friction);
-	real_t get_friction() const;
-
 	void set_engine_force(float p_engine_force);
 	float get_engine_force() const;
 
@@ -206,8 +193,6 @@ public:
 
 	void set_steering(float p_steering);
 	float get_steering() const;
-
-	Vector3 get_linear_velocity() const;
 
 	VehicleBody();
 };
