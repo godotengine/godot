@@ -312,6 +312,10 @@ void CreateDialog::_update_search() {
 		}
 	}
 
+	if (search_box->get_text() == "") {
+		to_select = root;
+	}
+
 	if (to_select) {
 		to_select->select(0);
 		search_options->scroll_to_item(to_select);
