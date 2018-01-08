@@ -1034,7 +1034,7 @@ void CodeTextEditor::_reset_zoom() {
 	Ref<DynamicFont> font = text_editor->get_font("font"); // reset source font size to default
 
 	if (font.is_valid()) {
-		EditorSettings::get_singleton()->set("interface/editor/source_font_size", 14);
+		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
 		font->set_size(14);
 	}
 }
@@ -1098,7 +1098,7 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 	if (font.is_valid()) {
 		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 		if (new_size != font->get_size()) {
-			EditorSettings::get_singleton()->set("interface/editor/source_font_size", new_size / EDSCALE);
+			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
 			font->set_size(new_size);
 		}
 
@@ -1140,20 +1140,7 @@ void CodeTextEditor::set_error(const String &p_error) {
 
 void CodeTextEditor::_update_font() {
 
-	// FONTS
-	String editor_font = EDITOR_DEF("text_editor/theme/font", "");
-	bool font_overridden = false;
-	if (editor_font != "") {
-		Ref<Font> fnt = ResourceLoader::load(editor_font);
-		if (fnt.is_valid()) {
-			text_editor->add_font_override("font", fnt);
-			font_overridden = true;
-		}
-	}
-	if (!font_overridden) {
-
-		text_editor->add_font_override("font", get_font("source", "EditorFonts"));
-	}
+	text_editor->add_font_override("font", get_font("source", "EditorFonts"));
 }
 
 void CodeTextEditor::_on_settings_change() {
