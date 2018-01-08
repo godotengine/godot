@@ -48,11 +48,6 @@ ShapeBullet::ShapeBullet() {}
 
 ShapeBullet::~ShapeBullet() {}
 
-btCollisionShape *ShapeBullet::create_bt_shape() {
-	btVector3 s(1, 1, 1);
-	return create_bt_shape(s);
-}
-
 btCollisionShape *ShapeBullet::create_bt_shape(const Vector3 &p_implicit_scale, real_t p_margin) {
 	btVector3 s;
 	G_TO_B(p_implicit_scale, s);
@@ -82,7 +77,7 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	ERR_FAIL_COND(!E);
+	if (!E) return;
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);

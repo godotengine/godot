@@ -72,6 +72,7 @@ public:
 		ShapeBullet *shape;
 		btCollisionShape *bt_shape;
 		btTransform transform;
+		btVector3 scale;
 		bool active;
 
 		ShapeWrapper() :
@@ -102,6 +103,7 @@ public:
 			shape = otherShape.shape;
 			bt_shape = otherShape.bt_shape;
 			transform = otherShape.transform;
+			scale = otherShape.scale;
 			active = otherShape.active;
 		}
 

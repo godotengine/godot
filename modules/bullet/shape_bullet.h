@@ -62,7 +62,6 @@ public:
 	ShapeBullet();
 	virtual ~ShapeBullet();
 
-	btCollisionShape *create_bt_shape();
 	btCollisionShape *create_bt_shape(const Vector3 &p_implicit_scale, real_t p_margin = 0);
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0) = 0;
 
