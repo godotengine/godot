@@ -70,11 +70,11 @@ class EditorHistory {
 		Variant value;
 	};
 
-	void _cleanup_history();
-
 	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
 
 public:
+	void cleanup_history();
+
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 

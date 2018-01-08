@@ -1398,7 +1398,7 @@ void EditorNode::_property_editor_forward() {
 }
 void EditorNode::_property_editor_back() {
 
-	if (editor_history.previous())
+	if (editor_history.previous() || editor_history.get_path_size() == 1)
 		_edit_current();
 }
 
