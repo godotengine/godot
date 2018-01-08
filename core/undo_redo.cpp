@@ -246,13 +246,6 @@ void UndoRedo::commit_action() {
 
 	redo(); // perform action
 
-	if (max_steps > 0 && actions.size() > max_steps) {
-		//clear early steps
-
-		while (actions.size() > max_steps)
-			_pop_history_tail();
-	}
-
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -347,16 +340,6 @@ String UndoRedo::get_current_action_name() const {
 	return actions[current_action].name;
 }
 
-void UndoRedo::set_max_steps(int p_max_steps) {
-
-	max_steps = p_max_steps;
-}
-
-int UndoRedo::get_max_steps() const {
-
-	return max_steps;
-}
-
 uint64_t UndoRedo::get_version() const {
 
 	return version;
@@ -385,7 +368,6 @@ UndoRedo::UndoRedo() {
 	version = 1;
 	action_level = 0;
 	current_action = -1;
-	max_steps = -1;
 	merge_mode = MERGE_DISABLE;
 	callback = NULL;
 	callback_ud = NULL;
@@ -510,8 +492,6 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_history"), &UndoRedo::clear_history);
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
-	ClassDB::bind_method(D_METHOD("set_max_steps", "max_steps"), &UndoRedo::set_max_steps);
-	ClassDB::bind_method(D_METHOD("get_max_steps"), &UndoRedo::get_max_steps);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
 
