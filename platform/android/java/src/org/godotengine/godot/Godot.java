@@ -828,7 +828,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	//@Override public boolean dispatchTouchEvent (MotionEvent event) {
 	public boolean gotTouchEvent(final MotionEvent event) {
 
-		super.onTouchEvent(event);
 		final int evcount = event.getPointerCount();
 		if (evcount == 0)
 			return true;
@@ -842,6 +841,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				arr[i * 3 + 1] = (int)event.getX(i);
 				arr[i * 3 + 2] = (int)event.getY(i);
 			}
+			final int pointer_idx = event.getPointerId(event.getActionIndex());
 
 			//System.out.printf("gaction: %d\n",event.getAction());
 			final int action = event.getAction() & MotionEvent.ACTION_MASK;
@@ -862,13 +862,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 							*/
 						} break;
 						case MotionEvent.ACTION_POINTER_UP: {
-							final int indexPointUp = event.getActionIndex();
-							final int pointer_idx = event.getPointerId(indexPointUp);
 							GodotLib.touch(4, pointer_idx, evcount, arr);
 							//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 						} break;
 						case MotionEvent.ACTION_POINTER_DOWN: {
-							int pointer_idx = event.getActionIndex();
 							GodotLib.touch(3, pointer_idx, evcount, arr);
 							//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 						} break;
