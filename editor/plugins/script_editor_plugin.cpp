@@ -514,7 +514,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 		if (p_save) {
 			apply_scripts();
 		}
-		current->clear_edit_menu();
 		notify_script_close(current->get_edited_script());
 	} else {
 		EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_child(selected));
@@ -540,6 +539,9 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	}
 
 	int idx = tab_container->get_current_tab();
+	if (current) {
+		current->clear_edit_menu();
+	}
 	memdelete(tselected);
 	if (idx >= tab_container->get_child_count())
 		idx = tab_container->get_child_count() - 1;
