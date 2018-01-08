@@ -7251,8 +7251,6 @@ void RasterizerStorageGLES3::initialize() {
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 
-	GLOBAL_DEF("rendering/quality/depth_prepass/disable", false);
-
 	String renderer = (const char *)glGetString(GL_RENDERER);
 
 	config.no_depth_prepass = !bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
