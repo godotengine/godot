@@ -49,7 +49,9 @@
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
 void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
+	G_TO_B(p_transform.get_basis().get_scale(), scale);
 	G_TO_B(p_transform, transform);
+	UNSCALE_BT_BASIS(transform);
 }
 void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_transform) {
 	transform = p_transform;
@@ -235,7 +237,7 @@ void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transfor
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes[p_index].set_transform(p_transform);
-	on_shapes_changed();
+	on_shape_changed(shapes[p_index].shape);
 }
 
 void RigidCollisionObjectBullet::remove_shape(ShapeBullet *p_shape) {
@@ -320,7 +322,7 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 		shpWrapper = &shapes[i];
 		if (shpWrapper->active) {
 			if (!shpWrapper->bt_shape) {
-				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape();
+				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale);
 			}
 			compoundShape->addChildShape(shpWrapper->transform, shpWrapper->bt_shape);
 		} else {

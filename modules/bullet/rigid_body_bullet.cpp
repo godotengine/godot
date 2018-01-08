@@ -204,7 +204,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 
 	const CollisionObjectBullet::ShapeWrapper *shape_wrapper;
 
-	btVector3 owner_body_scale(owner->get_bt_body_scale());
+	btVector3 owner_scale(owner->get_bt_body_scale());
 
 	for (int i = shapes_count - 1; 0 <= i; --i) {
 		shape_wrapper = &shapes_wrappers[i];
@@ -213,14 +213,14 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 		}
 
 		shapes[i].transform = shape_wrapper->transform;
-		shapes[i].transform.getOrigin() *= owner_body_scale;
+		shapes[i].transform.getOrigin() *= owner_scale;
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE:
 			case PhysicsServer::SHAPE_BOX:
 			case PhysicsServer::SHAPE_CAPSULE:
 			case PhysicsServer::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer::SHAPE_RAY: {
-				shapes[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_body_scale, safe_margin));
+				shapes[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
