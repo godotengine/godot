@@ -359,6 +359,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (err == OK) {
+			print_line("Creating " + tmp_app_path_name + "/Contents/Frameworks");
+			err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+		}
+
+		if (err == OK) {
 			print_line("Creating " + tmp_app_path_name + "/Contents/Resources");
 			err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 		}
@@ -502,10 +507,23 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		if (use_dmg()) {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
-			err = save_pack(p_preset, pack_path);
+			Vector<SharedObject> shared_objects;
+			Error err = save_pack(p_preset, pack_path, &shared_objects);
 
 			// see if we can code sign our new package
 			String identity = p_preset->get("codesign/identity");
+
+			if (err == OK) {
+				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				for (int i = 0; i < shared_objects.size(); i++) {
+					da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+					if (err == OK && identity != "") {
+						err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+					}
+				}
+				memdelete(da);
+			}
+
 			if (err == OK && identity != "") {
 				ep.step("Code signing bundle", 2);
 
@@ -582,7 +600,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ERR_CONTINUE(file.empty());
 
 					zipOpenNewFileInZip(dst_pkg_zip,
-							(pkg_name + ".app/Contents/MacOS/").plus_file(shared_objects[i].path.get_file()).utf8().get_data(),
+							(pkg_name + ".app/Contents/Frameworks/").plus_file(shared_objects[i].path.get_file()).utf8().get_data(),
 							NULL,
 							NULL,
 							0,
