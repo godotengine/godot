@@ -982,25 +982,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			return false;
 
 		} break;
+		case Variant::ARRAY:
 		case Variant::DICTIONARY: {
 
-		} break;
-		case Variant::POOL_BYTE_ARRAY: {
-
-		} break;
-		case Variant::POOL_INT_ARRAY: {
-
-		} break;
-		case Variant::POOL_REAL_ARRAY: {
-
-		} break;
-		case Variant::POOL_STRING_ARRAY: {
-
-		} break;
-		case Variant::POOL_VECTOR3_ARRAY: {
-
-		} break;
-		case Variant::POOL_COLOR_ARRAY: {
+			List<String> names;
+			names.push_back(vformat(TTR("New %s"), Variant::get_type_name(type)));
+			names.push_back(vformat(TTR("Duplicate %s"), Variant::get_type_name(type)));
+			config_action_buttons(names);
 
 		} break;
 		default: {}
@@ -1363,6 +1351,25 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				}
 
 				v = res.get_ref_ptr();
+				emit_signal("variant_changed");
+				hide();
+			}
+
+		} break;
+		case Variant::ARRAY:
+		case Variant::DICTIONARY: {
+
+			if (p_which == 0) {
+				Variant::CallError ce;
+				v = Variant::construct(Variant::Type(type), NULL, 0, ce);
+				emit_signal("variant_changed");
+				hide();
+			} else if (p_which == 1) {
+				if (type == Variant::ARRAY)
+					v = v.operator Array().duplicate();
+				else if (type == Variant::DICTIONARY)
+					v = v.operator Dictionary().duplicate();
+
 				emit_signal("variant_changed");
 				hide();
 			}
@@ -3217,6 +3224,7 @@ void PropertyEditor::update_tree() {
 
 				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 				item->add_button(1, get_icon("EditResource", "EditorIcons"));
+				item->add_button(1, get_icon("GuiDropdown", "EditorIcons"), 4);
 
 				Variant v = obj->get(p.name);
 				String type_name = "Array";
@@ -4011,27 +4019,55 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 			Variant v = obj->get(n);
 
-			if (v.get_type() != t) {
-				Variant::CallError ce;
-				v = Variant::construct(Variant::Type(t), NULL, 0, ce);
-			}
+			if (p_button == 4) {
 
-			Ref<ArrayPropertyEdit> ape = memnew(ArrayPropertyEdit);
-			ape->edit(obj, n, ht, Variant::Type(t));
-			EditorNode::get_singleton()->push_item(ape.ptr());
+				Rect2 where = tree->get_item_rect(ti, 1);
+				where.position -= tree->get_scroll();
+				where.position += tree->get_global_position() + Point2(where.size.width, 0);
+				for (int i = ti->get_button_count(p_column) - 1; i >= p_button; i--)
+					where.position.x -= ti->get_button(p_column, i)->get_width();
+				custom_editor->set_position(where.position);
+				custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
+				custom_editor->popup();
+
+			} else {
+
+				if (v.get_type() != t) {
+					Variant::CallError ce;
+					v = Variant::construct(Variant::Type(t), NULL, 0, ce);
+				}
+
+				Ref<ArrayPropertyEdit> ape = memnew(ArrayPropertyEdit);
+				ape->edit(obj, n, ht, Variant::Type(t));
+				EditorNode::get_singleton()->push_item(ape.ptr());
+			}
 
 		} else if (t == Variant::DICTIONARY) {
 
 			Variant v = obj->get(n);
 
-			if (v.get_type() != t) {
-				Variant::CallError ce;
-				v = Variant::construct(Variant::Type(t), NULL, 0, ce);
-			}
+			if (p_button == 4) {
 
-			Ref<DictionaryPropertyEdit> dpe = memnew(DictionaryPropertyEdit);
-			dpe->edit(obj, n);
-			EditorNode::get_singleton()->push_item(dpe.ptr());
+				Rect2 where = tree->get_item_rect(ti, 1);
+				where.position -= tree->get_scroll();
+				where.position += tree->get_global_position() + Point2(where.size.width, 0);
+				for (int i = ti->get_button_count(p_column) - 1; i >= p_button; i--)
+					where.position.x -= ti->get_button(p_column, i)->get_width();
+				custom_editor->set_position(where.position);
+				custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
+				custom_editor->popup();
+
+			} else {
+
+				if (v.get_type() != t) {
+					Variant::CallError ce;
+					v = Variant::construct(Variant::Type(t), NULL, 0, ce);
+				}
+
+				Ref<DictionaryPropertyEdit> dpe = memnew(DictionaryPropertyEdit);
+				dpe->edit(obj, n);
+				EditorNode::get_singleton()->push_item(dpe.ptr());
+			}
 		}
 	}
 }
