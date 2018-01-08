@@ -407,7 +407,7 @@ Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPre
 		Error err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
 		if (err) {
 			memdelete(da);
-			String err_str = String("Failed to export loading screen: ") + loading_screen_file;
+			String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path: " + loading_screen_file;
 			ERR_PRINT(err_str.utf8().get_data());
 			return err;
 		}
