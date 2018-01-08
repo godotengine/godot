@@ -631,6 +631,7 @@ bool DynamicFontAtSize::update_oversampling() {
 	textures.clear();
 	char_map.clear();
 	oversampling = font_oversampling;
+	valid = false;
 	_load();
 
 	return true;
@@ -973,13 +974,25 @@ void DynamicFont::finish_dynamic_fonts() {
 
 void DynamicFont::update_oversampling() {
 
+	Vector<Ref<DynamicFont> > changed;
+
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->lock();
+
 	SelfList<DynamicFont> *E = dynamic_fonts.first();
 	while (E) {
 
 		if (E->self()->data_at_size.is_valid() && E->self()->data_at_size->update_oversampling()) {
-			E->self()->emit_changed();
+			changed.push_back(E->self());
 		}
 		E = E->next();
+	}
+
+	if (dynamic_font_mutex)
+		dynamic_font_mutex->unlock();
+
+	for (int i = 0; i < changed.size(); i++) {
+		changed[i]->emit_changed();
 	}
 }
 
