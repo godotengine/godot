@@ -1237,8 +1237,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			VALIDATE_ARG_NUM(1);
 
-			Color color = Color::named(*p_inputs[0]);
-			color.a = *p_inputs[1];
+			Color color = Color::named(*p_inputs[0], *p_inputs[1]);
 
 			*r_return = String(color);
 

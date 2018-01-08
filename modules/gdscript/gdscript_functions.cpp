@@ -1169,11 +1169,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_error.argument = 0;
 				r_ret = Variant();
 			} else {
-				Color color = Color::named(*p_args[0]);
-				if (p_arg_count == 2) {
-					VALIDATE_ARG_NUM(1);
-					color.a = *p_args[1];
-				}
+				Color color = Color::named(*p_args[0], *p_args[1]);
 				r_ret = color;
 			}
 

@@ -346,7 +346,7 @@ bool Color::html_is_valid(const String &p_color) {
 	return true;
 }
 
-Color Color::named(const String &p_name) {
+Color Color::named(const String &p_name, float alpha) {
 	if (_named_colors.empty()) _populate_named_colors(); // from color_names.inc
 	String name = p_name;
 	// Normalize name
@@ -359,7 +359,9 @@ Color Color::named(const String &p_name) {
 
 	const Map<String, Color>::Element *color = _named_colors.find(name);
 	if (color) {
-		return color->value();
+		Color col = color->value();
+		col.a = alpha;
+		return col;
 	} else {
 		ERR_EXPLAIN("Invalid Color Name: " + p_name);
 		ERR_FAIL_V(Color());
