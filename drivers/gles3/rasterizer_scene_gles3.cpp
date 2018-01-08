@@ -2705,7 +2705,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 
-		ERR_BREAK(i >= RenderList::MAX_LIGHTS);
+		ERR_BREAK(i >= render_list.max_lights);
 
 		LightInstance *li = light_instance_owner.getptr(p_light_cull_result[i]);
 
@@ -4817,6 +4817,8 @@ void RasterizerSceneGLES3::initialize() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	render_list.max_elements = GLOBAL_DEF("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
+	render_list.max_lights = GLOBAL_DEF("rendering/limits/rendering/max_lights", (int)RenderList::DEFAULT_MAX_LIGHTS);
+	render_list.max_reflections = GLOBAL_DEF("rendering/limits/rendering/max_reflections", (int)RenderList::DEFAULT_MAX_REFLECTIONS);
 	if (render_list.max_elements > 1000000)
 		render_list.max_elements = 1000000;
 	if (render_list.max_elements < 1024)
@@ -4915,7 +4917,7 @@ void RasterizerSceneGLES3::initialize() {
 		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_ubo_size);
 		const int ubo_light_size = 160;
 		state.ubo_light_size = ubo_light_size;
-		state.max_ubo_lights = MIN(RenderList::MAX_LIGHTS, max_ubo_size / ubo_light_size);
+		state.max_ubo_lights = MIN(render_list.max_lights, max_ubo_size / ubo_light_size);
 		print_line("GLES3: max ubo light: " + itos(state.max_ubo_lights));
 
 		state.spot_array_tmp = (uint8_t *)memalloc(ubo_light_size * state.max_ubo_lights);
@@ -4941,7 +4943,7 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_LIGHT_DATA_STRUCTS " + itos(state.max_ubo_lights) + "\n");
 		state.scene_shader.add_custom_define("#define MAX_FORWARD_LIGHTS " + itos(state.max_forward_lights_per_object) + "\n");
 
-		state.max_ubo_reflections = MIN(RenderList::MAX_REFLECTIONS, max_ubo_size / sizeof(ReflectionProbeDataUBO));
+		state.max_ubo_reflections = MIN(render_list.max_reflections, max_ubo_size / sizeof(ReflectionProbeDataUBO));
 		print_line("GLES3: max ubo reflections: " + itos(state.max_ubo_reflections) + ", ubo size: " + itos(sizeof(ReflectionProbeDataUBO)));
 
 		state.reflection_array_tmp = (uint8_t *)memalloc(sizeof(ReflectionProbeDataUBO) * state.max_ubo_reflections);

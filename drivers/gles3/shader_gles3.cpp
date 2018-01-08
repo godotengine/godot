@@ -168,6 +168,25 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 	ERR_PRINTS(p_error);
 }
 
+static void _insert_shader_adreno_hacks(Vector<const char *> &p_strings) {
+	// Hacks for Adreno 3xx GPUs
+
+	// Hack 1 - sometimes shader compiler crashes when parsing code like `if (some_bool) { ... }`
+	// if `some_bool` was declared within `UniformData` struct
+	// Replacting `some_bool` with `int(some_bool) != 0` fixes the crash
+	p_strings.push_back("#define UNWRAP_BOOL(b) (int(b) != 0)\n");
+
+	// Hack 2 - compiler may hang on code with `pow` calls
+	// Seems like it's because shader compiler tries to inline `pow` but somehow fails
+	// Wrapping `pow` into another function forces the compiler never inline `pow`
+	p_strings.push_back("float pow_no_inline(float x, float y) {\n\treturn pow(x, y);\n}\n");
+	p_strings.push_back("vec2 pow_no_inline(vec2 x, vec2 y) {\n\treturn pow(x, y);\n}\n");
+	p_strings.push_back("vec3 pow_no_inline(vec3 x, vec3 y) {\n\treturn pow(x, y);\n}\n");
+	p_strings.push_back("vec4 pow_no_inline(vec4 x, vec4 y) {\n\treturn pow(x, y);\n}\n");
+	// According to GLES specification (paragraph 8.2) `pow` accepts float, vec2, vec3 and vec4 arguments
+	p_strings.push_back("#define pow(x, y) pow_no_inline(x, y)\n");
+}
+
 ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	Version *_v = version_map.getptr(conditional_version);
@@ -280,6 +299,10 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("precision highp sampler2DArray;\n");
 #endif
 
+#ifdef ANDROID_ENABLED
+	_insert_shader_adreno_hacks(strings);
+#endif
+
 	strings.push_back(vertex_code0.get_data());
 
 	if (cc) {
@@ -366,6 +389,10 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("precision highp sampler2D;\n");
 	strings.push_back("precision highp samplerCube;\n");
 	strings.push_back("precision highp sampler2DArray;\n");
+#endif
+
+#ifdef ANDROID_ENABLED
+	_insert_shader_adreno_hacks(strings);
 #endif
 
 	strings.push_back(fragment_code0.get_data());
