@@ -143,7 +143,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
-			float c = smoothing * get_physics_process_delta_time();
+			float c = smoothing * get_process_delta_time();
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
@@ -217,14 +217,14 @@ void Camera2D::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			_update_scroll();
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (!is_physics_processing())
+			if (!is_processing_internal())
 				_update_scroll();
 
 		} break;
@@ -246,7 +246,7 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(canvas_group_name);
 
 			if (Engine::get_singleton()->is_editor_hint()) {
-				set_physics_process(false);
+				set_process_internal(false);
 			}
 
 			_update_scroll();
@@ -503,9 +503,9 @@ void Camera2D::set_follow_smoothing(float p_speed) {
 
 	smoothing = p_speed;
 	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint()))
-		set_physics_process(true);
+		set_process_internal(true);
 	else
-		set_physics_process(false);
+		set_process_internal(false);
 }
 
 float Camera2D::get_follow_smoothing() const {
