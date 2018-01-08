@@ -483,23 +483,12 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	String path = rc[p_idx];
 	// if its not on disk its a help file or deleted
 	if (FileAccess::exists(path)) {
-		List<String> extensions;
-		ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-
-		if (extensions.find(path.get_extension())) {
-			Ref<Script> script = ResourceLoader::load(path);
-			if (script.is_valid()) {
-				edit(script, true);
-				return;
-			}
-		}
-
-		Error err;
-		Ref<TextFile> text_file = _load_text_file(path, &err);
-		if (text_file.is_valid()) {
-			edit(text_file, true);
+		Ref<Script> script = ResourceLoader::load(path);
+		if (script.is_valid()) {
+			edit(script, true);
 			return;
 		}
+
 		// if it's a path then its most likely a deleted file not help
 	} else if (!path.is_resource_file()) {
 		_help_class_open(path);
@@ -510,6 +499,12 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
 	_update_recent_scripts();
 	_show_error_dialog(path);
+}
+
+void ScriptEditor::_show_error_dialog(String p_path) {
+
+	error_dialog->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_path));
+	error_dialog->popup_centered_minsize();
 }
 
 void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
@@ -525,11 +520,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (p_save) {
 			apply_scripts();
 		}
-
-		Ref<Script> script = current->get_edited_resource();
-		if (script != NULL) {
-			notify_script_close(script);
-		}
+		notify_script_close(current->get_edited_script());
 	}
 
 	// roll back to previous tab
@@ -2028,8 +2019,8 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	if (p_line >= 0)
 		se->goto_line(p_line - 1);
 
-	notify_script_changed(p_resource);
-	_add_recent_script(p_resource->get_path());
+	notify_script_changed(p_script);
+	_add_recent_script(p_script->get_path());
 	return true;
 }
 
@@ -3116,7 +3107,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
-	error_dialog->get_ok()->set_text(TTR("I see..."));
+	error_dialog->get_ok()->set_text(TTR("I see.."));
 
 	debugger = memnew(ScriptEditorDebugger(editor));
 	debugger->connect("goto_script_line", this, "_goto_script_line");
