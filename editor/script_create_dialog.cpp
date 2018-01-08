@@ -307,7 +307,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent) {
 
 	is_browsing_parent = browse_parent;
 
-	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
 	List<String> extensions;
