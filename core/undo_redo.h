@@ -79,7 +79,6 @@ private:
 	Vector<Action> actions;
 	int current_action;
 	int action_level;
-	int max_steps;
 	MergeMode merge_mode;
 	uint64_t version;
 
@@ -114,9 +113,6 @@ public:
 	void undo();
 	String get_current_action_name() const;
 	void clear_history();
-
-	void set_max_steps(int p_max_steps);
-	int get_max_steps() const;
 
 	uint64_t get_version() const;
 
