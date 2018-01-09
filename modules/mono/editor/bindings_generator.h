@@ -429,10 +429,11 @@ class BindingsGenerator {
 
 	static bool verbose_output;
 
+	OrderedHashMap<StringName, TypeInterface> obj_types;
+
 	Map<StringName, TypeInterface> placeholder_types;
 	Map<StringName, TypeInterface> builtin_types;
 	Map<StringName, TypeInterface> enum_types;
-	Map<StringName, TypeInterface> obj_types;
 
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
