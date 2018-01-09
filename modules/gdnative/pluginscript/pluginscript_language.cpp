@@ -168,7 +168,7 @@ Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_
 		for (int i = 0; i < options.size(); i++) {
 			r_options->push_back(String(options[i]));
 		}
-		Error err = *(Error *)tmp;
+		Error err = *(Error *)&tmp;
 		return err;
 	}
 	return ERR_UNAVAILABLE;
