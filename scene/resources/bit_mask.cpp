@@ -81,7 +81,7 @@ void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
 			if (p_value)
 				b |= (1 << bbit);
 			else
-				b &= !(1 << bbit);
+				b &= ~(1 << bbit);
 
 			data[bbyte] = b;
 		}
@@ -127,7 +127,7 @@ void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
 	if (p_value)
 		b |= (1 << bbit);
 	else
-		b &= !(1 << bbit);
+		b &= ~(1 << bbit);
 
 	bitmask[bbyte] = b;
 }
