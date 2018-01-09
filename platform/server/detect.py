@@ -28,6 +28,7 @@ def get_opts():
 def get_flags():
 
     return [
+            ("module_mobile_vr_enabled", False),
     ]
 
 
