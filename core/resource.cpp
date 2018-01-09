@@ -211,6 +211,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 				}
 			}
 		}
+		set(E->get().name, p);
 	}
 }
 
