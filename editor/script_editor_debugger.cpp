@@ -1616,30 +1616,33 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 
 	error_stack->clear();
 	Array st = error_list->get_item_metadata(p_idx);
-	for (int i = 0; i < st.size(); i += 2) {
+	for (int i = 0; i < st.size(); i += 3) {
 
 		String script = st[i];
-		int line = st[i + 1];
+		String func = st[i + 1];
+		int line = st[i + 2];
 		Array md;
 		md.push_back(st[i]);
 		md.push_back(st[i + 1]);
+		md.push_back(st[i + 2]);
 
-		String str = script.get_file() + ":" + itos(line);
+		String str = func + " in " + script.get_file() + ":line " + itos(line);
 
 		error_stack->add_item(str);
 		error_stack->set_item_metadata(error_stack->get_item_count() - 1, md);
-		error_stack->set_item_tooltip(error_stack->get_item_count() - 1, TTR("File:") + " " + String(st[i]) + "\n" + TTR("Line:") + " " + itos(line));
+		error_stack->set_item_tooltip(error_stack->get_item_count() - 1,
+				TTR("File:") + " " + script + "\n" + TTR("Function:") + " " + func + "\n" + TTR("Line:") + " " + itos(line));
 	}
 }
 
 void ScriptEditorDebugger::_error_stack_selected(int p_idx) {
 
 	Array arr = error_stack->get_item_metadata(p_idx);
-	if (arr.size() != 2)
+	if (arr.size() != 3)
 		return;
 
 	Ref<Script> s = ResourceLoader::load(arr[0]);
-	emit_signal("goto_script_line", s, int(arr[1]) - 1);
+	emit_signal("goto_script_line", s, int(arr[2]) - 1);
 }
 
 void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {

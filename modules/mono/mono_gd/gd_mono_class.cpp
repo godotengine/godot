@@ -89,11 +89,6 @@ Vector<MonoClassField *> GDMonoClass::get_enum_fields() {
 }
 #endif
 
-bool GDMonoClass::has_method(const StringName &p_name) {
-
-	return get_method(p_name) != NULL;
-}
-
 bool GDMonoClass::has_attribute(GDMonoClass *p_attr_class) {
 
 #ifdef DEBUG_ENABLED
@@ -225,7 +220,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 	methods_fetched = true;
 }
 
-GDMonoMethod *GDMonoClass::get_method(const StringName &p_name) {
+GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p_name) {
 
 	ERR_FAIL_COND_V(!methods_fetched, NULL);
 
@@ -237,6 +232,11 @@ GDMonoMethod *GDMonoClass::get_method(const StringName &p_name) {
 	}
 
 	return NULL;
+}
+
+bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
+
+	return get_fetched_method_unknown_params(p_name) != NULL;
 }
 
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
@@ -302,6 +302,8 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	MonoMethodDesc *desc = mono_method_desc_new(p_description.utf8().get_data(), p_include_namespace);
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
+
+	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, NULL);
 
 	return get_method(method);
 }

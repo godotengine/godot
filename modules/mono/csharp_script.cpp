@@ -445,6 +445,72 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
+
+	// Printing an error here will result in endless recursion, so we must be careful
+
+	if (!gdmono->is_runtime_initialized() && GDMono::get_singleton()->get_editor_tools_assembly())
+		return Vector<StackInfo>();
+
+	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());
+
+	MonoBoolean need_file_info = true;
+	void *ctor_args[1] = { &need_file_info };
+
+	CACHED_METHOD(System_Diagnostics_StackTrace, ctor_bool)->invoke_raw(stack_trace, ctor_args);
+
+	Vector<StackInfo> si;
+	si = stack_trace_get_info(stack_trace);
+
+	return si;
+}
+
+Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
+
+	// Printing an error here could result in endless recursion, so we must be careful
+
+	MonoObject *exc = NULL;
+
+	GDMonoUtils::StackTrace_GetFrames st_get_frames = CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames);
+	MonoArray *frames = st_get_frames(p_stack_trace, &exc);
+
+	if (exc) {
+		GDMonoUtils::print_unhandled_exception(exc, true /* fail silently to avoid endless recursion */);
+		return Vector<StackInfo>();
+	}
+
+	int frame_count = mono_array_length(frames);
+
+	if (frame_count <= 0)
+		return Vector<StackInfo>();
+
+	GDMonoUtils::DebugUtils_StackFrameInfo get_sf_info = CACHED_METHOD_THUNK(DebuggingUtils, GetStackFrameInfo);
+
+	Vector<StackInfo> si;
+	si.resize(frame_count);
+
+	for (int i = 0; i < frame_count; i++) {
+		StackInfo &sif = si[i];
+		MonoObject *frame = mono_array_get(frames, MonoObject *, i);
+
+		MonoString *file_name;
+		int file_line_num;
+		MonoString *method_decl;
+		get_sf_info(frame, &file_name, &file_line_num, &method_decl, &exc);
+
+		if (exc) {
+			GDMonoUtils::print_unhandled_exception(exc, true /* fail silently to avoid endless recursion */);
+			return Vector<StackInfo>();
+		}
+
+		sif.file = GDMonoMarshal::mono_string_to_godot(file_name);
+		sif.line = file_line_num;
+		sif.func = GDMonoMarshal::mono_string_to_godot(method_decl);
+	}
+
+	return si;
+}
+
 void CSharpLanguage::frame() {
 
 	const Ref<MonoGCHandle> &task_scheduler_handle = GDMonoUtils::mono_cache.task_scheduler_handle;
@@ -1049,7 +1115,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
-		if (top->has_method(p_method)) {
+		if (top->has_fetched_method_unknown_params(p_method)) {
 			return true;
 		}
 
@@ -1227,7 +1293,7 @@ ScriptInstance::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method)
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_method(p_method);
+		GDMonoMethod *method = top->get_fetched_method_unknown_params(p_method);
 
 		if (method && !method->is_static())
 			return _member_get_rpc_mode(method);
@@ -1848,7 +1914,7 @@ void CSharpScript::set_source_code(const String &p_code) {
 
 bool CSharpScript::has_method(const StringName &p_method) const {
 
-	return script_class->has_method(p_method);
+	return script_class->has_fetched_method_unknown_params(p_method);
 }
 
 Error CSharpScript::reload(bool p_keep_state) {

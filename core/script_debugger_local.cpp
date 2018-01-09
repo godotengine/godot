@@ -294,6 +294,11 @@ void ScriptDebuggerLocal::send_message(const String &p_message, const Array &p_a
 	print_line("MESSAGE: '" + p_message + "' - " + String(Variant(p_args)));
 }
 
+void ScriptDebuggerLocal::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) {
+
+	print_line("ERROR: '" + (p_descr.empty() ? p_err : p_descr) + "'");
+}
+
 ScriptDebuggerLocal::ScriptDebuggerLocal() {
 
 	profiling = false;

@@ -226,7 +226,7 @@ void GDMono::initialize() {
 
 	mono_install_unhandled_exception_hook(gdmono_unhandled_exception_hook, NULL);
 
-	OS::get_singleton()->print("Mono: ALL IS GOOD\n");
+	OS::get_singleton()->print("Mono: INITIALIZED\n");
 }
 
 #ifndef MONO_GLUE_DISABLED
