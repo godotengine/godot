@@ -63,7 +63,7 @@ void OS_Server::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-void OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
@@ -81,7 +81,10 @@ void OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	power_manager = memnew(PowerX11);
 
 	_ensure_user_data_dir();
+
+	return OK;
 }
+
 void OS_Server::finalize() {
 
 	if (main_loop)
@@ -172,6 +175,9 @@ void OS_Server::move_window_to_foreground() {
 }
 
 void OS_Server::set_cursor_shape(CursorShape p_shape) {
+}
+
+void OS_Server::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 }
 
 OS::PowerState OS_Server::get_power_state() {

@@ -493,6 +493,7 @@ public:
 
 	void particles_set_emission_transform(RID p_particles, const Transform &p_transform) {}
 
+	bool particles_get_emitting(RID p_particles) { return false; }
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
 
