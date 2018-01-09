@@ -448,14 +448,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 		compile_items.push_back(output_file);
 	}
 
-	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
-		const TypeInterface &itype = E->get();
+	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
+		const TypeInterface &itype = E.get();
 
 		if (itype.api_type == ClassDB::API_EDITOR)
 			continue;
 
-		String output_file = path_join(obj_type_dir, E->get().proxy_name + ".cs");
-		Error err = _generate_cs_type(E->get(), output_file);
+		String output_file = path_join(obj_type_dir, itype.proxy_name + ".cs");
+		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP)
 			continue;
@@ -580,14 +580,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 	if (!solution.set_path(p_output_dir))
 		return ERR_FILE_NOT_FOUND;
 
-	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next()) {
-		const TypeInterface &itype = E->get();
+	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
+		const TypeInterface &itype = E.get();
 
 		if (itype.api_type != ClassDB::API_EDITOR)
 			continue;
 
-		String output_file = path_join(obj_type_dir, E->get().proxy_name + ".cs");
-		Error err = _generate_cs_type(E->get(), output_file);
+		String output_file = path_join(obj_type_dir, itype.proxy_name + ".cs");
+		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP)
 			continue;
@@ -945,7 +945,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				return ERR_BUG;
 			}
 
-			Map<StringName, TypeInterface>::Element *object_itype = obj_types.find("Object");
+			OrderedHashMap<StringName, TypeInterface>::Element object_itype = obj_types.find("Object");
 
 			if (!object_itype) {
 				ERR_PRINT("BUG: Object type interface not found!");
@@ -953,7 +953,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output.push_back(MEMBER_BEGIN "public " CS_CLASS_SIGNALAWAITER " ToSignal(");
-			output.push_back(object_itype->get().cs_type);
+			output.push_back(object_itype.get().cs_type);
 			output.push_back(" source, string signal)\n" OPEN_BLOCK_L2
 							 "return new " CS_CLASS_SIGNALAWAITER "(source, signal, this);\n" CLOSE_BLOCK_L2);
 		}
@@ -999,9 +999,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	const TypeInterface *current_type = &p_itype;
 	while (!setter && current_type->base_name != StringName()) {
-		Map<StringName, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
-		ERR_FAIL_NULL_V(base_match, ERR_BUG);
-		current_type = &base_match->get();
+		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		ERR_FAIL_COND_V(!base_match, ERR_BUG);
+		current_type = &base_match.get();
 		setter = current_type->find_method_by_name(p_iprop.setter);
 	}
 
@@ -1010,9 +1010,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	// Search it in base types too
 	current_type = &p_itype;
 	while (!getter && current_type->base_name != StringName()) {
-		Map<StringName, TypeInterface>::Element *base_match = obj_types.find(current_type->base_name);
-		ERR_FAIL_NULL_V(base_match, ERR_BUG);
-		current_type = &base_match->get();
+		OrderedHashMap<StringName, TypeInterface>::Element base_match = obj_types.find(current_type->base_name);
+		ERR_FAIL_COND_V(!base_match, ERR_BUG);
+		current_type = &base_match.get();
 		getter = current_type->find_method_by_name(p_iprop.getter);
 	}
 
@@ -1324,8 +1324,8 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	generated_icall_funcs.clear();
 
-	for (Map<StringName, TypeInterface>::Element *type_elem = obj_types.front(); type_elem; type_elem = type_elem->next()) {
-		const TypeInterface &itype = type_elem->get();
+	for (OrderedHashMap<StringName, TypeInterface>::Element type_elem = obj_types.front(); type_elem; type_elem = type_elem.next()) {
+		const TypeInterface &itype = type_elem.get();
 
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
@@ -1631,20 +1631,20 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_null(const StringName &p_cname) {
 
-	const Map<StringName, TypeInterface>::Element *match = builtin_types.find(p_cname);
+	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_cname);
 
-	if (match)
-		return &match->get();
+	if (builtin_type_match)
+		return &builtin_type_match->get();
 
-	match = obj_types.find(p_cname);
+	const OrderedHashMap<StringName, TypeInterface>::Element obj_type_match = obj_types.find(p_cname);
 
-	if (match)
-		return &match->get();
+	if (obj_type_match)
+		return &obj_type_match.get();
 
-	match = enum_types.find(p_cname);
+	const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(p_cname);
 
-	if (match)
-		return &match->get();
+	if (enum_match)
+		return &enum_match->get();
 
 	return NULL;
 }
@@ -2484,8 +2484,8 @@ void BindingsGenerator::initialize() {
 
 	_generate_header_icalls();
 
-	for (Map<StringName, TypeInterface>::Element *E = obj_types.front(); E; E = E->next())
-		_generate_method_icalls(E->get());
+	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next())
+		_generate_method_icalls(E.get());
 
 	_generate_method_icalls(builtin_types["NodePath"]);
 	_generate_method_icalls(builtin_types["RID"]);
