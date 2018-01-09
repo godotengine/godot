@@ -336,7 +336,7 @@ namespace Godot
             this.r = (rgba & 0xFF) / 255.0f;
         }
 
-        private static float _parse_col(string str, int ofs)
+        private static int _parse_col(string str, int ofs)
         {
             int ig = 0;
 
@@ -415,17 +415,17 @@ namespace Godot
 
             if (alpha)
             {
-                if ((int)_parse_col(color, 0) < 0)
+                if (_parse_col(color, 0) < 0)
                     return false;
             }
 
             int from = alpha ? 2 : 0;
 
-            if ((int)_parse_col(color, from + 0) < 0)
+            if (_parse_col(color, from + 0) < 0)
                 return false;
-            if ((int)_parse_col(color, from + 2) < 0)
+            if (_parse_col(color, from + 2) < 0)
                 return false;
-            if ((int)_parse_col(color, from + 4) < 0)
+            if (_parse_col(color, from + 4) < 0)
                 return false;
 
             return true;
@@ -467,10 +467,10 @@ namespace Godot
 
             if (alpha)
             {
-                a = _parse_col(rgba, 0);
+                a = _parse_col(rgba, 0) / 255f;
 
                 if (a < 0)
-                    throw new ArgumentOutOfRangeException("Invalid color code. Alpha is " + a + " but zero or greater is expected: " + rgba);
+                    throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
             }
             else
             {
@@ -479,20 +479,20 @@ namespace Godot
 
             int from = alpha ? 2 : 0;
 
-            r = _parse_col(rgba, from + 0);
+            r = _parse_col(rgba, from + 0) / 255f;
 
             if (r < 0)
-                throw new ArgumentOutOfRangeException("Invalid color code. Red is " + r + " but zero or greater is expected: " + rgba);
+                throw new ArgumentOutOfRangeException("Invalid color code. Red part is not valid hexadecimal: " + rgba);
 
-            g = _parse_col(rgba, from + 2);
+            g = _parse_col(rgba, from + 2) / 255f;
 
             if (g < 0)
-                throw new ArgumentOutOfRangeException("Invalid color code. Green is " + g + " but zero or greater is expected: " + rgba);
+                throw new ArgumentOutOfRangeException("Invalid color code. Green part is not valid hexadecimal: " + rgba);
 
-            b = _parse_col(rgba, from + 4);
+            b = _parse_col(rgba, from + 4) / 255f;
 
             if (b < 0)
-                throw new ArgumentOutOfRangeException("Invalid color code. Blue is " + b + " but zero or greater is expected: " + rgba);
+                throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
         }
 
         public static bool operator ==(Color left, Color right)
