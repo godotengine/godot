@@ -715,7 +715,7 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 
 			case ERR_CANT_OPEN: {
 
-				show_accept(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_file.get_file()), TTR("I see..."));
+				accept->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_file.get_file()));
 			} break;
 			case ERR_PARSE_ERROR: {
 
@@ -1148,6 +1148,20 @@ void EditorNode::_mark_unsaved_scenes() {
 void EditorNode::_dialog_action(String p_file) {
 
 	switch (current_option) {
+
+		case RESOURCE_LOAD: {
+
+			RES res = ResourceLoader::load(p_file);
+			if (res.is_null()) {
+
+				current_option = -1;
+				accept->get_ok()->set_text("Ugh");
+				accept->set_text(TTR("Failed to load resource."));
+				return;
+			};
+
+			push_item(res.operator->());
+		} break;
 		case FILE_NEW_INHERITED_SCENE: {
 
 			load_scene(p_file, false, true);
@@ -1841,8 +1855,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!scene) {
 
 				current_option = -1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see..."));
+				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("This operation can't be done without a tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -1908,8 +1921,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!editor_data.get_edited_scene_root()) {
 
 				current_option = -1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see..."));
+				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
