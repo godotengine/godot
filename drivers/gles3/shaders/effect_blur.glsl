@@ -214,7 +214,7 @@ void main() {
 
 	vec4 color_accum = vec4(0.0);
 
-	float max_accum=0;
+	float max_accum=0.0;
 
 	for(int i=0;i<dof_kernel_size;i++) {
 
