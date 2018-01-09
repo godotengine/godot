@@ -126,6 +126,8 @@
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
+			<argument index="2" name="update_current" type="bool">
+			</argument>
 			<description>
 			</description>
 		</method>

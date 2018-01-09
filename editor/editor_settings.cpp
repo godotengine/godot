@@ -992,7 +992,7 @@ void EditorSettings::raise_order(const String &p_setting) {
 	props[p_setting].order = ++last_order;
 }
 
-void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool update_current) {
+void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -1000,7 +1000,7 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 		return;
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
-	if (update_current) {
+	if (p_update_current) {
 		set(p_setting, p_value);
 	}
 }
@@ -1436,7 +1436,7 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
-	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &EditorSettings::set_initial_value);
+	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
