@@ -254,7 +254,8 @@ public:
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
 	struct StackInfo {
-		Ref<Script> script;
+		String file;
+		String func;
 		int line;
 	};
 
@@ -391,6 +392,7 @@ public:
 	ScriptLanguage *get_break_language() const;
 
 	virtual void send_message(const String &p_message, const Array &p_args) = 0;
+	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) = 0;
 
 	virtual bool is_remote() const { return false; }
 	virtual void request_quit() {}

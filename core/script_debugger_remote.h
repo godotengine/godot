@@ -157,6 +157,7 @@ public:
 	virtual void request_quit();
 
 	virtual void send_message(const String &p_message, const Array &p_args);
+	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info);
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);

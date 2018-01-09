@@ -46,13 +46,10 @@ typedef MonoObject *(*MarshalUtils_ArraysToDict)(MonoArray *, MonoArray *, MonoO
 typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray **, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
 typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
+typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoObject **);
+typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoObject **);
 
 struct MonoCache {
-	// Format for cached classes in the Godot namespace: class_<Class>
-	// Macro: CACHED_CLASS(<Class>)
-
-	// Format for cached classes in a different namespace: class_<Namespace>_<Class>
-	// Macro: CACHED_NS_CLASS(<Namespace>, <Class>)
 
 	// -----------------------------------------------
 	// corlib classes
@@ -72,6 +69,13 @@ struct MonoCache {
 	GDMonoClass *class_double;
 	GDMonoClass *class_String;
 	GDMonoClass *class_IntPtr;
+
+#ifdef DEBUG_ENABLED
+	GDMonoClass *class_System_Diagnostics_StackTrace;
+	StackTrace_GetFrames methodthunk_System_Diagnostics_StackTrace_GetFrames;
+	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool;
+	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool;
+#endif
 
 	MonoClass *rawclass_Dictionary;
 	// -----------------------------------------------
@@ -95,6 +99,11 @@ struct MonoCache {
 	GDMonoClass *class_Spatial;
 	GDMonoClass *class_WeakRef;
 	GDMonoClass *class_MarshalUtils;
+
+#ifdef DEBUG_ENABLED
+	GDMonoClass *class_DebuggingUtils;
+	DebugUtils_StackFrameInfo methodthunk_DebuggingUtils_GetStackFrameInfo;
+#endif
 
 	GDMonoClass *class_ExportAttribute;
 	GDMonoField *field_ExportAttribute_hint;
@@ -167,7 +176,8 @@ MonoDomain *create_domain(const String &p_friendly_name);
 
 String get_exception_name_and_message(MonoObject *p_ex);
 
-void print_unhandled_exception(MonoObject *p_ex);
+void print_unhandled_exception(MonoObject *p_exc);
+void print_unhandled_exception(MonoObject *p_exc, bool p_fail_silently);
 
 } // namespace GDMonoUtils
 
@@ -175,9 +185,9 @@ void print_unhandled_exception(MonoObject *p_ex);
 
 #define CACHED_CLASS(m_class) (GDMonoUtils::mono_cache.class_##m_class)
 #define CACHED_CLASS_RAW(m_class) (GDMonoUtils::mono_cache.class_##m_class->get_mono_ptr())
-#define CACHED_NS_CLASS(m_ns, m_class) (GDMonoUtils::mono_cache.class_##m_ns##_##m_class)
 #define CACHED_RAW_MONO_CLASS(m_class) (GDMonoUtils::mono_cache.rawclass_##m_class)
 #define CACHED_FIELD(m_class, m_field) (GDMonoUtils::mono_cache.field_##m_class##_##m_field)
+#define CACHED_METHOD(m_class, m_method) (GDMonoUtils::mono_cache.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method)
 
 #ifdef REAL_T_IS_DOUBLE

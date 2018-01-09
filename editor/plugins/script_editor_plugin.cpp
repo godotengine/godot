@@ -313,24 +313,22 @@ void ScriptEditor::_goto_script_line2(int p_line) {
 
 void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
 
-	editor->push_item(p_script.ptr());
+	Ref<Script> script = Object::cast_to<Script>(*p_script);
+	if (!script.is_null() && script->get_path().is_resource_file()) {
+		if (edit(p_script, p_line, 0)) {
+			editor->push_item(p_script.ptr());
 
-	if (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+			int selected = tab_container->get_current_tab();
+			if (selected < 0 || selected >= tab_container->get_child_count())
+				return;
 
-		Ref<Script> script = Object::cast_to<Script>(*p_script);
-		if (!script.is_null() && script->get_path().is_resource_file())
-			edit(p_script, p_line, 0);
+			ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
+			if (!current)
+				return;
+
+			current->goto_line(p_line, true);
+		}
 	}
-
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return;
-
-	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
-	if (!current)
-		return;
-
-	current->goto_line(p_line, true);
 }
 
 void ScriptEditor::_update_history_arrows() {

@@ -432,22 +432,6 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 	if (p_type == ERR_HANDLER_SCRIPT)
 		return; //ignore script errors, those go through debugger
 
-	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)ud;
-
-	OutputError oe;
-	oe.error = p_err;
-	oe.error_descr = p_descr;
-	oe.source_file = p_file;
-	oe.source_line = p_line;
-	oe.source_func = p_func;
-	oe.warning = p_type == ERR_HANDLER_WARNING;
-	uint64_t time = OS::get_singleton()->get_ticks_msec();
-	oe.hr = time / 3600000;
-	oe.min = (time / 60000) % 60;
-	oe.sec = (time / 1000) % 60;
-	oe.msec = time % 1000;
-	Array cstack;
-
 	Vector<ScriptLanguage::StackInfo> si;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -456,32 +440,8 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 			break;
 	}
 
-	cstack.resize(si.size() * 2);
-	for (int i = 0; i < si.size(); i++) {
-		String path;
-		int line = 0;
-		if (si[i].script.is_valid()) {
-			path = si[i].script->get_path();
-			line = si[i].line;
-		}
-		cstack[i * 2 + 0] = path;
-		cstack[i * 2 + 1] = line;
-	}
-
-	oe.callstack = cstack;
-
-	sdr->mutex->lock();
-
-	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
-
-		if (sdr->errors.size() >= sdr->max_errors_per_frame) {
-			sdr->n_errors_dropped++;
-		} else {
-			sdr->errors.push_back(oe);
-		}
-	}
-
-	sdr->mutex->unlock();
+	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)ud;
+	sdr->send_error(p_func, p_file, p_line, p_err, p_descr, p_type, si);
 }
 
 bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
@@ -925,6 +885,45 @@ void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_
 			messages.push_back(msg);
 		}
 	}
+	mutex->unlock();
+}
+
+void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) {
+
+	OutputError oe;
+	oe.error = p_err;
+	oe.error_descr = p_descr;
+	oe.source_file = p_file;
+	oe.source_line = p_line;
+	oe.source_func = p_func;
+	oe.warning = p_type == ERR_HANDLER_WARNING;
+	uint64_t time = OS::get_singleton()->get_ticks_msec();
+	oe.hr = time / 3600000;
+	oe.min = (time / 60000) % 60;
+	oe.sec = (time / 1000) % 60;
+	oe.msec = time % 1000;
+	Array cstack;
+
+	cstack.resize(p_stack_info.size() * 3);
+	for (int i = 0; i < p_stack_info.size(); i++) {
+		cstack[i * 3 + 0] = p_stack_info[i].file;
+		cstack[i * 3 + 1] = p_stack_info[i].func;
+		cstack[i * 3 + 2] = p_stack_info[i].line;
+	}
+
+	oe.callstack = cstack;
+
+	mutex->lock();
+
+	if (!locking && tcp_client->is_connected_to_host()) {
+
+		if (errors.size() >= max_errors_per_frame) {
+			n_errors_dropped++;
+		} else {
+			errors.push_back(oe);
+		}
+	}
+
 	mutex->unlock();
 }
 

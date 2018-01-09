@@ -349,7 +349,9 @@ public:
 		csi.resize(_debug_call_stack_pos);
 		for (int i = 0; i < _debug_call_stack_pos; i++) {
 			csi[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
-			csi[_debug_call_stack_pos - i - 1].script = Ref<GDScript>(_call_stack[i].function->get_script());
+			if (_call_stack[i].function)
+				csi[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
+			csi[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
 		}
 		return csi;
 	}
