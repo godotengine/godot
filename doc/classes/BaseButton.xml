@@ -21,7 +21,7 @@
 		<method name="_toggled" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="pressed" type="bool">
+			<argument index="0" name="button_pressed" type="bool">
 			</argument>
 			<description>
 				Called when button is toggled (only if toggle_mode is active).
@@ -82,7 +82,7 @@
 			</description>
 		</signal>
 		<signal name="toggled">
-			<argument index="0" name="pressed" type="bool">
+			<argument index="0" name="button_pressed" type="bool">
 			</argument>
 			<description>
 				This signal is emitted when the button was just toggled between pressed and normal states (only if toggle_mode is active). The new state is contained in the [i]pressed[/i] argument.

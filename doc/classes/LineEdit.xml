@@ -131,14 +131,14 @@
 	</members>
 	<signals>
 		<signal name="text_changed">
-			<argument index="0" name="text" type="String">
+			<argument index="0" name="new_text" type="String">
 			</argument>
 			<description>
 				Emitted when the text changes.
 			</description>
 		</signal>
 		<signal name="text_entered">
-			<argument index="0" name="text" type="String">
+			<argument index="0" name="new_text" type="String">
 			</argument>
 			<description>
 				Emitted when the user presses KEY_ENTER on the [code]LineEdit[/code].
