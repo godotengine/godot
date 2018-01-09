@@ -5075,7 +5075,7 @@
         ]
       },
       {
-        "name": "godot_string_ord_at",
+        "name": "godot_string_unicode_at",
         "return_type": "wchar_t",
         "arguments": [
           ["const godot_string *", "p_self"],
