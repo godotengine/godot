@@ -98,7 +98,8 @@ public:
 		FORMAT_ETC2_RGB8,
 		FORMAT_ETC2_RGBA8,
 		FORMAT_ETC2_RGB8A1,
-		FORMAT_MAX
+		FORMAT_MAX,
+		FORMAT_ANY = -1
 	};
 
 	static const char *format_names[FORMAT_MAX];

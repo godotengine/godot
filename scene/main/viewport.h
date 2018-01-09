@@ -80,7 +80,7 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
-	virtual Ref<Image> get_data() const;
+	virtual Ref<Image> get_data(Image::Format p_format = Image::FORMAT_ANY) const;
 
 	ViewportTexture();
 	~ViewportTexture();

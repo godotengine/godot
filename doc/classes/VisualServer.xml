@@ -1505,6 +1505,8 @@
 			</argument>
 			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
 			</argument>
+			<argument index="2" name="format" type="int" enum="Image.Format" default="-1">
+			</argument>
 			<description>
 				Returns a copy of a texture's image unless it's a CubeMap, in wich case it returns the [RID] of the image at one of the cubes sides.
 			</description>

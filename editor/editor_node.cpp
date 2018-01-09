@@ -930,9 +930,9 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	Ref<Image> img;
 	if (is2d) {
-		img = scene_root->get_texture()->get_data();
+		img = scene_root->get_texture()->get_data(Image::FORMAT_RGB8);
 	} else {
-		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data(Image::FORMAT_RGB8);
 	}
 
 	if (img.is_valid()) {
@@ -946,8 +946,6 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		int vp_size = MIN(img->get_width(), img->get_height());
 		int x = (img->get_width() - vp_size) / 2;
 		int y = (img->get_height() - vp_size) / 2;
-
-		img->convert(Image::FORMAT_RGB8);
 
 		if (vp_size < preview_size) {
 			// just square it.
