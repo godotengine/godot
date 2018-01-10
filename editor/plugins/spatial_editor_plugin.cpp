@@ -3915,7 +3915,7 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 
 	if (d.has("snap_enabled")) {
 		snap_enabled = d["snap_enabled"];
-		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["snap_enabled"]);
+		tool_option_button[TOOL_OPT_USE_SNAP]->set_pressed(d["snap_enabled"]);
 	}
 
 	if (d.has("translate_snap"))
