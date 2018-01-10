@@ -883,7 +883,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// give visual indication of empty selected line
-					if (selection.active && line >= selection.from_line && line <= selection.to_line) {
+					if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
 						int char_w = cache.font->get_char_size(' ').width;
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
 					}
