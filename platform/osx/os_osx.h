@@ -52,6 +52,21 @@
 
 class OS_OSX : public OS_Unix {
 public:
+	enum {
+		KEY_EVENT_BUFFER_SIZE = 512
+	};
+
+	struct KeyEvent {
+		unsigned int osx_state;
+		bool pressed;
+		bool echo;
+		uint32_t scancode;
+		uint32_t unicode;
+	};
+
+	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
+	int key_event_pos;
+
 	bool force_quit;
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
 	//Rasterizer *rasterizer;
@@ -72,6 +87,7 @@ public:
 	CGEventSourceRef eventSource;
 
 	void process_events();
+	void process_key_events();
 
 	void *framework;
 	//          pthread_key_t   current;
