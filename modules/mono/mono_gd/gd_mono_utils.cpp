@@ -399,7 +399,7 @@ void print_unhandled_exception(MonoObject *p_exc) {
 	print_unhandled_exception(p_exc, false);
 }
 
-void print_unhandled_exception(MonoObject *p_exc, bool p_fail_silently) {
+void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 	mono_print_unhandled_exception(p_exc);
 #ifdef DEBUG_ENABLED
 	GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
@@ -414,7 +414,7 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_fail_silently) {
 	if (unexpected_exc != NULL) {
 		mono_print_unhandled_exception(unexpected_exc);
 
-		if (p_fail_silently) {
+		if (p_recursion_caution) {
 			// Called from CSharpLanguage::get_current_stack_info,
 			// so printing an error here could result in endless recursion
 			OS::get_singleton()->printerr("Mono: Method GDMonoUtils::print_unhandled_exception failed");
@@ -425,7 +425,7 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_fail_silently) {
 	}
 
 	Vector<ScriptLanguage::StackInfo> si;
-	if (stack_trace != NULL)
+	if (stack_trace != NULL && !p_recursion_caution)
 		si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
 
 	String file = si.size() ? si[0].file : __FILE__;

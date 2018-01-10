@@ -177,7 +177,7 @@ MonoDomain *create_domain(const String &p_friendly_name);
 String get_exception_name_and_message(MonoObject *p_ex);
 
 void print_unhandled_exception(MonoObject *p_exc);
-void print_unhandled_exception(MonoObject *p_exc, bool p_fail_silently);
+void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution);
 
 } // namespace GDMonoUtils
 
