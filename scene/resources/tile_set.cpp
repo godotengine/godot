@@ -309,6 +309,7 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture> &p_texture) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].texture = p_texture;
 	emit_changed();
+	_change_notify("texture");
 }
 
 Ref<Texture> TileSet::tile_get_texture(int p_id) const {
@@ -386,8 +387,8 @@ void TileSet::tile_set_is_autotile(int p_id, bool p_is_autotile) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].is_autotile = p_is_autotile;
-	_change_notify("");
 	emit_changed();
+	_change_notify("is_autotile");
 }
 
 bool TileSet::tile_get_is_autotile(int p_id) const {

@@ -583,6 +583,14 @@ void AutotileEditor::_notification(int p_what) {
 	}
 }
 
+void AutotileEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_prop == StringName("texture") || p_prop == StringName("is_autotile")) {
+		edit(tile_set.ptr());
+		autotile_list->update();
+		workspace->update();
+	}
+}
+
 void AutotileEditor::_on_autotile_selected(int p_index) {
 
 	if (get_current_tile() >= 0) {
@@ -1581,6 +1589,7 @@ Vector2 AutotileEditor::snap_point(const Vector2 &point) {
 void AutotileEditor::edit(Object *p_node) {
 
 	tile_set = Ref<TileSet>(Object::cast_to<TileSet>(p_node));
+	tile_set->add_change_receptor(this);
 	helper->set_tileset(tile_set);
 
 	autotile_list->clear();
