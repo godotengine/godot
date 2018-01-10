@@ -45,7 +45,11 @@ void PluginScriptLanguage::init() {
 }
 
 String PluginScriptLanguage::get_type() const {
-	return String(_desc.type);
+	// We should use _desc.type here, however the returned type is used to
+	// query ClassDB which would complain given the type is not registered
+	// from his point of view...
+	// To solve this we just use a more generic (but present in ClassDB) type.
+	return String("PluginScript");
 }
 
 String PluginScriptLanguage::get_extension() const {
