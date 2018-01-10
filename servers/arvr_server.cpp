@@ -72,6 +72,8 @@ void ARVRServer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+
+	ADD_SIGNAL(MethodInfo("world_scale_changed", PropertyInfo(Variant::REAL, "scale")));
 };
 
 real_t ARVRServer::get_world_scale() const {
@@ -79,13 +81,16 @@ real_t ARVRServer::get_world_scale() const {
 };
 
 void ARVRServer::set_world_scale(real_t p_world_scale) {
-	if (world_scale < 0.01) {
-		world_scale = 0.01;
-	} else if (world_scale > 1000.0) {
-		world_scale = 1000.0;
-	};
+	if (world_scale != p_world_scale) {
+		if (world_scale < 0.01) {
+			world_scale = 0.01;
+		} else if (world_scale > 1000.0) {
+			world_scale = 1000.0;
+		};
 
-	world_scale = p_world_scale;
+		world_scale = p_world_scale;
+		emit_signal("world_scale_changed", world_scale);
+	};
 };
 
 Transform ARVRServer::get_world_origin() const {
