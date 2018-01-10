@@ -261,7 +261,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 					if (begin_d > 0) {
 
-						if (Geometry::is_point_in_triangle(p_start, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
+						if (Geometry::is_point_in_triangle_2d(p_start, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
 							begin_poly = &p;
 							begin_point = p_start;
@@ -273,7 +273,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 					if (end_d > 0) {
 
-						if (Geometry::is_point_in_triangle(p_end, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
+						if (Geometry::is_point_in_triangle_2d(p_end, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
 							end_poly = &p;
 							end_point = p_end;
@@ -617,7 +617,7 @@ Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
 
-				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
+				if (Geometry::is_point_in_triangle_2d(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
 					return p_point; //inside triangle, nothing else to discuss
 				}
@@ -669,7 +669,7 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
 
-				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
+				if (Geometry::is_point_in_triangle_2d(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
 					E->get().owner;
 				}

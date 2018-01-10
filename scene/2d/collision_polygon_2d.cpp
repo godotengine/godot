@@ -251,7 +251,7 @@ Rect2 CollisionPolygon2D::_edit_get_rect() const {
 
 bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
+	return Geometry::is_point_in_polygon_2d(p_point, Variant(polygon));
 }
 
 String CollisionPolygon2D::get_configuration_warning() const {

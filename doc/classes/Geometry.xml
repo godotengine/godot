@@ -61,7 +61,7 @@
 				Clips the polygon defined by the points in [code]points[/code] against the [code]plane[/code] and returns the points of the clipped polygon.
 			</description>
 		</method>
-		<method name="convex_hull_2d">
+		<method name="get_convex_hull_2d">
 			<return type="PoolVector2Array">
 			</return>
 			<argument index="0" name="points" type="PoolVector2Array">
@@ -96,7 +96,7 @@
 				Returns the 2d point on the 2d segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
-		<method name="get_closest_point_to_segment_uncapped">
+		<method name="get_closest_point_to_line">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="point" type="Vector3">
@@ -109,7 +109,7 @@
 				Returns the 3d point on the 3d line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
-		<method name="get_closest_point_to_segment_uncapped_2d">
+		<method name="get_closest_point_to_line_2d">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="point" type="Vector2">
@@ -169,7 +169,7 @@
 				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a vector of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
 			</description>
 		</method>
-		<method name="point_is_inside_triangle" qualifiers="const">
+		<method name="is_point_in_triangle_2d" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="point" type="Vector2">
@@ -182,6 +182,19 @@
 			</argument>
 			<description>
 				Returns if [code]point[/code] is inside the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code].
+			</description>
+		</method>
+		<method name="get_triangle_area_2d" qualifiers="const">
+			<return type="real_t">
+			</return>
+			<argument index="1" name="a" type="Vector2">
+			</argument>
+			<argument index="2" name="b" type="Vector2">
+			</argument>
+			<argument index="3" name="c" type="Vector2">
+			</argument>
+			<description>
+				Returns the area of the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code].
 			</description>
 		</method>
 		<method name="ray_intersects_triangle">
@@ -201,7 +214,7 @@
 				Tests if the 3d ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
 			</description>
 		</method>
-		<method name="segment_intersects_circle">
+		<method name="segment_intersects_circle_2d">
 			<return type="float">
 			</return>
 			<argument index="0" name="segment_from" type="Vector2">
@@ -257,6 +270,21 @@
 			</argument>
 			<description>
 				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
+			</description>
+		</method>
+		<method name="line_intersects_line_2d">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from_a" type="Vector2">
+			</argument>
+			<argument index="1" name="to_a" type="Vector2">
+			</argument>
+			<argument index="2" name="from_b" type="Vector2">
+			</argument>
+			<argument index="3" name="to_b" type="Vector2">
+			</argument>
+			<description>
+				Checks if the two lines ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
 			</description>
 		</method>
 		<method name="segment_intersects_sphere">

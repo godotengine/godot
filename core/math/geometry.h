@@ -468,7 +468,7 @@ public:
 			return p_segment[0] + n * d; // inside
 	}
 
-	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
+	static Vector3 get_closest_point_to_line(const Vector3 &p_point, const Vector3 *p_segment) {
 
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
@@ -501,7 +501,7 @@ public:
 			return p_segment[0] + n * d; // inside
 	}
 
-	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
+	static bool is_point_in_triangle_2d(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
 		int as_x = s.x - a.x;
 		int as_y = s.y - a.y;
 
@@ -514,9 +514,9 @@ public:
 		return true;
 	}
 
-	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
+	static bool is_point_in_polygon_2d(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
 
-	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
+	static Vector2 get_closest_point_to_line_2d(const Vector2 &p_point, const Vector2 *p_segment) {
 
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
@@ -559,7 +559,24 @@ public:
 		return true;
 	}
 
-	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
+	static bool line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
+
+		const Vector2 dir_a = p_to_a - p_from_a;
+		const Vector2 dir_b = p_to_b - p_from_b;
+
+		const real_t det = dir_a.x * dir_b.y - dir_b.x * dir_a.y;
+		if (det < 1e-10) // parallel?
+			return false;
+
+		const real_t s = (dir_b.y * (p_from_b.x - p_from_a.x) - dir_b.x * (p_from_b.y - p_from_a.y)) / det;
+
+		if (r_result)
+			*r_result = p_from_a + s * dir_a;
+
+		return true;
+	}
+
+	static inline bool is_point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
 
 		Vector3 face_n = (p_v1 - p_v3).cross(p_v1 - p_v2);
 
@@ -581,7 +598,7 @@ public:
 		return true;
 	}
 
-	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
+	static inline bool triangle_intersects_sphere(const Vector3 *p_triangle, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
 
 		real_t d = p_normal.dot(p_sphere_pos) - p_normal.dot(p_triangle[0]);
 
@@ -592,7 +609,7 @@ public:
 
 		/** 2nd) TEST INSIDE TRIANGLE **/
 
-		if (Geometry::point_in_projected_triangle(contact, p_triangle[0], p_triangle[1], p_triangle[2])) {
+		if (Geometry::is_point_in_projected_triangle(contact, p_triangle[0], p_triangle[1], p_triangle[2])) {
 			r_triangle_contact = contact;
 			r_sphere_contact = p_sphere_pos - p_normal * p_sphere_radius;
 			//printf("solved inside triangle\n");
@@ -666,7 +683,7 @@ public:
 		return false;
 	}
 
-	static real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
+	static real_t segment_intersects_circle_2d(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
 
 		Vector2 line_vec = p_to - p_from;
 		Vector2 vec_to_line = p_from - p_circle_pos;
@@ -862,9 +879,13 @@ public:
 		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
 	}
 
+	static real_t get_triangle_area_2d(const Point2 &O, const Point2 &A, const Point2 &B) {
+		return 0.5 * Math::abs(vec2_cross(O, A, B));
+	}
+
 	// Returns a list of points on the convex hull in counter-clockwise order.
 	// Note: the last point in the returned list is the same as the first one.
-	static Vector<Point2> convex_hull_2d(Vector<Point2> P) {
+	static Vector<Point2> get_convex_hull_2d(Vector<Point2> P) {
 		int n = P.size(), k = 0;
 		Vector<Point2> H;
 		H.resize(2 * n);

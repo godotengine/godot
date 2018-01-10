@@ -70,7 +70,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 		const int outline_size = outline.size();
 		if (outline_size < 3)
 			continue;
-		if (Geometry::is_point_in_polygon(p_point, Variant(outline)))
+		if (Geometry::is_point_in_polygon_2d(p_point, Variant(outline)))
 			return true;
 	}
 	return false;

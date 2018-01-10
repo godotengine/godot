@@ -49,7 +49,7 @@ Vector<Vector2> CapsuleShape2D::_get_points() const {
 
 bool CapsuleShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return Geometry::is_point_in_polygon(p_point, _get_points());
+	return Geometry::is_point_in_polygon_2d(p_point, _get_points());
 }
 
 void CapsuleShape2D::_update_shape() {
