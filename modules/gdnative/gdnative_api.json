@@ -3516,7 +3516,7 @@
         "return_type": "void",
         "arguments": [
           ["godot_transform *", "p_self"],
-          ["godot_basis *", "p_v"]
+          ["const godot_basis *", "p_v"]
         ]
       },
       {
@@ -3531,7 +3531,7 @@
         "return_type": "void",
         "arguments": [
           ["godot_transform *", "p_self"],
-          ["godot_vector3 *", "p_v"]
+          ["const godot_vector3 *", "p_v"]
         ]
       },
       {
@@ -4324,6 +4324,27 @@
         ]
       },
       {
+        "name": "godot_char_string_length",
+        "return_type": "godot_int",
+        "arguments": [
+          ["const godot_char_string *", "p_cs"]
+        ]
+      },
+      {
+        "name": "godot_char_string_get_data",
+        "return_type": "const char *",
+        "arguments": [
+          ["const godot_char_string *", "p_cs"]
+        ]
+      },
+      {
+        "name": "godot_char_string_destroy",
+        "return_type": "void",
+        "arguments": [
+          ["godot_char_string *", "p_cs"]
+        ]
+      },
+      {
         "name": "godot_string_new",
         "return_type": "void",
         "arguments": [
@@ -4339,30 +4360,12 @@
         ]
       },
       {
-        "name": "godot_string_new_data",
-        "return_type": "void",
-        "arguments": [
-          ["godot_string *", "r_dest"],
-          ["const char *", "p_contents"],
-          ["const int", "p_size"]
-        ]
-      },
-      {
-        "name": "godot_string_new_unicode_data",
+        "name": "godot_string_new_with_wide_string",
         "return_type": "void",
         "arguments": [
           ["godot_string *", "r_dest"],
           ["const wchar_t *", "p_contents"],
           ["const int", "p_size"]
-        ]
-      },
-      {
-        "name": "godot_string_get_data",
-        "return_type": "void",
-        "arguments": [
-          ["const godot_string *", "p_self"],
-          ["char *", "p_dest"],
-          ["int *", "p_size"]
         ]
       },
       {
@@ -4382,7 +4385,7 @@
         ]
       },
       {
-        "name": "godot_string_unicode_str",
+	"name": "godot_string_wide_str",
         "return_type": "const wchar_t *",
         "arguments": [
           ["const godot_string *", "p_self"]
@@ -4417,6 +4420,30 @@
         "return_type": "godot_int",
         "arguments": [
           ["const godot_string *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_string_casecmp_to",
+        "return_type": "signed char",
+        "arguments": [
+          ["const godot_string *", "p_self"],
+          ["const godot_string *", "p_str"]
+        ]
+      },
+      {
+        "name": "godot_string_nocasecmp_to",
+        "return_type": "signed char",
+        "arguments": [
+          ["const godot_string *", "p_self"],
+          ["const godot_string *", "p_str"]
+        ]
+      },
+      {
+        "name": "godot_string_naturalnocasecmp_to",
+        "return_type": "signed char",
+        "arguments": [
+          ["const godot_string *", "p_self"],
+          ["const godot_string *", "p_str"]
         ]
       },
       {
@@ -5125,26 +5152,23 @@
       },
       {
         "name": "godot_string_ascii",
-        "return_type": "void",
+        "return_type": "godot_char_string",
         "arguments": [
-          ["godot_string *", "p_self"],
-          ["char *", "result"]
+	  ["const godot_string *", "p_self"]
         ]
       },
       {
         "name": "godot_string_ascii_extended",
-        "return_type": "void",
+        "return_type": "godot_char_string",
         "arguments": [
-          ["godot_string *", "p_self"],
-          ["char *", "result"]
+	  ["const godot_string *", "p_self"]
         ]
       },
       {
         "name": "godot_string_utf8",
-        "return_type": "void",
+        "return_type": "godot_char_string",
         "arguments": [
-          ["godot_string *", "p_self"],
-          ["char *", "result"]
+	  ["const godot_string *", "p_self"]
         ]
       },
       {

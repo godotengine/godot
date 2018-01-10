@@ -63,7 +63,7 @@ godot_basis GDAPI godot_transform_get_basis(const godot_transform *p_self) {
 	return dest;
 }
 
-void GDAPI godot_transform_set_basis(godot_transform *p_self, godot_basis *p_v) {
+void GDAPI godot_transform_set_basis(godot_transform *p_self, const godot_basis *p_v) {
 	Transform *self = (Transform *)p_self;
 	const Basis *v = (const Basis *)p_v;
 	self->basis = *v;
@@ -76,7 +76,7 @@ godot_vector3 GDAPI godot_transform_get_origin(const godot_transform *p_self) {
 	return dest;
 }
 
-void GDAPI godot_transform_set_origin(godot_transform *p_self, godot_vector3 *p_v) {
+void GDAPI godot_transform_set_origin(godot_transform *p_self, const godot_vector3 *p_v) {
 	Transform *self = (Transform *)p_self;
 	const Vector3 *v = (const Vector3 *)p_v;
 	self->origin = *v;
