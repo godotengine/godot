@@ -52,7 +52,7 @@ Rect2 Polygon2D::_edit_get_rect() const {
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
+	return Geometry::is_point_in_polygon_2d(p_point, Variant(polygon));
 }
 
 void Polygon2D::_edit_set_pivot(const Point2 &p_pivot) {

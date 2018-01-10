@@ -36,7 +36,7 @@
 
 bool ConvexPolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return Geometry::is_point_in_polygon(p_point, points);
+	return Geometry::is_point_in_polygon_2d(p_point, points);
 }
 
 void ConvexPolygonShape2D::_update_shape() {
@@ -47,7 +47,7 @@ void ConvexPolygonShape2D::_update_shape() {
 
 void ConvexPolygonShape2D::set_point_cloud(const Vector<Vector2> &p_points) {
 
-	Vector<Point2> hull = Geometry::convex_hull_2d(p_points);
+	Vector<Point2> hull = Geometry::get_convex_hull_2d(p_points);
 	ERR_FAIL_COND(hull.size() < 3);
 	set_points(hull);
 }

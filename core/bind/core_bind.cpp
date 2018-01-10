@@ -1202,9 +1202,9 @@ PoolVector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height
 	return Geometry::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
 }
 
-real_t _Geometry::segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
+real_t _Geometry::segment_intersects_circle_2d(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
 
-	return Geometry::segment_intersects_circle(p_from, p_to, p_circle_pos, p_circle_radius);
+	return Geometry::segment_intersects_circle_2d(p_from, p_to, p_circle_pos, p_circle_radius);
 }
 
 Variant _Geometry::segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b) {
@@ -1249,15 +1249,15 @@ Vector3 _Geometry::get_closest_point_to_segment(const Vector3 &p_point, const Ve
 	Vector3 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment(p_point, s);
 }
-Vector2 _Geometry::get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
+Vector2 _Geometry::get_closest_point_to_line_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
 
 	Vector2 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment_uncapped_2d(p_point, s);
+	return Geometry::get_closest_point_to_line_2d(p_point, s);
 }
-Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
+Vector3 _Geometry::get_closest_point_to_line(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
 
 	Vector3 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment_uncapped(p_point, s);
+	return Geometry::get_closest_point_to_line(p_point, s);
 }
 Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 
@@ -1276,9 +1276,14 @@ Variant _Geometry::segment_intersects_triangle(const Vector3 &p_from, const Vect
 		return Variant();
 }
 
-bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
+bool _Geometry::is_point_in_triangle_2d(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
 
-	return Geometry::is_point_in_triangle(s, a, b, c);
+	return Geometry::is_point_in_triangle_2d(s, a, b, c);
+}
+
+real_t _Geometry::get_triangle_area_2d(const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
+
+	return Geometry::get_triangle_area_2d(a, b, c);
 }
 
 PoolVector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
@@ -1323,9 +1328,9 @@ Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
-Vector<Point2> _Geometry::convex_hull_2d(const Vector<Point2> &p_points) {
+Vector<Point2> _Geometry::get_convex_hull_2d(const Vector<Point2> &p_points) {
 
-	return Geometry::convex_hull_2d(p_points);
+	return Geometry::get_convex_hull_2d(p_points);
 }
 
 Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane) {
@@ -1371,7 +1376,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &_Geometry::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &_Geometry::segment_intersects_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle_2d", "segment_from", "segment_to", "circle_position", "circle_radius"), &_Geometry::segment_intersects_circle_2d);
 	ClassDB::bind_method(D_METHOD("segment_intersects_segment_2d", "from_a", "to_a", "from_b", "to_b"), &_Geometry::segment_intersects_segment_2d);
 
 	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments_2d", "p1", "q1", "p2", "q2"), &_Geometry::get_closest_points_between_segments_2d);
@@ -1380,8 +1385,8 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_2d", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_2d);
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped_2d", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_uncapped_2d);
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_uncapped);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_line_2d", "point", "s1", "s2"), &_Geometry::get_closest_point_to_line_2d);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_line", "point", "s1", "s2"), &_Geometry::get_closest_point_to_line);
 
 	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit", "normal"), &_Geometry::get_uv84_normal_bit);
 
@@ -1390,10 +1395,11 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "sphere_position", "sphere_radius"), &_Geometry::segment_intersects_sphere);
 	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder", "from", "to", "height", "radius"), &_Geometry::segment_intersects_cylinder);
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry::segment_intersects_convex);
-	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
+	ClassDB::bind_method(D_METHOD("is_point_in_triangle_2d", "point", "a", "b", "c"), &_Geometry::is_point_in_triangle_2d);
+	ClassDB::bind_method(D_METHOD("get_triangle_area_2d", "a", "b", "c"), &_Geometry::get_triangle_area_2d);
 
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
-	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
+	ClassDB::bind_method(D_METHOD("get_convex_hull_2d", "points"), &_Geometry::get_convex_hull_2d);
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry::clip_polygon);
 
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);

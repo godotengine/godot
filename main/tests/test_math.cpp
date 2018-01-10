@@ -622,7 +622,7 @@ MainLoop *test() {
 	}
 
 	return NULL;
-	print_line("inters: " + rtos(Geometry::segment_intersects_circle(Vector2(-5, 0), Vector2(-2, 0), Vector2(), 1.0)));
+	print_line("inters: " + rtos(Geometry::segment_intersects_circle_2d(Vector2(-5, 0), Vector2(-2, 0), Vector2(), 1.0)));
 
 	print_line("cross: " + Vector3(1, 2, 3).cross(Vector3(4, 5, 7)));
 	print_line("dot: " + rtos(Vector3(1, 2, 3).dot(Vector3(4, 5, 7))));

@@ -76,7 +76,7 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector3 closest_B = Geometry::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector3 closest_B = Geometry::get_closest_point_to_line(*p_points_A, p_points_B);
 	p_callback->call(*p_points_A, closest_B);
 }
 
@@ -136,7 +136,7 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 		d = 1.0;
 
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
-	Vector3 closest_B = Geometry::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
+	Vector3 closest_B = Geometry::get_closest_point_to_line(closest_A, p_points_B);
 	p_callback->call(closest_A, closest_B);
 }
 
