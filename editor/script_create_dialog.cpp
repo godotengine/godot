@@ -303,11 +303,19 @@ void ScriptCreateDialog::_built_in_pressed() {
 	_update_dialog();
 }
 
-void ScriptCreateDialog::_browse_path(bool browse_parent) {
+void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 
 	is_browsing_parent = browse_parent;
 
-	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	if (p_save) {
+		file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+		file_browse->set_title(TTR("Open Script/Choose Location"));
+		file_browse->get_ok()->set_text(TTR("Open"));
+	} else {
+		file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+		file_browse->set_title(TTR("Open Script"));
+	}
+
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
 	List<String> extensions;
@@ -678,7 +686,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_name);
 	parent_browse_button = memnew(Button);
 	parent_browse_button->set_flat(true);
-	parent_browse_button->connect("pressed", this, "_browse_path", varray(true));
+	parent_browse_button->connect("pressed", this, "_browse_path", varray(true, false));
 	hb->add_child(parent_browse_button);
 	l = memnew(Label);
 	l->set_text(TTR("Inherits"));
@@ -730,7 +738,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(file_path);
 	path_button = memnew(Button);
 	path_button->set_flat(true);
-	path_button->connect("pressed", this, "_browse_path", varray(false));
+	path_button->connect("pressed", this, "_browse_path", varray(false, true));
 	hb->add_child(path_button);
 	l = memnew(Label);
 	l->set_text(TTR("Path"));
@@ -742,6 +750,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	file_browse = memnew(EditorFileDialog);
 	file_browse->connect("file_selected", this, "_file_selected");
+	file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_browse);
 	get_ok()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
