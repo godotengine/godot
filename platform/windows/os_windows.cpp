@@ -461,6 +461,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_MOUSEWHEEL:
 		case WM_MOUSEHWHEEL:
 		case WM_LBUTTONDBLCLK:
+		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 			/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */ {
@@ -519,6 +520,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 						mb.pressed = true;
 						mb.button_index = 2;
+						mb.doubleclick = true;
+					} break;
+					case WM_MBUTTONDBLCLK: {
+
+						mb.pressed = true;
+						mb.button_index = 3;
 						mb.doubleclick = true;
 					} break;
 					case WM_MOUSEWHEEL: {
