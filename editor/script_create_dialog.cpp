@@ -51,7 +51,9 @@ void ScriptCreateDialog::_notification(int p_what) {
 void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path) {
 
 	class_name->set_text("");
+	class_name->deselect();
 	parent_name->set_text(p_base_name);
+	parent_name->deselect();
 	if (p_base_path != "") {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
@@ -59,8 +61,9 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 		initial_bp = "";
 		file_path->set_text("");
 	}
+	file_path->deselect();
+
 	_lang_changed(current_language);
-	_parent_name_changed(parent_name->get_text());
 	_class_name_changed("");
 	_path_changed(file_path->get_text());
 }
@@ -290,6 +293,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	_template_changed(template_menu->get_selected());
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
 
+	_parent_name_changed(parent_name->get_text());
 	_update_dialog();
 }
 
@@ -380,8 +384,6 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		is_new_script_created = false;
 		is_path_valid = true;
 		_msg_path_valid(true, TTR("File exists, will be reused"));
-	} else {
-		path_error_label->set_text("");
 	}
 	memdelete(f);
 	_update_dialog();
@@ -533,10 +535,8 @@ void ScriptCreateDialog::_update_dialog() {
 		internal->set_disabled(!supports_built_in);
 		if (is_built_in) {
 			_msg_path_valid(true, TTR("Built-in script (into scene file)"));
-		} else {
-			if (script_ok) {
-				_msg_path_valid(true, TTR("Create new script file"));
-			}
+		} else if (is_path_valid) {
+			_msg_path_valid(true, TTR("Create new script file"));
 		}
 	} else {
 		// Script Loaded
@@ -544,7 +544,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(false);
 		parent_browse_button->set_disabled(true);
 		internal->set_disabled(true);
-		if (script_ok) {
+		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Load existing script file"));
 		}
 	}
