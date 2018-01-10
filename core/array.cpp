@@ -266,6 +266,20 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 	return *this;
 }
 
+void Array::shuffle() {
+
+	const int n = _p->array.size();
+	if (n < 2)
+		return;
+	Variant *data = _p->array.ptrw();
+	for (int i = n - 1; i >= 1; i--) {
+		const int j = Math::rand() % (i + 1);
+		const Variant tmp = data[j];
+		data[j] = data[i];
+		data[i] = tmp;
+	}
+}
+
 template <typename Less>
 _FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
 
