@@ -407,13 +407,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange {
 	NSEvent *event = [NSApp currentEvent];
-	Ref<InputEventKey> k;
-	k.instance();
-
-	get_key_modifier_state([event modifierFlags], k);
-	k->set_pressed(true);
-	k->set_echo(false);
-	k->set_scancode(0);
 
 	NSString *characters;
 	if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -438,8 +431,15 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		if ((codepoint & 0xFF00) == 0xF700)
 			continue;
 
-		k->set_unicode(codepoint);
-		OS_OSX::singleton->push_input(k);
+		OS_OSX::KeyEvent ke;
+
+		ke.osx_state = [event modifierFlags];
+		ke.pressed = true;
+		ke.echo = false;
+		ke.scancode = 0;
+		ke.unicode = codepoint;
+
+		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
 	}
 	[self cancelComposition];
 }
@@ -788,80 +788,87 @@ static int translateKey(unsigned int key) {
 
 - (void)keyDown:(NSEvent *)event {
 
-	Ref<InputEventKey> k;
-	k.instance();
-
-	get_key_modifier_state([event modifierFlags], k);
-	k->set_pressed(true);
-	k->set_scancode(latin_keyboard_keycode_convert(translateKey([event keyCode])));
-	k->set_echo([event isARepeat]);
-
-	NSString *characters = [event characters];
-	NSUInteger i, length = [characters length];
-
 	//disable raw input in IME mode
-	if (!imeMode)
-		OS_OSX::singleton->push_input(k);
+	if (!imeMode) {
+		OS_OSX::KeyEvent ke;
+
+		ke.osx_state = [event modifierFlags];
+		ke.pressed = true;
+		ke.echo = [event isARepeat];
+		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+		ke.unicode = 0;
+
+		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+	}
 
 	if ((OS_OSX::singleton->im_position.x != 0) && (OS_OSX::singleton->im_position.y != 0))
 		[self interpretKeyEvents:[NSArray arrayWithObject:event]];
 }
 
 - (void)flagsChanged:(NSEvent *)event {
-	Ref<InputEventKey> k;
-	k.instance();
 
-	int key = [event keyCode];
-	int mod = [event modifierFlags];
+	if (!imeMode) {
+		OS_OSX::KeyEvent ke;
 
-	if (key == 0x36 || key == 0x37) {
-		if (mod & NSEventModifierFlagCommand) {
-			mod &= ~NSEventModifierFlagCommand;
-			k->set_pressed(true);
+		ke.echo = false;
+
+		int key = [event keyCode];
+		int mod = [event modifierFlags];
+
+		if (key == 0x36 || key == 0x37) {
+			if (mod & NSEventModifierFlagCommand) {
+				mod &= ~NSEventModifierFlagCommand;
+				ke.pressed = true;
+			} else {
+				ke.pressed = false;
+			}
+		} else if (key == 0x38 || key == 0x3c) {
+			if (mod & NSEventModifierFlagShift) {
+				mod &= ~NSEventModifierFlagShift;
+				ke.pressed = true;
+			} else {
+				ke.pressed = false;
+			}
+		} else if (key == 0x3a || key == 0x3d) {
+			if (mod & NSEventModifierFlagOption) {
+				mod &= ~NSEventModifierFlagOption;
+				ke.pressed = true;
+			} else {
+				ke.pressed = false;
+			}
+		} else if (key == 0x3b || key == 0x3e) {
+			if (mod & NSEventModifierFlagControl) {
+				mod &= ~NSEventModifierFlagControl;
+				ke.pressed = true;
+			} else {
+				ke.pressed = false;
+			}
 		} else {
-			k->set_pressed(false);
+			return;
 		}
-	} else if (key == 0x38 || key == 0x3c) {
-		if (mod & NSEventModifierFlagShift) {
-			mod &= ~NSEventModifierFlagShift;
-			k->set_pressed(true);
-		} else {
-			k->set_pressed(false);
-		}
-	} else if (key == 0x3a || key == 0x3d) {
-		if (mod & NSEventModifierFlagOption) {
-			mod &= ~NSEventModifierFlagOption;
-			k->set_pressed(true);
-		} else {
-			k->set_pressed(false);
-		}
-	} else if (key == 0x3b || key == 0x3e) {
-		if (mod & NSEventModifierFlagControl) {
-			mod &= ~NSEventModifierFlagControl;
-			k->set_pressed(true);
-		} else {
-			k->set_pressed(false);
-		}
-	} else {
-		return;
+
+		ke.osx_state = mod;
+		ke.scancode = latin_keyboard_keycode_convert(translateKey(key));
+		ke.unicode = 0;
+
+		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
 	}
-
-	get_key_modifier_state(mod, k);
-	k->set_scancode(latin_keyboard_keycode_convert(translateKey(key)));
-
-	OS_OSX::singleton->push_input(k);
 }
 
 - (void)keyUp:(NSEvent *)event {
 
-	Ref<InputEventKey> k;
-	k.instance();
+	if (!imeMode) {
 
-	get_key_modifier_state([event modifierFlags], k);
-	k->set_pressed(false);
-	k->set_scancode(latin_keyboard_keycode_convert(translateKey([event keyCode])));
+		OS_OSX::KeyEvent ke;
 
-	OS_OSX::singleton->push_input(k);
+		ke.osx_state = [event modifierFlags];
+		ke.pressed = false;
+		ke.echo = false;
+		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+		ke.unicode = 0;
+
+		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+	}
 }
 
 inline void sendScrollEvent(int button, double factor, int modifierFlags) {
@@ -2060,9 +2067,47 @@ void OS_OSX::process_events() {
 
 		[NSApp sendEvent:event];
 	}
+	process_key_events();
 
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
+}
+
+void OS_OSX::process_key_events() {
+
+	Ref<InputEventKey> k;
+	for (int i = 0; i < key_event_pos; i++) {
+
+		KeyEvent &ke = key_event_buffer[i];
+
+		if ((i == 0 && ke.scancode == 0) || (i > 0 && key_event_buffer[i - 1].scancode == 0)) {
+			k.instance();
+
+			get_key_modifier_state(ke.osx_state, k);
+			k->set_pressed(ke.pressed);
+			k->set_echo(ke.echo);
+			k->set_scancode(0);
+			k->set_unicode(ke.unicode);
+
+			push_input(k);
+		}
+		if (ke.scancode != 0) {
+			k.instance();
+
+			get_key_modifier_state(ke.osx_state, k);
+			k->set_pressed(ke.pressed);
+			k->set_echo(ke.echo);
+			k->set_scancode(ke.scancode);
+
+			if (i + 1 < key_event_pos && key_event_buffer[i + 1].scancode == 0) {
+				k->set_unicode(key_event_buffer[i + 1].unicode);
+			}
+
+			push_input(k);
+		}
+	}
+
+	key_event_pos = 0;
 }
 
 void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
@@ -2184,6 +2229,7 @@ OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {
 
+	key_event_pos = 0;
 	mouse_mode = OS::MOUSE_MODE_VISIBLE;
 	main_loop = NULL;
 	singleton = this;
