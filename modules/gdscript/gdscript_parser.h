@@ -252,6 +252,7 @@ public:
 			OP_SHIFT_RIGHT,
 			OP_INIT_ASSIGN,
 			OP_ASSIGN,
+			OP_UNPACK,
 			OP_ASSIGN_ADD,
 			OP_ASSIGN_SUB,
 			OP_ASSIGN_MUL,
@@ -338,6 +339,10 @@ public:
 			body = NULL;
 			body_else = NULL;
 		}
+	};
+
+	struct ForNode : public ControlFlowNode {
+		Vector<IdentifierNode *> ids;
 	};
 
 	struct AssertNode : public Node {
@@ -504,6 +509,7 @@ private:
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
 	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
 	Node *_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false);
+	Vector<Node *> _parse_and_reduce_expression_list(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false);
 
 	PatternNode *_parse_pattern(bool p_static);
 	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
