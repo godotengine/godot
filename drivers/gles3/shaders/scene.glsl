@@ -1307,7 +1307,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 	//make blend more rounded
 	blend=mix(length(inner_pos),blend,blend);
 	blend*=blend;
-	blend=1.001-blend;
+	blend=max(0.0, 1.0-blend);
 
 	if (reflections[idx].params.x>0.0){// compute reflection
 
@@ -1476,7 +1476,7 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds,vec
 	}
 
 	vec3 blendv = abs(probe_pos/bounds * 2.0 - 1.0);
-	float blend = 1.001-max(blendv.x,max(blendv.y,blendv.z));
+	float blend = clamp(1.0-max(blendv.x,max(blendv.y,blendv.z)), 0.0, 1.0);
 	//float blend=1.0;
 
 	float max_distance = length(bounds);
