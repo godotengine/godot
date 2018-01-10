@@ -296,6 +296,11 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="shuffle">
+			<description>
+				Shuffle the array such that the items will have a random order.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
