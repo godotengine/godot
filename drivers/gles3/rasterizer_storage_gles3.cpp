@@ -6451,6 +6451,10 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 	}
+
+#ifdef OSX_ENABLED
+	glFlush(); // fixes subsequent random crash on macOS inside glSwap_Exec()
+#endif
 }
 
 RID RasterizerStorageGLES3::render_target_create() {
