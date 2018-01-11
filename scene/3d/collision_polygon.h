@@ -50,6 +50,7 @@ protected:
 	Vector<Point2> polygon;
 
 	void _add_to_collision_object(Object *p_obj);
+	void _update_xform_in_parent();
 	void _update_parent();
 
 	bool can_update_body;

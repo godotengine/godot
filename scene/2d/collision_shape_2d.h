@@ -47,6 +47,8 @@ class CollisionShape2D : public Node2D {
 	void _set_update_shape_index(int p_index);
 	int _get_update_shape_index() const;
 
+	void _update_xform_in_parent();
+
 protected:
 	void _update_parent();
 	void _notification(int p_what);

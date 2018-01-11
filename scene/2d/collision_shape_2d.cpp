@@ -56,6 +56,17 @@ void CollisionShape2D::_shape_changed() {
 	_update_parent();
 }
 
+void CollisionShape2D::_update_xform_in_parent() {
+
+	if (update_shape_index >= 0) {
+
+		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		if (co) {
+			co->set_shape_transform(update_shape_index, get_transform());
+		}
+	}
+}
+
 void CollisionShape2D::_update_parent() {
 
 	Node *parent = get_parent();
@@ -75,6 +86,7 @@ void CollisionShape2D::_notification(int p_what) {
 			unparenting = false;
 			can_update_body = get_tree()->is_editor_hint();
 			if (!get_tree()->is_editor_hint()) {
+				_update_xform_in_parent();
 				//display above all else
 				set_z_as_relative(false);
 				set_z(VS::CANVAS_ITEM_Z_MAX - 1);
@@ -87,12 +99,8 @@ void CollisionShape2D::_notification(int p_what) {
 				break;
 			if (can_update_body) {
 				_update_parent();
-			} else if (update_shape_index >= 0) {
-
-				CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
-				if (co) {
-					co->set_shape_transform(update_shape_index, get_transform());
-				}
+			} else {
+				_update_xform_in_parent();
 			}
 
 		} break;
