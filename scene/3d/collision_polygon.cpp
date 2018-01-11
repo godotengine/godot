@@ -73,6 +73,14 @@ void CollisionPolygon::_build_polygon() {
 	}
 }
 
+void CollisionPolygon::_update_in_shape_owner(bool p_xform_only) {
+
+	parent->shape_owner_set_transform(owner_id, get_transform());
+	if (p_xform_only)
+		return;
+	parent->shape_owner_set_disabled(owner_id, disabled);
+}
+
 void CollisionPolygon::_notification(int p_what) {
 
 	switch (p_what) {
@@ -82,14 +90,20 @@ void CollisionPolygon::_notification(int p_what) {
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				_build_polygon();
-				parent->shape_owner_set_transform(owner_id, get_transform());
-				parent->shape_owner_set_disabled(owner_id, disabled);
+				_update_in_shape_owner();
 			}
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+
+			if (parent) {
+				_update_in_shape_owner();
+			}
+
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
 			if (parent) {
-				parent->shape_owner_set_transform(owner_id, get_transform());
+				_update_in_shape_owner(true);
 			}
 
 		} break;
