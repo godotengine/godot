@@ -235,6 +235,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 										if (p_edit_state == GEN_EDIT_STATE_MAIN) {
 											//for the main scene, use the resource as is
 											res->configure_for_local_scene(base, resources_local_to_scene);
+											resources_local_to_scene[res] = res;
 
 										} else {
 											//for instances, a copy must be made
@@ -244,9 +245,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 											res = local_dupe;
 											value = local_dupe;
 										}
-
-										//this here may reference nodes not iniialized so this line is commented and used after loading all nodes
-										//res->setup_local_to_scene();
 									}
 									//must make a copy, because this res is local to scene
 								}
