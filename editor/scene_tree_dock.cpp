@@ -237,13 +237,20 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	Node *parent = base->get_parent();
 	int pos = base->get_index();
-	memdelete(base);
+	parent->remove_child(base);
 	parent->add_child(instanced_scene);
 	parent->move_child(instanced_scene, pos);
 	instanced_scene->set_owner(edited_scene);
 	editor_selection->clear();
 	editor_selection->add_node(instanced_scene);
 	scene_tree->set_selected(instanced_scene);
+
+	// Delete the node as late as possible because before another one is selected
+	// an editor plugin could be referencing it to do something with it before
+	// switching to another (or to none); and since some steps of changing the
+	// editor state are deferred, the safest thing is to do this is as the last
+	// step of this function and also by enqueing instead of memdelete()-ing it here
+	base->queue_delete();
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
