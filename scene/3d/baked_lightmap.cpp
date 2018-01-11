@@ -784,7 +784,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "capture_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_capture_cell_size", "get_capture_cell_size");
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_path", PROPERTY_HINT_DIR), "set_image_path", "get_image_path");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "BakedIndirectLightData"), "set_light_data", "get_light_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "BakedLightmapData"), "set_light_data", "get_light_data");
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);
