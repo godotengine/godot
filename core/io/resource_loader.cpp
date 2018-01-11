@@ -202,7 +202,8 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_line("load resource: " + local_path + " (cached)");
-
+		if (r_error)
+			*r_error = OK;
 		return RES(ResourceCache::get(local_path));
 	}
 
