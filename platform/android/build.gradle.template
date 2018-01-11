@@ -15,6 +15,7 @@ allprojects {
     repositories {
     	jcenter()
 	mavenCentral()
+	google()
 	$$GRADLE_REPOSITORY_URLS$$
     }
 }
