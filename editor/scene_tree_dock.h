@@ -160,6 +160,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	bool _validate_no_foreign();
 	void _selection_changed();
+	void _update_script_button();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames);
 
