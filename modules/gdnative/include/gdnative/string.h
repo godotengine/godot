@@ -38,13 +38,24 @@ extern "C" {
 #include <stdint.h>
 #include <wchar.h>
 
+typedef wchar_t godot_char_type;
+
 #define GODOT_STRING_SIZE sizeof(void *)
+#define GODOT_CHAR_STRING_SIZE sizeof(void *)
 
 #ifndef GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
 typedef struct {
 	uint8_t _dont_touch_that[GODOT_STRING_SIZE];
 } godot_string;
+
+#endif
+
+#ifndef GODOT_CORE_API_GODOT_CHAR_STRING_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_CHAR_STRING_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_CHAR_STRING_SIZE];
+} godot_char_string;
 #endif
 
 // reduce extern "C" nesting for VS2013
@@ -60,16 +71,17 @@ typedef struct {
 extern "C" {
 #endif
 
+godot_int GDAPI godot_char_string_length(const godot_char_string *p_cs);
+const char GDAPI *godot_char_string_get_data(const godot_char_string *p_cs);
+void GDAPI godot_char_string_destroy(godot_char_string *p_cs);
+
 void GDAPI godot_string_new(godot_string *r_dest);
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
-void GDAPI godot_string_new_data(godot_string *r_dest, const char *p_contents, const int p_size);
-void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
-
-void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size);
+void GDAPI godot_string_new_with_wide_string(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
 
 wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
 wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx);
-const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self);
+const wchar_t GDAPI *godot_string_wide_str(const godot_string *p_self);
 
 godot_bool GDAPI godot_string_operator_equal(const godot_string *p_self, const godot_string *p_b);
 godot_bool GDAPI godot_string_operator_less(const godot_string *p_self, const godot_string *p_b);
@@ -80,6 +92,10 @@ godot_string GDAPI godot_string_operator_plus(const godot_string *p_self, const 
 godot_int GDAPI godot_string_length(const godot_string *p_self);
 
 /* Helpers */
+
+signed char GDAPI godot_string_casecmp_to(const godot_string *p_self, const godot_string *p_str);
+signed char GDAPI godot_string_nocasecmp_to(const godot_string *p_self, const godot_string *p_str);
+signed char GDAPI godot_string_naturalnocasecmp_to(const godot_string *p_self, const godot_string *p_str);
 
 godot_bool GDAPI godot_string_begins_with(const godot_string *p_self, const godot_string *p_string);
 godot_bool GDAPI godot_string_begins_with_char_array(const godot_string *p_self, const char *p_char_array);
@@ -177,9 +193,9 @@ godot_string GDAPI godot_string_strip_escapes(const godot_string *p_self);
 
 void GDAPI godot_string_erase(godot_string *p_self, godot_int p_pos, godot_int p_chars);
 
-void GDAPI godot_string_ascii(godot_string *p_self, char *result);
-void GDAPI godot_string_ascii_extended(godot_string *p_self, char *result);
-void GDAPI godot_string_utf8(godot_string *p_self, char *result);
+godot_char_string GDAPI godot_string_ascii(const godot_string *p_self);
+godot_char_string GDAPI godot_string_ascii_extended(const godot_string *p_self);
+godot_char_string GDAPI godot_string_utf8(const godot_string *p_self);
 godot_bool GDAPI godot_string_parse_utf8(godot_string *p_self, const char *p_utf8);
 godot_bool GDAPI godot_string_parse_utf8_with_len(godot_string *p_self, const char *p_utf8, godot_int p_len);
 godot_string GDAPI godot_string_chars_to_utf8(const char *p_utf8);
