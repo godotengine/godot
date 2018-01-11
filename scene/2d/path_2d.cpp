@@ -244,66 +244,16 @@ bool PathFollow2D::get_cubic_interpolation() const {
 	return cubic;
 }
 
-bool PathFollow2D::_set(const StringName &p_name, const Variant &p_value) {
+void PathFollow2D::_validate_property(PropertyInfo &property) const {
 
-	if (p_name == SceneStringNames::get_singleton()->offset) {
-		set_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->unit_offset) {
-		set_unit_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->rotate) {
-		set_rotate(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->v_offset) {
-		set_v_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->h_offset) {
-		set_h_offset(p_value);
-	} else if (String(p_name) == "cubic_interp") {
-		set_cubic_interpolation(p_value);
-	} else if (String(p_name) == "loop") {
-		set_loop(p_value);
-	} else if (String(p_name) == "lookahead") {
-		set_lookahead(p_value);
-	} else
-		return false;
+	if (property.name == "offset") {
 
-	return true;
-}
+		float max = 10000;
+		if (path && path->get_curve().is_valid())
+			max = path->get_curve()->get_baked_length();
 
-bool PathFollow2D::_get(const StringName &p_name, Variant &r_ret) const {
-
-	if (p_name == SceneStringNames::get_singleton()->offset) {
-		r_ret = get_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->unit_offset) {
-		r_ret = get_unit_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->rotate) {
-		r_ret = is_rotating();
-	} else if (p_name == SceneStringNames::get_singleton()->v_offset) {
-		r_ret = get_v_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->h_offset) {
-		r_ret = get_h_offset();
-	} else if (String(p_name) == "cubic_interp") {
-		r_ret = cubic;
-	} else if (String(p_name) == "loop") {
-		r_ret = loop;
-	} else if (String(p_name) == "lookahead") {
-		r_ret = lookahead;
-	} else
-		return false;
-
-	return true;
-}
-void PathFollow2D::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	float max = 10000;
-	if (path && path->get_curve().is_valid())
-		max = path->get_curve()->get_baked_length();
-	p_list->push_back(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0," + rtos(max) + ",0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001", PROPERTY_USAGE_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "rotate"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "cubic_interp"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "loop"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"));
+		property.hint_string = "0," + rtos(max) + ",0.01";
+	}
 }
 
 String PathFollow2D::get_configuration_warning() const {
@@ -340,6 +290,18 @@ void PathFollow2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow2D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow2D::has_loop);
+
+	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
+	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotate"), "set_rotate", "is_rotating");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
 }
 
 void PathFollow2D::set_offset(float p_offset) {

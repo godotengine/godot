@@ -788,7 +788,9 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), "set_transform", "get_transform") ;
+#ifdef TOOLS_ENABLED
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
+#endif
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }

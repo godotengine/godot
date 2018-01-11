@@ -784,6 +784,10 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_folding", "disable"), &TreeItem::set_disable_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_folding"), "set_disable_folding", "is_folding_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_minimum_height", PROPERTY_HINT_RANGE, "0,1000,1"), "set_custom_minimum_height", "get_custom_minimum_height");
+
 	BIND_ENUM_CONSTANT(CELL_MODE_STRING);
 	BIND_ENUM_CONSTANT(CELL_MODE_CHECK);
 	BIND_ENUM_CONSTANT(CELL_MODE_RANGE);
@@ -3086,6 +3090,11 @@ void Tree::set_select_mode(SelectMode p_mode) {
 	select_mode = p_mode;
 }
 
+Tree::SelectMode Tree::get_select_mode() const {
+
+	return select_mode;
+}
+
 void Tree::deselect_all() {
 
 	TreeItem *item = get_next_selected(get_root());
@@ -3137,6 +3146,11 @@ void Tree::set_hide_root(bool p_enabled) {
 
 	hide_root = p_enabled;
 	update();
+}
+
+bool Tree::is_root_hidden() const {
+
+	return hide_root;
 }
 
 void Tree::set_column_min_width(int p_column, int p_min_width) {
@@ -3759,11 +3773,13 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_column_width", "column"), &Tree::get_column_width);
 
 	ClassDB::bind_method(D_METHOD("set_hide_root", "enable"), &Tree::set_hide_root);
+	ClassDB::bind_method(D_METHOD("is_root_hidden"), &Tree::is_root_hidden);
 	ClassDB::bind_method(D_METHOD("get_next_selected", "from"), &Tree::_get_next_selected);
 	ClassDB::bind_method(D_METHOD("get_selected"), &Tree::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_column"), &Tree::get_selected_column);
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &Tree::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("set_select_mode", "mode"), &Tree::set_select_mode);
+	ClassDB::bind_method(D_METHOD("get_select_mode"), &Tree::get_select_mode);
 
 	ClassDB::bind_method(D_METHOD("set_columns", "amount"), &Tree::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &Tree::get_columns);
@@ -3796,6 +3812,14 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &Tree::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,Inbetween"), "set_drop_mode_flags", "get_drop_mode_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));

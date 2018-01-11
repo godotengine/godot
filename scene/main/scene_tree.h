@@ -451,6 +451,7 @@ public:
 	//network API
 
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
+	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	bool is_network_server() const;
 	bool has_network_peer() const;
 	int get_network_unique_id() const;

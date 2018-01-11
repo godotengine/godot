@@ -564,6 +564,7 @@ void Label::set_visible_characters(int p_amount) {
 	if (get_total_character_count() > 0) {
 		percent_visible = (float)p_amount / (float)total_char_cache;
 	}
+	_change_notify("percent_visible");
 	update();
 }
 
@@ -584,6 +585,7 @@ void Label::set_percent_visible(float p_percent) {
 		visible_chars = get_total_character_count() * p_percent;
 		percent_visible = p_percent;
 	}
+	_change_notify("visible_chars");
 	update();
 }
 
@@ -665,6 +667,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");

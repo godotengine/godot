@@ -190,61 +190,16 @@ bool PathFollow::get_cubic_interpolation() const {
 	return cubic;
 }
 
-bool PathFollow::_set(const StringName &p_name, const Variant &p_value) {
+void PathFollow::_validate_property(PropertyInfo &property) const {
 
-	if (p_name == SceneStringNames::get_singleton()->offset) {
-		set_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->unit_offset) {
-		set_unit_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->rotation_mode) {
-		set_rotation_mode(RotationMode(p_value.operator int()));
-	} else if (p_name == SceneStringNames::get_singleton()->v_offset) {
-		set_v_offset(p_value);
-	} else if (p_name == SceneStringNames::get_singleton()->h_offset) {
-		set_h_offset(p_value);
-	} else if (String(p_name) == "cubic_interp") {
-		set_cubic_interpolation(p_value);
-	} else if (String(p_name) == "loop") {
-		set_loop(p_value);
-	} else
-		return false;
+	if (property.name == "offset") {
 
-	return true;
-}
+		float max = 10000;
+		if (path && path->get_curve().is_valid())
+			max = path->get_curve()->get_baked_length();
 
-bool PathFollow::_get(const StringName &p_name, Variant &r_ret) const {
-
-	if (p_name == SceneStringNames::get_singleton()->offset) {
-		r_ret = get_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->unit_offset) {
-		r_ret = get_unit_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->rotation_mode) {
-		r_ret = get_rotation_mode();
-	} else if (p_name == SceneStringNames::get_singleton()->v_offset) {
-		r_ret = get_v_offset();
-	} else if (p_name == SceneStringNames::get_singleton()->h_offset) {
-		r_ret = get_h_offset();
-	} else if (String(p_name) == "cubic_interp") {
-		r_ret = cubic;
-	} else if (String(p_name) == "loop") {
-		r_ret = loop;
-	} else
-		return false;
-
-	return true;
-}
-void PathFollow::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	float max = 10000;
-	if (path && path->get_curve().is_valid())
-		max = path->get_curve()->get_baked_length();
-	p_list->push_back(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0," + rtos(max) + ",0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001", PROPERTY_USAGE_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
-	p_list->push_back(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "cubic_interp"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "loop"));
+		property.hint_string = "0," + rtos(max) + ",0.01";
+	}
 }
 
 void PathFollow::_bind_methods() {
@@ -269,6 +224,14 @@ void PathFollow::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow::has_loop);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ"), "set_rotation_mode", "get_rotation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 
 	BIND_ENUM_CONSTANT(ROTATION_NONE);
 	BIND_ENUM_CONSTANT(ROTATION_Y);

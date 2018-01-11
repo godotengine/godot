@@ -55,6 +55,8 @@ void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
 	ClassDB::bind_method(D_METHOD("get_time_left"), &SceneTreeTimer::get_time_left);
 
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_left"), "set_time_left", "get_time_left");
+
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
 
@@ -1684,6 +1686,11 @@ void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_
 	}
 }
 
+Ref<NetworkedMultiplayerPeer> SceneTree::get_network_peer() const {
+
+	return network_peer;
+}
+
 bool SceneTree::is_network_server() const {
 
 	ERR_FAIL_COND_V(!network_peer.is_valid(), false);
@@ -2188,6 +2195,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 
 	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &SceneTree::set_network_peer);
+	ClassDB::bind_method(D_METHOD("get_network_peer"), &SceneTree::get_network_peer);
 	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &SceneTree::has_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &SceneTree::get_network_connected_peers);
@@ -2203,6 +2211,18 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
+#ifdef TOOLS_ENABLED
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
+#endif
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node")));

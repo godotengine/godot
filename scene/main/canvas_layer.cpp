@@ -254,8 +254,11 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),"set_transform","get_transform") ;
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation"), "set_rotation_degrees", "get_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation_degrees", PROPERTY_HINT_RANGE, "-1440,1440,0.1", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", 0), "set_custom_viewport", "get_custom_viewport");
 }
 
 CanvasLayer::CanvasLayer() {

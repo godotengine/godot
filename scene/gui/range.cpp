@@ -248,6 +248,7 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step"), "set_step", "get_step");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "page"), "set_page", "get_page");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "value"), "set_value", "get_value");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 }

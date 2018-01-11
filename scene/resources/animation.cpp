@@ -36,13 +36,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;
 
-	if (name == "length")
-		set_length(p_value);
-	else if (name == "loop")
-		set_loop(p_value);
-	else if (name == "step")
-		set_step(p_value);
-	else if (name.begins_with("tracks/")) {
+	if (name.begins_with("tracks/")) {
 
 		int track = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
@@ -384,20 +378,15 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	p_list->push_back(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "loop"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"));
-
 	for (int i = 0; i < tracks.size(); i++) {
 
-		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "tracks/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "tracks/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 }
 
@@ -1689,6 +1678,10 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track", "to_animation"), &Animation::copy_track);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_step", "get_step");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_TRANSFORM);

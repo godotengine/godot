@@ -270,7 +270,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data"),&ShaderGraph::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"),&ShaderGraph::_get_data);
 
-	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data");
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data","_get_data");
 
 	//void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 

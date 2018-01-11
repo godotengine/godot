@@ -705,7 +705,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 
 void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
-	p_properties->push_back(PropertyInfo(Variant::STRING, "script/source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	p_properties->push_back(PropertyInfo(Variant::STRING, "script/source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void GDScript::_bind_methods() {

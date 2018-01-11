@@ -436,7 +436,7 @@ void VideoStreamWebm::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamWebm::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamWebm::get_file);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_file", "get_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
 }
 
 void VideoStreamWebm::set_audio_track(int p_track) {

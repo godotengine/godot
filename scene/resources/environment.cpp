@@ -270,19 +270,19 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && bg_mode != BG_COLOR_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_color") {
 		if (bg_mode != BG_COLOR && bg_mode != BG_COLOR_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
@@ -305,7 +305,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 		String enabled = prefix + "enabled";
 		if (property.name.begins_with(prefix) && property.name != enabled && !bool(get(enabled))) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 			return;
 		}
 

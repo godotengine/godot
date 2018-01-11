@@ -76,10 +76,12 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &Texture::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Ansiotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
 	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_FILTER);
-	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
 	BIND_ENUM_CONSTANT(FLAG_ANISOTROPIC_FILTER);
 	BIND_ENUM_CONSTANT(FLAG_CONVERT_TO_LINEAR);
 	BIND_ENUM_CONSTANT(FLAG_MIRRORED_REPEAT);
@@ -121,10 +123,6 @@ bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 		w = s.width;
 		h = s.height;
 		VisualServer::get_singleton()->texture_set_size_override(texture, w, h);
-	} else if (p_name == "storage") {
-		storage = Storage(p_value.operator int());
-	} else if (p_name == "lossy_quality") {
-		lossy_storage_quality = p_value;
 	} else if (p_name == "_data") {
 		_set_data(p_value);
 	} else
@@ -143,10 +141,6 @@ bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = flags;
 	else if (p_name == "size")
 		r_ret = Size2(w, h);
-	else if (p_name == "storage")
-		r_ret = storage;
-	else if (p_name == "lossy_quality")
-		r_ret = lossy_storage_quality;
 	else
 		return false;
 
@@ -165,8 +159,6 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::INT, "storage", PROPERTY_HINT_ENUM, "Uncompressed,Compress Lossy,Compress Lossless"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "lossy_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 }
 
 void ImageTexture::_reload_hook(const RID &p_hook) {
@@ -362,6 +354,9 @@ void ImageTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "storage", PROPERTY_HINT_ENUM, "Uncompressed,Compress Lossy,Compress Lossless"), "set_storage", "get_storage");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lossy_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_lossy_storage_quality", "get_lossy_storage_quality");
 
 	BIND_ENUM_CONSTANT(STORAGE_RAW);
 	BIND_ENUM_CONSTANT(STORAGE_COMPRESS_LOSSY);
@@ -1133,7 +1128,7 @@ void LargeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &LargeTexture::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &LargeTexture::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
 void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
@@ -1284,8 +1279,6 @@ bool CubeMap::_set(const StringName &p_name, const Variant &p_value) {
 		set_side(SIDE_FRONT, p_value);
 	} else if (p_name == "side/back") {
 		set_side(SIDE_BACK, p_value);
-	} else if (p_name == "flags") {
-		set_flags(p_value);
 	} else if (p_name == "storage") {
 		storage = Storage(p_value.operator int());
 	} else if (p_name == "lossy_quality") {
@@ -1310,8 +1303,6 @@ bool CubeMap::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_side(SIDE_FRONT);
 	} else if (p_name == "side/back") {
 		r_ret = get_side(SIDE_BACK);
-	} else if (p_name == "flags") {
-		r_ret = flags;
 	} else if (p_name == "storage") {
 		r_ret = storage;
 	} else if (p_name == "lossy_quality") {
@@ -1331,7 +1322,6 @@ void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS;
 	}
 
-	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/right", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/bottom", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
@@ -1353,6 +1343,7 @@ void CubeMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &CubeMap::set_lossy_storage_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"), &CubeMap::get_lossy_storage_quality);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"), "set_flags", "get_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "storage_mode", PROPERTY_HINT_ENUM, "Raw,Lossy Compressed,Lossless Compressed"), "set_storage", "get_storage");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lossy_storage_quality"), "set_lossy_storage_quality", "get_lossy_storage_quality");
 

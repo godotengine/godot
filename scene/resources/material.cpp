@@ -103,24 +103,18 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
-	if (p_name == SceneStringNames::get_singleton()->shader) {
-		set_shader(p_value);
-		return true;
-	} else {
+	if (shader.is_valid()) {
 
-		if (shader.is_valid()) {
-
-			StringName pr = shader->remap_param(p_name);
-			if (!pr) {
-				String n = p_name;
-				if (n.find("param/") == 0) { //backwards compatibility
-					pr = n.substr(6, n.length());
-				}
+		StringName pr = shader->remap_param(p_name);
+		if (!pr) {
+			String n = p_name;
+			if (n.find("param/") == 0) { //backwards compatibility
+				pr = n.substr(6, n.length());
 			}
-			if (pr) {
-				VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
-				return true;
-			}
+		}
+		if (pr) {
+			VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
+			return true;
 		}
 	}
 
@@ -129,20 +123,12 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 
-	if (p_name == SceneStringNames::get_singleton()->shader) {
+	if (shader.is_valid()) {
 
-		r_ret = get_shader();
-		return true;
-
-	} else {
-
-		if (shader.is_valid()) {
-
-			StringName pr = shader->remap_param(p_name);
-			if (pr) {
-				r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
-				return true;
-			}
+		StringName pr = shader->remap_param(p_name);
+		if (pr) {
+			r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
+			return true;
 		}
 	}
 
@@ -150,8 +136,6 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader,ShaderGraph"));
 
 	if (!shader.is_null()) {
 
@@ -193,6 +177,8 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
 	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader,ShaderGraph"), "set_shader", "get_shader");
 }
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {

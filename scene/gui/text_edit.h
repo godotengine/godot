@@ -491,7 +491,10 @@ public:
 	bool is_readonly() const;
 
 	void set_max_chars(int p_max_chars);
+	int get_max_chars() const;
+
 	void set_wrap(bool p_wrap);
+	bool is_wrapping() const;
 
 	void clear();
 

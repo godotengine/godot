@@ -1129,6 +1129,22 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_power_seconds_left"), &_OS::get_power_seconds_left);
 	ClassDB::bind_method(D_METHOD("get_power_percent_left"), &_OS::get_power_percent_left);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor"), "set_screen_orientation", "get_screen_orientation");
+	ADD_GROUP("Window", "window_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_fullscreen"), "set_window_fullscreen", "is_window_fullscreen");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_maximized"), "set_window_maximized", "is_window_maximized");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_minimized"), "set_window_minimized", "is_window_minimized");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
+
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);
 	BIND_ENUM_CONSTANT(DAY_TUESDAY);
@@ -1807,6 +1823,8 @@ void _File::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &_File::get_modified_time);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "endian_swap"), "set_endian_swap", "get_endian_swap");
 
 	BIND_ENUM_CONSTANT(READ);
 	BIND_ENUM_CONSTANT(WRITE);
@@ -2649,6 +2667,11 @@ void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_hint"), "set_editor_hint", "is_editor_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations_per_second"), "set_iterations_per_second", "get_iterations_per_second");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_scale"), "set_time_scale", "get_time_scale");
 }
 
 _Engine *_Engine::singleton = NULL;

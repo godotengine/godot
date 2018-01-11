@@ -130,7 +130,7 @@ void VisualScriptNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_default_input_values", "values"), &VisualScriptNode::_set_default_input_values);
 	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualScriptNode::_get_default_input_values);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_default_input_values", "_get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
 	ADD_SIGNAL(MethodInfo("ports_changed"));
 }
 
@@ -1319,7 +1319,7 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VisualScript::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VisualScript::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_SIGNAL(MethodInfo("node_ports_changed", PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::INT, "id")));
 }

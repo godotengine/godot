@@ -401,6 +401,8 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string);
 	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string);
 	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
 }
 ////////////////////////////////
 
@@ -414,6 +416,9 @@ void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data_array"), &StreamPeerBuffer::get_data_array);
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerBuffer::clear);
 	ClassDB::bind_method(D_METHOD("duplicate"), &StreamPeerBuffer::duplicate);
+
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data_array"), "set_data_array", "get_data_array");
+
 }
 
 Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {

@@ -112,11 +112,6 @@ void ProximityGroup::_new_group(StringName p_name) {
 	groups[p_name] = group_version;
 };
 
-void ProximityGroup::set_group_name(String p_group_name) {
-
-	group_name = p_group_name;
-};
-
 void ProximityGroup::_notification(int p_what) {
 
 	switch (p_what) {
@@ -153,9 +148,24 @@ void ProximityGroup::_proximity_group_broadcast(String p_name, Variant p_params)
 	};
 };
 
-void ProximityGroup::set_dispatch_mode(int p_mode) {
+void ProximityGroup::set_group_name(const String &p_group_name) {
 
-	dispatch_mode = (DispatchMode)p_mode;
+	group_name = p_group_name;
+};
+
+String ProximityGroup::get_group_name() const {
+
+	return group_name;
+};
+
+void ProximityGroup::set_dispatch_mode(DispatchMode p_mode) {
+
+	dispatch_mode = p_mode;
+};
+
+ProximityGroup::DispatchMode ProximityGroup::get_dispatch_mode() const {
+
+	return dispatch_mode;
 };
 
 void ProximityGroup::set_grid_radius(const Vector3 &p_radius) {
@@ -171,15 +181,22 @@ Vector3 ProximityGroup::get_grid_radius() const {
 void ProximityGroup::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_group_name", "name"), &ProximityGroup::set_group_name);
-	ClassDB::bind_method(D_METHOD("broadcast", "name", "parameters"), &ProximityGroup::broadcast);
+	ClassDB::bind_method(D_METHOD("get_group_name"), &ProximityGroup::get_group_name);
 	ClassDB::bind_method(D_METHOD("set_dispatch_mode", "mode"), &ProximityGroup::set_dispatch_mode);
-	ClassDB::bind_method(D_METHOD("_proximity_group_broadcast", "name", "params"), &ProximityGroup::_proximity_group_broadcast);
+	ClassDB::bind_method(D_METHOD("get_dispatch_mode"), &ProximityGroup::get_dispatch_mode);
 	ClassDB::bind_method(D_METHOD("set_grid_radius", "radius"), &ProximityGroup::set_grid_radius);
 	ClassDB::bind_method(D_METHOD("get_grid_radius"), &ProximityGroup::get_grid_radius);
+	ClassDB::bind_method(D_METHOD("broadcast", "name", "parameters"), &ProximityGroup::broadcast);
+	ClassDB::bind_method(D_METHOD("_proximity_group_broadcast", "name", "params"), &ProximityGroup::_proximity_group_broadcast);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "group_name"), "set_group_name", "get_group_name");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "dispatch_mode", PROPERTY_HINT_ENUM, "Proxy,Signal"), "set_dispatch_mode", "get_dispatch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "grid_radius"), "set_grid_radius", "get_grid_radius");
 
 	ADD_SIGNAL(MethodInfo("broadcast", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::ARRAY, "parameters")));
+
+	BIND_ENUM_CONSTANT(MODE_PROXY);
+	BIND_ENUM_CONSTANT(MODE_SIGNAL);
 };
 
 ProximityGroup::ProximityGroup() {

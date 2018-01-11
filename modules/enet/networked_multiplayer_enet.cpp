@@ -36,6 +36,10 @@ void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 
 	transfer_mode = p_mode;
 }
+NetworkedMultiplayerPeer::TransferMode NetworkedMultiplayerENet::get_transfer_mode() const {
+
+	return transfer_mode;
+}
 
 void NetworkedMultiplayerENet::set_target_peer(int p_peer) {
 
@@ -658,6 +662,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 
 	BIND_ENUM_CONSTANT(COMPRESS_NONE);
 	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);

@@ -793,6 +793,15 @@ void FileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"), "set_filters", "get_filters");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir"), "set_current_dir", "get_current_dir");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file"), "set_current_file", "get_current_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path"), "set_current_path", "get_current_path");
+
 	ADD_SIGNAL(MethodInfo("file_selected", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::POOL_STRING_ARRAY, "paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
@@ -806,12 +815,6 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"), "set_filters", "get_filters");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {
