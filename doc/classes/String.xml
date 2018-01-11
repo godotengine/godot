@@ -530,13 +530,13 @@
 				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
 			</description>
 		</method>
-		<method name="ord_at">
+		<method name="unicode_at">
 			<return type="int">
 			</return>
-			<argument index="0" name="at" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the character code at position [code]at[/code].
+				Returns the character code at position [code]idx[/code].
 			</description>
 		</method>
 		<method name="pad_decimals">

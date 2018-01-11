@@ -190,7 +190,7 @@ public:
 	String get_extension() const;
 	String get_basename() const;
 	String plus_file(const String &p_file) const;
-	CharType ord_at(int p_idx) const;
+	CharType unicode_at(int p_idx) const;
 
 	void erase(int p_pos, int p_chars);
 

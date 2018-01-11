@@ -169,7 +169,7 @@ godot_string GDAPI godot_string_to_upper(const godot_string *p_self);
 godot_string GDAPI godot_string_get_basename(const godot_string *p_self);
 godot_string GDAPI godot_string_get_extension(const godot_string *p_self);
 godot_string GDAPI godot_string_left(const godot_string *p_self, godot_int p_pos);
-wchar_t GDAPI godot_string_ord_at(const godot_string *p_self, godot_int p_idx);
+wchar_t GDAPI godot_string_unicode_at(const godot_string *p_self, godot_int p_idx);
 godot_string GDAPI godot_string_plus_file(const godot_string *p_self, const godot_string *p_file);
 godot_string GDAPI godot_string_right(const godot_string *p_self, godot_int p_pos);
 godot_string GDAPI godot_string_strip_edges(const godot_string *p_self, godot_bool p_left, godot_bool p_right);

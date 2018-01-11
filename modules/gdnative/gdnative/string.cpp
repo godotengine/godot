@@ -869,10 +869,10 @@ godot_string GDAPI godot_string_left(const godot_string *p_self, godot_int p_pos
 	return result;
 };
 
-wchar_t GDAPI godot_string_ord_at(const godot_string *p_self, godot_int p_idx) {
+wchar_t GDAPI godot_string_unicode_at(const godot_string *p_self, godot_int p_idx) {
 	const String *self = (const String *)p_self;
 
-	return self->ord_at(p_idx);
+	return self->unicode_at(p_idx);
 };
 
 godot_string GDAPI godot_string_plus_file(const godot_string *p_self, const godot_string *p_file) {

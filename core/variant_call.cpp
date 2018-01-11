@@ -267,7 +267,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, get_extension);
 	VCALL_LOCALMEM0R(String, get_basename);
 	VCALL_LOCALMEM1R(String, plus_file);
-	VCALL_LOCALMEM1R(String, ord_at);
+	VCALL_LOCALMEM1R(String, unicode_at);
 	VCALL_LOCALMEM2(String, erase);
 	VCALL_LOCALMEM0R(String, hash);
 	VCALL_LOCALMEM0R(String, md5_text);
@@ -1461,7 +1461,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, get_extension, varray());
 	ADDFUNC0R(STRING, STRING, String, get_basename, varray());
 	ADDFUNC1R(STRING, STRING, String, plus_file, STRING, "file", varray());
-	ADDFUNC1R(STRING, INT, String, ord_at, INT, "at", varray());
+	ADDFUNC1R(STRING, INT, String, unicode_at, INT, "idx", varray());
 	ADDFUNC0R(STRING, STRING, String, dedent, varray());
 	ADDFUNC2(STRING, NIL, String, erase, INT, "position", INT, "chars", varray());
 	ADDFUNC0R(STRING, INT, String, hash, varray());
