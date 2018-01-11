@@ -33,14 +33,14 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of intersecting [code]Area[/code]s.
+				Returns a list of intersecting [code]Area[/code]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of intersecting [PhysicsBody]s.
+				Returns a list of intersecting [PhysicsBody]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
@@ -49,7 +49,7 @@
 			<argument index="0" name="area" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code] the given area overlaps the Area.
+				If [code]true[/code] the given area overlaps the Area. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
@@ -58,7 +58,7 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code] the given body overlaps the Area.
+				If [code]true[/code] the given body overlaps the Area. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
