@@ -52,7 +52,6 @@ class OS_JavaScript : public OS_Unix {
 
 	VisualServer *visual_server;
 	AudioDriverJavaScript audio_driver_javascript;
-	const char *gl_extensions;
 
 	InputDefault *input;
 	Vector2 windowed_size;
@@ -138,8 +137,6 @@ public:
 	void main_loop_focusin();
 
 	virtual bool has_touchscreen_ui_hint() const;
-
-	void set_opengl_extensions(const char *p_gl_extensions);
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;

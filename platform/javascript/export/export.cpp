@@ -71,7 +71,7 @@ public:
 	virtual void get_platform_features(List<String> *r_features) {
 
 		r_features->push_back("web");
-		r_features->push_back("JavaScript");
+		r_features->push_back(get_os_name());
 	}
 
 	EditorExportPlatformJavaScript();
@@ -130,7 +130,7 @@ String EditorExportPlatformJavaScript::get_name() const {
 
 String EditorExportPlatformJavaScript::get_os_name() const {
 
-	return "JavaScript";
+	return "HTML5";
 }
 
 Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
