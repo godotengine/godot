@@ -1845,11 +1845,6 @@ void Main::cleanup() {
 	EditorNode::unregister_editor_types();
 #endif
 
-	if (audio_server) {
-		audio_server->finish();
-		memdelete(audio_server);
-	}
-
 	if (arvr_server) {
 		// cleanup now before we pull the rug from underneath...
 		memdelete(arvr_server);
@@ -1860,6 +1855,11 @@ void Main::cleanup() {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	if (audio_server) {
+		audio_server->finish();
+		memdelete(audio_server);
+	}
 
 	OS::get_singleton()->finalize();
 	finalize_physics();
