@@ -124,6 +124,7 @@ class AutotileEditor : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 private:
 	void _on_autotile_selected(int p_index);
