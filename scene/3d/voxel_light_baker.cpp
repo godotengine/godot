@@ -554,7 +554,7 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 		}
 
 		if (mat->get_emission_operator() == SpatialMaterial::EMISSION_OP_ADD) {
-			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1), emission_col * emission_energy);
 		} else {
 			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
 		}
