@@ -50,32 +50,11 @@
 				Return the index of the specified track. If the track is not found, return -1.
 			</description>
 		</method>
-		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the total length of the animation (in seconds).
-			</description>
-		</method>
-		<method name="get_step" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the animation step value.
-			</description>
-		</method>
 		<method name="get_track_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Return the amount of tracks in the animation.
-			</description>
-		</method>
-		<method name="has_loop" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the animation has the loop flag set.
 			</description>
 		</method>
 		<method name="method_track_get_key_indices" qualifiers="const">
@@ -120,33 +99,6 @@
 			</argument>
 			<description>
 				Remove a track by specifying the track index.
-			</description>
-		</method>
-		<method name="set_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="time_sec" type="float">
-			</argument>
-			<description>
-				Set the total length of the animation (in seconds). Note that length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
-			</description>
-		</method>
-		<method name="set_loop">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set a flag indicating that the animation must loop. This is uses for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
-			</description>
-		</method>
-		<method name="set_step">
-			<return type="void">
-			</return>
-			<argument index="0" name="size_sec" type="float">
-			</argument>
-			<description>
-				Set the animation step value.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -456,6 +408,17 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="length" type="float" setter="set_length" getter="get_length">
+			The total length of the animation (in seconds). Note that length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
+		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
+			A flag indicating that the animation must loop. This is uses for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+		</member>
+		<member name="step" type="float" setter="set_step" getter="get_step">
+			The animation step value.
+		</member>
+	</members>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.

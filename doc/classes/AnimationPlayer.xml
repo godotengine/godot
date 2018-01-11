@@ -90,13 +90,6 @@
 				Returns the list of stored animation names.
 			</description>
 		</method>
-		<method name="get_autoplay" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the name of the animation that will be automatically played when the scene is loaded.
-			</description>
-		</method>
 		<method name="get_blend_time" qualifiers="const">
 			<return type="float">
 			</return>
@@ -108,34 +101,6 @@
 				Get the blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
-		<method name="get_current_animation" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the name of the animation being played.
-			</description>
-		</method>
-		<method name="get_current_animation_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the length (in seconds) of the currently being played animation.
-			</description>
-		</method>
-		<method name="get_current_animation_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the position (in seconds) of the currently playing animation.
-			</description>
-		</method>
-		<method name="get_speed_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the speed scaling ratio of the current animation channel. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed.
-			</description>
-		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -143,13 +108,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [code]AnimationPlayer[/code] stores an [Animation] with key [code]name[/code].
-			</description>
-		</method>
-		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the player is active.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -226,24 +184,6 @@
 				Seek the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time.
 			</description>
 		</method>
-		<method name="set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
-			<description>
-				Sets the player as active (playing). If [code]true[/code], updates animations in response to process-related notifications. Default value: [code]true[/code].
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-				Defines the name of the animation to play when the scene loads. Default value: [code]""[/code].
-			</description>
-		</method>
 		<method name="set_blend_time">
 			<return type="void">
 			</return>
@@ -257,24 +197,6 @@
 				Specify a blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
-		<method name="set_current_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="String">
-			</argument>
-			<description>
-				Sets the name of the current animation. If already playing, restarts the animation. Ensure [member active] is [code]true[/code] to simulate [method play]. Default value: [code]""[/code].
-			</description>
-		</method>
-		<method name="set_speed_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="speed" type="float">
-			</argument>
-			<description>
-				Sets the speed scaling ratio in a given animation channel (or channel 0 if none is provided). Default value: [code]1[/code].
-			</description>
-		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
@@ -286,11 +208,29 @@
 		</method>
 	</methods>
 	<members>
+		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay">
+			The name of the animation to play when the scene loads. Default value: [code]""[/code].
+		</member>
+		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation">
+			The name of the current animation, "" if not playing anything. When being set, does not restart the animation. See also [method play]. Default value: [code]""[/code].
+		</member>
+		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
+			The length (in seconds) of the currently being played animation.
+		</member>
+		<member name="current_animation_position" type="float" setter="" getter="get_current_animation_position">
+			The position (in seconds) of the currently playing animation.
+		</member>
+		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code], updates animations in response to process-related notifications. Default value: [code]true[/code].
+		</member>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time">
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision. Default value: [code]0[/code].
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
 			The process notification in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+		</member>
+		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
+			The speed scaling ratio. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed. Default value: [code]1[/code].
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root">
 			The node from which node path references will travel. Default value: [code]".."[/code].

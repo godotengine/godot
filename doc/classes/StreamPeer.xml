@@ -131,13 +131,6 @@
 				Get a Variant from the stream.
 			</description>
 		</method>
-		<method name="is_big_endian_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether this [code]StreamPeer[/code] is using big-endian format.
-			</description>
-		</method>
 		<method name="put_16">
 			<return type="void">
 			</return>
@@ -264,16 +257,12 @@
 				Put a Variant into the stream.
 			</description>
 		</method>
-		<method name="set_big_endian">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set this [code]StreamPeer[/code] to use big-endian format. Default is false.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled">
+			If [code]true[/code], this [code]StreamPeer[/code] will using big-endian format for encoding and decoding.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

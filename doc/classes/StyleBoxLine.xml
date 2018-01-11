@@ -9,23 +9,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_grow" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_grow">
-			<return type="void">
-			</return>
-			<argument index="0" name="grow" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
+		</member>
+		<member name="grow" type="float" setter="set_grow" getter="get_grow">
 		</member>
 		<member name="thickness" type="int" setter="set_thickness" getter="get_thickness">
 		</member>

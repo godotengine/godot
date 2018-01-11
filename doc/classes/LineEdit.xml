@@ -34,13 +34,6 @@
 				Clears the current selection.
 			</description>
 		</method>
-		<method name="get_cursor_position" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the cursor position inside the [code]LineEdit[/code].
-			</description>
-		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
@@ -81,15 +74,6 @@
 				Selects the whole [String].
 			</description>
 		</method>
-		<method name="set_cursor_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
-			<description>
-				Sets the cursor position inside the [code]LineEdit[/code]. The text may scroll if needed.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
@@ -100,6 +84,9 @@
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
 			Duration (in seconds) of a caret's blinking cycle.
+		</member>
+		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position">
+			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accomodate it.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code] the context menu will appear when right clicked.

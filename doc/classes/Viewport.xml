@@ -37,25 +37,11 @@
 				Return the active 3D camera.
 			</description>
 		</method>
-		<method name="get_canvas_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<description>
-				Get the canvas transform of the viewport.
-			</description>
-		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Get the total transform of the viewport.
-			</description>
-		</method>
-		<method name="get_global_canvas_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<description>
-				Get the global canvas transform of the viewport.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
@@ -99,13 +85,6 @@
 			</return>
 			<description>
 				Return the final, visible rect in global screen coordinates.
-			</description>
-		</method>
-		<method name="get_world_2d" qualifiers="const">
-			<return type="World2D">
-			</return>
-			<description>
-				Return the 2D world of the viewport.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
@@ -152,24 +131,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_canvas_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
-			<description>
-				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
-			</description>
-		</method>
-		<method name="set_global_canvas_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
-			<description>
-				Set the global canvas transform of the viewport. The canvas transform is relative to this.
-			</description>
-		</method>
 		<method name="set_size_override">
 			<return type="void">
 			</return>
@@ -190,14 +151,6 @@
 			</argument>
 			<description>
 				Set whether the size override affects stretch as well.
-			</description>
-		</method>
-		<method name="set_world_2d">
-			<return type="void">
-			</return>
-			<argument index="0" name="world_2d" type="World2D">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="unhandled_input">
@@ -232,9 +185,15 @@
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener">
 		</member>
+		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
+			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
+		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw">
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled">
+		</member>
+		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
+			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled">
 		</member>
@@ -271,6 +230,8 @@
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage">
 		</member>
 		<member name="world" type="World" setter="set_world" getter="get_world">
+		</member>
+		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 		</member>
 	</members>
 	<signals>

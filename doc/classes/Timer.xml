@@ -11,34 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_time_left" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the timer's remaining time in seconds. Returns 0 if the timer is inactive.
-			</description>
-		</method>
-		<method name="is_paused" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the timer is paused.
-			</description>
-		</method>
 		<method name="is_stopped" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the timer is stopped.
-			</description>
-		</method>
-		<method name="set_paused">
-			<return type="void">
-			</return>
-			<argument index="0" name="paused" type="bool">
-			</argument>
-			<description>
-				Pauses the timer. If [code]paused[/code] is [code]true[/code], the timer will not process until it is started or unpaused again, even if [method start] is called.
 			</description>
 		</method>
 		<method name="start">
@@ -64,8 +41,14 @@
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot">
 			If [code]true[/code], Timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
 		</member>
+		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
+			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
+		</member>
 		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode">
 			Processing mode. Uses TIMER_PROCESS_* constants as value.
+		</member>
+		<member name="time_left" type="float" setter="" getter="get_time_left">
+			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 			Wait time in seconds.

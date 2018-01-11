@@ -31,13 +31,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_source_code" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the script source code, or an empty string if source code is not available.
-			</description>
-		</method>
 		<method name="has_script_signal" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -79,16 +72,12 @@
 				Reloads the script's class implementation. Returns an error code.
 			</description>
 		</method>
-		<method name="set_source_code">
-			<return type="void">
-			</return>
-			<argument index="0" name="source" type="String">
-			</argument>
-			<description>
-				Sets the script source code. Does not reload the class implementation.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="source_code" type="String" setter="set_source_code" getter="get_source_code">
+			The script source code, or an empty string if source code is not available. When set, does not reload the class implementation automatically.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

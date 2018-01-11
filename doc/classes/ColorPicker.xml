@@ -20,55 +20,18 @@
 				Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
 			</description>
 		</method>
-		<method name="get_pick_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Gets the current color.
-			</description>
-		</method>
-		<method name="is_editing_alpha" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the color has transparency or not.
-			</description>
-		</method>
-		<method name="is_raw_mode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this color picker is in raw mode or not, raw mode will allow the color R, G, B component values to go beyond 1, you have to consider that the max value for color components is 1, going beyond that value will not have effect in the color, but can be used for special operations that require it (like tinting without darkening or rendering sprites in HDR).
-			</description>
-		</method>
-		<method name="set_edit_alpha">
-			<return type="void">
-			</return>
-			<argument index="0" name="show" type="bool">
-			</argument>
-			<description>
-				Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
-			</description>
-		</method>
-		<method name="set_pick_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-				Select the current color.
-			</description>
-		</method>
-		<method name="set_raw_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="bool">
-			</argument>
-			<description>
-				Set whether this color picker is using raw mode or not, see [method is_raw_mode].
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
+			The currently selected color.
+		</member>
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
+			If [code]true[/code], shows an alpha channel slider (transparency).
+		</member>
+		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode">
+			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		</member>
+	</members>
 	<signals>
 		<signal name="color_changed">
 			<argument index="0" name="color" type="Color">

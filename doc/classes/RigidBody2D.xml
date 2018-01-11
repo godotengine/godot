@@ -49,50 +49,11 @@
 				Applies a positioned impulse to the body (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied instantaneously. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
-		<method name="get_applied_force" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the body's total applied force.
-			</description>
-		</method>
-		<method name="get_applied_torque" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the body's total applied torque.
-			</description>
-		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
 				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code]. Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
-			</description>
-		</method>
-		<method name="get_inertia" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the body's moment of inertia, which is computed automatically from the body's mass and assigned [Shape2D]s during the physics frame. Note that it will not yet have a value in the [code]_ready()[/code] function.
-			</description>
-		</method>
-		<method name="set_applied_force">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="Vector2">
-			</argument>
-			<description>
-				Sets the applied force vector. This is the equivalent of firing a rocket: the force is applied constantly.
-			</description>
-		</method>
-		<method name="set_applied_torque">
-			<return type="void">
-			</return>
-			<argument index="0" name="torque" type="float">
-			</argument>
-			<description>
-				Sets the applied torque.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -102,15 +63,6 @@
 			</argument>
 			<description>
 				Sets the body's velocity on the given axis. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
-			</description>
-		</method>
-		<method name="set_inertia">
-			<return type="void">
-			</return>
-			<argument index="0" name="inertia" type="float">
-			</argument>
-			<description>
-				Set the body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 			</description>
 		</method>
 		<method name="test_motion">
@@ -133,6 +85,12 @@
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
 			The body's rotational velocity.
+		</member>
+		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force">
+			The body's total applied force.
+		</member>
+		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque">
+			The body's total applied torque.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			The body's bounciness. Default value: [code]0[/code].
@@ -158,6 +116,9 @@
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
+		</member>
+		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia">
+			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 			Damps the body's [member linear_velocity]. If [code]-1[/code] the body will use the "Default Linear Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].

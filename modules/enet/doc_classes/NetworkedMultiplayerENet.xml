@@ -47,12 +47,6 @@
 				Create server that listens to connections via [code]port[/code].
 			</description>
 		</method>
-		<method name="get_compression_mode" qualifiers="const">
-			<return type="int" enum="NetworkedMultiplayerENet.CompressionMode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_bind_ip">
 			<return type="void">
 			</return>
@@ -61,15 +55,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_compression_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="NetworkedMultiplayerENet.CompressionMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode">
+		</member>
+	</members>
 	<constants>
 		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">
 		</constant>

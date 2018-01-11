@@ -11,13 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the render flags for the [code]CubeMap[/code]. See the [code]FLAG_*[/code] constants for details.
-			</description>
-		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
@@ -41,15 +34,6 @@
 				Returns the [code]CubeMap[/code]'s width.
 			</description>
 		</method>
-		<method name="set_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-				Returns the render flags for the [code]CubeMap[/code]. See the [code]FLAG_*[/code] constants for details.
-			</description>
-		</method>
 		<method name="set_side">
 			<return type="void">
 			</return>
@@ -63,6 +47,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+			The render flags for the [code]CubeMap[/code]. See the [code]FLAG_*[/code] constants for details.
+		</member>
 		<member name="lossy_storage_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
 			The lossy storage quality of the [code]CubeMap[/code] if the storage mode is set to STORAGE_COMPRESS_LOSSY.
 		</member>

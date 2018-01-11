@@ -35,12 +35,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_tab_align" qualifiers="const">
-			<return type="int" enum="Tabs.TabAlign">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -105,14 +99,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_tab_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="Tabs.TabAlign">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_tab_disabled">
 			<return type="void">
 			</return>
@@ -148,6 +134,8 @@
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
+		</member>
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign">
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
 		</member>

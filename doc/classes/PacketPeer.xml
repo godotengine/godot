@@ -39,12 +39,6 @@
 				Get a Variant.
 			</description>
 		</method>
-		<method name="is_object_decoding_allowed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="put_packet">
 			<return type="int" enum="Error">
 			</return>
@@ -63,15 +57,11 @@
 				Send a Variant as a packet.
 			</description>
 		</method>
-		<method name="set_allow_object_decoding">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

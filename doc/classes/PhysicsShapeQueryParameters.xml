@@ -9,60 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_exclude" qualifiers="const">
-			<return type="Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shape_rid" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="collision_mask" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_exclude">
-			<return type="void">
-			</return>
-			<argument index="0" name="exclude" type="Array">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_shape">
 			<return type="void">
 			</return>
@@ -71,23 +17,19 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_shape_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="RID">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="transform" type="Transform">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		</member>
+		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude">
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin">
+		</member>
+		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid">
+		</member>
+		<member name="transform" type="Transform" setter="set_transform" getter="get_transform">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

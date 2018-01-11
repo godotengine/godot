@@ -71,13 +71,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the current texture flags.
-			</description>
-		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
@@ -105,17 +98,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-				Change the texture flags.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+			The texture's flags.
+		</member>
+	</members>
 	<constants>
+		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
+			Default flags. Generate mipmaps, repeat, and filter are enabled.
+		</constant>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
 			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
@@ -124,9 +116,6 @@
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
 			Magnifying filter, to enable smooth zooming in of the texture.
-		</constant>
-		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
-			Default flags. Generate mipmaps, repeat, and filter are enabled.
 		</constant>
 		<constant name="FLAG_ANISOTROPIC_FILTER" value="8" enum="Flags">
 			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.

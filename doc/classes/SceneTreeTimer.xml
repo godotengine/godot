@@ -9,21 +9,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_time_left" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_time_left">
-			<return type="void">
-			</return>
-			<argument index="0" name="time" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left">
+		</member>
+	</members>
 	<signals>
 		<signal name="timeout">
 			<description>

@@ -184,13 +184,6 @@
 				Returns an array of references to node's children.
 			</description>
 		</method>
-		<method name="get_filename" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns a filename that may be contained by the node. When a scene is instanced from a file, its topmost node contains the filename from which it was loaded (see [method set_filename]).
-			</description>
-		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -203,13 +196,6 @@
 			</return>
 			<description>
 				Returns the node's index, i.e. its position among the siblings of its parent.
-			</description>
-		</method>
-		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the name of the node. This name is unique among the siblings (other child nodes from the same parent).
 			</description>
 		</method>
 		<method name="get_network_master" qualifiers="const">
@@ -253,13 +239,6 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="get_owner" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-				Returns the node owner (see [method set_owner]).
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
@@ -659,24 +638,6 @@
 				Sets the folded state of the node in the Scene dock.
 			</description>
 		</method>
-		<method name="set_filename">
-			<return type="void">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
-			<description>
-				A node can contain a filename. This filename should not be changed by the user, unless writing editors and tools. When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
-			</description>
-		</method>
-		<method name="set_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-				Sets the name of the node. The name must be unique within the parent. Using an existing name will cause the node to be automatically renamed.
-			</description>
-		</method>
 		<method name="set_network_master">
 			<return type="void">
 			</return>
@@ -686,15 +647,6 @@
 			</argument>
 			<description>
 				Sets the node network master to the peer with the given peer ID. The network master is the peer that has authority over it on the network. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server).
-			</description>
-		</method>
-		<method name="set_owner">
-			<return type="void">
-			</return>
-			<argument index="0" name="owner" type="Node">
-			</argument>
-			<description>
-				Sets the node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -768,6 +720,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="filename" type="String" setter="set_filename" getter="get_filename">
+			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name">
+			The name of the node. This name is unique among the siblings (other child nodes from the same parent).
+			When set to an existing name, the node will be automatically renamed
+		</member>
+		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
+			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
+		</member>
 		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode">
 		</member>
 	</members>

@@ -294,24 +294,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_max_chars">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Set the maximum amount of characters editable.
-			</description>
-		</method>
-		<method name="set_wrap">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Enable text wrapping when it goes beyond he edge of what is visible.
-			</description>
-		</method>
 		<method name="toggle_fold_line">
 			<return type="void">
 			</return>
@@ -384,6 +366,9 @@
 			String value of the [TextEdit].
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
+			If [code]true[/code], enables text wrapping when it goes beyond he edge of what is visible.
+		</member>
+		<member name="wrap_lines" type="bool" setter="set_wrap" getter="is_wrapping">
 		</member>
 	</members>
 	<signals>

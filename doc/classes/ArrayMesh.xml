@@ -51,23 +51,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_blend_shape_mode" qualifiers="const">
-			<return type="int" enum="Mesh.BlendShapeMode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_blend_shape_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_custom_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -81,22 +69,6 @@
 		<method name="regen_normalmaps">
 			<return type="void">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_shape_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_custom_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -212,6 +184,12 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode">
+		</member>
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb">
+		</member>
+	</members>
 	<constants>
 		<constant name="NO_INDEX_ARRAY" value="-1">
 			Default value used for index_array_len when no indices are present.

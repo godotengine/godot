@@ -78,13 +78,6 @@
 				Returns the time needed for all tweens to end in seconds, measured from the start. Thus, if you have two tweens, one ending 10 seconds after the start and the other - 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
-		<method name="get_speed_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the speed that has been set from editor GUI or [method set_repeat].
-			</description>
-		</method>
 		<method name="interpolate_callback">
 			<return type="bool">
 			</return>
@@ -186,13 +179,6 @@
 				Returns true if any tweens are currently running, and false otherwise. Note that this method doesn't consider tweens that have ended.
 			</description>
 		</method>
-		<method name="is_repeat" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if repeat has been set from editor GUI or [method set_repeat].
-			</description>
-		</method>
 		<method name="remove">
 			<return type="bool">
 			</return>
@@ -263,24 +249,6 @@
 			</argument>
 			<description>
 				Activate/deactivate the tween. You can use this for pausing animations, though [method stop_all] and [method resume_all] might be more fit for this.
-			</description>
-		</method>
-		<method name="set_repeat">
-			<return type="void">
-			</return>
-			<argument index="0" name="repeat" type="bool">
-			</argument>
-			<description>
-				Make the tween repeat after all tweens have finished.
-			</description>
-		</method>
-		<method name="set_speed_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="speed" type="float">
-			</argument>
-			<description>
-				Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
 			</description>
 		</method>
 		<method name="start">
@@ -370,6 +338,12 @@
 	</methods>
 	<members>
 		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode">
+		</member>
+		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
+			The speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
+		</member>
+		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat">
+			If [code]true[/code], the tween will repeat.
 		</member>
 	</members>
 	<signals>

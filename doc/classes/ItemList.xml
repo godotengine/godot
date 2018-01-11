@@ -53,12 +53,6 @@
 				Ensure selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
-		<method name="get_fixed_icon_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_item_at_position" qualifiers="const">
 			<return type="int">
 			</return>
@@ -198,14 +192,6 @@
 				Note:  This method does not trigger the item selection signal.
 			</description>
 		</method>
-		<method name="set_fixed_icon_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_item_custom_bg_color">
 			<return type="void">
 			</return>
@@ -327,6 +313,8 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height">
 		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width">
+		</member>
+		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size">
 		</member>
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode">
 		</member>

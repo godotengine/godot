@@ -11,43 +11,19 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_h_scroll" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return current horizontal scroll value.
-			</description>
-		</method>
-		<method name="get_v_scroll" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return current vertical scroll value.
-			</description>
-		</method>
-		<method name="set_h_scroll">
-			<return type="void">
-			</return>
-			<argument index="0" name="val" type="int">
-			</argument>
-			<description>
-				Set horizontal scroll value.
-			</description>
-		</method>
-		<method name="set_v_scroll">
-			<return type="void">
-			</return>
-			<argument index="0" name="val" type="int">
-			</argument>
-			<description>
-				Set vertical scroll value.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="scroll_horizontal" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled">
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll">
+			The current horizontal scroll value.
 		</member>
-		<member name="scroll_vertical" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled">
+			If [code]true[/code], enables horizontal scrolling.
+		</member>
+		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll">
+			The current horizontal scroll value.
+		</member>
+		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
+			If [code]true[/code], enables vertical scrolling.
 		</member>
 	</members>
 	<constants>

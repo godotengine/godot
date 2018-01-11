@@ -49,26 +49,6 @@
 				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
-		<method name="get_scroll_ofs" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the scroll offset.
-			</description>
-		</method>
-		<method name="get_snap" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_zoom" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the current zoom value.
-			</description>
-		</method>
 		<method name="is_node_connected">
 			<return type="bool">
 			</return>
@@ -84,36 +64,6 @@
 				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
-		<method name="is_right_disconnects_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
-			</description>
-		</method>
-		<method name="is_using_snap" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_right_disconnects">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
-			</description>
-		</method>
-		<method name="set_scroll_ofs">
-			<return type="void">
-			</return>
-			<argument index="0" name="ofs" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_selected">
 			<return type="void">
 			</return>
@@ -122,32 +72,24 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_snap">
-			<return type="void">
-			</return>
-			<argument index="0" name="pixels" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_use_snap">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_zoom">
-			<return type="void">
-			</return>
-			<argument index="0" name="p_zoom" type="float">
-			</argument>
-			<description>
-				Set the zoom value of the GraphEdit. Zoom value is between [0.01; 1.728].
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled">
+			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
+		</member>
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_ofs" getter="get_scroll_ofs">
+			The scroll offset.
+		</member>
+		<member name="snap_distance" type="int" setter="set_snap" getter="get_snap">
+			The snapping distance in pixels.
+		</member>
+		<member name="use_snap" type="bool" setter="set_use_snap" getter="is_using_snap">
+			If [code]true[/code], enables snapping.
+		</member>
+		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom">
+			The current zoom value.
+		</member>
+	</members>
 	<signals>
 		<signal name="_begin_node_move">
 			<description>

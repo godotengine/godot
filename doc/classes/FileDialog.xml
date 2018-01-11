@@ -33,27 +33,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_current_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Get the current working directory of the file dialog.
-			</description>
-		</method>
-		<method name="get_current_file" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Get the current selected file of the file dialog (empty if none).
-			</description>
-		</method>
-		<method name="get_current_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Get the current selected path (directory and file) of the file dialog (empty if none).
-			</description>
-		</method>
 		<method name="get_vbox">
 			<return type="VBoxContainer">
 			</return>
@@ -68,36 +47,18 @@
 				Invalidate and update the current dialog content list.
 			</description>
 		</method>
-		<method name="set_current_dir">
-			<return type="void">
-			</return>
-			<argument index="0" name="dir" type="String">
-			</argument>
-			<description>
-				Set the current working directory of the file dialog.
-			</description>
-		</method>
-		<method name="set_current_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
-			<description>
-				Set the current selected file name of the file dialog.
-			</description>
-		</method>
-		<method name="set_current_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-				Set the current selected file path of the file dialog.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access">
+		</member>
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
+			The current working directory of the file dialog.
+		</member>
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
+			The currently selected file of the file dialog.
+		</member>
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
+			The currently selected file path of the file dialog.
 		</member>
 		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters">
 		</member>

@@ -11,13 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_buffering_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Get the amount of milliseconds to store in buffer while playing.
-			</description>
-		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -25,25 +18,11 @@
 				Get the name of the video stream.
 			</description>
 		</method>
-		<method name="get_stream_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the current position of the stream, in seconds.
-			</description>
-		</method>
 		<method name="get_video_texture">
 			<return type="Texture">
 			</return>
 			<description>
 				Get the current frame of the video as a [Texture].
-			</description>
-		</method>
-		<method name="get_volume" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the volume of the audio track as a linear value.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -60,33 +39,6 @@
 				Start the video playback.
 			</description>
 		</method>
-		<method name="set_buffering_msec">
-			<return type="void">
-			</return>
-			<argument index="0" name="msec" type="int">
-			</argument>
-			<description>
-				Set the amount of milliseconds to buffer during playback.
-			</description>
-		</method>
-		<method name="set_stream_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="float">
-			</argument>
-			<description>
-				Set the current position of the stream, in seconds.
-			</description>
-		</method>
-		<method name="set_volume">
-			<return type="void">
-			</return>
-			<argument index="0" name="volume" type="float">
-			</argument>
-			<description>
-				Set the audio volume as a linear value.
-			</description>
-		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
@@ -100,6 +52,9 @@
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="has_autoplay">
 		</member>
+		<member name="buffering_msec" type="int" setter="set_buffering_msec" getter="get_buffering_msec">
+			The amount of milliseconds to store in buffer while playing.
+		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand">
@@ -107,6 +62,12 @@
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
 		</member>
 		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream">
+		</member>
+		<member name="stream_position" type="float" setter="set_stream_position" getter="get_stream_position">
+			The current position of the stream, in seconds.
+		</member>
+		<member name="volume" type="float" setter="set_volume" getter="get_volume">
+			The volume of the audio track as a linear value.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 		</member>

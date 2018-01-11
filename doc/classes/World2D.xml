@@ -11,28 +11,18 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_canvas">
-			<return type="RID">
-			</return>
-			<description>
-				Retrieve the [RID] of this world's canvas resource. Used by the [VisualServer] for 2D drawing.
-			</description>
-		</method>
-		<method name="get_direct_space_state">
-			<return type="Physics2DDirectSpaceState">
-			</return>
-			<description>
-				Retrieve the state of this world's physics space. This allows arbitrary querying for collision.
-			</description>
-		</method>
-		<method name="get_space">
-			<return type="RID">
-			</return>
-			<description>
-				Retrieve the [RID] of this world's physics space resource. Used by the [Physics2DServer] for 2D physics, treating it as both a space and an area.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="canvas" type="RID" setter="" getter="get_canvas">
+			The [RID] of this world's canvas resource. Used by the [VisualServer] for 2D drawing.
+		</member>
+		<member name="direct_space_state" type="Physics2DDirectSpaceState" setter="" getter="get_direct_space_state">
+			The state of this world's physics space. This allows arbitrary querying for collision.
+		</member>
+		<member name="space" type="RID" setter="" getter="get_space">
+			The [RID] of this world's physics space resource. Used by the [Physics2DServer] for 2D physics, treating it as both a space and an area.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

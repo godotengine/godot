@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_texture_rotation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the rotation in radians of the texture polygon.
-			</description>
-		</method>
-		<method name="set_texture_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture_rotation" type="float">
-			</argument>
-			<description>
-				Set the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in radians and clockwise rotation.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased">
@@ -54,6 +38,9 @@
 			Amount to offset the polygon's [code]texture[/code]. If [code](0, 0)[/code] the texture's origin (its top-left corner) will be placed at the polygon's [code]position[/code].
 		</member>
 		<member name="texture_rotation" type="float" setter="set_texture_rotation_degrees" getter="get_texture_rotation_degrees">
+			The texture's rotation in radians.
+		</member>
+		<member name="texture_rotation_degrees" type="float" setter="set_texture_rotation_degrees" getter="get_texture_rotation_degrees">
 			The texture's rotation in degrees.
 		</member>
 		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale">
