@@ -1357,24 +1357,32 @@ float Control::_a2s(float p_val, float p_anchor, float p_range) const {
 }
 
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
-	bool pushed = false;
+	float parent_range = _get_parent_range((p_margin == MARGIN_LEFT || p_margin == MARGIN_RIGHT) ? 0 : 1);
+	float previous_margin_pos = data.margin[p_margin] + data.anchor[p_margin] * parent_range;
+	float previous_opposite_margin_pos = data.margin[(p_margin + 2) % 4] + data.anchor[(p_margin + 2) % 4] * parent_range;
+
 	data.anchor[p_margin] = CLAMP(p_anchor, 0.0, 1.0);
 
 	if (((p_margin == MARGIN_LEFT || p_margin == MARGIN_TOP) && data.anchor[p_margin] > data.anchor[(p_margin + 2) % 4]) ||
 			((p_margin == MARGIN_RIGHT || p_margin == MARGIN_BOTTOM) && data.anchor[p_margin] < data.anchor[(p_margin + 2) % 4])) {
 		if (p_push_opposite_anchor) {
 			data.anchor[(p_margin + 2) % 4] = data.anchor[p_margin];
-			pushed = true;
 		} else {
 			data.anchor[p_margin] = data.anchor[(p_margin + 2) % 4];
 		}
 	}
 
-	if (is_inside_tree()) {
-		if (p_keep_margin) {
-			_size_changed();
+	if (!p_keep_margin) {
+		data.margin[p_margin] = _s2a(previous_margin_pos, data.anchor[p_margin], parent_range);
+		if (p_push_opposite_anchor) {
+			data.margin[(p_margin + 2) % 4] = _s2a(previous_opposite_margin_pos, data.anchor[(p_margin + 2) % 4], parent_range);
 		}
 	}
+
+	if (is_inside_tree()) {
+		_size_changed();
+	}
+
 	update();
 	_change_notify();
 }
