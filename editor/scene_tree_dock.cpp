@@ -350,8 +350,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (existing.is_valid()) {
 				const RefPtr empty;
 				selected->set_script(empty);
-				button_create_script->show();
-				button_clear_script->hide();
+				_update_script_button();
 			}
 
 		} break;
@@ -1211,8 +1210,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		return;
 	selected->set_script(p_script.get_ref_ptr());
 	editor->push_item(p_script.operator->());
-	button_create_script->hide();
-	button_clear_script->show();
+	_update_script_button();
 }
 
 void SceneTreeDock::_delete_confirm() {
@@ -1299,15 +1297,8 @@ void SceneTreeDock::_delete_confirm() {
 	EditorNode::get_singleton()->call("_prepare_history");
 }
 
-void SceneTreeDock::_selection_changed() {
-
-	int selection_size = EditorNode::get_singleton()->get_editor_selection()->get_selection().size();
-	if (selection_size > 1) {
-		//automatically turn on multi-edit
-		_tool_selected(TOOL_MULTI_EDIT);
-	}
-
-	if (selection_size == 1) {
+void SceneTreeDock::_update_script_button() {
+	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() == 1) {
 		if (EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
 			button_create_script->show();
 			button_clear_script->hide();
@@ -1319,6 +1310,16 @@ void SceneTreeDock::_selection_changed() {
 		button_create_script->hide();
 		button_clear_script->hide();
 	}
+}
+
+void SceneTreeDock::_selection_changed() {
+
+	int selection_size = EditorNode::get_singleton()->get_editor_selection()->get_selection().size();
+	if (selection_size > 1) {
+		//automatically turn on multi-edit
+		_tool_selected(TOOL_MULTI_EDIT);
+	}
+	_update_script_button();
 }
 
 void SceneTreeDock::_create() {
@@ -1655,6 +1656,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	Node *n = get_node(p_to);
 	if (n) {
 		n->set_script(scr.get_ref_ptr());
+		_update_script_button();
 	}
 }
 
