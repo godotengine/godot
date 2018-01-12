@@ -116,10 +116,7 @@ def configure(env):
 
             mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension='.dll')
 
-            if not mono_dll_name:
-                raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
-
-            copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
+        copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
 
         copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
     else:
@@ -172,8 +169,6 @@ def configure(env):
                     raise RuntimeError('Could not find mono shared library in: ' + mono_lib_path)
 
                 copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
-
-            copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
         else:
             if mono_static:
                 raise RuntimeError('mono-static: Not supported with pkg-config. Specify a mono prefix manually')
@@ -199,7 +194,8 @@ def configure(env):
                 raise RuntimeError('Could not find mono shared library in: ' + str(tmpenv['LIBPATH']))
 
             copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
-            copy_file(os.path.join(mono_prefix, 'lib', 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
+
+        copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
 
         env.Append(LINKFLAGS='-rdynamic')
 
