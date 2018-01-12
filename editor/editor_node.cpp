@@ -4749,12 +4749,12 @@ EditorNode::EditorNode() {
 	scene_distraction = false;
 	script_distraction = false;
 
-	FileAccess::set_backup_save(EDITOR_DEF("filesystem/on_save/safe_save_on_backup_then_rename", true));
-
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
+
+	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("interface/editor/hidpi_mode");

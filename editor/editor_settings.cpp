@@ -513,6 +513,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/resources/auto_reload_modified_images", true);
 
 	_initial_set("filesystem/import/automatic_reimport_on_sources_changed", true);
+	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
 
 	if (p_extra_config.is_valid()) {
 
