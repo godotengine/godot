@@ -6950,6 +6950,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		memdelete(cls);
 	} else if (particles_owner.owns(p_rid)) {
 		Particles *particles = particles_owner.get(p_rid);
+		particles->instance_remove_deps();
 		particles_owner.free(p_rid);
 		memdelete(particles);
 	} else {
