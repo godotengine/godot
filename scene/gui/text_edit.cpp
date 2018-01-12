@@ -5104,7 +5104,7 @@ int TextEdit::get_indent_level(int p_line) const {
 			break;
 		}
 	}
-	return tab_count * indent_size + whitespace_count;
+	return false;
 }
 
 bool TextEdit::is_line_comment(int p_line) const {
