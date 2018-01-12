@@ -129,10 +129,16 @@ struct MonoCache {
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 
+	bool corlib_cache_updated;
+	bool godot_api_cache_updated;
+
 	void clear_members();
-	void cleanup() {}
+	void cleanup();
 
 	MonoCache() {
+		corlib_cache_updated = false;
+		godot_api_cache_updated = false;
+
 		clear_members();
 	}
 };

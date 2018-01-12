@@ -449,7 +449,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 
 	// Printing an error here will result in endless recursion, so we must be careful
 
-	if (!gdmono->is_runtime_initialized() && GDMono::get_singleton()->get_api_assembly())
+	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_api_assembly() || !GDMonoUtils::mono_cache.corlib_cache_updated)
 		return Vector<StackInfo>();
 
 	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());
@@ -502,6 +502,10 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 			GDMonoUtils::print_unhandled_exception(exc, true /* fail silently to avoid endless recursion */);
 			return Vector<StackInfo>();
 		}
+
+		// TODO
+		// what if the StackFrame method is null (method_decl is empty). should we skip this frame?
+		// can reproduce with a MissingMethodException on internal calls
 
 		sif.file = GDMonoMarshal::mono_string_to_godot(file_name);
 		sif.line = file_line_num;
