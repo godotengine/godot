@@ -932,7 +932,7 @@ godot_char_string GDAPI godot_string_ascii(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 	godot_char_string result;
 
-	memnew_placement(&result, String(self->ascii()));
+	memnew_placement(&result, CharString(self->ascii()));
 
 	return result;
 }
@@ -942,7 +942,7 @@ godot_char_string GDAPI godot_string_ascii_extended(const godot_string *p_self) 
 
 	godot_char_string result;
 
-	memnew_placement(&result, String(self->ascii(true)));
+	memnew_placement(&result, CharString(self->ascii(true)));
 
 	return result;
 }
@@ -952,7 +952,7 @@ godot_char_string GDAPI godot_string_utf8(const godot_string *p_self) {
 
 	godot_char_string result;
 
-	memnew_placement(&result, String(self->utf8()));
+	memnew_placement(&result, CharString(self->utf8()));
 
 	return result;
 }
