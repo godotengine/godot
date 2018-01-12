@@ -63,11 +63,43 @@ void ScriptTextEditor::apply_code() {
 	//print_line("applying code");
 	script->set_source_code(code_editor->get_text_edit()->get_text());
 	script->update_exports();
+	_update_member_keywords();
 }
 
 Ref<Script> ScriptTextEditor::get_edited_script() const {
 
 	return script;
+}
+
+void ScriptTextEditor::_update_member_keywords() {
+	member_keywords.clear();
+	code_editor->get_text_edit()->clear_member_keywords();
+	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+
+	StringName instance_base = script->get_instance_base_type();
+
+	if (instance_base == StringName())
+		return;
+	List<PropertyInfo> plist;
+	ClassDB::get_property_list(instance_base, &plist);
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+		String name = E->get().name;
+		if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP)
+			continue;
+		if (name.find("/") != -1)
+			continue;
+
+		code_editor->get_text_edit()->add_member_keyword(name, member_variable_color);
+	}
+
+	List<String> clist;
+	ClassDB::get_integer_constant_list(instance_base, &clist);
+
+	for (List<String>::Element *E = clist.front(); E; E = E->next()) {
+
+		code_editor->get_text_edit()->add_member_keyword(E->get(), member_variable_color);
+	}
 }
 
 void ScriptTextEditor::_load_theme_settings() {
@@ -563,6 +595,7 @@ void ScriptTextEditor::_validate_script() {
 		if (!script->is_tool()) {
 			script->set_source_code(text);
 			script->update_exports();
+			_update_member_keywords();
 			//script->reload(); //will update all the variables in property editors
 		}
 

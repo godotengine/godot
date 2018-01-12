@@ -44,6 +44,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Vector<String> functions;
 
+	Vector<String> member_keywords;
+
 	HBoxContainer *edit_hb;
 
 	MenuButton *edit_menu;
@@ -57,6 +59,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ColorPicker *color_picker;
 	int color_line;
 	String color_args;
+
+	void _update_member_keywords();
 
 	struct ColorsCache {
 		Color symbol_color;
