@@ -1,4 +1,4 @@
-xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <class name="SceneTree" inherits="MainLoop" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>

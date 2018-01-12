@@ -29,6 +29,9 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			[Geometry] singleton
 		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			[GodotSharp] singleton
+		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
 		</member>
