@@ -225,6 +225,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 
 				mouse_over = i;
+				emit_signal("id_focused", i);
 				update();
 				accept_event();
 				break;
@@ -244,6 +245,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 
 				mouse_over = i;
+				emit_signal("id_focused", i);
 				update();
 				accept_event();
 				break;
@@ -1210,6 +1212,7 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "ID")));
+	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "ID")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 }
 
