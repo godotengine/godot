@@ -43,7 +43,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 
 		case ADDR_TYPE_SELF: {
 #ifdef DEBUG_ENABLED
-			if (unlikely(!p_instance)) {
+			if (unlikely(!p_instance && !p_script->is_extension())) {
 				r_error = "Cannot access self without instance.";
 				return NULL;
 			}
@@ -260,7 +260,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	int ip = 0;
 	int line = _initial_line;
 
-	if (p_state) {
+	if (p_state && p_state->instance) {
 		//use existing (supplied) state (yielded)
 		stack = (Variant *)p_state->stack.ptr();
 		call_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; //ptr() to avoid bounds check
@@ -334,6 +334,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			_class = p_instance->script.ptr();
 		} else {
 			_class = _script;
+		}
+
+		if (p_state && !p_state->instance) {
+			// this is an extension call
+			self = p_state->self;
+			p_state = NULL;
 		}
 	}
 

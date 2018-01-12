@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "os/mutex.h"
+#include "script_language.h"
 #include "version.h"
 
 #ifdef NO_THREADS
@@ -587,7 +588,33 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 	}
 }
 
-MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
+bool ClassDB::add_extension(const StringName &p_class, const Ref<Script> &p_script) {
+
+	OBJTYPE_WLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+	if (!type) {
+		// support pseudo-static classes like Geometry, which is indeed _Geometry.
+		type = classes.getptr("_" + p_class);
+	}
+	if (type) {
+
+		List<MethodInfo> methods;
+		p_script->get_script_method_list(&methods);
+		for (int i = 0; i < methods.size(); i++) {
+			const StringName name(methods[i].name);
+			if (type->method_map.has(name) && !type->method_map.has("_" + name)) { // override?
+				type->method_map["_" + name] = type->method_map[name];
+			}
+			type->method_map[name] = p_script->create_extension_method_bind(p_class, name);
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
+MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_name) {
 
 	OBJTYPE_RLOCK;
 

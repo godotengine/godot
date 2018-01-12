@@ -37,6 +37,9 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 	if (!codegen.function_node || codegen.function_node->_static)
 		return false;
 
+	if (codegen.function_node->_extension)
+		return false;
+
 	return _is_class_member_property(codegen.script, p_name);
 }
 
@@ -54,6 +57,15 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 	ERR_FAIL_COND_V(!nc, false);
 
 	return ClassDB::has_property(nc->get_name(), p_name);
+}
+
+bool GDScriptCompiler::_is_class_or_extension_member_property(CodeGen &codegen, const StringName &p_name) {
+
+	if (codegen.function_node && codegen.function_node->_extension) {
+		return !codegen.stack_identifiers.has(p_name);
+	} else {
+		return _is_class_member_property(codegen, p_name);
+	}
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
@@ -201,7 +213,16 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				return pos | (GDScriptFunction::ADDR_TYPE_STACK_VARIABLE << GDScriptFunction::ADDR_BITS);
 			}
 			//TRY MEMBERS!
-			if (!codegen.function_node || !codegen.function_node->_static) {
+			if (codegen.function_node->_extension) {
+
+				codegen.opcodes.push_back(GDScriptFunction::OPCODE_GET_NAMED);
+				codegen.opcodes.push_back(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
+				codegen.opcodes.push_back(codegen.get_name_map_pos(identifier));
+				int dst_addr = (p_stack_level) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+				codegen.opcodes.push_back(dst_addr);
+				codegen.alloc_stack(p_stack_level);
+				return dst_addr;
+			} else if (!codegen.function_node || !codegen.function_node->_static) {
 
 				// TRY MEMBER VARIABLES!
 				//static function
@@ -847,7 +868,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 									if (n->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 
 										GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(n->arguments[0]);
-										if (_is_class_member_property(codegen, identifier->name)) {
+										if (_is_class_or_extension_member_property(codegen, identifier->name)) {
 											assign_property = identifier->name;
 										}
 									}
@@ -883,7 +904,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							// in Node2D
 							setchain.push_back(prev_pos);
 							setchain.push_back(codegen.get_name_map_pos(assign_property));
-							setchain.push_back(GDScriptFunction::OPCODE_SET_MEMBER);
+							if (!codegen.function_node->_extension) {
+								setchain.push_back(GDScriptFunction::OPCODE_SET_MEMBER);
+							} else {
+								setchain.push_back(GDScriptFunction::OPCODE_SET_NAMED);
+								setchain.push_back(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
+							}
 						}
 
 						for (List<GDScriptParser::OperatorNode *>::Element *E = chain.back(); E; E = E->prev()) {
@@ -974,7 +1000,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						return retval;
 
-					} else if (on->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER && _is_class_member_property(codegen, static_cast<GDScriptParser::IdentifierNode *>(on->arguments[0])->name)) {
+					} else if (on->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER && _is_class_or_extension_member_property(codegen, static_cast<GDScriptParser::IdentifierNode *>(on->arguments[0])->name)) {
 						//assignment to member property
 
 						int slevel = p_stack_level;
@@ -985,7 +1011,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						StringName name = static_cast<GDScriptParser::IdentifierNode *>(on->arguments[0])->name;
 
-						codegen.opcodes.push_back(GDScriptFunction::OPCODE_SET_MEMBER);
+						if (!codegen.function_node->_extension) {
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_SET_MEMBER);
+						} else {
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_SET_NAMED);
+							codegen.opcodes.push_back(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
+						}
 						codegen.opcodes.push_back(codegen.get_name_map_pos(name));
 						codegen.opcodes.push_back(src_address);
 
@@ -1606,6 +1637,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 	p_script->subclasses.clear();
 	p_script->_owner = p_owner;
 	p_script->tool = p_class->tool;
+	p_script->extension = p_class->extension;
 	p_script->name = p_class->name;
 
 	Ref<GDScriptNativeClass> native;

@@ -254,6 +254,7 @@ public:
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) = 0;
+	virtual Variant call_as_extension(Variant *p_variant, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) { return Variant(); }
 
 #ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) = 0;

@@ -102,6 +102,7 @@ public:
 	PropertyInfo get_property_info(const StringName &p_property) const;
 
 	bool is_tool() const { return _tool; }
+	bool is_extension() const { return false; }
 
 	virtual ScriptLanguage *get_language() const;
 

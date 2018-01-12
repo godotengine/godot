@@ -333,10 +333,12 @@ public:
 	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
 
 	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static MethodBind *get_method(StringName p_class, StringName p_name);
+	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
+
+	static bool add_extension(const StringName &p_class, const Ref<Script> &p_script);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);

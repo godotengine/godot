@@ -277,6 +277,11 @@ bool NativeScript::is_tool() const {
 	return false;
 }
 
+bool NativeScript::is_extension() const {
+
+	return false;
+}
+
 ScriptLanguage *NativeScript::get_language() const {
 	return NativeScriptLanguage::get_singleton();
 }

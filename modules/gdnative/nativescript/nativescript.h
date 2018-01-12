@@ -142,6 +142,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual bool is_tool() const;
+	virtual bool is_extension() const;
 
 	virtual ScriptLanguage *get_language() const;
 

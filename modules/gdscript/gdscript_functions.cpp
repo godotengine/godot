@@ -122,6 +122,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"extend_builtin",
 	};
 
 	return _names[p_func];
@@ -1267,6 +1268,37 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case EXTEND_BUILT_IN: {
+
+			VALIDATE_ARG_COUNT(2);
+			const String name = *p_args[0];
+
+			const Ref<Script> script = *p_args[1];
+			if (script.is_null() || !script->is_extension()) {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				r_ret = RTR("Can only extend with an extension script.");
+				break;
+			}
+
+			int found = -1;
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (Variant::get_type_name((Variant::Type)i) == name) {
+					found = i;
+					break;
+				}
+			}
+
+			if (found >= 0) {
+				Variant::add_extension((Variant::Type)found, script);
+			} else if (!ClassDB::add_extension(name, script)) {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::NIL;
+				r_ret = RTR("Can only extend built-in classes.");
+			}
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1785,6 +1817,10 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
 			return mi;
+		} break;
+
+		case EXTEND_BUILT_IN: {
+			return MethodInfo(); // only used internally
 		} break;
 
 		case FUNC_MAX: {

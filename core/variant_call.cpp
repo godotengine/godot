@@ -124,6 +124,7 @@ struct _VariantCall {
 	struct TypeFunc {
 
 		Map<StringName, FuncData> functions;
+		HashMap<StringName, MethodBind *, StringNameHasher> extensions;
 	};
 
 	static TypeFunc *type_funcs;
@@ -983,6 +984,29 @@ _VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
 _VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
 _VariantCall::ConstantData *_VariantCall::constant_data = NULL;
 
+void Variant::add_extension(Variant::Type p_type, const Ref<Script> &p_script) {
+
+	const int type = (int)p_type;
+	ERR_FAIL_COND(type < 0 || type >= Variant::VARIANT_MAX);
+
+	List<MethodInfo> methods;
+	p_script->get_script_method_list(&methods);
+
+	_VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
+	const StringName class_name = Variant::get_type_name(p_type);
+
+	for (int i = 0; i < methods.size(); i++) {
+		const StringName name(methods[i].name);
+		if (tf.functions.has(name)) { // override?
+			tf.functions["_" + name] = tf.functions[name];
+			tf.functions.erase(name);
+		}
+		tf.extensions[name] = p_script->create_extension_method_bind(class_name, name);
+	}
+
+	ClassDB::add_extension(class_name, p_script); // needed e.g. for Object as base class
+}
+
 Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error) {
 
 	Variant ret;
@@ -1018,13 +1042,19 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 		r_error.error = Variant::CallError::CALL_OK;
 
-		Map<StringName, _VariantCall::FuncData>::Element *E = _VariantCall::type_funcs[type].functions.find(p_method);
-#ifdef DEBUG_ENABLED
+		_VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
+		Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 		if (!E) {
+			MethodBind *const *method = tf.extensions.getptr(p_method);
+			if (method) {
+				Variant ret = (*method)->call_as_extension(this, p_args, p_argcount, r_error);
+				if (r_ret)
+					*r_ret = ret;
+				return;
+			}
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			return;
 		}
-#endif
 		_VariantCall::FuncData &funcdata = E->get();
 		funcdata.call(ret, *this, p_args, p_argcount, r_error);
 	}

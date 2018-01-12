@@ -95,6 +95,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"is",
 	"onready",
 	"tool",
+	"extension",
 	"static",
 	"export",
 	"setget",
@@ -188,6 +189,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_IS, "is" },
 	{ GDScriptTokenizer::TK_PR_ONREADY, "onready" },
 	{ GDScriptTokenizer::TK_PR_TOOL, "tool" },
+	{ GDScriptTokenizer::TK_PR_EXTENSION, "extension" },
 	{ GDScriptTokenizer::TK_PR_STATIC, "static" },
 	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
 	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
@@ -239,6 +241,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 
 		case TK_PR_ONREADY:
 		case TK_PR_TOOL:
+		case TK_PR_EXTENSION:
 		case TK_PR_STATIC:
 		case TK_PR_EXPORT:
 		case TK_PR_SETGET:
