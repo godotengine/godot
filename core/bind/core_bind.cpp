@@ -2585,7 +2585,7 @@ void _Engine::set_target_fps(int p_fps) {
 	Engine::get_singleton()->set_target_fps(p_fps);
 }
 
-float _Engine::get_target_fps() const {
+int _Engine::get_target_fps() const {
 	return Engine::get_singleton()->get_target_fps();
 }
 
