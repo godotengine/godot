@@ -200,7 +200,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - last_progress_tick < 50000) //50ms
+		if (tus - last_progress_tick < 200000) //200ms
 			return cancelled;
 	}
 

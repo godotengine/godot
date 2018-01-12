@@ -73,7 +73,7 @@ void GIProbeEditorPlugin::bake_func_begin(int p_steps) {
 void GIProbeEditorPlugin::bake_func_step(int p_step, const String &p_description) {
 
 	ERR_FAIL_COND(tmp_progress == NULL);
-	tmp_progress->step(p_description, p_step);
+	tmp_progress->step(p_description, p_step, false);
 }
 
 void GIProbeEditorPlugin::bake_func_end() {
