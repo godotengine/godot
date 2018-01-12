@@ -261,8 +261,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		}
 
 		{
-			if (!child->is_connected("tree_exited", this, "_node_removed"))
-				child->connect("tree_exited", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+			if (!child->is_connected("tree_exiting", this, "_node_removed"))
+				child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;

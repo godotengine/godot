@@ -2689,7 +2689,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 
-		previewing->disconnect("tree_exited", this, "_preview_exited_scene");
+		previewing->disconnect("tree_exiting", this, "_preview_exited_scene");
 		previewing = NULL;
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview)
@@ -2700,7 +2700,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 
 		previewing = preview;
-		previewing->connect("tree_exited", this, "_preview_exited_scene");
+		previewing->connect("tree_exiting", this, "_preview_exited_scene");
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		view_menu->hide();
 		surface->update();
@@ -2851,7 +2851,7 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
 		if (Object::cast_to<Camera>(pv)) {
 			previewing = Object::cast_to<Camera>(pv);
-			previewing->connect("tree_exited", this, "_preview_exited_scene");
+			previewing->connect("tree_exiting", this, "_preview_exited_scene");
 			VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			view_menu->hide();
 			surface->update();

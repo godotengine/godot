@@ -32,8 +32,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Called when the node leaves the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
-				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification].
+				Called when the node is about to leave the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
+				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -744,9 +744,14 @@
 				Emitted when the node enters the tree.
 			</description>
 		</signal>
+		<signal name="tree_exiting">
+			<description>
+				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization.
+			</description>
+		</signal>
 		<signal name="tree_exited">
 			<description>
-				Emitted when the node exits the tree.
+				Emitted after the node exits the tree and is no longer active.
 			</description>
 		</signal>
 	</signals>
@@ -755,7 +760,7 @@
 			Notification received when the node enters a [SceneTree].
 		</constant>
 		<constant name="NOTIFICATION_EXIT_TREE" value="11">
-			Notification received when the node exits a [SceneTree].
+			Notification received when the node is about to exit a [SceneTree].
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 			Notification received when the node is moved in the parent.

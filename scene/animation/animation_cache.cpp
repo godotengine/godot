@@ -56,7 +56,7 @@ void AnimationCache::_clear_cache() {
 
 	while (connected_nodes.size()) {
 
-		connected_nodes.front()->get()->disconnect("tree_exited", this, "_node_exit_tree");
+		connected_nodes.front()->get()->disconnect("tree_exiting", this, "_node_exit_tree");
 		connected_nodes.erase(connected_nodes.front());
 	}
 	path_cache.clear();
@@ -181,7 +181,7 @@ void AnimationCache::_update_cache() {
 
 		if (!connected_nodes.has(path.node)) {
 			connected_nodes.insert(path.node);
-			path.node->connect("tree_exited", this, "_node_exit_tree", Node::make_binds(path.node), CONNECT_ONESHOT);
+			path.node->connect("tree_exiting", this, "_node_exit_tree", Node::make_binds(path.node), CONNECT_ONESHOT);
 		}
 	}
 

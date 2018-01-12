@@ -275,7 +275,7 @@ void Node::_propagate_exit_tree() {
 
 		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, NULL, 0);
 	}
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree)
@@ -297,6 +297,8 @@ void Node::_propagate_exit_tree() {
 	data.ready_notified = false;
 	data.tree = NULL;
 	data.depth = -1;
+
+	emit_signal(SceneStringNames::get_singleton()->tree_exited);
 }
 
 void Node::move_child(Node *p_child, int p_pos) {
@@ -2952,6 +2954,7 @@ void Node::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
+	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/process" ),"set_process","is_processing") ;

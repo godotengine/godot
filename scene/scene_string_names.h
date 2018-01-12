@@ -69,6 +69,7 @@ public:
 	StringName shader_unshaded;
 	StringName shading_mode;
 	StringName tree_entered;
+	StringName tree_exiting;
 	StringName tree_exited;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;

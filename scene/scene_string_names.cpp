@@ -49,6 +49,7 @@ SceneStringNames::SceneStringNames() {
 	shader_unshaded = StaticCString::create("shader/unshaded");
 	shading_mode = StaticCString::create("shader/shading_mode");
 	tree_entered = StaticCString::create("tree_entered");
+	tree_exiting = StaticCString::create("tree_exiting");
 	tree_exited = StaticCString::create("tree_exited");
 	item_rect_changed = StaticCString::create("item_rect_changed");
 	size_flags_changed = StaticCString::create("size_flags_changed");
