@@ -115,6 +115,8 @@ public:
 	Size2 window_size;
 	Rect2 restore_rect;
 
+	String open_with_filename;
+
 	Point2 im_position;
 	ImeCallback im_callback;
 	void *im_target;
