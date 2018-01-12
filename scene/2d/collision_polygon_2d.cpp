@@ -115,6 +115,15 @@ Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
 	return decomp;
 }
 
+void CollisionPolygon2D::_update_in_shape_owner(bool p_xform_only) {
+
+	parent->shape_owner_set_transform(owner_id, get_transform());
+	if (p_xform_only)
+		return;
+	parent->shape_owner_set_disabled(owner_id, disabled);
+	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+}
+
 void CollisionPolygon2D::_notification(int p_what) {
 
 	switch (p_what) {
@@ -124,9 +133,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				_build_polygon();
-				parent->shape_owner_set_transform(owner_id, get_transform());
-				parent->shape_owner_set_disabled(owner_id, disabled);
-				parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+				_update_in_shape_owner();
 			}
 
 			/*if (Engine::get_singleton()->is_editor_hint()) {
@@ -136,10 +143,17 @@ void CollisionPolygon2D::_notification(int p_what) {
 			}*/
 
 		} break;
+		case NOTIFICATION_ENTER_TREE: {
+
+			if (parent) {
+				_update_in_shape_owner();
+			}
+
+		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
 			if (parent) {
-				parent->shape_owner_set_transform(owner_id, get_transform());
+				_update_in_shape_owner(true);
 			}
 
 		} break;

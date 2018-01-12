@@ -64,6 +64,14 @@ void CollisionShape::make_convex_from_brothers() {
 	}
 }
 
+void CollisionShape::_update_in_shape_owner(bool p_xform_only) {
+
+	parent->shape_owner_set_transform(owner_id, get_transform());
+	if (p_xform_only)
+		return;
+	parent->shape_owner_set_disabled(owner_id, disabled);
+}
+
 void CollisionShape::_notification(int p_what) {
 
 	switch (p_what) {
@@ -75,19 +83,20 @@ void CollisionShape::_notification(int p_what) {
 				if (shape.is_valid()) {
 					parent->shape_owner_add_shape(owner_id, shape);
 				}
-				parent->shape_owner_set_transform(owner_id, get_transform());
-				parent->shape_owner_set_disabled(owner_id, disabled);
+				_update_in_shape_owner();
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			if (parent) {
+				_update_in_shape_owner();
+			}
 			if (get_tree()->is_debugging_collisions_hint()) {
 				_create_debug_shape();
 			}
-
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
-				parent->shape_owner_set_transform(owner_id, get_transform());
+				_update_in_shape_owner(true);
 			}
 		} break;
 		case NOTIFICATION_UNPARENTED: {
