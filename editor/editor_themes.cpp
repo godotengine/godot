@@ -1053,7 +1053,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color word_highlighted_color = alpha1;
 	const Color number_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color function_color = main_color;
-	const Color member_variable_color = mono_color;
+	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color breakpoint_color = error_color;
 	const Color code_folding_color = alpha4;
