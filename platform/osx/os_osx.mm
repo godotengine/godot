@@ -144,6 +144,13 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 
 @implementation GodotApplicationDelegate
 
+- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
+	// Note: called before main loop init!
+	char *utfs = strdup([filename UTF8String]);
+	OS_OSX::singleton->open_with_filename.parse_utf8(utfs);
+	return YES;
+}
+
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
@@ -2322,6 +2329,20 @@ OS_OSX::OS_OSX() {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(OSXTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
+
+	//process application:openFile: event
+	while (true) {
+		NSEvent *event = [NSApp
+				nextEventMatchingMask:NSEventMaskAny
+							untilDate:[NSDate distantPast]
+							   inMode:NSDefaultRunLoopMode
+							  dequeue:YES];
+
+		if (event == nil)
+			break;
+
+		[NSApp sendEvent:event];
+	}
 }
 
 bool OS_OSX::_check_internal_feature_support(const String &p_feature) {

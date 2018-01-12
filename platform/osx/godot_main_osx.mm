@@ -82,8 +82,17 @@ int main(int argc, char **argv) {
 #endif
 
 	OS_OSX os;
+	Error err;
 
-	Error err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+	if (os.open_with_filename != "") {
+		char *argv_c = (char *)malloc(os.open_with_filename.utf8().size());
+		memcpy(argv_c, os.open_with_filename.utf8().get_data(), os.open_with_filename.utf8().size());
+		err = Main::setup(argv[0], 1, &argv_c);
+		free(argv_c);
+	} else {
+		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+	}
+
 	if (err != OK)
 		return 255;
 
