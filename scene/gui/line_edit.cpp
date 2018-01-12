@@ -373,12 +373,14 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_UP: {
 
 					shift_selection_check_pre(k->get_shift());
+					if (get_cursor_position() == 0) handled = false;
 					set_cursor_position(0);
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DOWN: {
 
 					shift_selection_check_pre(k->get_shift());
+					if (get_cursor_position() == text.length()) handled = false;
 					set_cursor_position(text.length());
 					shift_selection_check_post(k->get_shift());
 				} break;
