@@ -56,6 +56,39 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_VOID: return 0;
 		case SL::TYPE_BOOL: return 4;
 		case SL::TYPE_BVEC2: return 8;
+		case SL::TYPE_BVEC3: return 12;
+		case SL::TYPE_BVEC4: return 16;
+		case SL::TYPE_INT: return 4;
+		case SL::TYPE_IVEC2: return 8;
+		case SL::TYPE_IVEC3: return 12;
+		case SL::TYPE_IVEC4: return 16;
+		case SL::TYPE_UINT: return 4;
+		case SL::TYPE_UVEC2: return 8;
+		case SL::TYPE_UVEC3: return 12;
+		case SL::TYPE_UVEC4: return 16;
+		case SL::TYPE_FLOAT: return 4;
+		case SL::TYPE_VEC2: return 8;
+		case SL::TYPE_VEC3: return 12;
+		case SL::TYPE_VEC4: return 16;
+		case SL::TYPE_MAT2: return 16;
+		case SL::TYPE_MAT3: return 44;
+		case SL::TYPE_MAT4: return 64;
+		case SL::TYPE_SAMPLER2D: return 16;
+		case SL::TYPE_ISAMPLER2D: return 16;
+		case SL::TYPE_USAMPLER2D: return 16;
+		case SL::TYPE_SAMPLERCUBE: return 16;
+	}
+
+	ERR_FAIL_V(0);
+}
+
+static int _get_datatype_alignment(SL::DataType p_type) {
+
+	switch (p_type) {
+
+		case SL::TYPE_VOID: return 0;
+		case SL::TYPE_BOOL: return 4;
+		case SL::TYPE_BVEC2: return 8;
 		case SL::TYPE_BVEC3: return 16;
 		case SL::TYPE_BVEC4: return 16;
 		case SL::TYPE_INT: return 4;
@@ -71,8 +104,8 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_VEC3: return 16;
 		case SL::TYPE_VEC4: return 16;
 		case SL::TYPE_MAT2: return 16;
-		case SL::TYPE_MAT3: return 48;
-		case SL::TYPE_MAT4: return 64;
+		case SL::TYPE_MAT3: return 16;
+		case SL::TYPE_MAT4: return 16;
 		case SL::TYPE_SAMPLER2D: return 16;
 		case SL::TYPE_ISAMPLER2D: return 16;
 		case SL::TYPE_USAMPLER2D: return 16;
@@ -81,7 +114,6 @@ static int _get_datatype_size(SL::DataType p_type) {
 
 	ERR_FAIL_V(0);
 }
-
 static String _interpstr(SL::DataInterpolation p_interp) {
 
 	switch (p_interp) {
@@ -341,7 +373,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					}
 					uniform_defines[E->get().order] = ucode;
 					uniform_sizes[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments[E->get().order] = MIN(16, _get_datatype_size(E->get().type));
+					uniform_alignments[E->get().order] = _get_datatype_alignment(E->get().type);
 				}
 
 				p_actions.uniforms->insert(E->key(), E->get());
@@ -350,6 +382,27 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for (int i = 0; i < max_uniforms; i++) {
 				r_gen_code.uniforms += uniform_defines[i];
 			}
+#if 1
+			// add up
+			int offset = 0;
+			for (int i = 0; i < uniform_sizes.size(); i++) {
+
+				int align = offset % uniform_alignments[i];
+
+				if (align != 0) {
+					offset += uniform_alignments[i] - align;
+				}
+
+				r_gen_code.uniform_offsets.push_back(offset);
+
+				offset += uniform_sizes[i];
+			}
+
+			r_gen_code.uniform_total_size = offset;
+			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
+				r_gen_code.uniform_total_size += r_gen_code.uniform_total_size % 16;
+			}
+#else
 			// add up
 			for (int i = 0; i < uniform_sizes.size(); i++) {
 
@@ -389,6 +442,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			} else {
 				r_gen_code.uniform_total_size = 0;
 			}
+#endif
 
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
 
