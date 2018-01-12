@@ -118,7 +118,6 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	}
 
 	uint32_t imgw = p_img->get_width(), imgh = p_img->get_height();
-	ERR_FAIL_COND(next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh);
 
 	Image::Format etc_format = force_etc1_format ? Image::FORMAT_ETC : _get_etc2_mode(detected_channels);
 
@@ -126,6 +125,25 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	if (img->get_format() != Image::FORMAT_RGBA8)
 		img->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+
+	if (img->has_mipmaps()) {
+		if (next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh) {
+			img->resize_to_po2();
+			imgw = img->get_width();
+			imgh = img->get_height();
+		}
+	} else {
+		if (imgw % 4 != 0 || imgh % 4 != 0) {
+			if (imgw % 4) {
+				imgw += 4 - imgw % 4;
+			}
+			if (imgh % 4) {
+				imgh += 4 - imgh % 4;
+			}
+
+			img->resize(imgw, imgh);
+		}
+	}
 
 	PoolVector<uint8_t>::Read r = img->get_data().read();
 
