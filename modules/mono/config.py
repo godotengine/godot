@@ -3,7 +3,7 @@ import imp
 import os
 import sys
 
-from SCons.Script import BoolVariable, Environment, Variables
+from SCons.Script import BoolVariable, Dir, Environment, PathVariable, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
@@ -29,20 +29,16 @@ def is_enabled():
     return False
 
 
-def copy_file_no_replace(src_dir, dst_dir, name):
+def copy_file(src_dir, dst_dir, name):
     from shutil import copyfile
 
     src_path = os.path.join(src_dir, name)
     dst_path = os.path.join(dst_dir, name)
-    need_copy = True
 
     if not os.path.isdir(dst_dir):
         os.mkdir(dst_dir)
-    elif os.path.exists(dst_path):
-        need_copy = False
 
-    if need_copy:
-        copyfile(src_path, dst_path)
+    copyfile(src_path, dst_path)
 
 
 def configure(env):
@@ -51,11 +47,13 @@ def configure(env):
 
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
+    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', PathVariable.PathIsDirCreate))
     envvars.Update(env)
 
     bits = env['bits']
 
     mono_static = env['mono_static']
+    assemblies_output_dir = Dir(env['mono_assemblies_output_dir']).abspath
 
     mono_lib_names = ['mono-2.0-sgen', 'monosgen-2.0']
 
@@ -99,11 +97,14 @@ def configure(env):
         if not mono_dll_name:
             raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
 
-        copy_file_no_replace(mono_bin_path, 'bin', mono_dll_name + '.dll')
+        copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
+
+        copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
     else:
         sharedlib_ext = '.dylib' if sys.platform == 'darwin' else '.so'
 
         mono_root = ''
+        mono_lib_path = ''
 
         if bits == '32':
             if os.getenv('MONO32_PREFIX'):
@@ -148,7 +149,7 @@ def configure(env):
                 if not mono_so_name:
                     raise RuntimeError('Could not find mono shared library in: ' + mono_lib_path)
 
-                copy_file_no_replace(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
+                copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
         else:
             if mono_static:
                 raise RuntimeError('mono-static: Not supported with pkg-config. Specify a mono prefix manually')
@@ -171,7 +172,9 @@ def configure(env):
             if not mono_so_name:
                 raise RuntimeError('Could not find mono shared library in: ' + str(tmpenv['LIBPATH']))
 
-            copy_file_no_replace(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
+            copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
+
+        copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
 
         env.Append(LINKFLAGS='-rdynamic')
 
