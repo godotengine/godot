@@ -146,6 +146,10 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_local_normal(int p_contact_idx
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
+float BulletPhysicsDirectBodyState::get_contact_impulse(int p_contact_idx) const {
+	return body->collisions[p_contact_idx].appliedImpulse;
+}
+
 int BulletPhysicsDirectBodyState::get_contact_local_shape(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].local_shape;
 }
@@ -388,7 +392,7 @@ void RigidBodyBullet::on_collision_checker_start() {
 	collisionsCount = 0;
 }
 
-bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index) {
+bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
 
 	if (collisionsCount >= maxCollisionsDetection) {
 		return false;
@@ -399,6 +403,7 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 	cd.otherObject = p_otherObject;
 	cd.hitWorldLocation = p_hitWorldLocation;
 	cd.hitNormal = p_hitNormal;
+	cd.appliedImpulse = p_appliedImpulse;
 	cd.other_object_shape = p_other_shape_index;
 	cd.local_shape = p_local_shape_index;
 

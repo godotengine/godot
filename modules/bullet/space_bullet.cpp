@@ -754,19 +754,20 @@ void SpaceBullet::check_body_collision() {
 				Vector3 collisionWorldPosition;
 				Vector3 collisionLocalPosition;
 				Vector3 normalOnB;
+				float appliedImpulse = pt.m_appliedImpulse;
 				B_TO_G(pt.m_normalWorldOnB, normalOnB);
 
 				if (bodyA->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
 					/// pt.m_localPointB Doesn't report the exact point in local space
 					B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
-					bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, pt.m_index1, pt.m_index0);
+					bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, pt.m_index1, pt.m_index0);
 				}
 				if (bodyB->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
 					/// pt.m_localPointA Doesn't report the exact point in local space
 					B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
-					bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, pt.m_index0, pt.m_index1);
+					bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, pt.m_index0, pt.m_index1);
 				}
 
 #ifdef DEBUG_ENABLED
