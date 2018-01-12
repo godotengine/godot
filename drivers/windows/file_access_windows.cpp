@@ -31,6 +31,7 @@
 #ifdef WINDOWS_ENABLED
 
 #include "file_access_windows.h"
+#include "os/os.h"
 #include "shlwapi.h"
 #include <windows.h>
 
@@ -115,25 +116,35 @@ void FileAccessWindows::close() {
 		//_wunlink(save_path.c_str()); //unlink if exists
 		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
 
-		bool rename_error;
+		bool rename_error = true;
+		int attempts = 4;
+		while (rename_error && attempts) {
+		// This workaround of trying multiple times is added to deal with paranoid Windows
+		// antiviruses that love reading just written files even if they are not executable, thus
+		// locking the file and preventing renaming from happening.
 
 #ifdef UWP_ENABLED
-		// UWP has no PathFileExists, so we check attributes instead
-		DWORD fileAttr;
+			// UWP has no PathFileExists, so we check attributes instead
+			DWORD fileAttr;
 
-		fileAttr = GetFileAttributesW(save_path.c_str());
-		if (INVALID_FILE_ATTRIBUTES == fileAttr) {
+			fileAttr = GetFileAttributesW(save_path.c_str());
+			if (INVALID_FILE_ATTRIBUTES == fileAttr) {
 #else
-		if (!PathFileExistsW(save_path.c_str())) {
+			if (!PathFileExistsW(save_path.c_str())) {
 #endif
-			//creating new file
-			rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
-		} else {
-			//atomic replace for existing file
-			rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
-		}
-		if (rename_error && close_fail_notify) {
-			close_fail_notify(save_path);
+				//creating new file
+				rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
+			} else {
+				//atomic replace for existing file
+				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
+			}
+			if (rename_error && close_fail_notify) {
+				close_fail_notify(save_path);
+			}
+			if (rename_error) {
+				attempts--;
+				OS::get_singleton()->delay_usec(1000000); //wait 100msec and try again
+			}
 		}
 
 		save_path = "";

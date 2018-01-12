@@ -4749,7 +4749,7 @@ EditorNode::EditorNode() {
 	scene_distraction = false;
 	script_distraction = false;
 
-	FileAccess::set_backup_save(true);
+	FileAccess::set_backup_save(EDITOR_DEF("filesystem/on_save/safe_save_on_backup_then_rename", true));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
