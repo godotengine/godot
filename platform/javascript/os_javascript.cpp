@@ -81,12 +81,6 @@ void OS_JavaScript::initialize_core() {
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 }
 
-void OS_JavaScript::set_opengl_extensions(const char *p_gl_extensions) {
-
-	ERR_FAIL_COND(!p_gl_extensions);
-	gl_extensions = p_gl_extensions;
-}
-
 static EM_BOOL _browser_resize_callback(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_RESIZE, false);
@@ -975,7 +969,25 @@ int OS_JavaScript::get_power_percent_left() {
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "web" || p_feature == "s3tc"; // TODO check for these features really being available
+	if (p_feature == "HTML5" || p_feature == "web")
+		return true;
+
+#ifdef JAVASCRIPT_EVAL_ENABLED
+	if (p_feature == "JavaScript")
+		return true;
+#endif
+
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
+	// all extensions are already automatically enabled, this function allows
+	// checking WebGL extension support without inline JavaScript
+	if (p_feature == "s3tc" && emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_s3tc_srgb"))
+		return true;
+	if (p_feature == "etc" && emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc1"))
+		return true;
+	if (p_feature == "etc2" && emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc"))
+		return true;
+
+	return false;
 }
 
 void OS_JavaScript::set_idbfs_available(bool p_idbfs_available) {
@@ -992,7 +1004,6 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_us
 
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;
-	gl_extensions = NULL;
 	window_maximized = false;
 	soft_fs_enabled = false;
 	canvas_size_adjustment_requested = false;
