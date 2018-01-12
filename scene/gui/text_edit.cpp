@@ -217,7 +217,7 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 	}
 }
 
-const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) {
+const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) const {
 
 	static Map<int, ColorRegionInfo> cri;
 	ERR_FAIL_INDEX_V(p_line, text.size(), cri);
@@ -4661,13 +4661,36 @@ int TextEdit::get_indent_level(int p_line) const {
 			tab_count++;
 		} else if (text[p_line][i] == ' ') {
 			whitespace_count++;
-		} else if (text[p_line][i] == '#') {
-			break;
 		} else {
 			break;
 		}
 	}
 	return tab_count + whitespace_count / indent_size;
+}
+
+bool TextEdit::is_line_comment(int p_line) const {
+
+	// checks to see if this line is the start of a comment
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+
+	const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(p_line);
+
+	int line_length = text[p_line].size();
+	for (int i = 0; i < line_length - 1; i++) {
+		if (_is_symbol(text[p_line][i]) && cri_map.has(i)) {
+			const Text::ColorRegionInfo &cri = cri_map[i];
+			if (color_regions[cri.region].begin_key == "#" || color_regions[cri.region].begin_key == "//") {
+				return true;
+			} else {
+				return false;
+			}
+		} else if (_is_whitespace(text[p_line][i])) {
+			continue;
+		} else {
+			break;
+		}
+	}
+	return false;
 }
 
 bool TextEdit::can_fold(int p_line) const {
@@ -4683,6 +4706,8 @@ bool TextEdit::can_fold(int p_line) const {
 		return false;
 	if (is_line_hidden(p_line))
 		return false;
+	if (is_line_comment(p_line))
+		return false;
 
 	int start_indent = get_indent_level(p_line);
 
@@ -4690,10 +4715,13 @@ bool TextEdit::can_fold(int p_line) const {
 		if (text[i].size() == 0)
 			continue;
 		int next_indent = get_indent_level(i);
-		if (next_indent > start_indent)
+		if (is_line_comment(i)) {
+			continue;
+		} else if (next_indent > start_indent) {
 			return true;
-		else
+		} else {
 			return false;
+		}
 	}
 
 	return false;
@@ -4722,7 +4750,9 @@ void TextEdit::fold_line(int p_line) {
 	int last_line = start_indent;
 	for (int i = p_line + 1; i < text.size(); i++) {
 		if (text[i].strip_edges().size() != 0) {
-			if (get_indent_level(i) > start_indent) {
+			if (is_line_comment(i)) {
+				continue;
+			} else if (get_indent_level(i) > start_indent) {
 				last_line = i;
 			} else {
 				break;
