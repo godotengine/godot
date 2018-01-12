@@ -656,7 +656,7 @@ public:
 	int get_iterations_per_second() const;
 
 	void set_target_fps(int p_fps);
-	float get_target_fps() const;
+	int get_target_fps() const;
 
 	float get_frames_per_second() const;
 
