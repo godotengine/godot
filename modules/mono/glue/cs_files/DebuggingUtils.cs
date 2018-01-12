@@ -26,6 +26,12 @@ namespace Godot
 
             MethodBase methodBase = frame.GetMethod();
 
+            if (methodBase == null)
+            {
+                methodDecl = string.Empty;
+                return;
+            }
+
             StringBuilder sb = new StringBuilder();
 
             if (methodBase is MethodInfo methodInfo)

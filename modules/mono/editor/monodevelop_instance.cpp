@@ -35,6 +35,8 @@
 
 void MonoDevelopInstance::execute(const Vector<String> &p_files) {
 
+	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+
 	ERR_FAIL_NULL(execute_method);
 	ERR_FAIL_COND(gc_handle.is_null());
 

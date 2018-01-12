@@ -44,10 +44,13 @@ namespace GDMonoUtils {
 
 MonoCache mono_cache;
 
-#define CACHE_AND_CHECK(m_var, m_val)                                                        \
-	{                                                                                        \
-		m_var = m_val;                                                                       \
-		if (!m_var) ERR_PRINT("Mono Cache: Member " #m_var " is null. This is really bad!"); \
+#define CACHE_AND_CHECK(m_var, m_val)                             \
+	{                                                             \
+		m_var = m_val;                                            \
+		if (!m_var) {                                             \
+			ERR_EXPLAIN("Mono Cache: Member " #m_var " is null"); \
+			ERR_FAIL();                                           \
+		}                                                         \
 	}
 
 #define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.class_##m_class, m_val)
@@ -133,6 +136,12 @@ void MonoCache::clear_members() {
 	task_scheduler_handle = Ref<MonoGCHandle>();
 }
 
+void MonoCache::cleanup() {
+
+	corlib_cache_updated = false;
+	godot_api_cache_updated = false;
+}
+
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
 
 void update_corlib_cache() {
@@ -158,6 +167,8 @@ void update_corlib_cache() {
 	CACHE_METHOD_AND_CHECK(System_Diagnostics_StackTrace, ctor_bool, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method_with_desc("System.Diagnostics.StackTrace:.ctor(bool)", true));
 	CACHE_METHOD_AND_CHECK(System_Diagnostics_StackTrace, ctor_Exception_bool, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method_with_desc("System.Diagnostics.StackTrace:.ctor(System.Exception,bool)", true));
 #endif
+
+	mono_cache.corlib_cache_updated = true;
 }
 
 void update_godot_api_cache() {
@@ -231,6 +242,8 @@ void update_godot_api_cache() {
 	MonoObject *task_scheduler = mono_object_new(SCRIPTS_DOMAIN, GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
 	mono_runtime_object_init(task_scheduler);
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
+
+	mono_cache.corlib_cache_updated = true;
 }
 
 void clear_cache() {
@@ -402,6 +415,9 @@ void print_unhandled_exception(MonoObject *p_exc) {
 void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 	mono_print_unhandled_exception(p_exc);
 #ifdef DEBUG_ENABLED
+	if (!ScriptDebugger::get_singleton())
+		return;
+
 	GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
 	MonoObject *stack_trace = mono_object_new(mono_domain_get(), st_klass->get_mono_ptr());
 
