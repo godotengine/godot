@@ -67,11 +67,11 @@ void ARVRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESET_BUT_KEEP_TILT);
 	BIND_ENUM_CONSTANT(DONT_RESET_ROTATION);
 
-	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "interface_name")));
+	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING, "interface_name")));
 
-	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
 };
 
 real_t ARVRServer::get_world_scale() const {
