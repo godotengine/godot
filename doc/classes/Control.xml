@@ -178,13 +178,6 @@
 				Returns the mouse cursor shape the control displays on mouse hover, one of the [code]CURSOR_*[/code] constants.
 			</description>
 		</method>
-		<method name="get_default_cursor_shape" qualifiers="const">
-			<return type="int" enum="Control.CursorShape">
-			</return>
-			<description>
-				Returns the default cursor shape for this control. See enum [code]CURSOR_*[/code] for the list of shapes.
-			</description>
-		</method>
 		<method name="get_drag_data" qualifiers="virtual">
 			<return type="Object">
 			</return>
@@ -198,13 +191,6 @@
 			</return>
 			<description>
 				Returns MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
-			</description>
-		</method>
-		<method name="get_focus_mode" qualifiers="const">
-			<return type="int" enum="Control.FocusMode">
-			</return>
-			<description>
-				Returns the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL) (see [method set_focus_mode]).
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
@@ -222,13 +208,6 @@
 			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="get_global_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the Control position, relative to the top-left corner of the parent Control and independent of the anchor mode.
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
@@ -490,15 +469,6 @@
 				Sets MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
 			</description>
 		</method>
-		<method name="set_default_cursor_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="int" enum="Control.CursorShape">
-			</argument>
-			<description>
-				Sets the default cursor shape for this control. See [code]CURSOR_*[/code] for the list of available cursor shapes. Useful for Godot plugins and applications or games that use the system's mouse cursors.
-			</description>
-		</method>
 		<method name="set_drag_forwarding">
 			<return type="void">
 			</return>
@@ -522,24 +492,6 @@
 			</argument>
 			<description>
 				Sets MARGIN_RIGHT and MARGIN_BOTTOM at the same time. This is a helper (see [method set_margin]).
-			</description>
-		</method>
-		<method name="set_focus_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Control.FocusMode">
-			</argument>
-			<description>
-				Set the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL). Only one Control can be focused at the same time, and it will receive keyboard signals.
-			</description>
-		</method>
-		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Move the Control to a new position, relative to the top-left corner of the [i]window[/i] Control, and without changing current anchor mode. (see [method set_margin]).
 			</description>
 		</method>
 		<method name="set_margins_preset">
@@ -594,6 +546,9 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor">
 			Anchors the top edge of the node to the origin, the center or the end of its parent container. It changes how the top margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
+			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
+		</member>
 		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 			Tells Godot which node it should give keyboard focus to if the user presses Tab, the down arrow on the keyboard, or down on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 			If the user presses Tab, Godot will give focus to the closest node to the right first, then to the bottom. If the user presses Shift+Tab, Godot will look to the left of the node, then above it.
@@ -631,10 +586,16 @@
 		<member name="margin_top" type="float" setter="set_margin" getter="get_margin">
 			Distance between the node's top edge and its parent container, based on [member anchor_top].
 		</member>
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape">
+			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Use one of the [code]MOUSE_FILTER_*[/code] constants. See the constants to learn what each does.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
+		</member>
+		<member name="rect_global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
+			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
 		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.

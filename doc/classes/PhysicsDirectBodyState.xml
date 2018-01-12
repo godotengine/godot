@@ -37,18 +37,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_angular_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_center_of_mass" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_contact_collider" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -127,62 +115,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_inverse_inertia" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_inverse_mass" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_linear_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_principal_inertia_axes" qualifiers="const">
-			<return type="Basis">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_space_state">
 			<return type="PhysicsDirectSpaceState">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_step" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_total_angular_damp" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_total_gravity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_total_linear_damp" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
 			</return>
 			<description>
 			</description>
@@ -193,45 +127,43 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_sleeping" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_angular_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="velocity" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_linear_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="velocity" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_sleep_state">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="transform" type="Transform">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
+			The angular velocity of the body.
+		</member>
+		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
+		</member>
+		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
+			The inverse of the inertia of the body.
+		</member>
+		<member name="inverse_mass" type="float" setter="" getter="get_inverse_mass">
+			The inverse of the mass of the body.
+		</member>
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
+			The linear velocity of the body.
+		</member>
+		<member name="principal_inertia_axes" type="Basis" setter="" getter="get_principal_inertia_axes">
+		</member>
+		<member name="sleeping" type="bool" setter="set_sleep_state" getter="is_sleeping">
+			[code]true[/code] if this body is currently sleeping (not active).
+		</member>
+		<member name="step" type="float" setter="" getter="get_step">
+			The timestep (delta) used for the simulation.
+		</member>
+		<member name="total_angular_damp" type="float" setter="" getter="get_total_angular_damp">
+			The rate at which the body stops rotating, if there are not any other forces moving it.
+		</member>
+		<member name="total_gravity" type="Vector3" setter="" getter="get_total_gravity">
+			The total gravity vector being currently applied to this body.
+		</member>
+		<member name="total_linear_damp" type="float" setter="" getter="get_total_linear_damp">
+			The rate at which the body stops moving, if there are not any other forces moving it.
+		</member>
+		<member name="transform" type="Transform" setter="set_transform" getter="get_transform">
+			The transformation matrix of the body.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

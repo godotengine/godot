@@ -109,13 +109,6 @@
 				Returns the next 64 bits from the file as a floating point number.
 			</description>
 		</method>
-		<method name="get_endian_swap">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if endian swap is enabled for this file.
-			</description>
-		</method>
 		<method name="get_error" qualifiers="const">
 			<return type="int" enum="Error">
 			</return>
@@ -274,16 +267,6 @@
 				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
-		<method name="set_endian_swap">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
-				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
-			</description>
-		</method>
 		<method name="store_16">
 			<return type="void">
 			</return>
@@ -393,6 +376,12 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap">
+			If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
+			Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
+		</member>
+	</members>
 	<constants>
 		<constant name="READ" value="1" enum="ModeFlags">
 			Opens the file for read operations.

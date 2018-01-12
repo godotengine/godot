@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_data" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="PoolByteArray">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">

@@ -99,32 +99,11 @@
 				Returns the scancode of the given string (e.g. "Escape")
 			</description>
 		</method>
-		<method name="get_borderless_window" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the current window is borderless.
-			</description>
-		</method>
-		<method name="get_clipboard" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Get clipboard from the host OS.
-			</description>
-		</method>
 		<method name="get_cmdline_args">
 			<return type="PoolStringArray">
 			</return>
 			<description>
 				Returns the command line arguments passed to the engine.
-			</description>
-		</method>
-		<method name="get_current_screen" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the current screen index (0 padded).
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -176,12 +155,6 @@
 			</return>
 			<description>
 				Returns the path to the current engine executable.
-			</description>
-		</method>
-		<method name="get_exit_code" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -279,13 +252,6 @@
 					xhdpi   - 320 dpi
 					xxhdpi  - 480 dpi
 					xxxhdpi - 640 dpi
-			</description>
-		</method>
-		<method name="get_screen_orientation" qualifiers="const">
-			<return type="int" enum="OS.ScreenOrientation">
-			</return>
-			<description>
-				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="get_screen_position" qualifiers="const">
@@ -403,20 +369,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_window_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
-			</description>
-		</method>
-		<method name="get_window_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the size of the window (without counting window manager decorations).
-			</description>
-		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -464,20 +416,6 @@
 				Returns [code]false[/code] if the build is a release build.
 			</description>
 		</method>
-		<method name="is_in_low_processor_usage_mode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if low cpu usage mode is enabled.
-			</description>
-		</method>
-		<method name="is_keep_screen_on" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the screen is being kept on.
-			</description>
-		</method>
 		<method name="is_ok_left_and_cancel_right" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -506,41 +444,6 @@
 			</return>
 			<description>
 				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
-			</description>
-		</method>
-		<method name="is_vsync_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if synchronizing the framerate to the monitor's refresh rate is enabled.
-			</description>
-		</method>
-		<method name="is_window_fullscreen" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the window is in fullscreen mode.
-			</description>
-		</method>
-		<method name="is_window_maximized" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the window is maximized.
-			</description>
-		</method>
-		<method name="is_window_minimized" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the window is minimized.
-			</description>
-		</method>
-		<method name="is_window_resizable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the window is resizable.
 			</description>
 		</method>
 		<method name="kill">
@@ -636,42 +539,6 @@
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
 			</description>
 		</method>
-		<method name="set_borderless_window">
-			<return type="void">
-			</return>
-			<argument index="0" name="borderless" type="bool">
-			</argument>
-			<description>
-				Removes the window frame.
-			</description>
-		</method>
-		<method name="set_clipboard">
-			<return type="void">
-			</return>
-			<argument index="0" name="clipboard" type="String">
-			</argument>
-			<description>
-				Sets clipboard to the OS.
-			</description>
-		</method>
-		<method name="set_current_screen">
-			<return type="void">
-			</return>
-			<argument index="0" name="screen" type="int">
-			</argument>
-			<description>
-				Sets the current screen by index.
-			</description>
-		</method>
-		<method name="set_exit_code">
-			<return type="void">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
-			<description>
-				Sets the exit code that will be returned by the game.
-			</description>
-		</method>
 		<method name="set_icon">
 			<return type="void">
 			</return>
@@ -687,33 +554,6 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_keep_screen_on">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets keep screen on if true, or goes to sleep by device setting if false. (for Android/iOS)
-			</description>
-		</method>
-		<method name="set_low_processor_usage_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to [code]true[/code] to enable the low cpu usage mode. In this mode, the screen only redraws when there are changes, and a considerable sleep time is inserted between frames. Use this in tool mode to reduce CPU usage.
-			</description>
-		</method>
-		<method name="set_screen_orientation">
-			<return type="void">
-			</return>
-			<argument index="0" name="orientation" type="int" enum="OS.ScreenOrientation">
-			</argument>
-			<description>
-				Sets the current screen orientation, the argument value must be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -732,69 +572,6 @@
 			</argument>
 			<description>
 				Enables backup saves if [code]enabled[/code] is [code]true[/code].
-			</description>
-		</method>
-		<method name="set_use_vsync">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the framerate will synchronize to the monitor's refresh rate.
-			</description>
-		</method>
-		<method name="set_window_fullscreen">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets window fullscreen mode to the [i]enabled[/i] argument, [i]enabled[/i] is a toggle for the fullscreen mode, calling the function with [i]enabled[/i] true when the screen is not on fullscreen mode will cause the screen to go to fullscreen mode, calling the function with [i]enabled[/i] false when the screen is in fullscreen mode will cause the window to exit the fullscreen mode.
-			</description>
-		</method>
-		<method name="set_window_maximized">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set [code]true[/code] to maximize the window.
-			</description>
-		</method>
-		<method name="set_window_minimized">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set [code]true[/code] to minimize the window.
-			</description>
-		</method>
-		<method name="set_window_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Sets the position of the window to the specified position (this function could be restricted by the window manager, meaning that there could be some unreachable areas of the screen).
-			</description>
-		</method>
-		<method name="set_window_resizable">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
-			</description>
-		</method>
-		<method name="set_window_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-				Sets the window size to the specified size.
 			</description>
 		</method>
 		<method name="set_window_title">
@@ -827,6 +604,46 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard">
+			The clipboard from the host OS. Might be unavailable on some platforms.
+		</member>
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
+			The current screen index (starting from 0).
+		</member>
+		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code">
+		</member>
+		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
+		</member>
+		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
+		</member>
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
+			The current screen orientation.
+		</member>
+		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
+		</member>
+		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
+			If [code]true[/code], removes the window frame.
+		</member>
+		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
+			If [code]true[/code], the window is fullscreen.
+		</member>
+		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
+			If [code]true[/code], the window is maximized.
+		</member>
+		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
+			If [code]true[/code], the window is minimized.
+		</member>
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
+			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
+		</member>
+		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable">
+			If [code]true[/code], the window is resizable by the user.
+		</member>
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size">
+			The size of the window (without counting window manager decorations).
+		</member>
+	</members>
 	<constants>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 		</constant>

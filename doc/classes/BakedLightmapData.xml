@@ -27,30 +27,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_bounds" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cell_space_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cell_subdiv" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_octree" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_user_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -73,41 +49,17 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_bounds">
-			<return type="void">
-			</return>
-			<argument index="0" name="bounds" type="AABB">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cell_space_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cell_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="cell_subdiv" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_octree">
-			<return type="void">
-			</return>
-			<argument index="0" name="octree" type="PoolByteArray">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
+		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds">
+		</member>
+		<member name="cell_space_transform" type="Transform" setter="set_cell_space_transform" getter="get_cell_space_transform">
+		</member>
+		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv">
+		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		</member>
+		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree">
 		</member>
 	</members>
 	<constants>

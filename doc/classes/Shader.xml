@@ -11,12 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_code" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_default_texture_param" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -39,14 +33,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_code">
-			<return type="void">
-			</return>
-			<argument index="0" name="code" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_default_texture_param">
 			<return type="void">
 			</return>
@@ -58,6 +44,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code">
+		</member>
+	</members>
 	<constants>
 		<constant name="MODE_SPATIAL" value="0" enum="Mode">
 		</constant>

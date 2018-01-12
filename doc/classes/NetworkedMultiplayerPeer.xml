@@ -32,27 +32,11 @@
 				Returns the ID of this [code]NetworkedMultiplayerPeer[/code].
 			</description>
 		</method>
-		<method name="is_refusing_new_connections" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if this [code]NetworkedMultiplayerPeer[/code] refuses new connections. Default value: [code]false[/code].
-			</description>
-		</method>
 		<method name="poll">
 			<return type="void">
 			</return>
 			<description>
 				Waits up to 1 second to receive a new network event.
-			</description>
-		</method>
-		<method name="set_refuse_new_connections">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] this [code]NetworkedMultiplayerPeer[/code] refuses new connections. Default value: [code]false[/code].
 			</description>
 		</method>
 		<method name="set_target_peer">
@@ -64,16 +48,15 @@
 				The peer to which packets will be sent. Default value: [code]0[/code].
 			</description>
 		</method>
-		<method name="set_transfer_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode">
-			</argument>
-			<description>
-				The manner in which to send packets to the [code]target_peer[/code]. See [enum TransferMode].
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections">
+			If [code]true[/code] this [code]NetworkedMultiplayerPeer[/code] refuses new connections. Default value: [code]false[/code].
+		</member>
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" enum="NetworkedMultiplayerPeer.TransferMode">
+			The manner in which to send packets to the [code]target_peer[/code]. See [enum TransferMode].
+		</member>
+	</members>
 	<signals>
 		<signal name="connection_failed">
 			<description>

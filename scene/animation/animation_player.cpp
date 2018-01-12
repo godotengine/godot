@@ -49,24 +49,15 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;
 
-	if (p_name == SceneStringNames::get_singleton()->playback_speed || p_name == SceneStringNames::get_singleton()->speed) { //bw compatibility
-		set_speed_scale(p_value);
+	if (name.begins_with("playback/play")) { // bw compatibility
 
-	} else if (p_name == SceneStringNames::get_singleton()->playback_active) {
-		set_active(p_value);
-	} else if (name.begins_with("playback/play")) {
+		set_current_animation(p_value);
 
-		String which = p_value;
-
-		if (which == "[stop]")
-			stop();
-		else
-			play(which);
 	} else if (name.begins_with("anims/")) {
 
 		String which = name.get_slicec('/', 1);
-
 		add_animation(which, p_value);
+
 	} else if (name.begins_with("next/")) {
 
 		String which = name.get_slicec('/', 1);
@@ -100,24 +91,15 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	String name = p_name;
 
-	if (name == "playback/speed") { //bw compatibility
+	if (name == "playback/play") { // bw compatibility
 
-		r_ret = speed_scale;
-	} else if (name == "playback/active") {
-
-		r_ret = is_active();
-	} else if (name == "playback/play") {
-
-		if (is_active() && is_playing())
-			r_ret = playback.assigned;
-		else
-			r_ret = "[stop]";
+		r_ret = get_current_animation();
 
 	} else if (name.begins_with("anims/")) {
 
 		String which = name.get_slicec('/', 1);
-
 		r_ret = get_animation(which).get_ref_ptr();
+
 	} else if (name.begins_with("next/")) {
 
 		String which = name.get_slicec('/', 1);
@@ -150,27 +132,14 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
-void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
+void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 
-	List<String> names;
+	if (property.name == "current_animation") {
+		List<String> names;
 
-	List<PropertyInfo> anim_names;
-
-	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-
-		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-		if (E->get().next != StringName())
-			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		names.push_back(E->key());
-	}
-
-	anim_names.sort();
-
-	for (List<PropertyInfo>::Element *E = anim_names.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
-	}
-
-	{
+		for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
+			names.push_back(E->key());
+		}
 		names.sort();
 		names.push_front("[stop]");
 		String hint;
@@ -181,12 +150,28 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 			hint += E->get();
 		}
 
-		p_list->push_back(PropertyInfo(Variant::STRING, "playback/play", PROPERTY_HINT_ENUM, hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "playback/active", PROPERTY_HINT_NONE, ""));
-		p_list->push_back(PropertyInfo(Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"));
+		property.hint_string = hint;
+	}
+}
+
+void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
+
+	List<PropertyInfo> anim_names;
+
+	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
+
+		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+		if (E->get().next != StringName())
+			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	anim_names.sort();
+
+	for (List<PropertyInfo>::Element *E = anim_names.front(); E; E = E->next()) {
+		p_list->push_back(E->get());
+	}
+
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 	p_list->push_back(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 }
 
@@ -990,23 +975,29 @@ bool AnimationPlayer::is_playing() const {
 	};
 
 	return true;
-    */
+	*/
 }
 void AnimationPlayer::set_current_animation(const String &p_anim) {
 
-	if (is_playing()) {
+	if (p_anim == "[stop]" || p_anim == "") {
+		stop();
+	} else if (!is_playing() || playback.assigned != p_anim) {
 		play(p_anim);
 	} else {
-		ERR_FAIL_COND(!animation_set.has(p_anim));
-		playback.current.pos = 0;
-		playback.current.from = &animation_set[p_anim];
-		playback.assigned = p_anim;
+		// Same animation, do not replay from start
 	}
+
+	/*
+	ERR_FAIL_COND(!animation_set.has(p_anim));
+	playback.current.pos = 0;
+	playback.current.from = &animation_set[p_anim];
+	playback.assigned = p_anim;
+	*/
 }
 
 String AnimationPlayer::get_current_animation() const {
 
-	return (playback.assigned);
+	return (is_playing() ? playback.assigned : "");
 }
 
 void AnimationPlayer::stop(bool p_reset) {
@@ -1033,8 +1024,10 @@ float AnimationPlayer::get_speed_scale() const {
 void AnimationPlayer::seek(float p_time, bool p_update) {
 
 	if (!playback.current.from) {
-		if (playback.assigned)
-			set_current_animation(playback.assigned);
+		if (playback.assigned) {
+			ERR_FAIL_COND(!animation_set.has(playback.assigned));
+			playback.current.from = &animation_set[playback.assigned];
+		}
 		ERR_FAIL_COND(!playback.current.from);
 	}
 
@@ -1047,8 +1040,10 @@ void AnimationPlayer::seek(float p_time, bool p_update) {
 void AnimationPlayer::seek_delta(float p_time, float p_delta) {
 
 	if (!playback.current.from) {
-		if (playback.assigned)
-			set_current_animation(playback.assigned);
+		if (playback.assigned) {
+			ERR_FAIL_COND(!animation_set.has(playback.assigned));
+			playback.current.from = &animation_set[playback.assigned];
+		}
 		ERR_FAIL_COND(!playback.current.from);
 	}
 
@@ -1334,10 +1329,17 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("seek", "seconds", "update"), &AnimationPlayer::seek, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");
+
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", 0), "set_active", "is_active");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));

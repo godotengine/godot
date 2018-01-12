@@ -67,34 +67,6 @@
 				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is retuned if the cell is empty.
 			</description>
 		</method>
-		<method name="get_cell_size" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				The dimensions of the grid's cells.
-			</description>
-		</method>
-		<method name="get_center_x" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether or not grid items are centered on the X axis.
-			</description>
-		</method>
-		<method name="get_center_y" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether or not grid items are centered on the Y axis.
-			</description>
-		</method>
-		<method name="get_center_z" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether or not grid items are centered on the Z axis.
-			</description>
-		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -116,20 +88,6 @@
 			</return>
 			<description>
 				Array of [Transform] and [Mesh] references corresponding to the non empty cells in the grid. The transforms are specified in world space.
-			</description>
-		</method>
-		<method name="get_octant_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				The size of each octant measured in number of cells. This applies to all three axis.
-			</description>
-		</method>
-		<method name="get_theme" qualifiers="const">
-			<return type="MeshLibrary">
-			</return>
-			<description>
-				The assigned [MeshLibrary].
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
@@ -188,42 +146,6 @@
 				Optionally, the item's orientation can be passed.
 			</description>
 		</method>
-		<method name="set_cell_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector3">
-			</argument>
-			<description>
-				Sets the height, width and depth of the grid's cells.
-			</description>
-		</method>
-		<method name="set_center_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set grid items to be centered on the X axis. By default it is enabled.
-			</description>
-		</method>
-		<method name="set_center_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set grid items to be centered on the Y axis. By default it is enabled.
-			</description>
-		</method>
-		<method name="set_center_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set grid items to be centered on the Z axis. By default it is enabled.
-			</description>
-		</method>
 		<method name="set_clip">
 			<return type="void">
 			</return>
@@ -258,24 +180,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_octant_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
-			<description>
-				Sets the size for each octant measured in number of cells. This applies to all three axis.
-			</description>
-		</method>
-		<method name="set_theme">
-			<return type="void">
-			</return>
-			<argument index="0" name="theme" type="MeshLibrary">
-			</argument>
-			<description>
-				Sets the collection of meshes for the map.
-			</description>
-		</method>
 		<method name="world_to_map" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -286,9 +190,29 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x">
+			If [code]true[/code] grid items are centered on the X axis.
+		</member>
+		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y">
+			If [code]true[/code] grid items are centered on the Y axis.
+		</member>
+		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z">
+			If [code]true[/code] grid items are centered on the Z axis.
+		</member>
+		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size">
+			The size of each octant measured in number of cells. This applies to all three axis.
+		</member>
+		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale">
+		</member>
+		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size">
+			The dimensions of the grid's cells.
+		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		</member>
+		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
+			The assigned [MeshLibrary].
 		</member>
 	</members>
 	<constants>

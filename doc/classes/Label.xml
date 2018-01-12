@@ -33,27 +33,11 @@
 				Returns the total length of the text.
 			</description>
 		</method>
-		<method name="get_visible_characters" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the restricted number of characters to display. Returns -1 if unrestricted.
-			</description>
-		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the number of lines shown. Useful if the [code]Label[/code] 's height cannot currently display all lines.
-			</description>
-		</method>
-		<method name="set_visible_characters">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Restricts the number of characters to display. Set to -1 to disable.
 			</description>
 		</method>
 	</methods>
@@ -84,6 +68,9 @@
 		</member>
 		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign">
 			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [code]VALIGN_*[/code] constants.
+		</member>
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
+			Restricts the number of characters to display. Set to -1 to disable.
 		</member>
 	</members>
 	<constants>

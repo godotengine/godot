@@ -125,6 +125,8 @@ void SpatialVelocityTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_position", "position"), &SpatialVelocityTracker::update_position);
 	ClassDB::bind_method(D_METHOD("get_tracked_linear_velocity"), &SpatialVelocityTracker::get_tracked_linear_velocity);
 	ClassDB::bind_method(D_METHOD("reset", "position"), &SpatialVelocityTracker::reset);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "track_physics_step"), "set_track_physics_step", "is_tracking_physics_step");
 }
 
 SpatialVelocityTracker::SpatialVelocityTracker() {

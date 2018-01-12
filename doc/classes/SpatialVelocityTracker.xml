@@ -15,24 +15,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_tracking_physics_step" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="reset">
 			<return type="void">
 			</return>
 			<argument index="0" name="position" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_track_physics_step">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -46,6 +32,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

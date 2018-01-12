@@ -29,9 +29,6 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			[Geometry] singleton
 		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			[GodotSharp] singleton
-		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
 		</member>
@@ -1285,7 +1282,7 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NOEDITOR" value="1048581" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NOEDITOR" value="5" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
 			Flag for normal method

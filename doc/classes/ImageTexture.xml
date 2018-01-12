@@ -46,20 +46,6 @@
 				Return the format of the [code]ImageTexture[/code], one of [Image].FORMAT_*.
 			</description>
 		</method>
-		<method name="get_lossy_storage_quality" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the storage quality for [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
-			</description>
-		</method>
-		<method name="get_storage" qualifiers="const">
-			<return type="int" enum="ImageTexture.Storage">
-			</return>
-			<description>
-				Return the storage type. One of [code]ImageTexture[/code].STORAGE_*.
-			</description>
-		</method>
 		<method name="load">
 			<return type="void">
 			</return>
@@ -78,15 +64,6 @@
 				Set the [Image] of this [code]ImageTexture[/code].
 			</description>
 		</method>
-		<method name="set_lossy_storage_quality">
-			<return type="void">
-			</return>
-			<argument index="0" name="quality" type="float">
-			</argument>
-			<description>
-				Set the storage quality in case of [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
-			</description>
-		</method>
 		<method name="set_size_override">
 			<return type="void">
 			</return>
@@ -96,16 +73,15 @@
 				Resizes the [code]ImageTexture[/code] to the specified dimensions.
 			</description>
 		</method>
-		<method name="set_storage">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="ImageTexture.Storage">
-			</argument>
-			<description>
-				Set the storage type. One of [code]ImageTexture[/code].STORAGE_*.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
+			The storage quality for [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
+		</member>
+		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage">
+			The storage type (raw, lossy, or compressed).
+		</member>
+	</members>
 	<constants>
 		<constant name="STORAGE_RAW" value="0" enum="Storage">
 			[Image] data is stored raw and unaltered.

@@ -95,19 +95,6 @@
 				Return the type of the output connection 'idx'.
 			</description>
 		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the offset of the GraphNode.
-			</description>
-		</method>
-		<method name="get_overlay" qualifiers="const">
-			<return type="int" enum="GraphNode.Overlay">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -144,18 +131,6 @@
 				Return the (integer) type of right (output) 'idx' slot.
 			</description>
 		</method>
-		<method name="is_comment" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_selected">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -172,39 +147,6 @@
 			</argument>
 			<description>
 				Return true if right (output) slot 'idx' is enabled. False otherwise.
-			</description>
-		</method>
-		<method name="set_comment">
-			<return type="void">
-			</return>
-			<argument index="0" name="comment" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Set the offset of the GraphNode.
-			</description>
-		</method>
-		<method name="set_overlay">
-			<return type="void">
-			</return>
-			<argument index="0" name="overlay" type="int" enum="GraphNode.Overlay">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_selected">
-			<return type="void">
-			</return>
-			<argument index="0" name="selected" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_slot">
@@ -233,7 +175,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="comment" type="bool" setter="set_comment" getter="is_comment">
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit]. Note that you cannot use position directly, as [GraphEdit] is a [Container].
+		</member>
+		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay">
+		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable">
+		</member>
+		<member name="selected" type="bool" setter="set_selected" getter="is_selected">
 		</member>
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible">
 		</member>

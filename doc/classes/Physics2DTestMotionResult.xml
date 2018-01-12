@@ -9,61 +9,27 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_collider" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_rid" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_velocity" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_normal" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_point" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_motion" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_motion_remainder" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="collider" type="Object" setter="" getter="get_collider">
+		</member>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id">
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
+		</member>
+		<member name="collider_shape" type="int" setter="" getter="get_collider_shape">
+		</member>
+		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity">
+		</member>
+		<member name="collision_normal" type="Vector2" setter="" getter="get_collision_normal">
+		</member>
+		<member name="collision_point" type="Vector2" setter="" getter="get_collision_point">
+		</member>
+		<member name="motion" type="Vector2" setter="" getter="get_motion">
+		</member>
+		<member name="motion_remainder" type="Vector2" setter="" getter="get_motion_remainder">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

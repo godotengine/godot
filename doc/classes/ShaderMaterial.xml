@@ -9,24 +9,10 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_shader" qualifiers="const">
-			<return type="Shader">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_shader_param" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="param" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shader">
-			<return type="void">
-			</return>
-			<argument index="0" name="shader" type="Shader">
 			</argument>
 			<description>
 			</description>
@@ -42,6 +28,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

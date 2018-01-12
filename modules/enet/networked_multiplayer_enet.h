@@ -110,6 +110,7 @@ protected:
 
 public:
 	virtual void set_transfer_mode(TransferMode p_mode);
+	virtual TransferMode get_transfer_mode() const;
 	virtual void set_target_peer(int p_peer);
 
 	virtual int get_packet_peer() const;

@@ -53,20 +53,6 @@
 				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
 			</description>
 		</method>
-		<method name="get_tab_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the number of spaces associated with a single tab length. Does not affect "\t" in text tags, only indent tags.
-			</description>
-		</method>
-		<method name="get_text">
-			<return type="String">
-			</return>
-			<description>
-				Returns the raw content of [member bbcode_text].
-			</description>
-		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -86,34 +72,6 @@
 			</return>
 			<description>
 				Returns the number of visible lines.
-			</description>
-		</method>
-		<method name="is_meta_underlined" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the label underlines meta tags such as [url]{text}[/url].
-			</description>
-		</method>
-		<method name="is_scroll_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
-			</description>
-		</method>
-		<method name="is_scroll_following" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the window scrolls down to display new content automatically.
-			</description>
-		</method>
-		<method name="is_selection_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the label allows text selection.
 			</description>
 		</method>
 		<method name="newline">
@@ -234,51 +192,6 @@
 				Scrolls the window's top line to match [code]line[/code].
 			</description>
 		</method>
-		<method name="set_meta_underline">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] will underline meta tags such as the [url] bbcode. Default value: [code]true[/code].
-			</description>
-		</method>
-		<method name="set_scroll_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
-			<description>
-				If [code]false[/code] the vertical scrollbar is hidden. Default value: [code]true[/code].
-			</description>
-		</method>
-		<method name="set_scroll_follow">
-			<return type="void">
-			</return>
-			<argument index="0" name="follow" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the window scrolls to reveal new content. Default value: [code]false[/code].
-			</description>
-		</method>
-		<method name="set_selection_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] text can be selected.
-			</description>
-		</method>
-		<method name="set_tab_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="spaces" type="int">
-			</argument>
-			<description>
-				Sets the current tab length in spaces. Use with [method push_indent] to redefine indent length.
-			</description>
-		</method>
 		<method name="set_table_column_expand">
 			<return type="void">
 			</return>
@@ -294,15 +207,6 @@
 				Columns with a [code]false[/code] expand will not contribute to the total ratio.
 			</description>
 		</method>
-		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Clears the tag stack and adds a raw text tag to the top of it. Does not parse bbcodes. Does not modify [member bbcode_text].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
@@ -311,11 +215,30 @@
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
+		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined">
+			If [code]true[/code], the label underlines meta tags such as [url]{text}[/url]. Default value: [code]true[/code].
+		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 			If [code]true[/code] the label uses the custom font color. Default value: [code]false[/code].
 		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
 			The text's visibility, as a [float] between 0.0 and 1.0.
+		</member>
+		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active">
+			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line]. Default value: [code]true[/code].
+		</member>
+		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following">
+			If [code]true[/code], the window scrolls down to display new content automatically. Default value: [code]false[/code].
+		</member>
+		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled">
+			If [code]true[/code], the label allows text selection.
+		</member>
+		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size">
+			The number of spaces associated with a single tab length. Does not affect "\t" in text tags, only indent tags.
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+			The raw text of the label.
+			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse bbcodes. Does not modify [member bbcode_text].
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
 			The restricted number of characters to display in the label.

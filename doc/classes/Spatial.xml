@@ -13,13 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_gizmo" qualifiers="const">
-			<return type="SpatialGizmo">
-			</return>
-			<description>
-				Returns the SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
-			</description>
-		</method>
 		<method name="get_parent_spatial" qualifiers="const">
 			<return type="Spatial">
 			</return>
@@ -195,15 +188,6 @@
 				Makes the node ignore its parents transformations. Node transformations are only in global space.
 			</description>
 		</method>
-		<method name="set_gizmo">
-			<return type="void">
-			</return>
-			<argument index="0" name="gizmo" type="SpatialGizmo">
-			</argument>
-			<description>
-				Set [SpatialGizmo] for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
-			</description>
-		</method>
 		<method name="set_identity">
 			<return type="void">
 			</return>
@@ -289,6 +273,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="gizmo" type="SpatialGizmo" setter="set_gizmo" getter="get_gizmo">
+			The SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
+		</member>
 		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
 			World space (global) [Transform] of this node.
 		</member>

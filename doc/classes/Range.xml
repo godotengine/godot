@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_as_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return value mapped to 0 to 1 range.
-			</description>
-		</method>
-		<method name="set_as_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<description>
-				Set value mapped to 0 to 1 (unit) range, it will then be converted to the actual value within min and max.
-			</description>
-		</method>
 		<method name="share">
 			<return type="void">
 			</return>
@@ -56,6 +40,9 @@
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page">
 			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
+		</member>
+		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
+			The value mapped between 0 and 1.
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
 			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.

@@ -39,13 +39,6 @@
 				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
 			</description>
 		</method>
-		<method name="get_connection" qualifiers="const">
-			<return type="StreamPeer">
-			</return>
-			<description>
-				Returns the current connection.
-			</description>
-		</method>
 		<method name="get_response_body_length" qualifiers="const">
 			<return type="int">
 			</return>
@@ -88,13 +81,6 @@
 			</return>
 			<description>
 				If [code]true[/code] this [code]HTTPClient[/code] has a response available.
-			</description>
-		</method>
-		<method name="is_blocking_mode_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				If [code]true[/code] blocking mode is enabled.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
@@ -172,24 +158,6 @@
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>
-		<method name="set_blocking_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				If set to true, execution will block until all data is read from the response.
-			</description>
-		</method>
-		<method name="set_connection">
-			<return type="void">
-			</return>
-			<argument index="0" name="connection" type="StreamPeer">
-			</argument>
-			<description>
-				Sets connection to use for this client.
-			</description>
-		</method>
 		<method name="set_read_chunk_size">
 			<return type="void">
 			</return>
@@ -200,6 +168,14 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled">
+			If [code]true[/code], execution will block until all data is read from the response.
+		</member>
+		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
+			The connection to use for this client.
+		</member>
+	</members>
 	<constants>
 		<constant name="METHOD_GET" value="0" enum="Method">
 			HTTP GET method. The GET method requests a representation of the specified resource. Requests using GET should only retrieve data.

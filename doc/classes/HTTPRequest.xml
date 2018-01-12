@@ -26,13 +26,6 @@
 				Returns the response body length.
 			</description>
 		</method>
-		<method name="get_download_file" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the file this request will download into.
-			</description>
-		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
 			<return type="int">
 			</return>
@@ -63,19 +56,13 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_download_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-				Sets the file to download into. Outputs the response body into the file if set.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
 			Maximum allowed size for response bodies.
+		</member>
+		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file">
+			The file to download into. Will output any received file into it.
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
 			Maximum number of allowed redirects.

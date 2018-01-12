@@ -12,20 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_predelay_feedback" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_predelay_feedback">
-			<return type="void">
-			</return>
-			<argument index="0" name="feedback" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping">

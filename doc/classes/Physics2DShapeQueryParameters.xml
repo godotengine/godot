@@ -11,84 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_collision_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the physics layer the shape belongs to.
-			</description>
-		</method>
-		<method name="get_exclude" qualifiers="const">
-			<return type="Array">
-			</return>
-			<description>
-				Return the list of objects, or object [RID]s, that will be excluded from collisions.
-			</description>
-		</method>
-		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the collision margin for the shape.
-			</description>
-		</method>
-		<method name="get_motion" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the current movement speed of the shape.
-			</description>
-		</method>
-		<method name="get_shape_rid" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-				Return the [RID] of the shape queried.
-			</description>
-		</method>
-		<method name="get_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<description>
-				Return the transform matrix of the shape queried.
-			</description>
-		</method>
-		<method name="set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="collision_layer" type="int">
-			</argument>
-			<description>
-				Set the physics layer the shape belongs to.
-			</description>
-		</method>
-		<method name="set_exclude">
-			<return type="void">
-			</return>
-			<argument index="0" name="exclude" type="Array">
-			</argument>
-			<description>
-				Set the list of objects, or object [RID]s, that will be excluded from collisions.
-			</description>
-		</method>
-		<method name="set_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="float">
-			</argument>
-			<description>
-				Set the collision margin for the shape. A collision margin is an amount (in pixels) that the shape will grow when computing collisions, to account for numerical imprecision.
-			</description>
-		</method>
-		<method name="set_motion">
-			<return type="void">
-			</return>
-			<argument index="0" name="motion" type="Vector2">
-			</argument>
-			<description>
-				Set the current movement speed of the shape.
-			</description>
-		</method>
 		<method name="set_shape">
 			<return type="void">
 			</return>
@@ -98,25 +20,27 @@
 				Set the [Shape2D] that will be used for collision/intersection queries.
 			</description>
 		</method>
-		<method name="set_shape_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="RID">
-			</argument>
-			<description>
-				Set the [RID] of the shape to be used in queries.
-			</description>
-		</method>
-		<method name="set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="transform" type="Transform2D">
-			</argument>
-			<description>
-				Set the transformation matrix of the shape. This is necessary to set its position/rotation/scale.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+			The physics layer the query should be made on.
+		</member>
+		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude">
+			The list of objects or object [RID]s, that will be excluded from collisions.
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin">
+			The collision margin for the shape.
+		</member>
+		<member name="motion" type="Vector2" setter="set_motion" getter="get_motion">
+			The motion of the shape being queried for.
+		</member>
+		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid">
+			The [RID] of the queried shape. See [method set_shape] also.
+		</member>
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
+			the transform matrix of the queried shape.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

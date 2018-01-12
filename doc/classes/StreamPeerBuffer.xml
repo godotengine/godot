@@ -21,12 +21,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_data_array" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
@@ -55,15 +49,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_data_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="PoolByteArray">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="data_array" type="PoolByteArray" setter="set_data_array" getter="get_data_array">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

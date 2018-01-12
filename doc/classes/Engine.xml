@@ -25,13 +25,6 @@
 				Returns the frames per second of the running game.
 			</description>
 		</method>
-		<method name="get_iterations_per_second" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the number of fixed iterations per second (for fixed process and physics).
-			</description>
-		</method>
 		<method name="get_main_loop" qualifiers="const">
 			<return type="MainLoop">
 			</return>
@@ -45,20 +38,6 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="get_target_fps" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the desired frames per second. If the hardware cannot keep up, this setting may not be respected. It defaults to 0, which indicates no limit.
-			</description>
-		</method>
-		<method name="get_time_scale">
-			<return type="float">
-			</return>
-			<description>
-				Returns how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
@@ -83,13 +62,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_editor_hint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the editor is running.
-			</description>
-		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -97,43 +69,21 @@
 				Returns [code]true[/code] if the game is inside the fixed process and physics phase of the game loop.
 			</description>
 		</method>
-		<method name="set_editor_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the running inside the editor hint if [code]enabled[/code] is [code]true[/code].
-			</description>
-		</method>
-		<method name="set_iterations_per_second">
-			<return type="void">
-			</return>
-			<argument index="0" name="iterations_per_second" type="int">
-			</argument>
-			<description>
-				Sets the number of fixed iterations per second (for fixed process and physics).
-			</description>
-		</method>
-		<method name="set_target_fps">
-			<return type="void">
-			</return>
-			<argument index="0" name="target_fps" type="int">
-			</argument>
-			<description>
-				Sets the target frames per second.
-			</description>
-		</method>
-		<method name="set_time_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="time_scale" type="float">
-			</argument>
-			<description>
-				Sets the time scale.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint">
+			If [code]true[/code], it is running inside the editor. Useful for tool scripts.
+		</member>
+		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second">
+			The number of fixed iterations per second (for fixed process and physics).
+		</member>
+		<member name="target_fps" type="float" setter="set_target_fps" getter="get_target_fps">
+			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. Defaults to 0, which indicates no limit.
+		</member>
+		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale">
+			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

@@ -28,13 +28,6 @@
 				Returns the number of capturing groups.
 			</description>
 		</method>
-		<method name="get_names" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<description>
-				Returns a dictionary of named groups and its corresponding group number. Only groups with that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
-			</description>
-		</method>
 		<method name="get_start" qualifiers="const">
 			<return type="int">
 			</return>
@@ -55,21 +48,18 @@
 				Returns an empty string if the group did not match or doesn't exist.
 			</description>
 		</method>
-		<method name="get_strings" qualifiers="const">
-			<return type="Array">
-			</return>
-			<description>
-				Returns an [Array] of the match and its capturing groups.
-			</description>
-		</method>
-		<method name="get_subject" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the source string used with the search pattern to find this matching result.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="names" type="Dictionary" setter="" getter="get_names">
+			A dictionary of named groups and its corresponding group number. Only groups with that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
+		</member>
+		<member name="strings" type="Array" setter="" getter="get_strings">
+			An [Array] of the match and its capturing groups.
+		</member>
+		<member name="subject" type="String" setter="" getter="get_subject">
+			The source string used with the search pattern to find this matching result.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

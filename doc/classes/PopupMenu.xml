@@ -233,12 +233,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_hide_on_state_item_selection" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -282,14 +276,6 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
-			</description>
-		</method>
-		<method name="set_hide_on_state_item_selection">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_item_accelerator">
@@ -454,6 +440,8 @@
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection">
 		</member>
 		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection">
+		</member>
+		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection">
 		</member>
 	</members>
 	<signals>

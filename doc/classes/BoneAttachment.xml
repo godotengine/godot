@@ -11,23 +11,12 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_bone_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the name of the bone node attached to.
-			</description>
-		</method>
-		<method name="set_bone_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_name" type="String">
-			</argument>
-			<description>
-				Changes the name of the bone node
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name">
+			The name of the attached bone.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

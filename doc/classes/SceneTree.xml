@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+xml version="1.0" encoding="UTF-8" ?>
 <class name="SceneTree" inherits="MainLoop" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
@@ -57,18 +57,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_current_scene" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_edited_scene_root" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int">
 			</return>
@@ -101,12 +89,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_root" qualifiers="const">
-			<return type="Viewport">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -128,18 +110,6 @@
 				Returns true if there is a [NetworkedMultiplayerPeer] set (with [method SceneTree.set_network_peer]).
 			</description>
 		</method>
-		<method name="is_debugging_collisions_hint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_debugging_navigation_hint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_input_handled">
 			<return type="bool">
 			</return>
@@ -151,24 +121,6 @@
 			</return>
 			<description>
 				Returns true if this SceneTree's [NetworkedMultiplayerPeer] is in server mode (listening for connections).
-			</description>
-		</method>
-		<method name="is_paused" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_refusing_new_network_connections" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_using_font_oversampling" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="notify_group">
@@ -221,38 +173,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_current_scene">
-			<return type="void">
-			</return>
-			<argument index="0" name="child_node" type="Node">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_debug_collisions_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_debug_navigation_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_edited_scene_root">
-			<return type="void">
-			</return>
-			<argument index="0" name="scene" type="Node">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_group">
 			<return type="void">
 			</return>
@@ -285,35 +205,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_network_peer">
-			<return type="void">
-			</return>
-			<argument index="0" name="peer" type="NetworkedMultiplayerPeer">
-			</argument>
-			<description>
-				Set the peer object to handle the RPC system (effectively enabling networking). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
-			</description>
-		</method>
-		<method name="set_pause">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_quit_on_go_back">
 			<return type="void">
 			</return>
 			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_refuse_new_network_connections">
-			<return type="void">
-			</return>
-			<argument index="0" name="refuse" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -332,15 +227,28 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_use_font_oversampling">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
+		</member>
+		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint">
+		</member>
+		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint">
+		</member>
+		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
+		</member>
+		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
+		</member>
+		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
+		</member>
+		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
+		</member>
+		<member name="root" type="Viewport" setter="" getter="get_root">
+		</member>
+		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling">
+		</member>
+	</members>
 	<signals>
 		<signal name="connected_to_server">
 			<description>

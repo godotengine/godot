@@ -54,20 +54,6 @@
 				Makes the currently selected item visible. This will scroll the tree to make sure the selected item is visible.
 			</description>
 		</method>
-		<method name="get_allow_reselect" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if a cell that is currently already selected may be selected again.
-			</description>
-		</method>
-		<method name="get_allow_rmb_select" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if a right click can select items.
-			</description>
-		</method>
 		<method name="get_column_at_position" qualifiers="const">
 			<return type="int">
 			</return>
@@ -95,25 +81,11 @@
 				Returns the column's width in pixels.
 			</description>
 		</method>
-		<method name="get_columns" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of columns.
-			</description>
-		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
 				Returns the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
-			</description>
-		</method>
-		<method name="get_drop_mode_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the current drop mode's flags.
 			</description>
 		</method>
 		<method name="get_drop_section_at_position" qualifiers="const">
@@ -202,31 +174,6 @@
 				Returns the current selection's column.
 			</description>
 		</method>
-		<method name="is_folding_hidden" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the folding arrow is hidden.
-			</description>
-		</method>
-		<method name="set_allow_reselect">
-			<return type="void">
-			</return>
-			<argument index="0" name="allow" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the currently selected cell may be selected again.
-			</description>
-		</method>
-		<method name="set_allow_rmb_select">
-			<return type="void">
-			</return>
-			<argument index="0" name="allow" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] a right mouse button click can select items.
-			</description>
-		</method>
 		<method name="set_column_expand">
 			<return type="void">
 			</return>
@@ -269,52 +216,31 @@
 				If [code]true[/code] column titles are visible.
 			</description>
 		</method>
-		<method name="set_columns">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Set the amount of columns.
-			</description>
-		</method>
-		<method name="set_drop_mode_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-				Set the drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
-			</description>
-		</method>
-		<method name="set_hide_folding">
-			<return type="void">
-			</return>
-			<argument index="0" name="hide" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the folding arrow is hidden.
-			</description>
-		</method>
-		<method name="set_hide_root">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the tree's root is hidden.
-			</description>
-		</method>
-		<method name="set_select_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Tree.SelectMode">
-			</argument>
-			<description>
-				Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
+			If [code]true[/code] the currently selected cell may be selected again.
+		</member>
+		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
+			If [code]true[/code] a right mouse button click can select items.
+
+		</member>
+		<member name="columns" type="int" setter="set_columns" getter="get_columns">
+			The amount of columns.
+		</member>
+		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags">
+			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
+		</member>
+		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden">
+			If [code]true[/code] the folding arrow is hidden.
+		</member>
+		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden">
+			If [code]true[/code] the tree's root is hidden.
+		</member>
+		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode">
+			Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
+		</member>
+	</members>
 	<signals>
 		<signal name="button_pressed">
 			<argument index="0" name="item" type="Object">
