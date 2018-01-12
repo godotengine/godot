@@ -217,6 +217,8 @@ void RayCast::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
+		against = 0;
+		against_shape = 0;
 	}
 }
 
