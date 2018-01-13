@@ -31,20 +31,26 @@ const char* ZSTD_versionString(void) { return ZSTD_VERSION_STRING; }
 *  ZSTD Error Management
 ******************************************/
 /*! ZSTD_isError() :
-*   tells if a return value is an error code */
+ *  tells if a return value is an error code */
 unsigned ZSTD_isError(size_t code) { return ERR_isError(code); }
 
 /*! ZSTD_getErrorName() :
-*   provides error code string from function result (useful for debugging) */
+ *  provides error code string from function result (useful for debugging) */
 const char* ZSTD_getErrorName(size_t code) { return ERR_getErrorName(code); }
 
 /*! ZSTD_getError() :
-*   convert a `size_t` function result into a proper ZSTD_errorCode enum */
+ *  convert a `size_t` function result into a proper ZSTD_errorCode enum */
 ZSTD_ErrorCode ZSTD_getErrorCode(size_t code) { return ERR_getErrorCode(code); }
 
 /*! ZSTD_getErrorString() :
-*   provides error code string from enum */
+ *  provides error code string from enum */
 const char* ZSTD_getErrorString(ZSTD_ErrorCode code) { return ERR_getErrorString(code); }
+
+/*! g_debuglog_enable :
+ *  turn on/off debug traces (global switch) */
+#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG >= 2)
+int g_debuglog_enable = 1;
+#endif
 
 
 /*=**************************************************************

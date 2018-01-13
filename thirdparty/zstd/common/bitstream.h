@@ -167,7 +167,7 @@ MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, unsigned nbBits);
 /*-**************************************************************
 *  Internal functions
 ****************************************************************/
-MEM_STATIC unsigned BIT_highbit32 (register U32 val)
+MEM_STATIC unsigned BIT_highbit32 (U32 val)
 {
     assert(val != 0);
     {

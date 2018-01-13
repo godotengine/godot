@@ -11,7 +11,6 @@
 
 /* ======   Dependencies   ======= */
 #include <stddef.h>  /* size_t */
-#include <stdlib.h>  /* malloc, calloc, free */
 #include "pool.h"
 
 /* ======   Compiler specifics   ====== */
@@ -115,7 +114,7 @@ POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize, ZSTD_customM
      * and full queues.
      */
     ctx->queueSize = queueSize + 1;
-    ctx->queue = (POOL_job*) malloc(ctx->queueSize * sizeof(POOL_job));
+    ctx->queue = (POOL_job*)ZSTD_malloc(ctx->queueSize * sizeof(POOL_job), customMem);
     ctx->queueHead = 0;
     ctx->queueTail = 0;
     ctx->numThreadsBusy = 0;
