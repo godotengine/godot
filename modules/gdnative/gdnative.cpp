@@ -181,13 +181,23 @@ bool GDNative::initialize() {
 	godot_gdnative_init_fn library_init_fpointer;
 	library_init_fpointer = (godot_gdnative_init_fn)library_init;
 
+	static uint64_t core_api_hash = 0;
+	static uint64_t editor_api_hash = 0;
+	static uint64_t no_api_hash = 0;
+
+	if (!(core_api_hash || editor_api_hash || no_api_hash)) {
+		core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+		editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+		no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	}
+
 	godot_gdnative_init_options options;
 
 	options.api_struct = &api_struct;
 	options.in_editor = Engine::get_singleton()->is_editor_hint();
-	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
-	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
-	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	options.core_api_hash = core_api_hash;
+	options.editor_api_hash = editor_api_hash;
+	options.no_api_hash = no_api_hash;
 	options.report_version_mismatch = &_gdnative_report_version_mismatch;
 	options.report_loading_error = &_gdnative_report_loading_error;
 	options.gd_native_library = (godot_object *)(get_library().ptr());
