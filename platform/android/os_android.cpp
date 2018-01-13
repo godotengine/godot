@@ -48,6 +48,8 @@
 #include "file_access_jandroid.h"
 #endif
 
+#include <dlfcn.h>
+
 class AndroidLogger : public Logger {
 public:
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) {
@@ -171,6 +173,15 @@ void OS_Android::alert(const String &p_alert, const String &p_title) {
 	//print("ALERT: %s\n", p_alert.utf8().get_data());
 	if (alert_func)
 		alert_func(p_alert, p_title);
+}
+
+Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
 }
 
 void OS_Android::set_mouse_show(bool p_show) {
