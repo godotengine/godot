@@ -3070,6 +3070,7 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		p_item->cells[p_column].selected = true;
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
 
+		selected_col = p_column;
 	} else {
 
 		select_single_item(p_item, root, p_column);
@@ -3100,7 +3101,9 @@ void Tree::deselect_all() {
 	TreeItem *item = get_next_selected(get_root());
 	while (item) {
 		item->deselect(selected_col);
+		TreeItem *prev_item = item;
 		item = get_next_selected(get_root());
+		ERR_FAIL_COND(item == prev_item);
 	}
 
 	selected_item = NULL;
