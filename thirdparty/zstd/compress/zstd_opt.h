@@ -11,11 +11,11 @@
 #ifndef ZSTD_OPT_H
 #define ZSTD_OPT_H
 
-#include "zstd_compress.h"
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
+
+#include "zstd.h"   /* ZSTD_CCtx, size_t */
 
 size_t ZSTD_compressBlock_btopt(ZSTD_CCtx* ctx, const void* src, size_t srcSize);
 size_t ZSTD_compressBlock_btultra(ZSTD_CCtx* ctx, const void* src, size_t srcSize);

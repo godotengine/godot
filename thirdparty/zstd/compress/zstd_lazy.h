@@ -11,11 +11,12 @@
 #ifndef ZSTD_LAZY_H
 #define ZSTD_LAZY_H
 
-#include "zstd_compress.h"
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
+
+#include "mem.h"    /* U32 */
+#include "zstd.h"   /* ZSTD_CCtx, size_t */
 
 U32 ZSTD_insertAndFindFirstIndex (ZSTD_CCtx* zc, const BYTE* ip, U32 mls);
 void ZSTD_updateTree(ZSTD_CCtx* zc, const BYTE* const ip, const BYTE* const iend, const U32 nbCompares, const U32 mls);
