@@ -431,7 +431,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 0.9.5+ (git 9f784ca - 24 October 2017)
+- Version: git (e385dad, 2018)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
