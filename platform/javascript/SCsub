@@ -23,6 +23,7 @@ env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_main_after_fs_sync'
 
 target_dir = env.Dir("#bin")
 build = env.add_program(['#bin/godot', target_dir.File('godot' + env['PROGSUFFIX'] + '.wasm')], javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js');
+js, wasm = build
 
 js_libraries = []
 js_libraries.append(env.File('http_request.js'))
@@ -30,12 +31,10 @@ for lib in js_libraries:
     env.Append(LINKFLAGS=['--js-library', lib.path])
 env.Depends(build, js_libraries)
 
-prejs = env.File('pre.js')
-postjs = env.File('engine.js')
-env.Append(LINKFLAGS=['--pre-js', prejs.path])
-env.Append(LINKFLAGS=['--post-js', postjs.path])
-env.Depends(build, [prejs, postjs])
+wrapper_start = env.File('pre.js')
+wrapper_end = env.File('engine.js')
+js_final = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX=env['PROGSUFFIX'] + '.wrapped.js')
 
 zip_dir = target_dir.Dir('.javascript_zip')
-zip_files = env.InstallAs([zip_dir.File('godot.js'), zip_dir.File('godot.wasm'), zip_dir.File('godot.html')], build + ['#misc/dist/html/default.html'])
+zip_files = env.InstallAs([zip_dir.File('godot.js'), zip_dir.File('godot.wasm'), zip_dir.File('godot.html')], [js_final, wasm, '#misc/dist/html/default.html'])
 Zip('#bin/godot', zip_files, ZIPSUFFIX=env['PROGSUFFIX'] + env['ZIPSUFFIX'], ZIPROOT=zip_dir, ZIPCOMSTR="Archving $SOURCES as $TARGET")
