@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os_types.h 19098 2014-02-26 19:06:45Z giles $
+ last mod: $Id$
 
  ********************************************************************/
 #ifndef _OS_TYPES_H
@@ -49,22 +49,23 @@
      typedef short ogg_int16_t;
      typedef unsigned short ogg_uint16_t;
 #  else
-     /* MSVC/Borland */
-     typedef __int64 ogg_int64_t;
-     typedef __int32 ogg_int32_t;
-     typedef unsigned __int32 ogg_uint32_t;
-     typedef __int16 ogg_int16_t;
-     typedef unsigned __int16 ogg_uint16_t;
+#    if defined(_MSC_VER) && (_MSC_VER >= 1800) /* MSVC 2013 and newer */
+#      include <stdint.h>
+       typedef int16_t ogg_int16_t;
+       typedef uint16_t ogg_uint16_t;
+       typedef int32_t ogg_int32_t;
+       typedef uint32_t ogg_uint32_t;
+       typedef int64_t ogg_int64_t;
+       typedef uint64_t ogg_uint64_t;
+#    else
+       /* MSVC/Borland */
+       typedef __int64 ogg_int64_t;
+       typedef __int32 ogg_int32_t;
+       typedef unsigned __int32 ogg_uint32_t;
+       typedef __int16 ogg_int16_t;
+       typedef unsigned __int16 ogg_uint16_t;
+#    endif
 #  endif
-
-#elif defined(__MACOS__)
-
-#  include <sys/types.h>
-   typedef SInt16 ogg_int16_t;
-   typedef UInt16 ogg_uint16_t;
-   typedef SInt32 ogg_int32_t;
-   typedef UInt32 ogg_uint32_t;
-   typedef SInt64 ogg_int64_t;
 
 #elif (defined(__APPLE__) && defined(__MACH__)) /* MacOS X Framework build */
 

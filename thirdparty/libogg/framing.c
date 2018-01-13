@@ -12,7 +12,7 @@
 
  function: code raw packets into framed OggSquish stream and
            decode Ogg streams back into raw packets
- last mod: $Id: framing.c 18758 2013-01-08 16:29:56Z tterribe $
+ last mod: $Id$
 
  note: The CRC code is directly derived from public domain code by
  Ross Williams (ross@guest.adelaide.edu.au).  See docs/framing.html
@@ -875,6 +875,7 @@ int ogg_stream_pagein(ogg_stream_state *os, ogg_page *og){
      some segments */
   if(continued){
     if(os->lacing_fill<1 ||
+       (os->lacing_vals[os->lacing_fill-1]&0xff)<255 ||
        os->lacing_vals[os->lacing_fill-1]==0x400){
       bos=0;
       for(;segptr<segments;segptr++){
@@ -1492,6 +1493,34 @@ const int head3_7[] = {0x4f,0x67,0x67,0x53,0,0x05,
                        1,
                        0};
 
+int compare_packet(const ogg_packet *op1, const ogg_packet *op2){
+  if(op1->packet!=op2->packet){
+    fprintf(stderr,"op1->packet != op2->packet\n");
+    return(1);
+  }
+  if(op1->bytes!=op2->bytes){
+    fprintf(stderr,"op1->bytes != op2->bytes\n");
+    return(1);
+  }
+  if(op1->b_o_s!=op2->b_o_s){
+    fprintf(stderr,"op1->b_o_s != op2->b_o_s\n");
+    return(1);
+  }
+  if(op1->e_o_s!=op2->e_o_s){
+    fprintf(stderr,"op1->e_o_s != op2->e_o_s\n");
+    return(1);
+  }
+  if(op1->granulepos!=op2->granulepos){
+    fprintf(stderr,"op1->granulepos != op2->granulepos\n");
+    return(1);
+  }
+  if(op1->packetno!=op2->packetno){
+    fprintf(stderr,"op1->packetno != op2->packetno\n");
+    return(1);
+  }
+  return(0);
+}
+
 void test_pack(const int *pl, const int **headers, int byteskip,
                int pageskip, int packetskip){
   unsigned char *data=_ogg_malloc(1024*1024); /* for scripted test cases only */
@@ -1600,7 +1629,7 @@ void test_pack(const int *pl, const int **headers, int byteskip,
               ogg_stream_packetout(&os_de,&op_de); /* just catching them all */
 
               /* verify peek and out match */
-              if(memcmp(&op_de,&op_de2,sizeof(op_de))){
+              if(compare_packet(&op_de,&op_de2)){
                 fprintf(stderr,"packetout != packetpeek! pos=%ld\n",
                         depacket);
                 exit(1);
