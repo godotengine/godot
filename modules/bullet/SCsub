@@ -8,7 +8,9 @@ Import('env_modules')
 
 env_bullet = env_modules.Clone()
 
-bullet_src__2_x = [
+thirdparty_dir = "#thirdparty/bullet/"
+
+bullet2_src = [
         # BulletCollision
           "BulletCollision/BroadphaseCollision/btAxisSweep3.cpp"
         , "BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp"
@@ -179,13 +181,10 @@ bullet_src__2_x = [
         , "LinearMath/btVector3.cpp"
     ]
 
-thirdparty_dir = "#thirdparty/bullet/"
-thirdparty_src = thirdparty_dir + "src/"
-
-bullet_sources = [thirdparty_src + file for file in bullet_src__2_x]
+bullet_sources = [thirdparty_dir + file for file in bullet2_src]
 
 # include headers
-env_bullet.Append(CPPPATH=[thirdparty_src])
+env_bullet.Append(CPPPATH=[thirdparty_dir])
 
 env_bullet.add_source_files(env.modules_sources, bullet_sources)
 

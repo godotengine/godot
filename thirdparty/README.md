@@ -8,6 +8,18 @@
 - License: zlib
 
 
+## bullet
+
+- Upstream: https://github.com/bulletphysics/bullet3
+- Version: git (d05ad4b, 2017)
+- License: zlib
+
+Files extracted from upstream source:
+
+- src/* apart from CMakeLists.txt and premake4.lua files
+- LICENSE.txt
+
+
 ## certs
 
 - Upstream: ?
