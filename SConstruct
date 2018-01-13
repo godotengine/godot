@@ -438,7 +438,12 @@ node_count_max = 0
 node_count_interval = 1
 if ('env' in locals()):
     node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
-show_progress = env['progress'] == 'yes'
+# Progress reporting is not available in non-TTY environments since it
+# messes with the output (for example, when writing to a file)
+if sys.stdout.isatty():
+    show_progress = env['progress']
+else:
+    show_progress = False
 
 import time, math
 
