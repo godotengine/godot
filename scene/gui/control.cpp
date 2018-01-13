@@ -1325,7 +1325,7 @@ float Control::_get_parent_range(int p_idx) const {
 
 	if (!is_inside_tree()) {
 
-		return 1.0;
+		return 0;
 	}
 	if (data.parent_canvas_item) {
 
@@ -1334,7 +1334,7 @@ float Control::_get_parent_range(int p_idx) const {
 		return get_viewport()->get_visible_rect().size[p_idx & 1];
 	}
 
-	return 1.0;
+	return 0;
 }
 
 float Control::_get_range(int p_idx) const {
