@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectBandLimitFilter" inherits="AudioEffectFilter" category="Core" version="3.0-beta">
+<class name="AudioEffectBandLimitFilter" inherits="AudioEffectFilter" category="Core" version="3.0-rc1">
 	<brief_description>
 		Adds a band limit filter to the Audio Bus.
 	</brief_description>

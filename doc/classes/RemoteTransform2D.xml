@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RemoteTransform2D" inherits="Node2D" category="Core" version="3.0-beta">
+<class name="RemoteTransform2D" inherits="Node2D" category="Core" version="3.0-rc1">
 	<brief_description>
 		RemoteTransform2D leads the [Transform2D] of another [CanvasItem] derived Node in the scene.
 	</brief_description>

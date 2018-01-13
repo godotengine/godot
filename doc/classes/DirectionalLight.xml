@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirectionalLight" inherits="Light" category="Core" version="3.0-beta">
+<class name="DirectionalLight" inherits="Light" category="Core" version="3.0-rc1">
 	<brief_description>
 		Directional Light, such as the Sun or the Moon.
 	</brief_description>
