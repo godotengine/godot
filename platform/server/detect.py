@@ -86,6 +86,16 @@ def configure(env):
     if not env['builtin_libpng']:
         env.ParseConfig('pkg-config libpng --cflags --libs')
 
+    if not env['builtin_bullet']:
+        # We need at least version 2.87
+        import subprocess
+        bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
+        if bullet_version < "2.87":
+            # Abort as system bullet was requested but too old
+            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.87"))
+            sys.exit(255)
+        env.ParseConfig('pkg-config bullet --cflags --libs')
+
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
