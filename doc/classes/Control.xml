@@ -96,7 +96,7 @@
 				Overrides the [code]name[/code] shader in the [theme] resource the node uses. If [code]shader[/code] is empty, Godot clears the override.
 			</description>
 		</method>
-		<method name="add_style_override">
+		<method name="add_stylebox_override">
 			<return type="void">
 			</return>
 			<argument index="0" name="name" type="String">
@@ -375,6 +375,14 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_shader_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
