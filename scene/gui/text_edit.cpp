@@ -4878,6 +4878,8 @@ void TextEdit::undo() {
 	else
 		undo_stack_pos = undo_stack_pos->prev();
 
+	deselect();
+
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, true);
 	current_op.version = op.prev_version;
@@ -4911,6 +4913,8 @@ void TextEdit::redo() {
 
 	if (undo_stack_pos == NULL)
 		return; //nothing to do.
+
+	deselect();
 
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, false);
