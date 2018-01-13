@@ -247,14 +247,14 @@
 			</description>
 		</signal>
 		<signal name="animation_finished">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="anim_name" type="String">
 			</argument>
 			<description>
 				Notifies when an animation finished playing.
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="anim_name" type="String">
 			</argument>
 			<description>
 				Notifies when an animation starts playing.

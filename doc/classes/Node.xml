@@ -744,14 +744,14 @@
 				Emitted when the node enters the tree.
 			</description>
 		</signal>
-		<signal name="tree_exiting">
-			<description>
-				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization.
-			</description>
-		</signal>
 		<signal name="tree_exited">
 			<description>
 				Emitted after the node exits the tree and is no longer active.
+			</description>
+		</signal>
+		<signal name="tree_exiting">
+			<description>
+				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization.
 			</description>
 		</signal>
 	</signals>

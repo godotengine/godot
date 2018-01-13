@@ -223,7 +223,6 @@
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
 			If [code]true[/code] a right mouse button click can select items.
-
 		</member>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">
 			The amount of columns.

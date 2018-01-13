@@ -99,21 +99,21 @@
 	</members>
 	<signals>
 		<signal name="interface_added">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="interface_name" type="String">
 			</argument>
 			<description>
 				Signal send when a new interface has been added.
 			</description>
 		</signal>
 		<signal name="interface_removed">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="interface_name" type="String">
 			</argument>
 			<description>
 				Signal send when an interface is removed.
 			</description>
 		</signal>
 		<signal name="tracker_added">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="tracker_name" type="String">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>
@@ -124,7 +124,7 @@
 			</description>
 		</signal>
 		<signal name="tracker_removed">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="tracker_name" type="String">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>

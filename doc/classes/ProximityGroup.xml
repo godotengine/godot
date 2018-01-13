@@ -32,7 +32,7 @@
 	</members>
 	<signals>
 		<signal name="broadcast">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="group_name" type="String">
 			</argument>
 			<argument index="1" name="parameters" type="Array">
 			</argument>
