@@ -71,9 +71,9 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_VEC3: return 12;
 		case SL::TYPE_VEC4: return 16;
 		case SL::TYPE_MAT2:
-			return 24; //4 * 4 + 4 * 2
+			return 32; //4 * 4 + 4 * 4
 		case SL::TYPE_MAT3:
-			return 44; // 4 * 4 + 4 * 4 + 4 * 3
+			return 48; // 4 * 4 + 4 * 4 + 4 * 4
 		case SL::TYPE_MAT4: return 64;
 		case SL::TYPE_SAMPLER2D: return 16;
 		case SL::TYPE_ISAMPLER2D: return 16;

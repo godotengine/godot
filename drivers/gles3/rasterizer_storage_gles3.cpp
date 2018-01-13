@@ -2184,10 +2184,15 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			Transform2D v = value;
 			GLfloat *gui = (GLfloat *)data;
 
+			//in std140 members of mat2 are treated as vec4s
 			gui[0] = v.elements[0][0];
 			gui[1] = v.elements[0][1];
-			gui[2] = v.elements[1][0];
-			gui[3] = v.elements[1][1];
+			gui[2] = 0;
+			gui[3] = 0;
+			gui[4] = v.elements[1][0];
+			gui[5] = v.elements[1][1];
+			gui[6] = 0;
+			gui[7] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
 
@@ -2362,9 +2367,15 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_MAT2: {
 			GLfloat *gui = (GLfloat *)data;
 
-			for (int i = 0; i < 2; i++) {
-				gui[i] = value[i].real;
-			}
+			//in std140 members of mat2 are treated as vec4s
+			gui[0] = value[0].real;
+			gui[1] = value[1].real;
+			gui[2] = 0;
+			gui[3] = 0;
+			gui[4] = value[2].real;
+			gui[5] = value[3].real;
+			gui[6] = 0;
+			gui[7] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
 
@@ -2418,10 +2429,13 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
-		case ShaderLanguage::TYPE_VEC4:
-		case ShaderLanguage::TYPE_MAT2: {
+		case ShaderLanguage::TYPE_VEC4: {
 
 			zeromem(data, 16);
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+
+			zeromem(data, 32);
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
 
