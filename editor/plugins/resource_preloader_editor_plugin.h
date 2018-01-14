@@ -42,6 +42,10 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
+	enum {
+		BUTTON_SUBSCENE = 0,
+	};
+
 	Button *load;
 	Button *_delete;
 	Button *paste;
@@ -61,6 +65,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 	void _delete_pressed();
 	void _delete_confirm_pressed();
 	void _update_library();
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
 	void _item_edited();
 
 	UndoRedo *undo_redo;
