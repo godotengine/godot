@@ -4234,17 +4234,14 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		clear_color = env->bg_color.to_linear();
 		storage->frame.clear_request = false;
-	} else if (env->bg_mode == VS::ENV_BG_SKY || env->bg_mode == VS::ENV_BG_COLOR_SKY) {
+	} else if (env->bg_mode == VS::ENV_BG_SKY) {
 
-		sky = storage->sky_owner.getornull(env->sky);
-
-		if (sky) {
-			env_radiance_tex = sky->radiance;
-		}
 		storage->frame.clear_request = false;
-		if (env->bg_mode == VS::ENV_BG_COLOR_SKY) {
-			clear_color = env->bg_color.to_linear();
-		}
+
+	} else if (env->bg_mode == VS::ENV_BG_COLOR_SKY) {
+
+		clear_color = env->bg_color.to_linear();
+		storage->frame.clear_request = false;
 
 	} else {
 		storage->frame.clear_request = false;
@@ -4254,34 +4251,48 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glClearBufferfv(GL_COLOR, 0, clear_color.components); // specular
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_CANVAS) {
-		//copy canvas to 3d buffer and convert it to linear
+	if (env) {
+		switch (env->bg_mode) {
+			case VS::ENV_BG_COLOR_SKY:
 
-		glDisable(GL_BLEND);
-		glDepthMask(GL_FALSE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
+			case VS::ENV_BG_SKY:
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
+				sky = storage->sky_owner.getornull(env->sky);
 
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+				if (sky) {
+					env_radiance_tex = sky->radiance;
+				}
+				break;
+			case VS::ENV_BG_CANVAS:
+				//copy canvas to 3d buffer and convert it to linear
 
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
+				glDisable(GL_BLEND);
+				glDepthMask(GL_FALSE);
+				glDisable(GL_DEPTH_TEST);
+				glDisable(GL_CULL_FACE);
 
-		storage->shaders.copy.bind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
-		_copy_screen(true, true);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
 
-		//turn off everything used
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
 
-		//restore
-		glEnable(GL_BLEND);
-		glDepthMask(GL_TRUE);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
+				storage->shaders.copy.bind();
+
+				_copy_screen(true, true);
+
+				//turn off everything used
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+
+				//restore
+				glEnable(GL_BLEND);
+				glDepthMask(GL_TRUE);
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_CULL_FACE);
+				break;
+		}
 	}
 
 	state.texscreen_copied = false;
