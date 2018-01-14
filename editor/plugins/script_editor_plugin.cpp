@@ -1672,10 +1672,14 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
+	const bool should_open = open_dominant || !EditorNode::get_singleton()->is_changing_scene();
+
 	if (p_script->get_language()->overrides_external_editor()) {
-		Error err = p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col);
-		if (err != OK)
-			ERR_PRINT("Couldn't open script in the overridden external text editor");
+		if (should_open) {
+			Error err = p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col);
+			if (err != OK)
+				ERR_PRINT("Couldn't open script in the overridden external text editor");
+		}
 		return false;
 	}
 
@@ -1726,7 +1730,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 
 		if (se->get_edited_script() == p_script) {
 
-			if (open_dominant || !EditorNode::get_singleton()->is_changing_scene()) {
+			if (should_open) {
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
 					script_list->select(script_list->find_metadata(i));
