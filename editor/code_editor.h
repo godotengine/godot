@@ -131,62 +131,6 @@ public:
 	FindReplaceBar();
 };
 
-class FindReplaceDialog : public ConfirmationDialog {
-
-	GDCLASS(FindReplaceDialog, ConfirmationDialog);
-
-	LineEdit *search_text;
-	LineEdit *replace_text;
-	CheckButton *whole_words;
-	CheckButton *case_sensitive;
-	CheckButton *backwards;
-	CheckButton *prompt;
-	CheckButton *selection_only;
-	Button *skip;
-	Label *error_label;
-	MarginContainer *replace_mc;
-	Label *replace_label;
-	VBoxContainer *replace_vb;
-
-	void _search_text_entered(const String &p_text);
-	void _replace_text_entered(const String &p_text);
-	void _prompt_changed();
-	void _skip_pressed();
-
-	TextEdit *text_edit;
-
-protected:
-	void _search_callback();
-	void _replace_skip_callback();
-
-	bool _search();
-	void _replace();
-
-	virtual void ok_pressed();
-	static void _bind_methods();
-
-public:
-	String get_search_text() const;
-	String get_replace_text() const;
-	bool is_whole_words() const;
-	bool is_case_sensitive() const;
-	bool is_backwards() const;
-	bool is_replace_mode() const;
-	bool is_replace_all_mode() const;
-	bool is_replace_selection_only() const;
-	void set_replace_selection_only(bool p_enable);
-
-	void set_error(const String &p_error);
-
-	void popup_search();
-	void popup_replace();
-
-	void set_text_edit(TextEdit *p_text_edit);
-
-	void search_next();
-	FindReplaceDialog();
-};
-
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<String> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
