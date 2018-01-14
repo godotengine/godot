@@ -1119,6 +1119,19 @@ void TextEdit::_notification(int p_what) {
 
 					if ((char_ofs + char_margin) < xmargin_beg) {
 						char_ofs += char_w;
+
+						// line highlighting handle horizontal clipping
+						if (line == cursor.line && highlight_current_line) {
+							// char next to margin is skipped
+							if ((char_ofs + char_margin) > xmargin_beg) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
+							}
+
+							// end of line when last char is skipped
+							if (j == str.length() - 1) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
+							}
+						}
 						continue;
 					}
 
