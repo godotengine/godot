@@ -316,6 +316,10 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
+				line_ascent = MAX(line_ascent, ascent);
+				line_descent = MAX(line_descent, descent);
+				fh = MAX(fh, line_ascent + line_descent); // various fonts!
+
 				Color color;
 				Color font_color_shadow;
 				bool underline = false;
@@ -430,24 +434,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
 
-									if (p_font_color_shadow.a > 0) {
-										float x_ofs_shadow = align_ofs + pofs;
-										float y_ofs_shadow = y + lh - line_descent;
-										float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
+									cw = font->get_char_size(c[i], c[i + 1]).x;
+									draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
+									if (visible)
+										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
 
-										if (p_shadow_as_outline) {
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
-										}
-										x_ofs_shadow += move;
-									}
-
-									if (selected) {
-										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
-									} else {
-										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], color);
-									}
+								} else {
+									if (visible)
+										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], color);
 								}
 
 								p_char_count++;
