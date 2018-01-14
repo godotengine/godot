@@ -2017,6 +2017,20 @@ Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMous
 	return relative;
 }
 
+static bool is_shortcut_pressed(const String &p_path) {
+	Ref<ShortCut> shortcut = ED_GET_SHORTCUT(p_path);
+	if (shortcut.is_null()) {
+		return false;
+	}
+	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_shortcut().ptr());
+	if (k == NULL) {
+		return false;
+	}
+	const Input &input = *Input::get_singleton();
+	int scancode = k->get_scancode();
+	return input.is_key_pressed(scancode);
+}
+
 void SpatialEditorViewport::_update_freelook(real_t delta) {
 
 	if (!is_freelook_active()) {
@@ -2027,38 +2041,28 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
 	Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
 
-	int key_left = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_left")->get_shortcut().ptr())->get_scancode();
-	int key_right = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_right")->get_shortcut().ptr())->get_scancode();
-	int key_forward = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_forward")->get_shortcut().ptr())->get_scancode();
-	int key_backwards = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_backwards")->get_shortcut().ptr())->get_scancode();
-	int key_up = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_up")->get_shortcut().ptr())->get_scancode();
-	int key_down = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_down")->get_shortcut().ptr())->get_scancode();
-	int key_speed_modifier = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier")->get_shortcut().ptr())->get_scancode();
-
 	Vector3 direction;
 	bool speed_modifier = false;
 
-	const Input &input = *Input::get_singleton();
-
-	if (input.is_key_pressed(key_left)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
 	}
-	if (input.is_key_pressed(key_right)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_right")) {
 		direction += right;
 	}
-	if (input.is_key_pressed(key_forward)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_forward")) {
 		direction += forward;
 	}
-	if (input.is_key_pressed(key_backwards)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_backwards")) {
 		direction -= forward;
 	}
-	if (input.is_key_pressed(key_up)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_up")) {
 		direction += up;
 	}
-	if (input.is_key_pressed(key_down)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
-	if (input.is_key_pressed(key_speed_modifier)) {
+	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
 		speed_modifier = true;
 	}
 
