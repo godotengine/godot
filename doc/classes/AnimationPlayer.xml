@@ -208,6 +208,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
+			If playing, the current animation; otherwise, the animation last played. When set, would change the animation, but would not play it unless currently playing. See also [member current_animation].
+		</member>
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay">
 			The name of the animation to play when the scene loads. Default value: [code]""[/code].
 		</member>
