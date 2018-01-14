@@ -316,6 +316,10 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
+				line_ascent = MAX(line_ascent, ascent);
+				line_descent = MAX(line_descent, descent);
+				fh = MAX(fh, line_ascent + line_descent); // various fonts!
+
 				Color color;
 				Color font_color_shadow;
 				bool underline = false;
