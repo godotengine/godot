@@ -80,6 +80,8 @@ private:
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
+		Vector<int> ascent_caches;
+		Vector<int> descent_caches;
 		Vector<int> space_caches;
 		int height_cache;
 		int height_accum_cache;
