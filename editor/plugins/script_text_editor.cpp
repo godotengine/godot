@@ -231,6 +231,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 		text_edit->add_keyword_color(n, colors_cache.type_color);
 	}
+	_update_member_keywords();
 
 	//colorize comments
 	List<String> comments;
