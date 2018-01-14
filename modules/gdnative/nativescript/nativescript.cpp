@@ -835,11 +835,13 @@ NativeScriptLanguage::~NativeScriptLanguage() {
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
-		L->get()->terminate();
-		NSL->library_classes.clear();
-		NSL->library_gdnatives.clear();
-		NSL->library_script_users.clear();
+		if (L->get().is_valid())
+			L->get()->terminate();
 	}
+
+	NSL->library_classes.clear();
+	NSL->library_gdnatives.clear();
+	NSL->library_script_users.clear();
 
 #ifndef NO_THREADS
 	memdelete(mutex);
