@@ -1822,6 +1822,9 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
+	message_queue->flush();
+	memdelete(message_queue);
+
 	if (script_debugger) {
 		if (use_debug_profiler) {
 			script_debugger->profiling_end();
@@ -1878,9 +1881,6 @@ void Main::cleanup() {
 		memdelete(globals);
 	if (engine)
 		memdelete(engine);
-
-	message_queue->flush();
-	memdelete(message_queue);
 
 	unregister_core_driver_types();
 	unregister_core_types();
