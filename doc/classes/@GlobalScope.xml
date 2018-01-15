@@ -45,6 +45,7 @@
 			[JSON] singleton
 		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
+			[JavaScript] singleton
 		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
