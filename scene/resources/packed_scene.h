@@ -33,7 +33,6 @@
 
 #include "resource.h"
 #include "scene/main/node.h"
-//#include "core/os/mutex.h"
 
 class SceneState : public Reference {
 
