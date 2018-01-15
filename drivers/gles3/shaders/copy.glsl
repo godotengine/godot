@@ -161,7 +161,7 @@ void main() {
 
 #ifdef SRGB_TO_LINEAR
 
-	color.rgb = mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1 + 0.055)),vec3(2.4)),color.rgb * (1.0 / 12.92),lessThan(color.rgb,vec3(0.04045)));
+	color.rgb = mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),color.rgb * (1.0 / 12.92),lessThan(color.rgb,vec3(0.04045)));
 #endif
 
 #ifdef DEBUG_GRADIENT
