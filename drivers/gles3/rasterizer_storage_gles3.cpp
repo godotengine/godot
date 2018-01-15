@@ -5694,6 +5694,7 @@ void RasterizerStorageGLES3::_particles_process(Particles *p_particles, float p_
 	SWAP(p_particles->particle_buffers[0], p_particles->particle_buffers[1]);
 	SWAP(p_particles->particle_vaos[0], p_particles->particle_vaos[1]);
 
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
 	glBindVertexArray(0);
 	/* //debug particles :D
 	glBindBuffer(GL_ARRAY_BUFFER, p_particles->particle_buffers[0]);
