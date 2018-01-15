@@ -304,8 +304,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	tileset_editor = memnew(TileSetEditor(p_node));
 
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, tileset_editor);
-	tileset_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	tileset_editor->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_BEGIN);
+	tileset_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
 	tileset_editor->set_end(Point2(0, 22));
 	tileset_editor->hide();
 

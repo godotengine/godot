@@ -290,8 +290,7 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew(MeshLibraryEditor(p_node));
 
 	p_node->get_viewport()->add_child(theme_editor);
-	theme_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	theme_editor->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_BEGIN);
+	theme_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
 	theme_editor->set_end(Point2(0, 22));
 	theme_editor->hide();
 }
