@@ -2148,12 +2148,21 @@ void OS_OSX::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
-	while (!force_quit) {
+	bool quit = false;
 
-		process_events(); // get rid of pending events
-		joypad_osx->process_joypads();
-		if (Main::iteration() == true)
-			break;
+	while (!force_quit && !quit) {
+
+		@try {
+
+			process_events(); // get rid of pending events
+			joypad_osx->process_joypads();
+
+			if (Main::iteration() == true) {
+				quit = true;
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINTS("NSException: " + String([exception reason].UTF8String));
+		}
 	};
 
 	main_loop->finish();
