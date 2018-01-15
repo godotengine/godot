@@ -16,6 +16,7 @@
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) of the receiving peer. To identify which node receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/step_by_step/scenes_and_nodes.html
 	</tutorials>
 	<demos>
 	</demos>

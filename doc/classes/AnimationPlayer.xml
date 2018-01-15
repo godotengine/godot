@@ -7,6 +7,8 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/step_by_step/animations.html
+	http://docs.godotengine.org/en/3.0/learning/features/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>

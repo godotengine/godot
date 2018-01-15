@@ -7,6 +7,7 @@
 		AudioServer is a low level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/features/audio/audio_buses.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -7,6 +7,7 @@
 		PhysicsBody is an abstract base class for implementing a physics body. All *Body types inherit from it.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/features/physics/physics_introduction.html
 	</tutorials>
 	<demos>
 	</demos>

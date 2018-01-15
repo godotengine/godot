@@ -686,6 +686,9 @@ Vector<String> String::split_spaces() const {
 	int from = 0;
 	int i = 0;
 	int len = length();
+	if (len == 0)
+		return ret;
+
 	bool inside = false;
 
 	while (true) {

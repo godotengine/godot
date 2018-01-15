@@ -7,6 +7,7 @@
 		Light is the abstract base class for light nodes, so it shouldn't be used directly (It can't be instanced). Other types of light nodes inherit from it. Light contains the common variables and parameters used for lighting.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/features/3d/lights_and_shadows.html
 	</tutorials>
 	<demos>
 	</demos>

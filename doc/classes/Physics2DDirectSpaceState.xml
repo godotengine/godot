@@ -7,6 +7,7 @@
 		Direct access object to a space in the [Physics2DServer]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/features/physics/ray-casting.html
 	</tutorials>
 	<demos>
 	</demos>

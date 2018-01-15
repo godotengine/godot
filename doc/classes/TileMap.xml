@@ -7,6 +7,7 @@
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
 	</description>
 	<tutorials>
+	http://docs.godotengine.org/en/3.0/learning/features/2d/using_tilemaps.html
 	</tutorials>
 	<demos>
 	</demos>
