@@ -779,6 +779,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #endif
 
+	if (globals->setup(game_path, main_pack, upwards) != OK) {
+
+#ifdef TOOLS_ENABLED
+		editor = false;
+#else
+		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
+
+		goto error;
+#endif
+	} else if (String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
+#ifdef TOOLS_ENABLED
+		if (!editor) {
+#endif
+			OS::get_singleton()->print("Error: Can't run project: no main scene defined.\n");
+			goto error;
+#ifdef TOOLS_ENABLED
+		}
+#endif
+	}
+
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
 	GLOBAL_DEF("logging/file_logging/max_log_files", 10);
