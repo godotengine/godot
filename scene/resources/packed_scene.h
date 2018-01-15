@@ -234,6 +234,7 @@ public:
 	Ref<SceneState> get_state();
 
 	PackedScene();
+	~PackedScene();
 };
 
 VARIANT_ENUM_CAST(PackedScene::GenEditState)

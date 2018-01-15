@@ -1741,8 +1741,10 @@ void PackedScene::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
 }
 
-PackedScene::PackedScene() {
-
+PackedScene::PackedScene() : mtx(Mutex::create()) {
 	state = Ref<SceneState>(memnew(SceneState));
-	mtx = Mutex::create();
+}
+
+PackedScene::~PackedScene() {
+	memdelete(mtx);
 }
