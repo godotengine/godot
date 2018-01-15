@@ -53,7 +53,7 @@ private:
 	bool _tool;
 	bool _valid;
 
-	Ref<PluginScript> _ref_base_parent;
+	Ref<Script> _ref_base_parent;
 	StringName _native_parent;
 	SelfList<PluginScript> _script_list;
 
