@@ -1490,7 +1490,7 @@ void ProjectManager::_bind_methods() {
 }
 
 void ProjectManager::_open_asset_library() {
-	asset_library->disable_community_support();
+
 	tabs->set_current_tab(1);
 }
 
