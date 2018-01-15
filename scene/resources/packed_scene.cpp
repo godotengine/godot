@@ -1671,6 +1671,7 @@ bool PackedScene::can_instance() const {
 }
 
 Node *PackedScene::instance(GenEditState p_edit_state) const {
+	MutexLock lck(mtx);
 
 #ifndef TOOLS_ENABLED
 	if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
@@ -1743,4 +1744,5 @@ void PackedScene::_bind_methods() {
 PackedScene::PackedScene() {
 
 	state = Ref<SceneState>(memnew(SceneState));
+	mtx = Mutex::create();
 }

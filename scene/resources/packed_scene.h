@@ -33,6 +33,7 @@
 
 #include "resource.h"
 #include "scene/main/node.h"
+//#include "core/os/mutex.h"
 
 class SceneState : public Reference {
 
@@ -203,6 +204,7 @@ class PackedScene : public Resource {
 
 	void _set_bundled_scene(const Dictionary &p_scene);
 	Dictionary _get_bundled_scene() const;
+	mutable Mutex *mtx;
 
 protected:
 	virtual bool editor_can_reload_from_file() { return false; } // this is handled by editor better
