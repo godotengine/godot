@@ -201,6 +201,8 @@ static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font = NULL;
 
 static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
 
+static ResourceFormatLoaderBMFont *resource_loader_bmfont = NULL;
+
 static ResourceFormatSaverShader *resource_saver_shader = NULL;
 static ResourceFormatLoaderShader *resource_loader_shader = NULL;
 
@@ -232,6 +234,9 @@ void register_scene_types() {
 
 	resource_loader_shader = memnew(ResourceFormatLoaderShader);
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
+
+	resource_loader_bmfont = memnew(ResourceFormatLoaderBMFont);
+	ResourceLoader::add_resource_format_loader(resource_loader_bmfont, true);
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -651,6 +656,9 @@ void unregister_scene_types() {
 	}
 	if (resource_loader_shader) {
 		memdelete(resource_loader_shader);
+	}
+	if (resource_loader_bmfont) {
+		memdelete(resource_loader_bmfont);
 	}
 
 	SpatialMaterial::finish_shaders();
