@@ -1830,6 +1830,9 @@ void Main::cleanup() {
 		memdelete(script_debugger);
 	}
 
+	message_queue->flush();
+	memdelete(message_queue);
+
 	OS::get_singleton()->delete_main_loop();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -1878,9 +1881,6 @@ void Main::cleanup() {
 		memdelete(globals);
 	if (engine)
 		memdelete(engine);
-
-	message_queue->flush();
-	memdelete(message_queue);
 
 	unregister_core_driver_types();
 	unregister_core_types();
