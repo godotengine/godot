@@ -118,6 +118,7 @@ class DynamicFontAtSize : public Reference {
 	float linegap;
 	float rect_margin;
 	float oversampling;
+	float scale_color_font;
 
 	uint32_t texture_flags;
 
