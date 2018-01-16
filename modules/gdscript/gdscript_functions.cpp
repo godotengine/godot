@@ -1483,7 +1483,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_INVERSE_LERP: {
-			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "value"));
+			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1579,12 +1579,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case LOGIC_CLAMP: {
-			MethodInfo mi("clamp", PropertyInfo(Variant::REAL, "val"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
+			MethodInfo mi("clamp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case LOGIC_NEAREST_PO2: {
-			MethodInfo mi("nearest_po2", PropertyInfo(Variant::INT, "val"));
+			MethodInfo mi("nearest_po2", PropertyInfo(Variant::INT, "value"));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;

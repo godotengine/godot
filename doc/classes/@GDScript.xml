@@ -182,7 +182,7 @@
 		<method name="clamp">
 			<return type="float">
 			</return>
-			<argument index="0" name="val" type="float">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<argument index="1" name="min" type="float">
 			</argument>
@@ -589,7 +589,7 @@
 		<method name="nearest_po2">
 			<return type="int">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Returns the nearest larger power of 2 for integer [code]val[/code].
