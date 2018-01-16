@@ -160,16 +160,13 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 
 void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 
-	btTransform btTrans;
-	Basis decomposed_basis;
+	set_body_scale(p_global_transform.basis.get_scale());
 
-	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
+	btTransform bt_transform;
+	G_TO_B(p_global_transform, bt_transform);
+	UNSCALE_BT_BASIS(bt_transform);
 
-	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
-	G_TO_B(decomposed_basis, btTrans.getBasis());
-
-	set_body_scale(decomposed_scale);
-	set_transform__bullet(btTrans);
+	set_transform__bullet(bt_transform);
 }
 
 Transform CollisionObjectBullet::get_transform() const {
@@ -317,20 +314,22 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	}
 
 	// Insert all shapes
-
+	btVector3 body_scale(get_bt_body_scale());
 	for (i = 0; i < shapes_size; ++i) {
 		shpWrapper = &shapes[i];
 		if (shpWrapper->active) {
 			if (!shpWrapper->bt_shape) {
-				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale);
+				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale * body_scale);
 			}
-			compoundShape->addChildShape(shpWrapper->transform, shpWrapper->bt_shape);
+
+			btTransform scaled_shape_transform(shpWrapper->transform);
+			scaled_shape_transform.getOrigin() *= body_scale;
+			compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
 		} else {
-			compoundShape->addChildShape(shpWrapper->transform, BulletPhysicsServer::get_empty_shape());
+			compoundShape->addChildShape(btTransform(), BulletPhysicsServer::get_empty_shape());
 		}
 	}
 
-	compoundShape->setLocalScaling(get_bt_body_scale());
 	compoundShape->recalculateLocalAabb();
 }
 
