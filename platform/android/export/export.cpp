@@ -552,6 +552,10 @@ class EditorExportAndroid : public EditorExportPlatform {
 		return OK;
 	}
 
+	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+		return OK;
+	}
+
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 
 		// Leaving the unused types commented because looking these constants up
@@ -1504,6 +1508,10 @@ public:
 				cl.push_back(passwd);
 			}*/
 
+			APKExportData ed;
+			ed.ep = &ep;
+			ed.apk = unaligned_apk;
+			err = export_project_files(p_preset, ignore_apk_file, &ed, save_apk_so);
 		} else {
 			//all files
 
@@ -1531,17 +1539,17 @@ public:
 
 				err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
 			}
+		}
 
-			if (!err) {
-				APKExportData ed;
-				ed.ep = &ep;
-				ed.apk = unaligned_apk;
-				for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
-					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
-					if (icon_path != "" && icon_path.ends_with(".png") && FileAccess::exists(icon_path)) {
-						Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);
-						store_in_apk(&ed, launcher_icons[i].export_path, data);
-					}
+		if (!err) {
+			APKExportData ed;
+			ed.ep = &ep;
+			ed.apk = unaligned_apk;
+			for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+				String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
+				if (icon_path != "" && icon_path.ends_with(".png") && FileAccess::exists(icon_path)) {
+					Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);
+					store_in_apk(&ed, launcher_icons[i].export_path, data);
 				}
 			}
 		}
