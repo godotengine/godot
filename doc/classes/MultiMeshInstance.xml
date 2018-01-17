@@ -4,7 +4,8 @@
 		Node that instances a [MultiMesh].
 	</brief_description>
 	<description>
-		MultiMeshInstance is a [Node] that takes a [MultiMesh] resource and adds it to the current scenario by creating an instance of it (yes, this is an instance of instances).
+		[code]MultiMeshInstance[/code] is a specialized node to instance [GeometryInstance]s based on a [MultiMesh] resource.
+		This is useful to optimize the rendering of a high amount of instances of a given mesh (for example tree in a forest or grass strands).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,6 +15,7 @@
 	</methods>
 	<members>
 		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
+			The [MultiMesh] resource that will be used and shared among all instances of the [code]MultiMeshInstance[/code].
 		</member>
 	</members>
 	<constants>
