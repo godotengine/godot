@@ -103,13 +103,16 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public void onTextChanged(final CharSequence pCharSequence, final int start, final int before, final int count) {
 		//Log.d(TAG, "onTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",before: " + before);
 
+		final int[] newChars = new int[count];
+		for (int i = start; i < start + count; ++i) {
+			newChars[i - start] = pCharSequence.charAt(i);
+		}
 		mView.queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				for (int i = start; i < start + count; ++i) {
-					final int ch = pCharSequence.charAt(i);
-					GodotLib.key(0, ch, true);
-					GodotLib.key(0, ch, false);
+				for (int i = 0; i < count; ++i) {
+					GodotLib.key(0, newChars[i], true);
+					GodotLib.key(0, newChars[i], false);
 				}
 			}
 		});
