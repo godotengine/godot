@@ -189,7 +189,7 @@
 			<argument index="2" name="max" type="float">
 			</argument>
 			<description>
-				Clamps [code]val[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
 				speed = 1000
 				# a is 20
@@ -592,7 +592,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Returns the nearest larger power of 2 for integer [code]val[/code].
+				Returns the nearest larger power of 2 for integer [code]value[/code].
 				[codeblock]
 				nearest_po2(3) # returns 4
 				nearest_po2(4) # returns 4
