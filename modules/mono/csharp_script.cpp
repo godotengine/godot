@@ -1044,7 +1044,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 		if (field) {
 			MonoObject *value = field->get_value(mono_object);
-			r_ret = GDMonoMarshal::mono_object_to_variant(value, field->get_type());
+			r_ret = GDMonoMarshal::mono_object_to_variant(value);
 			return true;
 		}
 
@@ -1057,7 +1057,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = Variant();
 				GDMonoUtils::print_unhandled_exception(exc);
 			} else {
-				r_ret = GDMonoMarshal::mono_object_to_variant(value, property->get_type());
+				r_ret = GDMonoMarshal::mono_object_to_variant(value);
 			}
 			return true;
 		}
@@ -1147,7 +1147,7 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 			MonoObject *return_value = method->invoke(mono_object, p_args);
 
 			if (return_value) {
-				return GDMonoMarshal::mono_object_to_variant(return_value, method->get_return_type());
+				return GDMonoMarshal::mono_object_to_variant(return_value);
 			} else {
 				return Variant();
 			}
@@ -1633,7 +1633,7 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 			MonoObject *result = method->invoke(NULL, p_args);
 
 			if (result) {
-				return GDMonoMarshal::mono_object_to_variant(result, method->get_return_type());
+				return GDMonoMarshal::mono_object_to_variant(result);
 			} else {
 				return Variant();
 			}
