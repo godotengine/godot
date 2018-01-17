@@ -1323,6 +1323,7 @@ void ScriptEditor::ensure_focus_current() {
 }
 
 void ScriptEditor::_members_overview_selected(int p_idx) {
+	members_overview->unselect(p_idx);
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(current);
 	if (!se) {
@@ -1337,6 +1338,7 @@ void ScriptEditor::_members_overview_selected(int p_idx) {
 }
 
 void ScriptEditor::_help_overview_selected(int p_idx) {
+	help_overview->unselect(p_idx);
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	EditorHelp *se = Object::cast_to<EditorHelp>(current);
 	if (!se) {
