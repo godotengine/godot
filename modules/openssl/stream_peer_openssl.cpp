@@ -475,14 +475,34 @@ Error StreamPeerOpenSSL::put_data(const uint8_t *p_data, int p_bytes) {
 Error StreamPeerOpenSSL::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
 
 	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
+
+	r_sent = 0;
+
 	if (p_bytes == 0)
 		return OK;
 
-	Error err = put_data(p_data, p_bytes);
-	if (err != OK)
-		return err;
+	while (p_bytes > 0) {
+		use_blocking = false;
+		int ret = SSL_write(ssl, p_data, p_bytes);
+		use_blocking = true;
 
-	r_sent = p_bytes;
+		switch (SSL_get_error(ssl, ret)) {
+			case SSL_ERROR_NONE:
+				break;
+			case SSL_ERROR_SYSCALL:
+				if (ERR_get_error() == 0)
+					return OK; // No error really, just non blocking io
+			default:
+				_print_error(ret);
+				disconnect_from_stream();
+				return ERR_CONNECTION_ERROR;
+		}
+
+		p_bytes -= ret;
+		r_sent += ret;
+		p_data += ret;
+	}
+
 	return OK;
 }
 
