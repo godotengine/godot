@@ -190,7 +190,6 @@ private:
 			return "";
 		}
 
-		set_message(TTR("That's a BINGO!"));
 		memdelete(d);
 		get_ok()->set_disabled(false);
 		return valid_path;
