@@ -7,7 +7,7 @@
 		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
 	</description>
 	<tutorials>
-	http://docs.godotengine.org/en/3.0/learning/features/math/index.html
+		http://docs.godotengine.org/en/3.0/learning/features/math/index.html
 	</tutorials>
 	<demos>
 	</demos>

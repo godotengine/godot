@@ -134,7 +134,7 @@
 		<method name="put_16">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put a signed 16 bit value into the stream.
@@ -143,7 +143,7 @@
 		<method name="put_32">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put a signed 32 bit value into the stream.
@@ -152,7 +152,7 @@
 		<method name="put_64">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put a signed 64 bit value into the stream.
@@ -161,7 +161,7 @@
 		<method name="put_8">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put a signed byte into the stream.
@@ -179,7 +179,7 @@
 		<method name="put_double">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="float">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
 				Put a double-precision float into the stream.
@@ -188,7 +188,7 @@
 		<method name="put_float">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="float">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
 				Put a single-precision float into the stream.
@@ -206,7 +206,7 @@
 		<method name="put_u16">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put an unsigned 16 bit value into the stream.
@@ -215,7 +215,7 @@
 		<method name="put_u32">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put an unsigned 32 bit value into the stream.
@@ -224,7 +224,7 @@
 		<method name="put_u64">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put an unsigned 64 bit value into the stream.
@@ -233,7 +233,7 @@
 		<method name="put_u8">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
 				Put an unsigned byte into the stream.
@@ -242,7 +242,7 @@
 		<method name="put_utf8_string">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="String">
+			<argument index="0" name="value" type="String">
 			</argument>
 			<description>
 				Put a zero-terminated utf8 string into the stream.
@@ -251,7 +251,7 @@
 		<method name="put_var">
 			<return type="void">
 			</return>
-			<argument index="0" name="val" type="Variant">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Put a Variant into the stream.

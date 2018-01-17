@@ -466,7 +466,7 @@
 			</argument>
 			<argument index="1" name="to" type="float">
 			</argument>
-			<argument index="2" name="value" type="float">
+			<argument index="2" name="weight" type="float">
 			</argument>
 			<description>
 				Returns a normalized value considering the given range.

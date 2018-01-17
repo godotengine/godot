@@ -7,7 +7,7 @@
 		Manages the connection to network peers. Assigns unique IDs to each client connected to the server.
 	</description>
 	<tutorials>
-	http://docs.godotengine.org/en/3.0/learning/features/networking/high_level_multiplayer.html
+		http://docs.godotengine.org/en/3.0/learning/features/networking/high_level_multiplayer.html
 	</tutorials>
 	<demos>
 	</demos>
