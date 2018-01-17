@@ -588,29 +588,13 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 	}
 }
 
-bool ClassDB::add_extension(const StringName &p_class, const Ref<Script> &p_script) {
+void ClassDB::_patch_method(const StringName &p_class, const StringName &p_name, MethodBind *p_bind) {
 
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	if (!type) {
-		// support pseudo-static classes like Geometry, which is indeed _Geometry.
-		type = classes.getptr("_" + p_class);
-	}
 	if (type) {
-
-		List<MethodInfo> methods;
-		p_script->get_script_method_list(&methods);
-		for (int i = 0; i < methods.size(); i++) {
-			const StringName name(methods[i].name);
-			if (type->method_map.has(name) && !type->method_map.has("_" + name)) { // override?
-				type->method_map["_" + name] = type->method_map[name];
-			}
-			type->method_map[name] = p_script->create_extension_method_bind(p_class, name);
-		}
-		return true;
-	} else {
-		return false;
+		type->method_map[p_name] = p_bind;
 	}
 }
 

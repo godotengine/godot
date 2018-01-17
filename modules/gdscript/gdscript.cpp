@@ -64,7 +64,7 @@ public:
 		return func->call(NULL, p_args, p_arg_count, r_error, &state);
 	}
 
-	virtual Variant call_as_extension(Variant *p_variant, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
+	virtual Variant vcall(Variant *p_variant, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
 		GDScriptFunction::CallState state;
 		state.instance = NULL; // indicates we're calling as extension
 		state.self = *p_variant;

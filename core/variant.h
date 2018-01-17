@@ -60,6 +60,7 @@ class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
+class MethodBind;
 
 typedef PoolVector<uint8_t> PoolByteArray;
 typedef PoolVector<int> PoolIntArray;
@@ -68,11 +69,6 @@ typedef PoolVector<String> PoolStringArray;
 typedef PoolVector<Vector2> PoolVector2Array;
 typedef PoolVector<Vector3> PoolVector3Array;
 typedef PoolVector<Color> PoolColorArray;
-
-template <class T>
-class Ref;
-
-class Script;
 
 class Variant {
 public:
@@ -154,8 +150,8 @@ private:
 	void clear();
 
 public:
-	static void add_extension(Variant::Type p_type, const Ref<Script> &p_script);
-	static void remove_extension(Variant::Type p_type, const Ref<Script> &p_script);
+	static void _patch_method(Variant::Type p_type, const StringName &p_name, MethodBind *p_bind);
+	static void _patch_method(Variant::Type p_type, const StringName &p_name, const StringName &p_from);
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
