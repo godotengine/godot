@@ -106,6 +106,8 @@ public:
 
 	virtual int get_available_bytes() const;
 
+	void poll();
+
 	static void initialize_ssl();
 	static void finalize_ssl();
 

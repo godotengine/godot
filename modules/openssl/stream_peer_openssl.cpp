@@ -205,8 +205,13 @@ int StreamPeerOpenSSL::_bio_read(BIO *b, char *buf, int len) {
 		return len;
 	} else {
 
-		int got;
-		Error err = sp->base->get_partial_data((uint8_t *)buf, len, got);
+		int got = 0;
+		Error err = OK;
+
+		// Avoid reading when we know there's no data as it will generate a disconnect
+		if (sp->base->get_available_bytes() > 0)
+			err = sp->base->get_partial_data((uint8_t *)buf, len, got);
+
 		if (err != OK) {
 			return -1;
 		}
@@ -369,6 +374,7 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	ssl = SSL_new(ctx);
 	bio = BIO_new(_get_bio_method());
 	BIO_set_data(bio, this);
+	BIO_set_nbio(bio, 1);
 	SSL_set_bio(ssl, bio, bio);
 
 	if (p_for_hostname != String()) {
@@ -480,6 +486,29 @@ Error StreamPeerOpenSSL::put_partial_data(const uint8_t *p_data, int p_bytes, in
 	return OK;
 }
 
+void StreamPeerOpenSSL::poll() {
+
+	ERR_FAIL_COND(!connected);
+	ERR_FAIL_COND(!base.is_valid());
+
+	if (base->get_available_bytes() == 0)
+		return; // No new data available
+
+	uint8_t buf[1];
+	int ret = SSL_read(ssl, buf, 0);
+	switch (SSL_get_error(ssl, ret)) {
+		case SSL_ERROR_NONE:
+			break;
+		case SSL_ERROR_SYSCALL:
+			if (ERR_get_error() == 0)
+				return; // No error really, just non blocking poll
+		default:
+			_print_error(ret);
+			disconnect_from_stream();
+			return;
+	}
+}
+
 Error StreamPeerOpenSSL::get_data(uint8_t *p_buffer, int p_bytes) {
 
 	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
@@ -502,15 +531,33 @@ Error StreamPeerOpenSSL::get_data(uint8_t *p_buffer, int p_bytes) {
 Error StreamPeerOpenSSL::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	ERR_FAIL_COND_V(!connected, ERR_UNCONFIGURED);
-	if (p_bytes == 0) {
-		r_received = 0;
-		return OK;
+
+	int left = p_bytes;
+	r_received = 0;
+
+	while (left > 0) {
+
+		poll();
+
+		if (!connected) // Polling might result in a disconnect
+			return ERR_CONNECTION_ERROR;
+
+		if (SSL_pending(ssl) == 0)
+			return OK; // No data left, return without blocking
+
+		// Only read pending data, avoid generating more _bio_read.
+		int ret = SSL_read(ssl, p_buffer, MIN(left, SSL_pending(ssl)));
+
+		if (ret <= 0) {
+			_print_error(ret);
+			disconnect_from_stream();
+			return ERR_CONNECTION_ERROR;
+		}
+		left -= ret;
+		r_received += ret;
+		p_buffer += ret;
 	}
 
-	Error err = get_data(p_buffer, p_bytes);
-	if (err != OK)
-		return err;
-	r_received = p_bytes;
 	return OK;
 }
 
