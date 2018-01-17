@@ -386,6 +386,10 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	if (result < 1) {
 		ERR_print_errors_fp(stdout);
 		_print_error(result);
+		// Since the handshake is done in blocking mode, result != 1 means failure
+		connected = false;
+		status = STATUS_DISCONNECTED;
+		return FAILED;
 	}
 
 	X509 *peer = SSL_get_peer_certificate(ssl);
@@ -393,9 +397,14 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	if (peer) {
 		bool cert_ok = SSL_get_verify_result(ssl) == X509_V_OK;
 		print_line("cert_ok: " + itos(cert_ok));
+		if (!cert_ok && validate_certs) {
+			status = STATUS_ERROR_HOSTNAME_MISMATCH;
+			return FAILED;
+		}
 
 	} else if (validate_certs) {
 		status = STATUS_ERROR_NO_CERTIFICATE;
+		return FAILED;
 	}
 
 	connected = true;
