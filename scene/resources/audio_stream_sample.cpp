@@ -509,6 +509,10 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 	return pv;
 }
 
+void AudioStreamSample::save_to_wav(String p_path) {
+//	TODO! Implement saving to wav file
+}
+
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
 
 	Ref<AudioStreamPlaybackSample> sample;
