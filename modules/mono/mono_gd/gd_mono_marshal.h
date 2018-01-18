@@ -102,7 +102,6 @@ _FORCE_INLINE_ MonoObject *variant_to_mono_object(Variant p_var) {
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
-Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type);
 
 // Array
 
