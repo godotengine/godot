@@ -2450,8 +2450,10 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 		} break;
 		case GDScriptParser::COMPLETION_RESOURCE_PATH: {
 
-			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))
+			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths")) {
 				get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
+				r_forced = true;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_ASSIGN: {
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
