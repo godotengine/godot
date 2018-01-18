@@ -1566,13 +1566,13 @@ bool CSharpScript::_update_signals() {
 
 		while (top && top != native) {
 			const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
-			for (int i = delegates.size() - 1; i >= 0; i--) {
+			for (int i = delegates.size() - 1; i >= 0; --i) {
+				Vector<Argument> parameters;
+
 				GDMonoClass *delegate = delegates[i];
 
-				if (delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-					StringName name = delegate->get_name();
-
-					_signals[name] = Vector<StringName>(); // TODO Retrieve arguments
+				if (_get_signal(top, delegate, parameters)) {
+					_signals[delegate->get_name()] = parameters;
 				}
 			}
 
@@ -1582,6 +1582,41 @@ bool CSharpScript::_update_signals() {
 
 	return changed;
 #endif
+	return false;
+}
+
+bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
+	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
+		MonoType *raw_type = GDMonoClass::get_raw_type(p_delegate);
+
+		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
+			// Arguments are accessibles as arguments of .Invoke method
+			GDMonoMethod *invoke = p_delegate->get_method("Invoke", -1);
+
+			Vector<StringName> names;
+			Vector<ManagedType> types;
+			invoke->get_parameter_names(names);
+			invoke->get_parameter_types(types);
+
+			if (names.size() == types.size()) {
+				for (int i = 0; i < names.size(); ++i) {
+					Argument arg;
+					arg.name = names[i];
+					arg.type = GDMonoMarshal::managed_to_variant_type(types[i]);
+
+					if (arg.type == Variant::NIL) {
+						ERR_PRINTS("Unknown type of signal parameter: " + arg.name + " in " + p_class->get_full_name());
+						return false;
+					}
+
+					params.push_back(arg);
+				}
+
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
@@ -1913,6 +1948,8 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 #endif
 	}
 
+	update_signals();
+
 	if (native) {
 		String native_name = native->get_name();
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
@@ -2074,6 +2111,27 @@ void CSharpScript::update_exports() {
 #ifdef TOOLS_ENABLED
 	_update_exports();
 #endif
+}
+
+bool CSharpScript::has_script_signal(const StringName &p_signal) const {
+	if (_signals.has(p_signal))
+		return true;
+
+	return false;
+}
+
+void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+	for (const Map<StringName, Vector<Argument> >::Element *E = _signals.front(); E; E = E->next()) {
+		MethodInfo mi;
+
+		mi.name = E->key();
+		for (int i = 0; i < E->get().size(); i++) {
+			PropertyInfo arg;
+			arg.name = E->get()[i].name;
+			mi.arguments.push_back(arg);
+		}
+		r_signals->push_back(mi);
+	}
 }
 
 void CSharpScript::update_signals() {

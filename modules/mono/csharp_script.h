@@ -85,13 +85,18 @@ class CSharpScript : public Script {
 
 	SelfList<CSharpScript> script_list;
 
+	struct Argument {
+		String name;
+		Variant::Type type;
+	};
+
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
 	Set<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache;
 	bool exports_invalidated;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName, Vector<Argument> > _signals;
 	bool signals_invalidated;
 
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
@@ -107,6 +112,7 @@ class CSharpScript : public Script {
 	void _clear();
 
 	bool _update_signals();
+	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
@@ -141,8 +147,8 @@ public:
 
 	virtual Error reload(bool p_keep_state = false);
 
-	/* TODO */ virtual bool has_script_signal(const StringName &p_signal) const { return false; }
-	/* TODO */ virtual void get_script_signal_list(List<MethodInfo> *r_signals) const {}
+	virtual bool has_script_signal(const StringName &p_signal) const;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
 	virtual void update_signals();
 
 	/* TODO */ virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;

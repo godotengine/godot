@@ -80,6 +80,9 @@ public:
 	String get_ret_type_full_name() const;
 	String get_signature_desc(bool p_namespaces = false) const;
 
+	void get_parameter_names(Vector<StringName> &names) const;
+	void get_parameter_types(Vector<ManagedType> &types) const;
+
 	GDMonoMethod(StringName p_name, MonoMethod *p_method);
 	~GDMonoMethod();
 };
