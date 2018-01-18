@@ -328,6 +328,20 @@ void CollisionObject2D::_update_pickable() {
 		Physics2DServer::get_singleton()->body_set_pickable(rid, pickable);
 }
 
+String CollisionObject2D::get_configuration_warning() const {
+
+	String warning = Node2D::get_configuration_warning();
+
+	if (shapes.empty()) {
+		if (warning == String()) {
+			warning += "\n";
+		}
+		warning += TTR("This node has no children shapes, so it can't interact with the space.\nConsider adding CollisionShape2D or CollisionPolygon2D children nodes to define it's shape.");
+	}
+
+	return warning;
+}
+
 void CollisionObject2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject2D::get_rid);
