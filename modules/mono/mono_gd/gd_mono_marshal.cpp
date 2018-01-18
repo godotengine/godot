@@ -459,11 +459,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 	type.type_encoding = mono_type_get_type(raw_type);
 	type.type_class = tclass;
 
-	return mono_object_to_variant(p_obj, type);
-}
-
-Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
-	switch (p_type.type_encoding) {
+	switch (type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
 			return (bool)unbox<MonoBoolean>(p_obj);
 
@@ -497,7 +493,7 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = p_type.type_class;
+			GDMonoClass *tclass = type.type_class;
 
 			if (tclass == CACHED_CLASS(Vector2))
 				RETURN_UNBOXED_STRUCT(Vector2, p_obj);
@@ -535,7 +531,7 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(p_type.type_class));
+			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(type.type_class));
 
 			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
 				return mono_array_to_Array((MonoArray *)p_obj);
@@ -566,7 +562,7 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_CLASS: {
-			GDMonoClass *type_class = p_type.type_class;
+			GDMonoClass *type_class = type.type_class;
 
 			// GodotObject
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
@@ -586,14 +582,14 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			if (CACHED_RAW_MONO_CLASS(Dictionary) == p_type.type_class->get_mono_ptr()) {
+			if (CACHED_RAW_MONO_CLASS(Dictionary) == type.type_class->get_mono_ptr()) {
 				return mono_object_to_Dictionary(p_obj);
 			}
 		} break;
 	}
 
 	ERR_EXPLAIN(String() + "Attempted to convert an unmarshallable managed type to Variant. Name: \'" +
-				p_type.type_class->get_name() + "\' Encoding: " + itos(p_type.type_encoding));
+				type.type_class->get_name() + "\' Encoding: " + itos(type.type_encoding));
 	ERR_FAIL_V(Variant());
 }
 
