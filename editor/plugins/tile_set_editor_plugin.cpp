@@ -1235,14 +1235,14 @@ void AutotileEditor::draw_highlight_tile(Vector2 coord, const Vector<Vector2> &o
 	workspace->draw_rect(Rect2(0, coord.y, coord.x, size.y), Color(0.5, 0.5, 0.5, 0.5));
 	workspace->draw_rect(Rect2(coord.x + size.x, coord.y, region.size.x - coord.x - size.x, size.y), Color(0.5, 0.5, 0.5, 0.5));
 	workspace->draw_rect(Rect2(0, coord.y + size.y, region.size.x, region.size.y - size.y - coord.y), Color(0.5, 0.5, 0.5, 0.5));
-	coord += Vector2(1, 1);
-	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2)), Color(1, 0, 0), false);
+	coord += Vector2(1, 1) / workspace->get_scale().x;
+	workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0, 0), false);
 	for (int i = 0; i < other_highlighted.size(); i++) {
 		coord = other_highlighted[i];
 		coord.x *= (size.x + spacing);
 		coord.y *= (size.y + spacing);
-		coord += Vector2(1, 1);
-		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2)), Color(1, 0, 0), false);
+		coord += Vector2(1, 1) / workspace->get_scale().x;
+		workspace->draw_rect(Rect2(coord, size - Vector2(2, 2) / workspace->get_scale().x), Color(1, 0, 0), false);
 	}
 }
 
@@ -1250,8 +1250,6 @@ void AutotileEditor::draw_grid_snap() {
 	if (tools[SHAPE_GRID_SNAP]->is_pressed()) {
 		Color grid_color = Color(0.39, 0, 1, 0.2f);
 		Size2 s = workspace->get_size();
-
-		Vector2 size = tile_set->autotile_get_size(get_current_tile());
 
 		int width_count = (int)(s.width / (snap_step.x + snap_separation.x));
 		int height_count = (int)(s.height / (snap_step.y + snap_separation.y));
