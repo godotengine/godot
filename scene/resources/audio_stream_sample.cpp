@@ -512,73 +512,7 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 }
 
 void AudioStreamSample::save_to_wav(String p_path) {
-	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		WARN_PRINTS("Saving IMA_ADPC samples are not supported yet");
-		return;
-	}
-
-	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
-
-	// Format code
-	// 1:PCM format (for 8 or 16 bit)
-	// 3:IEEE float format
-	int format_code = (format == FORMAT_IMA_ADPCM) ? 3 : 1;
-
-	int n_channels = stereo ? 2 : 1;
-
-	long sample_rate = mix_rate;
-
-	int byte_pr_sample = 0;
-	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS: byte_pr_sample = 1; break;
-		case AudioStreamSample::FORMAT_16_BITS: byte_pr_sample = 2; break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM: byte_pr_sample = 4; break;
-	}
-
-	String file_path = p_path;
-	if (!(file_path.substr(file_path.length() - 4, 4) == ".wav")) {
-		file_path += ".wav";
-	}
-
-	Error err;
-	FileAccess *file = FileAccess::open(file_path, FileAccess::WRITE, &err); //Overrides existing file if present
-
-	// Create WAV Header
-	file->store_string("RIFF"); //ChunkID
-	file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
-	file->store_string("WAVE"); //Format
-	file->store_string("fmt "); //Subchunk1ID
-	file->store_32(16); //Subchunk1Size = 16
-	file->store_16(format_code); //AudioFormat
-	file->store_16(n_channels); //Number of Channels
-	file->store_32(sample_rate); //SampleRate
-	file->store_32(sample_rate * n_channels * byte_pr_sample); //ByteRate
-	file->store_16(n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
-	file->store_16(byte_pr_sample * 8); //BitsPerSample
-	file->store_string("data"); //Subchunk2ID
-	file->store_32(sub_chunk_2_size); //Subchunk2Size
-
-	// Add data
-	PoolVector<uint8_t>::Read read_data = get_data().read();
-	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS:
-			for (int i = 0; i < data_bytes; i++) {
-				uint8_t data_point = (read_data[i] + 128);
-				file->store_8(data_point);
-			}
-			break;
-		case AudioStreamSample::FORMAT_16_BITS:
-			for (int i = 0; i < data_bytes / 2; i++) {
-				uint16_t data_point = decode_uint16(&read_data[i * 2]);
-				file->store_16(data_point);
-			}
-			break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM:
-			//Unimplemented
-			break;
-	}
-
-	file->close();
+//	TODO! Implement saving to wav file
 }
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {

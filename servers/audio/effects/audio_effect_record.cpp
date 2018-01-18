@@ -61,7 +61,7 @@ void AudioEffectRecordInstance::_io_thread_process() {
 
 	while (is_recording) {
 		//Check: The current recording has been requested to stop
-		if (is_recording && !base->recording_active) {
+		if (is_recording && !base->should_record) {
 			is_recording = false;
 		}
 
@@ -136,7 +136,7 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 
 	ensure_thread_stopped();
 	current_instance = ins;
-	if (recording_active) {
+	if (should_record) {
 		ins->init();
 	}
 
@@ -144,29 +144,23 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 }
 
 void AudioEffectRecord::ensure_thread_stopped() {
-	recording_active = false;
+	should_record = false;
 	if (current_instance != 0 && current_instance->thread_active) {
 		Thread::wait_to_finish(current_instance->io_thread);
 	}
 }
 
-void AudioEffectRecord::set_recording_active(bool p_record) {
+void AudioEffectRecord::set_should_record(bool p_record) {
 	if (p_record) {
-		if (current_instance == 0) {
-			WARN_PRINTS("Recording should not be set as active before Godot has initialized.");
-			recording_active = false;
-			return;
-		}
-
 		ensure_thread_stopped();
 		current_instance->init();
 	}
 
-	recording_active = p_record;
+	should_record = p_record;
 }
 
-bool AudioEffectRecord::is_recording_active() const {
-	return recording_active;
+bool AudioEffectRecord::get_should_record() const {
+	return should_record;
 }
 
 void AudioEffectRecord::set_format(AudioStreamSample::Format p_format) {
@@ -250,12 +244,13 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 }
 
 void AudioEffectRecord::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_recording_active", "record"), &AudioEffectRecord::set_recording_active);
-	ClassDB::bind_method(D_METHOD("is_recording_active"), &AudioEffectRecord::is_recording_active);
+	ClassDB::bind_method(D_METHOD("set_should_record", "record"), &AudioEffectRecord::set_should_record);
+	ClassDB::bind_method(D_METHOD("get_should_record"), &AudioEffectRecord::get_should_record);
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &AudioEffectRecord::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &AudioEffectRecord::get_format);
 	ClassDB::bind_method(D_METHOD("get_recording"), &AudioEffectRecord::get_recording);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "should_record"), "set_should_record", "get_should_record");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 }
 
