@@ -68,7 +68,7 @@ private:
 	bool force_autohinter;
 
 	String font_path;
-	Map<CacheID, DynamicFontAtSize *> size_cache;
+	Map<CacheID, Ref<DynamicFontAtSize> > size_cache;
 
 	friend class DynamicFontAtSize;
 
