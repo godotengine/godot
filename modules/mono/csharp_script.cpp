@@ -745,9 +745,11 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 	for (Map<Ref<CSharpScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
 
 		Ref<CSharpScript> scr = E->key();
+		scr->signals_invalidated = true;
 		scr->exports_invalidated = true;
 		scr->signals_invalidated = true;
 		scr->reload(p_soft_reload);
+		scr->update_signals();
 		scr->update_exports();
 
 		//restore state if saved
@@ -1572,67 +1574,39 @@ bool CSharpScript::_update_exports() {
 	return false;
 }
 
-void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
+bool CSharpScript::_update_signals() {
+#ifdef TOOLS_ENABLED
+	if (!valid)
+		return false;
 
-	// no need to load the script's signals more than once
-	if (!signals_invalidated) {
-		return;
-	}
+	bool changed = false;
 
-	// make sure this classes signals are empty when loading for the first time
-	_signals.clear();
+	if (signals_invalidated) {
+		signals_invalidated = false;
 
-	GDMonoClass *top = p_class;
-	while (top && top != p_native_class) {
-		const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
-		for (int i = delegates.size() - 1; i >= 0; --i) {
-			Vector<Argument> parameters;
+		GDMonoClass *top = script_class;
 
-			GDMonoClass *delegate = delegates[i];
+		_signals.clear();
+		changed = true; // TODO Do a real check for change
 
-			if (_get_signal(top, delegate, parameters)) {
-				_signals[delegate->get_name()] = parameters;
-			}
-		}
+		while (top && top != native) {
+			const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
+			for (int i = delegates.size() - 1; i >= 0; i--) {
+				GDMonoClass *delegate = delegates[i];
 
-		top = top->get_parent_class();
-	}
+				if (delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
+					StringName name = delegate->get_name();
 
-	signals_invalidated = false;
-}
-
-bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
-	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-		MonoType *raw_type = GDMonoClass::get_raw_type(p_delegate);
-
-		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
-			// Arguments are accessibles as arguments of .Invoke method
-			GDMonoMethod *invoke = p_delegate->get_method("Invoke", -1);
-
-			Vector<StringName> names;
-			Vector<ManagedType> types;
-			invoke->get_parameter_names(names);
-			invoke->get_parameter_types(types);
-
-			if (names.size() == types.size()) {
-				for (int i = 0; i < names.size(); ++i) {
-					Argument arg;
-					arg.name = names[i];
-					arg.type = GDMonoMarshal::managed_to_variant_type(types[i]);
-
-					if (arg.type == Variant::NIL) {
-						ERR_PRINTS("Unknown type of signal parameter: " + arg.name + " in " + p_class->get_full_name());
-						return false;
-					}
-
-					params.push_back(arg);
+					_signals[name] = Vector<StringName>(); // TODO Retrieve arguments
 				}
-
-				return true;
 			}
+
+			top = top->get_parent_class();
 		}
 	}
 
+	return changed;
+#endif
 	return false;
 }
 
@@ -1958,6 +1932,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
 		placeholders.insert(si);
 		_update_exports();
+		_update_signals();
 		return si;
 #else
 		return NULL;
@@ -2136,25 +2111,10 @@ void CSharpScript::update_exports() {
 #endif
 }
 
-bool CSharpScript::has_script_signal(const StringName &p_signal) const {
-	if (_signals.has(p_signal))
-		return true;
-
-	return false;
-}
-
-void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<Argument> >::Element *E = _signals.front(); E; E = E->next()) {
-		MethodInfo mi;
-
-		mi.name = E->key();
-		for (int i = 0; i < E->get().size(); i++) {
-			PropertyInfo arg;
-			arg.name = E->get()[i].name;
-			mi.arguments.push_back(arg);
-		}
-		r_signals->push_back(mi);
-	}
+void CSharpScript::update_signals() {
+#ifdef TOOLS_ENABLED
+	_update_signals();
+#endif
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
@@ -2221,6 +2181,7 @@ CSharpScript::CSharpScript() :
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
 	exports_invalidated = true;
+	signals_invalidated = true;
 #endif
 
 	signals_invalidated = true;
