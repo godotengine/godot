@@ -176,10 +176,10 @@ private:
 
 			if (!is_empty) {
 
-				set_message(TTR("Your project will be created in a non empty folder (you might want to create a new folder)."), MESSAGE_WARNING);
+				set_message(TTR("Please choose an empty folder."), MESSAGE_ERROR);
 				memdelete(d);
-				get_ok()->set_disabled(false);
-				return valid_path;
+				get_ok()->set_disabled(true);
+				return "";
 			}
 
 		} else if (d->file_exists("project.godot")) {
