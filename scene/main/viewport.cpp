@@ -196,8 +196,6 @@ void Viewport::_update_stretch_transform() {
 
 	if (size_override_stretch && size_override) {
 
-		//print_line("sive override size "+size_override_size);
-		//print_line("rect size "+size);
 		stretch_transform = Transform2D();
 		Size2 scale = size / (size_override_size + size_override_margin * 2);
 		stretch_transform.scale(scale);
@@ -209,114 +207,6 @@ void Viewport::_update_stretch_transform() {
 	}
 
 	_update_global_transform();
-}
-
-void Viewport::_update_rect() {
-
-	if (!is_inside_tree())
-		return;
-
-	/*if (!render_target && parent_control) {
-
-		Control *c = parent_control;
-
-		rect.pos=Point2();
-		rect.size=c->get_size();
-	}*/
-	/*
-	VisualServer::ViewportRect vr;
-	vr.x=rect.pos.x;
-	vr.y=rect.pos.y;
-
-	if (render_target) {
-		vr.x=0;
-		vr.y=0;
-	}
-	vr.width=rect.size.width;
-	vr.height=rect.size.height;
-
-	VisualServer::get_singleton()->viewport_set_rect(viewport,vr);
-	last_vp_rect=rect;
-
-	if (canvas_item.is_valid()) {
-		VisualServer::get_singleton()->canvas_item_set_custom_rect(canvas_item,true,rect);
-	}
-
-	emit_signal("size_changed");
-	texture->emit_changed();
-*/
-}
-
-void Viewport::_parent_resized() {
-
-	_update_rect();
-}
-
-void Viewport::_parent_draw() {
-}
-
-void Viewport::_parent_visibility_changed() {
-
-	/*
-	if (parent_control) {
-
-		Control *c = parent_control;
-		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,c->is_visible_in_tree());
-
-		_update_listener();
-		_update_listener_2d();
-	}
-*/
-}
-
-void Viewport::_vp_enter_tree() {
-
-	/*	if (parent_control) {
-
-		Control *cparent=parent_control;
-		RID parent_ci = cparent->get_canvas_item();
-		ERR_FAIL_COND(!parent_ci.is_valid());
-		canvas_item = VisualServer::get_singleton()->canvas_item_create();
-
-		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent_ci);
-		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
-		//VisualServer::get_singleton()->canvas_item_attach_viewport(canvas_item,viewport);
-		parent_control->connect("resized",this,"_parent_resized");
-		parent_control->connect("visibility_changed",this,"_parent_visibility_changed");
-	} else if (!parent){
-
-		//VisualServer::get_singleton()->viewport_attach_to_screen(viewport,0);
-
-	}
-*/
-}
-
-void Viewport::_vp_exit_tree() {
-
-	/*
-	if (parent_control) {
-
-		parent_control->disconnect("resized",this,"_parent_resized");
-	}
-
-	if (parent_control) {
-
-		parent_control->disconnect("visibility_changed",this,"_parent_visibility_changed");
-	}
-
-	if (canvas_item.is_valid()) {
-
-		VisualServer::get_singleton()->free(canvas_item);
-		canvas_item=RID();
-
-	}
-
-	if (!parent) {
-
-		VisualServer::get_singleton()->viewport_detach(viewport);
-
-	}
-*/
 }
 
 void Viewport::update_worlds() {
@@ -376,7 +266,6 @@ void Viewport::_notification(int p_what) {
 
 			_update_listener();
 			_update_listener_2d();
-			_update_rect();
 
 			find_world_2d()->_register_viewport(this, Rect2());
 
@@ -435,11 +324,6 @@ void Viewport::_notification(int p_what) {
 			_gui_cancel_tooltip();
 			if (world_2d.is_valid())
 				world_2d->_remove_viewport(this);
-
-			/*
-			if (!render_target)
-				_vp_exit_tree();
-			*/
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport, RID());
 			//			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
@@ -718,7 +602,6 @@ void Viewport::set_size(const Size2 &p_size) {
 	size = p_size.floor();
 	VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
 
-	_update_rect();
 	_update_stretch_transform();
 
 	emit_signal("size_changed");
@@ -1167,7 +1050,7 @@ void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vecto
 		size_override_size = p_size;
 	}
 	size_override_margin = p_margin;
-	_update_rect();
+
 	_update_stretch_transform();
 	emit_signal("size_changed");
 }
@@ -1186,9 +1069,6 @@ void Viewport::set_size_override_stretch(bool p_enable) {
 		return;
 
 	size_override_stretch = p_enable;
-	if (size_override) {
-		_update_rect();
-	}
 
 	_update_stretch_transform();
 }
@@ -2684,9 +2564,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);
 	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
 
-	ClassDB::bind_method(D_METHOD("_parent_visibility_changed"), &Viewport::_parent_visibility_changed);
-
-	ClassDB::bind_method(D_METHOD("_parent_resized"), &Viewport::_parent_resized);
 	ClassDB::bind_method(D_METHOD("_vp_input"), &Viewport::_vp_input);
 	ClassDB::bind_method(D_METHOD("_vp_input_text", "text"), &Viewport::_vp_input_text);
 	ClassDB::bind_method(D_METHOD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
