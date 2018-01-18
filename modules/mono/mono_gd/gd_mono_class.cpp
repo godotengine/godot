@@ -404,6 +404,33 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 	return properties_list;
 }
 
+const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
+	if (delegates_fetched)
+		return delegates_list;
+
+	void *iter = NULL;
+	MonoClass *raw_class = NULL;
+	while ((raw_class = mono_class_get_nested_types(mono_class, &iter)) != NULL) {
+		if (mono_class_is_delegate(raw_class)) {
+			StringName name = mono_class_get_name(raw_class);
+
+			Map<StringName, GDMonoClass *>::Element *match = delegates.find(name);
+
+			if (match) {
+				delegates_list.push_back(match->get());
+			} else {
+				GDMonoClass *delegate = memnew(GDMonoClass(mono_class_get_namespace(raw_class), mono_class_get_name(raw_class), raw_class, assembly));
+				delegates.insert(name, delegate);
+				delegates_list.push_back(delegate);
+			}
+		}
+	}
+
+	delegates_fetched = true;
+
+	return delegates_list;
+}
+
 GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly) {
 
 	namespace_name = p_namespace;
@@ -417,6 +444,7 @@ GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name
 	methods_fetched = false;
 	fields_fetched = false;
 	properties_fetched = false;
+	delegates_fetched = false;
 }
 
 GDMonoClass::~GDMonoClass() {
