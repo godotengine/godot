@@ -80,7 +80,7 @@ private:
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
-	ToolButton *status_btn;
+	TextureRect *status_rect;
 	FileDialog *fdialog;
 	String zip_path;
 	String zip_title;
@@ -92,42 +92,35 @@ private:
 	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS) {
 
 		msg->set_text(p_msg);
-		Ref<Texture> current_icon = status_btn->get_icon();
+		Ref<Texture> current_icon = status_rect->get_texture();
+		Ref<Texture> new_icon;
 
 		switch (p_type) {
 
 			case MESSAGE_ERROR: {
 
 				msg->add_color_override("font_color", get_color("error_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusError", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 1));
+				new_icon = get_icon("StatusError", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					msg->show();
-				}
 			} break;
 			case MESSAGE_WARNING: {
 
 				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusWarning", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 1));
+				new_icon = get_icon("StatusWarning", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					if (current_icon != get_icon("StatusSuccess", "EditorIcons"))
-						msg->hide();
-				}
 			} break;
 			case MESSAGE_SUCCESS: {
 
-				msg->add_color_override("font_color", get_color("success_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusSuccess", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 0));
+				new_icon = get_icon("StatusSuccess", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					msg->hide();
-				}
 			} break;
 		}
+
+		if (current_icon != new_icon)
+			status_rect->set_texture(new_icon);
 
 		set_size(Size2(500, 0) * EDSCALE);
 	}
@@ -190,7 +183,7 @@ private:
 			return "";
 		}
 
-		set_message(TTR("That's a BINGO!"));
+		set_message("");
 		memdelete(d);
 		get_ok()->set_disabled(false);
 		return valid_path;
@@ -481,13 +474,6 @@ private:
 		}
 	}
 
-	void _toggle_message() {
-
-		msg->set_visible(!msg->is_visible());
-		if (!msg->is_visible())
-			set_size(Size2(500, 0) * EDSCALE);
-	}
-
 	void cancel_pressed() {
 
 		_remove_created_folder();
@@ -495,7 +481,7 @@ private:
 		project_path->clear();
 		project_name->clear();
 
-		if (status_btn->get_icon() == get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
 			msg->show();
 	}
 
@@ -514,7 +500,6 @@ protected:
 		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
 		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
-		ClassDB::bind_method("_toggle_message", &ProjectDialog::_toggle_message);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
@@ -558,7 +543,8 @@ public:
 			project_name->call_deferred("grab_focus");
 
 			create_dir->hide();
-			status_btn->hide();
+			status_rect->hide();
+			msg->hide();
 
 		} else {
 
@@ -578,7 +564,8 @@ public:
 			browse->set_disabled(false);
 			browse->show();
 			create_dir->show();
-			status_btn->show();
+			status_rect->show();
+			msg->show();
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
@@ -646,9 +633,9 @@ public:
 		pphb->add_child(project_path);
 
 		// status button
-		status_btn = memnew(ToolButton);
-		status_btn->connect("pressed", this, "_toggle_message");
-		pphb->add_child(status_btn);
+		status_rect = memnew(TextureRect);
+		status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		pphb->add_child(status_rect);
 
 		browse = memnew(Button);
 		browse->set_text(TTR("Browse"));
@@ -657,7 +644,6 @@ public:
 
 		msg = memnew(Label);
 		msg->set_align(Label::ALIGN_CENTER);
-		msg->hide();
 		vb->add_child(msg);
 
 		fdialog = memnew(FileDialog);
