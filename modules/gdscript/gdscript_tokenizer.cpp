@@ -100,6 +100,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"setget",
 	"const",
 	"var",
+	"as",
 	"enum",
 	"preload",
 	"assert",
@@ -192,6 +193,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
 	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
 	{ GDScriptTokenizer::TK_PR_VAR, "var" },
+	{ GDScriptTokenizer::TK_PR_AS, "as" },
 	{ GDScriptTokenizer::TK_PR_PRELOAD, "preload" },
 	{ GDScriptTokenizer::TK_PR_ASSERT, "assert" },
 	{ GDScriptTokenizer::TK_PR_YIELD, "yield" },
@@ -247,6 +249,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_MASTER:
 		case TK_PR_SLAVE:
 		case TK_PR_SYNC:
+		case TK_PR_AS:
 			return true;
 
 		// Literal for non-variables only:

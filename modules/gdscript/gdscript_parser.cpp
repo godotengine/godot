@@ -217,6 +217,128 @@ bool GDScriptParser::_get_completable_identifier(CompletionType p_type, StringNa
 	return false;
 }
 
+bool GDScriptParser::_parse_resource_name(const String &p_path, String &r_name) {
+
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_AS) {
+		tokenizer->advance();
+		if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER) {
+			_set_error("Expected identifier");
+			return false;
+		}
+		r_name = tokenizer->get_token_identifier();
+		tokenizer->advance();
+		return true;
+	} else {
+		// extract default name from path
+		int index_extension = p_path.length() - 1;
+		while (index_extension >= 0 && p_path[index_extension] != '.')
+			index_extension--;
+		int index_path = index_extension - 1;
+		while (index_path >= 0 && p_path[index_path] != '/')
+			index_path--;
+
+		r_name = p_path.substr(index_path + 1, index_extension - index_path - 1);
+		if (r_name.length() < 1) {
+			_set_error("Failed to extract resource name from path " + p_path);
+			return false;
+		}
+		return true;
+	}
+}
+
+Ref<Resource> GDScriptParser::_parse_resource_path(Node *p_parent, bool p_static, bool p_preload, String *r_path) {
+
+	String path;
+	bool found_constant = false;
+	bool valid = false;
+	ConstantNode *cn;
+
+	Node *subexpr = _parse_and_reduce_expression(p_parent, p_static);
+
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
+		completion_cursor = StringName();
+		completion_node = p_parent;
+		completion_type = COMPLETION_RESOURCE_PATH;
+		completion_class = current_class;
+		completion_function = current_function;
+		completion_line = tokenizer->get_token_line();
+		completion_block = current_block;
+		completion_argument = 0;
+		completion_found = true;
+		tokenizer->advance();
+	}
+
+	if (!subexpr) {
+		return Ref<Resource>();
+	}
+
+	if (subexpr->type == Node::TYPE_CONSTANT) {
+		cn = static_cast<ConstantNode *>(subexpr);
+		found_constant = true;
+	}
+	if (subexpr->type == Node::TYPE_IDENTIFIER) {
+		IdentifierNode *in = static_cast<IdentifierNode *>(subexpr);
+		Vector<ClassNode::Constant> ce = current_class->constant_expressions;
+
+		// Try to find the constant expression by the identifier
+		for (int i = 0; i < ce.size(); ++i) {
+			if (ce[i].identifier == in->name) {
+				if (ce[i].expression->type == Node::TYPE_CONSTANT) {
+					cn = static_cast<ConstantNode *>(ce[i].expression);
+					found_constant = true;
+				}
+			}
+		}
+	}
+
+	if (found_constant && cn->value.get_type() == Variant::STRING) {
+		valid = true;
+		path = (String)cn->value;
+	}
+
+	if (!valid) {
+		const String statement = p_preload ? "preload" : "load";
+		_set_error("expected string constant as argument to '" + statement + "'.");
+		return Ref<Resource>();
+	}
+
+	if (!path.is_abs_path() && base_path != "")
+		path = base_path + "/" + path;
+	path = path.replace("///", "//").simplify_path();
+	if (p_preload && path == self_path) {
+
+		_set_error("Can't preload itself (use 'get_script()').");
+		return Ref<Resource>();
+	}
+
+	Ref<Resource> res;
+	if (!validating) {
+
+		//this can be too slow for just validating code
+		if (for_completion && ScriptCodeCompletionCache::get_sigleton()) {
+			res = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(path);
+		} else {
+			res = ResourceLoader::load(path);
+		}
+		if (p_preload && !res.is_valid()) {
+			_set_error("Can't preload resource at path: " + path);
+			return Ref<Resource>();
+		}
+	} else {
+
+		if (p_preload && !FileAccess::exists(path)) {
+			_set_error("Can't preload resource at path: " + path);
+			return Ref<Resource>();
+		}
+	}
+
+	if (r_path) {
+		*r_path = path;
+	}
+
+	return res;
+}
+
 GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign, bool p_parsing_constant) {
 
 	//Vector<Node*> expressions;
@@ -395,84 +517,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 			tokenizer->advance();
 
-			if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
-				completion_cursor = StringName();
-				completion_node = p_parent;
-				completion_type = COMPLETION_RESOURCE_PATH;
-				completion_class = current_class;
-				completion_function = current_function;
-				completion_line = tokenizer->get_token_line();
-				completion_block = current_block;
-				completion_argument = 0;
-				completion_found = true;
-				tokenizer->advance();
-			}
-
-			String path;
-			bool found_constant = false;
-			bool valid = false;
-			ConstantNode *cn;
-
-			Node *subexpr = _parse_and_reduce_expression(p_parent, p_static);
-			if (subexpr) {
-				if (subexpr->type == Node::TYPE_CONSTANT) {
-					cn = static_cast<ConstantNode *>(subexpr);
-					found_constant = true;
-				}
-				if (subexpr->type == Node::TYPE_IDENTIFIER) {
-					IdentifierNode *in = static_cast<IdentifierNode *>(subexpr);
-					Vector<ClassNode::Constant> ce = current_class->constant_expressions;
-
-					// Try to find the constant expression by the identifier
-					for (int i = 0; i < ce.size(); ++i) {
-						if (ce[i].identifier == in->name) {
-							if (ce[i].expression->type == Node::TYPE_CONSTANT) {
-								cn = static_cast<ConstantNode *>(ce[i].expression);
-								found_constant = true;
-							}
-						}
-					}
-				}
-
-				if (found_constant && cn->value.get_type() == Variant::STRING) {
-					valid = true;
-					path = (String)cn->value;
-				}
-			}
-
-			if (!valid) {
-				_set_error("expected string constant as 'preload' argument.");
+			Ref<Resource> res = _parse_resource_path(p_parent, p_static, true, NULL);
+			if (res.is_null()) {
 				return NULL;
-			}
-
-			if (!path.is_abs_path() && base_path != "")
-				path = base_path + "/" + path;
-			path = path.replace("///", "//").simplify_path();
-			if (path == self_path) {
-
-				_set_error("Can't preload itself (use 'get_script()').");
-				return NULL;
-			}
-
-			Ref<Resource> res;
-			if (!validating) {
-
-				//this can be too slow for just validating code
-				if (for_completion && ScriptCodeCompletionCache::get_sigleton()) {
-					res = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(path);
-				} else {
-					res = ResourceLoader::load(path);
-				}
-				if (!res.is_valid()) {
-					_set_error("Can't preload resource at path: " + path);
-					return NULL;
-				}
-			} else {
-
-				if (!FileAccess::exists(path)) {
-					_set_error("Can't preload resource at path: " + path);
-					return NULL;
-				}
 			}
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -3402,6 +3449,84 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					_set_error("Expected end of statement (signal)");
 					return;
 				}
+			} break;
+			case GDScriptTokenizer::TK_BUILT_IN_FUNC: {
+				if (tokenizer->get_token_built_in_func() == GDScriptFunctions::RESOURCE_LOAD) {
+					tokenizer->advance();
+
+					const int line = tokenizer->get_token_line();
+					String path;
+
+					Ref<Resource> res = _parse_resource_path(p_class, false, false, &path);
+					if (path.length() == 0) {
+						return;
+					}
+
+					OperatorNode *load = alloc_node<OperatorNode>();
+					load->op = OperatorNode::OP_CALL;
+
+					ConstantNode *resource_path = alloc_node<ConstantNode>();
+					resource_path->value = path;
+
+					BuiltInFunctionNode *load_fn = alloc_node<BuiltInFunctionNode>();
+					load_fn->function = GDScriptFunctions::RESOURCE_LOAD;
+					load->arguments.push_back(load_fn);
+					load->arguments.push_back(resource_path);
+
+					String name;
+					if (!_parse_resource_name(path, name)) {
+						return;
+					}
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = name;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_INIT_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(load);
+
+					p_class->ready->statements.push_back(op);
+
+					Node *expression = load;
+					if (!res.is_null()) {
+						ConstantNode *resource = alloc_node<ConstantNode>();
+						resource->value = res;
+						expression = resource;
+					}
+
+					ClassNode::Member member;
+
+					member.identifier = name;
+					member.expression = expression;
+					member._export.name = name;
+					member.line = line;
+					member.rpc_mode = rpc_mode;
+					p_class->variables.push_back(member);
+				}
+			} break;
+			case GDScriptTokenizer::TK_PR_PRELOAD: {
+				tokenizer->advance();
+				const int line = tokenizer->get_token_line();
+
+				Ref<Resource> res = _parse_resource_path(p_class, false, true, NULL);
+				if (res.is_null()) {
+					return;
+				}
+
+				String name;
+				if (!_parse_resource_name(res->get_path(), name)) {
+					return;
+				}
+
+				ConstantNode *res_constant = alloc_node<ConstantNode>();
+				res_constant->value = res;
+
+				ClassNode::Constant constant;
+				constant.identifier = name;
+				constant.expression = res_constant;
+				p_class->constant_expressions.push_back(constant);
+
 			} break;
 			case GDScriptTokenizer::TK_PR_EXPORT: {
 
