@@ -400,6 +400,55 @@ String Color::to_html(bool p_alpha) const {
 	return txt;
 }
 
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) {
+
+	const float h_ = p_h / 60.0f;
+	const float c = p_v * p_s;
+	const float x = c * (1.0f - Math::abs(Math::fmod(h_, 2.0f) - 1.0f));
+	float r, g, b;
+
+	switch ((int)h_) {
+		case 0: {
+			r = c;
+			g = x;
+			b = 0;
+		} break;
+		case 1: {
+			r = x;
+			g = c;
+			b = 0;
+		} break;
+		case 2: {
+			r = 0;
+			g = c;
+			b = x;
+		} break;
+		case 3: {
+			r = 0;
+			g = x;
+			b = c;
+		} break;
+		case 4: {
+			r = x;
+			g = 0;
+			b = c;
+		} break;
+		case 5: {
+			r = c;
+			g = 0;
+			b = x;
+		} break;
+		default: {
+			r = 0;
+			g = 0;
+			b = 0;
+		} break;
+	}
+
+	const float m = p_v - c;
+	return Color(m + r, m + g, m + b, p_a);
+}
+
 float Color::gray() const {
 
 	return (r + g + b) / 3.0;

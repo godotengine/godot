@@ -578,18 +578,47 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (identifier == StringName()) {
 
-				_set_error("Built-in type constant expected after '.'");
+				_set_error("Built-in type constant or static function expected after '.'");
 				return NULL;
 			}
 			if (!Variant::has_numeric_constant(bi_type, identifier)) {
 
-				_set_error("Static constant  '" + identifier.operator String() + "' not present in built-in type " + Variant::get_type_name(bi_type) + ".");
-				return NULL;
-			}
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN &&
+						Variant::is_method_const(bi_type, identifier) &&
+						Variant::get_method_return_type(bi_type, identifier) == bi_type) {
 
-			ConstantNode *cn = alloc_node<ConstantNode>();
-			cn->value = Variant::get_numeric_constant_value(bi_type, identifier);
-			expr = cn;
+					tokenizer->advance();
+
+					OperatorNode *construct = alloc_node<OperatorNode>();
+					construct->op = OperatorNode::OP_CALL;
+
+					TypeNode *tn = alloc_node<TypeNode>();
+					tn->vtype = bi_type;
+					construct->arguments.push_back(tn);
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_CALL;
+					op->arguments.push_back(construct);
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = identifier;
+					op->arguments.push_back(id);
+
+					if (!_parse_arguments(op, op->arguments, p_static, true))
+						return NULL;
+
+					expr = op;
+				} else {
+
+					_set_error("Static constant  '" + identifier.operator String() + "' not present in built-in type " + Variant::get_type_name(bi_type) + ".");
+					return NULL;
+				}
+			} else {
+
+				ConstantNode *cn = alloc_node<ConstantNode>();
+				cn->value = Variant::get_numeric_constant_value(bi_type, identifier);
+				expr = cn;
+			}
 
 		} else if (tokenizer->get_token(1) == GDScriptTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
 			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
