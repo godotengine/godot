@@ -76,6 +76,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+				Return an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
@@ -125,6 +126,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
 		</method>
 	</methods>
