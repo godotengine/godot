@@ -58,6 +58,10 @@ private:
 	bool expand;
 	StretchMode stretch_mode;
 
+	Rect2 _texture_region;
+	Rect2 _position_rect;
+	bool _tile;
+
 protected:
 	virtual Size2 get_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
