@@ -90,6 +90,10 @@ class GDMonoClass {
 	Map<StringName, GDMonoProperty *> properties;
 	Vector<GDMonoProperty *> properties_list;
 
+	bool delegates_fetched;
+	Map<StringName, GDMonoClass *> delegates;
+	Vector<GDMonoClass *> delegates_list;
+
 	friend class GDMonoAssembly;
 	GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly);
 
@@ -132,6 +136,8 @@ public:
 
 	GDMonoProperty *get_property(const StringName &p_name);
 	const Vector<GDMonoProperty *> &get_all_properties();
+
+	const Vector<GDMonoClass *> &get_all_delegates();
 
 	~GDMonoClass();
 };

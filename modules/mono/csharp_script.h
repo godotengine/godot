@@ -91,6 +91,8 @@ class CSharpScript : public Script {
 	Set<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache;
 	bool exports_invalidated;
+	Map<StringName, Vector<StringName> > _signals;
+	bool signals_invalidated;
 
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
@@ -103,6 +105,8 @@ class CSharpScript : public Script {
 	Map<StringName, PropertyInfo> member_info;
 
 	void _clear();
+
+	bool _update_signals();
 
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
@@ -139,6 +143,7 @@ public:
 
 	/* TODO */ virtual bool has_script_signal(const StringName &p_signal) const { return false; }
 	/* TODO */ virtual void get_script_signal_list(List<MethodInfo> *r_signals) const {}
+	virtual void update_signals();
 
 	/* TODO */ virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
