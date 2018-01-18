@@ -90,10 +90,13 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
-
+		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		set_process_unhandled_input(is_visible_in_tree());
+		if (is_visible_in_tree()) {
+			call_deferred("_update_size");
+		}
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
@@ -101,6 +104,7 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 	}
 }
 
@@ -109,7 +113,7 @@ void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 
-		if (k->is_pressed() && (text_edit->has_focus() || text_vbc->is_a_parent_of(get_focus_owner()))) {
+		if (k->is_pressed() && (text_edit->has_focus() || vbc_lineedit->is_a_parent_of(get_focus_owner()))) {
 
 			bool accepted = true;
 
@@ -182,6 +186,7 @@ void FindReplaceBar::_replace() {
 
 void FindReplaceBar::_replace_all() {
 
+	text_edit->disconnect("text_changed", this, "_editor_text_changed");
 	// line as x so it gets priority in comparison, column as y
 	Point2i orig_cursor(text_edit->cursor_get_line(), text_edit->cursor_get_column());
 	Point2i prev_match = Point2(-1, -1);
@@ -255,6 +260,8 @@ void FindReplaceBar::_replace_all() {
 
 	text_edit->set_v_scroll(vsval);
 	set_error(vformat(TTR("Replaced %d occurrence(s)."), rc));
+
+	text_edit->call_deferred("connect", "text_changed", this, "_editor_text_changed");
 }
 
 void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
@@ -356,13 +363,13 @@ void FindReplaceBar::_hide_bar() {
 	text_edit->set_search_text("");
 	result_line = -1;
 	result_col = -1;
-	replace_hbc->hide();
-	replace_options_hbc->hide();
+	set_error("");
 	hide();
 }
 
 void FindReplaceBar::_show_search() {
 
+	hide(); // to update size correctly
 	show();
 	search_text->grab_focus();
 
@@ -375,21 +382,24 @@ void FindReplaceBar::_show_search() {
 		search_text->set_cursor_position(search_text->get_text().length());
 		search_current();
 	}
+	call_deferred("_update_size");
 }
 
 void FindReplaceBar::popup_search() {
 
-	replace_hbc->hide();
-	replace_options_hbc->hide();
+	replace_text->hide();
+	hbc_button_replace->hide();
+	hbc_option_replace->hide();
 	_show_search();
 }
 
 void FindReplaceBar::popup_replace() {
 
-	if (!replace_hbc->is_visible_in_tree() || !replace_options_hbc->is_visible_in_tree()) {
+	if (!replace_text->is_visible_in_tree()) {
 		replace_text->clear();
-		replace_hbc->show();
-		replace_options_hbc->show();
+		replace_text->show();
+		hbc_button_replace->show();
+		hbc_option_replace->show();
 	}
 
 	selection_only->set_pressed((text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line()));
@@ -456,13 +466,18 @@ bool FindReplaceBar::is_selection_only() const {
 
 void FindReplaceBar::set_error(const String &p_label) {
 
-	error_label->set_text(p_label);
+	emit_signal("error", p_label);
 }
 
 void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 	text_edit = p_text_edit;
 	text_edit->connect("text_changed", this, "_editor_text_changed");
+}
+
+void FindReplaceBar::_update_size() {
+
+	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
 }
 
 void FindReplaceBar::_bind_methods() {
@@ -480,101 +495,101 @@ void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_replace_all_pressed", &FindReplaceBar::_replace_all);
 	ClassDB::bind_method("_search_options_changed", &FindReplaceBar::_search_options_changed);
 	ClassDB::bind_method("_hide_pressed", &FindReplaceBar::_hide_bar);
+	ClassDB::bind_method("_update_size", &FindReplaceBar::_update_size);
 
 	ADD_SIGNAL(MethodInfo("search"));
+	ADD_SIGNAL(MethodInfo("error"));
 }
 
 FindReplaceBar::FindReplaceBar() {
 
+	container = memnew(Control);
+	add_child(container);
+	container->set_clip_contents(true);
+	container->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	replace_all_mode = false;
 	preserve_cursor = false;
 
-	text_vbc = memnew(VBoxContainer);
-	add_child(text_vbc);
+	hbc = memnew(HBoxContainer);
+	container->add_child(hbc);
+	hbc->set_anchor_and_margin(MARGIN_RIGHT, 1, 0);
 
-	HBoxContainer *search_hbc = memnew(HBoxContainer);
-	text_vbc->add_child(search_hbc);
+	vbc_lineedit = memnew(VBoxContainer);
+	hbc->add_child(vbc_lineedit);
+	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
+	VBoxContainer *vbc_button = memnew(VBoxContainer);
+	hbc->add_child(vbc_button);
+	VBoxContainer *vbc_option = memnew(VBoxContainer);
+	hbc->add_child(vbc_option);
 
+	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
+	vbc_button->add_child(hbc_button_search);
+	hbc_button_replace = memnew(HBoxContainer);
+	vbc_button->add_child(hbc_button_replace);
+
+	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
+	vbc_option->add_child(hbc_option_search);
+	hbc_option_replace = memnew(HBoxContainer);
+	vbc_option->add_child(hbc_option_replace);
+
+	// search toolbar
 	search_text = memnew(LineEdit);
-	search_hbc->add_child(search_text);
-	search_text->set_custom_minimum_size(Size2(200, 0));
+	vbc_lineedit->add_child(search_text);
+	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
 
 	find_prev = memnew(ToolButton);
-	search_hbc->add_child(find_prev);
+	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
-	search_hbc->add_child(find_next);
+	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
-	replace_hbc = memnew(HBoxContainer);
-	text_vbc->add_child(replace_hbc);
-	replace_hbc->hide();
-
-	replace_text = memnew(LineEdit);
-	replace_hbc->add_child(replace_text);
-	replace_text->set_custom_minimum_size(Size2(200, 0));
-	replace_text->connect("text_entered", this, "_replace_text_entered");
-
-	replace = memnew(Button);
-	replace_hbc->add_child(replace);
-	replace->set_text(TTR("Replace"));
-	//replace->set_focus_mode(FOCUS_NONE);
-	replace->connect("pressed", this, "_replace_pressed");
-
-	replace_all = memnew(Button);
-	replace_hbc->add_child(replace_all);
-	replace_all->set_text(TTR("Replace All"));
-	//replace_all->set_focus_mode(FOCUS_NONE);
-	replace_all->connect("pressed", this, "_replace_all_pressed");
-
-	Control *spacer_split = memnew(Control);
-	spacer_split->set_custom_minimum_size(Size2(0, 1));
-	text_vbc->add_child(spacer_split);
-
-	VBoxContainer *options_vbc = memnew(VBoxContainer);
-	add_child(options_vbc);
-	options_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	HBoxContainer *search_options = memnew(HBoxContainer);
-	options_vbc->add_child(search_options);
-
 	case_sensitive = memnew(CheckBox);
-	search_options->add_child(case_sensitive);
+	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
 	case_sensitive->connect("toggled", this, "_search_options_changed");
 
 	whole_words = memnew(CheckBox);
-	search_options->add_child(whole_words);
+	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
 	whole_words->connect("toggled", this, "_search_options_changed");
 
-	error_label = memnew(Label);
-	search_options->add_child(error_label);
-	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	// replace toolbar
+	replace_text = memnew(LineEdit);
+	vbc_lineedit->add_child(replace_text);
+	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	replace_text->connect("text_entered", this, "_replace_text_entered");
 
-	search_options->add_spacer();
+	replace = memnew(Button);
+	hbc_button_replace->add_child(replace);
+	replace->set_text(TTR("Replace"));
+	replace->connect("pressed", this, "_replace_pressed");
 
-	hide_button = memnew(TextureButton);
-	search_options->add_child(hide_button);
-	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect("pressed", this, "_hide_pressed");
-
-	replace_options_hbc = memnew(HBoxContainer);
-	options_vbc->add_child(replace_options_hbc);
-	replace_options_hbc->hide();
+	replace_all = memnew(Button);
+	hbc_button_replace->add_child(replace_all);
+	replace_all->set_text(TTR("Replace All"));
+	replace_all->connect("pressed", this, "_replace_all_pressed");
 
 	selection_only = memnew(CheckBox);
-	replace_options_hbc->add_child(selection_only);
+	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTR("Selection Only"));
 	selection_only->set_focus_mode(FOCUS_NONE);
 	selection_only->connect("toggled", this, "_search_options_changed");
+
+	hide_button = memnew(TextureButton);
+	add_child(hide_button);
+	hide_button->set_focus_mode(FOCUS_NONE);
+	hide_button->connect("pressed", this, "_hide_pressed");
+	hide_button->set_expand(true);
+	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 }
 
 /*** CODE EDITOR ****/
@@ -859,6 +874,7 @@ CodeTextEditor::CodeTextEditor() {
 	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
+	find_replace_bar->connect("error", error, "set_text");
 
 	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
 
