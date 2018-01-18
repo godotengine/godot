@@ -8141,7 +8141,7 @@ msgstr "PathFollow2D zadziała tylko wtedy, gdy będzie dzieckiem węzeł Path2D
 #: scene/2d/physics_body_2d.cpp
 #, fuzzy
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -8266,8 +8266,8 @@ msgstr ""
 #: scene/3d/physics_body.cpp
 #, fuzzy
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "Zmiany rozmiaru w RigidBody (w trybach character i rigid) zostaną nadpisane "

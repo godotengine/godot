@@ -8346,7 +8346,7 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp
 #, fuzzy
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -8481,8 +8481,8 @@ msgstr ""
 #: scene/3d/physics_body.cpp
 #, fuzzy
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "Los cambios en el tamaño del RigidBody (en el personaje o modos rígidos) "

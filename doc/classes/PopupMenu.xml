@@ -266,7 +266,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item is a seperator. If it is, it would be displayed as a line.
+				Return whether the item is a separator. If it is, it would be displayed as a line.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -308,7 +308,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Mark the item at index "idx" as a seperator, which means that it would be displayed as a mere line.
+				Mark the item at index "idx" as a separator, which means that it would be displayed as a mere line.
 			</description>
 		</method>
 		<method name="set_item_checked">

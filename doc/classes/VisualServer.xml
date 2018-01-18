@@ -204,7 +204,7 @@
 			<argument index="4" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a polyline, which is a line from mutliple points with a width, to the [CanvasItem]'s draw commands.
+				Adds a polyline, which is a line from multiple points with a width, to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -669,7 +669,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				The shadow mask. binary about wich layers this canvas light affects wich canvas item's shadows. See [LightOccluder2D] for more information on light masks.
+				The shadow mask. binary about which layers this canvas light affects which canvas item's shadows. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_light_set_layer_range">
@@ -1506,7 +1506,7 @@
 			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
 			</argument>
 			<description>
-				Returns a copy of a texture's image unless it's a CubeMap, in wich case it returns the [RID] of the image at one of the cubes sides.
+				Returns a copy of a texture's image unless it's a CubeMap, in which case it returns the [RID] of the image at one of the cubes sides.
 			</description>
 		</method>
 		<method name="texture_get_flags" qualifiers="const">
@@ -2155,10 +2155,10 @@
 			Primitive to draw consists of triangles.
 		</constant>
 		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
-			Primitive to draw consists of a triangle strip (the last 3 verticies are always combined to make a triangle).
+			Primitive to draw consists of a triangle strip (the last 3 vertices are always combined to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
-			Primitive to draw consists of a triangle strip (the last 2 verticies are always combined with the first to make a triangle).
+			Primitive to draw consists of a triangle strip (the last 2 vertices are always combined with the first to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
 			Marks the primitive types endpoint. used internally.

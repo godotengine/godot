@@ -4,7 +4,7 @@
 		A hinge between two 3D bodies.
 	</brief_description>
 	<description>
-		Normaly uses the z-axis of body A as the hinge axis, another axis can be specified when adding it manually though.
+		Normally uses the z-axis of body A as the hinge axis, another axis can be specified when adding it manually though.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,12 +40,12 @@
 			Target speed for the motor.
 		</member>
 		<member name="params/bias" type="float" setter="set_param" getter="get_param">
-			The speed with wich the two bodies get pulled together when they move in different directions.
+			The speed with which the two bodies get pulled together when they move in different directions.
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_BIAS" value="0" enum="Param">
-			The speed with wich the two bodies get pulled together when they move in different directions.
+			The speed with which the two bodies get pulled together when they move in different directions.
 		</constant>
 		<constant name="PARAM_LIMIT_UPPER" value="1" enum="Param">
 			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].

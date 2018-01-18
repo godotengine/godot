@@ -627,7 +627,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 	if (!efsd)
 		return false;
 
-	bool has_childs = false;
+	bool has_children = false;
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 
@@ -643,7 +643,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 			if (!children) {
 				memdelete(dir_item);
 			} else {
-				has_childs = true;
+				has_children = true;
 			}
 		}
 	}
@@ -683,12 +683,12 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"));
 				}
 				ti->set_metadata(0, path);
-				has_childs = true;
+				has_children = true;
 			}
 		}
 	}
 
-	return has_childs;
+	return has_children;
 }
 
 void OrphanResourcesDialog::refresh() {

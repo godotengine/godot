@@ -7869,7 +7869,7 @@ msgstr "PathFollow2D类型的节点只有放在Path2D节点下才能正常工作
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -7986,8 +7986,8 @@ msgstr "粒子不可见，因为没有网格(meshes)指定到绘制通道(draw p
 
 #: scene/3d/physics_body.cpp
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "运行时，修改RigidBody（character或rigid模式）的尺寸，会修改物理引擎的大小尺"

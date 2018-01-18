@@ -1811,7 +1811,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					imethod.return_type = name_cache.type_void;
 
 					// Actually, more methods like this may be added in the future,
-					// which could actually will return something differnet.
+					// which could actually will return something different.
 					// Let's put this to notify us if that ever happens.
 					if (itype.cname != name_cache.type_Object || imethod.name != "free") {
 						if (verbose_output) {

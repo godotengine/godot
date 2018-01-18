@@ -690,7 +690,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		/// Calculate using the rule writte below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
-		///     for an object of dimentions 1 meter, try 0.2
+		///     for an object of dimensions 1 meter, try 0.2
 		btVector3 center;
 		btScalar radius;
 		btBody->getCollisionShape()->getBoundingSphere(center, radius);

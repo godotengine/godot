@@ -1077,7 +1077,7 @@
 			Joypad Right Analog Trigger
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Functions that return Error return OK when no error occured. Most functions don't return errors and/or just print errors to STDOUT.
+			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.

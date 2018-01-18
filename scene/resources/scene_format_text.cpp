@@ -1411,7 +1411,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				I = I->next();
 			}
 
-			resource_set.insert(res); //saved after, so the childs it needs are available when loaded
+			resource_set.insert(res); //saved after, so the children it needs are available when loaded
 			saved_resources.push_back(res);
 
 		} break;

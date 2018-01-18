@@ -159,7 +159,7 @@ private:
 			bool is_empty = true;
 			String n = d->get_next();
 			while (n != String()) {
-				if (!n.begins_with(".")) { // i dont know if this is enough to guarantee an empty dir
+				if (!n.begins_with(".")) { // i don't know if this is enough to guarantee an empty dir
 					is_empty = false;
 					break;
 				}
@@ -690,7 +690,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (scroll_childs->get_child_count() == 0)
+			if (scroll_children->get_child_count() == 0)
 				open_templates->popup_centered_minsize();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -712,9 +712,9 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 }
 
 void ProjectManager::_update_project_buttons() {
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_childs->get_child(i));
+		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_children->get_child(i));
 		item->update();
 	}
 
@@ -736,8 +736,8 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 			int clicked_id = -1;
 			int last_clicked_id = -1;
-			for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+			for (int i = 0; i < scroll_children->get_child_count(); i++) {
+				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 				if (!hb) continue;
 				if (hb->get_meta("name") == clicked) clicked_id = i;
 				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
@@ -746,8 +746,8 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			if (last_clicked_id != -1 && clicked_id != -1) {
 				int min = clicked_id < last_clicked_id ? clicked_id : last_clicked_id;
 				int max = clicked_id > last_clicked_id ? clicked_id : last_clicked_id;
-				for (int i = 0; i < scroll_childs->get_child_count(); ++i) {
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+				for (int i = 0; i < scroll_children->get_child_count(); ++i) {
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (!hb) continue;
 					if (i != clicked_id && (i < min || i > max) && !mb->get_control()) {
 						selected_list.erase(hb->get_meta("name"));
@@ -801,9 +801,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case KEY_HOME: {
 
-				for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+				for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (hb) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
@@ -816,13 +816,13 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case KEY_END: {
 
-				for (int i = scroll_childs->get_child_count() - 1; i >= 0; i--) {
+				for (int i = scroll_children->get_child_count() - 1; i >= 0; i--) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (hb) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
-						scroll->set_v_scroll(scroll_childs->get_size().y);
+						scroll->set_v_scroll(scroll_children->get_size().y);
 						_update_project_buttons();
 						break;
 					}
@@ -838,9 +838,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 					bool found = false;
 
-					for (int i = scroll_childs->get_child_count() - 1; i >= 0; i--) {
+					for (int i = scroll_children->get_child_count() - 1; i >= 0; i--) {
 
-						HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+						HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 						if (!hb) continue;
 
 						String current = hb->get_meta("name");
@@ -875,9 +875,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 				bool found = selected_list.empty();
 
-				for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+				for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (!hb) continue;
 
 					String current = hb->get_meta("name");
@@ -941,8 +941,8 @@ void ProjectManager::_load_recent_projects() {
 	ProjectListFilter::FilterOption filter_option = project_filter->get_filter_option();
 	String search_term = project_filter->get_search_term();
 
-	while (scroll_childs->get_child_count() > 0) {
-		memdelete(scroll_childs->get_child(0));
+	while (scroll_children->get_child_count() > 0) {
+		memdelete(scroll_children->get_child(0));
 	}
 
 	Map<String, String> selected_list_copy = selected_list;
@@ -1102,7 +1102,7 @@ void ProjectManager::_load_recent_projects() {
 		fpath->add_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
 
-		scroll_childs->add_child(hb);
+		scroll_children->add_child(hb);
 	}
 
 	for (Map<String, String>::Element *E = selected_list_copy.front(); E; E = E->next()) {
@@ -1125,8 +1125,8 @@ void ProjectManager::_on_project_renamed() {
 
 void ProjectManager::_on_project_created(const String &dir) {
 	bool has_already = false;
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
 		if (fpath->get_text() == dir) {
 			has_already = true;
@@ -1143,8 +1143,8 @@ void ProjectManager::_on_project_created(const String &dir) {
 }
 
 void ProjectManager::_update_scroll_position(const String &dir) {
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
 		if (fpath->get_text() == dir) {
 			last_clicked = hb->get_meta("name");
@@ -1584,9 +1584,9 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
 	tree_hb->add_child(tree_vb);
-	scroll_childs = memnew(VBoxContainer);
-	scroll_childs->set_h_size_flags(SIZE_EXPAND_FILL);
-	scroll->add_child(scroll_childs);
+	scroll_children = memnew(VBoxContainer);
+	scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
+	scroll->add_child(scroll_children);
 
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));

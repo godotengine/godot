@@ -91,7 +91,7 @@ namespace Godot
 
             float dist = (normal.Dot(from) - d) / den;
 
-            // This is a ray, before the emiting pos (from) does not exist
+            // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
                 return new Vector3();
 

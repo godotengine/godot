@@ -5369,7 +5369,7 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	if (p_emitting != particles->emitting) {
-		// Restart is overriden by set_emitting
+		// Restart is overridden by set_emitting
 		particles->restart_request = false;
 	}
 	particles->emitting = p_emitting;

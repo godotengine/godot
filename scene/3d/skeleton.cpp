@@ -61,7 +61,7 @@ bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_enabled(which, p_value);
 	else if (what == "pose")
 		set_bone_pose(which, p_value);
-	else if (what == "bound_childs") {
+	else if (what == "bound_children") {
 		Array children = p_value;
 
 		if (is_inside_tree()) {
@@ -105,7 +105,7 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = is_bone_enabled(which);
 	else if (what == "pose")
 		r_ret = get_bone_pose(which);
-	else if (what == "bound_childs") {
+	else if (what == "bound_children") {
 		Array children;
 
 		for (const List<uint32_t>::Element *E = bones[which].nodes_bound.front(); E; E = E->next()) {
@@ -134,7 +134,7 @@ void Skeleton::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, prep + "bound_childs"));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, prep + "bound_children"));
 	}
 }
 

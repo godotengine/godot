@@ -52,9 +52,9 @@ def make_editor_icons_action(target, source, env):
         # some special cases
         if icon_name in ['Int', 'Bool', 'Float']:
             icon_name = icon_name.lower()
-        if icon_name.endswith("MediumThumb"):  # dont know a better way to handle this
+        if icon_name.endswith("MediumThumb"):  # don't know a better way to handle this
             thumb_medium_indices.append(str(index))
-        if icon_name.endswith("BigThumb"):  # dont know a better way to handle this
+        if icon_name.endswith("BigThumb"):  # don't know a better way to handle this
             thumb_big_indices.append(str(index))
 
         s.write('\t"%s"' % icon_name)

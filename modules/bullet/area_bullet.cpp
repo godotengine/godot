@@ -236,7 +236,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
-			print_line("The Bullet areas dosn't suppot this param: " + itos(p_param));
+			print_line("The Bullet areas doesn't suppot this param: " + itos(p_param));
 	}
 }
 
@@ -259,7 +259,7 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
-			print_line("The Bullet areas dosn't suppot this param: " + itos(p_param));
+			print_line("The Bullet areas doesn't suppot this param: " + itos(p_param));
 			return Variant();
 	}
 }

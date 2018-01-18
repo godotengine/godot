@@ -2217,7 +2217,7 @@ int String::find(const String &p_str, int p_from) const {
 	const int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 	const CharType *str = p_str.c_str();
@@ -2256,7 +2256,7 @@ int String::find(const char *p_str, int p_from) const {
 	const int len = length();
 
 	if (len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2317,7 +2317,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	int len = length();
 
 	if (len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2366,7 +2366,7 @@ int String::findn(const String &p_str, int p_from) const {
 	int src_len = p_str.length();
 
 	if (src_len == 0 || length() == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *srcd = c_str();
 
@@ -2462,7 +2462,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 	int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 

@@ -455,7 +455,7 @@ void TextEdit::_update_selection_mode_word() {
 		end += 1;
 	}
 
-	// inital selection
+	// initial selection
 	if (!selection.active) {
 		select(row, beg, row, end);
 		selection.selecting_column = beg;
@@ -888,7 +888,7 @@ void TextEdit::_notification(int p_what) {
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
 					}
 				} else {
-					// if it has text, then draw current line marker in the margin, as line number ect will draw over it, draw the rest of line marker later.
+					// if it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
 					if (line == cursor.line && highlight_current_line) {
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg, get_row_height()), cache.current_line_color);
 					}
@@ -937,7 +937,7 @@ void TextEdit::_notification(int p_what) {
 
 					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
 				}
-				//loop through charcters in one line
+				//loop through characters in one line
 				for (int j = 0; j < str.length(); j++) {
 
 					//look for keyword
@@ -3131,7 +3131,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (!scancode_handled && !k->get_command()) { //for german kbds
+		if (!scancode_handled && !k->get_command()) { //for German kbds
 
 			if (k->get_unicode() >= 32) {
 

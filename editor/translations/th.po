@@ -7845,7 +7845,7 @@ msgstr "PathFollow2D จะทำงานได้ต้องเป็นโ�
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -7957,8 +7957,8 @@ msgstr "ไม่มีการแสดงผลเนื่องจากไ
 
 #: scene/3d/physics_body.cpp
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "ระบบฟิสิกส์จะจัดการขนาดของ RigidBody (ในโหมด character หรือ rigid) เมื่อรันเกม\n"

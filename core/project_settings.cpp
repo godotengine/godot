@@ -167,7 +167,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (props.has(p_name)) {
-			if (!props[p_name].overrided)
+			if (!props[p_name].overridden)
 				props[p_name].variant = p_value;
 
 		} else {

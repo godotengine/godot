@@ -45,12 +45,12 @@
 
 void TreeItem::move_to_top() {
 
-	if (!parent || parent->childs == this)
+	if (!parent || parent->children == this)
 		return; //already on top
 	TreeItem *prev = get_prev();
 	prev->next = next;
-	next = parent->childs;
-	parent->childs = this;
+	next = parent->children;
+	parent->children = this;
 }
 
 void TreeItem::move_to_bottom() {
@@ -65,7 +65,7 @@ void TreeItem::move_to_bottom() {
 	if (prev) {
 		prev->next = next;
 	} else {
-		parent->childs = next;
+		parent->children = next;
 	}
 	last->next = this;
 	next = NULL;
@@ -368,10 +368,10 @@ TreeItem *TreeItem::get_next() {
 
 TreeItem *TreeItem::get_prev() {
 
-	if (!parent || parent->childs == this)
+	if (!parent || parent->children == this)
 		return NULL;
 
-	TreeItem *prev = parent->childs;
+	TreeItem *prev = parent->children;
 	while (prev && prev->next != this)
 		prev = prev->next;
 
@@ -385,7 +385,7 @@ TreeItem *TreeItem::get_parent() {
 
 TreeItem *TreeItem::get_children() {
 
-	return childs;
+	return children;
 }
 
 TreeItem *TreeItem::get_prev_visible() {
@@ -402,10 +402,10 @@ TreeItem *TreeItem::get_prev_visible() {
 	} else {
 
 		current = prev;
-		while (!current->collapsed && current->childs) {
+		while (!current->collapsed && current->children) {
 			//go to the very end
 
-			current = current->childs;
+			current = current->children;
 			while (current->next)
 				current = current->next;
 		}
@@ -418,9 +418,9 @@ TreeItem *TreeItem::get_next_visible() {
 
 	TreeItem *current = this;
 
-	if (!current->collapsed && current->childs) {
+	if (!current->collapsed && current->children) {
 
-		current = current->childs;
+		current = current->children;
 
 	} else if (current->next) {
 
@@ -444,7 +444,7 @@ TreeItem *TreeItem::get_next_visible() {
 void TreeItem::remove_child(TreeItem *p_item) {
 
 	ERR_FAIL_NULL(p_item);
-	TreeItem **c = &childs;
+	TreeItem **c = &children;
 
 	while (*c) {
 
@@ -802,16 +802,16 @@ void TreeItem::_bind_methods() {
 
 void TreeItem::clear_children() {
 
-	TreeItem *c = childs;
+	TreeItem *c = children;
 	while (c) {
 
 		TreeItem *aux = c;
 		c = c->get_next();
-		aux->parent = 0; // so it wont try to recursively autoremove from me in here
+		aux->parent = 0; // so it won't try to recursively autoremove from me in here
 		memdelete(aux);
 	}
 
-	childs = 0;
+	children = 0;
 };
 
 TreeItem::TreeItem(Tree *p_tree) {
@@ -823,7 +823,7 @@ TreeItem::TreeItem(Tree *p_tree) {
 
 	parent = 0; // parent item
 	next = 0; // next in list
-	childs = 0; //child items
+	children = 0; //child items
 }
 
 TreeItem::~TreeItem() {
@@ -977,9 +977,9 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	int height = compute_item_height(p_item);
 	height += cache.vseparation;
 
-	if (!p_item->collapsed) { /* if not collapsed, check the childs */
+	if (!p_item->collapsed) { /* if not collapsed, check the children */
 
-		TreeItem *c = p_item->childs;
+		TreeItem *c = p_item->children;
 
 		while (c) {
 
@@ -1386,7 +1386,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		if (!p_item->disable_folding && !hide_folding && p_item->childs) { //has childs, draw the guide box
+		if (!p_item->disable_folding && !hide_folding && p_item->children) { //has children, draw the guide box
 
 			Ref<Texture> arrow;
 
@@ -1413,9 +1413,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		children_pos.y += htotal;
 	}
 
-	if (!p_item->collapsed) { /* if not collapsed, check the childs */
+	if (!p_item->collapsed) { /* if not collapsed, check the children */
 
-		TreeItem *c = p_item->childs;
+		TreeItem *c = p_item->children;
 
 		while (c) {
 
@@ -1569,7 +1569,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		*r_in_range = false;
 	}
 
-	TreeItem *c = p_current->childs;
+	TreeItem *c = p_current->children;
 
 	while (c) {
 
@@ -1635,7 +1635,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 		if (!p_item->disable_folding && !hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
 
-			if (p_item->childs)
+			if (p_item->children)
 				p_item->set_collapsed(!p_item->is_collapsed());
 
 			return -1; //handled!
@@ -1942,9 +1942,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			new_pos.y -= item_h;
 		}
 
-		if (!p_item->collapsed) { /* if not collapsed, check the childs */
+		if (!p_item->collapsed) { /* if not collapsed, check the children */
 
-			TreeItem *c = p_item->childs;
+			TreeItem *c = p_item->children;
 
 			while (c) {
 
@@ -2988,7 +2988,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 		ti->cells.resize(columns.size());
 
 		TreeItem *prev = NULL;
-		TreeItem *c = p_parent->childs;
+		TreeItem *c = p_parent->children;
 		int idx = 0;
 
 		while (c) {
@@ -3003,7 +3003,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 		if (prev)
 			prev->next = ti;
 		else
-			p_parent->childs = ti;
+			p_parent->children = ti;
 		ti->parent = p_parent;
 
 	} else {
@@ -3036,8 +3036,8 @@ TreeItem *Tree::get_last_item() {
 
 		if (last->next)
 			last = last->next;
-		else if (last->childs)
-			last = last->childs;
+		else if (last->children)
+			last = last->children;
 		else
 			break;
 	}
@@ -3208,9 +3208,9 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 			p_item = root;
 		} else {
 
-			if (p_item->childs) {
+			if (p_item->children) {
 
-				p_item = p_item->childs;
+				p_item = p_item->children;
 
 			} else if (p_item->next) {
 
@@ -3325,9 +3325,9 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 
 		ofs += compute_item_height(it) + cache.vseparation;
 
-		if (it->childs && !it->collapsed) {
+		if (it->children && !it->collapsed) {
 
-			it = it->childs;
+			it = it->children;
 
 		} else if (it->next) {
 
@@ -3548,7 +3548,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	}
 
 	if (p_item->is_collapsed())
-		return NULL; // do not try childs, it's collapsed
+		return NULL; // do not try children, it's collapsed
 
 	TreeItem *n = p_item->get_children();
 	while (n) {
@@ -3821,7 +3821,7 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,Inbetween"), "set_drop_mode_flags", "get_drop_mode_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In between"), "set_drop_mode_flags", "get_drop_mode_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));

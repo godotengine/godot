@@ -144,13 +144,13 @@ private:
 
 	Vector<Cell> cells;
 
-	bool collapsed; // wont show childs
+	bool collapsed; // won't show children
 	bool disable_folding;
 	int custom_min_height;
 
 	TreeItem *parent; // parent item
 	TreeItem *next; // next in list
-	TreeItem *childs; //child items
+	TreeItem *children; //child items
 	Tree *tree; //tree (for reference)
 
 	TreeItem(Tree *p_tree);

@@ -212,7 +212,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			Vector3 v;
 			for (Map<Vector2, int>::Element *E = tile_map[id].autotile_data.priority_map.front(); E; E = E->next()) {
 				if (E->value() > 1) {
-					//Dont save default value
+					//Don't save default value
 					v.x = E->key().x;
 					v.y = E->key().y;
 					v.z = E->value();

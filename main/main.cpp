@@ -908,7 +908,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
-	if (!OS::get_singleton()->_verbose_stdout) //overrided
+	if (!OS::get_singleton()->_verbose_stdout) //overridden
 		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
 	if (frame_delay == 0) {

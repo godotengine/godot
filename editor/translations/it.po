@@ -8151,7 +8151,7 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp
 #, fuzzy
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -8283,8 +8283,8 @@ msgstr "Nulla é visibile perché le mesh non sono state assegnate ai draw pass.
 
 #: scene/3d/physics_body.cpp
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "I cambiamenti di dimensione a RigidBody (nel personaggio o nelle modalità "

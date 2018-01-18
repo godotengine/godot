@@ -138,12 +138,12 @@ void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(con
 
 void NavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, EditorProgress *ep,
 		rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh, rcPolyMeshDetail *detail_mesh,
-		Vector<float> &verticies, Vector<int> &indices) {
+		Vector<float> &vertices, Vector<int> &indices) {
 	rcContext ctx;
 	ep->step(TTR("Setting up Configuration..."), 1);
 
-	const float *verts = verticies.ptr();
-	const int nverts = verticies.size() / 3;
+	const float *verts = vertices.ptr();
+	const int nverts = vertices.size() / 3;
 	const int *tris = indices.ptr();
 	const int ntris = indices.size() / 3;
 
@@ -265,12 +265,12 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	EditorProgress ep("bake", TTR("Navigation Mesh Generator Setup:"), 11);
 	ep.step(TTR("Parsing Geometry..."), 0);
 
-	Vector<float> verticies;
+	Vector<float> vertices;
 	Vector<int> indices;
 
-	_parse_geometry(Object::cast_to<Spatial>(p_node)->get_global_transform().affine_inverse(), p_node, verticies, indices);
+	_parse_geometry(Object::cast_to<Spatial>(p_node)->get_global_transform().affine_inverse(), p_node, vertices, indices);
 
-	if (verticies.size() > 0 && indices.size() > 0) {
+	if (vertices.size() > 0 && indices.size() > 0) {
 
 		rcHeightfield *hf = NULL;
 		rcCompactHeightfield *chf = NULL;
@@ -278,7 +278,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		rcPolyMesh *poly_mesh = NULL;
 		rcPolyMeshDetail *detail_mesh = NULL;
 
-		_build_recast_navigation_mesh(p_nav_mesh, &ep, hf, chf, cset, poly_mesh, detail_mesh, verticies, indices);
+		_build_recast_navigation_mesh(p_nav_mesh, &ep, hf, chf, cset, poly_mesh, detail_mesh, vertices, indices);
 
 		if (hf) {
 			rcFreeHeightField(hf);

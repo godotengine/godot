@@ -184,7 +184,7 @@ void Node::_propagate_ready() {
 }
 
 void Node::_propagate_enter_tree() {
-	// this needs to happen to all childs before any enter_tree
+	// this needs to happen to all children before any enter_tree
 
 	if (data.parent) {
 		data.tree = data.parent->data.tree;
@@ -1202,13 +1202,13 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			unique = false;
 		} else {
 			//check if exists
-			Node **childs = data.children.ptrw();
+			Node **children = data.children.ptrw();
 			int cc = data.children.size();
 
 			for (int i = 0; i < cc; i++) {
-				if (childs[i] == p_child)
+				if (children[i] == p_child)
 					continue;
-				if (childs[i]->data.name == p_child->data.name) {
+				if (children[i]->data.name == p_child->data.name) {
 					unique = false;
 					break;
 				}
@@ -1311,7 +1311,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	}
 
 	/* Notify */
-	//recognize childs created in this node constructor
+	//recognize children created in this node constructor
 	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
 }

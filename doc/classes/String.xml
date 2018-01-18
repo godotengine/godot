@@ -343,7 +343,7 @@
 			<argument index="1" name="placeholder" type="String" default="{_}">
 			</argument>
 			<description>
-				Formats the string by replacing all occurences of [code]placeholder[/code] with [code]values[/code].
+				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
 			</description>
 		</method>
 		<method name="get_base_dir">

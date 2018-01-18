@@ -195,7 +195,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 					float dist = global_pos.distance_to(screen_in_global); //distance to screen center
 
 					if (dist > max_distance)
-						continue; //cant hear this sound in this viewport
+						continue; //can't hear this sound in this viewport
 
 					float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
 					multiplier *= Math::db2linear(volume_db); //also apply player volume!

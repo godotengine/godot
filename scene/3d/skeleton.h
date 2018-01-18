@@ -83,12 +83,12 @@ class Skeleton : public Spatial {
 	Array _get_bound_child_nodes_to_bone(int p_bone) const {
 
 		Array bound;
-		List<Node *> childs;
-		get_bound_child_nodes_to_bone(p_bone, &childs);
+		List<Node *> children;
+		get_bound_child_nodes_to_bone(p_bone, &children);
 
-		for (int i = 0; i < childs.size(); i++) {
+		for (int i = 0; i < children.size(); i++) {
 
-			bound.push_back(childs[i]);
+			bound.push_back(children[i]);
 		}
 		return bound;
 	}

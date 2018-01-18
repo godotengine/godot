@@ -41,7 +41,7 @@ int AudioRBResampler::get_channel_count() const {
 	return channels;
 }
 
-// Linear interpolation based sample rate convertion (low quality)
+// Linear interpolation based sample rate conversion (low quality)
 // Note that AudioStreamPlaybackResampled::mix has better algorithm,
 // but it wasn't obvious to integrate that with VideoPlayer
 template <int C>

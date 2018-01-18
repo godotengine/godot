@@ -1589,7 +1589,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							float snap = spatial_editor->get_rotate_snap();
 
 							if (snap) {
-								angle = Math::rad2deg(angle) + snap * 0.5; //else it wont reach +180
+								angle = Math::rad2deg(angle) + snap * 0.5; //else it won't reach +180
 								angle -= Math::fmod(angle, snap);
 								set_message(vformat(TTR("Rotating %s degrees."), rtos(angle)));
 								angle = Math::deg2rad(angle);

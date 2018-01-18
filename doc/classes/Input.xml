@@ -17,7 +17,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				This will simulate pressing the specificed action.
+				This will simulate pressing the specified action.
 			</description>
 		</method>
 		<method name="action_release">

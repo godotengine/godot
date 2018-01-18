@@ -1238,7 +1238,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -1296,7 +1296,7 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");

@@ -187,7 +187,7 @@ void AnimationPlayerEditor::_play_pressed() {
 	if (current != "") {
 
 		if (current == player->get_assigned_animation())
-			player->stop(); //so it wont blend with itself
+			player->stop(); //so it won't blend with itself
 		player->play(current);
 	}
 
@@ -211,7 +211,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 		if (current == player->get_assigned_animation() && player->is_playing()) {
 
-			player->stop(); //so it wont blend with itself
+			player->stop(); //so it won't blend with itself
 		}
 
 		player->play(current);
@@ -235,7 +235,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	if (current != "") {
 
 		if (current == player->get_assigned_animation())
-			player->stop(); //so it wont blend with itself
+			player->stop(); //so it won't blend with itself
 		player->play(current, -1, -1, true);
 	}
 
@@ -257,7 +257,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 
 		float time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation())
-			player->stop(); //so it wont blend with itself
+			player->stop(); //so it won't blend with itself
 
 		player->play(current, -1, -1, true);
 		player->seek(time);

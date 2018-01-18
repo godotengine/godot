@@ -23,7 +23,7 @@
 			The [Node], the second side of the Joint attaches to.
 		</member>
 		<member name="solver/priority" type="int" setter="set_solver_priority" getter="get_solver_priority">
-			The order in wich the solver is executed compared to the other [Joints], the lower, the earlier.
+			The order in which the solver is executed compared to the other [Joints], the lower, the earlier.
 		</member>
 	</members>
 	<constants>

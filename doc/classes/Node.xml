@@ -44,7 +44,7 @@
 			</argument>
 			<description>
 				Called when there is an input event. The input event propagates through the node tree until a node consumes it.
-				It is only called if input processing is enabled, which is done automatically if this method is overriden, and can be toggled with [method set_process_input].
+				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -54,7 +54,7 @@
 			</argument>
 			<description>
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
-				It is only called if physics processing is enabled, which is done automatically if this method is overriden, and can be toggled with [method set_physics_process].
+				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the NOTIFICATION_PHYSICS_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
@@ -65,7 +65,7 @@
 			</argument>
 			<description>
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
-				It is only called if processing is enabled, which is done automatically if this method is overriden, and can be toggled with [method set_process].
+				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the NOTIFICATION_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
@@ -84,7 +84,7 @@
 			</argument>
 			<description>
 				Propagated to all nodes when the previous InputEvent is not consumed by any nodes.
-				It is only called if unhandled input processing is enabled, which is done automatically if this method is overriden, and can be toggled with [method set_process_unhandled_input].
+				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -656,7 +656,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a NOTIFICATION_PHYSICS_PROCESS at a fixed (usually 60 fps, see [OS] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overriden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a NOTIFICATION_PHYSICS_PROCESS at a fixed (usually 60 fps, see [OS] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process_internal">
@@ -673,7 +673,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). Enabled automatically if [method _process] is overriden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). Enabled automatically if [method _process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_input">
@@ -682,7 +682,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables input processing. This is not required for GUI controls! Enabled automatically if [method _input] is overriden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables input processing. This is not required for GUI controls! Enabled automatically if [method _input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_internal">
@@ -699,7 +699,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables unhandled input processing. This is not required for GUI controls! It enables the node to receive all input that was not previously handled (usually by a [Control]). Enabled automatically if [method _unhandled_input] is overriden. Any calls to this before [method _ready] will be ignored.
+				Enables unhandled input processing. This is not required for GUI controls! It enables the node to receive all input that was not previously handled (usually by a [Control]). Enabled automatically if [method _unhandled_input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_process_unhandled_key_input">
@@ -708,7 +708,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables unhandled key input processing. Enabled automatically if [method _unhandled_key_input] is overriden. Any calls to this before [method _ready] will be ignored.
+				Enables unhandled key input processing. Enabled automatically if [method _unhandled_key_input] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_scene_instance_load_placeholder">

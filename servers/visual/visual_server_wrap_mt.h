@@ -394,7 +394,7 @@ public:
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
-	//this passes directly to avoid stalling, but it's pretty dangerous, so dont call after freeing a viewport
+	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
 		return visual_server->viewport_get_render_info(p_viewport, p_info);
 	}

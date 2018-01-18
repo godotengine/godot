@@ -101,7 +101,7 @@ void CanvasItemMaterial::_update_shader() {
 		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
 		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
 	}
-	code += ";\n"; //thats it.
+	code += ";\n"; //that's it.
 
 	ShaderData shader_data;
 	shader_data.shader = VS::get_singleton()->shader_create();

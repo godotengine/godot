@@ -58,19 +58,19 @@ protected:
 		Variant variant;
 		Variant initial;
 		bool hide_from_editor;
-		bool overrided;
+		bool overridden;
 		VariantContainer() :
 				order(0),
 				persist(false),
 				hide_from_editor(false),
-				overrided(false) {
+				overridden(false) {
 		}
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
 				persist(p_persist),
 				variant(p_variant),
 				hide_from_editor(false),
-				overrided(false) {
+				overridden(false) {
 		}
 	};
 

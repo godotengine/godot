@@ -209,7 +209,7 @@ Error PluginScript::reload(bool p_keep_state) {
 	}
 
 	// Script's parent is passed as base_name which can make reference to a
-	// ClassDB name (i.e. `Node2D`) or a ressource path (i.e. `res://foo/bar.gd`)
+	// ClassDB name (i.e. `Node2D`) or a resource path (i.e. `res://foo/bar.gd`)
 	StringName *base_name = (StringName *)&manifest.base;
 	if (*base_name) {
 

@@ -320,7 +320,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 						total_max = MAX(total_max, cam_area_pos.length());
 					}
 					if (total_max > max_distance) {
-						continue; //cant hear this sound in this camera
+						continue; //can't hear this sound in this camera
 					}
 				}
 

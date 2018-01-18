@@ -71,7 +71,7 @@
 			The gradient is drawn through the whole line from start to finish. The default color will not be used if a gradient is set.
 		</member>
 		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode">
-			The style for the points inbetween the start and the end.
+			The style for the points between the start and the end.
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
 			The points that form the lines. The line is drawn between every point set in this array.

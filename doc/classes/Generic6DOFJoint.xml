@@ -24,10 +24,10 @@
 			When rotating across x-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
 		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
-			The maximum amount of force that can occur, when rotating arround x-axis.
+			The maximum amount of force that can occur, when rotating around x-axis.
 		</member>
 		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x">
-			The minimum rotation in negative direction to break loose and rotate arround the x-axis.
+			The minimum rotation in negative direction to break loose and rotate around the x-axis.
 		</member>
 		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x">
 			The amount of rotational restitution across the x-axis. The lower, the more restitution occurs.
@@ -36,7 +36,7 @@
 			The speed of all rotations across the x-axis.
 		</member>
 		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x">
-			The minimum rotation in positive direction to break loose and rotate arround the x-axis.
+			The minimum rotation in positive direction to break loose and rotate around the x-axis.
 		</member>
 		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y">
 			The amount of rotational damping across the y-axis. The lower, the more dampening occurs.
@@ -48,10 +48,10 @@
 			When rotating across y-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
 		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
-			The maximum amount of force that can occur, when rotating arround y-axis.
+			The maximum amount of force that can occur, when rotating around y-axis.
 		</member>
 		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y">
-			The minimum rotation in negative direction to break loose and rotate arround the y-axis.
+			The minimum rotation in negative direction to break loose and rotate around the y-axis.
 		</member>
 		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y">
 			The amount of rotational restitution across the y-axis. The lower, the more restitution occurs.
@@ -60,7 +60,7 @@
 			The speed of all rotations across the y-axis.
 		</member>
 		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y">
-			The minimum rotation in positive direction to break loose and rotate arround the y-axis.
+			The minimum rotation in positive direction to break loose and rotate around the y-axis.
 		</member>
 		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z">
 			The amount of rotational damping across the z-axis. The lower, the more dampening occurs.
@@ -72,10 +72,10 @@
 			When rotating across z-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</member>
 		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
-			The maximum amount of force that can occur, when rotating arround z-axis.
+			The maximum amount of force that can occur, when rotating around z-axis.
 		</member>
 		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z">
-			The minimum rotation in negative direction to break loose and rotate arround the z-axis.
+			The minimum rotation in negative direction to break loose and rotate around the z-axis.
 		</member>
 		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z">
 			The amount of rotational restitution across the z-axis. The lower, the more restitution occurs.
@@ -84,7 +84,7 @@
 			The speed of all rotations across the z-axis.
 		</member>
 		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z">
-			The minimum rotation in positive direction to break loose and rotate arround the z-axis.
+			The minimum rotation in positive direction to break loose and rotate around the z-axis.
 		</member>
 		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
 			If [code]true[/code] a rotating motor at the x-axis is enabled.
@@ -185,10 +185,10 @@
 			The amount of damping that happens at the linear motion across the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="5" enum="Param">
-			The minimum rotation in negative direction to break loose and rotate arround the axes.
+			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="6" enum="Param">
-			The minimum rotation in positive direction to break loose and rotate arround the axes.
+			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="7" enum="Param">
 			The speed of all rotations across the axes.
@@ -200,7 +200,7 @@
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
 		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="10" enum="Param">
-			The maximum amount of force that can occur, when rotating arround the axes.
+			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_ERP" value="11" enum="Param">
 			When rotating across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.

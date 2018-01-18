@@ -678,7 +678,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
 				ERR_FAIL_COND_V(indices.size() != p_index_array_len, ERR_INVALID_PARAMETER);
 
-				/* determine wether using 16 or 32 bits indices */
+				/* determine whether using 16 or 32 bits indices */
 
 				PoolVector<int>::Read read = indices.read();
 				const int *src = read.ptr();
@@ -943,7 +943,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
 				}
-				/* determine wether using 16 or 32 bits indices */
+				/* determine whether using 16 or 32 bits indices */
 				if (array_len >= (1 << 16)) {
 
 					elem_size = 4;
@@ -1111,7 +1111,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
 				}
-				/* determine wether using 16 or 32 bits indices */
+				/* determine whether using 16 or 32 bits indices */
 				if (p_vertex_len >= (1 << 16)) {
 
 					elem_size = 4;
@@ -1397,7 +1397,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_INDEX: {
-				/* determine wether using 16 or 32 bits indices */
+				/* determine whether using 16 or 32 bits indices */
 
 				PoolVector<uint8_t>::Read ir = p_index_data.read();
 

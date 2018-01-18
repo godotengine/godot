@@ -2013,7 +2013,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
 
-			//find last of the childs
+			//find last of the children
 
 			prev_child = _prev_control(from);
 

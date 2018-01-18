@@ -14,11 +14,11 @@
 	</methods>
 	<members>
 		<member name="params/bias" type="float" setter="set_param" getter="get_param">
-			The force with wich the pinned objects stay in positional relation to each other.
+			The force with which the pinned objects stay in positional relation to each other.
 			The higher, the stronger.
 		</member>
 		<member name="params/damping" type="float" setter="set_param" getter="get_param">
-			The force with wich the pinned objects stay in velocity relation to each other.
+			The force with which the pinned objects stay in velocity relation to each other.
 			The higher, the stronger.
 		</member>
 		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param">
@@ -27,11 +27,11 @@
 	</members>
 	<constants>
 		<constant name="PARAM_BIAS" value="0" enum="Param">
-			The force with wich the pinned objects stay in positional relation to each other.
+			The force with which the pinned objects stay in positional relation to each other.
 			The higher, the stronger.
 		</constant>
 		<constant name="PARAM_DAMPING" value="1" enum="Param">
-			The force with wich the pinned objects stay in velocity relation to each other.
+			The force with which the pinned objects stay in velocity relation to each other.
 			The higher, the stronger.
 		</constant>
 		<constant name="PARAM_IMPULSE_CLAMP" value="2" enum="Param">
