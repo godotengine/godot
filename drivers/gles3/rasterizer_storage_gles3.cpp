@@ -876,11 +876,34 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 		}
 	}
 
+	Image::Format img_format;
+
+	//convert special case RGB10_A2 to RGBA8 because it's not a supported image format
+	if (texture->gl_internal_format_cache == GL_RGB10_A2) {
+
+		img_format = Image::FORMAT_RGBA8;
+
+		uint32_t *ptr = (uint32_t *)wb.ptr();
+		uint32_t num_pixels = data_size / 4;
+
+		for (int ofs = 0; ofs < num_pixels; ofs++) {
+			uint32_t px = ptr[ofs];
+			uint32_t a = px >> 30 & 0xFF;
+
+			ptr[ofs] = (px >> 2 & 0xFF) |
+					   (px >> 12 & 0xFF) << 8 |
+					   (px >> 22 & 0xFF) << 16 |
+					   (a | a << 2 | a << 4 | a << 6) << 24;
+		}
+	} else {
+		img_format = texture->format;
+	}
+
 	wb = PoolVector<uint8_t>::Write();
 
 	data.resize(data_size);
 
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, texture->format, data));
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, img_format, data));
 
 	return Ref<Image>(img);
 #else
