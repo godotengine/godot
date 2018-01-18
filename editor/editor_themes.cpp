@@ -193,6 +193,10 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	exceptions.push_back("ZoomReset");
 	exceptions.push_back("LockViewport");
 	exceptions.push_back("GroupViewport");
+	exceptions.push_back("StatusError");
+	exceptions.push_back("StatusSuccess");
+	exceptions.push_back("StatusWarning");
+	exceptions.push_back("NodeWarning");
 
 	clock_t begin_time = clock();
 
