@@ -931,7 +931,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	return Ref<NativeScript>(s);
 }
 bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
-	return false;
+	return true;
 }
 
 Script *NativeScriptLanguage::create_script() const {
