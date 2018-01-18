@@ -84,17 +84,17 @@ void GridContainer::_notification(int p_what) {
 				if (!row_expanded.has(E->key()))
 					remaining_space.height -= E->get();
 			}
-			remaining_space.height -= vsep * MAX(max_row - 1, 0);
-			remaining_space.width -= hsep * MAX(max_col - 1, 0);
+			remaining_space.height -= vsep * (max_row - 1);
+			remaining_space.width -= hsep * (max_col - 1);
 
 			bool can_fit = false;
-			while (!can_fit && col_expanded.size() > 0) {
+			while (!can_fit) {
 				// Check if all minwidth constraints are ok if we use the remaining space
 				can_fit = true;
-				int max_index = col_expanded.front()->get();
+				int max_index = 0;
 				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
 					if (col_minw[E->get()] > col_minw[max_index]) {
-						max_index = E->get();
+						max_index = col_minw[E->get()];
 					}
 					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E->get()]) {
 						can_fit = false;
@@ -109,13 +109,13 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			can_fit = false;
-			while (!can_fit && row_expanded.size() > 0) {
+			while (!can_fit) {
 				// Check if all minwidth constraints are ok if we use the remaining space
 				can_fit = true;
-				int max_index = row_expanded.front()->get();
+				int max_index = 0;
 				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
 					if (row_minh[E->get()] > row_minh[max_index]) {
-						max_index = E->get();
+						max_index = row_minh[E->get()];
 					}
 					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E->get()]) {
 						can_fit = false;
@@ -130,8 +130,8 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			// Finally, fit the nodes
-			int col_expand = col_expanded.size() > 0 ? remaining_space.width / col_expanded.size() : 0;
-			int row_expand = row_expanded.size() > 0 ? remaining_space.height / row_expanded.size() : 0;
+			int col_expand = remaining_space.width / col_expanded.size();
+			int row_expand = remaining_space.height / row_expanded.size();
 
 			int col_ofs = 0;
 			int row_ofs = 0;
