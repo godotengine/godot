@@ -1775,15 +1775,16 @@ void TextEdit::indent_left() {
 void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const {
 
 	float rows = p_mouse.y;
+	rows -= cache.style_normal->get_margin(MARGIN_TOP);
+	rows += (CLAMP(v_scroll->get_value() - get_line_scroll_pos(true), 0, 1) * get_row_height());
 	rows /= get_row_height();
-	rows += v_scroll->get_value();
-	int row = Math::floor(rows);
+	int first_vis_line = CLAMP(cursor.line_ofs, 0, text.size() - 1);
+	int row = first_vis_line + Math::floor(rows);
 
 	if (is_hiding_enabled()) {
 		// row will be offset by the hidden rows
-		int lsp = get_line_scroll_pos(true);
-		int f_ofs = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(row + 1 - cursor.line_ofs, text.size() - cursor.line_ofs)) - 1;
-		row = cursor.line_ofs + f_ofs;
+		int f_ofs = num_lines_from(first_vis_line, rows + 1) - 1;
+		row = first_vis_line + f_ofs;
 		row = CLAMP(row, 0, text.size() - num_lines_from(text.size() - 1, -1));
 	}
 
