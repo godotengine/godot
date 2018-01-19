@@ -1,20 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorScenePostImport" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
+		Post process scenes after import
 	</brief_description>
 	<description>
+		The imported scene can be automatically modified right after import by specifying a 'custom script' that inherits from this class. The [method post_import]-method receives the imported scene's root-node and returns the modified version of the scene
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/learning/workflow/assets/importing_scenes.html?highlight=post%20import
 	</tutorials>
 	<demos>
+		[codeblock]
+tool # needed so it runs in editor
+extends EditorScenePostImport
+
+# This sample changes all node names
+
+# get called right after the scene is imported and gets the root-node
+func post_import(scene):
+	# change all node names to "modified_[oldnodename]"
+    iterate(scene)
+    return scene # remember to return the imported scene
+
+func iterate(node):
+    if node!=null:
+        node.name = "modified_"+node.name
+        for child in node.get_children():
+            iterate(child)	
+[/codeblock]
 	</demos>
 	<methods>
+		<method name="get_source_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the source-file-path which got imported (e.g. [code]res://scene.dae[/code] )
+			</description>
+		</method>
+		<method name="get_source_folder" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the resource-folder the imported scene-file is located in
+			</description>
+		</method>
 		<method name="post_import" qualifiers="virtual">
-			<return type="void">
+			<return type="Object">
 			</return>
 			<argument index="0" name="scene" type="Object">
 			</argument>
 			<description>
+				Gets called after the scene got imported and has to return the modified version of the scene
 			</description>
 		</method>
 	</methods>
