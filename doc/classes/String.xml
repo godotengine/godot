@@ -277,6 +277,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Removes indentation from string.
 			</description>
 		</method>
 		<method name="empty">
