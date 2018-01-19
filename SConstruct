@@ -290,6 +290,8 @@ if selected_platform in platform_list:
                     basename = basename.replace('\\\\', '/')
                     if os.path.isfile(basename + ".h"):
                         env.vs_incs = env.vs_incs + [basename + ".h"]
+                    elif os.path.isfile(basename + ".hpp"):
+                        env.vs_incs = env.vs_incs + [basename + ".hpp"]
                     if os.path.isfile(basename + ".c"):
                         env.vs_srcs = env.vs_srcs + [basename + ".c"]
                     elif os.path.isfile(basename + ".cpp"):
