@@ -321,7 +321,7 @@
 			<argument index="0" name="what" type="String">
 			</argument>
 			<description>
-				Finds the last occurrence of a substring. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Finds the last occurrence of a substring. Returns the starting position of the substring or -1 if not found.
 			</description>
 		</method>
 		<method name="findn">
