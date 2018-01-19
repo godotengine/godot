@@ -90,6 +90,7 @@ env_base.android_appattributes_chunk = ""
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
+env_base.split_modules = False
 env_base.module_version_string = ""
 
 # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.

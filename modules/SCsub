@@ -17,6 +17,10 @@ for x in env.module_list:
     env_modules.Append(CPPFLAGS=["-DMODULE_" + x.upper() + "_ENABLED"])
     SConscript(x + "/SCsub")
 
-lib = env_modules.add_library("modules", env.modules_sources)
+if env.split_modules:
+	env.split_lib("modules")
+else:
 
-env.Prepend(LIBS=[lib])
+	lib = env_modules.add_library("modules", env.modules_sources)
+	
+	env.Prepend(LIBS=[lib])
