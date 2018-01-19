@@ -1598,7 +1598,7 @@ def detect_visual_c_compiler_version(tools_env):
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
     # the proper vc version that will be called
 
-    # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
+    # There is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
     # is to check the PATH variable and figure out which one will be called first. Code bellow does that and returns:
