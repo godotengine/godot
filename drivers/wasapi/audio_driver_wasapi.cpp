@@ -296,6 +296,8 @@ Error AudioDriverWASAPI::finish_device() {
 	if (audio_client) {
 		if (active) {
 			audio_client->Stop();
+			audio_client->Release();
+			audio_client = NULL;
 			active = false;
 		}
 
@@ -544,6 +546,15 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (err != OK) {
 				ERR_PRINT("WASAPI: finish_device error");
 			}
+		}
+
+		if (default_device_changed) {
+			Error err = ad->finish_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_device error");
+			}
+
+			default_device_changed = false;
 		}
 
 		if (!ad->audio_client) {
