@@ -211,7 +211,11 @@ public:
 	};
 
 	struct SelfNode : public Node {
-		SelfNode() { type = TYPE_SELF; }
+		bool implicit;
+		SelfNode() {
+			type = TYPE_SELF;
+			implicit = false;
+		}
 	};
 
 	struct OperatorNode : public Node {
