@@ -296,6 +296,8 @@ Error AudioDriverWASAPI::finish_device() {
 	if (audio_client) {
 		if (active) {
 			audio_client->Stop();
+			audio_client->Release();
+			audio_client = NULL;
 			active = false;
 		}
 
@@ -534,23 +536,13 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			}
 		}
 
-		// If we're using the Default device and it changed finish it so we'll re-init the device
-		if (ad->device_name == "Default" && default_device_changed) {
+		if (default_device_changed) {
 			Error err = ad->finish_device();
 			if (err != OK) {
 				ERR_PRINT("WASAPI: finish_device error");
 			}
 
 			default_device_changed = false;
-		}
-
-		// User selected a new device, finish the current one so we'll init the new device
-		if (ad->device_name != ad->new_device) {
-			ad->device_name = ad->new_device;
-			Error err = ad->finish_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_device error");
-			}
 		}
 
 		if (!ad->audio_client) {
