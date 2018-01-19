@@ -88,6 +88,15 @@ static void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithM
 	state->set_metakey((p_osx_state & NSEventModifierFlagCommand));
 }
 
+static void push_to_key_event_buffer(const OS_OSX::KeyEvent &p_event) {
+
+	Vector<OS_OSX::KeyEvent> &buffer = OS_OSX::singleton->key_event_buffer;
+	if (OS_OSX::singleton->key_event_pos >= buffer.size()) {
+		buffer.resize(1 + OS_OSX::singleton->key_event_pos);
+	}
+	buffer[OS_OSX::singleton->key_event_pos++] = p_event;
+}
+
 static int mouse_x = 0;
 static int mouse_y = 0;
 static int prev_mouse_x = 0;
@@ -446,7 +455,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		ke.scancode = 0;
 		ke.unicode = codepoint;
 
-		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+		push_to_key_event_buffer(ke);
 	}
 	[self cancelComposition];
 }
@@ -805,7 +814,7 @@ static int translateKey(unsigned int key) {
 		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 		ke.unicode = 0;
 
-		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+		push_to_key_event_buffer(ke);
 	}
 
 	if ((OS_OSX::singleton->im_position.x != 0) && (OS_OSX::singleton->im_position.y != 0))
@@ -858,7 +867,7 @@ static int translateKey(unsigned int key) {
 		ke.scancode = latin_keyboard_keycode_convert(translateKey(key));
 		ke.unicode = 0;
 
-		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+		push_to_key_event_buffer(ke);
 	}
 }
 
@@ -874,7 +883,7 @@ static int translateKey(unsigned int key) {
 		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 		ke.unicode = 0;
 
-		OS_OSX::singleton->key_event_buffer[OS_OSX::singleton->key_event_pos++] = ke;
+		push_to_key_event_buffer(ke);
 	}
 }
 

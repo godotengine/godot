@@ -52,10 +52,6 @@
 
 class OS_OSX : public OS_Unix {
 public:
-	enum {
-		KEY_EVENT_BUFFER_SIZE = 512
-	};
-
 	struct KeyEvent {
 		unsigned int osx_state;
 		bool pressed;
@@ -64,7 +60,7 @@ public:
 		uint32_t unicode;
 	};
 
-	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
+	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
 	bool force_quit;
