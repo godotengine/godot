@@ -461,16 +461,16 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				}
 			}
 
-			if (bake_cells[p_idx].childs[i] == CHILD_EMPTY) {
+			if (bake_cells[p_idx].children[i] == CHILD_EMPTY) {
 				//sub cell must be created
 
 				uint32_t child_idx = bake_cells.size();
-				bake_cells[p_idx].childs[i] = child_idx;
+				bake_cells[p_idx].children[i] = child_idx;
 				bake_cells.resize(bake_cells.size() + 1);
 				bake_cells[child_idx].level = p_level + 1;
 			}
 
-			_plot_face(bake_cells[p_idx].childs[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
+			_plot_face(bake_cells[p_idx].children[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
 		}
 	}
 }
@@ -700,7 +700,7 @@ void VoxelLightBaker::_init_light_plot(int p_idx, int p_level, int p_x, int p_y,
 		int half = (1 << (cell_subdiv - 1)) >> (p_level + 1);
 		for (int i = 0; i < 8; i++) {
 
-			uint32_t child = bake_cells[p_idx].childs[i];
+			uint32_t child = bake_cells[p_idx].children[i];
 
 			if (child == CHILD_EMPTY)
 				continue;
@@ -809,7 +809,7 @@ uint32_t VoxelLightBaker::_find_cell_at_pos(const Cell *cells, int x, int y, int
 			ofs_z += half;
 		}
 
-		cell = bc->childs[child];
+		cell = bc->children[child];
 		if (cell == CHILD_EMPTY)
 			return CHILD_EMPTY;
 
@@ -1257,7 +1257,7 @@ void VoxelLightBaker::_fixup_plot(int p_idx, int p_level) {
 
 		for (int i = 0; i < 8; i++) {
 
-			uint32_t child = bake_cells[p_idx].childs[i];
+			uint32_t child = bake_cells[p_idx].children[i];
 
 			if (child == CHILD_EMPTY)
 				continue;
@@ -1483,7 +1483,7 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 					ofs_z += half;
 				}
 
-				cell = bc->childs[child];
+				cell = bc->children[child];
 				if (cell == CHILD_EMPTY)
 					break;
 
@@ -1766,7 +1766,7 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 					ofs_z += half;
 				}
 
-				cell = bc->childs[child];
+				cell = bc->children[child];
 				if (unlikely(cell == CHILD_EMPTY))
 					break;
 
@@ -1928,7 +1928,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
 					if (lightmap_ptr[i * width + j].normal == Vector3())
-						continue; //empty, dont write over it anyway
+						continue; //empty, don't write over it anyway
 					float gauss_sum = gauss_kernel[0];
 					Vector3 accum = lightmap_ptr[i * width + j].pos * gauss_kernel[0];
 					for (int k = 1; k < 4; k++) {
@@ -2191,7 +2191,7 @@ PoolVector<int> VoxelLightBaker::create_gi_probe_data() {
 		for (int i = 0; i < bake_cells.size(); i++) {
 
 			for (int j = 0; j < 8; j++) {
-				w32[ofs++] = bake_cells[i].childs[j];
+				w32[ofs++] = bake_cells[i].children[j];
 			}
 
 			{ //albedo
@@ -2275,7 +2275,7 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 
 		for (int i = 0; i < 8; i++) {
 
-			uint32_t child = bake_cells[p_idx].childs[i];
+			uint32_t child = bake_cells[p_idx].children[i];
 
 			if (child == CHILD_EMPTY || child >= max_original_cells)
 				continue;
@@ -2290,7 +2290,7 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 			if (i & 4)
 				aabb.position.z += aabb.size.z;
 
-			_debug_mesh(bake_cells[p_idx].childs[i], p_level + 1, aabb, p_multimesh, idx, p_mode);
+			_debug_mesh(bake_cells[p_idx].children[i], p_level + 1, aabb, p_multimesh, idx, p_mode);
 		}
 	}
 }
@@ -2423,7 +2423,7 @@ PoolVector<uint8_t> VoxelLightBaker::create_capture_octree(int p_subdiv) {
 		}
 
 		for (int j = 0; j < 8; j++) {
-			uint32_t child = bake_cells[demap[i]].childs[j];
+			uint32_t child = bake_cells[demap[i]].children[j];
 			octree[i].children[j] = child == CHILD_EMPTY ? CHILD_EMPTY : remap[child];
 		}
 	}

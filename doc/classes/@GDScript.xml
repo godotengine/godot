@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" category="Core" version="3.0-beta">
+<class name="@GDScript" category="Core" version="3.0-rc1">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
@@ -182,14 +182,14 @@
 		<method name="clamp">
 			<return type="float">
 			</return>
-			<argument index="0" name="val" type="float">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<argument index="1" name="min" type="float">
 			</argument>
 			<argument index="2" name="max" type="float">
 			</argument>
 			<description>
-				Clamps [code]val[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
 				speed = 1000
 				# a is 20
@@ -466,7 +466,7 @@
 			</argument>
 			<argument index="1" name="to" type="float">
 			</argument>
-			<argument index="2" name="value" type="float">
+			<argument index="2" name="weight" type="float">
 			</argument>
 			<description>
 				Returns a normalized value considering the given range.
@@ -589,10 +589,10 @@
 		<method name="nearest_po2">
 			<return type="int">
 			</return>
-			<argument index="0" name="val" type="int">
+			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Returns the nearest larger power of 2 for integer [code]val[/code].
+				Returns the nearest larger power of 2 for integer [code]value[/code].
 				[codeblock]
 				nearest_po2(3) # returns 4
 				nearest_po2(4) # returns 4

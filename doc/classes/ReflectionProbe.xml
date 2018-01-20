@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReflectionProbe" inherits="VisualInstance" category="Core" version="3.0-beta">
+<class name="ReflectionProbe" inherits="VisualInstance" category="Core" version="3.0-rc1">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/3d/reflection_probes.html
 	</tutorials>
 	<demos>
 	</demos>

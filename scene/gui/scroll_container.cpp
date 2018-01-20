@@ -462,9 +462,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
-	ClassDB::bind_method(D_METHOD("set_h_scroll", "val"), &ScrollContainer::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
-	ClassDB::bind_method(D_METHOD("set_v_scroll", "val"), &ScrollContainer::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &ScrollContainer::set_v_scroll);
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ScrollContainer::get_v_scroll);
 
 	ADD_GROUP("Scroll", "scroll_");

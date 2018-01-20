@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProximityGroup" inherits="Spatial" category="Core" version="3.0-beta">
+<class name="ProximityGroup" inherits="Spatial" category="Core" version="3.0-rc1">
 	<brief_description>
 		General purpose proximity-detection node.
 	</brief_description>
@@ -32,7 +32,7 @@
 	</members>
 	<signals>
 		<signal name="broadcast">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="group_name" type="String">
 			</argument>
 			<argument index="1" name="parameters" type="Array">
 			</argument>

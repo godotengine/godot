@@ -80,7 +80,7 @@ private:
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
-	ToolButton *status_btn;
+	TextureRect *status_rect;
 	FileDialog *fdialog;
 	String zip_path;
 	String zip_title;
@@ -92,42 +92,35 @@ private:
 	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS) {
 
 		msg->set_text(p_msg);
-		Ref<Texture> current_icon = status_btn->get_icon();
+		Ref<Texture> current_icon = status_rect->get_texture();
+		Ref<Texture> new_icon;
 
 		switch (p_type) {
 
 			case MESSAGE_ERROR: {
 
 				msg->add_color_override("font_color", get_color("error_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusError", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 1));
+				new_icon = get_icon("StatusError", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					msg->show();
-				}
 			} break;
 			case MESSAGE_WARNING: {
 
 				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusWarning", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 1));
+				new_icon = get_icon("StatusWarning", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					if (current_icon != get_icon("StatusSuccess", "EditorIcons"))
-						msg->hide();
-				}
 			} break;
 			case MESSAGE_SUCCESS: {
 
-				msg->add_color_override("font_color", get_color("success_color", "Editor"));
-				Ref<Texture> new_icon = get_icon("StatusSuccess", "EditorIcons");
-				if (current_icon != new_icon) {
+				msg->set_modulate(Color(1, 1, 1, 0));
+				new_icon = get_icon("StatusSuccess", "EditorIcons");
 
-					status_btn->set_icon(new_icon);
-					msg->hide();
-				}
 			} break;
 		}
+
+		if (current_icon != new_icon)
+			status_rect->set_texture(new_icon);
 
 		set_size(Size2(500, 0) * EDSCALE);
 	}
@@ -166,7 +159,7 @@ private:
 			bool is_empty = true;
 			String n = d->get_next();
 			while (n != String()) {
-				if (!n.begins_with(".")) { // i dont know if this is enough to guarantee an empty dir
+				if (!n.begins_with(".")) { // i don't know if this is enough to guarantee an empty dir
 					is_empty = false;
 					break;
 				}
@@ -176,10 +169,10 @@ private:
 
 			if (!is_empty) {
 
-				set_message(TTR("Your project will be created in a non empty folder (you might want to create a new folder)."), MESSAGE_WARNING);
+				set_message(TTR("Please choose an empty folder."), MESSAGE_ERROR);
 				memdelete(d);
-				get_ok()->set_disabled(false);
-				return valid_path;
+				get_ok()->set_disabled(true);
+				return "";
 			}
 
 		} else if (d->file_exists("project.godot")) {
@@ -190,7 +183,7 @@ private:
 			return "";
 		}
 
-		set_message(TTR("That's a BINGO!"));
+		set_message("");
 		memdelete(d);
 		get_ok()->set_disabled(false);
 		return valid_path;
@@ -481,13 +474,6 @@ private:
 		}
 	}
 
-	void _toggle_message() {
-
-		msg->set_visible(!msg->is_visible());
-		if (!msg->is_visible())
-			set_size(Size2(500, 0) * EDSCALE);
-	}
-
 	void cancel_pressed() {
 
 		_remove_created_folder();
@@ -495,7 +481,7 @@ private:
 		project_path->clear();
 		project_name->clear();
 
-		if (status_btn->get_icon() == get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
 			msg->show();
 	}
 
@@ -514,7 +500,6 @@ protected:
 		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
 		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
-		ClassDB::bind_method("_toggle_message", &ProjectDialog::_toggle_message);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
@@ -558,7 +543,8 @@ public:
 			project_name->call_deferred("grab_focus");
 
 			create_dir->hide();
-			status_btn->hide();
+			status_rect->hide();
+			msg->hide();
 
 		} else {
 
@@ -578,7 +564,8 @@ public:
 			browse->set_disabled(false);
 			browse->show();
 			create_dir->show();
-			status_btn->show();
+			status_rect->show();
+			msg->show();
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
@@ -646,9 +633,9 @@ public:
 		pphb->add_child(project_path);
 
 		// status button
-		status_btn = memnew(ToolButton);
-		status_btn->connect("pressed", this, "_toggle_message");
-		pphb->add_child(status_btn);
+		status_rect = memnew(TextureRect);
+		status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		pphb->add_child(status_rect);
 
 		browse = memnew(Button);
 		browse->set_text(TTR("Browse"));
@@ -657,7 +644,6 @@ public:
 
 		msg = memnew(Label);
 		msg->set_align(Label::ALIGN_CENTER);
-		msg->hide();
 		vb->add_child(msg);
 
 		fdialog = memnew(FileDialog);
@@ -704,7 +690,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (scroll_childs->get_child_count() == 0)
+			if (scroll_children->get_child_count() == 0)
 				open_templates->popup_centered_minsize();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -726,9 +712,9 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 }
 
 void ProjectManager::_update_project_buttons() {
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_childs->get_child(i));
+		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_children->get_child(i));
 		item->update();
 	}
 
@@ -750,8 +736,8 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 			int clicked_id = -1;
 			int last_clicked_id = -1;
-			for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+			for (int i = 0; i < scroll_children->get_child_count(); i++) {
+				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 				if (!hb) continue;
 				if (hb->get_meta("name") == clicked) clicked_id = i;
 				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
@@ -760,8 +746,8 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			if (last_clicked_id != -1 && clicked_id != -1) {
 				int min = clicked_id < last_clicked_id ? clicked_id : last_clicked_id;
 				int max = clicked_id > last_clicked_id ? clicked_id : last_clicked_id;
-				for (int i = 0; i < scroll_childs->get_child_count(); ++i) {
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+				for (int i = 0; i < scroll_children->get_child_count(); ++i) {
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (!hb) continue;
 					if (i != clicked_id && (i < min || i > max) && !mb->get_control()) {
 						selected_list.erase(hb->get_meta("name"));
@@ -815,9 +801,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case KEY_HOME: {
 
-				for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+				for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (hb) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
@@ -830,13 +816,13 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case KEY_END: {
 
-				for (int i = scroll_childs->get_child_count() - 1; i >= 0; i--) {
+				for (int i = scroll_children->get_child_count() - 1; i >= 0; i--) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (hb) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
-						scroll->set_v_scroll(scroll_childs->get_size().y);
+						scroll->set_v_scroll(scroll_children->get_size().y);
 						_update_project_buttons();
 						break;
 					}
@@ -852,9 +838,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 					bool found = false;
 
-					for (int i = scroll_childs->get_child_count() - 1; i >= 0; i--) {
+					for (int i = scroll_children->get_child_count() - 1; i >= 0; i--) {
 
-						HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+						HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 						if (!hb) continue;
 
 						String current = hb->get_meta("name");
@@ -889,9 +875,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 				bool found = selected_list.empty();
 
-				for (int i = 0; i < scroll_childs->get_child_count(); i++) {
+				for (int i = 0; i < scroll_children->get_child_count(); i++) {
 
-					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 					if (!hb) continue;
 
 					String current = hb->get_meta("name");
@@ -955,8 +941,8 @@ void ProjectManager::_load_recent_projects() {
 	ProjectListFilter::FilterOption filter_option = project_filter->get_filter_option();
 	String search_term = project_filter->get_search_term();
 
-	while (scroll_childs->get_child_count() > 0) {
-		memdelete(scroll_childs->get_child(0));
+	while (scroll_children->get_child_count() > 0) {
+		memdelete(scroll_children->get_child(0));
 	}
 
 	Map<String, String> selected_list_copy = selected_list;
@@ -1116,7 +1102,7 @@ void ProjectManager::_load_recent_projects() {
 		fpath->add_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
 
-		scroll_childs->add_child(hb);
+		scroll_children->add_child(hb);
 	}
 
 	for (Map<String, String>::Element *E = selected_list_copy.front(); E; E = E->next()) {
@@ -1139,8 +1125,8 @@ void ProjectManager::_on_project_renamed() {
 
 void ProjectManager::_on_project_created(const String &dir) {
 	bool has_already = false;
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
 		if (fpath->get_text() == dir) {
 			has_already = true;
@@ -1157,8 +1143,8 @@ void ProjectManager::_on_project_created(const String &dir) {
 }
 
 void ProjectManager::_update_scroll_position(const String &dir) {
-	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
-		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
 		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
 		if (fpath->get_text() == dir) {
 			last_clicked = hb->get_meta("name");
@@ -1598,9 +1584,9 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
 	tree_hb->add_child(tree_vb);
-	scroll_childs = memnew(VBoxContainer);
-	scroll_childs->set_h_size_flags(SIZE_EXPAND_FILL);
-	scroll->add_child(scroll_childs);
+	scroll_children = memnew(VBoxContainer);
+	scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
+	scroll->add_child(scroll_children);
 
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));

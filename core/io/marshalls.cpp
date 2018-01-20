@@ -333,7 +333,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				len -= 12;
 				buf += 12;
 
-				if (flags & 2) // Obsolete format with property seperate from subpath
+				if (flags & 2) // Obsolete format with property separate from subpath
 					subnamecount++;
 
 				uint32_t total = namecount + subnamecount;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="World" inherits="Resource" category="Core" version="3.0-beta">
+<class name="World" inherits="Resource" category="Core" version="3.0-rc1">
 	<brief_description>
 		Class that has everything pertaining to a world.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Class that has everything pertaining to a world. A physics space, a visual scenario and a sound space. Spatial nodes register their resources into the current world.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/physics/ray-casting.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -24,7 +25,6 @@
 		</member>
 		<member name="scenario" type="RID" setter="" getter="get_scenario">
 			The World's visual scenario.
-
 		</member>
 		<member name="space" type="RID" setter="" getter="get_space">
 			The World's physics space.

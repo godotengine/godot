@@ -396,7 +396,7 @@ String Color::to_html(bool p_alpha) const {
 	txt += _to_hex(g);
 	txt += _to_hex(b);
 	if (p_alpha)
-		txt += _to_hex(a);
+		txt = _to_hex(a) + txt;
 	return txt;
 }
 

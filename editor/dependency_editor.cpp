@@ -595,6 +595,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Scene failed to load due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
+	files->set_custom_minimum_size(Size2(1, 200));
 	get_ok()->set_text(TTR("Open Anyway"));
 	get_cancel()->set_text(TTR("Close"));
 
@@ -626,7 +627,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 	if (!efsd)
 		return false;
 
-	bool has_childs = false;
+	bool has_children = false;
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 
@@ -642,7 +643,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 			if (!children) {
 				memdelete(dir_item);
 			} else {
-				has_childs = true;
+				has_children = true;
 			}
 		}
 	}
@@ -682,12 +683,12 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"));
 				}
 				ti->set_metadata(0, path);
-				has_childs = true;
+				has_children = true;
 			}
 		}
 	}
 
-	return has_childs;
+	return has_children;
 }
 
 void OrphanResourcesDialog::refresh() {

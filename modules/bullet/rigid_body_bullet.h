@@ -48,11 +48,11 @@ class GodotMotionState;
 class BulletPhysicsDirectBodyState;
 
 /// This class could be used in multi thread with few changes but currently
-/// is setted to be only in one single thread.
+/// is set to be only in one single thread.
 ///
 /// In the system there is only one object at a time that manage all bodies and is
 /// created by BulletPhysicsServer and is held by the "singleton" variable of this class
-/// Each time something require it, the body must be setted again.
+/// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
 	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState)
 

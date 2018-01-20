@@ -1549,18 +1549,26 @@ def save_active_platforms(apnames, ap):
 
 def no_verbose(sys, env):
 
-    # If the output is not a terminal, do nothing
-    if not sys.stdout.isatty():
-        return
-
     colors = {}
-    colors['cyan'] = '\033[96m'
-    colors['purple'] = '\033[95m'
-    colors['blue'] = '\033[94m'
-    colors['green'] = '\033[92m'
-    colors['yellow'] = '\033[93m'
-    colors['red'] = '\033[91m'
-    colors['end'] = '\033[0m'
+
+    # Colors are disabled in non-TTY environments such as pipes. This means
+    # that if output is redirected to a file, it will not contain color codes
+    if sys.stdout.isatty():
+        colors['cyan'] = '\033[96m'
+        colors['purple'] = '\033[95m'
+        colors['blue'] = '\033[94m'
+        colors['green'] = '\033[92m'
+        colors['yellow'] = '\033[93m'
+        colors['red'] = '\033[91m'
+        colors['end'] = '\033[0m'
+    else:
+        colors['cyan'] = ''
+        colors['purple'] = ''
+        colors['blue'] = ''
+        colors['green'] = ''
+        colors['yellow'] = ''
+        colors['red'] = ''
+        colors['end'] = ''
 
     compile_source_message = '%sCompiling %s==> %s$SOURCE%s' % (colors['blue'], colors['purple'], colors['yellow'], colors['end'])
     java_compile_source_message = '%sCompiling %s==> %s$SOURCE%s' % (colors['blue'], colors['purple'], colors['yellow'], colors['end'])
@@ -1590,10 +1598,10 @@ def detect_visual_c_compiler_version(tools_env):
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
     # the proper vc version that will be called
 
-    # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
+    # There is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
-    # is to check the PATH varaible and figure out which one will be called first. Code bellow does that and returns:
+    # is to check the PATH variable and figure out which one will be called first. Code bellow does that and returns:
     # the following string values:
 
     # ""              Compiler not detected

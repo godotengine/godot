@@ -2090,6 +2090,13 @@
         ]
       },
       {
+        "name": "godot_pool_byte_array_read_access_copy",
+        "return_type": "godot_pool_byte_array_read_access *",
+        "arguments": [
+          ["const godot_pool_byte_array_read_access *", "p_read"]
+        ]
+      },
+      {
         "name": "godot_pool_byte_array_read_access_ptr",
         "return_type": "const uint8_t *",
         "arguments": [
@@ -2109,6 +2116,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_byte_array_read_access *", "p_read"]
+        ]
+      },
+      {
+        "name": "godot_pool_int_array_read_access_copy",
+        "return_type": "godot_pool_int_array_read_access *",
+        "arguments": [
+          ["const godot_pool_int_array_read_access *", "p_read"]
         ]
       },
       {
@@ -2134,6 +2148,13 @@
         ]
       },
       {
+        "name": "godot_pool_real_array_read_access_copy",
+        "return_type": "godot_pool_real_array_read_access *",
+        "arguments": [
+          ["const godot_pool_real_array_read_access *", "p_read"]
+        ]
+      },
+      {
         "name": "godot_pool_real_array_read_access_ptr",
         "return_type": "const godot_real *",
         "arguments": [
@@ -2153,6 +2174,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_real_array_read_access *", "p_read"]
+        ]
+      },
+      {
+        "name": "godot_pool_string_array_read_access_copy",
+        "return_type": "godot_pool_string_array_read_access *",
+        "arguments": [
+          ["const godot_pool_string_array_read_access *", "p_read"]
         ]
       },
       {
@@ -2178,6 +2206,13 @@
         ]
       },
       {
+        "name": "godot_pool_vector2_array_read_access_copy",
+        "return_type": "godot_pool_vector2_array_read_access *",
+        "arguments": [
+          ["const godot_pool_vector2_array_read_access *", "p_read"]
+        ]
+      },
+      {
         "name": "godot_pool_vector2_array_read_access_ptr",
         "return_type": "const godot_vector2 *",
         "arguments": [
@@ -2197,6 +2232,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_vector2_array_read_access *", "p_read"]
+        ]
+      },
+      {
+        "name": "godot_pool_vector3_array_read_access_copy",
+        "return_type": "godot_pool_vector3_array_read_access *",
+        "arguments": [
+          ["const godot_pool_vector3_array_read_access *", "p_read"]
         ]
       },
       {
@@ -2222,6 +2264,13 @@
         ]
       },
       {
+        "name": "godot_pool_color_array_read_access_copy",
+        "return_type": "godot_pool_color_array_read_access *",
+        "arguments": [
+          ["const godot_pool_color_array_read_access *", "p_read"]
+        ]
+      },
+      {
         "name": "godot_pool_color_array_read_access_ptr",
         "return_type": "const godot_color *",
         "arguments": [
@@ -2241,6 +2290,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_color_array_read_access *", "p_read"]
+        ]
+      },
+      {
+        "name": "godot_pool_byte_array_write_access_copy",
+        "return_type": "godot_pool_byte_array_write_access *",
+        "arguments": [
+          ["const godot_pool_byte_array_write_access *", "p_write"]
         ]
       },
       {
@@ -2266,6 +2322,13 @@
         ]
       },
       {
+        "name": "godot_pool_int_array_write_access_copy",
+        "return_type": "godot_pool_int_array_write_access *",
+        "arguments": [
+          ["const godot_pool_int_array_write_access *", "p_write"]
+        ]
+      },
+      {
         "name": "godot_pool_int_array_write_access_ptr",
         "return_type": "godot_int *",
         "arguments": [
@@ -2285,6 +2348,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_int_array_write_access *", "p_write"]
+        ]
+      },
+      {
+        "name": "godot_pool_real_array_write_access_copy",
+        "return_type": "godot_pool_real_array_write_access *",
+        "arguments": [
+          ["const godot_pool_real_array_write_access *", "p_write"]
         ]
       },
       {
@@ -2310,6 +2380,13 @@
         ]
       },
       {
+        "name": "godot_pool_string_array_write_access_copy",
+        "return_type": "godot_pool_string_array_write_access *",
+        "arguments": [
+          ["const godot_pool_string_array_write_access *", "p_write"]
+        ]
+      },
+      {
         "name": "godot_pool_string_array_write_access_ptr",
         "return_type": "godot_string *",
         "arguments": [
@@ -2329,6 +2406,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_string_array_write_access *", "p_write"]
+        ]
+      },
+      {
+        "name": "godot_pool_vector2_array_write_access_copy",
+        "return_type": "godot_pool_vector2_array_write_access *",
+        "arguments": [
+          ["const godot_pool_vector2_array_write_access *", "p_write"]
         ]
       },
       {
@@ -2354,6 +2438,13 @@
         ]
       },
       {
+        "name": "godot_pool_vector3_array_write_access_copy",
+        "return_type": "godot_pool_vector3_array_write_access *",
+        "arguments": [
+          ["const godot_pool_vector3_array_write_access *", "p_write"]
+        ]
+      },
+      {
         "name": "godot_pool_vector3_array_write_access_ptr",
         "return_type": "godot_vector3 *",
         "arguments": [
@@ -2373,6 +2464,13 @@
         "return_type": "void",
         "arguments": [
           ["godot_pool_vector3_array_write_access *", "p_write"]
+        ]
+      },
+      {
+        "name": "godot_pool_color_array_write_access_copy",
+        "return_type": "godot_pool_color_array_write_access *",
+        "arguments": [
+          ["const godot_pool_color_array_write_access *", "p_write"]
         ]
       },
       {

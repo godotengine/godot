@@ -455,7 +455,7 @@ void TextEdit::_update_selection_mode_word() {
 		end += 1;
 	}
 
-	// inital selection
+	// initial selection
 	if (!selection.active) {
 		select(row, beg, row, end);
 		selection.selecting_column = beg;
@@ -888,7 +888,7 @@ void TextEdit::_notification(int p_what) {
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
 					}
 				} else {
-					// if it has text, then draw current line marker in the margin, as line number ect will draw over it, draw the rest of line marker later.
+					// if it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
 					if (line == cursor.line && highlight_current_line) {
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg, get_row_height()), cache.current_line_color);
 					}
@@ -937,7 +937,7 @@ void TextEdit::_notification(int p_what) {
 
 					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
 				}
-				//loop through charcters in one line
+				//loop through characters in one line
 				for (int j = 0; j < str.length(); j++) {
 
 					//look for keyword
@@ -1119,6 +1119,19 @@ void TextEdit::_notification(int p_what) {
 
 					if ((char_ofs + char_margin) < xmargin_beg) {
 						char_ofs += char_w;
+
+						// line highlighting handle horizontal clipping
+						if (line == cursor.line && highlight_current_line) {
+							// char next to margin is skipped
+							if ((char_ofs + char_margin) > xmargin_beg) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
+							}
+
+							// end of line when last char is skipped
+							if (j == str.length() - 1) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
+							}
+						}
 						continue;
 					}
 
@@ -1762,15 +1775,16 @@ void TextEdit::indent_left() {
 void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const {
 
 	float rows = p_mouse.y;
+	rows -= cache.style_normal->get_margin(MARGIN_TOP);
+	rows += (CLAMP(v_scroll->get_value() - get_line_scroll_pos(true), 0, 1) * get_row_height());
 	rows /= get_row_height();
-	rows += v_scroll->get_value();
-	int row = Math::floor(rows);
+	int first_vis_line = CLAMP(cursor.line_ofs, 0, text.size() - 1);
+	int row = first_vis_line + Math::floor(rows);
 
 	if (is_hiding_enabled()) {
 		// row will be offset by the hidden rows
-		int lsp = get_line_scroll_pos(true);
-		int f_ofs = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(row + 1 - cursor.line_ofs, text.size() - cursor.line_ofs)) - 1;
-		row = cursor.line_ofs + f_ofs;
+		int f_ofs = num_lines_from(first_vis_line, rows + 1) - 1;
+		row = first_vis_line + f_ofs;
 		row = CLAMP(row, 0, text.size() - num_lines_from(text.size() - 1, -1));
 	}
 
@@ -3117,7 +3131,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (!scancode_handled && !k->get_command()) { //for german kbds
+		if (!scancode_handled && !k->get_command()) { //for German kbds
 
 			if (k->get_unicode() >= 32) {
 
@@ -4878,6 +4892,8 @@ void TextEdit::undo() {
 	else
 		undo_stack_pos = undo_stack_pos->prev();
 
+	deselect();
+
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, true);
 	current_op.version = op.prev_version;
@@ -4911,6 +4927,8 @@ void TextEdit::redo() {
 
 	if (undo_stack_pos == NULL)
 		return; //nothing to do.
+
+	deselect();
 
 	TextOperation op = undo_stack_pos->get();
 	_do_text_op(op, false);

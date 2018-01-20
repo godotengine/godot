@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform" category="Built-In Types" version="3.0-beta">
+<class name="Transform" category="Built-In Types" version="3.0-rc1">
 	<brief_description>
 		3D Transformation. 3x4 matrix.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/math/index.html
 	</tutorials>
 	<demos>
 	</demos>

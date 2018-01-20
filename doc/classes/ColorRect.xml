@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ColorRect" inherits="Control" category="Core" version="3.0-beta">
+<class name="ColorRect" inherits="Control" category="Core" version="3.0-rc1">
 	<brief_description>
 		Colored rect for canvas.
 	</brief_description>

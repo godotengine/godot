@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" category="Core" version="3.0-beta">
+<class name="AnimationPlayer" inherits="Node" category="Core" version="3.0-rc1">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
@@ -7,6 +7,8 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/step_by_step/animations.html
+	http://docs.godotengine.org/en/3.0/learning/features/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -208,6 +210,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
+			If playing, the current animation; otherwise, the animation last played. When set, would change the animation, but would not play it unless currently playing. See also [member current_animation].
+		</member>
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay">
 			The name of the animation to play when the scene loads. Default value: [code]""[/code].
 		</member>
@@ -247,14 +252,14 @@
 			</description>
 		</signal>
 		<signal name="animation_finished">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="anim_name" type="String">
 			</argument>
 			<description>
 				Notifies when an animation finished playing.
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="anim_name" type="String">
 			</argument>
 			<description>
 				Notifies when an animation starts playing.

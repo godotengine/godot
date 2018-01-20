@@ -398,6 +398,11 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 		owner = memnew(Reference);
 	}
 
+	if (!owner) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
 	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
 		ref = REF(r);
@@ -793,11 +798,33 @@ NativeScriptLanguage *NativeScriptLanguage::singleton;
 void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *L = library_classes.front(); L; L = L->next()) {
 
-		if (p_reload && !library_gdnatives[L->key()]->get_library()->is_reloadable()) {
-			continue;
+		String lib_path = L->key();
+		Map<StringName, NativeScriptDesc> classes = L->get();
+
+		if (p_reload) {
+
+			Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
+			Ref<GDNative> gdn;
+
+			if (E) {
+				gdn = E->get();
+			}
+
+			bool should_reload = false;
+
+			if (gdn.is_valid()) {
+				Ref<GDNativeLibrary> lib = gdn->get_library();
+				if (lib.is_valid()) {
+					should_reload = lib->is_reloadable();
+				}
+			}
+
+			if (!should_reload) {
+				continue;
+			}
 		}
 
-		for (Map<StringName, NativeScriptDesc>::Element *C = L->get().front(); C; C = C->next()) {
+		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
 
 			// free property stuff first
 			for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
@@ -835,11 +862,13 @@ NativeScriptLanguage::~NativeScriptLanguage() {
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
-		L->get()->terminate();
-		NSL->library_classes.clear();
-		NSL->library_gdnatives.clear();
-		NSL->library_script_users.clear();
+		if (L->get().is_valid())
+			L->get()->terminate();
 	}
+
+	NSL->library_classes.clear();
+	NSL->library_gdnatives.clear();
+	NSL->library_script_users.clear();
 
 #ifndef NO_THREADS
 	memdelete(mutex);
@@ -902,7 +931,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	return Ref<NativeScript>(s);
 }
 bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
-	return false;
+	return true;
 }
 
 Script *NativeScriptLanguage::create_script() const {
@@ -1056,6 +1085,11 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 	// library_gdnatives is modified only from the main thread, so it's safe not to use mutex here
 	for (Map<String, Ref<GDNative> >::Element *L = library_gdnatives.front(); L; L = L->next()) {
+
+		if (L->get().is_null()) {
+			continue;
+		}
+
 		if (L->get()->is_initialized()) {
 
 			void *proc_ptr;
@@ -1118,6 +1152,10 @@ void NativeReloadNode::_notification(int p_what) {
 
 				Ref<GDNative> gdn = L->get();
 
+				if (gdn.is_null()) {
+					continue;
+				}
+
 				if (!gdn->get_library()->is_reloadable()) {
 					continue;
 				}
@@ -1141,6 +1179,10 @@ void NativeReloadNode::_notification(int p_what) {
 			for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
 				Ref<GDNative> gdn = L->get();
+
+				if (gdn.is_null()) {
+					continue;
+				}
 
 				if (!gdn->get_library()->is_reloadable()) {
 					continue;

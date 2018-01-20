@@ -11,11 +11,12 @@
 #ifndef ZSTD_FAST_H
 #define ZSTD_FAST_H
 
-#include "zstd_compress.h"
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
+
+#include "mem.h"      /* U32 */
+#include "zstd.h"     /* ZSTD_CCtx, size_t */
 
 void ZSTD_fillHashTable(ZSTD_CCtx* zc, const void* end, const U32 mls);
 size_t ZSTD_compressBlock_fast(ZSTD_CCtx* ctx,

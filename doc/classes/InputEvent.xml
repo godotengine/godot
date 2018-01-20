@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEvent" inherits="Resource" category="Core" version="3.0-beta">
+<class name="InputEvent" inherits="Resource" category="Core" version="3.0-rc1">
 	<brief_description>
 		Generic input event
 	</brief_description>
@@ -7,7 +7,8 @@
 		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
+		http://docs.godotengine.org/en/3.0/learning/features/inputs/inputevent.html
+		http://docs.godotengine.org/en/3.0/learning/features/2d/2d_transforms.html
 	</tutorials>
 	<demos>
 	</demos>

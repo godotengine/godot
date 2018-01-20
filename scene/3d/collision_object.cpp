@@ -365,6 +365,20 @@ bool CollisionObject::get_capture_input_on_drag() const {
 	return capture_input_on_drag;
 }
 
+String CollisionObject::get_configuration_warning() const {
+
+	String warning = Spatial::get_configuration_warning();
+
+	if (shapes.empty()) {
+		if (warning == String()) {
+			warning += "\n";
+		}
+		warning += TTR("This node has no children shapes, so it can't interact with the space.\nConsider adding CollisionShape or CollisionPolygon children nodes to define it's shape.");
+	}
+
+	return warning;
+}
+
 CollisionObject::CollisionObject() {
 
 	capture_input_on_drag = false;

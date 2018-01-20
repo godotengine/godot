@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody" inherits="PhysicsBody" category="Core" version="3.0-beta">
+<class name="RigidBody" inherits="PhysicsBody" category="Core" version="3.0-rc1">
 	<brief_description>
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
@@ -11,6 +11,7 @@
 		As a warning, don't change RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/physics/physics_introduction.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -3,12 +3,15 @@
 Import('env')
 Import('env_modules')
 
-# build only version 2
-# Bullet 2.87
-
 env_bullet = env_modules.Clone()
 
-bullet_src__2_x = [
+# Thirdparty source files
+
+if env['builtin_bullet']:
+    # Build only version 2 for now (as of 2.87)
+    thirdparty_dir = "#thirdparty/bullet/"
+
+    bullet2_src = [
         # BulletCollision
           "BulletCollision/BroadphaseCollision/btAxisSweep3.cpp"
         , "BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp"
@@ -179,17 +182,10 @@ bullet_src__2_x = [
         , "LinearMath/btVector3.cpp"
     ]
 
-thirdparty_dir = "#thirdparty/bullet/"
-thirdparty_src = thirdparty_dir + "src/"
+    thirdparty_sources = [thirdparty_dir + file for file in bullet2_src]
 
-bullet_sources = [thirdparty_src + file for file in bullet_src__2_x]
-
-# include headers
-env_bullet.Append(CPPPATH=[thirdparty_src])
-
-env_bullet.add_source_files(env.modules_sources, bullet_sources)
+    env_bullet.add_source_files(env.modules_sources, thirdparty_sources)
+    env_bullet.Append(CPPPATH=[thirdparty_dir])
 
 # Godot source files
 env_bullet.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env')

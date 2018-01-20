@@ -255,6 +255,9 @@ void CreateDialog::_update_search() {
 		if (base_type == "Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
 
+		if (base_type == "Resource" && ClassDB::is_parent_class(type, "Script"))
+			continue; // do not show script nodes
+
 		if (!ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 

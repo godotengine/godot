@@ -109,6 +109,8 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
+	virtual String get_configuration_warning() const;
+
 	CollisionObject();
 	~CollisionObject();
 };

@@ -177,7 +177,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					set_hover_point_index(i);
 					set_selected_point(i);
 
-					// This is to prevent the user from loosing a point out of view.
+					// This is to prevent the user from losing a point out of view.
 					if (point_pos.y < curve.get_min_value())
 						point_pos.y = curve.get_min_value();
 					else if (point_pos.y > curve.get_max_value())

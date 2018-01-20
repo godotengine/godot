@@ -206,12 +206,6 @@ private:
 	void _test_new_mouseover(ObjectID new_collider);
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
-	void _update_rect();
-
-	void _parent_resized();
-	void _parent_draw();
-	void _parent_visibility_changed();
-
 	Ref<World2D> world_2d;
 	Ref<World> world;
 	Ref<World> own_world;
@@ -293,9 +287,6 @@ private:
 	void update_worlds();
 
 	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
-
-	void _vp_enter_tree();
-	void _vp_exit_tree();
 
 	void _vp_input(const Ref<InputEvent> &p_ev);
 	void _vp_input_text(const String &p_text);

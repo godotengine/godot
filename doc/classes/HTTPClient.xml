@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.0-beta">
+<class name="HTTPClient" inherits="Reference" category="Core" version="3.0-rc1">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>
@@ -10,6 +10,8 @@
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/networking/http_client_class.html
+	http://docs.godotengine.org/en/3.0/learning/features/networking/ssl_certificates.html
 	</tutorials>
 	<demos>
 	</demos>

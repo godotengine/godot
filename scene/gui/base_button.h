@@ -90,8 +90,8 @@ public:
 
 	/* Signals */
 
-	bool is_pressed() const; ///< return wether button is pressed (toggled in)
-	bool is_pressing() const; ///< return wether button is pressed (toggled in)
+	bool is_pressed() const; ///< return whether button is pressed (toggled in)
+	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
 	void set_pressed(bool p_pressed); ///only works in toggle mode

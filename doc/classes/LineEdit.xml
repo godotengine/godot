@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" category="Core" version="3.0-beta">
+<class name="LineEdit" inherits="Control" category="Core" version="3.0-rc1">
 	<brief_description>
 		Control that provides single line string editing.
 	</brief_description>
@@ -86,7 +86,7 @@
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position">
-			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accomodate it.
+			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code] the context menu will appear when right clicked.

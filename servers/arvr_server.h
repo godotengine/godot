@@ -95,7 +95,7 @@ public:
 	/*
 		World scale allows you to specify a scale factor that is applied to all positioning vectors in our VR world in essence scaling up, or scaling down the world.
 		For stereoscopic rendering specifically this is very important to give an accurate sense of scale.
-		Add controllers into the mix and an accurate mapping of real world movement to percieved virtual movement becomes very important.
+		Add controllers into the mix and an accurate mapping of real world movement to perceived virtual movement becomes very important.
 
 		Most VR platforms, and our assumption, is that 1 unit in our virtual world equates to 1 meter in the real mode.
 		This scale basically effects the unit size relationship to real world size.
@@ -112,7 +112,7 @@ public:
 		in relation to this point.
 
 		Note that the ARVROrigin spatial node in your scene automatically updates this property and it should be used instead of
-		direct access to this property and it therefor is not available in GDScript
+		direct access to this property and it therefore is not available in GDScript
 
 		Note: this should not be used in AR and should be ignored by an AR based interface as it would throw what you're looking at in the real world
 		and in the virtual world out of sync

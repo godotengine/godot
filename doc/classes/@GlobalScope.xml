@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.0-beta">
+<class name="@GlobalScope" category="Core" version="3.0-rc1">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
@@ -45,6 +45,7 @@
 			[JSON] singleton
 		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
+			[JavaScript] singleton
 		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
@@ -1076,7 +1077,7 @@
 			Joypad Right Analog Trigger
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Functions that return Error return OK when no error occured. Most functions don't return errors and/or just print errors to STDOUT.
+			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.

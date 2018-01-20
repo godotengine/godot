@@ -686,6 +686,9 @@ Vector<String> String::split_spaces() const {
 	int from = 0;
 	int i = 0;
 	int len = length();
+	if (len == 0)
+		return ret;
+
 	bool inside = false;
 
 	while (true) {
@@ -1098,9 +1101,8 @@ String String::num(double p_num, int p_decimals) {
 String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 
 	bool sign = p_num < 0;
-	int64_t num = ABS(p_num);
 
-	int64_t n = num;
+	int64_t n = p_num;
 
 	int chars = 0;
 	do {
@@ -1114,9 +1116,9 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	s.resize(chars + 1);
 	CharType *c = s.ptrw();
 	c[chars] = 0;
-	n = num;
+	n = p_num;
 	do {
-		int mod = n % base;
+		int mod = ABS(n % base);
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -2215,7 +2217,7 @@ int String::find(const String &p_str, int p_from) const {
 	const int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 	const CharType *str = p_str.c_str();
@@ -2254,7 +2256,7 @@ int String::find(const char *p_str, int p_from) const {
 	const int len = length();
 
 	if (len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2315,7 +2317,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	int len = length();
 
 	if (len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2364,7 +2366,7 @@ int String::findn(const String &p_str, int p_from) const {
 	int src_len = p_str.length();
 
 	if (src_len == 0 || length() == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *srcd = c_str();
 
@@ -2460,7 +2462,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 	int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -3165,7 +3167,7 @@ String String::http_unescape() const {
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
 				CharType ord2 = ord_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
-					char bytes[2] = { ord1, ord2 };
+					char bytes[2] = { (char)ord1, (char)ord2 };
 					res += (char)strtol(bytes, NULL, 16);
 					i += 2;
 				}

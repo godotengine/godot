@@ -2091,7 +2091,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		_render_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
-		//do roughness postprocess step until it belives it's done
+		//do roughness postprocess step until it believes it's done
 		return VSG::scene_render->reflection_probe_instance_postprocess_step(reflection_probe->instance);
 	}
 

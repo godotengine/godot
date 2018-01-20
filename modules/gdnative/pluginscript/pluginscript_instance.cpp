@@ -84,8 +84,9 @@ Variant PluginScriptInstance::call(const StringName &p_method, const Variant **p
 	godot_variant ret = _desc->call_method(
 			_data, (godot_string_name *)&p_method, (const godot_variant **)p_args,
 			p_argcount, (godot_variant_call_error *)&r_error);
-	Variant *var_ret = (Variant *)&ret;
-	return *var_ret;
+	Variant var_ret = *(Variant *)&ret;
+	godot_variant_destroy(&ret);
+	return var_ret;
 }
 
 #if 0 // TODO: Don't rely on default implementations provided by ScriptInstance ?

@@ -152,8 +152,9 @@ License: OFL-1.1
 
 Files: ./thirdparty/fonts/Hack_Regular.ttf
 Comment: Hack font
-Copyright: 2015-2017, Christopher Simpkins (with Reserved Font Name Hack).
-License: Hack Open Font License v2.0
+Copyright: 2017, Source Foundry Authors
+  2003, Bitstream Inc.
+License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
@@ -292,9 +293,14 @@ Comment: YUV2RGB
 Copyright: 2008-2011, Robin Watts
 License: BSD-2-clause
 
+Files: ./thirdparty/nanosvg/
+Comment: NanoSVG
+Copyright: 2013-2014, Mikko Mononen
+License: Zlib
+
 Files: ./thirdparty/openssl/
 Comment: The OpenSSL Project
-Copyright: 1998-2016, The OpenSSL Project.
+Copyright: 1998-2017, The OpenSSL Project.
 License: OpenSSL
 
 Files: ./thirdparty/opus/
@@ -305,10 +311,11 @@ Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
  Erik de Castro Lopo
 License: BSD-3-clause
 
-Files: ./thirdparty/nanosvg/
-Comment: NanoSVG
-Copyright: 2013-2014, Mikko Mononen
-License: Zlib
+Files: ./thirdparty/pcre2/
+Comment: PCRE2
+Copyright: 1997-2017, University of Cambridge,
+ 2009-2017, Zoltan Herczeg
+License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
 Comment: PvrTcCompressor
@@ -330,6 +337,11 @@ Comment: libSquish
 Copyright: 2006, Simon Brown
 License: Expat
 
+Files: ./thirdparty/thekla_atlas/
+Comment: Thekla Atlas
+Copyright: 2013, Thekla, Inc
+License: Expat
+
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
 Copyright: 2014-2017, Syoyo Fujita
@@ -343,7 +355,7 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2017, Facebook, Inc.
+Copyright: 2016-2018, Facebook, Inc.
 License: BSD-3-Clause
 
 
@@ -384,6 +396,48 @@ License: BSD-2-clause
  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Bitstream Vera Fonts Copyright
+ Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. Bitstream Vera is a
+ trademark of Bitstream, Inc.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ the fonts accompanying this license ("Fonts") and associated documentation
+ files (the "Font Software"), to reproduce and distribute the Font Software,
+ including without limitation the rights to use, copy, merge, publish,
+ distribute, and/or sell copies of the Font Software, and to permit persons to
+ whom the Font Software is furnished to do so, subject to the following
+ conditions:
+ .
+ The above copyright and trademark notices and this permission notice shall be
+ included in all copies of one or more of the Font Software typefaces.
+ .
+ The Font Software may be modified, altered, or added to, and in particular the
+ designs of glyphs or characters in the Fonts may be modified and additional
+ glyphs or characters may be added to the Fonts, only if the fonts are renamed
+ to names not containing either the words "Bitstream" or the word "Vera".
+ .
+ This License becomes null and void to the extent applicable to Fonts or Font
+ Software that has been modified and is distributed under the "Bitstream Vera"
+ names.
+ .
+ The Font Software may be sold as part of a larger software package but no copy
+ of one or more of the Font Software typefaces may be sold by itself.
+ .
+ THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT,
+ TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL BITSTREAM OR THE GNOME FOUNDATION
+ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL,
+ SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO
+ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
+ .
+ Except as contained in this notice, the names of GNOME, the GNOME Foundation,
+ and Bitstream Inc., shall not be used in advertising or otherwise to promote
+ the sale, use or other dealings in this Font Software without prior written
+ authorization from the GNOME Foundation or Bitstream Inc., respectively. For
+ further information, contact: fonts at gnome dot org.
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without

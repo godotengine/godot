@@ -282,7 +282,7 @@ PhysicsServer::ShapeType ConvexPolygonShapeBullet::get_type() const {
 }
 
 void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
-	// Make a copy of verticies
+	// Make a copy of vertices
 	const int n_of_vertices = p_vertices.size();
 	vertices.resize(n_of_vertices);
 	for (int i = n_of_vertices - 1; 0 <= i; --i) {

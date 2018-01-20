@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" category="Core" version="3.0-beta">
+<class name="ARVRServer" inherits="Object" category="Core" version="3.0-rc1">
 	<brief_description>
 		This is our AR/VR Server.
 	</brief_description>
@@ -49,7 +49,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look throught the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
+				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look through the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">
@@ -99,21 +99,21 @@
 	</members>
 	<signals>
 		<signal name="interface_added">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="interface_name" type="String">
 			</argument>
 			<description>
 				Signal send when a new interface has been added.
 			</description>
 		</signal>
 		<signal name="interface_removed">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="interface_name" type="String">
 			</argument>
 			<description>
 				Signal send when an interface is removed.
 			</description>
 		</signal>
 		<signal name="tracker_added">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="tracker_name" type="String">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>
@@ -124,7 +124,7 @@
 			</description>
 		</signal>
 		<signal name="tracker_removed">
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="tracker_name" type="String">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>

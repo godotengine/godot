@@ -41,7 +41,7 @@
 
 class RigidBodyBullet;
 
-// This clas is responsible to move kinematic actor
+// This class is responsible to move kinematic actor
 // and sincronize rendering engine with Bullet
 /// DOC:
 /// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/MotionStates#What.27s_a_MotionState.3F

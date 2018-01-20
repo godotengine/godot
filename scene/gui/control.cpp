@@ -1325,7 +1325,7 @@ float Control::_get_parent_range(int p_idx) const {
 
 	if (!is_inside_tree()) {
 
-		return 1.0;
+		return 0;
 	}
 	if (data.parent_canvas_item) {
 
@@ -1334,7 +1334,7 @@ float Control::_get_parent_range(int p_idx) const {
 		return get_viewport()->get_visible_rect().size[p_idx & 1];
 	}
 
-	return 1.0;
+	return 0;
 }
 
 float Control::_get_range(int p_idx) const {
@@ -2013,7 +2013,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
 
-			//find last of the childs
+			//find last of the children
 
 			prev_child = _prev_control(from);
 
@@ -2747,7 +2747,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_icon_override", "name", "texture"), &Control::add_icon_override);
 	ClassDB::bind_method(D_METHOD("add_shader_override", "name", "shader"), &Control::add_shader_override);
-	ClassDB::bind_method(D_METHOD("add_style_override", "name", "stylebox"), &Control::add_style_override);
+	ClassDB::bind_method(D_METHOD("add_stylebox_override", "name", "stylebox"), &Control::add_style_override);
 	ClassDB::bind_method(D_METHOD("add_font_override", "name", "font"), &Control::add_font_override);
 	ClassDB::bind_method(D_METHOD("add_color_override", "name", "color"), &Control::add_color_override);
 	ClassDB::bind_method(D_METHOD("add_constant_override", "name", "constant"), &Control::add_constant_override);
@@ -2759,6 +2759,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant", "name", "type"), &Control::get_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_icon_override", "name"), &Control::has_icon_override);
+	ClassDB::bind_method(D_METHOD("has_shader_override", "name"), &Control::has_shader_override);
 	ClassDB::bind_method(D_METHOD("has_stylebox_override", "name"), &Control::has_stylebox_override);
 	ClassDB::bind_method(D_METHOD("has_font_override", "name"), &Control::has_font_override);
 	ClassDB::bind_method(D_METHOD("has_color_override", "name"), &Control::has_color_override);

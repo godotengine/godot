@@ -775,7 +775,7 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 	ERR_FAIL_COND(p_y + p_height > MAX_HEIGHT);
 
 	/* to save memory, cropping should be done in-place, however, since this function
-	   will most likely either not be used much, or in critical areas, for now it wont, because
+	   will most likely either not be used much, or in critical areas, for now it won't, because
 	   it's a waste of time. */
 
 	if (p_width == width && p_height == height && p_x == 0 && p_y == 0)

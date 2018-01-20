@@ -73,7 +73,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			if (player->is_playing()) {
 
 				{
-					String animname = player->get_current_animation();
+					String animname = player->get_assigned_animation();
 
 					if (player->has_animation(animname)) {
 						Ref<Animation> anim = player->get_animation(animname);
@@ -186,8 +186,8 @@ void AnimationPlayerEditor::_play_pressed() {
 
 	if (current != "") {
 
-		if (current == player->get_current_animation())
-			player->stop(); //so it wont blend with itself
+		if (current == player->get_assigned_animation())
+			player->stop(); //so it won't blend with itself
 		player->play(current);
 	}
 
@@ -209,9 +209,9 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 		float time = player->get_current_animation_position();
 
-		if (current == player->get_current_animation() && player->is_playing()) {
+		if (current == player->get_assigned_animation() && player->is_playing()) {
 
-			player->stop(); //so it wont blend with itself
+			player->stop(); //so it won't blend with itself
 		}
 
 		player->play(current);
@@ -234,8 +234,8 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 
 	if (current != "") {
 
-		if (current == player->get_current_animation())
-			player->stop(); //so it wont blend with itself
+		if (current == player->get_assigned_animation())
+			player->stop(); //so it won't blend with itself
 		player->play(current, -1, -1, true);
 	}
 
@@ -256,8 +256,8 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	if (current != "") {
 
 		float time = player->get_current_animation_position();
-		if (current == player->get_current_animation())
-			player->stop(); //so it wont blend with itself
+		if (current == player->get_assigned_animation())
+			player->stop(); //so it won't blend with itself
 
 		player->play(current, -1, -1, true);
 		player->seek(time);
@@ -299,7 +299,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	if (current != "") {
 
-		// player->set_current_animation(current, false);
+		player->set_assigned_animation(current);
 
 		Ref<Animation> anim = player->get_animation(current);
 		{
@@ -654,9 +654,7 @@ Dictionary AnimationPlayerEditor::get_state() const {
 	d["visible"] = is_visible_in_tree();
 	if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
 		d["player"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
-	}
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
-		d["animation"] = animation->get_item_text(animation->get_selected());
+		d["animation"] = player->get_assigned_animation();
 	}
 
 	return d;
@@ -784,7 +782,7 @@ void AnimationPlayerEditor::_update_animation() {
 	}
 
 	scale->set_text(String::num(player->get_speed_scale(), 2));
-	String current = player->get_current_animation();
+	String current = player->get_assigned_animation();
 
 	for (int i = 0; i < animation->get_item_count(); i++) {
 
@@ -831,7 +829,7 @@ void AnimationPlayerEditor::_update_player() {
 		else
 			animation->add_item(E->get());
 
-		if (player->get_current_animation() == E->get())
+		if (player->get_assigned_animation() == E->get())
 			active_idx = animation->get_item_count() - 1;
 	}
 
@@ -988,7 +986,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	};
 
 	updating = true;
-	String current = player->get_current_animation(); //animation->get_item_text( animation->get_selected() );
+	String current = player->get_assigned_animation(); //animation->get_item_text( animation->get_selected() );
 	if (current == "" || !player->has_animation(current)) {
 		updating = false;
 		current = "";
@@ -1338,7 +1336,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
-	Ref<Animation> anim = player->get_animation(player->get_current_animation());
+	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
 	if (!anim.is_valid())
 		return;
 

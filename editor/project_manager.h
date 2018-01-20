@@ -64,7 +64,7 @@ class ProjectManager : public Control {
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 	ScrollContainer *scroll;
-	VBoxContainer *scroll_childs;
+	VBoxContainer *scroll_children;
 	Map<String, String> selected_list; // name -> main_scene
 	String last_clicked;
 	bool importing;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" category="Core" version="3.0-beta">
+<class name="Spatial" inherits="Node" category="Core" version="3.0-rc1">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D related nodes.
 	</brief_description>
@@ -9,6 +9,7 @@
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the Spatial object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the Spatial's transform. The word local below refers to this coordinate system. The coordinate system that is attached to the Spatial object itself is referred to as object-local coordinate system.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/3d/introduction_to_3d.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -36,7 +36,7 @@
 #include "os/copymem.h"
 #include "os/memory.h"
 
-// uncomment this to disable intial local storage.
+// uncomment this to disable initial local storage.
 #define OA_HASH_MAP_INITIAL_LOCAL_STORAGE
 
 /**

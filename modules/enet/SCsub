@@ -3,9 +3,9 @@
 Import('env')
 Import('env_modules')
 
-# Thirdparty source files
-
 env_enet = env_modules.Clone()
+
+# Thirdparty source files
 
 if env['builtin_enet']:
     thirdparty_dir = "#thirdparty/enet/"

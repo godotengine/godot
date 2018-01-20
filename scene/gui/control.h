@@ -317,11 +317,11 @@ public:
 
 	/* POSITIONING */
 
-	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin = false);
+	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin = true);
 	void set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 
-	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false, bool p_push_opposite_anchor = true);
+	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = true, bool p_push_opposite_anchor = true);
 	float get_anchor(Margin p_margin) const;
 
 	void set_margin(Margin p_margin, float p_value);

@@ -107,6 +107,8 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
+	String get_configuration_warning() const;
+
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
 	CollisionObject2D();

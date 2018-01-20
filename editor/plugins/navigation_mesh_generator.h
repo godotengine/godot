@@ -54,7 +54,7 @@ protected:
 	static void _convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh);
 	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, EditorProgress *ep,
 			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
-			rcPolyMeshDetail *detail_mesh, Vector<float> &verticies, Vector<int> &indices);
+			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices);
 
 public:
 	static void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node);

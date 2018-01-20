@@ -491,8 +491,8 @@ static Ref<Reference> _get_parent_class(GDScriptCompletionContext &context) {
 				path = context.base_path.plus_file(path);
 			}
 
-			if (ScriptCodeCompletionCache::get_sigleton())
-				script = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(path);
+			if (ScriptCodeCompletionCache::get_singleton())
+				script = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
 			else
 				script = ResourceLoader::load(path);
 
@@ -765,8 +765,8 @@ static bool _guess_expression_type(GDScriptCompletionContext &context, const GDS
 													//print_line("is a script");
 
 													Ref<Script> scr;
-													if (ScriptCodeCompletionCache::get_sigleton())
-														scr = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(script);
+													if (ScriptCodeCompletionCache::get_singleton())
+														scr = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(script);
 													else
 														scr = ResourceLoader::load(script);
 
@@ -1301,8 +1301,8 @@ static bool _guess_identifier_type(GDScriptCompletionContext &context, int p_lin
 					//print_line("is a script");
 
 					Ref<Script> scr;
-					if (ScriptCodeCompletionCache::get_sigleton())
-						scr = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(script);
+					if (ScriptCodeCompletionCache::get_singleton())
+						scr = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(script);
 					else
 						scr = ResourceLoader::load(script);
 
@@ -2450,8 +2450,10 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 		} break;
 		case GDScriptParser::COMPLETION_RESOURCE_PATH: {
 
-			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))
+			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths")) {
 				get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
+				r_forced = true;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_ASSIGN: {
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)

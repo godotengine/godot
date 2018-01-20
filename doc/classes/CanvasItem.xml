@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" category="Core" version="3.0-beta">
+<class name="CanvasItem" inherits="Node" category="Core" version="3.0-rc1">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -11,6 +11,8 @@
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/2d/2d_transforms.html
+	http://docs.godotengine.org/en/3.0/learning/features/2d/custom_drawing_in_2d.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -131,13 +131,10 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 #endif
 	}
 
-	PluginScript *top = this;
-	// TODO: can be optimized by storing a PluginScript::_base_parent direct pointer
-	while (top->_ref_base_parent.is_valid())
-		top = top->_ref_base_parent.ptr();
-	if (top->_native_parent) {
-		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->_native_parent)) {
-			String msg = "Script inherits from native type '" + String(top->_native_parent) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
+	StringName base_type = get_instance_base_type();
+	if (base_type) {
+		if (!ClassDB::is_parent_class(p_this->get_class_name(), base_type)) {
+			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
 			// TODO: implement PluginscriptLanguage::debug_break_parse
 			// if (ScriptDebugger::get_singleton()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
@@ -210,29 +207,31 @@ Error PluginScript::reload(bool p_keep_state) {
 		// TODO: GDscript uses `ScriptDebugger` here to jump into the parsing error
 		return err;
 	}
+
+	// Script's parent is passed as base_name which can make reference to a
+	// ClassDB name (i.e. `Node2D`) or a resource path (i.e. `res://foo/bar.gd`)
+	StringName *base_name = (StringName *)&manifest.base;
+	if (*base_name) {
+
+		if (ClassDB::class_exists(*base_name)) {
+			_native_parent = *base_name;
+		} else {
+			Ref<Script> res = ResourceLoader::load(*base_name);
+			if (res.is_valid()) {
+				_ref_base_parent = res;
+			} else {
+				String name = *(StringName *)&manifest.name;
+				ERR_EXPLAIN(_path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
+				ERR_FAIL_V(ERR_PARSE_ERROR);
+			}
+		}
+	}
+
 	_valid = true;
 	// Use the manifest to configure this script object
 	_data = manifest.data;
 	_name = *(StringName *)&manifest.name;
 	_tool = manifest.is_tool;
-	// Base name is either another PluginScript or a regular class accessible
-	// through ClassDB
-	StringName *base_name = (StringName *)&manifest.base;
-	for (SelfList<PluginScript> *e = _language->_script_list.first(); e != NULL; e = e->next()) {
-		if (e->self()->_name == *base_name) {
-			// Found you, base is a PluginScript !
-			_ref_base_parent = Ref<PluginScript>(e->self());
-			break;
-		}
-	}
-	if (!_ref_base_parent.is_valid()) {
-		// Base is a native ClassDB
-		if (!ClassDB::class_exists(*base_name)) {
-			ERR_EXPLAIN("Unknown script '" + String(_name) + "' parent '" + String(*base_name) + "'.");
-			ERR_FAIL_V(ERR_PARSE_ERROR);
-		}
-		_native_parent = *base_name;
-	}
 
 	Dictionary *members = (Dictionary *)&manifest.member_lines;
 	for (const Variant *key = members->next(); key != NULL; key = members->next(key)) {

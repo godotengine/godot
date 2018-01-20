@@ -977,6 +977,7 @@ bool AnimationPlayer::is_playing() const {
 	return true;
 	*/
 }
+
 void AnimationPlayer::set_current_animation(const String &p_anim) {
 
 	if (p_anim == "[stop]" || p_anim == "") {
@@ -986,18 +987,28 @@ void AnimationPlayer::set_current_animation(const String &p_anim) {
 	} else {
 		// Same animation, do not replay from start
 	}
-
-	/*
-	ERR_FAIL_COND(!animation_set.has(p_anim));
-	playback.current.pos = 0;
-	playback.current.from = &animation_set[p_anim];
-	playback.assigned = p_anim;
-	*/
 }
 
 String AnimationPlayer::get_current_animation() const {
 
 	return (is_playing() ? playback.assigned : "");
+}
+
+void AnimationPlayer::set_assigned_animation(const String &p_anim) {
+
+	if (is_playing()) {
+		play(p_anim);
+	} else {
+		ERR_FAIL_COND(!animation_set.has(p_anim));
+		playback.current.pos = 0;
+		playback.current.from = &animation_set[p_anim];
+		playback.assigned = p_anim;
+	}
+}
+
+String AnimationPlayer::get_assigned_animation() const {
+
+	return playback.assigned;
 }
 
 void AnimationPlayer::stop(bool p_reset) {
@@ -1301,6 +1312,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);
+	ClassDB::bind_method(D_METHOD("set_assigned_animation", "anim"), &AnimationPlayer::set_assigned_animation);
+	ClassDB::bind_method(D_METHOD("get_assigned_animation"), &AnimationPlayer::get_assigned_animation);
 	ClassDB::bind_method(D_METHOD("queue", "name"), &AnimationPlayer::queue);
 	ClassDB::bind_method(D_METHOD("clear_queue"), &AnimationPlayer::clear_queue);
 
@@ -1331,6 +1344,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "assigned_animation", PROPERTY_HINT_NONE, "", 0), "set_assigned_animation", "get_assigned_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");

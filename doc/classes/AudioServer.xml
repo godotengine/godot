@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" category="Core" version="3.0-beta">
+<class name="AudioServer" inherits="Object" category="Core" version="3.0-rc1">
 	<brief_description>
 		Server interface for low level audio access.
 	</brief_description>
@@ -7,6 +7,7 @@
 		AudioServer is a low level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/features/audio/audio_buses.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -8,6 +8,9 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+/* This header contains definitions
+ * that shall **only** be used by modules within lib/compress.
+ */
 
 #ifndef ZSTD_COMPRESS_H
 #define ZSTD_COMPRESS_H
@@ -42,6 +45,95 @@ typedef struct ZSTD_prefixDict_s {
     size_t dictSize;
     ZSTD_dictMode_e dictMode;
 } ZSTD_prefixDict;
+
+typedef struct {
+    U32 hufCTable[HUF_CTABLE_SIZE_U32(255)];
+    FSE_CTable offcodeCTable[FSE_CTABLE_SIZE_U32(OffFSELog, MaxOff)];
+    FSE_CTable matchlengthCTable[FSE_CTABLE_SIZE_U32(MLFSELog, MaxML)];
+    FSE_CTable litlengthCTable[FSE_CTABLE_SIZE_U32(LLFSELog, MaxLL)];
+    U32 workspace[HUF_WORKSPACE_SIZE_U32];
+    HUF_repeat hufCTable_repeatMode;
+    FSE_repeat offcode_repeatMode;
+    FSE_repeat matchlength_repeatMode;
+    FSE_repeat litlength_repeatMode;
+} ZSTD_entropyCTables_t;
+
+typedef struct {
+    U32 off;
+    U32 len;
+} ZSTD_match_t;
+
+typedef struct {
+    int price;
+    U32 off;
+    U32 mlen;
+    U32 litlen;
+    U32 rep[ZSTD_REP_NUM];
+} ZSTD_optimal_t;
+
+typedef struct {
+    /* All tables are allocated inside cctx->workspace by ZSTD_resetCCtx_internal() */
+    U32* litFreq;               /* table of literals statistics, of size 256 */
+    U32* litLengthFreq;         /* table of litLength statistics, of size (MaxLL+1) */
+    U32* matchLengthFreq;       /* table of matchLength statistics, of size (MaxML+1) */
+    U32* offCodeFreq;           /* table of offCode statistics, of size (MaxOff+1) */
+    ZSTD_match_t* matchTable;   /* list of found matches, of size ZSTD_OPT_NUM+1 */
+    ZSTD_optimal_t* priceTable; /* All positions tracked by optimal parser, of size ZSTD_OPT_NUM+1 */
+
+    U32  litSum;                 /* nb of literals */
+    U32  litLengthSum;           /* nb of litLength codes */
+    U32  matchLengthSum;         /* nb of matchLength codes */
+    U32  offCodeSum;             /* nb of offset codes */
+    /* begin updated by ZSTD_setLog2Prices */
+    U32  log2litSum;             /* pow2 to compare log2(litfreq) to */
+    U32  log2litLengthSum;       /* pow2 to compare log2(llfreq) to */
+    U32  log2matchLengthSum;     /* pow2 to compare log2(mlfreq) to */
+    U32  log2offCodeSum;         /* pow2 to compare log2(offreq) to */
+    /* end : updated by ZSTD_setLog2Prices */
+    U32  staticPrices;           /* prices follow a pre-defined cost structure, statistics are irrelevant */
+} optState_t;
+
+typedef struct {
+    U32 offset;
+    U32 checksum;
+} ldmEntry_t;
+
+typedef struct {
+    ldmEntry_t* hashTable;
+    BYTE* bucketOffsets;    /* Next position in bucket to insert entry */
+    U64 hashPower;          /* Used to compute the rolling hash.
+                             * Depends on ldmParams.minMatchLength */
+} ldmState_t;
+
+typedef struct {
+    U32 enableLdm;          /* 1 if enable long distance matching */
+    U32 hashLog;            /* Log size of hashTable */
+    U32 bucketSizeLog;      /* Log bucket size for collision resolution, at most 8 */
+    U32 minMatchLength;     /* Minimum match length */
+    U32 hashEveryLog;       /* Log number of entries to skip */
+} ldmParams_t;
+
+struct ZSTD_CCtx_params_s {
+    ZSTD_format_e format;
+    ZSTD_compressionParameters cParams;
+    ZSTD_frameParameters fParams;
+
+    int compressionLevel;
+    U32 forceWindow;           /* force back-references to respect limit of
+                                * 1<<wLog, even for dictionary */
+
+    /* Multithreading: used to pass parameters to mtctx */
+    U32 nbThreads;
+    unsigned jobSize;
+    unsigned overlapSizeLog;
+
+    /* Long distance matching parameters */
+    ldmParams_t ldmParams;
+
+    /* For use with createCCtxParams() and freeCCtxParams() only */
+    ZSTD_customMem customMem;
+
+};  /* typedef'd to ZSTD_CCtx_params within "zstd.h" */
 
 struct ZSTD_CCtx_s {
     const BYTE* nextSrc;    /* next block here to continue on current prefix */
@@ -99,38 +191,51 @@ struct ZSTD_CCtx_s {
 };
 
 
-static const BYTE LL_Code[64] = {  0,  1,  2,  3,  4,  5,  6,  7,
-                                   8,  9, 10, 11, 12, 13, 14, 15,
-                                  16, 16, 17, 17, 18, 18, 19, 19,
-                                  20, 20, 20, 20, 21, 21, 21, 21,
-                                  22, 22, 22, 22, 22, 22, 22, 22,
-                                  23, 23, 23, 23, 23, 23, 23, 23,
-                                  24, 24, 24, 24, 24, 24, 24, 24,
-                                  24, 24, 24, 24, 24, 24, 24, 24 };
+MEM_STATIC U32 ZSTD_LLcode(U32 litLength)
+{
+    static const BYTE LL_Code[64] = {  0,  1,  2,  3,  4,  5,  6,  7,
+                                       8,  9, 10, 11, 12, 13, 14, 15,
+                                      16, 16, 17, 17, 18, 18, 19, 19,
+                                      20, 20, 20, 20, 21, 21, 21, 21,
+                                      22, 22, 22, 22, 22, 22, 22, 22,
+                                      23, 23, 23, 23, 23, 23, 23, 23,
+                                      24, 24, 24, 24, 24, 24, 24, 24,
+                                      24, 24, 24, 24, 24, 24, 24, 24 };
+    static const U32 LL_deltaCode = 19;
+    return (litLength > 63) ? ZSTD_highbit32(litLength) + LL_deltaCode : LL_Code[litLength];
+}
 
-static const BYTE ML_Code[128] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-                                  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-                                  32, 32, 33, 33, 34, 34, 35, 35, 36, 36, 36, 36, 37, 37, 37, 37,
-                                  38, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 39, 39,
-                                  40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
-                                  41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
-                                  42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,
-                                  42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42 };
+/* ZSTD_MLcode() :
+ * note : mlBase = matchLength - MINMATCH;
+ *        because it's the format it's stored in seqStore->sequences */
+MEM_STATIC U32 ZSTD_MLcode(U32 mlBase)
+{
+    static const BYTE ML_Code[128] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+                                      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+                                      32, 32, 33, 33, 34, 34, 35, 35, 36, 36, 36, 36, 37, 37, 37, 37,
+                                      38, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 39, 39,
+                                      40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
+                                      41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
+                                      42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,
+                                      42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42 };
+    static const U32 ML_deltaCode = 36;
+    return (mlBase > 127) ? ZSTD_highbit32(mlBase) + ML_deltaCode : ML_Code[mlBase];
+}
 
 /*! ZSTD_storeSeq() :
-    Store a sequence (literal length, literals, offset code and match length code) into seqStore_t.
-    `offsetCode` : distance to match, or 0 == repCode.
-    `matchCode` : matchLength - MINMATCH
+ *  Store a sequence (literal length, literals, offset code and match length code) into seqStore_t.
+ *  `offsetCode` : distance to match + 3 (values 1-3 are repCodes).
+ *  `mlBase` : matchLength - MINMATCH
 */
-MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const void* literals, U32 offsetCode, size_t matchCode)
+MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const void* literals, U32 offsetCode, size_t mlBase)
 {
 #if defined(ZSTD_DEBUG) && (ZSTD_DEBUG >= 6)
     static const BYTE* g_start = NULL;
-    U32 const pos = (U32)((const BYTE*)literals - g_start);
-    if (g_start==NULL) g_start = (const BYTE*)literals;
-    if ((pos > 0) && (pos < 1000000000))
-        DEBUGLOG(6, "Cpos %6u :%5u literals & match %3u bytes at distance %6u",
-               pos, (U32)litLength, (U32)matchCode+MINMATCH, (U32)offsetCode);
+    if (g_start==NULL) g_start = (const BYTE*)literals;  /* note : index only works for compression within a single segment */
+    {   U32 const pos = (U32)((const BYTE*)literals - g_start);
+        DEBUGLOG(6, "Cpos%7u :%3u literals, match%3u bytes at dist.code%7u",
+               pos, (U32)litLength, (U32)mlBase+MINMATCH, (U32)offsetCode);
+    }
 #endif
     /* copy Literals */
     assert(seqStorePtr->lit + litLength <= seqStorePtr->litStart + 128 KB);
@@ -139,6 +244,7 @@ MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const v
 
     /* literal Length */
     if (litLength>0xFFFF) {
+        assert(seqStorePtr->longLengthID == 0); /* there can only be a single long length */
         seqStorePtr->longLengthID = 1;
         seqStorePtr->longLengthPos = (U32)(seqStorePtr->sequences - seqStorePtr->sequencesStart);
     }
@@ -148,11 +254,12 @@ MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const v
     seqStorePtr->sequences[0].offset = offsetCode + 1;
 
     /* match Length */
-    if (matchCode>0xFFFF) {
+    if (mlBase>0xFFFF) {
+        assert(seqStorePtr->longLengthID == 0); /* there can only be a single long length */
         seqStorePtr->longLengthID = 2;
         seqStorePtr->longLengthPos = (U32)(seqStorePtr->sequences - seqStorePtr->sequencesStart);
     }
-    seqStorePtr->sequences[0].matchLength = (U16)matchCode;
+    seqStorePtr->sequences[0].matchLength = (U16)mlBase;
 
     seqStorePtr->sequences++;
 }
@@ -161,7 +268,7 @@ MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const v
 /*-*************************************
 *  Match length counter
 ***************************************/
-static unsigned ZSTD_NbCommonBytes (register size_t val)
+static unsigned ZSTD_NbCommonBytes (size_t val)
 {
     if (MEM_isLittleEndian()) {
         if (MEM_64bits()) {
@@ -235,13 +342,17 @@ MEM_STATIC size_t ZSTD_count(const BYTE* pIn, const BYTE* pMatch, const BYTE* co
     const BYTE* const pStart = pIn;
     const BYTE* const pInLoopLimit = pInLimit - (sizeof(size_t)-1);
 
-    while (pIn < pInLoopLimit) {
-        size_t const diff = MEM_readST(pMatch) ^ MEM_readST(pIn);
-        if (!diff) { pIn+=sizeof(size_t); pMatch+=sizeof(size_t); continue; }
-        pIn += ZSTD_NbCommonBytes(diff);
-        return (size_t)(pIn - pStart);
-    }
-    if (MEM_64bits()) if ((pIn<(pInLimit-3)) && (MEM_read32(pMatch) == MEM_read32(pIn))) { pIn+=4; pMatch+=4; }
+    if (pIn < pInLoopLimit) {
+        { size_t const diff = MEM_readST(pMatch) ^ MEM_readST(pIn);
+          if (diff) return ZSTD_NbCommonBytes(diff); }
+        pIn+=sizeof(size_t); pMatch+=sizeof(size_t);
+        while (pIn < pInLoopLimit) {
+            size_t const diff = MEM_readST(pMatch) ^ MEM_readST(pIn);
+            if (!diff) { pIn+=sizeof(size_t); pMatch+=sizeof(size_t); continue; }
+            pIn += ZSTD_NbCommonBytes(diff);
+            return (size_t)(pIn - pStart);
+    }   }
+    if (MEM_64bits() && (pIn<(pInLimit-3)) && (MEM_read32(pMatch) == MEM_read32(pIn))) { pIn+=4; pMatch+=4; }
     if ((pIn<(pInLimit-1)) && (MEM_read16(pMatch) == MEM_read16(pIn))) { pIn+=2; pMatch+=2; }
     if ((pIn<pInLimit) && (*pMatch == *pIn)) pIn++;
     return (size_t)(pIn - pStart);
@@ -303,5 +414,49 @@ MEM_STATIC size_t ZSTD_hashPtr(const void* p, U32 hBits, U32 mls)
 #if defined (__cplusplus)
 }
 #endif
+
+
+/* ==============================================================
+ * Private declarations
+ * These prototypes shall only be called from within lib/compress
+ * ============================================================== */
+
+/*! ZSTD_initCStream_internal() :
+ *  Private use only. Init streaming operation.
+ *  expects params to be valid.
+ *  must receive dict, or cdict, or none, but not both.
+ *  @return : 0, or an error code */
+size_t ZSTD_initCStream_internal(ZSTD_CStream* zcs,
+                     const void* dict, size_t dictSize,
+                     const ZSTD_CDict* cdict,
+                     ZSTD_CCtx_params  params, unsigned long long pledgedSrcSize);
+
+/*! ZSTD_compressStream_generic() :
+ *  Private use only. To be called from zstdmt_compress.c in single-thread mode. */
+size_t ZSTD_compressStream_generic(ZSTD_CStream* zcs,
+                                   ZSTD_outBuffer* output,
+                                   ZSTD_inBuffer* input,
+                                   ZSTD_EndDirective const flushMode);
+
+/*! ZSTD_getCParamsFromCDict() :
+ *  as the name implies */
+ZSTD_compressionParameters ZSTD_getCParamsFromCDict(const ZSTD_CDict* cdict);
+
+/* ZSTD_compressBegin_advanced_internal() :
+ * Private use only. To be called from zstdmt_compress.c. */
+size_t ZSTD_compressBegin_advanced_internal(ZSTD_CCtx* cctx,
+                                    const void* dict, size_t dictSize,
+                                    ZSTD_dictMode_e dictMode,
+                                    const ZSTD_CDict* cdict,
+                                    ZSTD_CCtx_params params,
+                                    unsigned long long pledgedSrcSize);
+
+/* ZSTD_compress_advanced_internal() :
+ * Private use only. To be called from zstdmt_compress.c. */
+size_t ZSTD_compress_advanced_internal(ZSTD_CCtx* cctx,
+                                       void* dst, size_t dstCapacity,
+                                 const void* src, size_t srcSize,
+                                 const void* dict,size_t dictSize,
+                                 ZSTD_CCtx_params params);
 
 #endif /* ZSTD_COMPRESS_H */

@@ -1551,7 +1551,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 				node = node_name_map[at.target];
 			} else {
-				print_line("Couldnt find node: " + at.target);
+				print_line("Couldn't find node: " + at.target);
 				continue;
 			}
 		} else {
@@ -1736,7 +1736,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					print_line("couldnt find matching node " + at.target + " xform for track " + at.param);
+					print_line("couldn't find matching node " + at.target + " xform for track " + at.param);
 					continue;
 				}
 

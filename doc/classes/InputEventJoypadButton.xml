@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.0-beta">
+<class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.0-rc1">
 	<brief_description>
 		Input event for gamepad buttons.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Input event type for gamepad buttons. For joysticks see [InputEventJoypadMotion].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
+		http://docs.godotengine.org/en/3.0/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>

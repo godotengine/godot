@@ -388,7 +388,7 @@ public:
 	};
 
 	/**
-	 * return wether the list is empty
+	 * return whether the list is empty
 	 */
 	_FORCE_INLINE_ bool empty() const {
 

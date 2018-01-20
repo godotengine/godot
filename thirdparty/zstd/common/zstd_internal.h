@@ -11,6 +11,10 @@
 #ifndef ZSTD_CCOMMON_H_MODULE
 #define ZSTD_CCOMMON_H_MODULE
 
+/* this module contains definitions which must be identical
+ * across compression, decompression and dictBuilder.
+ * It also contains a few functions useful to at least 2 of them
+ * and which benefit from being inlined */
 
 /*-*************************************
 *  Dependencies
@@ -50,21 +54,26 @@ extern "C" {
 
 #if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=2)
 #  include <stdio.h>
+extern int g_debuglog_enable;
 /* recommended values for ZSTD_DEBUG display levels :
  * 1 : no display, enables assert() only
- * 2 : reserved for currently active debugging path
- * 3 : events once per object lifetime (CCtx, CDict)
+ * 2 : reserved for currently active debug path
+ * 3 : events once per object lifetime (CCtx, CDict, etc.)
  * 4 : events once per frame
  * 5 : events once per block
  * 6 : events once per sequence (*very* verbose) */
-#  define DEBUGLOG(l, ...) {                         \
-                if (l<=ZSTD_DEBUG) {                 \
-                    fprintf(stderr, __FILE__ ": ");  \
-                    fprintf(stderr, __VA_ARGS__);    \
-                    fprintf(stderr, " \n");          \
+#  define RAWLOG(l, ...) {                                      \
+                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
+                    fprintf(stderr, __VA_ARGS__);               \
+            }   }
+#  define DEBUGLOG(l, ...) {                                    \
+                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
+                    fprintf(stderr, __FILE__ ": " __VA_ARGS__); \
+                    fprintf(stderr, " \n");                     \
             }   }
 #else
-#  define DEBUGLOG(l, ...)      {}    /* disabled */
+#  define RAWLOG(l, ...)      {}    /* disabled */
+#  define DEBUGLOG(l, ...)    {}    /* disabled */
 #endif
 
 
@@ -85,9 +94,7 @@ extern "C" {
 #define ZSTD_OPT_NUM    (1<<12)
 
 #define ZSTD_REP_NUM      3                 /* number of repcodes */
-#define ZSTD_REP_CHECK    (ZSTD_REP_NUM)    /* number of repcodes to check by the optimal parser */
 #define ZSTD_REP_MOVE     (ZSTD_REP_NUM-1)
-#define ZSTD_REP_MOVE_OPT (ZSTD_REP_NUM)
 static const U32 repStartValue[ZSTD_REP_NUM] = { 1, 4, 8 };
 
 #define KB *(1 <<10)
@@ -134,28 +141,40 @@ typedef enum { set_basic, set_rle, set_compressed, set_repeat } symbolEncodingTy
 #define LLFSELog    9
 #define OffFSELog   8
 
-static const U32 LL_bits[MaxLL+1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      1, 1, 1, 1, 2, 2, 3, 3, 4, 6, 7, 8, 9,10,11,12,
+static const U32 LL_bits[MaxLL+1] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                      1, 1, 1, 1, 2, 2, 3, 3,
+                                      4, 6, 7, 8, 9,10,11,12,
                                      13,14,15,16 };
-static const S16 LL_defaultNorm[MaxLL+1] = { 4, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1,
-                                             2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 1, 1, 1, 1, 1,
+static const S16 LL_defaultNorm[MaxLL+1] = { 4, 3, 2, 2, 2, 2, 2, 2,
+                                             2, 2, 2, 2, 2, 1, 1, 1,
+                                             2, 2, 2, 2, 2, 2, 2, 2,
+                                             2, 3, 2, 1, 1, 1, 1, 1,
                                             -1,-1,-1,-1 };
 #define LL_DEFAULTNORMLOG 6  /* for static allocation */
 static const U32 LL_defaultNormLog = LL_DEFAULTNORMLOG;
 
-static const U32 ML_bits[MaxML+1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 7, 8, 9,10,11,
+static const U32 ML_bits[MaxML+1] = { 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                      1, 1, 1, 1, 2, 2, 3, 3,
+                                      4, 4, 5, 7, 8, 9,10,11,
                                      12,13,14,15,16 };
-static const S16 ML_defaultNorm[MaxML+1] = { 1, 4, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1,
-                                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,
+static const S16 ML_defaultNorm[MaxML+1] = { 1, 4, 3, 2, 2, 2, 2, 2,
+                                             2, 1, 1, 1, 1, 1, 1, 1,
+                                             1, 1, 1, 1, 1, 1, 1, 1,
+                                             1, 1, 1, 1, 1, 1, 1, 1,
+                                             1, 1, 1, 1, 1, 1, 1, 1,
+                                             1, 1, 1, 1, 1, 1,-1,-1,
                                             -1,-1,-1,-1,-1 };
 #define ML_DEFAULTNORMLOG 6  /* for static allocation */
 static const U32 ML_defaultNormLog = ML_DEFAULTNORMLOG;
 
-static const S16 OF_defaultNorm[DefaultMaxOff+1] = { 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1,
-                                                     1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1 };
+static const S16 OF_defaultNorm[DefaultMaxOff+1] = { 1, 1, 1, 1, 1, 1, 2, 2,
+                                                     2, 1, 1, 1, 1, 1, 1, 1,
+                                                     1, 1, 1, 1, 1, 1, 1, 1,
+                                                    -1,-1,-1,-1,-1 };
 #define OF_DEFAULTNORMLOG 5  /* for static allocation */
 static const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 
@@ -167,7 +186,7 @@ static void ZSTD_copy8(void* dst, const void* src) { memcpy(dst, src, 8); }
 #define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
 
 /*! ZSTD_wildcopy() :
-*   custom version of memcpy(), can copy up to 7 bytes too many (8 bytes if length==0) */
+ *  custom version of memcpy(), can overwrite up to WILDCOPY_OVERLENGTH bytes (if length==0) */
 #define WILDCOPY_OVERLENGTH 8
 MEM_STATIC void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length)
 {
@@ -191,16 +210,13 @@ MEM_STATIC void ZSTD_wildcopy_e(void* dst, const void* src, void* dstEnd)   /* s
 
 
 /*-*******************************************
-*  Private interfaces
+*  Private declarations
 *********************************************/
-typedef struct ZSTD_stats_s ZSTD_stats_t;
-
 typedef struct seqDef_s {
     U32 offset;
     U16 litLength;
     U16 matchLength;
 } seqDef;
-
 
 typedef struct {
     seqDef* sequencesStart;
@@ -216,100 +232,8 @@ typedef struct {
     U32   repToConfirm[ZSTD_REP_NUM];
 } seqStore_t;
 
-typedef struct {
-    U32 off;
-    U32 len;
-} ZSTD_match_t;
-
-typedef struct {
-    U32 price;
-    U32 off;
-    U32 mlen;
-    U32 litlen;
-    U32 rep[ZSTD_REP_NUM];
-} ZSTD_optimal_t;
-
-typedef struct {
-    U32* litFreq;
-    U32* litLengthFreq;
-    U32* matchLengthFreq;
-    U32* offCodeFreq;
-    ZSTD_match_t* matchTable;
-    ZSTD_optimal_t* priceTable;
-
-    U32  matchLengthSum;
-    U32  matchSum;
-    U32  litLengthSum;
-    U32  litSum;
-    U32  offCodeSum;
-    U32  log2matchLengthSum;
-    U32  log2matchSum;
-    U32  log2litLengthSum;
-    U32  log2litSum;
-    U32  log2offCodeSum;
-    U32  factor;
-    U32  staticPrices;
-    U32  cachedPrice;
-    U32  cachedLitLength;
-    const BYTE* cachedLiterals;
-} optState_t;
-
-typedef struct {
-    U32 offset;
-    U32 checksum;
-} ldmEntry_t;
-
-typedef struct {
-    ldmEntry_t* hashTable;
-    BYTE* bucketOffsets;    /* Next position in bucket to insert entry */
-    U64 hashPower;          /* Used to compute the rolling hash.
-                             * Depends on ldmParams.minMatchLength */
-} ldmState_t;
-
-typedef struct {
-    U32 enableLdm;          /* 1 if enable long distance matching */
-    U32 hashLog;            /* Log size of hashTable */
-    U32 bucketSizeLog;      /* Log bucket size for collision resolution, at most 8 */
-    U32 minMatchLength;     /* Minimum match length */
-    U32 hashEveryLog;       /* Log number of entries to skip */
-} ldmParams_t;
-
-typedef struct {
-    U32 hufCTable[HUF_CTABLE_SIZE_U32(255)];
-    FSE_CTable offcodeCTable[FSE_CTABLE_SIZE_U32(OffFSELog, MaxOff)];
-    FSE_CTable matchlengthCTable[FSE_CTABLE_SIZE_U32(MLFSELog, MaxML)];
-    FSE_CTable litlengthCTable[FSE_CTABLE_SIZE_U32(LLFSELog, MaxLL)];
-    U32 workspace[HUF_WORKSPACE_SIZE_U32];
-    HUF_repeat hufCTable_repeatMode;
-    FSE_repeat offcode_repeatMode;
-    FSE_repeat matchlength_repeatMode;
-    FSE_repeat litlength_repeatMode;
-} ZSTD_entropyCTables_t;
-
-struct ZSTD_CCtx_params_s {
-    ZSTD_format_e format;
-    ZSTD_compressionParameters cParams;
-    ZSTD_frameParameters fParams;
-
-    int compressionLevel;
-    U32 forceWindow;           /* force back-references to respect limit of
-                                * 1<<wLog, even for dictionary */
-
-    /* Multithreading: used to pass parameters to mtctx */
-    U32 nbThreads;
-    unsigned jobSize;
-    unsigned overlapSizeLog;
-
-    /* Long distance matching parameters */
-    ldmParams_t ldmParams;
-
-    /* For use with createCCtxParams() and freeCCtxParams() only */
-    ZSTD_customMem customMem;
-
-};  /* typedef'd to ZSTD_CCtx_params within "zstd.h" */
-
-const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);
-void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);
+const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);   /* compress & dictBuilder */
+void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);   /* compress, dictBuilder, decodeCorpus (shouldn't get its definition from here) */
 
 /* custom memory allocation functions */
 void* ZSTD_malloc(size_t size, ZSTD_customMem customMem);
@@ -317,9 +241,7 @@ void* ZSTD_calloc(size_t size, ZSTD_customMem customMem);
 void ZSTD_free(void* ptr, ZSTD_customMem customMem);
 
 
-/*======  common function  ======*/
-
-MEM_STATIC U32 ZSTD_highbit32(U32 val)
+MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus */
 {
     assert(val != 0);
     {
@@ -330,66 +252,25 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
         return 31 - __builtin_clz(val);
 #   else   /* Software version */
-        static const int DeBruijnClz[32] = { 0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31 };
+        static const U32 DeBruijnClz[32] = { 0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31 };
         U32 v = val;
-        int r;
         v |= v >> 1;
         v |= v >> 2;
         v |= v >> 4;
         v |= v >> 8;
         v |= v >> 16;
-        r = DeBruijnClz[(U32)(v * 0x07C4ACDDU) >> 27];
-        return r;
+        return DeBruijnClz[(v * 0x07C4ACDDU) >> 27];
 #   endif
     }
 }
 
 
-/* hidden functions */
-
 /* ZSTD_invalidateRepCodes() :
  * ensures next compression will not use repcodes from previous block.
  * Note : only works with regular variant;
  *        do not use with extDict variant ! */
-void ZSTD_invalidateRepCodes(ZSTD_CCtx* cctx);
+void ZSTD_invalidateRepCodes(ZSTD_CCtx* cctx);   /* zstdmt, adaptive_compression (shouldn't get this definition from here) */
 
-
-/*! ZSTD_initCStream_internal() :
- *  Private use only. Init streaming operation.
- *  expects params to be valid.
- *  must receive dict, or cdict, or none, but not both.
- *  @return : 0, or an error code */
-size_t ZSTD_initCStream_internal(ZSTD_CStream* zcs,
-                     const void* dict, size_t dictSize,
-                     const ZSTD_CDict* cdict,
-                     ZSTD_CCtx_params  params, unsigned long long pledgedSrcSize);
-
-/*! ZSTD_compressStream_generic() :
- *  Private use only. To be called from zstdmt_compress.c in single-thread mode. */
-size_t ZSTD_compressStream_generic(ZSTD_CStream* zcs,
-                                   ZSTD_outBuffer* output,
-                                   ZSTD_inBuffer* input,
-                                   ZSTD_EndDirective const flushMode);
-
-/*! ZSTD_getCParamsFromCDict() :
- *  as the name implies */
-ZSTD_compressionParameters ZSTD_getCParamsFromCDict(const ZSTD_CDict* cdict);
-
-/* ZSTD_compressBegin_advanced_internal() :
- * Private use only. To be called from zstdmt_compress.c. */
-size_t ZSTD_compressBegin_advanced_internal(ZSTD_CCtx* cctx,
-                                    const void* dict, size_t dictSize,
-                                    ZSTD_dictMode_e dictMode,
-                                    ZSTD_CCtx_params params,
-                                    unsigned long long pledgedSrcSize);
-
-/* ZSTD_compress_advanced_internal() :
- * Private use only. To be called from zstdmt_compress.c. */
-size_t ZSTD_compress_advanced_internal(ZSTD_CCtx* cctx,
-                                       void* dst, size_t dstCapacity,
-                                 const void* src, size_t srcSize,
-                                 const void* dict,size_t dictSize,
-                                 ZSTD_CCtx_params params);
 
 typedef struct {
     blockType_e blockType;
@@ -398,7 +279,8 @@ typedef struct {
 } blockProperties_t;
 
 /*! ZSTD_getcBlockSize() :
-*   Provides the size of compressed block from block header `src` */
+ *  Provides the size of compressed block from block header `src` */
+/* Used by: decompress, fullbench (does not get its definition from here) */
 size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
                           blockProperties_t* bpPtr);
 

@@ -131,7 +131,7 @@ void main() {
 
 #elif defined(USE_ASYM_PANO)
 
-	// When an assymetrical projection matrix is used (applicable for stereoscopic rendering i.e. VR) we need to do this calculation per fragment to get a perspective correct result. 
+	// When an asymmetrical projection matrix is used (applicable for stereoscopic rendering i.e. VR) we need to do this calculation per fragment to get a perspective correct result. 
 	// Note that we're ignoring the x-offset for IPD, with Z sufficiently in the distance it becomes neglectible, as a result we could probably just set cube_normal.z to -1.
 	// The Matrix[2][0] (= asym_proj.x) and Matrix[2][1] (= asym_proj.z) values are what provide the right shift in the image.
 
@@ -161,7 +161,7 @@ void main() {
 
 #ifdef SRGB_TO_LINEAR
 
-	color.rgb = mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1 + 0.055)),vec3(2.4)),color.rgb * (1.0 / 12.92),lessThan(color.rgb,vec3(0.04045)));
+	color.rgb = mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),color.rgb * (1.0 / 12.92),lessThan(color.rgb,vec3(0.04045)));
 #endif
 
 #ifdef DEBUG_GRADIENT

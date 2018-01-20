@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDScript" inherits="Script" category="Core" version="3.0-beta">
+<class name="GDScript" inherits="Script" category="Core" version="3.0-rc1">
 	<brief_description>
 		A script implemented in the GDScript programming language.
 	</brief_description>
@@ -8,6 +8,7 @@
 		[method new] creates a new instance of the script. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/learning/scripting/gdscript/index.html
 	</tutorials>
 	<demos>
 	</demos>

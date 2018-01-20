@@ -3,10 +3,11 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Artem Varaksa <aymfst@gmail.com>, 2018.
 # B10nicMachine <shumik1337@gmail.com>, 2017.
 # DimOkGamer <dimokgamer@gmail.com>, 2016-2017.
 # Igor S <scorched@bk.ru>, 2017.
-# ijet <my-ijet@mail.ru>, 2017.
+# ijet <my-ijet@mail.ru>, 2017-2018.
 # Maxim Kim <habamax@gmail.com>, 2016.
 # Maxim toby3d Lebedev <mail@toby3d.ru>, 2016.
 # outbools <drag4e@yandex.ru>, 2017.
@@ -17,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-12-22 14:18+0000\n"
-"Last-Translator: ijet <my-ijet@mail.ru>\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"Last-Translator: Artem Varaksa <aymfst@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -384,14 +385,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Заменено %d совпадений."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Заменить"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Заменить всё"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Учитывать регистр"
 
@@ -400,48 +393,16 @@ msgid "Whole Words"
 msgstr "Целые слова"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Заменить"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Заменить всё"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Только выделять"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Поиск"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Найти"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Следующий"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Не найдено!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Заменить на"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Чувствительность регистра"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "В обратном направлении"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Подтверждение замены"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Пропустить"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -560,9 +521,8 @@ msgid "Signals"
 msgstr "Сигналы"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Изменить тип"
+msgstr "Изменить тип %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -681,9 +641,8 @@ msgstr ""
 "Всё равно удалить его? (Нельзя отменить!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Не удаётся удалить:\n"
+msgstr "Не удаётся удалить:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -766,9 +725,8 @@ msgid "Lead Developer"
 msgstr "Ведущий Разработчик"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Менеджер проектов"
+msgstr "Менеджер проектов "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1021,7 +979,7 @@ msgstr "Загрузить по умолчанию"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Загрузить стандартную раскладку шины."
+msgstr "Загрузить раскладку шины по умолчанию."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1169,9 +1127,8 @@ msgid "Packing"
 msgstr "Упаковывание"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Файл шаблона не найден:\n"
+msgstr "Файл шаблона не найден:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1382,6 +1339,21 @@ msgid "Description"
 msgstr "Описание"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Уроки"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"В настоящее время отсутствует описание этого метода. Пожалуйста [color="
+"$color][url=$url]помогите нам[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Свойства"
 
@@ -1417,6 +1389,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Искать текст"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Найти"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Вывод:"
@@ -1429,9 +1405,8 @@ msgid "Clear"
 msgstr "Очистить"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Вывод"
+msgstr "Очистить вывод"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1441,8 +1416,8 @@ msgstr "Ошибка при сохранении ресурса!"
 msgid "Save Resource As.."
 msgstr "Сохранить ресурс как.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Ясно.."
 
@@ -1495,13 +1470,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Эта операция не может быть выполнена без корня дерева."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры) не могли "
-"быть удовлетворены."
+"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры или "
+"унаследованные) не могли быть удовлетворены."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2108,6 +2082,13 @@ msgstr "Справка"
 msgid "Classes"
 msgstr "Классы"
 
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Поиск"
+
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлайн Документы"
@@ -2491,9 +2472,8 @@ msgid "No version.txt found inside templates."
 msgstr "Не найден version.txt файл в шаблонах."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Ошибка сохранения шаблонов:\n"
+msgstr "Ошибка создания пути для шаблонов:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2651,10 +2631,8 @@ msgid "View items as a list"
 msgstr "Просмотр элементов в виде списка"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Статус: Импорт файла не удался. Пожалуйста, исправьте файл и "
 "переимпортируйте вручную."
 
@@ -2663,24 +2641,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Нельзя переместить/переименовать корень."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Невозможно переместить папку в себя.\n"
+msgstr "Невозможно переместить папку в себя."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Ошибка перемещения:\n"
+msgstr "Ошибка перемещения:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Ошибка дублирования:\n"
+msgstr "Ошибка дублирования:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Не удаётся обновить зависимости:\n"
+msgstr "Не удаётся обновить зависимости:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -3326,9 +3300,8 @@ msgid "Filters.."
 msgstr "Фильтры.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Анимация"
+msgstr "Дерево анимации"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -3806,6 +3779,14 @@ msgstr "Добавить %s"
 msgid "Adding %s..."
 msgstr "Добавление %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "Ок"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3815,11 +3796,6 @@ msgstr "Создать узел"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Ошибка добавления сцены из %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Эта операция требует одного выбранного узла."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -4193,9 +4169,8 @@ msgid "Bake!"
 msgstr "Запечь!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Создать полисетку навигации.\n"
+msgstr "Создать полисетку навигации."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4260,7 +4235,7 @@ msgstr "Создать Navigation Polygon"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr "Создание AABB"
+msgstr "Генерация AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4584,20 +4559,16 @@ msgid "Paste"
 msgstr "Вставить"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Путь ресурса"
+msgstr "Предзагрузчик ресурсов"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
 msgstr "Очистить Недавние Файлы"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"Закрыть и сохранить изменения?\n"
-"\""
+msgstr "Закрыть и сохранить изменения?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4672,7 +4643,6 @@ msgid "Copy Script Path"
 msgstr "Копировать путь к скрипту"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
 msgstr "Показать в файловой системе"
 
@@ -5203,6 +5173,10 @@ msgstr "Ок :("
 msgid "No parent to instance a child at."
 msgstr "Не выбран родитель для добавления потомка."
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Эта операция требует одного выбранного узла."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Режим нормалей"
@@ -5280,9 +5254,8 @@ msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Режим выделения (Q)\n"
+msgstr "Режим выделения (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5562,7 +5535,7 @@ msgstr "Переместить (после)"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "SpriteFrames"
-msgstr "Стек"
+msgstr "Кадры cпрайта"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5851,30 +5824,33 @@ msgid "Error"
 msgstr "Ошибка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
-msgstr "Автоматически"
+msgstr "Автотайлы"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
+"Выберите плитку для использования в качестве значка, она также будет "
+"использоваться при неверных привязках автотайлов."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
+"ЛКМ: установить бит.\n"
+"ПКМ: снять бит."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select current edited sub-tile."
+msgstr "Выберите текущий редактированный вложенный тайл."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Select current edited sub-tile."
-msgstr "Сохранить текущий редактируемый ресурс."
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
-msgstr ""
+msgid "Select sub-tile to change its priority."
+msgstr "Выберите вложенный тайл чтобы изменить его приоритет."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -5985,31 +5961,25 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Пожалуйста, выберите 'project.godot' файл."
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr "Ваш проект будет создан не в пустой папке (лучше создать новую папку)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "Пожалуйста, выберите 'project.godot' файл."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "Пожалуйста, выберите папку, которая не содержит файл 'project.godot'."
 
 #: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "Бинго!"
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Импортированный проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
-msgstr "Невозможно создать папку."
+msgstr "Не удалось создать папку."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "По этому пути уже существует папка с указанным именем."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6052,27 +6022,24 @@ msgid "Import Existing Project"
 msgstr "Импортировать существующий проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Импортировать и Открыть"
+msgstr "Импортировать и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Создать новый проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Создать излучатель"
+msgstr "Создать и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Установить проект:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Установить"
+msgstr "Установить и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6656,10 +6623,6 @@ msgid "Error loading scene from %s"
 msgstr "Ошибка при загрузке сцены из %s"
 
 #: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Ок"
-
-#: editor/scene_tree_dock.cpp
 msgid ""
 "Cannot instance the scene '%s' because the current scene exists within one "
 "of its nodes."
@@ -6748,9 +6711,8 @@ msgid "Error duplicating scene to save it."
 msgstr "Ошибка дублирования сцены, при её сохранении."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "Вложенные Ресурсы:"
+msgstr "Вложенные ресурсы"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -7062,9 +7024,8 @@ msgid "Child Process Connected"
 msgstr "Дочерний процесс связан"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Ошибки загрузки"
+msgstr "Ошибка копирования"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7414,56 +7375,48 @@ msgid "Pick Distance:"
 msgstr "Расстояние выбора:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "Создание контуров..."
+msgstr "Генерация решения..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "Создание C# проекта..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "Невозможно создать контур!"
+msgstr "Не удалось создать решение."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "Не удалось загрузить ресурс."
+msgstr "Не удалось сохранить решение."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Сделано!"
+msgstr "Готово"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "Не удалось загрузить ресурс."
+msgstr "Не удалось создать C# проект."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Моно"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "Создать контур"
+msgstr "Создать C# решение"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "Билды"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "Проект"
+msgstr "Собрать проект"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
-msgstr "Предупреждение"
+msgstr "Предупреждения"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7820,37 +7773,31 @@ msgstr "Запустить в браузере"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr "Запустить HTML в стандартном браузере системы."
+msgstr "Запустить HTML в системном браузере по умолчанию."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "Не удалось записать файл:\n"
+msgstr "Не удалось записать файл:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "Не удалось открыть шаблон для экспорта:\n"
+msgstr "Не удалось открыть шаблон для экспорта:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Неверный шаблон экспорта:\n"
+msgstr "Неверный шаблон экспорта:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Не удается прочитать пользовательскую HTML-оболочку:\n"
+msgstr "Не удалось прочитать пользовательскую HTML оболочку:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Не удалось прочитать файл изображения заставки:\n"
+msgstr "Не удалось прочитать файл изображения заставки:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Не удалось прочитать файл изображения заставки:\n"
+msgstr "Использовать изображения заставки по умолчанию."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7867,6 +7814,13 @@ msgid ""
 msgstr ""
 "Только один видимый CanvasModulate на сцену (или совокупность приведённых "
 "сцен). Будет работать первый созданный, остальные будут проигнорированы."
+
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7959,7 +7913,7 @@ msgstr ""
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
-"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"Size changes to RigidBody2D (in character or rigid modes) will be overridden "
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -8029,6 +7983,13 @@ msgstr "Завершение построения"
 msgid "Lighting Meshes: "
 msgstr "Освещение полисетки: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8085,8 +8046,8 @@ msgstr "Ничего не видно, потому что полисетки н�
 
 #: scene/3d/physics_body.cpp
 msgid ""
-"Size changes to RigidBody (in character or rigid modes) will be overriden by "
-"the physics engine when running.\n"
+"Size changes to RigidBody (in character or rigid modes) will be overridden "
+"by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
 "Изменения размера RigidBody (в режиме character или rigid) будут "
@@ -8147,7 +8108,8 @@ msgid ""
 "hide upon running."
 msgstr ""
 "После запуска всплывающие окна по умолчанию скрыты, для их отображения "
-"используйте функцию popup() или любую из popup_*()."
+"используйте функцию popup() или любую из popup*(). Делать их видимыми для "
+"редактирования - нормально, но они будут скрыты при запуске."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -8168,11 +8130,11 @@ msgstr "(Другие)"
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Среда по умолчанию, как определено в Настройках проекта (Rendering -> "
-"Viewport -> Default Environment) не может быть загружена."
+"Environment -> Default Environment) не может быть загружена."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -8202,6 +8164,36 @@ msgstr "Ошибка загрузки шрифта."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Недопустимый размер шрифта."
+
+#~ msgid "Next"
+#~ msgstr "Следующий"
+
+#~ msgid "Not found!"
+#~ msgstr "Не найдено!"
+
+#~ msgid "Replace By"
+#~ msgstr "Заменить на"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Чувствительность регистра"
+
+#~ msgid "Backwards"
+#~ msgstr "В обратном направлении"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Подтверждение замены"
+
+#~ msgid "Skip"
+#~ msgstr "Пропустить"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "Ваш проект будет создан не в пустой папке (лучше создать новую папку)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "Бинго!"
 
 #~ msgid "preview"
 #~ msgstr "предпросмотр"
@@ -8991,9 +8983,6 @@ msgstr "Недопустимый размер шрифта."
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "Оповещения, когда внешний ресурс был изменён."
-
-#~ msgid "Tutorials"
-#~ msgstr "Уроки"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "Открыть https://godotengine.org с разделом уроков."

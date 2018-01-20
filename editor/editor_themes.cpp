@@ -193,6 +193,10 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	exceptions.push_back("ZoomReset");
 	exceptions.push_back("LockViewport");
 	exceptions.push_back("GroupViewport");
+	exceptions.push_back("StatusError");
+	exceptions.push_back("StatusSuccess");
+	exceptions.push_back("StatusWarning");
+	exceptions.push_back("NodeWarning");
 
 	clock_t begin_time = clock();
 
@@ -208,7 +212,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		}
 
 	// generate thumb files with the given thumb size
-	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we dont need filter with original resolution
+	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we don't need filter with original resolution
 	if (p_thumb_size >= 64) {
 		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
