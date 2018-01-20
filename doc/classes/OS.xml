@@ -346,7 +346,8 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a string that is unique to the device. Currently only works on Android and iOS. Returns empty string on other platforms.
+				Returns a string that is unique to the device.
+				Returns empty string on HTML5 and UWP which are not supported yet.
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">

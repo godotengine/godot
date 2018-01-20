@@ -229,6 +229,8 @@ public:
 	virtual void set_ime_position(const Point2 &p_pos);
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
 
+	virtual String get_unique_id() const;
+
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
