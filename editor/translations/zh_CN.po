@@ -389,14 +389,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "替换了%d项。"
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "替换"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "全部替换"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "大小写匹配"
 
@@ -405,48 +397,16 @@ msgid "Whole Words"
 msgstr "全字匹配"
 
 #: editor/code_editor.cpp
-msgid "Selection Only"
-msgstr "仅选中"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "搜索"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "查找"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "下一项"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "未找到！"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
+msgid "Replace"
 msgstr "替换"
 
 #: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "区分大小写"
+msgid "Replace All"
+msgstr "全部替换"
 
 #: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "向后"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "更换时提示"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "跳过"
+msgid "Selection Only"
+msgstr "仅选中"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1369,6 +1329,21 @@ msgid "Description"
 msgstr "描述"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "教程"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"当前没有此方法的说明。请帮助我们通过 [color=$color] [url=$url] 贡献一个 [/"
+"url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "属性"
 
@@ -1404,6 +1379,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "搜索文本"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "查找"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "输出："
@@ -1427,8 +1406,8 @@ msgstr "保存资源出错！"
 msgid "Save Resource As.."
 msgstr "资源另存为.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "好吧.."
 
@@ -2063,6 +2042,13 @@ msgstr "帮助"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "类型"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "搜索"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3739,6 +3725,14 @@ msgstr "添加(Add)  %s"
 msgid "Adding %s..."
 msgstr "添加(Adding) %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "好的"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3748,11 +3742,6 @@ msgstr "新节点"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "从%s实例化场景出错"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "此操作只能应用于单个选中节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5131,6 +5120,10 @@ msgstr "好吧"
 msgid "No parent to instance a child at."
 msgstr "没有选中节点来添加实例。"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "此操作只能应用于单个选中节点。"
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "显示法线"
@@ -5799,7 +5792,8 @@ msgid "Select current edited sub-tile."
 msgstr "保存当前编辑的子地砖(sub-tile)。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+#, fuzzy
+msgid "Select sub-tile to change its priority."
 msgstr "选择修改优先级的子地砖（sub-tile）。"
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5909,18 +5903,13 @@ msgid "Please choose a 'project.godot' file."
 msgstr "请选择一个'project.godot'文件。"
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr "您的工程在非空文件夹中创建 (您可能需要建立一个新文件夹)。"
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "请选择一个'project.godot'文件。"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "请选择一个不包含'project.godot'文件的文件夹。"
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "碉堡了！"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6574,10 +6563,6 @@ msgstr "没有选中节点来添加实例。"
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "从%s加载场景出错"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "好的"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7772,6 +7757,13 @@ msgstr ""
 "每个场景中只允许有一个CanvasModulate类型的节点，场景中的第一个CanvasModulate"
 "节点能正常工作，其余的将被忽略。"
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7913,6 +7905,13 @@ msgstr "正在完成划分"
 msgid "Lighting Meshes: "
 msgstr "正在绘制网格"
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8043,7 +8042,7 @@ msgstr "(其它)"
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr "项目设置中的默认环境无法加载，详见（渲染->视图->默认环境） 。"
 
@@ -8073,6 +8072,35 @@ msgstr "加载字体出错。"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "字体大小非法。"
+
+#~ msgid "Next"
+#~ msgstr "下一项"
+
+#~ msgid "Not found!"
+#~ msgstr "未找到！"
+
+#~ msgid "Replace By"
+#~ msgstr "替换"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "区分大小写"
+
+#~ msgid "Backwards"
+#~ msgstr "向后"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "更换时提示"
+
+#~ msgid "Skip"
+#~ msgstr "跳过"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr "您的工程在非空文件夹中创建 (您可能需要建立一个新文件夹)。"
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "碉堡了！"
 
 #~ msgid "preview"
 #~ msgstr "预览"
@@ -8857,9 +8885,6 @@ msgstr "字体大小非法。"
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "外部资源改变后弹出提示。"
-
-#~ msgid "Tutorials"
-#~ msgstr "教程"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "打开 https://godotengine.org 中的教程."

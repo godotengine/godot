@@ -375,14 +375,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Αντικαταστάθηκαν %d εμφανίσεις."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Αντικατάσταση"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Αντικατάσταση όλων"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Αντιστοίχηση πεζών-κεφαλαίων"
 
@@ -391,48 +383,16 @@ msgid "Whole Words"
 msgstr "Ολόκληρες λέξεις"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Αντικατάσταση"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Αντικατάσταση όλων"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Μόνο στην επιλογή"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Αναζήτηση"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Εύρεση"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Επόμενο"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Δεν βρέθηκε!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Αντικατάσταση με"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Διάκριση πεζών-κεφαλαίων"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "Αντίστροφα"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Ρώτησε στην αντικατάσταση"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Παράλειψη"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1366,6 +1326,21 @@ msgid "Description"
 msgstr "Περιγραφή"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Βοηθήματα"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"Δεν υπάρχει ακόμη περιγραφή για αυτήν την μέθοδο. Παρακαλούμε βοηθήστε μας "
+"[color=$color][url=$url]γράφοντας μία[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Ιδιότητες"
 
@@ -1401,6 +1376,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Αναζήτηση κειμένου"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Εύρεση"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Έξοδος:"
@@ -1424,8 +1403,8 @@ msgstr "Σφάλμα κατά την αποθήκευση πόρου!"
 msgid "Save Resource As.."
 msgstr "Αποθήκευση πόρου ως.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Εντάξει.."
 
@@ -2103,6 +2082,13 @@ msgstr "Βοήθεια"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Κλάσεις"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Αναζήτηση"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3798,6 +3784,14 @@ msgstr "Πρόσθεσε %s"
 msgid "Adding %s..."
 msgstr "Προσθήκη %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "Εντάξει"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3807,11 +3801,6 @@ msgstr "Δημιουργία κόμβου"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Σφάλμα κατά την αρχικοποίηση σκηνής από %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Αυτή η λειτουργία απαιτεί έναν μόνο επιλεγμένο κόμβο."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5195,6 +5184,10 @@ msgid "No parent to instance a child at."
 msgstr ""
 "Δεν υπάρχει γονέας στον οποίο μπορεί να γίνει αρχικοποίηση του παιδιού."
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Αυτή η λειτουργία απαιτεί έναν μόνο επιλεγμένο κόμβο."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Κανονική εμφάνιση"
@@ -5864,7 +5857,8 @@ msgid "Select current edited sub-tile."
 msgstr "Επέλεξε το τρέχων επεξεργαζόμενο υπο-πλακίδιο."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+#, fuzzy
+msgid "Select sub-tile to change its priority."
 msgstr "Επέλεξε υπο-πλακίδιο για να αλλάξεις την προτεραιότητα του."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5980,21 +5974,14 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Παρακαλούμε επιλέκτε ένα αρχείο 'project.godot'."
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"Το έργο θα δημιουργηθεί σε έναν μη-άδειο φάκελο (Ίσως θέλετε να "
-"δημιουργήσετε έναν καινούργιο)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "Παρακαλούμε επιλέκτε ένα αρχείο 'project.godot'."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr ""
 "Παρακαλούμε επιλέξτε έναν φάκελο που δεν περιέχει ένα αρχείο 'project.godot'."
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "Αυτό είναι ένα «Εύρηκα»!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6651,10 +6638,6 @@ msgstr "Δεν υπάρχει γονέας για να δημιουργηθού�
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Σφάλμα κατά τη φόρτωση σκηνής από %s"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Εντάξει"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7862,6 +7845,13 @@ msgstr ""
 "στιγμιότυπων σκηνών). Το πρώτο που δημιουργήθηκε θα δουλέψει, ενώ τα άλλα θα "
 "αγνοηθούν."
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -8022,6 +8012,13 @@ msgstr "Ολοκλήρωση σχεδιαγράμματος"
 msgid "Lighting Meshes: "
 msgstr "Φώτηση πλεγμάτων: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8165,8 +8162,9 @@ msgid "(Other)"
 msgstr "(Άλλο)"
 
 #: scene/main/scene_tree.cpp
+#, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Το προεπιλεγμένο περιβάλλον, όπως έχει ορισθεί στις ρυθμίσεις έργου "
@@ -8199,6 +8197,37 @@ msgstr "Σφάλμα κατά την φόρτωση της γραμματοσε�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
+
+#~ msgid "Next"
+#~ msgstr "Επόμενο"
+
+#~ msgid "Not found!"
+#~ msgstr "Δεν βρέθηκε!"
+
+#~ msgid "Replace By"
+#~ msgstr "Αντικατάσταση με"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Διάκριση πεζών-κεφαλαίων"
+
+#~ msgid "Backwards"
+#~ msgstr "Αντίστροφα"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Ρώτησε στην αντικατάσταση"
+
+#~ msgid "Skip"
+#~ msgstr "Παράλειψη"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "Το έργο θα δημιουργηθεί σε έναν μη-άδειο φάκελο (Ίσως θέλετε να "
+#~ "δημιουργήσετε έναν καινούργιο)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "Αυτό είναι ένα «Εύρηκα»!"
 
 #~ msgid "preview"
 #~ msgstr "Προεπισκόπηση"
@@ -8995,9 +9024,6 @@ msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "Ειδοποίηση όταν ένας εξωτερικός πόρος έχει αλλάξει."
-
-#~ msgid "Tutorials"
-#~ msgstr "Βοηθήματα"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr ""

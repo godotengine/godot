@@ -389,14 +389,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "%d voorgekomen waarde(s) vervangen."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Vervangen"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Alle Vervangen"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Hoofdlettergevoelig"
 
@@ -405,48 +397,16 @@ msgid "Whole Words"
 msgstr "Hele Woorden"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Vervangen"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Alle Vervangen"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Alleen Selectie"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Zoeken"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Zoeken"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Volgende"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Niet gevonden!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Vervangen Door"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Hoofdlettergevoelig"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "Achterwaarts"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Vragen Bij Vervangen"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Overslaan"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1391,6 +1351,21 @@ msgid "Description"
 msgstr "Beschrijving"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Online Documentatie"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"Er is momenteel geen beschrijving voor deze methode. Help ons alsjeblieft "
+"door [color=$color][url=$url]een toe te voegen[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Eigenschappen"
 
@@ -1426,6 +1401,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Zoek Tekst"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Zoeken"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Uitvoer:"
@@ -1450,8 +1429,8 @@ msgstr "Error bij het opslaan van resource!"
 msgid "Save Resource As.."
 msgstr "Resource Opslaan Als.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Ik snap het.."
 
@@ -2126,6 +2105,13 @@ msgstr "Help"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Klassen"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Zoeken"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3842,6 +3828,14 @@ msgstr ""
 msgid "Adding %s..."
 msgstr ""
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3850,11 +3844,6 @@ msgstr "Creëer Node"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5248,6 +5237,10 @@ msgstr ""
 msgid "No parent to instance a child at."
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr ""
@@ -5927,7 +5920,7 @@ msgid "Select current edited sub-tile."
 msgstr "De bewerkte bron opslaan."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -6043,17 +6036,11 @@ msgid "Please choose a 'project.godot' file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
+msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -6711,10 +6698,6 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -7948,6 +7931,13 @@ msgstr ""
 "geïnstantieerde scenes). De eerst gemaakte zal werken, terwijl de rest "
 "genegeerd wordt."
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -8100,6 +8090,13 @@ msgstr ""
 msgid "Lighting Meshes: "
 msgstr ""
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8233,7 +8230,7 @@ msgstr "(Andere)"
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Standaard Omgeving gespecificeerd in Project Instellingen (Rendering -> "
@@ -8266,6 +8263,27 @@ msgstr "Fout bij het laden van lettertype."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
+
+#~ msgid "Next"
+#~ msgstr "Volgende"
+
+#~ msgid "Not found!"
+#~ msgstr "Niet gevonden!"
+
+#~ msgid "Replace By"
+#~ msgstr "Vervangen Door"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Hoofdlettergevoelig"
+
+#~ msgid "Backwards"
+#~ msgstr "Achterwaarts"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Vragen Bij Vervangen"
+
+#~ msgid "Skip"
+#~ msgstr "Overslaan"
 
 #, fuzzy
 #~ msgid "preview"

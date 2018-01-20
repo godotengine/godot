@@ -380,14 +380,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "取代了 %d 個"
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "取代"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "取代全部"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "符合大小寫"
 
@@ -396,48 +388,16 @@ msgid "Whole Words"
 msgstr ""
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "取代"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "取代全部"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "僅選擇區域"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "搜尋"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "尋找"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "下一個"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "找不到!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "用...取代"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "區分大小寫"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr ""
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "每次取代都要先詢問我"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "跳過"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1374,6 +1334,17 @@ msgid "Description"
 msgstr "描述:"
 
 #: editor/editor_help.cpp
+msgid "Online Tutorials:"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr ""
 
@@ -1405,6 +1376,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "搜尋詞彙"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "尋找"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "輸出:"
@@ -1429,8 +1404,8 @@ msgstr ""
 msgid "Save Resource As.."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "我知道了"
 
@@ -2047,6 +2022,13 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "搜尋"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3736,6 +3718,14 @@ msgstr ""
 msgid "Adding %s..."
 msgstr ""
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3744,11 +3734,6 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5139,6 +5124,10 @@ msgstr ""
 msgid "No parent to instance a child at."
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr ""
@@ -5810,7 +5799,7 @@ msgid "Select current edited sub-tile."
 msgstr "新增資料夾"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5923,17 +5912,11 @@ msgid "Please choose a 'project.godot' file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
+msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -6586,10 +6569,6 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -7791,6 +7770,13 @@ msgstr ""
 "每個場景中僅允許一個可見的CanvasModulate，只有第一個CanvasModulate會有作用，"
 "其餘的將被忽略。"
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7922,6 +7908,13 @@ msgstr ""
 msgid "Lighting Meshes: "
 msgstr ""
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8034,7 +8027,7 @@ msgstr ""
 
 #: scene/main/scene_tree.cpp
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
@@ -8061,6 +8054,24 @@ msgstr "讀取字體錯誤。"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "無效的字體大小。"
+
+#~ msgid "Next"
+#~ msgstr "下一個"
+
+#~ msgid "Not found!"
+#~ msgstr "找不到!"
+
+#~ msgid "Replace By"
+#~ msgstr "用...取代"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "區分大小寫"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "每次取代都要先詢問我"
+
+#~ msgid "Skip"
+#~ msgstr "跳過"
 
 #, fuzzy
 #~ msgid "preview"

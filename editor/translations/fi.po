@@ -385,14 +385,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Korvattu %d osuvuutta."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Korvaa"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Korvaa kaikki"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Huomioi kirjainkoko"
 
@@ -401,48 +393,16 @@ msgid "Whole Words"
 msgstr "Kokonaisia sanoja"
 
 #: editor/code_editor.cpp
-msgid "Selection Only"
-msgstr "Pelkkä valinta"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Hae"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Etsi"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Seuraava"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Ei löytynyt!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
+msgid "Replace"
 msgstr "Korvaa"
 
 #: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Merkkikokoriippuvainen"
+msgid "Replace All"
+msgstr "Korvaa kaikki"
 
 #: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "Taaksepäin"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Kysy vaihdettaessa"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Ohita"
+msgid "Selection Only"
+msgstr "Pelkkä valinta"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1411,6 +1371,21 @@ msgstr "Kuvaus:"
 
 #: editor/editor_help.cpp
 #, fuzzy
+msgid "Online Tutorials:"
+msgstr "Oppaat"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"Tälle metodille ei vielä löydy kuvailua. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
+
+#: editor/editor_help.cpp
+#, fuzzy
 msgid "Properties"
 msgstr "Ominaisuudet:"
 
@@ -1448,6 +1423,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Hae tekstiä"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Etsi"
+
 #: editor/editor_log.cpp
 #, fuzzy
 msgid "Output:"
@@ -1473,8 +1452,8 @@ msgstr "Virhe tallennettaessa resurssia!"
 msgid "Save Resource As.."
 msgstr "Tallenna resurssi nimellä..."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Ymmärrän..."
 
@@ -2147,6 +2126,13 @@ msgstr "Ohje"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Luokat"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Hae"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3901,6 +3887,14 @@ msgstr "Lisää %s"
 msgid "Adding %s..."
 msgstr "Lisätään %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3910,11 +3904,6 @@ msgstr "Luo Node"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Virhe luotaessa instanssia kohteesta %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Tämä toiminto vaatii yhden valitun noden."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5335,6 +5324,10 @@ msgstr "Asia kunnossa :("
 msgid "No parent to instance a child at."
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Tämä toiminto vaatii yhden valitun noden."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Näytä normaali"
@@ -6029,7 +6022,7 @@ msgid "Select current edited sub-tile."
 msgstr "Tallenna tällä hetkellä muokattu resurssi."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -6145,20 +6138,13 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"Projektillesi valitsema hakemisto ei ole tyhjä (ehkä haluaisit luoda uuden "
-"hakemiston)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "Ole hyvä ja valitse hakemisto jossa ei ole 'project.godot' tiedostoa."
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "Sehän on BINGO!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6829,10 +6815,6 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -8054,6 +8036,13 @@ msgid ""
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -8183,6 +8172,13 @@ msgstr ""
 msgid "Lighting Meshes: "
 msgstr ""
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8303,7 +8299,7 @@ msgstr ""
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Projektin asetuksissa määriteltyä oletusympäristöä  (Renderöinti -> Näkymä -"
@@ -8336,6 +8332,37 @@ msgstr "Virhe fontin latauksessa."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
+
+#~ msgid "Next"
+#~ msgstr "Seuraava"
+
+#~ msgid "Not found!"
+#~ msgstr "Ei löytynyt!"
+
+#~ msgid "Replace By"
+#~ msgstr "Korvaa"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Merkkikokoriippuvainen"
+
+#~ msgid "Backwards"
+#~ msgstr "Taaksepäin"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Kysy vaihdettaessa"
+
+#~ msgid "Skip"
+#~ msgstr "Ohita"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "Projektillesi valitsema hakemisto ei ole tyhjä (ehkä haluaisit luoda "
+#~ "uuden hakemiston)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "Sehän on BINGO!"
 
 #, fuzzy
 #~ msgid "preview"
@@ -8829,9 +8856,6 @@ msgstr "Virheellinen fonttikoko."
 
 #~ msgid "Export the project to many platforms."
 #~ msgstr "Vie projekti usealle alustalle."
-
-#~ msgid "Tutorials"
-#~ msgstr "Oppaat"
 
 #, fuzzy
 #~ msgid "Open https://godotengine.org at tutorials section."

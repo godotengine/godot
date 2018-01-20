@@ -378,14 +378,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Замінено %d випадок(-ів)."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Замінити"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Замінити всі"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Враховувати регістр"
 
@@ -394,48 +386,16 @@ msgid "Whole Words"
 msgstr "Цілі слова"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Замінити"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Замінити всі"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Тільки виділити"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Пошук"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Знайти"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Далі"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Не знайдено!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Замінити на"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Чутливість регістра"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "Назад"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Запитувати при заміні"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Пропустити"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1371,6 +1331,21 @@ msgid "Description"
 msgstr "Опис"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Онлайн документація"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"На данний момент опис цього методу відсутній. Будьласка, [color=$color][url="
+"$url]допоможіть нам[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Властивості"
 
@@ -1406,6 +1381,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Шукати текст"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Знайти"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Вивід:"
@@ -1429,8 +1408,8 @@ msgstr "Помилка збереження ресурсу!"
 msgid "Save Resource As.."
 msgstr "Зберегти ресурс як.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Бачу.."
 
@@ -2098,6 +2077,13 @@ msgstr "Довідка"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Класи"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Пошук"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3789,6 +3775,14 @@ msgstr "Додати %s"
 msgid "Adding %s..."
 msgstr "Додавання %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "Гаразд"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3798,11 +3792,6 @@ msgstr "Створити вузол"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Помилка додавання сцени з %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Ця операція вимагає одного обраного вузла."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5181,6 +5170,10 @@ msgstr "Гаразд :("
 msgid "No parent to instance a child at."
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Ця операція вимагає одного обраного вузла."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr ""
@@ -5843,7 +5836,7 @@ msgid "Select current edited sub-tile."
 msgstr "Вибрати поточну редаговану вкладену плитку."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5953,17 +5946,11 @@ msgid "Please choose a 'project.godot' file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
+msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -6605,10 +6592,6 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Гаразд"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7770,6 +7753,13 @@ msgid ""
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7897,6 +7887,13 @@ msgstr "Завершальна ділянка"
 msgid "Lighting Meshes: "
 msgstr "Освітлення сітки: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8010,7 +8007,7 @@ msgstr "(Інші)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
@@ -8037,6 +8034,27 @@ msgstr "Помилка завантаження шрифту."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Недійсний розмір шрифту."
+
+#~ msgid "Next"
+#~ msgstr "Далі"
+
+#~ msgid "Not found!"
+#~ msgstr "Не знайдено!"
+
+#~ msgid "Replace By"
+#~ msgstr "Замінити на"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Чутливість регістра"
+
+#~ msgid "Backwards"
+#~ msgstr "Назад"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Запитувати при заміні"
+
+#~ msgid "Skip"
+#~ msgstr "Пропустити"
 
 #~ msgid "Move Add Key"
 #~ msgstr "Посунути ключ"

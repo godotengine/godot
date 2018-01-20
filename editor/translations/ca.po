@@ -375,14 +375,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "%d ocurrència/es reemplaçades."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Reemplaça"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Reemplaça-hoTot"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Distingeix entre majúscules i minúscules"
 
@@ -391,48 +383,16 @@ msgid "Whole Words"
 msgstr "Paraules senceres"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Reemplaça"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Reemplaça-hoTot"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Selecció Només"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Cerca"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Troba"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Següent"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "No s'ha trobat!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Reemplaça per"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Majúscules i minúscules"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "Enrere"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Indica en reemplaçar"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Omet"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1370,6 +1330,21 @@ msgid "Description"
 msgstr "Descripció"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Documentació en línia"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"Aquest mètode no disposa de cap descripció. Podeu contribuir  [color=$color]"
+"[url=$url] tot aportant-ne una[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Propietats"
 
@@ -1405,6 +1380,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Cerca Text"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Troba"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Sortida:"
@@ -1428,8 +1407,8 @@ msgstr "Error en desar recurs!"
 msgid "Save Resource As.."
 msgstr "Anomena i Desa el Recurs..."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Vaja..."
 
@@ -2098,6 +2077,13 @@ msgstr "Ajuda"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Classes"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Cerca"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3784,6 +3770,14 @@ msgstr "Afegeix %s"
 msgid "Adding %s..."
 msgstr "Afegint %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "D'acord"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3793,11 +3787,6 @@ msgstr "Crea un Node"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Error en instanciar l'escena des de %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Aquesta operació requereix un únic node seleccionat."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5175,6 +5164,10 @@ msgstr "Buenu, pos molt bé, pos adiós... :("
 msgid "No parent to instance a child at."
 msgstr "No hi ha cap node Pare per instanciar-li un fill."
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Aquesta operació requereix un únic node seleccionat."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Mostra les Normals"
@@ -5844,7 +5837,8 @@ msgid "Select current edited sub-tile."
 msgstr "Selecciona la sub-tessel·la en edició."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+#, fuzzy
+msgid "Select sub-tile to change its priority."
 msgstr "Selecciona sub-tessel·la per a modificar-ne la prioritat."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5959,21 +5953,14 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Selecciona un fitxer 'projecte.godot'."
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"El projecte es crearà en un directori ja existent (Si s'escau, creeu un "
-"directori nou)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "Selecciona un fitxer 'projecte.godot'."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr ""
 "Seleccioneu un directori que no contingui ja un fitxer 'project.godot'."
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "BINGO!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6625,10 +6612,6 @@ msgstr "Manca un Node Pare per instanciar-li l'escena."
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Error en carregar l'escena des de %s"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "D'acord"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7828,6 +7811,13 @@ msgstr ""
 "Només es permet un sol CanvasModulate per escena (o conjunt d'escenes "
 "instanciades). El primer funcionarà, mentre que la resta seran ignorats."
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7984,6 +7974,13 @@ msgstr "S'està finalitzant el Traçat"
 msgid "Lighting Meshes: "
 msgstr "Il·luminant les Malles: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8122,8 +8119,9 @@ msgid "(Other)"
 msgstr "(Altres)"
 
 #: scene/main/scene_tree.cpp
+#, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "No es pot carregar l'Entorn per Defecte especificat en la Configuració del "
@@ -8156,6 +8154,37 @@ msgstr "Error carregant lletra."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "La mida de la lletra no és vàlida."
+
+#~ msgid "Next"
+#~ msgstr "Següent"
+
+#~ msgid "Not found!"
+#~ msgstr "No s'ha trobat!"
+
+#~ msgid "Replace By"
+#~ msgstr "Reemplaça per"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Majúscules i minúscules"
+
+#~ msgid "Backwards"
+#~ msgstr "Enrere"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Indica en reemplaçar"
+
+#~ msgid "Skip"
+#~ msgstr "Omet"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "El projecte es crearà en un directori ja existent (Si s'escau, creeu un "
+#~ "directori nou)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "BINGO!"
 
 #~ msgid "preview"
 #~ msgstr "Previsualització"

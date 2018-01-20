@@ -386,14 +386,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Rimpiazzate %d occorrenze."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "Rimpiazza"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "Rimpiazza Tutti"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "Controlla Maiuscole"
 
@@ -402,48 +394,16 @@ msgid "Whole Words"
 msgstr "Parole Intere"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "Rimpiazza"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "Rimpiazza Tutti"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Solo Selezione"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Cerca"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "Trova"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "Successivo"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "Non trovato!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "Rimpiazza con"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "Case Sensitive"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "All'indietro"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "Richiedi Per Sostituire"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "Salta"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1389,6 +1349,21 @@ msgid "Description"
 msgstr "Descrizione"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "Tutorials"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"Al momento una descrizione per questo metodo non esiste. Aiutaci [color="
+"$color][url=$url]aggiungendone una[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Proprietà"
 
@@ -1424,6 +1399,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "Cerca Testo"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "Trova"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Output:"
@@ -1448,8 +1427,8 @@ msgstr "Errore salvando la Risorsa!"
 msgid "Save Resource As.."
 msgstr "Salva Risorsa Come.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Capisco.."
 
@@ -2123,6 +2102,13 @@ msgstr "Aiuto"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Classi"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Cerca"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3842,6 +3828,14 @@ msgstr "Aggiungi %s"
 msgid "Adding %s..."
 msgstr "Aggiungendo %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "Ok"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3851,11 +3845,6 @@ msgstr "Crea Nodo"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Errore istanziamento scena da %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Questa operazione richiede un solo nodo selezionato."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5278,6 +5267,10 @@ msgstr "OK :("
 msgid "No parent to instance a child at."
 msgstr "Nessun genitore del quale istanziare un figlio."
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Questa operazione richiede un solo nodo selezionato."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Mostra Normale"
@@ -5963,7 +5956,7 @@ msgid "Select current edited sub-tile."
 msgstr "Salva la risorsa in modifica."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -6084,21 +6077,14 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Si prega di esportare al di fuori della cartella del progetto!"
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"Il tuo progetto verrà creato in una cartella già esistente (forse vorresti "
-"creare una nuova cartella?)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "Si prega di esportare al di fuori della cartella del progetto!"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr ""
 "Per favore seleziona una cartella che non contiene un file 'project.godot'."
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "Questo è un BINGO!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6782,10 +6768,6 @@ msgstr "Nessun genitore nel quale istanziare una scena."
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Errore caricamento scena da %s"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Ok"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -8055,6 +8037,13 @@ msgstr ""
 "scene istanziate). Il primo creato funzionerà, mentre i restanti saranno "
 "ignorati."
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -8224,6 +8213,13 @@ msgstr "Finalizzazione del Plot"
 msgid "Lighting Meshes: "
 msgstr "Bliting Immagini"
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8369,7 +8365,7 @@ msgstr "(Altro)"
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Impossobile caricare Ambiente di Default come specificato nelle Impostazioni "
@@ -8402,6 +8398,37 @@ msgstr "Errore caricamento font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
+
+#~ msgid "Next"
+#~ msgstr "Successivo"
+
+#~ msgid "Not found!"
+#~ msgstr "Non trovato!"
+
+#~ msgid "Replace By"
+#~ msgstr "Rimpiazza con"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "Case Sensitive"
+
+#~ msgid "Backwards"
+#~ msgstr "All'indietro"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "Richiedi Per Sostituire"
+
+#~ msgid "Skip"
+#~ msgstr "Salta"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "Il tuo progetto verrà creato in una cartella già esistente (forse "
+#~ "vorresti creare una nuova cartella?)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "Questo è un BINGO!"
 
 #, fuzzy
 #~ msgid "preview"
@@ -9196,9 +9223,6 @@ msgstr "Dimensione font Invalida."
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "Avverti quando una risorsa esterna è stata modificata."
-
-#~ msgid "Tutorials"
-#~ msgstr "Tutorials"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "Apri https://godotengine.org alla sezione tutorial."

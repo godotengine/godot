@@ -374,14 +374,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "แทนที่แล้ว %d ครั้ง"
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "แทนที่"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "แทนที่ทั้งหมด"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ่"
 
@@ -390,48 +382,16 @@ msgid "Whole Words"
 msgstr "ทั้งคำ"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "แทนที่"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "แทนที่ทั้งหมด"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "เฉพาะที่กำลังเลือก"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "ค้นหา"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "ค้นหา"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "ต่อไป"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "ไม่พบ!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "แทนที่ด้วย"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ่"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "ย้อนกลับ"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "เตือนก่อนแทนที่"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "ข้าม"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1359,6 +1319,19 @@ msgid "Description"
 msgstr "รายละเอียด"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "คู่มือ"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr "เมท็อดนี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "คุณสมบัติ"
 
@@ -1390,6 +1363,10 @@ msgstr "เมท็อดนี้ยังไม่มีคำอธิบา
 msgid "Search Text"
 msgstr "ค้นหาคำ"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "ค้นหา"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "ข้อความ:"
@@ -1413,8 +1390,8 @@ msgstr "บันทึกรีซอร์สผิดพลาด!"
 msgid "Save Resource As.."
 msgstr "บันทึกรีซอร์สเป็น.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "ตกลง.."
 
@@ -2048,6 +2025,13 @@ msgstr "ช่วยเหลือ"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "คลาส"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "ค้นหา"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3722,6 +3706,14 @@ msgstr "เพิ่ม %s"
 msgid "Adding %s..."
 msgstr "กำลังเพิ่ม %s..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "ตกลง"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3731,11 +3723,6 @@ msgstr "สร้างโหนด"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "ผิดพลาดขณะอินสแตนซ์ฉากจาก %s"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "ต้องเลือกเพียงโหนดเดียว"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5111,6 +5098,10 @@ msgstr "ตกลง :("
 msgid "No parent to instance a child at."
 msgstr "ไม่พบโหนดแม่ที่จะรับอินสแตนซ์โหนดลูก"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "ต้องเลือกเพียงโหนดเดียว"
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "แสดงปกติ"
@@ -5778,7 +5769,8 @@ msgid "Select current edited sub-tile."
 msgstr "เลือกไทล์ย่อยที่กำลังปรับแต่ง"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+#, fuzzy
+msgid "Select sub-tile to change its priority."
 msgstr "เลือกไทล์ย่อยเพื่อจัดลำดับความสำคัญ"
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5888,18 +5880,13 @@ msgid "Please choose a 'project.godot' file."
 msgstr "กรุณาเลือกไฟล์ 'project.godot'"
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr "จะสร้างโปรเจกต์ในโฟลเดอร์ที่มีไฟล์อยู่แล้ว (ท่านอาจต้องการสร้างโฟลเดอร์ใหม่)"
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "กรุณาเลือกไฟล์ 'project.godot'"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "กรุณาเลือกโฟลเดอร์ที่ไม่มีไฟล์ 'project.godot'"
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "บิงโก!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6548,10 +6535,6 @@ msgstr "ไม่มีโหนดแม่เป็นที่อินสแ
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "ผิดพลาดขณะโหลดฉากจาก %s"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "ตกลง"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7725,6 +7708,13 @@ msgstr ""
 "จะมี CanvasModulate ที่มองเห็นได้เพียงโหนดเดียวในฉาก (หรือกลุ่มของฉากที่เป็นอินสแตนซ์) "
 "โหนดแรกเท่านั้นที่จะทำงานได้ปกติ ที่เหลือจะไม่ทำงาน"
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7863,6 +7853,13 @@ msgstr "เสร็จสิ้นการวางแนว"
 msgid "Lighting Meshes: "
 msgstr "ส่องแสงบนพื้นผิว: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -7986,8 +7983,9 @@ msgid "(Other)"
 msgstr "(อื่น)"
 
 #: scene/main/scene_tree.cpp
+#, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "ไม่สามารถโหลด Environment ปริยายที่กำหนดในตัวเลือกโปรเจกต์ได้ (Rendering -> "
@@ -8019,6 +8017,35 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid "Next"
+#~ msgstr "ต่อไป"
+
+#~ msgid "Not found!"
+#~ msgstr "ไม่พบ!"
+
+#~ msgid "Replace By"
+#~ msgstr "แทนที่ด้วย"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ่"
+
+#~ msgid "Backwards"
+#~ msgstr "ย้อนกลับ"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "เตือนก่อนแทนที่"
+
+#~ msgid "Skip"
+#~ msgstr "ข้าม"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr "จะสร้างโปรเจกต์ในโฟลเดอร์ที่มีไฟล์อยู่แล้ว (ท่านอาจต้องการสร้างโฟลเดอร์ใหม่)"
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "บิงโก!"
 
 #~ msgid "preview"
 #~ msgstr "ตัวอย่าง"
@@ -8782,9 +8809,6 @@ msgstr "ขนาดฟอนต์ผิดพลาด"
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "เตือนเมื่อมีการแก้ไขรีซอร์สภายนอก"
-
-#~ msgid "Tutorials"
-#~ msgstr "คู่มือ"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "เปิดคู่มือจาก https://godotengine.org"

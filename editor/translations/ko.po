@@ -379,14 +379,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "%d 회 교체됨."
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "바꾸기"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "전체 바꾸기"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "대소문자 구분"
 
@@ -395,48 +387,16 @@ msgid "Whole Words"
 msgstr "전체 단어"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "바꾸기"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "전체 바꾸기"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "선택 영역만"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "검색"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "찾기"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "다음"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "찾을 수 없음!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "으로 바꿈"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "대소문자 구분"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "뒤로"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "변경 시 알림"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "건너뛰기"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1368,6 +1328,21 @@ msgid "Description"
 msgstr "설명"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials:"
+msgstr "튜토리얼"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"현재 이 메서드에 대한 상세설명이 없습니다. [color=$color][url=$url]관련 정보"
+"를 기여하여[/url][/color] 더 나아지게 도와주세요!"
+
+#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "속성"
 
@@ -1403,6 +1378,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "문자 검색"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "찾기"
+
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "출력:"
@@ -1426,8 +1405,8 @@ msgstr "리소스 저장 중 에러!"
 msgid "Save Resource As.."
 msgstr "리소스를 다른 이름으로 저장.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "알겠습니다.."
 
@@ -2086,6 +2065,13 @@ msgstr "도움말"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "클래스"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "검색"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -3768,6 +3754,14 @@ msgstr "%s 추가"
 msgid "Adding %s..."
 msgstr "%s 추가중..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "확인"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3777,11 +3771,6 @@ msgstr "노드 생성"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "'%s' 로부터 씬 인스턴스 중 에러"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "이 작업은 하나의 선택된 노드를 필요로 합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5157,6 +5146,10 @@ msgstr "넹 :("
 msgid "No parent to instance a child at."
 msgstr "선택된 부모 노드가 없어서 자식노드를 인스턴스할 수 없습니다."
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "이 작업은 하나의 선택된 노드를 필요로 합니다."
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Normal 표시"
@@ -5826,7 +5819,8 @@ msgid "Select current edited sub-tile."
 msgstr "현재 편집된 서브 타일 선택."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+#, fuzzy
+msgid "Select sub-tile to change its priority."
 msgstr "서브 타일을 선택해 우선 순위를 바꿉니다."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -5936,19 +5930,13 @@ msgid "Please choose a 'project.godot' file."
 msgstr "'project.godot' 파일을 선택하세요."
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"비어있지 않은 폴더에 프로젝트가 생성됩니다 (새 폴더를 만드는 것을 권합니다)."
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "'project.godot' 파일을 선택하세요."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "'project.godot' 파일이 없는 폴더를 선택 하십시오."
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "빙고!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6599,10 +6587,6 @@ msgstr "씬을 인스턴스할 수 있는 부모가 없습니다."
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "'%s' 로부터 씬 로딩 중 에러"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "확인"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -7794,6 +7778,13 @@ msgstr ""
 "씬마다 보이는 CanvasModulate가 단 하나만 허용됩니다. 첫번째로 생성된 것만 동"
 "작하고, 나머지는 무시됩니다."
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -7942,6 +7933,13 @@ msgstr "구분 끝남"
 msgid "Lighting Meshes: "
 msgstr "메시에 라이팅 중: "
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8076,8 +8074,9 @@ msgid "(Other)"
 msgstr "(기타)"
 
 #: scene/main/scene_tree.cpp
+#, fuzzy
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Project Setings(렌더링 -> 환경 -> 기본 환경)에 지정된 기본 환경은 로드할 수 "
@@ -8110,6 +8109,37 @@ msgstr "폰트 로딩 에러."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "유효하지 않은 폰트 크기."
+
+#~ msgid "Next"
+#~ msgstr "다음"
+
+#~ msgid "Not found!"
+#~ msgstr "찾을 수 없음!"
+
+#~ msgid "Replace By"
+#~ msgstr "으로 바꿈"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "대소문자 구분"
+
+#~ msgid "Backwards"
+#~ msgstr "뒤로"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "변경 시 알림"
+
+#~ msgid "Skip"
+#~ msgstr "건너뛰기"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "비어있지 않은 폴더에 프로젝트가 생성됩니다 (새 폴더를 만드는 것을 권합니"
+#~ "다)."
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "빙고!"
 
 #~ msgid "preview"
 #~ msgstr "미리보기"
@@ -8862,9 +8892,6 @@ msgstr "유효하지 않은 폰트 크기."
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "외부 리소스가 변경되었을 때 알림."
-
-#~ msgid "Tutorials"
-#~ msgstr "튜토리얼"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "https://godotengine.org의 튜토리얼 부분을 엽니다."

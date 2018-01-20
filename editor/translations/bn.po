@@ -378,14 +378,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"
 
 #: editor/code_editor.cpp
-msgid "Replace"
-msgstr "প্রতিস্থাপন করুন"
-
-#: editor/code_editor.cpp
-msgid "Replace All"
-msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
-
-#: editor/code_editor.cpp
 msgid "Match Case"
 msgstr "অক্ষরের মাত্রা (বড়/ছোট-হাতের) মিল করুন"
 
@@ -394,48 +386,16 @@ msgid "Whole Words"
 msgstr "সম্পূর্ণ শব্দ"
 
 #: editor/code_editor.cpp
+msgid "Replace"
+msgstr "প্রতিস্থাপন করুন"
+
+#: editor/code_editor.cpp
+msgid "Replace All"
+msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
+
+#: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "শুধুমাত্র নির্বাচিতসমূহ"
-
-#: editor/code_editor.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "অনুসন্ধান করুন"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "Find"
-msgstr "সন্ধান করুন"
-
-#: editor/code_editor.cpp
-msgid "Next"
-msgstr "পরবর্তী"
-
-#: editor/code_editor.cpp
-msgid "Not found!"
-msgstr "খুঁজে পাওয়া যায়নি!"
-
-#: editor/code_editor.cpp
-msgid "Replace By"
-msgstr "এর দ্বারা প্রতিস্থাপন করুন"
-
-#: editor/code_editor.cpp
-msgid "Case Sensitive"
-msgstr "অক্ষরের মাত্রা (বড়/ছোট-হাতের) সংবেদনশীল"
-
-#: editor/code_editor.cpp
-msgid "Backwards"
-msgstr "পিছনের/অতীতের দিকে"
-
-#: editor/code_editor.cpp
-msgid "Prompt On Replace"
-msgstr "প্রতিস্থাপনে অবহিত করুন"
-
-#: editor/code_editor.cpp
-msgid "Skip"
-msgstr "অতিক্রম করে যান"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
@@ -1393,6 +1353,22 @@ msgstr "বর্ণনা:"
 
 #: editor/editor_help.cpp
 #, fuzzy
+msgid "Online Tutorials:"
+msgstr "টিউটোরিয়ালসমূহ"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
+"এই মেথড সম্পর্কে বিস্তারিত তথ্য লিপিবদ্ধ করা হয়নি। অনুগ্রহ করে তথ্য প্রদানের মাধ্যমে "
+"সহায়তা করুন। তথ্য প্রদানের জন্য [color=$color][url=$url], [/url][/color] ফরম্যাট "
+"ব্যাবহার করুন !"
+
+#: editor/editor_help.cpp
+#, fuzzy
 msgid "Properties"
 msgstr "প্রোপার্টি-সমূহ:"
 
@@ -1431,6 +1407,10 @@ msgstr ""
 msgid "Search Text"
 msgstr "টেক্সট অনুসন্ধান করুন"
 
+#: editor/editor_help.cpp
+msgid "Find"
+msgstr "সন্ধান করুন"
+
 #: editor/editor_log.cpp
 #, fuzzy
 msgid "Output:"
@@ -1456,8 +1436,8 @@ msgstr "রিসোর্স সংরক্ষণে সমস্যা হয়
 msgid "Save Resource As.."
 msgstr "রিসোর্স এইরূপে সংরক্ষণ করুন.."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "বুঝলাম.."
 
@@ -2142,6 +2122,13 @@ msgstr "হেল্প"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "ক্লাসসমূহ"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "অনুসন্ধান করুন"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -3923,6 +3910,14 @@ msgstr "%s সংযুক্ত করুন"
 msgid "Adding %s..."
 msgstr "%s সংযুক্ত হচ্ছে..."
 
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "ঠিক আছে"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Cannot instantiate multiple nodes without root."
+msgstr ""
+
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3932,11 +3927,6 @@ msgstr "নোড তৈরি করুন"
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "%s হতে দৃশ্য ইনস্ট্যান্স করাতে সমস্যা হয়েছে"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "এই কাজটি করার জন্য একটি একক নির্বাচিত নোড প্রয়োজন।"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -5376,6 +5366,10 @@ msgstr "ঠিক আছে :("
 msgid "No parent to instance a child at."
 msgstr "ইনস্ট্যান্স করার জন্য প্রয়োজনীয় ধারক উপস্থিত নেই।"
 
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "এই কাজটি করার জন্য একটি একক নির্বাচিত নোড প্রয়োজন।"
+
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
 msgstr "Normal প্রদর্শন"
@@ -6071,7 +6065,7 @@ msgid "Select current edited sub-tile."
 msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change it's priority."
+msgid "Select sub-tile to change its priority."
 msgstr ""
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -6205,20 +6199,13 @@ msgid "Please choose a 'project.godot' file."
 msgstr "অনুগ্রহ করে প্রকল্পের ফোল্ডারের বাইরে এক্সপোর্ট করুন!"
 
 #: editor/project_manager.cpp
-msgid ""
-"Your project will be created in a non empty folder (you might want to create "
-"a new folder)."
-msgstr ""
-"আপনার প্রজেক্ট একটি খালি ফোল্ডারে তৈরি করা হবে (আপনি চাইলে একটি নতুন ফোল্ডার তৈরি "
-"করতে পারেন)।"
+#, fuzzy
+msgid "Please choose an empty folder."
+msgstr "অনুগ্রহ করে প্রকল্পের ফোল্ডারের বাইরে এক্সপোর্ট করুন!"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
 msgstr "এমন একটি ফোল্ডার বাছাই করুন যেখানে 'project.godot' নামে কোন ফাইল নেই।"
-
-#: editor/project_manager.cpp
-msgid "That's a BINGO!"
-msgstr "দারুণ খবর!"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6907,10 +6894,6 @@ msgstr "দৃশ্যসমূহ ইন্সট্যান্স করা�
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "%s হতে দৃশ্য লোড করতে সমস্যা হয়েছে"
-
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "ঠিক আছে"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -8182,6 +8165,13 @@ msgstr ""
 "প্রতি দৃশ্যে (অথবা ইন্সট্যান্সড দৃশ্যের সম্মেলনে) সর্বোচ্চ একটি দৃশ্যমান CanvasModulate "
 "সম্ভব। সর্বপ্রথমেরটি দৃশ্যত হলেও বাকিগুলো বাতিল হয়ে যাবে।"
 
+#: scene/2d/collision_object_2d.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"define it's shape."
+msgstr ""
+
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
@@ -8329,6 +8319,13 @@ msgstr ""
 msgid "Lighting Meshes: "
 msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
 
+#: scene/3d/collision_object.cpp
+msgid ""
+"This node has no children shapes, so it can't interact with the space.\n"
+"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"it's shape."
+msgstr ""
+
 #: scene/3d/collision_polygon.cpp
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
@@ -8462,7 +8459,7 @@ msgstr ""
 
 #: scene/main/scene_tree.cpp
 msgid ""
-"Default Environment as specified in Project Setings (Rendering -> "
+"Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
@@ -8493,6 +8490,37 @@ msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়ে�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
+
+#~ msgid "Next"
+#~ msgstr "পরবর্তী"
+
+#~ msgid "Not found!"
+#~ msgstr "খুঁজে পাওয়া যায়নি!"
+
+#~ msgid "Replace By"
+#~ msgstr "এর দ্বারা প্রতিস্থাপন করুন"
+
+#~ msgid "Case Sensitive"
+#~ msgstr "অক্ষরের মাত্রা (বড়/ছোট-হাতের) সংবেদনশীল"
+
+#~ msgid "Backwards"
+#~ msgstr "পিছনের/অতীতের দিকে"
+
+#~ msgid "Prompt On Replace"
+#~ msgstr "প্রতিস্থাপনে অবহিত করুন"
+
+#~ msgid "Skip"
+#~ msgstr "অতিক্রম করে যান"
+
+#~ msgid ""
+#~ "Your project will be created in a non empty folder (you might want to "
+#~ "create a new folder)."
+#~ msgstr ""
+#~ "আপনার প্রজেক্ট একটি খালি ফোল্ডারে তৈরি করা হবে (আপনি চাইলে একটি নতুন ফোল্ডার "
+#~ "তৈরি করতে পারেন)।"
+
+#~ msgid "That's a BINGO!"
+#~ msgstr "দারুণ খবর!"
 
 #, fuzzy
 #~ msgid "preview"
@@ -9266,9 +9294,6 @@ msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
 
 #~ msgid "Alerts when an external resource has changed."
 #~ msgstr "বহি:স্থ রিসোর্সের পরিবর্তনে সতর্ক করে।"
-
-#~ msgid "Tutorials"
-#~ msgstr "টিউটোরিয়ালসমূহ"
 
 #~ msgid "Open https://godotengine.org at tutorials section."
 #~ msgstr "টিউটোরিয়ালের স্থানে https://godotengine.org খুলুন।"
