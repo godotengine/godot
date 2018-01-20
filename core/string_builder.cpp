@@ -56,6 +56,9 @@ StringBuilder &StringBuilder::append(const char *p_cstring) {
 
 String StringBuilder::as_string() const {
 
+	if (string_length == 0)
+		return "";
+
 	CharType *buffer = memnew_arr(CharType, string_length);
 
 	int current_position = 0;
