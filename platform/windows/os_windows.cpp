@@ -589,7 +589,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb.y = old_y;
 				}
 
-				if (uMsg != WM_MOUSEWHEEL) {
+				if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 					if (mb.pressed) {
 
 						if (++pressrc > 0)
