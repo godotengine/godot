@@ -32,6 +32,7 @@
 
 #include "class_db.h"
 #include "core_string_names.h"
+#include "func_ref.h"
 #include "message_queue.h"
 #include "os/os.h"
 #include "print_string.h"

@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "os/mutex.h"
+#include "script_language.h"
 #include "version.h"
 
 #ifdef NO_THREADS
@@ -587,7 +588,17 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 	}
 }
 
-MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
+void ClassDB::_patch_method(const StringName &p_class, const StringName &p_name, MethodBind *p_bind) {
+
+	OBJTYPE_WLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+	if (type) {
+		type->method_map[p_name] = p_bind;
+	}
+}
+
+MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_name) {
 
 	OBJTYPE_RLOCK;
 

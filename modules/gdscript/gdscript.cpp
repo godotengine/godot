@@ -40,6 +40,58 @@
 
 ///////////////////////////
 
+class GDExtensionMethodBind : public MethodBind {
+
+	StringName instance_class;
+	Ref<Script> script; // makes sure "func" below stays valid
+	GDScriptFunction *func;
+
+public:
+#ifdef DEBUG_METHODS_ENABLED
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
+		return Variant::NIL;
+	}
+
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+		return PropertyInfo();
+	}
+#endif
+
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
+		GDScriptFunction::CallState state;
+		state.instance = NULL; // indicates we're calling as extension
+		state.self = Variant(p_object);
+		return func->call(NULL, p_args, p_arg_count, r_error, &state);
+	}
+
+	virtual Variant vcall(Variant *p_variant, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
+		GDScriptFunction::CallState state;
+		state.instance = NULL; // indicates we're calling as extension
+		state.self = *p_variant;
+		return func->call(NULL, p_args, p_arg_count, r_error, &state);
+	}
+
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+		ERR_FAIL(); //can't call
+	} //todo
+#endif
+
+	virtual String get_instance_class() const {
+		return instance_class;
+	}
+
+	GDExtensionMethodBind(const StringName &p_class, const Ref<Script> &p_script, GDScriptFunction *p_func, const MethodInfo &p_info) {
+		instance_class = p_class;
+		script = p_script;
+		func = p_func;
+		set_argument_count(p_info.arguments.size());
+		_set_returns(true);
+	}
+};
+
+///////////////////////////
+
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 
 	name = p_name;
@@ -138,6 +190,11 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 	/* STEP 1, CREATE */
 
 	if (!valid) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	if (extension) {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
@@ -633,6 +690,14 @@ void GDScript::get_members(Set<StringName> *p_members) {
 	}
 }
 
+MethodBind *GDScript::create_extension_method_bind(const StringName &p_class, const StringName &p_method) const {
+
+	const Map<StringName, GDScriptFunction *>::Element *E = member_functions.find(p_method);
+	ERR_FAIL_COND_V(!E, NULL);
+	const MethodInfo info = get_method_info(p_method);
+	return memnew(GDExtensionMethodBind(p_class, Ref<Script>(this), E->get(), info));
+}
+
 Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	GDScript *top = this;
@@ -887,6 +952,7 @@ GDScript::GDScript() :
 	_base = NULL;
 	_owner = NULL;
 	tool = false;
+	extension = false;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
 #endif
@@ -1737,6 +1803,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"setget",
 		"signal",
 		"tool",
+		"extension",
 		"yield",
 		// var
 		"const",

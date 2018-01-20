@@ -57,6 +57,7 @@ class GDScript : public Script {
 
 	GDCLASS(GDScript, Script);
 	bool tool;
+	bool extension;
 	bool valid;
 
 	struct MemberInfo {
@@ -152,6 +153,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
 
 	bool is_tool() const { return tool; }
+	bool is_extension() const { return extension; }
 	Ref<GDScript> get_base() const;
 
 	const Map<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
@@ -201,6 +203,8 @@ public:
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
 	virtual void get_members(Set<StringName> *p_members);
+
+	virtual MethodBind *create_extension_method_bind(const StringName &p_class, const StringName &p_method) const;
 
 	GDScript();
 	~GDScript();

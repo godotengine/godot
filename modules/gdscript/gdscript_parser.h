@@ -74,6 +74,7 @@ public:
 	struct ClassNode : public Node {
 
 		bool tool;
+		bool extension;
 		StringName name;
 		bool extends_used;
 		StringName extends_file;
@@ -115,6 +116,7 @@ public:
 
 		ClassNode() {
 			tool = false;
+			extension = false;
 			type = TYPE_CLASS;
 			extends_used = false;
 			end_line = -1;
@@ -125,6 +127,7 @@ public:
 	struct FunctionNode : public Node {
 
 		bool _static;
+		bool _extension;
 		ScriptInstance::RPCMode rpc_mode;
 		StringName name;
 		Vector<StringName> arguments;
@@ -134,6 +137,7 @@ public:
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			_static = false;
+			_extension = false;
 			rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
 		}
 	};

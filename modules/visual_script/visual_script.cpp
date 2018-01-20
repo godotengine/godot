@@ -975,6 +975,11 @@ bool VisualScript::is_tool() const {
 	return false;
 }
 
+bool VisualScript::is_extension() const {
+
+	return false;
+}
+
 ScriptLanguage *VisualScript::get_language() const {
 
 	return VisualScriptLanguage::singleton;

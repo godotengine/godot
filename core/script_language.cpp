@@ -61,6 +61,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+	ClassDB::bind_method(D_METHOD("is_extension"), &Script::is_extension);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", 0), "set_source_code", "get_source_code");
 }

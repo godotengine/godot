@@ -58,13 +58,14 @@ struct _VariantCall {
 		bool returns;
 
 		VariantFunc func;
+		MethodBind *bind;
 
-		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) {
+		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) const {
 
 			if (arg_count == 0)
 				return true;
 
-			Variant::Type *tptr = &arg_types[0];
+			const Variant::Type *tptr = &arg_types[0];
 
 			for (int i = 0; i < arg_count; i++) {
 
@@ -80,7 +81,12 @@ struct _VariantCall {
 			return true;
 		}
 
-		_FORCE_INLINE_ void call(Variant &r_ret, Variant &p_self, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+		_FORCE_INLINE_ void call(Variant &r_ret, Variant &p_self, const Variant **p_args, int p_argcount, Variant::CallError &r_error) const {
+			if (!func) {
+				r_ret = bind->vcall(&p_self, p_args, p_argcount, r_error);
+				return;
+			}
+
 #ifdef DEBUG_ENABLED
 			if (p_argcount > arg_count) {
 				r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
@@ -983,6 +989,24 @@ _VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
 _VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
 _VariantCall::ConstantData *_VariantCall::constant_data = NULL;
 
+void Variant::_patch_method(Variant::Type p_type, const StringName &p_name, MethodBind *p_bind) {
+
+	_VariantCall::FuncData funcdata;
+	funcdata.func = NULL;
+	funcdata.bind = p_bind;
+	funcdata.arg_count = 0;
+
+	ERR_FAIL_COND((int)p_type < 0 || (int)p_type >= Variant::VARIANT_MAX);
+	_VariantCall::type_funcs[(int)p_type].functions[p_name] = funcdata;
+}
+
+void Variant::_patch_method(Variant::Type p_type, const StringName &p_name, const StringName &p_from) {
+
+	ERR_FAIL_COND((int)p_type < 0 || (int)p_type >= Variant::VARIANT_MAX);
+	_VariantCall::TypeFunc &tf = _VariantCall::type_funcs[(int)p_type];
+	tf.functions[p_name] = tf.functions[p_from];
+}
+
 Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error) {
 
 	Variant ret;
@@ -1018,13 +1042,12 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 		r_error.error = Variant::CallError::CALL_OK;
 
-		Map<StringName, _VariantCall::FuncData>::Element *E = _VariantCall::type_funcs[type].functions.find(p_method);
-#ifdef DEBUG_ENABLED
+		_VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
+		Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 		if (!E) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			return;
 		}
-#endif
 		_VariantCall::FuncData &funcdata = E->get();
 		funcdata.call(ret, *this, p_args, p_argcount, r_error);
 	}

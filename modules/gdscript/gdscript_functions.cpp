@@ -122,6 +122,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"extend_builtin",
 	};
 
 	return _names[p_func];
@@ -1267,6 +1268,70 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case EXTEND_BUILT_IN: {
+
+			VALIDATE_ARG_COUNT(2);
+			String name = *p_args[0];
+
+			const Ref<Script> script = *p_args[1];
+			if (script.is_null() || !script->is_extension()) {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				r_ret = RTR("Can only extend with an extension script.");
+				break;
+			}
+
+			Variant::Type type = Variant::NIL;
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (Variant::get_type_name((Variant::Type)i) == name) {
+					type = (Variant::Type)i;
+					break;
+				}
+			}
+
+			if (type == Variant::NIL && !ClassDB::class_exists(name)) {
+				name = "_" + name; // support pseudo-static classes, e.g. Geometry -> _Geometry
+			}
+
+			Variant v;
+			if (type != Variant::NIL) {
+				Variant::CallError error;
+				v = Variant::construct(type, NULL, 0, error);
+			}
+
+			if (type != Variant::NIL || ClassDB::class_exists(name)) {
+				List<MethodInfo> methods;
+				script->get_script_method_list(&methods);
+
+				for (int i = 0; i < methods.size(); i++) {
+					const StringName method_name(methods[i].name);
+
+					MethodBind *bind = script->create_extension_method_bind(name, method_name);
+					if (type != Variant::NIL) {
+
+						if (v.has_method(method_name) && !v.has_method("_" + method_name)) {
+							Variant::_patch_method(type, "_" + method_name, method_name);
+						}
+
+						Variant::_patch_method(type, method_name, bind);
+					}
+
+					// note that ClassDB patching is also needed for some Variant types, e.g. Object
+
+					if (ClassDB::has_method(name, method_name, true) && !ClassDB::has_method(name, "_" + method_name, true)) {
+						ClassDB::_patch_method(name, "_" + method_name, ClassDB::get_method(name, method_name)); // override?
+					}
+
+					ClassDB::_patch_method(name, method_name, bind);
+				}
+			} else {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::NIL;
+				r_ret = RTR("Can only extend built-in classes.");
+			}
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1785,6 +1850,10 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
 			return mi;
+		} break;
+
+		case EXTEND_BUILT_IN: {
+			return MethodInfo(); // only used internally
 		} break;
 
 		case FUNC_MAX: {

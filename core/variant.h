@@ -60,6 +60,7 @@ class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
+class MethodBind;
 
 typedef PoolVector<uint8_t> PoolByteArray;
 typedef PoolVector<int> PoolIntArray;
@@ -149,6 +150,9 @@ private:
 	void clear();
 
 public:
+	static void _patch_method(Variant::Type p_type, const StringName &p_name, MethodBind *p_bind);
+	static void _patch_method(Variant::Type p_type, const StringName &p_name, const StringName &p_from);
+
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);

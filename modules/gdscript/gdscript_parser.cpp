@@ -2957,6 +2957,12 @@ bool GDScriptParser::_parse_newline() {
 
 void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
+	if (p_class->extension) {
+
+		_set_error("Extension scripts are generic and may not use 'extends'.");
+		return;
+	}
+
 	if (p_class->extends_used) {
 
 		_set_error("'extends' already used for this class.");
@@ -3086,6 +3092,17 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 
 			} break;
+			case GDScriptTokenizer::TK_PR_EXTENSION: {
+
+				if (p_class->extension) {
+
+					_set_error("extension used more than once");
+					return;
+				}
+
+				p_class->extension = true;
+				tokenizer->advance();
+			} break;
 			case GDScriptTokenizer::TK_PR_CLASS: {
 				//class inside class :D
 
@@ -3134,6 +3151,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			} break;
 			*/
 			case GDScriptTokenizer::TK_PR_STATIC: {
+				if (p_class->extension) {
+
+					_set_error("Extension scripts may not use 'static'.");
+					return;
+				}
 				tokenizer->advance();
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
 
@@ -3332,6 +3354,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->arguments = arguments;
 				function->default_values = default_values;
 				function->_static = _static;
+				function->_extension = p_class->extension;
 				function->line = fnline;
 
 				function->rpc_mode = rpc_mode;
@@ -3994,6 +4017,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_PR_VAR: {
 				//variale declaration and (eventual) initialization
 
+				if (p_class->extension) {
+
+					_set_error("Member variables are not allowed in extension scripts.");
+					return;
+				}
+
 				ClassNode::Member member;
 				bool autoexport = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_EXPORT;
 				if (current_export.type != Variant::NIL) {
@@ -4165,6 +4194,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			} break;
 			case GDScriptTokenizer::TK_PR_CONST: {
 				//variale declaration and (eventual) initialization
+
+				if (p_class->extension) {
+
+					_set_error("Constants are not allowed in extension scripts.");
+					return;
+				}
 
 				ClassNode::Constant constant;
 
