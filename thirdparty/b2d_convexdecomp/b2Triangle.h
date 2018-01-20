@@ -27,8 +27,8 @@ namespace b2ConvexDecomp {
 
 class b2Triangle{
 public:
-	float* x;
-    float* y;
+	real_t* x;
+    real_t* y;
 	b2Triangle();
 	b2Triangle(float32 x1, float32 y1, float32 x2, float32 y2, float32 x3, float32 y3);
 	~b2Triangle();

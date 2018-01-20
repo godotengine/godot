@@ -65,7 +65,7 @@ private:
 		float emission[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float normal[3];
 		uint32_t used_sides;
-		float alpha; //used for upsampling
+		real_t alpha; //used for upsampling
 		int level;
 
 		Cell() {
@@ -155,7 +155,7 @@ private:
 
 	void _plot_triangle(Vector2 *vertices, Vector3 *positions, Vector3 *normals, LightMap *pixels, int width, int height);
 
-	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, float p_level, Vector3 &r_color, float &r_alpha);
+	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, real_t p_level, Vector3 &r_color, real_t &r_alpha);
 	_FORCE_INLINE_ Vector3 _voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture);
 	_FORCE_INLINE_ Vector3 _compute_pixel_light_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
 	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);

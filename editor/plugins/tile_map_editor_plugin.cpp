@@ -1778,7 +1778,7 @@ void TileMapEditor::_tileset_settings_changed() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TileMapEditor::_icon_size_changed(float p_value) {
+void TileMapEditor::_icon_size_changed(real_t p_value) {
 	if (node) {
 		palette->set_icon_scale(p_value);
 		manual_palette->set_icon_scale(p_value);

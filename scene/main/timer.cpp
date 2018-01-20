@@ -79,12 +79,13 @@ void Timer::_notification(int p_what) {
 	}
 }
 
-void Timer::set_wait_time(float p_time) {
+void Timer::set_wait_time(real_t p_time) {
 	ERR_EXPLAIN("time should be greater than zero.");
 	ERR_FAIL_COND(p_time <= 0);
 	wait_time = p_time;
 }
-float Timer::get_wait_time() const {
+
+real_t Timer::get_wait_time() const {
 
 	return wait_time;
 }
@@ -137,7 +138,7 @@ bool Timer::is_stopped() const {
 	return get_time_left() <= 0;
 }
 
-float Timer::get_time_left() const {
+real_t Timer::get_time_left() const {
 
 	return time_left > 0 ? time_left : 0;
 }

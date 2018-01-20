@@ -199,7 +199,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	struct GLTFMesh {
 		Ref<ArrayMesh> mesh;
-		Vector<float> blend_weights;
+		Vector<real_t> blend_weights;
 	};
 
 	struct GLTFCamera {
@@ -229,7 +229,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		template <class T>
 		struct Channel {
 			Interpolation interpolation;
-			Vector<float> times;
+			Vector<real_t> times;
 			Vector<T> values;
 		};
 
@@ -238,7 +238,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
-			Vector<Channel<float> > weight_tracks;
+			Vector<Channel<real_t> > weight_tracks;
 		};
 
 		String name;
@@ -300,7 +300,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_accessors(GLTFState &state);
 	Error _decode_buffer_view(GLTFState &state, int p_buffer_view, double *dst, int skip_every, int skip_bytes, int element_size, int count, GLTFType type, int component_count, int component_type, int component_size, bool normalized, int byte_offset, bool for_vertex);
 	Vector<double> _decode_accessor(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<float> _decode_accessor_as_floats(GLTFState &state, int p_accessor, bool p_for_vertex);
+	PoolVector<real_t> _decode_accessor_as_floats(GLTFState &state, int p_accessor, bool p_for_vertex);
 	PoolVector<int> _decode_accessor_as_ints(GLTFState &state, int p_accessor, bool p_for_vertex);
 	PoolVector<Vector2> _decode_accessor_as_vec2(GLTFState &state, int p_accessor, bool p_for_vertex);
 	PoolVector<Vector3> _decode_accessor_as_vec3(GLTFState &state, int p_accessor, bool p_for_vertex);
@@ -332,7 +332,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	void _assign_scene_names(GLTFState &state);
 
 	template <class T>
-	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp);
+	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, real_t p_time, GLTFAnimation::Interpolation p_interp);
 
 public:
 	virtual uint32_t get_import_flags() const;

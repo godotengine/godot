@@ -405,48 +405,48 @@ uint32_t ihash3(uint32_t a) {
 MainLoop *test() {
 
 	{
-		float r = 1;
-		float g = 0.5;
-		float b = 0.1;
+		real_t r = 1;
+		real_t g = 0.5;
+		real_t b = 0.1;
 
-		const float pow2to9 = 512.0f;
-		const float B = 15.0f;
-		const float N = 9.0f;
+		const real_t pow2to9 = 512.0f;
+		const real_t B = 15.0f;
+		const real_t N = 9.0f;
 
-		float sharedexp = 65408.000f;
+		real_t sharedexp = 65408.000f;
 
-		float cRed = MAX(0.0f, MIN(sharedexp, r));
-		float cGreen = MAX(0.0f, MIN(sharedexp, g));
-		float cBlue = MAX(0.0f, MIN(sharedexp, b));
+		real_t cRed = MAX(0.0f, MIN(sharedexp, r));
+		real_t cGreen = MAX(0.0f, MIN(sharedexp, g));
+		real_t cBlue = MAX(0.0f, MIN(sharedexp, b));
 
-		float cMax = MAX(cRed, MAX(cGreen, cBlue));
+		real_t cMax = MAX(cRed, MAX(cGreen, cBlue));
 
-		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
+		real_t expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
 
-		float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
+		real_t sMax = (real_t)floor((cMax / Math::pow((real_t)2.0, expp - B - N)) + (real_t)0.5f);
 
-		float exps = expp + 1.0f;
+		real_t exps = expp + 1.0f;
 
 		if (0.0 <= sMax && sMax < pow2to9) {
 			exps = expp;
 		}
 
-		float sRed = Math::floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-		float sGreen = Math::floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-		float sBlue = Math::floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
+		real_t sRed = Math::floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
+		real_t sGreen = Math::floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
+		real_t sBlue = Math::floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
 
 		print_line("R: " + rtos(sRed) + " G: " + rtos(sGreen) + " B: " + rtos(sBlue) + " EXP: " + rtos(exps));
 
 		uint32_t rgbe = (Math::fast_ftoi(sRed) & 0x1FF) | ((Math::fast_ftoi(sGreen) & 0x1FF) << 9) | ((Math::fast_ftoi(sBlue) & 0x1FF) << 18) | ((Math::fast_ftoi(exps) & 0x1F) << 27);
 
-		float rb = rgbe & 0x1ff;
-		float gb = (rgbe >> 9) & 0x1ff;
-		float bb = (rgbe >> 18) & 0x1ff;
-		float eb = (rgbe >> 27);
-		float mb = Math::pow(2, eb - 15.0 - 9.0);
-		float rd = rb * mb;
-		float gd = gb * mb;
-		float bd = bb * mb;
+		real_t rb = rgbe & 0x1ff;
+		real_t gb = (rgbe >> 9) & 0x1ff;
+		real_t bb = (rgbe >> 18) & 0x1ff;
+		real_t eb = (rgbe >> 27);
+		real_t mb = Math::pow(2, eb - 15.0 - 9.0);
+		real_t rd = rb * mb;
+		real_t gd = gb * mb;
+		real_t bd = bb * mb;
 
 		print_line("RGBE: " + Color(rd, gd, bd));
 	}
@@ -564,13 +564,13 @@ MainLoop *test() {
 	{
 		Vector3 v(1, 2, 3);
 		v.normalize();
-		float a = 0.3;
+		real_t a = 0.3;
 
 		Basis m(v, a);
 
 		Vector3 v2(7, 3, 1);
 		v2.normalize();
-		float a2 = 0.8;
+		real_t a2 = 0.8;
 
 		Basis m2(v2, a2);
 

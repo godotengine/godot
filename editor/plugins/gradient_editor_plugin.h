@@ -46,6 +46,7 @@ class GradientEditor : public GradientEdit {
 
 protected:
 	static void _bind_methods();
+	void _undo_redo_gradient(const Vector<real_t> &offsets, const Vector<Color> &colors);
 
 public:
 	virtual Size2 get_minimum_size() const;

@@ -1272,11 +1272,11 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 
-			Color color((float)*p_args[0] / 255.0f, (float)*p_args[1] / 255.0f, (float)*p_args[2] / 255.0f);
+			Color color((real_t)*p_args[0] / 255.0f, (real_t)*p_args[1] / 255.0f, (real_t)*p_args[2] / 255.0f);
 
 			if (p_arg_count == 4) {
 				VALIDATE_ARG_NUM(3);
-				color.a = (float)*p_args[3] / 255.0f;
+				color.a = (real_t)*p_args[3] / 255.0f;
 			}
 
 			r_ret = color;

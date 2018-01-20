@@ -46,7 +46,7 @@ class MeshDataTool : public Reference {
 		Vector2 uv;
 		Vector2 uv2;
 		Vector<int> bones;
-		Vector<float> weights;
+		Vector<real_t> weights;
 		Vector<int> edges;
 		Vector<int> faces;
 		Variant meta;
@@ -109,8 +109,8 @@ public:
 	Vector<int> get_vertex_bones(int p_idx) const;
 	void set_vertex_bones(int p_idx, const Vector<int> &p_bones);
 
-	Vector<float> get_vertex_weights(int p_idx) const;
-	void set_vertex_weights(int p_idx, const Vector<float> &p_weights);
+	Vector<real_t> get_vertex_weights(int p_idx) const;
+	void set_vertex_weights(int p_idx, const Vector<real_t> &p_weights);
 
 	Variant get_vertex_meta(int p_idx) const;
 	void set_vertex_meta(int p_idx, const Variant &p_meta);

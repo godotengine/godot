@@ -362,7 +362,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _tree_changed();
 
-	void _script_split_dragged(float);
+	void _script_split_dragged(real_t);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

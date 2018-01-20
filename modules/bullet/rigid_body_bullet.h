@@ -89,13 +89,13 @@ private:
 
 public:
 	virtual Vector3 get_total_gravity() const;
-	virtual float get_total_angular_damp() const;
-	virtual float get_total_linear_damp() const;
+	virtual real_t get_total_angular_damp() const;
+	virtual real_t get_total_linear_damp() const;
 
 	virtual Vector3 get_center_of_mass() const;
 	virtual Basis get_principal_inertia_axes() const;
 	// get the mass
-	virtual float get_inverse_mass() const;
+	virtual real_t get_inverse_mass() const;
 	// get density of this body space
 	virtual Vector3 get_inverse_inertia() const;
 	// get density of this body space

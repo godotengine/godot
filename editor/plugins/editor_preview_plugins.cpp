@@ -396,7 +396,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
 	PoolVector<Vector2> uvs;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {

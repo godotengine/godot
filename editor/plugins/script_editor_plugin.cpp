@@ -1362,7 +1362,7 @@ void ScriptEditor::_notification(int p_what) {
 			script_split->connect("dragged", this, "_script_split_dragged");
 			autosave_timer->connect("timeout", this, "_autosave_scripts");
 			{
-				float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+				real_t autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 				if (autosave_time > 0) {
 					autosave_timer->set_wait_time(autosave_time);
 					autosave_timer->start();
@@ -1732,7 +1732,7 @@ void ScriptEditor::_update_script_colors() {
 				continue;
 			}
 			int non_zero_hist_size = (hist_size == 0) ? 1 : hist_size;
-			float v = Math::ease((edit_pass - pass) / float(non_zero_hist_size), 0.4);
+			real_t v = Math::ease((edit_pass - pass) / real_t(non_zero_hist_size), 0.4);
 
 			script_list->set_item_custom_fg_color(i, hot_color.linear_interpolate(cold_color, v));
 		}
@@ -2278,7 +2278,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 
-	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+	real_t autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 	if (autosave_time > 0) {
 		autosave_timer->set_wait_time(autosave_time);
 		autosave_timer->start();
@@ -2322,7 +2322,7 @@ void ScriptEditor::_tree_changed() {
 	call_deferred("_update_script_connections");
 }
 
-void ScriptEditor::_script_split_dragged(float) {
+void ScriptEditor::_script_split_dragged(real_t) {
 
 	_save_layout();
 }

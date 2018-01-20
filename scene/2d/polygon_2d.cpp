@@ -716,7 +716,7 @@ NodePath Polygon2D::get_bone_path(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), NodePath());
 	return bone_weights[p_index].path;
 }
-PoolVector<float> Polygon2D::get_bone_weights(int p_index) const {
+PoolVector<real_t> Polygon2D::get_bone_weights(int p_index) const {
 
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), PoolVector<float>());
 	return bone_weights[p_index].weights;

@@ -281,7 +281,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;
@@ -494,7 +494,7 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;
@@ -745,7 +745,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;
@@ -961,7 +961,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;
@@ -1078,7 +1078,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;
@@ -1356,7 +1356,7 @@ PrismMesh::PrismMesh() {
 void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	PoolVector<Vector3> faces;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 
 	faces.resize(6);
@@ -1436,7 +1436,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector2> uvs;
 	PoolVector<int> indices;
 	point = 0;

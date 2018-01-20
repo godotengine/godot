@@ -163,7 +163,7 @@ class Curve2D : public Resource {
 
 	struct BakedPoint {
 
-		float ofs;
+		real_t ofs;
 		Vector2 point;
 	};
 
@@ -175,7 +175,7 @@ class Curve2D : public Resource {
 
 	float bake_interval;
 
-	void _bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, float p_tol) const;
+	void _bake_segment2d(Map<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -194,19 +194,19 @@ public:
 	void remove_point(int p_index);
 	void clear_points();
 
-	Vector2 interpolate(int p_index, float p_offset) const;
+	Vector2 interpolate(int p_index, real_t p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
 
 	void set_bake_interval(float p_tolerance);
-	float get_bake_interval() const;
+	real_t get_bake_interval() const;
 
-	float get_baked_length() const;
+	real_t get_baked_length() const;
 	Vector2 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	PoolVector2Array get_baked_points() const; //useful for going through
 	Vector2 get_closest_point(const Vector2 &p_to_point) const;
 	float get_closest_offset(const Vector2 &p_to_point) const;
 
-	PoolVector2Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector2Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
 
 	Curve2D();
 };
@@ -220,7 +220,7 @@ class Curve3D : public Resource {
 		Vector3 in;
 		Vector3 out;
 		Vector3 pos;
-		float tilt;
+		real_t tilt;
 
 		Point() { tilt = 0; }
 	};
@@ -229,7 +229,7 @@ class Curve3D : public Resource {
 
 	struct BakedPoint {
 
-		float ofs;
+		real_t ofs;
 		Vector3 point;
 	};
 
@@ -237,14 +237,14 @@ class Curve3D : public Resource {
 	mutable PoolVector3Array baked_point_cache;
 	mutable PoolRealArray baked_tilt_cache;
 	mutable PoolVector3Array baked_up_vector_cache;
-	mutable float baked_max_ofs;
+	mutable real_t baked_max_ofs;
 
 	void _bake() const;
 
-	float bake_interval;
+	real_t bake_interval;
 	bool up_vector_enabled;
 
-	void _bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const;
+	void _bake_segment3d(Map<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -265,25 +265,25 @@ public:
 	void remove_point(int p_index);
 	void clear_points();
 
-	Vector3 interpolate(int p_index, float p_offset) const;
+	Vector3 interpolate(int p_index, real_t p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
 
-	void set_bake_interval(float p_tolerance);
-	float get_bake_interval() const;
+	void set_bake_interval(real_t p_tolerance);
+	real_t get_bake_interval() const;
 	void set_up_vector_enabled(bool p_enable);
 	bool is_up_vector_enabled() const;
 
-	float get_baked_length() const;
-	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
-	float interpolate_baked_tilt(float p_offset) const;
-	Vector3 interpolate_baked_up_vector(float p_offset, bool p_apply_tilt = false) const;
+	real_t get_baked_length() const;
+	Vector3 interpolate_baked(real_t p_offset, bool p_cubic = false) const;
+	real_t interpolate_baked_tilt(real_t p_offset) const;
+	Vector3 interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
 	PoolVector3Array get_baked_points() const; //useful for going through
 	PoolRealArray get_baked_tilts() const; //useful for going through
 	PoolVector3Array get_baked_up_vectors() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
-	float get_closest_offset(const Vector3 &p_to_point) const;
+	real_t get_closest_offset(const Vector3 &p_to_point) const;
 
-	PoolVector3Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
 
 	Curve3D();
 };

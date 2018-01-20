@@ -1618,7 +1618,7 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	grests.resize(skel->get_bone_count());
 
 	Vector<int> bones;
-	Vector<float> weights;
+	Vector<real_t> weights;
 	bones.resize(4);
 	weights.resize(4);
 
@@ -1646,14 +1646,14 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Vector3 v0 = grests[parent].origin;
 			Vector3 v1 = grests[i].origin;
 			Vector3 d = (v1 - v0).normalized();
-			float dist = v0.distance_to(v1);
+			real_t dist = v0.distance_to(v1);
 
 			//find closest axis
 			int closest = -1;
-			float closest_d = 0.0;
+			real_t closest_d = 0.0;
 
 			for (int j = 0; j < 3; j++) {
-				float dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
+				real_t dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
 				if (j == 0 || dp > closest_d)
 					closest = j;
 			}
@@ -1758,7 +1758,7 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 			for (int j=0;j<4;j++) {
 
-				float v[3];
+				real_t v[3];
 				v[0]=1.0;
 				v[1]=1-2*((j>>1)&1);
 				v[2]=v[1]*(1-2*(j&1));

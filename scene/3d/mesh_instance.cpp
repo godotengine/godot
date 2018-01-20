@@ -299,7 +299,7 @@ void MeshInstance::create_debug_tangents() {
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
 		if (norms.size() == 0)
 			continue;
-		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
+		Vector<real_t> tangents = arrays[Mesh::ARRAY_TANGENT];
 		if (tangents.size() == 0)
 			continue;
 

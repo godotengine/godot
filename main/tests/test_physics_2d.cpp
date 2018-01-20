@@ -416,7 +416,7 @@ public:
 		//_add_plane(Vector2(-1,0).normalized(),-600);
 	}
 
-	virtual bool idle(float p_time) {
+	virtual bool idle(real_t p_time) {
 
 		return false;
 	}

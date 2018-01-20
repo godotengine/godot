@@ -614,7 +614,7 @@ void Curve2D::clear_points() {
 	}
 }
 
-Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
+Vector2 Curve2D::interpolate(int p_index, real_t p_offset) const {
 
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector2());
@@ -642,16 +642,16 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
 
-void Curve2D::_bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, float p_tol) const {
+void Curve2D::_bake_segment2d(Map<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
 
-	float mp = p_begin + (p_end - p_begin) * 0.5;
+	real_t mp = p_begin + (p_end - p_begin) * 0.5;
 	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
 	Vector2 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
 	Vector2 end = _bezier_interp(p_end, p_a, p_a + p_out, p_b + p_in, p_b);
 
 	Vector2 na = (mid - beg).normalized();
 	Vector2 nb = (end - mid).normalized();
-	float dp = na.dot(nb);
+	real_t dp = na.dot(nb);
 
 	if (dp < Math::cos(Math::deg2rad(p_tol))) {
 
@@ -751,7 +751,7 @@ void Curve2D::_bake() const {
 	}
 }
 
-float Curve2D::get_baked_length() const {
+real_t Curve2D::get_baked_length() const {
 
 	if (baked_cache_dirty)
 		_bake();
@@ -818,7 +818,7 @@ void Curve2D::set_bake_interval(float p_tolerance) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-float Curve2D::get_bake_interval() const {
+real_t Curve2D::get_bake_interval() const {
 
 	return bake_interval;
 }
@@ -945,14 +945,14 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 	baked_cache_dirty = true;
 }
 
-PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const {
+PoolVector2Array Curve2D::tessellate(int p_max_stages /*= 5*/, real_t p_tolerance /*= 4*/) const {
 
 	PoolVector2Array tess;
 
 	if (points.size() == 0) {
 		return tess;
 	}
-	Vector<Map<float, Vector2> > midpoints;
+	Vector<Map<real_t, Vector2> > midpoints;
 
 	midpoints.resize(points.size() - 1);
 
@@ -971,7 +971,7 @@ PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const 
 
 	for (int i = 0; i < points.size() - 1; i++) {
 
-		for (Map<float, Vector2>::Element *E = midpoints[i].front(); E; E = E->next()) {
+		for (Map<real_t, Vector2>::Element *E = midpoints[i].front(); E; E = E->next()) {
 
 			pidx++;
 			bpw[pidx] = E->get();
@@ -1126,7 +1126,7 @@ void Curve3D::clear_points() {
 	}
 }
 
-Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
+Vector3 Curve3D::interpolate(int p_index, real_t p_offset) const {
 
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector3());
@@ -1154,7 +1154,7 @@ Vector3 Curve3D::interpolatef(real_t p_findex) const {
 	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
 
-void Curve3D::_bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const {
+void Curve3D::_bake_segment3d(Map<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
 
 	float mp = p_begin + (p_end - p_begin) * 0.5;
 	Vector3 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
@@ -1213,26 +1213,26 @@ void Curve3D::_bake() const {
 
 	for (int i = 0; i < points.size() - 1; i++) {
 
-		float step = 0.1; // at least 10 substeps ought to be enough?
-		float p = 0;
+		real_t step = 0.1; // at least 10 substeps ought to be enough?
+		real_t p = 0;
 
 		while (p < 1.0) {
 
-			float np = p + step;
+			real_t np = p + step;
 			if (np > 1.0)
 				np = 1.0;
 
 			Vector3 npp = _bezier_interp(np, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
-			float d = pos.distance_to(npp);
+			real_t d = pos.distance_to(npp);
 
 			if (d > bake_interval) {
 				// OK! between P and NP there _has_ to be Something, let's go searching!
 
 				int iterations = 10; //lots of detail!
 
-				float low = p;
-				float hi = np;
-				float mid = low + (hi - low) * 0.5;
+				real_t low = p;
+				real_t hi = np;
+				real_t mid = low + (hi - low) * 0.5;
 
 				for (int j = 0; j < iterations; j++) {
 
@@ -1260,9 +1260,9 @@ void Curve3D::_bake() const {
 	}
 
 	Vector3 lastpos = points[points.size() - 1].pos;
-	float lastilt = points[points.size() - 1].tilt;
+	real_t lastilt = points[points.size() - 1].tilt;
 
-	float rem = pos.distance_to(lastpos);
+	real_t rem = pos.distance_to(lastpos);
 	baked_max_ofs = (pointlist.size() - 1) * bake_interval + rem;
 	pointlist.push_back(Plane(lastpos, lastilt));
 
@@ -1322,14 +1322,14 @@ void Curve3D::_bake() const {
 	}
 }
 
-float Curve3D::get_baked_length() const {
+real_t Curve3D::get_baked_length() const {
 
 	if (baked_cache_dirty)
 		_bake();
 
 	return baked_max_ofs;
 }
-Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
+Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic /*= false*/) const {
 
 	if (baked_cache_dirty)
 		_bake();
@@ -1353,7 +1353,7 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 		return r[bpc - 1];
 
 	int idx = Math::floor((double)p_offset / (double)bake_interval);
-	float frac = Math::fmod(p_offset, bake_interval);
+	real_t frac = Math::fmod(p_offset, bake_interval);
 
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
@@ -1374,7 +1374,7 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	}
 }
 
-float Curve3D::interpolate_baked_tilt(float p_offset) const {
+real_t Curve3D::interpolate_baked_tilt(real_t p_offset) const {
 
 	if (baked_cache_dirty)
 		_bake();
@@ -1398,7 +1398,7 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 		return r[bpc - 1];
 
 	int idx = Math::floor((double)p_offset / (double)bake_interval);
-	float frac = Math::fmod(p_offset, bake_interval);
+	real_t frac = Math::fmod(p_offset, bake_interval);
 
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
@@ -1564,14 +1564,14 @@ float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 	return nearest;
 }
 
-void Curve3D::set_bake_interval(float p_tolerance) {
+void Curve3D::set_bake_interval(real_t p_tolerance) {
 
 	bake_interval = p_tolerance;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-float Curve3D::get_bake_interval() const {
+real_t Curve3D::get_bake_interval() const {
 
 	return bake_interval;
 }
@@ -1639,14 +1639,14 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	baked_cache_dirty = true;
 }
 
-PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const {
+PoolVector3Array Curve3D::tessellate(int p_max_stages /*= 5*/, real_t p_tolerance /*= 4*/) const {
 
 	PoolVector3Array tess;
 
 	if (points.size() == 0) {
 		return tess;
 	}
-	Vector<Map<float, Vector3> > midpoints;
+	Vector<Map<real_t, Vector3> > midpoints;
 
 	midpoints.resize(points.size() - 1);
 
@@ -1665,7 +1665,7 @@ PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const 
 
 	for (int i = 0; i < points.size() - 1; i++) {
 
-		for (Map<float, Vector3>::Element *E = midpoints[i].front(); E; E = E->next()) {
+		for (Map<real_t, Vector3>::Element *E = midpoints[i].front(); E; E = E->next()) {
 
 			pidx++;
 			bpw[pidx] = E->get();

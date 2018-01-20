@@ -136,7 +136,7 @@ public:
 	void add_bone(const NodePath &p_path = NodePath(), const PoolVector<float> &p_weights = PoolVector<float>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	PoolVector<float> get_bone_weights(int p_index) const;
+	PoolVector<real_t> get_bone_weights(int p_index) const;
 	void erase_bone(int p_idx);
 	void clear_bones();
 	void set_bone_weights(int p_index, const PoolVector<float> &p_weights);

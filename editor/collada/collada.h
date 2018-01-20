@@ -156,7 +156,7 @@ public:
 		String name;
 		struct Source {
 
-			Vector<float> array;
+			Vector<real_t> array;
 			int stride;
 		};
 
@@ -179,8 +179,8 @@ public:
 
 			String material;
 			Map<String, SourceRef> sources;
-			Vector<float> polygons;
-			Vector<float> indices;
+			Vector<real_t> polygons;
+			Vector<real_t> indices;
 			int count;
 			int vertex_size;
 		};
@@ -204,7 +204,7 @@ public:
 		struct Source {
 
 			Vector<String> sarray;
-			Vector<float> array;
+			Vector<real_t> array;
 			int stride;
 		};
 
@@ -227,7 +227,7 @@ public:
 		struct Source {
 
 			Vector<String> sarray; //maybe for names
-			Vector<float> array;
+			Vector<real_t> array;
 			int stride;
 			Source() {
 				stride = 1;
@@ -251,8 +251,8 @@ public:
 
 			String material;
 			Map<String, SourceRef> sources;
-			Vector<float> sets;
-			Vector<float> indices;
+			Vector<real_t> sets;
+			Vector<real_t> indices;
 			int count;
 		} weights;
 
@@ -270,7 +270,7 @@ public:
 
 			int stride;
 			Vector<String> sarray; //maybe for names
-			Vector<float> array;
+			Vector<real_t> array;
 			Source() { stride = 1; }
 		};
 
@@ -381,7 +381,7 @@ public:
 
 			String id;
 			Op op;
-			Vector<float> data;
+			Vector<real_t> data;
 		};
 
 		Type type;
@@ -503,8 +503,8 @@ public:
 				TYPE_MATRIX
 			};
 
-			float time;
-			Vector<float> data;
+			real_t time;
+			Vector<real_t> data;
 			Point2 in_tangent;
 			Point2 out_tangent;
 			InterpolationType interp_type;
@@ -512,7 +512,7 @@ public:
 			Key() { interp_type = INTERP_LINEAR; }
 		};
 
-		Vector<float> get_value_at_time(float p_time) const;
+		Vector<real_t> get_value_at_time(real_t p_time) const;
 
 		Vector<Key> keys;
 
@@ -627,7 +627,7 @@ private: // private stuff
 	void _parse_library(XMLParser &parser);
 
 	Variant _parse_param(XMLParser &parser);
-	Vector<float> _read_float_array(XMLParser &parser);
+	Vector<real_t> _read_float_array(XMLParser &parser);
 	Vector<String> _read_string_array(XMLParser &parser);
 	Transform _read_transform(XMLParser &parser);
 	String _read_empty_draw_type(XMLParser &parser);

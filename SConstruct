@@ -105,7 +105,8 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", '')
-opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32', '64')))
+opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32', '64', 'fat')))
+opts.Add(EnumVariable('float', "Target float bits", 'default', ('default', '32', '64')))
 opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
@@ -216,6 +217,16 @@ if (env_base['no_editor_splash']):
 
 if not env_base['deprecated']:
     env_base.Append(CPPDEFINES=['DISABLE_DEPRECATED'])
+
+if (env_base["float"] == "64"):
+    if (env_base["bits"] == "32"):
+        print("64-bit double-precision floats are slow on 32-bit CPUs, please compile for 64-bit CPUs instead.")
+        sys.exit(255)
+    if env_base.msvc:
+        env_base.Append(CCFLAGS=['/DREAL_T_IS_DOUBLE'])
+    else:
+        env_base.Append(CCFLAGS=['-DREAL_T_IS_DOUBLE'])
+#else: #In the far future, we may add ".single" to single-precision builds, but that's not necessary or desired right now.
 
 env_base.platforms = {}
 
@@ -367,6 +378,9 @@ if selected_platform in platform_list:
         suffix = "." + detect.get_program_suffix()
     else:
         suffix = "." + selected_platform
+
+    if (env_base["float"] == "64"):
+        suffix = ".double"
 
     if (env["target"] == "release"):
         if env["tools"]:

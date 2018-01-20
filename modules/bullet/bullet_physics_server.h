@@ -206,8 +206,8 @@ public:
 	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
-	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
+	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const;
@@ -240,8 +240,8 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts);
 	virtual int body_get_max_contacts_reported(RID p_body) const;
 
-	virtual void body_set_contacts_reported_depth_threshold(RID p_body, float p_threshold);
-	virtual float body_get_contacts_reported_depth_threshold(RID p_body) const;
+	virtual void body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold);
+	virtual real_t body_get_contacts_reported_depth_threshold(RID p_body) const;
 
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit);
 	virtual bool body_is_omitting_force_integration(RID p_body) const;
@@ -336,8 +336,8 @@ public:
 
 	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B);
 
-	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, float p_value);
-	virtual float pin_joint_get_param(RID p_joint, PinJointParam p_param) const;
+	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value);
+	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const;
 
 	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_A);
 	virtual Vector3 pin_joint_get_local_a(RID p_joint) const;
@@ -348,8 +348,8 @@ public:
 	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B);
 	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B);
 
-	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, float p_value);
-	virtual float hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const;
+	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value);
+	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const;
 
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value);
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const;
@@ -357,20 +357,20 @@ public:
 	/// Reference frame is A
 	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
 
-	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value);
-	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const;
+	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value);
+	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const;
 
 	/// Reference frame is A
 	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
 
-	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, float p_value);
-	virtual float cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const;
+	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value);
+	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const;
 
 	/// Reference frame is A
 	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
 
-	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, float p_value);
-	virtual float generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param);
+	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value);
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param);
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
@@ -395,7 +395,7 @@ public:
 	}
 
 	virtual void init();
-	virtual void step(float p_deltaTime);
+	virtual void step(real_t p_deltaTime);
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();

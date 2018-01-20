@@ -2530,7 +2530,7 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	};
 
 	if (!asymmetrical) {
-		float vw, vh, zn;
+		real_t vw, vh, zn;
 		camera.get_viewport_size(vw, vh);
 		zn = p_projection.get_z_near();
 
@@ -4173,7 +4173,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = 0;
 	state.ubo_data.opaque_prepass_threshold = 0.99;
 
-	p_cam_projection.get_viewport_size(state.ubo_data.viewport_size[0], state.ubo_data.viewport_size[1]);
+	real_t viewport_size_0 = state.ubo_data.viewport_size[0];
+	real_t viewport_size_1 = state.ubo_data.viewport_size[1];
+
+	p_cam_projection.get_viewport_size(viewport_size_0, viewport_size_1);
 
 	if (storage->frame.current_rt) {
 		state.ubo_data.screen_pixel_size[0] = 1.0 / storage->frame.current_rt->width;

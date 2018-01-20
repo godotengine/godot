@@ -35,10 +35,15 @@
 #include "gdnative.h"
 
 #include "arvr/register_types.h"
+#include "audio_stream/register_types.h"
 #include "nativescript/register_types.h"
 #include "net/register_types.h"
+#include "networked_multiplayer_peer/register_types.h"
+#include "packet_peer/register_types.h"
 #include "pluginscript/register_types.h"
 #include "videodecoder/register_types.h"
+#include "stream_peer/register_types.h"
+#include "video_Stream/register_types.h"
 
 #include "core/engine.h"
 #include "core/io/resource_loader.h"
@@ -240,6 +245,11 @@ void register_gdnative_types() {
 
 	register_net_types();
 	register_arvr_types();
+	register_networked_multiplayer_peer_types();
+	register_audio_stream_types();
+	register_packet_peer_types();
+	register_video_stream_types();
+	register_stream_peer_types();
 	register_nativescript_types();
 	register_pluginscript_types();
 	register_videodecoder_types();
@@ -304,6 +314,11 @@ void unregister_gdnative_types() {
 	unregister_videodecoder_types();
 	unregister_pluginscript_types();
 	unregister_nativescript_types();
+	unregister_video_stream_types();
+	unregister_stream_peer_types();
+	unregister_packet_peer_types();
+	unregister_audio_stream_types();
+	unregister_networked_multiplayer_peer_types();
 	unregister_arvr_types();
 	unregister_net_types();
 

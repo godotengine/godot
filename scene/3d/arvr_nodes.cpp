@@ -88,7 +88,7 @@ Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
-	float screen_w, screen_h;
+	real_t screen_w, screen_h;
 	cm.get_viewport_size(screen_w, screen_h);
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -get_znear()).normalized();
 

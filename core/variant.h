@@ -210,7 +210,8 @@ public:
 
 	operator PoolVector<uint8_t>() const;
 	operator PoolVector<int>() const;
-	operator PoolVector<real_t>() const;
+	operator PoolVector<float>() const;
+	operator PoolVector<double>() const;
 	operator PoolVector<String>() const;
 	operator PoolVector<Vector3>() const;
 	operator PoolVector<Color>() const;
@@ -220,7 +221,8 @@ public:
 	operator Vector<Variant>() const;
 	operator Vector<uint8_t>() const;
 	operator Vector<int>() const;
-	operator Vector<real_t>() const;
+	operator Vector<float>() const;
+	operator Vector<double>() const;
 	operator Vector<String>() const;
 	operator Vector<StringName>() const;
 	operator Vector<Vector3>() const;

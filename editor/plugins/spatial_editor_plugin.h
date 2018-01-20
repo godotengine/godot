@@ -212,7 +212,7 @@ private:
 	bool transforming;
 	bool orthogonal;
 	bool lock_rotation;
-	float gizmo_scale;
+	real_t gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
@@ -225,7 +225,7 @@ private:
 	struct _RayResult {
 
 		Spatial *item;
-		float depth;
+		real_t depth;
 		int handle;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
@@ -255,9 +255,9 @@ private:
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 
-	float get_znear() const;
-	float get_zfar() const;
-	float get_fov() const;
+	real_t get_znear() const;
+	real_t get_zfar() const;
+	real_t get_fov() const;
 
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
@@ -315,7 +315,7 @@ private:
 	struct Cursor {
 
 		Vector3 pos;
-		float x_rot, y_rot, distance;
+		real_t x_rot, y_rot, distance;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -342,12 +342,12 @@ private:
 
 	String last_message;
 	String message;
-	float message_time;
+	real_t message_time;
 
-	void set_message(String p_message, float p_time = 5);
+	void set_message(String p_message, real_t p_time = 5);
 
 	//
-	void _update_camera(float p_interp_delta);
+	void _update_camera(real_t p_interp_delta);
 	Transform to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
@@ -446,8 +446,8 @@ public:
 private:
 	View view;
 	bool mouseover;
-	float ratio_h;
-	float ratio_v;
+	real_t ratio_h;
+	real_t ratio_v;
 
 	bool hovering_v;
 	bool hovering_h;
@@ -546,7 +546,7 @@ private:
 	struct Gizmo {
 
 		bool visible;
-		float scale;
+		real_t scale;
 		Transform transform;
 	} gizmo;
 
@@ -668,9 +668,9 @@ public:
 
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
 
-	float get_znear() const { return settings_znear->get_value(); }
-	float get_zfar() const { return settings_zfar->get_value(); }
-	float get_fov() const { return settings_fov->get_value(); }
+	real_t get_znear() const { return settings_znear->get_value(); }
+	real_t get_zfar() const { return settings_zfar->get_value(); }
+	real_t get_fov() const { return settings_fov->get_value(); }
 
 	Transform get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }
@@ -678,9 +678,10 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	float get_translate_snap() const;
-	float get_rotate_snap() const;
-	float get_scale_snap() const;
+
+	real_t get_translate_snap() const;
+	real_t get_rotate_snap() const;
+	real_t get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }

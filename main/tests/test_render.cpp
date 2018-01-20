@@ -60,7 +60,7 @@ class TestMainLoop : public MainLoop {
 
 	List<InstanceInfo> instances;
 
-	float ofs;
+	real_t ofs;
 	bool quit;
 
 protected:
@@ -203,7 +203,7 @@ public:
 		ofs = 0;
 		quit = false;
 	}
-	virtual bool iteration(float p_time) {
+	virtual bool iteration(real_t p_time) {
 
 		VisualServer *vs = VisualServer::get_singleton();
 		//Transform t;
@@ -230,7 +230,7 @@ public:
 		return quit;
 	}
 
-	virtual bool idle(float p_time) {
+	virtual bool idle(real_t p_time) {
 		return quit;
 	}
 

@@ -409,7 +409,7 @@ void ScrollContainer::update_scrollbars() {
 	}
 }
 
-void ScrollContainer::_scroll_moved(float) {
+void ScrollContainer::_scroll_moved(real_t) {
 
 	scroll.x = h_scroll->get_value();
 	scroll.y = v_scroll->get_value();

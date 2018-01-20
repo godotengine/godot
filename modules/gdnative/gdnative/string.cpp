@@ -663,7 +663,7 @@ godot_array GDAPI godot_string_split_floats(const godot_string *p_self, const go
 	godot_array result;
 	memnew_placement(&result, Array);
 	Array *proxy = (Array *)&result;
-	Vector<float> return_value = self->split_floats(*splitter, false);
+	Vector<real_t> return_value = self->split_floats(*splitter, false);
 
 	proxy->resize(return_value.size());
 	for (int i = 0; i < return_value.size(); i++) {
@@ -679,7 +679,7 @@ godot_array GDAPI godot_string_split_floats_allows_empty(const godot_string *p_s
 	godot_array result;
 	memnew_placement(&result, Array);
 	Array *proxy = (Array *)&result;
-	Vector<float> return_value = self->split_floats(*splitter);
+	Vector<real_t> return_value = self->split_floats(*splitter);
 
 	proxy->resize(return_value.size());
 	for (int i = 0; i < return_value.size(); i++) {
@@ -702,7 +702,7 @@ godot_array GDAPI godot_string_split_floats_mk(const godot_string *p_self, const
 	godot_array result;
 	memnew_placement(&result, Array);
 	Array *proxy = (Array *)&result;
-	Vector<float> return_value = self->split_floats_mk(splitters, false);
+	Vector<real_t> return_value = self->split_floats_mk(splitters, false);
 
 	proxy->resize(return_value.size());
 	for (int i = 0; i < return_value.size(); i++) {
@@ -725,7 +725,7 @@ godot_array GDAPI godot_string_split_floats_mk_allows_empty(const godot_string *
 	godot_array result;
 	memnew_placement(&result, Array);
 	Array *proxy = (Array *)&result;
-	Vector<float> return_value = self->split_floats_mk(splitters);
+	Vector<real_t> return_value = self->split_floats_mk(splitters);
 
 	proxy->resize(return_value.size());
 	for (int i = 0; i < return_value.size(); i++) {

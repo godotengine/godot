@@ -186,7 +186,7 @@ RID VisualServer::_make_test_cube() {
 
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
+	PoolVector<real_t> tangents;
 	PoolVector<Vector3> uvs;
 
 #define ADD_VTX(m_idx)                           \
@@ -752,7 +752,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 		PoolVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
 		PoolVector<int> bones = p_arrays[VS::ARRAY_BONES];
-		PoolVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
+		PoolVector<real_t> weights = p_arrays[VS::ARRAY_WEIGHTS];
 
 		bool any_valid = false;
 
@@ -761,7 +761,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			int vs = vertices.size();
 			PoolVector<Vector3>::Read rv = vertices.read();
 			PoolVector<int>::Read rb = bones.read();
-			PoolVector<float>::Read rw = weights.read();
+			PoolVector<real_t>::Read rw = weights.read();
 
 			AABB *bptr = r_bone_aabb.ptrw();
 
@@ -1394,10 +1394,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 			} break;
 
 			case VS::ARRAY_TANGENT: {
-				PoolVector<float> arr;
+				PoolVector<real_t> arr;
 				arr.resize(p_vertex_len * 4);
 				if (p_format & ARRAY_COMPRESS_TANGENT) {
-					PoolVector<float>::Write w = arr.write();
+					PoolVector<real_t>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
@@ -1408,7 +1408,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					}
 				} else {
 
-					PoolVector<float>::Write w = arr.write();
+					PoolVector<real_t>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
@@ -1504,10 +1504,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 			} break;
 			case VS::ARRAY_WEIGHTS: {
 
-				PoolVector<float> arr;
+				PoolVector<real_t> arr;
 				arr.resize(p_vertex_len * 4);
 				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
-					PoolVector<float>::Write w = arr.write();
+					PoolVector<real_t>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
@@ -1518,7 +1518,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					}
 				} else {
 
-					PoolVector<float>::Write w = arr.write();
+					PoolVector<real_t>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];

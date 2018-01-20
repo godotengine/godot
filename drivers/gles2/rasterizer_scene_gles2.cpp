@@ -2658,7 +2658,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	};
 
 	if (!asymmetrical) {
-		float vw, vh, zn;
+		real_t vw, vh, zn;
 		camera.get_viewport_size(vw, vh);
 		zn = p_projection.get_z_near();
 

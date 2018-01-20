@@ -1096,16 +1096,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "PoolRealArray" || id == "FloatArray") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
-			PoolVector<float> arr;
+			PoolVector<real_t> arr;
 			{
 				int len = args.size();
 				arr.resize(len);
-				PoolVector<float>::Write w = arr.write();
+				PoolVector<real_t>::Write w = arr.write();
 				for (int i = 0; i < len; i++) {
 					w[i] = args[i];
 				}

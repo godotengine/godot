@@ -37,7 +37,7 @@ class Timer : public Node {
 
 	GDCLASS(Timer, Node);
 
-	float wait_time;
+	real_t wait_time;
 	bool one_shot;
 	bool autostart;
 	bool processing;
@@ -55,8 +55,8 @@ public:
 		TIMER_PROCESS_IDLE,
 	};
 
-	void set_wait_time(float p_time);
-	float get_wait_time() const;
+	void set_wait_time(real_t p_time);
+	real_t get_wait_time() const;
 
 	void set_one_shot(bool p_one_shot);
 	bool is_one_shot() const;
@@ -72,7 +72,7 @@ public:
 
 	bool is_stopped() const;
 
-	float get_time_left() const;
+	real_t get_time_left() const;
 
 	void set_timer_process_mode(TimerProcessMode p_mode);
 	TimerProcessMode get_timer_process_mode() const;

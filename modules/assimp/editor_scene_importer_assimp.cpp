@@ -1294,7 +1294,7 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportS
 				Vector<BoneInfo> bone_info = vertex_weights[j];
 				Vector<int> bones;
 				bones.resize(bone_info.size());
-				Vector<float> weights;
+				Vector<real_t> weights;
 				weights.resize(bone_info.size());
 				for (int k = 0; k < bone_info.size(); k++) {
 					bones.write[k] = bone_info[k].bone;

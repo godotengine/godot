@@ -604,21 +604,23 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			ERR_FAIL_MUL_OF(count, 4, ERR_INVALID_DATA);
 			ERR_FAIL_COND_V(count < 0 || count * 4 > len, ERR_INVALID_DATA);
 
-			PoolVector<float> data;
+			PoolVector<real_t> data;
 
 			if (count) {
 				//const float*rbuf=(const float*)buf;
 				data.resize(count);
-				PoolVector<float>::Write w = data.write();
+				PoolVector<real_t>::Write w = data.write();
 				for (int32_t i = 0; i < count; i++) {
 
-					w[i] = decode_float(&buf[i * 4]);
+					w[i] = decode_float(&buf[i * sizeof(real_t)]);
 				}
+
+				w = PoolVector<real_t>::Write();
 			}
 			r_variant = data;
 
 			if (r_len) {
-				(*r_len) += 4 + count * sizeof(float);
+				(*r_len) += 4 + count * sizeof(real_t);
 			}
 
 		} break;

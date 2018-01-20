@@ -71,7 +71,7 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
-	void _scroll_moved(float);
+	void _scroll_moved(real_t);
 	static void _bind_methods();
 
 	void _update_scrollbar_position();

@@ -674,7 +674,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				}
 
 				//make sure weights always add up to 1
-				float total = 0;
+				real_t total = 0;
 				for (int i = 0; i < weights.size(); i++)
 					total += weights[i].weight;
 				if (total)
@@ -933,11 +933,11 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				}
 
 				if (has_weights) {
-					Vector<float> weights;
+					Vector<real_t> weights;
 					Vector<int> bones;
 					weights.resize(VS::ARRAY_WEIGHTS_SIZE);
 					bones.resize(VS::ARRAY_WEIGHTS_SIZE);
-					//float sum=0.0;
+					//real_t sum=0.0;
 					for (int l = 0; l < VS::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
@@ -1614,7 +1614,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					continue;
 				}
 
-				Vector<float> data = at.get_value_at_time(snapshots[i]);
+				Vector<real_t> data = at.get_value_at_time(snapshots[i]);
 				ERR_CONTINUE(data.empty());
 
 				Collada::Node::XForm &xf = cn->xform_list.write[xform_idx];
@@ -1749,7 +1749,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 				float time = at.keys[j].time;
 				Variant value;
-				Vector<float> data = at.keys[j].data;
+				Vector<real_t> data = at.keys[j].data;
 				if (data.size() == 1) {
 					//push a float
 					value = data[0];

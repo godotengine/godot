@@ -76,8 +76,8 @@ void Gradient::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "colors"), COLOR_RAMP_SET_COLORS, COLOR_RAMP_GET_COLORS);
 }
 
-Vector<float> Gradient::get_offsets() const {
-	Vector<float> offsets;
+Vector<real_t> Gradient::get_offsets() const {
+	Vector<real_t> offsets;
 	offsets.resize(points.size());
 	for (int i = 0; i < points.size(); i++) {
 		offsets.write[i] = points[i].offset;
@@ -94,7 +94,7 @@ Vector<Color> Gradient::get_colors() const {
 	return colors;
 }
 
-void Gradient::set_offsets(const Vector<float> &p_offsets) {
+void Gradient::set_offsets(const Vector<real_t> &p_offsets) {
 	points.resize(p_offsets.size());
 	for (int i = 0; i < points.size(); i++) {
 		points.write[i].offset = p_offsets[i];
@@ -117,7 +117,7 @@ Vector<Gradient::Point> &Gradient::get_points() {
 	return points;
 }
 
-void Gradient::add_point(float p_offset, const Color &p_color) {
+void Gradient::add_point(real_t p_offset, const Color &p_color) {
 
 	Point p;
 	p.offset = p_offset;
@@ -142,8 +142,7 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-void Gradient::set_offset(int pos, const float offset) {
-
+void Gradient::set_offset(int pos, const real_t offset) {
 	ERR_FAIL_COND(pos < 0);
 	if (points.size() <= pos)
 		points.resize(pos + 1);
@@ -152,7 +151,7 @@ void Gradient::set_offset(int pos, const float offset) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-float Gradient::get_offset(int pos) const {
+real_t Gradient::get_offset(int pos) const {
 	ERR_FAIL_INDEX_V(pos, points.size(), 0.0);
 	return points[pos].offset;
 }

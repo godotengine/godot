@@ -836,9 +836,9 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 	return ret;
 }
 
-Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
+Vector<real_t> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
 
-	Vector<float> ret;
+	Vector<real_t> ret;
 	int from = 0;
 	int len = length();
 
@@ -859,9 +859,9 @@ Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty)
 	return ret;
 }
 
-Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
+Vector<real_t> String::split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
 
-	Vector<float> ret;
+	Vector<real_t> ret;
 	int from = 0;
 	int len = length();
 

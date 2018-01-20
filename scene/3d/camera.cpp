@@ -294,7 +294,7 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 	} else {
 		CameraMatrix cm;
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-		float screen_w, screen_h;
+		real_t screen_w, screen_h;
 		cm.get_viewport_size(screen_w, screen_h);
 		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -near).normalized();
 	}
@@ -798,7 +798,7 @@ void ClippedCamera::_notification(int p_what) {
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
-		float csafe, cunsafe;
+		real_t csafe, cunsafe;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
 			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
 		}

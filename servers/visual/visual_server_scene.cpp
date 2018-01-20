@@ -1067,7 +1067,7 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 	p_instance->aabb = new_aabb;
 }
 
-_FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage::LightmapCaptureOctree *p_octree, int p_cell_subdiv, const Vector3 &p_pos, const Vector3 &p_dir, float p_level, Vector3 &r_color, float &r_alpha) {
+_FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage::LightmapCaptureOctree *p_octree, int p_cell_subdiv, const Vector3 &p_pos, const Vector3 &p_dir, real_t p_level, Vector3 &r_color, real_t &r_alpha) {
 
 	static const Vector3 aniso_normal[6] = {
 		Vector3(-1, 0, 0),
@@ -1087,10 +1087,10 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	pos.y = CLAMP(p_pos.y, 0, clamp_v);
 	pos.z = CLAMP(p_pos.z, 0, clamp_v);
 
-	float level = (p_cell_subdiv - 1) - p_level;
+	real_t level = (p_cell_subdiv - 1) - p_level;
 
 	int target_level;
-	float level_filter;
+	real_t level_filter;
 	if (level <= 0.0) {
 		level_filter = 0;
 		target_level = 0;
@@ -1100,8 +1100,8 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	}
 
 	Vector3 color[2][8];
-	float alpha[2][8];
-	zeromem(alpha, sizeof(float) * 2 * 8);
+	real_t alpha[2][8];
+	zeromem(alpha, sizeof(real_t) * 2 * 8);
 
 	//find cell at given level first
 
@@ -1178,7 +1178,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 		}
 	}
 
-	float target_level_size = size >> target_level;
+	real_t target_level_size = size >> target_level;
 	Vector3 pos_fract[2];
 
 	pos_fract[0].x = Math::fmod(pos.x, target_level_size) / target_level_size;
@@ -1191,7 +1191,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	pos_fract[1].y = Math::fmod(pos.y, target_level_size) / target_level_size;
 	pos_fract[1].z = Math::fmod(pos.z, target_level_size) / target_level_size;
 
-	float alpha_interp[2];
+	real_t alpha_interp[2];
 	Vector3 color_interp[2];
 
 	for (int i = 0; i < 2; i++) {
@@ -1206,39 +1206,39 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 
 		color_interp[i] = blend_z0.linear_interpolate(blend_z1, pos_fract[i].z);
 
-		float alpha_x00 = Math::lerp(alpha[i][0], alpha[i][1], pos_fract[i].x);
-		float alpha_xy0 = Math::lerp(alpha[i][2], alpha[i][3], pos_fract[i].x);
-		float alpha_z0 = Math::lerp(alpha_x00, alpha_xy0, pos_fract[i].y);
+		real_t alpha_x00 = Math::lerp((real_t)alpha[i][0], (real_t)alpha[i][1], (real_t)pos_fract[i].x);
+		real_t alpha_xy0 = Math::lerp((real_t)alpha[i][2], (real_t)alpha[i][3], (real_t)pos_fract[i].x);
+		real_t alpha_z0 = Math::lerp((real_t)alpha_x00, (real_t)alpha_xy0, (real_t)pos_fract[i].y);
 
-		float alpha_x0z = Math::lerp(alpha[i][4], alpha[i][5], pos_fract[i].x);
-		float alpha_xyz = Math::lerp(alpha[i][6], alpha[i][7], pos_fract[i].x);
-		float alpha_z1 = Math::lerp(alpha_x0z, alpha_xyz, pos_fract[i].y);
+		real_t alpha_x0z = Math::lerp((real_t)alpha[i][4], (real_t)alpha[i][5], (real_t)pos_fract[i].x);
+		real_t alpha_xyz = Math::lerp((real_t)alpha[i][6], (real_t)alpha[i][7], (real_t)pos_fract[i].x);
+		real_t alpha_z1 = Math::lerp((real_t)alpha_x0z, (real_t)alpha_xyz, (real_t)pos_fract[i].y);
 
-		alpha_interp[i] = Math::lerp(alpha_z0, alpha_z1, pos_fract[i].z);
+		alpha_interp[i] = Math::lerp((real_t)alpha_z0, (real_t)alpha_z1, (real_t)pos_fract[i].z);
 	}
 
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
-	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
+	r_alpha = Math::lerp((real_t)alpha_interp[0], (real_t)alpha_interp[1], (real_t)level_filter);
 
 	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
-_FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
+_FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, real_t p_aperture, int p_cell_subdiv) {
 
-	float bias = 0.0; //no need for bias here
-	float max_distance = (Vector3(1, 1, 1) * (1 << (p_cell_subdiv - 1))).length();
+	real_t bias = 0.0; //no need for bias here
+	real_t max_distance = (Vector3(1, 1, 1) * (1 << (p_cell_subdiv - 1))).length();
 
-	float dist = bias;
-	float alpha = 0.0;
+	real_t dist = bias;
+	real_t alpha = 0.0;
 	Vector3 color;
 
 	Vector3 scolor;
-	float salpha;
+	real_t salpha;
 
 	while (dist < max_distance && alpha < 0.95) {
-		float diameter = MAX(1.0, 2.0 * p_aperture * dist);
+		real_t diameter = MAX(1.0, 2.0 * p_aperture * dist);
 		_light_capture_sample_octree(p_octree, p_cell_subdiv, p_pos + dist * p_dir, p_dir, log2(diameter), scolor, salpha);
-		float a = (1.0 - alpha);
+		real_t a = (1.0 - alpha);
 		color += scolor * a;
 		alpha += a * salpha;
 		dist += diameter * 0.5;
@@ -1345,7 +1345,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						animated_material_found = true;
 					}
 
-					float max, min;
+					real_t max, min;
 					instance->transformed_aabb.project_range_in_plane(base, min, max);
 
 					if (max > z_max) {
@@ -1398,7 +1398,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				if (p_cam_orthogonal) {
 
-					float w, h;
+					real_t w, h;
 					p_cam_projection.get_viewport_size(w, h);
 					camera_matrix.set_orthogonal(w, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 				} else {
@@ -1532,7 +1532,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				for (int j = 0; j < cull_count; j++) {
 
-					float min, max;
+					real_t min, max;
 					Instance *instance = instance_shadow_cull_result[j];
 					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						cull_count--;
@@ -2085,10 +2085,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			{ //compute coverage
 
 				Transform cam_xf = p_cam_transform;
-				float zn = p_cam_projection.get_z_near();
+				real_t zn = p_cam_projection.get_z_near();
 				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); //camera near plane
 
-				float vp_w, vp_h; //near plane size in screen coordinates
+				real_t vp_w, vp_h; //near plane size in screen coordinates
 				p_cam_projection.get_viewport_size(vp_w, vp_h);
 
 				switch (VSG::storage->light_get_type(ins->base)) {

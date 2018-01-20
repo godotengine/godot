@@ -216,6 +216,8 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CPPDEFINES=['_WIN64'])
 
     ## Libs
+    if env["float"] == "64":
+       env.Append(CCFLAGS=['/DREAL_T_IS_DOUBLE'])
 
     LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
             'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',

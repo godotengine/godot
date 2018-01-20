@@ -40,7 +40,7 @@ class Gradient : public Resource {
 public:
 	struct Point {
 
-		float offset;
+		real_t offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
 			return offset < p_ponit.offset;
@@ -58,25 +58,25 @@ public:
 	Gradient();
 	virtual ~Gradient();
 
-	void add_point(float p_offset, const Color &p_color);
+	void add_point(real_t p_offset, const Color &p_color);
 	void remove_point(int p_index);
 
 	void set_points(Vector<Point> &p_points);
 	Vector<Point> &get_points();
 
-	void set_offset(int pos, const float offset);
-	float get_offset(int pos) const;
+	void set_offset(int pos, const real_t offset);
+	real_t get_offset(int pos) const;
 
 	void set_color(int pos, const Color &color);
 	Color get_color(int pos) const;
 
-	void set_offsets(const Vector<float> &p_offsets);
-	Vector<float> get_offsets() const;
+	void set_offsets(const Vector<real_t> &p_offsets);
+	Vector<real_t> get_offsets() const;
 
 	void set_colors(const Vector<Color> &p_colors);
 	Vector<Color> get_colors() const;
 
-	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
+	_FORCE_INLINE_ Color get_color_at_offset(real_t p_offset) {
 
 		if (points.empty())
 			return Color(0, 0, 0, 1);

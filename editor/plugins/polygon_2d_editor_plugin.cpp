@@ -413,25 +413,25 @@ void Polygon2DEditor::_set_show_grid(bool p_show) {
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_off_x(float p_val) {
+void Polygon2DEditor::_set_snap_off_x(real_t p_val) {
 	snap_offset.x = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_off_y(float p_val) {
+void Polygon2DEditor::_set_snap_off_y(real_t p_val) {
 	snap_offset.y = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_step_x(float p_val) {
+void Polygon2DEditor::_set_snap_step_x(real_t p_val) {
 	snap_step.x = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_step_y(float p_val) {
+void Polygon2DEditor::_set_snap_step_y(real_t p_val) {
 	snap_step.y = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->update();
@@ -563,7 +563,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					undo_redo->add_do_method(node, "set_vertex_colors", uv_create_colors_prev);
 					undo_redo->add_undo_method(node, "set_vertex_colors", node->get_vertex_colors());
 					for (int i = 0; i < node->get_bone_count(); i++) {
-						PoolVector<float> bonew = node->get_bone_weights(i);
+						PoolVector<real_t> bonew = node->get_bone_weights(i);
 						bonew.push_back(0);
 						undo_redo->add_do_method(node, "set_bone_weights", i, bonew);
 						undo_redo->add_undo_method(node, "set_bone_weights", i, node->get_bone_weights(i));
@@ -618,7 +618,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					undo_redo->add_do_method(node, "set_vertex_colors", uv_create_colors_prev);
 					undo_redo->add_undo_method(node, "set_vertex_colors", node->get_vertex_colors());
 					for (int i = 0; i < node->get_bone_count(); i++) {
-						PoolVector<float> bonew = node->get_bone_weights(i);
+						PoolVector<real_t> bonew = node->get_bone_weights(i);
 						bonew.remove(closest);
 						undo_redo->add_do_method(node, "set_bone_weights", i, bonew);
 						undo_redo->add_undo_method(node, "set_bone_weights", i, node->get_bone_weights(i));
@@ -960,7 +960,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void Polygon2DEditor::_uv_scroll_changed(float) {
+void Polygon2DEditor::_uv_scroll_changed(real_t) {
 
 	if (updating_uv_scroll)
 		return;

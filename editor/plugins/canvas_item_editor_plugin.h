@@ -237,7 +237,7 @@ private:
 	bool show_viewport;
 	bool show_helpers;
 	bool show_edit_locks;
-	float zoom;
+	real_t zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
@@ -476,7 +476,7 @@ private:
 
 	void _solve_IK(Node2D *leaf_node, Point2 target_position);
 
-	void _snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius = 10.0);
+	void _snap_if_closer_float(real_t p_value, real_t p_target_snap, real_t &r_current_snap, bool &r_snapped, real_t p_radius = 10.0);
 	void _snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
 	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap = NULL);
 

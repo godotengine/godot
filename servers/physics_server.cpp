@@ -163,12 +163,12 @@ Transform PhysicsShapeQueryParameters::get_transform() const {
 	return transform;
 }
 
-void PhysicsShapeQueryParameters::set_margin(float p_margin) {
+void PhysicsShapeQueryParameters::set_margin(real_t p_margin) {
 
 	margin = p_margin;
 }
 
-float PhysicsShapeQueryParameters::get_margin() const {
+real_t PhysicsShapeQueryParameters::get_margin() const {
 
 	return margin;
 }
@@ -309,7 +309,7 @@ Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameter
 
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
-	float closest_safe, closest_unsafe;
+	real_t closest_safe, closest_unsafe;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	if (!res)
 		return Array();

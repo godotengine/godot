@@ -174,9 +174,9 @@ public:
 	}
 };
 
-void CanvasItemEditor::_snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius) {
-	float radius = p_radius / zoom;
-	float dist = Math::abs(p_value - p_target_snap);
+void CanvasItemEditor::_snap_if_closer_float(real_t p_value, real_t p_target_snap, real_t &r_current_snap, bool &r_snapped, real_t p_radius /*= 10.0*/) {
+	real_t radius = p_radius / zoom;
+	real_t dist = Math::abs(p_value - p_target_snap);
 	if ((p_radius < 0 || dist < radius) && (!r_snapped || dist < Math::abs(r_current_snap - p_value))) {
 		r_current_snap = p_target_snap;
 		r_snapped = true;

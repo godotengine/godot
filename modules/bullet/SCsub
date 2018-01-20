@@ -8,6 +8,9 @@ env_bullet = env_modules.Clone()
 # Thirdparty source files
 
 if env['builtin_bullet']:
+    if env["float"] == "64":
+        env_bullet.Append(CPPDEFINES=['BT_USE_DOUBLE_PRECISION=1'])
+
     # Build only version 2 for now (as of 2.87)
     thirdparty_dir = "#thirdparty/bullet/"
 

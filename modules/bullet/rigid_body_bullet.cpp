@@ -56,11 +56,11 @@ Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
 	return gVec;
 }
 
-float BulletPhysicsDirectBodyState::get_total_angular_damp() const {
+real_t BulletPhysicsDirectBodyState::get_total_angular_damp() const {
 	return body->btBody->getAngularDamping();
 }
 
-float BulletPhysicsDirectBodyState::get_total_linear_damp() const {
+real_t BulletPhysicsDirectBodyState::get_total_linear_damp() const {
 	return body->btBody->getLinearDamping();
 }
 
@@ -74,7 +74,7 @@ Basis BulletPhysicsDirectBodyState::get_principal_inertia_axes() const {
 	return Basis();
 }
 
-float BulletPhysicsDirectBodyState::get_inverse_mass() const {
+real_t BulletPhysicsDirectBodyState::get_inverse_mass() const {
 	return body->btBody->getInvMass();
 }
 
