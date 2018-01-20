@@ -46,7 +46,7 @@ public:
 
 private:
 	bool vertical;
-	int expand_ofs;
+	int split_offset;
 	int middle_sep;
 	bool dragging;
 	int drag_from;
