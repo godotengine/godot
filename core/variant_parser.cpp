@@ -178,7 +178,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 			};
 			case '#': {
 
-				StringBuffer color_str;
+				StringBuffer<> color_str;
 				color_str += '#';
 				while (true) {
 					CharType ch = p_stream->get_char();
@@ -299,7 +299,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
 					//a number
 
-					StringBuffer num;
+					StringBuffer<> num;
 #define READING_SIGN 0
 #define READING_INT 1
 #define READING_DEC 2
@@ -378,7 +378,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
 
-					StringBuffer id;
+					StringBuffer<> id;
 					bool first = true;
 
 					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
