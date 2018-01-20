@@ -202,29 +202,27 @@ def configure_msvc(env, manual_msvc_config):
         if os.getenv("WindowsSdkDir") is not None:
             env.Append(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
         else:
-            print("Missing environment variable: WindowsSdkDir")
+            print("Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup.")
 
-    env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
-                                   'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
-                                   'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
-                                   'WIN32', 'MSVC',
-                                   {'WINVER' : '$target_win_version',
-                                    '_WIN32_WINNT': '$target_win_version'}])
-    if env["bits"] == "64":
-        env.AppendUnique(CPPDEFINES=['_WIN64'])
+        ## Compile flags
 
-    ## Libs
+        env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
+        env.Append(CXXFLAGS=['/TP'])
+        env.Append(CPPFLAGS=['/DMSVC', '/GR', ])
+        env.Append(CCFLAGS=['/I' + os.getenv("WindowsSdkDir") + "/Include"])
 
-    LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
-            'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
-            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt']
-    env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
+        env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
+        env.Append(CCFLAGS=['/DOPENGL_ENABLED'])
+        env.Append(CCFLAGS=['/DRTAUDIO_ENABLED'])
+        env.Append(CCFLAGS=['/DWASAPI_ENABLED'])
+        env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
+        env.Append(CCFLAGS=['/DWIN32'])
+        env.Append(CCFLAGS=['/DWINVER=%s' % env['target_win_version'], '/D_WIN32_WINNT=%s' % env['target_win_version']])
+        if env["bits"] == "64":
+            env.Append(CCFLAGS=['/D_WIN64'])
 
-    if manual_msvc_config:
-        if os.getenv("WindowsSdkDir") is not None:
-            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
-        else:
-            print("Missing environment variable: WindowsSdkDir")
+        LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid', 'Imm32']
+        env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     ## LTO
 
@@ -341,23 +339,12 @@ def configure(env):
 
     print("Configuring for Windows: target=%s, bits=%s" % (env['target'], env['bits']))
 
-    if (os.name == "nt"):
-        env['ENV'] = os.environ # this makes build less repeatable, but simplifies some things
-        env['ENV']['TMP'] = os.environ['TMP']
-
-    # First figure out which compiler, version, and target arch we're using
-    if os.getenv("VCINSTALLDIR"):
-        # Manual setup of MSVC
-        setup_msvc_manual(env)
-        env.msvc = True
-        manual_msvc_config = True
-    elif env.get('MSVC_VERSION', ''):
-        setup_msvc_auto(env)
-        env.msvc = True
-        manual_msvc_config = False
-    else:
-        setup_mingw(env)
-        env.msvc = False
+        env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
+        env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
+        env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
+        env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
+        env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
+        env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'Imm32'])
 
     # Now set compiler/linker flags
     if env.msvc:
