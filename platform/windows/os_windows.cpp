@@ -588,7 +588,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb->set_position(Vector2(old_x, old_y));
 				}
 
-				if (uMsg != WM_MOUSEWHEEL) {
+				if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 					if (mb->is_pressed()) {
 
 						if (++pressrc > 0)
