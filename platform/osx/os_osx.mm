@@ -1145,6 +1145,30 @@ String OS_OSX::get_unique_id() const {
 	return serial_number;
 }
 
+void OS_OSX::set_ime_position(const Point2 &p_pos) {
+	im_position = p_pos;
+}
+
+	if (serial_number.empty()) {
+		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+		CFStringRef serialNumberAsCFString = NULL;
+		if (platformExpert) {
+			serialNumberAsCFString = (CFStringRef)IORegistryEntryCreateCFProperty(platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
+			IOObjectRelease(platformExpert);
+		}
+
+		NSString *serialNumberAsNSString = nil;
+		if (serialNumberAsCFString) {
+			serialNumberAsNSString = [NSString stringWithString:(NSString *)serialNumberAsCFString];
+			CFRelease(serialNumberAsCFString);
+		}
+
+		serial_number = [serialNumberAsNSString UTF8String];
+	}
+
+	return serial_number;
+}
+
 void OS_OSX::set_ime_active(const bool p_active) {
 	im_active = p_active;
 }
