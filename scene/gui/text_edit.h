@@ -90,6 +90,7 @@ class TextEdit : public Control {
 		Color line_number_color;
 		Color font_color;
 		Color font_selected_color;
+		Color basetype_color;
 		Color keyword_color;
 		Color number_color;
 		Color function_color;
