@@ -1039,7 +1039,6 @@ VARIANT_ENUM_CAST(VisualServer::RenderInfo);
 VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
-VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
