@@ -132,7 +132,6 @@ void AudioStreamPlayer::_notification(int p_what) {
 		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
 			active = false;
 			set_process_internal(false);
-			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
 	}
