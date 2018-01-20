@@ -2707,36 +2707,13 @@ String OS_Windows::get_user_data_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
-String OS_Windows::get_unique_id() const {
-
-	HW_PROFILE_INFO HwProfInfo;
-	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String(HwProfInfo.szHwProfileGuid);
-}
-
-void OS_Windows::set_ime_active(const bool p_active) {
-
-	if (p_active) {
-		ImmAssociateContext(hWnd, im_himc);
-
-		set_ime_position(im_position);
-	} else {
-		ImmAssociateContext(hWnd, (HIMC)0);
-	}
-}
-
 void OS_Windows::set_ime_position(const Point2 &p_pos) {
 
-	im_position = p_pos;
-
 	HIMC himc = ImmGetContext(hWnd);
-	if (himc == (HIMC)0)
-		return;
-
 	COMPOSITIONFORM cps;
 	cps.dwStyle = CFS_FORCE_POSITION;
-	cps.ptCurrentPos.x = im_position.x;
-	cps.ptCurrentPos.y = im_position.y;
+	cps.ptCurrentPos.x = p_pos.x;
+	cps.ptCurrentPos.y = p_pos.y;
 	ImmSetCompositionWindow(himc, &cps);
 	ImmReleaseContext(hWnd, himc);
 }
