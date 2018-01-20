@@ -269,6 +269,8 @@ public:
 	virtual String get_system_dir(SystemDir p_dir) const;
 	virtual String get_user_data_dir() const;
 
+	virtual void set_ime_position(const Point2 &p_pos);
+
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
