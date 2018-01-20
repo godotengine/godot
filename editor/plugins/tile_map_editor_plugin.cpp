@@ -426,6 +426,9 @@ void TileMapEditor::_update_palette() {
 		Ref<Texture> tex = tileset->tile_get_texture(entries[i].id);
 
 		if (tex.is_valid()) {
+			Color color = tileset->tile_get_modulate(entries[i].id);
+			palette->set_item_icon_modulate(palette->get_item_count() - 1, color);
+
 			Rect2 region = tileset->tile_get_region(entries[i].id);
 
 			if (tileset->tile_get_tile_mode(entries[i].id) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(entries[i].id) == TileSet::ATLAS_TILE) {
@@ -759,10 +762,13 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 	rect.position = p_xform.xform(rect.position);
 	rect.size *= sc;
 
+	Color modulate = node->get_tileset()->tile_get_modulate(p_cell);
+	modulate.a = 0.5;
+
 	if (r.has_no_area())
-		canvas_item_editor->draw_texture_rect(t, rect, false, Color(1, 1, 1, 0.5), p_transpose);
+		canvas_item_editor->draw_texture_rect(t, rect, false, modulate, p_transpose);
 	else
-		canvas_item_editor->draw_texture_rect_region(t, rect, r, Color(1, 1, 1, 0.5), p_transpose);
+		canvas_item_editor->draw_texture_rect_region(t, rect, r, modulate, p_transpose);
 }
 
 void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
