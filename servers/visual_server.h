@@ -785,6 +785,10 @@ public:
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
 
+	Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
+	Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
+	Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
+
 	enum InstanceFlags {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
 		INSTANCE_FLAG_MAX
@@ -1012,6 +1016,22 @@ VARIANT_ENUM_CAST(VisualServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(VisualServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(VisualServer::RenderInfo);
 VARIANT_ENUM_CAST(VisualServer::Features);
+VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
+VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
+VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
+VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
+VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
+VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowDepthRangeMode);
+VARIANT_ENUM_CAST(VisualServer::ReflectionProbeUpdateMode);
+VARIANT_ENUM_CAST(VisualServer::ParticlesDrawOrder);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentBG);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentDOFBlurQuality);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentGlowBlendMode);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentToneMapper);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
+VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
+VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer
