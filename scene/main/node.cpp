@@ -136,7 +136,6 @@ void Node::_notification(int p_notification) {
 
 				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, NULL, 0);
 			}
-			//emit_signal(SceneStringNames::get_singleton()->enter_tree);
 
 		} break;
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -180,6 +179,7 @@ void Node::_propagate_ready() {
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
+		emit_signal(SceneStringNames::get_singleton()->ready);
 	}
 }
 
@@ -2952,6 +2952,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANCING);
 
+	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
