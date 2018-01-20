@@ -4,14 +4,16 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
+# Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
-# Марс Ямбар <mjambarmeta@gmail.com>, 2017.
+# Марс Ямбар <mjambarmeta@gmail.com>, 2017-2018.
+# Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
-"Last-Translator: Олександр Пилипчук <pilipchukap@rambler.ru>\n"
+"PO-Revision-Date: 2018-01-12 15:18+0000\n"
+"Last-Translator: Марс Ямбар <mjambarmeta@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -552,14 +554,13 @@ msgid "Signals"
 msgstr "Сигнали"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Змінити базовий тип"
+msgstr "Змінити тип %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Змінити"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
@@ -674,9 +675,8 @@ msgstr ""
 "Видалити їх у будь-якому разі? (скасування неможливе)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Неможливо вилучити:\n"
+msgstr "Неможливо вилучити:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -759,9 +759,8 @@ msgid "Lead Developer"
 msgstr "Ведучий розробник"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Керівник проекту"
+msgstr "Керівник проектів "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1160,9 +1159,8 @@ msgid "Packing"
 msgstr "Пакування"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Файл шаблону не знайдено:\n"
+msgstr "Файл шаблону не знайдено:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1420,9 +1418,8 @@ msgid "Clear"
 msgstr "Очистити"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Результат"
+msgstr "Очистити вивід"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1486,12 +1483,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Ця операція не може бути виконана без кореню дерева."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Не вдалося зберегти сцену. Вірогідно, залежності (екземпляри) не задоволені."
+"Не вдалося зберегти сцену. Вірогідно, залежності (екземпляри або "
+"успадковані) не задоволені."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2485,9 +2482,8 @@ msgid "No version.txt found inside templates."
 msgstr "Файл version.txt не знайдено у шаблонах."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Помилка створення шляху для шаблонів:\n"
+msgstr "Помилка створення шляху для шаблонів:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2646,10 +2642,8 @@ msgid "View items as a list"
 msgstr "Перегляд елементів як список"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Статус: не вдалося імпортувати файл. Виправте файл та повторно імпортуйте "
 "вручну."
 
@@ -2658,24 +2652,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Неможливо перемістити/перейменувати корінь ресурсів."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Не вдається перемістити теку в себе.\n"
+msgstr "Не вдається перемістити теку в себе."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Помилка переміщення:\n"
+msgstr "Помилка переміщення:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Помилка дублювання:\n"
+msgstr "Помилка дублювання:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Неможливо оновити залежності:\n"
+msgstr "Неможливо оновити залежності:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -3319,9 +3309,8 @@ msgid "Filters.."
 msgstr "Фільтри..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Анімація"
+msgstr "Дерево анімації"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -4187,9 +4176,8 @@ msgid "Bake!"
 msgstr "Запекти!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Запекти навігаційну сітку.\n"
+msgstr "Створити навігаційну сітку."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4259,6 +4247,7 @@ msgstr "Створення AABB"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
+"Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
@@ -4266,11 +4255,11 @@ msgstr "Помилка завантаження зображення:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
-msgstr ""
+msgstr "В зображенні немає пікселів з прозорістю > 128.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "Створити область видимості"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -4316,7 +4305,7 @@ msgstr "Вузол не містить геометрії (граней)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "Потрібен матеріал типу 'ParticlesMaterial'."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -4372,11 +4361,11 @@ msgstr "Видалити точку з кривої"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Out-Control from Curve"
-msgstr ""
+msgstr "Вилучити з кривої вихідний промінь"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove In-Control from Curve"
-msgstr ""
+msgstr "Вилучити з кривої вхідний промінь"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4389,11 +4378,11 @@ msgstr "Перемістити точку на криву"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
-msgstr ""
+msgstr "Пересунути вхідний промінь кривої"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Out-Control in Curve"
-msgstr ""
+msgstr "Пересунути вихідний промінь кривої"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4403,7 +4392,7 @@ msgstr "Виберіть пункти"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Shift+Drag: Select Control Points"
-msgstr ""
+msgstr "Shift+перетяг: Вибрати керувальні точки"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4417,7 +4406,7 @@ msgstr "Клацніть правою кнопкою миші: видалити 
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr ""
+msgstr "Вибір керувальних точок (Shift+перетяг)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4427,7 +4416,7 @@ msgstr "Додати точку (в порожньому просторі)"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Segment (in curve)"
-msgstr ""
+msgstr "Розділити сегмент (кривої)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4445,7 +4434,7 @@ msgstr "Точку кривої #"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Point Position"
-msgstr ""
+msgstr "Задати положення точки кривої"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve In Position"
@@ -4453,35 +4442,35 @@ msgstr "Встановити криву в позиції"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Out Position"
-msgstr ""
+msgstr "Встановити положення виходу кривої"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
-msgstr ""
+msgstr "Розділити шлях"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove Path Point"
-msgstr ""
+msgstr "Видалити точку шляху"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove Out-Control Point"
-msgstr ""
+msgstr "Вилучити вихідну керувальну точку"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove In-Control Point"
-msgstr ""
+msgstr "Вилучити вхідну керувальну точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
-msgstr ""
+msgstr "Створити UV карту"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
-msgstr ""
+msgstr "Перетворити UV карту"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr ""
+msgstr "Polygon 2D UV редактор"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"
@@ -4497,7 +4486,7 @@ msgstr "Shift: Перемістити всі"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
-msgstr ""
+msgstr "Shift+Ctrl: Масштаб"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Polygon"
@@ -4521,28 +4510,28 @@ msgstr "Редагувати"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
-msgstr ""
+msgstr "Полігон -> UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV->Polygon"
-msgstr ""
+msgstr "UV -> полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
-msgstr ""
+msgstr "Очистити UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
-msgstr ""
+msgstr "Прилипання"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr ""
+msgstr "Дозволити прилипання"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
-msgstr ""
+msgstr "Сітка"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -4563,35 +4552,31 @@ msgstr "Вилучити ресурс"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Resource clipboard is empty!"
-msgstr ""
+msgstr "В буфері обміну немає ресурсу!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
-msgstr ""
+msgstr "Завантажити ресурс"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr ""
+msgstr "Вставити"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Ресурс"
+msgstr "Передзавантажувач ресурсів"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
-msgstr ""
+msgstr "Очистити недавні файли"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"Закрити та зберегти зміни?\n"
-"\""
+msgstr "Закрити та зберегти зміни?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4603,15 +4588,15 @@ msgstr "Помилка збереження"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme"
-msgstr ""
+msgstr "Помилка імпортування теми"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing"
-msgstr ""
+msgstr "Помилка імпортування"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr ""
+msgstr "Імпортувати тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
@@ -4619,254 +4604,257 @@ msgstr "Зберегти тему як..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " Посилання на клас"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
-msgstr ""
+msgstr "Сортувати"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
-msgstr ""
+msgstr "Перемістити вгору"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
-msgstr ""
+msgstr "Перемістити вниз"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
-msgstr ""
+msgstr "Наступний сценарій"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Previous script"
-msgstr ""
+msgstr "Попередній сценарій"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New"
-msgstr ""
+msgstr "Новий"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr ""
+msgstr "Зберегти все"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr ""
+msgstr "М'яко перезавантажити сценарії"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
 msgstr "Копіювати шлях до скрипту"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
-msgstr "Показати в файловому менеджері"
+msgstr "Показати в файловій системі"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
-msgstr ""
+msgstr "Попередній файл"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
-msgstr ""
+msgstr "Наступний файл"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr ""
+msgstr "Перезавантажити тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
+msgstr "Зберегти тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As"
-msgstr ""
+msgstr "Зберегти тему як"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
-msgstr ""
+msgstr "Закрити документацію"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
-msgstr ""
+msgstr "Закрити все"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "Закрити інші вкладки"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Запустити"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr ""
+msgstr "Перемкнути панель сценаріїв"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find.."
-msgstr ""
+msgstr "Знайти.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "Знайти наступне"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
-msgstr ""
+msgstr "Крок через"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
-msgstr ""
+msgstr "Крок в"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
-msgstr ""
+msgstr "Пауза"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr ""
+msgstr "Продовжити"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
-msgstr ""
+msgstr "Залишити зневаджувач відкритим"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with external editor"
-msgstr ""
+msgstr "Зневадження за допомогою зовнішнього редактора"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
-msgstr ""
+msgstr "Відкрити онлайнову документацію Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
-msgstr ""
+msgstr "Пошук в ієрархії класів."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
-msgstr ""
+msgstr "Пошук довідкової документації."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to previous edited document."
-msgstr ""
+msgstr "Перейти до попереднього редагованого документа."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to next edited document."
-msgstr ""
+msgstr "Перейти до наступного редагованого документа."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Discard"
-msgstr ""
+msgstr "Скинути"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "Створити сценарій"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
 msgstr ""
+"Такі файли на диску новіші.\n"
+"Що робити?:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload"
-msgstr ""
+msgstr "Перезавантажити"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Resave"
-msgstr ""
+msgstr "Перезаписати"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr ""
+msgstr "Зневаджувач"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
+"Вбудовані скрипти можна змінити тільки тоді, коли завантажено сцену, до якої "
+"вони належать"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
-msgstr ""
+msgstr "Можна перетягнути тільки ресурс з файлової системи."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
-msgstr ""
+msgstr "Вибрати колір"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Case"
-msgstr ""
+msgstr "Перемкнути регістр"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Uppercase"
-msgstr ""
+msgstr "ВЕРХНІЙ РЕГІСТР"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lowercase"
-msgstr ""
+msgstr "нижній регістр"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr ""
+msgstr "З Великої"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Вирізати"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Копіювати"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Вибрати все"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
-msgstr ""
+msgstr "Видалити рядок"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
-msgstr ""
+msgstr "Зменшити відступ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Right"
-msgstr ""
+msgstr "Збільшити відступ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr ""
+msgstr "Перемкнути коментар"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
-msgstr ""
+msgstr "Клонувати вниз"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr ""
+msgstr "Згорнути/розгорнути рядок"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr ""
+msgstr "Згорнути всі рядки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr ""
+msgstr "Розгорнути всі рядки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4878,64 +4866,64 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Spaces"
-msgstr ""
+msgstr "Перетворити відступ на пропуски"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Tabs"
-msgstr ""
+msgstr "Перетворити відступ на табуляції"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr ""
+msgstr "Автовідступ"
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr ""
+msgstr "Перемкнути точку зупинки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
-msgstr ""
+msgstr "Вилучити всі точки зупинки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Next Breakpoint"
-msgstr ""
+msgstr "Перейти до наступної точки зупинки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Previous Breakpoint"
-msgstr ""
+msgstr "Перейти до попередньої точки зупинки"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert To Uppercase"
-msgstr ""
+msgstr "Конвертувати у ВЕРХНІЙ РЕГІСТР"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert To Lowercase"
-msgstr ""
+msgstr "Конвертувати в нижній регістр"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "Знайти попереднє"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Replace.."
-msgstr ""
+msgstr "Замінити.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Function.."
-msgstr ""
+msgstr "Перейти до функції.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Line.."
-msgstr ""
+msgstr "Перейти до рядка.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
-msgstr ""
+msgstr "Контекстна довідка"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr ""
+msgstr "Шейдер"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
@@ -4943,7 +4931,7 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Constant"
-msgstr ""
+msgstr "Змінити векторну константу"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Constant"
@@ -4991,7 +4979,7 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Default Value"
-msgstr ""
+msgstr "Змінити значення за промовчанням"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
@@ -5007,7 +4995,7 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Comment"
-msgstr ""
+msgstr "Змінити коментар"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add/Remove to Color Ramp"
@@ -5019,7 +5007,7 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Curve Map"
-msgstr ""
+msgstr "Змінити карту кривої"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Input Name"
@@ -5055,7 +5043,7 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Missing Input Connections"
-msgstr ""
+msgstr "Помилка: Відсутні вхідні з'єднання"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
@@ -5270,9 +5258,8 @@ msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Режим виділення"
+msgstr "Режим виділення (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5852,9 +5839,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select current edited sub-tile."
-msgstr "Зберегти поточний редагований ресурс."
+msgstr "Вибрати поточну редаговану вкладену плитку."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change it's priority."
@@ -5985,7 +5971,6 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Неможливо створити теку."
 
@@ -6034,27 +6019,24 @@ msgid "Import Existing Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Імпортувати"
+msgstr "Імпортувати та редагувати"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Створити випромінювач"
+msgstr "Створити та змінити"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Встановити"
+msgstr "Встановити та змінити"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6713,9 +6695,8 @@ msgid "Error duplicating scene to save it."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "Ресурс"
+msgstr "Підресурси"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -7016,9 +6997,8 @@ msgid "Child Process Connected"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Завантажити помилки"
+msgstr "Помилка копіювання"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7367,54 +7347,46 @@ msgid "Pick Distance:"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "Створення контурів..."
+msgstr "Створення розв'язку..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "Не вдалося створити контур!"
+msgstr "Не вдалося створити розв'язок."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "Не вдалося завантажити ресурс."
+msgstr "Не вдалося зберегти розв'язок."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Зроблено!"
+msgstr "Зроблено"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "Не вдалося завантажити ресурс."
+msgstr "Не вдалося створити проект C#."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "Створити контур"
+msgstr "Створити розв'язок C#"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr ""
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "Проект"
+msgstr "Зібрати проект"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
 msgstr "Попередження"
 
@@ -7614,7 +7586,7 @@ msgstr "Отримати"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
-msgstr ""
+msgstr "Скрипт уже має функцію '%s'"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
@@ -7630,7 +7602,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
-msgstr ""
+msgstr "Вставити вузли (Візуального скриптингу) VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -7763,34 +7735,28 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Виконати експортований HTML у браузері за умовчанням системи."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "Не вдалося записати файл:\n"
+msgstr "Не вдалося записати файл:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "Не вдалося відкрити шаблон для експорту:\n"
+msgstr "Не вдалося відкрити шаблон для експорту:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Неправильний шаблон експорту:\n"
+msgstr "Неправильний шаблон експорту:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Не вдалося прочитати спеціальну оболонку HTML:\n"
+msgstr "Не вдалося прочитати спеціальну оболонку HTML:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Не вдалося розпізнати файл зображення заставки:\n"
+msgstr "Не вдалося розпізнати файл зображення заставки:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Не вдалося розпізнати файл зображення заставки:\n"
+msgstr "Використання типового файлу зображення заставки."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -8010,7 +7976,7 @@ msgstr "Raw (сирий) режим"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Додати поточний колір в якості пресету"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

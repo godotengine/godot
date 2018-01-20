@@ -5,15 +5,15 @@
 #
 # Diego López <diegodario21@gmail.com>, 2017.
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018.
-# Roger BR <drai_kin@hotmail.com>, 2016.
+# Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"Last-Translator: Roger Blanco Ribera <roger.blancoribera@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -7234,7 +7234,7 @@ msgstr "Cambiar Extensión de Sonda"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr "Sleccionar una biblioteca dinamica para esta entrada"
+msgstr "Seleccionar una biblioteca dinamica para esta entrada"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"

@@ -11,21 +11,21 @@
 # hubbyist <hub@legrud.net>, 2017.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
-# razah <icnikerazah@gmail.com>, 2017.
+# razah <icnikerazah@gmail.com>, 2017-2018.
 # stnmycri <satenmeycri@gmail.com>, 2017.
 # Yavuz Günay <yavuzgunay@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
 "Last-Translator: razah <icnikerazah@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
@@ -37,22 +37,20 @@ msgid "All Selection"
 msgstr "Tüm Seçim"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Animasyon Değişikliği Değeri"
+msgstr "Anim Anahtar-kare Zamanını Değiştir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Animasyon Değişikliği Geçişi"
+msgstr "Animasyon Geçişinin Değişimi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
 msgstr "Animasyon Değişikliği Dönüşümü"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Animasyon Değişikliği Değeri"
+msgstr "Anim Anahtar-kare Değerini Değiştir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -546,9 +544,8 @@ msgid "Connecting Signal:"
 msgstr "Bağlantı Sinyali:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Bunu '%s'  şuna '%s' bağla"
+msgstr "Şunun: '%s' şununla: '%s' bağlantısını kes"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -564,9 +561,8 @@ msgid "Signals"
 msgstr "Sinyaller"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Türü Değiştir"
+msgstr "%s Tipini değiştir"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -574,9 +570,8 @@ msgid "Change"
 msgstr "Değiştir"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Yeni oluştur"
+msgstr "Yeni %s oluştur"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -686,9 +681,8 @@ msgstr ""
 "Yine de kaldırmak istiyor musunuz? (geri alınamaz)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Kaldırılamadı:\n"
+msgstr "Kaldırılamadı:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -771,9 +765,8 @@ msgid "Lead Developer"
 msgstr "Baş Geliştirici"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Proje Yöneticisi"
+msgstr "Proje Yöneticisi "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -882,9 +875,8 @@ msgid "Rename Audio Bus"
 msgstr "Audio Bus'ı Yeniden Adlandır"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Audio Bus'ı Solo Aç/Kapat"
+msgstr "Audio Bus Ses Seviyesini Değiştir"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1124,7 +1116,6 @@ msgid "Updating scene.."
 msgstr "Sahne güncelleniyor.."
 
 #: editor/editor_data.cpp
-#, fuzzy
 msgid "[empty]"
 msgstr "(boş)"
 
@@ -1170,9 +1161,8 @@ msgid "Packing"
 msgstr "Çıkınla"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Biçem dosyası bulunamadı:\n"
+msgstr "Şablon dosyası bulunamadı:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1430,9 +1420,8 @@ msgid "Clear"
 msgstr "Temizle"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Çıktı"
+msgstr "Çıktıyı Temizle"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1496,11 +1485,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Bu işlem bir kök sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
-msgstr "Sahne kaydedilemedi. Anlaşılan bağımlılıklar (örnekler) karşılanamadı."
+msgstr ""
+"Sahne kaydedilemedi. Anlaşılan bağımlılıklar (örnekler ve kalıtımlar) "
+"karşılanamadı."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2378,14 +2368,12 @@ msgid "Frame #:"
 msgstr "Kare #:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
-msgstr "Süre:"
+msgstr "Zaman"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "Çağır"
+msgstr "Çağrılar"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2492,9 +2480,8 @@ msgid "No version.txt found inside templates."
 msgstr "Şablonların içinde version.txt bulunamadı."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Şablonlar için yol oluşturulurken hata:\n"
+msgstr "Şablonlar için yol oluşturulurken hata:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2529,9 +2516,8 @@ msgstr "Cevap yok."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
-msgstr "İstem Başarısız."
+msgstr "İstek Başarısız Oldu."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2577,7 +2563,6 @@ msgid "Connecting.."
 msgstr "Bağlanılıyor.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
 msgstr "Bağlanamadı"
 
@@ -2653,10 +2638,8 @@ msgid "View items as a list"
 msgstr "Öğeleri liste olarak göster"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Durum: Dosya içe aktarma başarısız oldu. Lütfen dosyayı onarın ve tekrar içe "
 "aktarın."
 
@@ -2665,24 +2648,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Kaynakların kökü taşınamaz/yeniden adlandırılamaz."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Bir klasör kendisinin içine taşınamaz.\n"
+msgstr "Bir klasör kendisinin içine taşınamaz."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Taşıma Hatası:\n"
+msgstr "Taşıma Hatası:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Yüklerken hata:"
+msgstr "Çoğaltılırken hata:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Bağımlılıklar güncellenemedi:\n"
+msgstr "Bağımlılıklar güncellenemedi:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -2713,14 +2692,12 @@ msgid "Renaming folder:"
 msgstr "Klasör yeniden adlandırma:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "Çoğalt"
+msgstr "Dosya çoğaltılıyor:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Klasör yeniden adlandırma:"
+msgstr "Klasör çoğaltılıyor:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2739,9 +2716,8 @@ msgid "Move To.."
 msgstr "Şuraya Taşı.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
-msgstr "Sahneyi Aç"
+msgstr "Sahne(ler) Aç"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2756,9 +2732,8 @@ msgid "View Owners.."
 msgstr "Sahipleri Görüntüle.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "Çoğalt"
+msgstr "Çoğalt.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2855,14 +2830,12 @@ msgid "Importing Scene.."
 msgstr "Sahneyi İçe Aktarıyor..."
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Işık Haritalarına Aktar:"
+msgstr "Işık-haritaları Üretiliyor"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh: "
-msgstr "AABB Üretimi"
+msgstr "Örüntü için Üretiliyor: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3333,9 +3306,8 @@ msgid "Filters.."
 msgstr "Süzgeçler..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Animasyon"
+msgstr "AnimasyonAğacı"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -3486,21 +3458,27 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Lightmap resimleri için kaydetme yolu belirlenemiyor.\n"
+"Sahneni kaydet (resimler aynı klasöre kaydedilmeli), ya da BakedLightmap "
+"özelliklerinden bir kayıt yolu seçin."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Pişirilecek örüntüler yok. Örüntülerin UV2 kanalı içerdiğinden ve 'Bake "
+"Light' bayrağınının açık olduğundan emin olun."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Işık-haritası görüntüleri oluşturma başarısız oldu, yolun yazılabilir "
+"olduğundan emin olun."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Işık Haritalarına Aktar:"
+msgstr "Işık-Haritalarını Pişir"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4016,19 +3994,19 @@ msgstr "Yönlendirici Örüntüsü Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr ""
+msgstr "Bulunan Örüntü ArrayMesh tipinde değil."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "UV Unwrap başarısız oldu, örüntü manifold olmayabilir?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Hata ayıklaöma için örüntü yok."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
-msgstr ""
+msgstr "Model bu katmanda UV'ye sahip değil"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -4071,18 +4049,16 @@ msgid "Create Outline Mesh.."
 msgstr "Anahat Örüntüsü Oluştur.."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
-msgstr "Görüş"
+msgstr "UV1'i Göster"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
-msgstr "Görüş"
+msgstr "UV2'yi Göster"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "Lightmap/AO için UV2 paket aç"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4197,9 +4173,8 @@ msgid "Bake!"
 msgstr "Pişir!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Yönlendirici örüntüsünü pişir.\n"
+msgstr "Yönlendirici örüntüsünü pişir."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4588,20 +4563,16 @@ msgid "Paste"
 msgstr "Yapıştır"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Kaynak Yolu"
+msgstr "KaynakÖnyükleyici"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
 msgstr "En Son Dosyaları Temizle"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"Kapa ve değişiklikleri kaydet?\n"
-"\""
+msgstr "Kapa ve değişiklikleri kaydet?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4672,12 +4643,10 @@ msgid "Soft Reload Script"
 msgstr "Betiği Yeniden Duyarlı Yükle"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "Dosya Yolunu Tıpkıla"
+msgstr "Betik Yolunu Kopyala"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
 msgstr "Dosya Sisteminde Göster"
 
@@ -4872,9 +4841,8 @@ msgid "Clone Down"
 msgstr "Aşağıya Eşle"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Satırı Genişlet"
+msgstr "Satırı Katla/Aç"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5286,9 +5254,8 @@ msgid "XForm Dialog"
 msgstr "XForm İletişim Kutusu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Seçim Kipi (Q)\n"
+msgstr "Seçim Kipi (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5317,14 +5284,12 @@ msgid "Local Coords"
 msgstr "Yerel Koordlar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Local Space Mode (%s)"
-msgstr "Ölçek Biçimi (R)"
+msgstr "Yerel Uzay Kipi (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "Yapışma Kipi:"
+msgstr "Yapışma Kipi (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5441,7 +5406,7 @@ msgstr "Ayarlar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Skeleton Gizmo visibility"
-msgstr ""
+msgstr "İskelet Gizmo görünürlüğü"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5568,18 +5533,16 @@ msgid "Move (After)"
 msgstr "Taşı (Sonra)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "SpriteFrames"
-msgstr "Çerçeveleri Yığ"
+msgstr "GörüntüKareleri"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "StyleBox Önizleme:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
-#, fuzzy
 msgid "StyleBox"
-msgstr "Yoldam"
+msgstr "StilKutusu"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -5843,9 +5806,8 @@ msgid "Merge from scene?"
 msgstr "Sahneden birleştirilsin mi?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "TileSet .."
+msgstr "Karo Takımı"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -5860,30 +5822,32 @@ msgid "Error"
 msgstr "Hata"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
-msgstr "Otomatik Dilimle"
+msgstr "Oto-döşemeler"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
+"Simge olarak kullanmak işin alt-karo seç,  bu aynı zamanda geçersiz oto-karo "
+"bağlantılarında kullanılacaktır."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
+"LMB: bit'i aç.\n"
+"RMB: bit'i kapat."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select current edited sub-tile."
-msgstr "Düzenlenen kaynağı kaydedin."
+msgstr "Şuanki düzenlenmiş alt-döşemeyi seç."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change it's priority."
-msgstr ""
+msgstr "Önceliğini değiştirmek için alt-karo seçin."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -6016,13 +5980,12 @@ msgid "Imported Project"
 msgstr "İçe Aktarılan Proje"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Klasör oluşturulamadı."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "Yolda bu isimde bir klasör zaten var."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6065,27 +6028,24 @@ msgid "Import Existing Project"
 msgstr "Var Olan Projeyi İçe Aktar"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "İçe Aktar & Aç"
+msgstr "İçe Aktar & Düzenle"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Yeni Proje Oluştur"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Yayıcı Oluştur"
+msgstr "Oluştur & Düzenle"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Projeyi Kur:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Kur"
+msgstr "Kur & Düzenle"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6303,9 +6263,8 @@ msgid "Joypad Button Index:"
 msgstr "Oyun Kolu Düğmesi İndeksi:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Erase Input Action"
-msgstr "Giriş Eylemi Olayını Sil"
+msgstr "Girdi Eylemini Sil"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
@@ -6553,7 +6512,7 @@ msgstr "Yeni Betik"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Yeni %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
@@ -6588,9 +6547,8 @@ msgid "On"
 msgstr "Açık"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "[Empty]"
-msgstr "Boş Ekle"
+msgstr "[Boş]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
@@ -6761,9 +6719,8 @@ msgid "Error duplicating scene to save it."
 msgstr "Kaydetmek için sahne çoğaltılırken hata."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "Alt Kaynaklar:"
+msgstr "Alt Kaynaklar"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -7074,9 +7031,8 @@ msgid "Child Process Connected"
 msgstr "Çocuk Süreç Bağlandı"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Hataları Yükle"
+msgstr "Hatayı Kopyala"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7116,7 +7072,7 @@ msgstr "Değer"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
-msgstr "Görüntülükler"
+msgstr "Monitörler"
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -7172,7 +7128,7 @@ msgstr "Kısayollar"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Bağlayıcı"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7224,43 +7180,39 @@ msgstr "Deşme Genişlemesini Değiştir"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Bu girdi için bir dinamik kütüphane seçin"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Bu girdi için kütüphanenin bağımlılıklarını seçin"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Yol Noktasını Kaldır"
+msgstr "Mevcut giriyi kaldır"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Yeni girdi oluşturmak için çift tıkla"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
-msgstr ""
+msgstr "Mecra:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Platform"
-msgstr "Düzleme Tıpkıla.."
+msgstr "Mecra"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Dynamic Library"
-msgstr "Kütüphane"
+msgstr "Dinamik Kütüphane"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Bir yapı girdisi ekle"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "GDNativeLibrary"
-msgstr "GDYerel"
+msgstr "GDYerelKütüphanesi"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -7430,56 +7382,48 @@ msgid "Pick Distance:"
 msgstr "Uzaklık Seç:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "Konturlar oluşturuluyor..."
+msgstr "solü oluşturuluyor..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "C# projesi üretiliyor..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "Anahat oluşturulamadı!"
+msgstr "Çözüm oluşturma başarısız."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "Kaynak yükleme başarısız oldu."
+msgstr "Çözüm kaydetme başarısız."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Oldu!"
+msgstr "Oldu"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "Kaynak yükleme başarısız oldu."
+msgstr "C# projesi oluşturma başarısız."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Tekli"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "Anahat Oluştur"
+msgstr "C# Çözümü oluştur"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "İnşalar"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "Proje"
+msgstr "Projeyi İnşa et"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
-msgstr "Uyarı"
+msgstr "Uyarılar"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7838,34 +7782,28 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Dışa aktarılmış HTML'yi sistemin varsayılan tarayıcısında çalıştır."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "Dosya yazılamadı:\n"
+msgstr "Dosya yazılamadı:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "Dışa aktarma için şablon açılamadı:\n"
+msgstr "Dışa aktarma için şablon açılamadı:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Geçersiz Dışa Aktarım Şablonu:\n"
+msgstr "Geçersiz Dışa Aktarım Şablonu:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Özel HTML çekirdeği okunamadı:\n"
+msgstr "Özel HTML çekirdeği okunamadı:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Açılış ekranı resim dosyası okunamadı:\n"
+msgstr "Açılış ekranı resim dosyası okunamadı:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Açılış ekranı resim dosyası okunamadı:\n"
+msgstr "Açılış ekranı resim dosyası okunamadı."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -8027,23 +7965,20 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin bir ARVRCamera çocuk düğümü gerektirir"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
-msgstr "Örüntüler Haritalanıyor"
+msgstr "Örüntüler Haritalanıyor: "
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Lights:"
-msgstr "Örüntüler Haritalanıyor"
+msgstr "Örüntüler Haritalanıyor:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
 msgstr "Haritalama Bitiriliyor"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Lighting Meshes: "
-msgstr "Örüntüler Haritalanıyor"
+msgstr "Örüntüler Haritalanıyor: "
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8185,13 +8120,12 @@ msgid "(Other)"
 msgstr "(Diğer)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Proje Ayarlarında tanımlanmış Varsayılan Ortam (İşleme -> Görüntükapısı -> "
-"Varsayılan Ortam) Yüklenemedi."
+"Varsayılan Ortam) yüklenemedi."
 
 #: scene/main/viewport.cpp
 msgid ""

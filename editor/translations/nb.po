@@ -7,22 +7,22 @@
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # flesk <eivindkn@gmail.com>, 2017.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
-# NicolaiF <nico-fre@hotmail.com>, 2017.
+# NicolaiF <nico-fre@hotmail.com>, 2017-2018.
 # Norwegian Disaster <stian.furu.overbye@gmail.com>, 2017.
 # passeride <lukas@passeride.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-05 23:48+0000\n"
-"Last-Translator: flesk <eivindkn@gmail.com>\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"Last-Translator: NicolaiF <nico-fre@hotmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -948,7 +948,7 @@ msgstr "Fjern Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Lyd"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1127,11 +1127,11 @@ msgstr "Oppdaterer scene.."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
-msgstr ""
+msgstr "[tom]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[ulagret]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1296,7 +1296,7 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr ""
+msgstr "(Re)Importerer Assets"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1803,6 +1803,7 @@ msgstr "Kan ikke laste addon-skript fra bane: '%s'."
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Kan ikke laste addon skript fra bane: Basistype '%s' er ikke en EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
@@ -2117,7 +2118,7 @@ msgstr "Online Dokumentasjon"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "Spørsmål og Svar"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -3271,7 +3272,7 @@ msgstr "Blend 0:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 1:"
-msgstr ""
+msgstr "Blend 1:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "X-Fade Time (s):"

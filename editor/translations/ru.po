@@ -3,10 +3,11 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Artem Varaksa <aymfst@gmail.com>, 2018.
 # B10nicMachine <shumik1337@gmail.com>, 2017.
 # DimOkGamer <dimokgamer@gmail.com>, 2016-2017.
 # Igor S <scorched@bk.ru>, 2017.
-# ijet <my-ijet@mail.ru>, 2017.
+# ijet <my-ijet@mail.ru>, 2017-2018.
 # Maxim Kim <habamax@gmail.com>, 2016.
 # Maxim toby3d Lebedev <mail@toby3d.ru>, 2016.
 # outbools <drag4e@yandex.ru>, 2017.
@@ -17,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-12-22 14:18+0000\n"
-"Last-Translator: ijet <my-ijet@mail.ru>\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"Last-Translator: Artem Varaksa <aymfst@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -560,9 +561,8 @@ msgid "Signals"
 msgstr "Сигналы"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Изменить тип"
+msgstr "Изменить тип %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -681,9 +681,8 @@ msgstr ""
 "Всё равно удалить его? (Нельзя отменить!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Не удаётся удалить:\n"
+msgstr "Не удаётся удалить:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -766,9 +765,8 @@ msgid "Lead Developer"
 msgstr "Ведущий Разработчик"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Менеджер проектов"
+msgstr "Менеджер проектов "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1021,7 +1019,7 @@ msgstr "Загрузить по умолчанию"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Загрузить стандартную раскладку шины."
+msgstr "Загрузить раскладку шины по умолчанию."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1169,9 +1167,8 @@ msgid "Packing"
 msgstr "Упаковывание"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Файл шаблона не найден:\n"
+msgstr "Файл шаблона не найден:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1429,9 +1426,8 @@ msgid "Clear"
 msgstr "Очистить"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Вывод"
+msgstr "Очистить вывод"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1495,13 +1491,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Эта операция не может быть выполнена без корня дерева."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры) не могли "
-"быть удовлетворены."
+"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры или "
+"унаследованные) не могли быть удовлетворены."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2491,9 +2486,8 @@ msgid "No version.txt found inside templates."
 msgstr "Не найден version.txt файл в шаблонах."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Ошибка сохранения шаблонов:\n"
+msgstr "Ошибка создания пути для шаблонов:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2651,10 +2645,8 @@ msgid "View items as a list"
 msgstr "Просмотр элементов в виде списка"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Статус: Импорт файла не удался. Пожалуйста, исправьте файл и "
 "переимпортируйте вручную."
 
@@ -2663,24 +2655,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Нельзя переместить/переименовать корень."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Невозможно переместить папку в себя.\n"
+msgstr "Невозможно переместить папку в себя."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Ошибка перемещения:\n"
+msgstr "Ошибка перемещения:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Ошибка дублирования:\n"
+msgstr "Ошибка дублирования:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Не удаётся обновить зависимости:\n"
+msgstr "Не удаётся обновить зависимости:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -3326,9 +3314,8 @@ msgid "Filters.."
 msgstr "Фильтры.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Анимация"
+msgstr "Дерево анимации"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -4193,9 +4180,8 @@ msgid "Bake!"
 msgstr "Запечь!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Создать полисетку навигации.\n"
+msgstr "Создать полисетку навигации."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4260,7 +4246,7 @@ msgstr "Создать Navigation Polygon"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr "Создание AABB"
+msgstr "Генерация AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4584,20 +4570,16 @@ msgid "Paste"
 msgstr "Вставить"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Путь ресурса"
+msgstr "Предзагрузчик ресурсов"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
 msgstr "Очистить Недавние Файлы"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"Закрыть и сохранить изменения?\n"
-"\""
+msgstr "Закрыть и сохранить изменения?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4672,7 +4654,6 @@ msgid "Copy Script Path"
 msgstr "Копировать путь к скрипту"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
 msgstr "Показать в файловой системе"
 
@@ -5280,9 +5261,8 @@ msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Режим выделения (Q)\n"
+msgstr "Режим выделения (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5562,7 +5542,7 @@ msgstr "Переместить (после)"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "SpriteFrames"
-msgstr "Стек"
+msgstr "Кадры cпрайта"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5851,30 +5831,32 @@ msgid "Error"
 msgstr "Ошибка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
-msgstr "Автоматически"
+msgstr "Автотайлы"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
+"Выберите плитку для использования в качестве значка, она также будет "
+"использоваться при неверных привязках автотайлов."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
+"ЛКМ: установить бит.\n"
+"ПКМ: снять бит."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select current edited sub-tile."
-msgstr "Сохранить текущий редактируемый ресурс."
+msgstr "Выберите текущий редактированный вложенный тайл."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change it's priority."
-msgstr ""
+msgstr "Выберите вложенный тайл чтобы изменить его приоритет."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -6003,13 +5985,12 @@ msgid "Imported Project"
 msgstr "Импортированный проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
-msgstr "Невозможно создать папку."
+msgstr "Не удалось создать папку."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "По этому пути уже существует папка с указанным именем."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6052,27 +6033,24 @@ msgid "Import Existing Project"
 msgstr "Импортировать существующий проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Импортировать и Открыть"
+msgstr "Импортировать и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Создать новый проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Создать излучатель"
+msgstr "Создать и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Установить проект:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Установить"
+msgstr "Установить и редактировать"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6748,9 +6726,8 @@ msgid "Error duplicating scene to save it."
 msgstr "Ошибка дублирования сцены, при её сохранении."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "Вложенные Ресурсы:"
+msgstr "Вложенные ресурсы"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -7062,9 +7039,8 @@ msgid "Child Process Connected"
 msgstr "Дочерний процесс связан"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Ошибки загрузки"
+msgstr "Ошибка копирования"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7414,56 +7390,48 @@ msgid "Pick Distance:"
 msgstr "Расстояние выбора:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "Создание контуров..."
+msgstr "Генерация решения..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "Создание C# проекта..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "Невозможно создать контур!"
+msgstr "Не удалось создать решение."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "Не удалось загрузить ресурс."
+msgstr "Не удалось сохранить решение."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Сделано!"
+msgstr "Готово"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "Не удалось загрузить ресурс."
+msgstr "Не удалось создать C# проект."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Моно"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "Создать контур"
+msgstr "Создать C# решение"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "Билды"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "Проект"
+msgstr "Собрать проект"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
-msgstr "Предупреждение"
+msgstr "Предупреждения"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7820,37 +7788,31 @@ msgstr "Запустить в браузере"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr "Запустить HTML в стандартном браузере системы."
+msgstr "Запустить HTML в системном браузере по умолчанию."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "Не удалось записать файл:\n"
+msgstr "Не удалось записать файл:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "Не удалось открыть шаблон для экспорта:\n"
+msgstr "Не удалось открыть шаблон для экспорта:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Неверный шаблон экспорта:\n"
+msgstr "Неверный шаблон экспорта:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Не удается прочитать пользовательскую HTML-оболочку:\n"
+msgstr "Не удалось прочитать пользовательскую HTML оболочку:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Не удалось прочитать файл изображения заставки:\n"
+msgstr "Не удалось прочитать файл изображения заставки:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Не удалось прочитать файл изображения заставки:\n"
+msgstr "Использовать изображения заставки по умолчанию."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -8147,7 +8109,8 @@ msgid ""
 "hide upon running."
 msgstr ""
 "После запуска всплывающие окна по умолчанию скрыты, для их отображения "
-"используйте функцию popup() или любую из popup_*()."
+"используйте функцию popup() или любую из popup*(). Делать их видимыми для "
+"редактирования - нормально, но они будут скрыты при запуске."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -8166,13 +8129,12 @@ msgid "(Other)"
 msgstr "(Другие)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Среда по умолчанию, как определено в Настройках проекта (Rendering -> "
-"Viewport -> Default Environment) не может быть загружена."
+"Environment -> Default Environment) не может быть загружена."
 
 #: scene/main/viewport.cpp
 msgid ""

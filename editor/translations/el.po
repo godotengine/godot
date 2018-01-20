@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-04 15:26+0000\n"
+"PO-Revision-Date: 2018-01-16 17:46+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -551,9 +551,8 @@ msgid "Signals"
 msgstr "Σήματα"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Αλλαγή τύπου"
+msgstr "Αλλαγή τύπου %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -672,9 +671,8 @@ msgstr ""
 "Να αφαιρεθούν; (Αδύνατη η αναίρεση)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Αδύνατη η αφαίρεση:\n"
+msgstr "Αδύνατη η αφαίρεση:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -757,9 +755,8 @@ msgid "Lead Developer"
 msgstr "Επικεφαλής προγραμματιστής"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Διαχειριστής"
+msgstr "Διαχειριστής έργων "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1157,9 +1154,8 @@ msgid "Packing"
 msgstr "Πακετάρισμα"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Δεν βρέθηκε το αρχείο προτύπου:\n"
+msgstr "Δεν βρέθηκε αρχείο προτύπου:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1417,9 +1413,8 @@ msgid "Clear"
 msgstr "Εκκαθάριση"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Έξοδος"
+msgstr "Εκκαθάριση εξόδου"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1483,13 +1478,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Αυτή η λειτουργία δεν μπορεί να γίνει χωρίς ρίζα δέντρου."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Αδύνατη η αποθήκευση σκηνής. Πιθανώς οι εξαρτήσεις (στιγμιότυπα) να μην "
-"μπορούσαν να ικανοποιηθούν."
+"Αδύνατη η αποθήκευση σκηνής. Πιθανώς οι εξαρτήσεις (στιγμιότυπα ή "
+"κληρονομιά) να μην μπορούσαν να ικανοποιηθούν."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2493,9 +2487,8 @@ msgid "No version.txt found inside templates."
 msgstr "Δεν βρέθηκε version.txt μέσα στα πρότυπα."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Σφάλμα κατά τη δημιουργία διαδρομης για τα πρότυπα:\n"
+msgstr "Σφάλμα κατά τη δημιουργία διαδρομης για τα πρότυπα:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2653,10 +2646,8 @@ msgid "View items as a list"
 msgstr "Εμφάνιση αντικειμένων σε λίστα"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Κατάσταση: Η εισαγωγή απέτυχε. Παρακαλούμε διορθώστε το αρχείο και "
 "επανεισάγετε το χειροκίνητα."
 
@@ -2665,24 +2656,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Δεν ήταν δυνατή η μετακίνηση/μετονομασία του πηγαίου καταλόγου."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Δεν είναι δυνατή η μετακίνηση ενός φακέλου στον εαυτό του.\n"
+msgstr "Δεν είναι δυνατή η μετακίνηση ενός φακέλου στον εαυτό του."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Σφάλμα κατά την μετακίνηση:\n"
+msgstr "Σφάλμα κατά την μετακίνηση:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Σφάλμα κατά τον διπλασιασμό:\n"
+msgstr "Σφάλμα κατά τον διπλασιασμό:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Αδύνατη η ενημέρωση των εξαρτήσεων:\n"
+msgstr "Αδύνατη η ενημέρωση των εξαρτήσεων:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -3329,9 +3316,8 @@ msgid "Filters.."
 msgstr "Φίλτρα.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Κίνηση"
+msgstr "Δέντρο κίνησης"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -4201,9 +4187,8 @@ msgid "Bake!"
 msgstr "Προετοίμασε!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Προετοιμασία του πλέγματος πλοήγησης.\n"
+msgstr "Προετοιμασία του πλέγματος πλοήγησης."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4594,20 +4579,16 @@ msgid "Paste"
 msgstr "Επικόληση"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Διαδρομή πόρου"
+msgstr "Πρόφραμμα προφόρτωσης"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
 msgstr "Εκκαθάριση πρόσφατων αρχείων"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"Κλείσιμο και αποθήκευση αλλαγών;\n"
-"\""
+msgstr "Κλείσιμο και αποθήκευση αλλαγών;"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4682,7 +4663,6 @@ msgid "Copy Script Path"
 msgstr "Αντιγραφή διαδρομής δεσμής ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
 msgstr "Εμφάνιση στο σύστημα αρχείων"
 
@@ -5292,9 +5272,8 @@ msgid "XForm Dialog"
 msgstr "Διάλογος XForm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Επιλογή λειτουργίας (Q)\n"
+msgstr "Επιλογή λειτουργίας (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5572,18 +5551,16 @@ msgid "Move (After)"
 msgstr "Μετκίνιση (Μετά)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "SpriteFrames"
-msgstr "Στοίβαξη καρέ"
+msgstr "Kαρέ Sprite"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "Προεπισκόπηση StyleBox:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
-#, fuzzy
 msgid "StyleBox"
-msgstr "Στυλ"
+msgstr "Κουτί Στυλ"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -5863,30 +5840,32 @@ msgid "Error"
 msgstr "Σφάλμα"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
-msgstr "Αυτόματο κόψιμο"
+msgstr "Αυτόματο πλακίδια"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
+"Επιλέξτε υπότιτλο για εικονίδιο, o οποίος θα χρησιμοποιείται και σε μη "
+"έγκυρες συνδέσεις αυτόματων πλακιδίων."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
+"Αριστερό κλικ: ενεργοποίησε το bit.\n"
+"Δεξί κλικ: απενεργοποίησε το bit."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select current edited sub-tile."
-msgstr "Αποθήκευσε το τρέχων επεξεργαζόμενο πόρο."
+msgstr "Επέλεξε το τρέχων επεξεργαζόμενο υπο-πλακίδιο."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change it's priority."
-msgstr ""
+msgstr "Επέλεξε υπο-πλακίδιο για να αλλάξεις την προτεραιότητα του."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -6022,13 +6001,12 @@ msgid "Imported Project"
 msgstr "Εισαγμένο έργο"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Αδύνατη η δημιουργία φακέλου."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "Υπάρχει ήδη φάκελος στην διαδρομή με το προσδιορισμένο όνομα."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6072,27 +6050,24 @@ msgid "Import Existing Project"
 msgstr "Εισαγωγή υπαρκτού έργου"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Εισαγωγή & Άνοιγμα"
+msgstr "Εισαγωγή & Επεξεργασία"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Δημιουργία νέου έργου"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Δημιουργία πομπού"
+msgstr "Δημιουργία & Επεξεργασία"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Εγκατάσταση έργου:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Εγκατάσταση"
+msgstr "Εγκατάσταση & Επεξεργασία"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6774,9 +6749,8 @@ msgid "Error duplicating scene to save it."
 msgstr "Σφάλμα κατά τον διπλασιασμό σκηνής για αποθήκευση."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "Yπο-Πόροι:"
+msgstr "Yπο-Πόροι"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -7090,9 +7064,8 @@ msgid "Child Process Connected"
 msgstr "Η παιδική διαδικασία συνδέθηκε"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Σφάλματα φόρτωσης"
+msgstr "Αντιγραφή σφάλματος"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7444,56 +7417,48 @@ msgid "Pick Distance:"
 msgstr "Επιλογή απόστασης:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "Δημιουργία περιγραμμάτων..."
+msgstr "Δημιουργία λύσης..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "Δημιουργία έργου C#..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "Δεν ήταν δυνατή η δημιουργία περιγράμματος!"
+msgstr "Απέτυχε η δημιουργία λύσης."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "Απέτυχε η φόρτωση πόρου."
+msgstr "Απέτυχε η αποθήκευση της λύσης."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Τέλος!"
+msgstr "Τέλος"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "Απέτυχε η φόρτωση πόρου."
+msgstr "Απέτυχε η δημιουργία έργου C#."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Μονοφωνικό"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "Δημιουργία περιγράμματος"
+msgstr "Δημιουργία λύσης C#"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "Δόμηση"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "Έργο"
+msgstr "Δόμηση έργου"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
-msgstr "Προειδοποίηση"
+msgstr "Προειδοποιήσεις"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7857,34 +7822,28 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Εκτέλεση εξαγόμενης HTMP στον προεπιλεγμένο περιηγητή του συστήματος."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "Δεν ήταν δυνατό το γράψιμο στο αρχείο:\n"
+msgstr "Απέτυχε η εγγραφή σε αρχείο:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "Δεν ήταν δυνατό το άνοιγμα προτύπου για εξαγωγή:\n"
+msgstr "Σφάλμα κατά το άνοιγμα προτύπου για εξαγωγή:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Άκυρο προτύπο εξαγωγής:\n"
+msgstr "Άκυρο προτύπο εξαγωγής:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Δεν ήταν δυνατή η ανάγνωση του προσαρμοσμένου κελύφους HTML:\n"
+msgstr "Σφάλμα κατά την ανάγνωση προσαρμοσμένου κελύφους HTML:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Δεν ήταν δυνατή η ανάγνωση της εικόνας εκκίνησης:\n"
+msgstr "Σφάλμα κατά την ανάγνωση εικόνας εκκίνησης:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Δεν ήταν δυνατή η ανάγνωση της εικόνας εκκίνησης:\n"
+msgstr "Χρήση προεπιλεγμένης εικόνας εκκίνησης."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -8206,13 +8165,12 @@ msgid "(Other)"
 msgstr "(Άλλο)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "Το προεπιλεγμένο περιβάλλον, όπως έχει ορισθεί στις ρυθμίσεις έργου "
-"(Rendering -> Viewport -> Default Environment) δεν μπορούσε να φορτωθεί."
+"(Rendering -> Environment -> Default Environment) δεν μπορούσε να φορτωθεί."
 
 #: scene/main/viewport.cpp
 msgid ""

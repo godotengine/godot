@@ -4,12 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Kaveeta Vivatchai <goodytong@gmail.com>, 2017.
-# Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017.
+# Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -548,9 +548,8 @@ msgid "Signals"
 msgstr "สัญญาณ"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "เปลี่ยนประเภท"
+msgstr "เปลี่ยนประเภท %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -669,9 +668,8 @@ msgstr ""
 "ยืนยันจะลบหรือไม่? (ย้อนกลับไม่ได้)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "ไม่สามารถลบ:\n"
+msgstr "ไม่สามารถลบ:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -754,9 +752,8 @@ msgid "Lead Developer"
 msgstr "ผู้พัฒนาหลัก"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "ตัวจัดการโปรเจกต์"
+msgstr "ผู้จัดการโครงการ "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1150,9 +1147,8 @@ msgid "Packing"
 msgstr "กำลังรวบรวม"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "ไม่พบแม่แบบ:\n"
+msgstr "ไม่พบแม่แบบ:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1406,9 +1402,8 @@ msgid "Clear"
 msgstr "ลบ"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "ข้อความ"
+msgstr "ลบข้อความ"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1472,11 +1467,10 @@ msgid "This operation can't be done without a tree root."
 msgstr "ทำไม่ได้ถ้าไม่มีฉาก"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
-msgstr "บันทึกฉากไม่ได้ อาจจะมีการอ้างอิงไม่สมบูรณ์"
+msgstr "บันทึกฉากไม่ได้ อาจจะมีการอ้างอิงไม่สมบูรณ์ (อินสแตนซ์หรือการสืบทอด)"
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -2436,9 +2430,8 @@ msgid "No version.txt found inside templates."
 msgstr "ไม่พบ version.txt ในแม่แบบ"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "ผิดพลาดขณะสร้างตำแหน่งแม่แบบ:\n"
+msgstr "ผิดพลาดขณะสร้างตำแหน่งแม่แบบ:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2591,35 +2584,28 @@ msgid "View items as a list"
 msgstr "แสดงเป็นรายชื่อไฟล์"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
-msgstr ""
-"\n"
-"สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
+msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "ไม่สามารถย้าย/เปลี่ยนชื่อโฟลเดอร์ราก"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "ย้ายโฟลเดอร์มาข้างในตัวมันเองไม่ได้\n"
+msgstr "ย้ายโฟลเดอร์มาข้างในตัวมันเองไม่ได้"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "ผิดพลาดขณะย้าย:\n"
+msgstr "ผิดพลาดขณะย้าย:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "ผิดพลาดขณะทำซ้ำ:\n"
+msgstr "ผิดพลาดขณะทำซ้ำ:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "ไม่สามารถอัพเดทการอ้างอิง:\n"
+msgstr "ไม่สามารถอัพเดทการอ้างอิง:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -3262,9 +3248,8 @@ msgid "Filters.."
 msgstr "ตัวกรอง.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "แอนิเมชัน"
+msgstr "ผังแอนิเมชัน"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -4124,9 +4109,8 @@ msgid "Bake!"
 msgstr "สร้าง!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "สร้าง Mesh นำทาง\n"
+msgstr "สร้าง Mesh นำทาง"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4515,20 +4499,16 @@ msgid "Paste"
 msgstr "วาง"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "ตำแหน่งรีซอร์ส"
+msgstr "ตัวโหลดรีซอร์สล่วงหน้า"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
 msgstr "ล้างรายการไฟล์ล่าสุด"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"ปิดและบันทึก?\n"
-"\""
+msgstr "ปิดและบันทึก?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4603,7 +4583,6 @@ msgid "Copy Script Path"
 msgstr "คัดลอกตำแหน่งสคริปต์"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
 msgstr "เปิดในตัวจัดการไฟล์"
 
@@ -5209,9 +5188,8 @@ msgid "XForm Dialog"
 msgstr "เครื่องมือเคลื่อนย้าย"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "โหมดเลือก (Q)\n"
+msgstr "โหมดเลือก (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5489,18 +5467,16 @@ msgid "Move (After)"
 msgstr "ย้าย (หลัง)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "SpriteFrames"
-msgstr "สแตค"
+msgstr "SpriteFrames"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "ตัวอย่าง StyleBox:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
-#, fuzzy
 msgid "StyleBox"
-msgstr "รูปแบบ"
+msgstr "StyleBox"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -5780,30 +5756,30 @@ msgid "Error"
 msgstr "ผิดพลาด"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
-msgstr "แบ่งอัตโนมัติ"
+msgstr "Autotiles"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
-msgstr ""
+msgstr "เลือกรูปภาพย่อยเพื่อทำเป็นไอคอน ภาพนี้จะใช้แสดงเมื่อการ"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
+"คลิกซ้าย: กำหนดค่าบิต เปิด\n"
+"คลิกขวา: กำหนดค่าบิต ปิด"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select current edited sub-tile."
-msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
+msgstr "เลือกไทล์ย่อยที่กำลังปรับแต่ง"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change it's priority."
-msgstr ""
+msgstr "เลือกไทล์ย่อยเพื่อจัดลำดับความสำคัญ"
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -5930,13 +5906,12 @@ msgid "Imported Project"
 msgstr "นำเข้าโปรเจกต์แล้ว"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "ไม่สามารถสร้างโฟลเดอร์"
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "มีโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -5979,27 +5954,24 @@ msgid "Import Existing Project"
 msgstr "นำเข้าโปรเจกต์ที่มีอยู่เดิม"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "นำเข้าและเปิด"
+msgstr "นำเข้าและแก้ไข"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "สร้างโปรเจกต์ใหม่"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "สร้างตัวปะทุ"
+msgstr "สร้างและแก้ไข"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "ติดตั้งโปรเจกต์:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "ติดตั้ง"
+msgstr "ติดตั้งและแก้ไข"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6666,9 +6638,8 @@ msgid "Error duplicating scene to save it."
 msgstr "ผิดพลาดขณะทำซ้ำฉากเพื่อบันทึก"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "รีซอร์สย่อย:"
+msgstr "รีซอร์สย่อย"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -6977,9 +6948,8 @@ msgid "Child Process Connected"
 msgstr "เชื่อมกระบวนการแล้ว"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "โหลดผิดพลาด"
+msgstr "คัดลอกผิดพลาด"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -7328,54 +7298,46 @@ msgid "Pick Distance:"
 msgstr "ระยะการเลือก:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "กำลังสร้างคอนทัวร์..."
+msgstr "กำลังสร้าง solution..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "กำลังสร้างโปรเจกต์ C#..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "สร้างเส้นรอบรูปไม่ได้!"
+msgstr "ผิดพลาดในการสร้าง solution"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "โหลดรีซอร์สไม่ได้"
+msgstr "ผิดพลาดในการบันทึก solution"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "เสร็จสิ้น!"
+msgstr "เสร็จสิ้น"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "โหลดรีซอร์สไม่ได้"
+msgstr "ผิดพลาดในการสร้างโปรเจกต์ C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "โมโน"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "สร้างเส้นรอบรูป"
+msgstr "สร้าง C# solution"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "สร้าง"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "โปรเจกต์"
+msgstr "Build โปรเจกต์"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
 msgstr "คำเตือน"
 
@@ -7725,34 +7687,29 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "รันไฟล์ HTML ที่ส่งออกในเบราเซอร์"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "เขียนไฟล์ไม่ได้:\n"
+msgstr "เขียนไฟล์ไม่ได้:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "เปิดแม่แบบเพื่อส่งออกไม่ได้:\n"
+msgstr "เปิดแม่แบบเพื่อส่งออกไม่ได้:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "แม่แบบส่งออกไม่ถูกต้อง:\n"
+msgstr "แม่แบบส่งออกไม่ถูกต้อง:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "ไม่สามารถอ่านโครงสร้าง HTML:\n"
+msgstr "ไม่สามารถอ่านโครงสร้าง HTML:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "ไม่สามารถอ่านไฟล์ภาพขณะบูต:\n"
+msgstr "ไม่สามารถอ่านไฟล์ภาพขณะบูต:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Using default boot splash image."
-msgstr "ไม่สามารถอ่านไฟล์ภาพขณะบูต:\n"
+msgstr "ใช้ภาพขณะบูตปริยาย"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -8029,13 +7986,12 @@ msgid "(Other)"
 msgstr "(อื่น)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"ไม่สามารถโหลด Environment ปริยายที่กำหนดในตัวเลือกโปรเจกต์ได้ (Rendering -> Viewport "
-"-> Default Environment)"
+"ไม่สามารถโหลด Environment ปริยายที่กำหนดในตัวเลือกโปรเจกต์ได้ (Rendering -> "
+"Environment -> Default Environment)"
 
 #: scene/main/viewport.cpp
 msgid ""
