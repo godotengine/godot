@@ -34,13 +34,7 @@
 
 bool DynamicFontData::CacheID::operator<(CacheID right) const {
 
-	if (size < right.size)
-		return true;
-	if (mipmaps != right.mipmaps)
-		return right.mipmaps;
-	if (filter != right.filter)
-		return right.filter;
-	return false;
+	return key < right.key;
 }
 
 Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_id) {
@@ -616,6 +610,7 @@ DynamicFontAtSize::~DynamicFontAtSize() {
 		FT_Done_FreeType(library);
 	}
 	font->size_cache.erase(id);
+	font.unref();
 }
 
 /////////////////////////
