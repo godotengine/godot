@@ -139,7 +139,7 @@ bool GDMonoProperty::has_setter() {
 }
 
 void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoObject **r_exc) {
-	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
+	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
 
 	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
 	mono_array_set(params, MonoObject *, 0, p_value);
