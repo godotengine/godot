@@ -373,7 +373,7 @@ String CollisionObject::get_configuration_warning() const {
 		if (warning == String()) {
 			warning += "\n";
 		}
-		warning += TTR("This node has no children shapes, so it can't interact with the space.\nConsider adding CollisionShape or CollisionPolygon children nodes to define its shape.");
+		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape or CollisionPolygon as a child to define its shape.");
 	}
 
 	return warning;
