@@ -41,7 +41,7 @@ bool DynamicFontData::CacheID::operator<(CacheID right) const {
 Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_cache_id) {
 
 	if (size_cache.has(p_cache_id)) {
-		return Ref<DynamicFontAtSize>(size_cache[p_cache_id]);
+		return size_cache[p_cache_id];
 	}
 
 	Ref<DynamicFontAtSize> dfas;
@@ -50,7 +50,7 @@ Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_cach
 
 	dfas->font = Ref<DynamicFontData>(this);
 
-	size_cache[p_cache_id] = dfas.ptr();
+	size_cache[p_cache_id] = dfas;
 	dfas->id = p_cache_id;
 	dfas->_load();
 
