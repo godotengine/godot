@@ -258,6 +258,7 @@ void RigidBody::_body_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
+	ERR_FAIL_COND(!contact_monitor);
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->get().in_tree);
@@ -281,6 +282,7 @@ void RigidBody::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
+	ERR_FAIL_COND(!contact_monitor);
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->get().in_tree);
@@ -306,6 +308,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
+	ERR_FAIL_COND(!contact_monitor);
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
@@ -719,6 +722,14 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
 			//clean up mess
+			Object *obj = ObjectDB::get_instance(E->key());
+			Node *node = Object::cast_to<Node>(obj);
+
+			if (node) {
+
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+			}
 		}
 
 		memdelete(contact_monitor);
