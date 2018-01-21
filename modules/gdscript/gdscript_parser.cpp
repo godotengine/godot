@@ -460,7 +460,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				//this can be too slow for just validating code
 				if (for_completion && ScriptCodeCompletionCache::get_singleton()) {
 					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
-				} else if (FileAccess::exists(path)) {
+				} else { // essential; see issue 15902
 					res = ResourceLoader::load(path);
 				}
 				if (!res.is_valid()) {
