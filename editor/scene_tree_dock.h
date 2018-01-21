@@ -59,7 +59,6 @@ class SceneTreeDock : public VBoxContainer {
 
 		TOOL_NEW,
 		TOOL_INSTANCE,
-		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
 		TOOL_ATTACH_SCRIPT,
