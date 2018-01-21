@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_sub_scene.h"
 #include "editor/groups_editor.h"
+#include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
@@ -58,6 +59,7 @@ class SceneTreeDock : public VBoxContainer {
 
 		TOOL_NEW,
 		TOOL_INSTANCE,
+		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_CLEAR_SCRIPT,
@@ -90,6 +92,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option;
 	CreateDialog *create_dialog;
+	RenameDialog *rename_dialog;
 
 	ToolButton *button_add;
 	ToolButton *button_instance;
