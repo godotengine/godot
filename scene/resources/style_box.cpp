@@ -650,7 +650,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		style_rect = style_rect.grow(-((aa_size + 1) / 2));
 	}
 
-	//adapt borders (prevent weird overlapping/glitchy drawings)
+	//adapt borders (prevent weired overlapping/glitchy drawings)
 	int width = MAX(style_rect.size.width, 0);
 	int height = MAX(style_rect.size.height, 0);
 	int adapted_border[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
