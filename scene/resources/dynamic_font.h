@@ -50,15 +50,17 @@ class DynamicFontData : public Resource {
 public:
 	struct CacheID {
 
-		int size;
-		bool mipmaps;
-		bool filter;
-
+		union {
+			struct {
+				uint32_t size : 16;
+				bool mipmaps : 1;
+				bool filter : 1;
+			};
+			uint32_t key;
+		};
 		bool operator<(CacheID right) const;
 		CacheID() {
-			size = 16;
-			mipmaps = false;
-			filter = false;
+			key = 0;
 		}
 	};
 
