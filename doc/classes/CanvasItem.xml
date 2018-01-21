@@ -415,7 +415,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node is in the [SceneTree] and is visible on-screen.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and its inherited visibility is also [code]true[/code].
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
