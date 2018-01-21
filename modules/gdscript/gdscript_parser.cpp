@@ -458,9 +458,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			if (!validating) {
 
 				//this can be too slow for just validating code
-				if (for_completion && ScriptCodeCompletionCache::get_singleton()) {
+				if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
 					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
-				} else { // essential; see issue 15902
+				} else if (!for_completion || FileAccess::exists(path)) {
 					res = ResourceLoader::load(path);
 				}
 				if (!res.is_valid()) {
@@ -4358,8 +4358,6 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 
 	base_path = p_base_path;
 
-	clear();
-
 	//assume class
 	ClassNode *main_class = alloc_node<ClassNode>();
 	main_class->initializer = alloc_node<BlockNode>();
@@ -4384,17 +4382,7 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 
 Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path, const String &p_self_path) {
 
-	for_completion = false;
-	validating = false;
-	completion_type = COMPLETION_NONE;
-	completion_node = NULL;
-	completion_class = NULL;
-	completion_function = NULL;
-	completion_block = NULL;
-	completion_found = false;
-	current_block = NULL;
-	current_class = NULL;
-	current_function = NULL;
+	clear();
 
 	self_path = p_self_path;
 	GDScriptTokenizerBuffer *tb = memnew(GDScriptTokenizerBuffer);
@@ -4408,16 +4396,7 @@ Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const St
 
 Error GDScriptParser::parse(const String &p_code, const String &p_base_path, bool p_just_validate, const String &p_self_path, bool p_for_completion) {
 
-	completion_type = COMPLETION_NONE;
-	completion_node = NULL;
-	completion_class = NULL;
-	completion_function = NULL;
-	completion_block = NULL;
-	completion_found = false;
-	current_block = NULL;
-	current_class = NULL;
-
-	current_function = NULL;
+	clear();
 
 	self_path = p_self_path;
 	GDScriptTokenizerText *tt = memnew(GDScriptTokenizerText);
