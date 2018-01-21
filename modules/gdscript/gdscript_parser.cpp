@@ -4844,12 +4844,13 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 
 				for (int i = 0; i < p_class->extends_class.size(); i++) {
 
-					String sub = p_class->extends_class[i];
-					if (script->get_subclasses().has(sub)) {
-
-						Ref<Script> subclass = script->get_subclasses()[sub]; //avoid reference from disappearing
-						script = subclass;
-					} else {
+	//assume class
+	ClassNode *main_class = alloc_node<ClassNode>();
+	main_class->initializer = alloc_node<BlockNode>();
+	main_class->initializer->parent_class = main_class;
+	main_class->ready = alloc_node<BlockNode>();
+	main_class->ready->parent_class = main_class;
+	current_class = main_class;
 
 						_set_error("Could not find subclass: " + sub, p_class->line);
 						return;
@@ -4879,7 +4880,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 				p = NULL;
 			}
 
-			while (p) {
+	clear();
 
 				bool found = false;
 
@@ -4909,22 +4910,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 					}
 				}
 
-				if (base_class) break;
-				if (found) continue;
-
-				if (p->constant_expressions.has(base)) {
-					if (!p->constant_expressions[base].expression->type == Node::TYPE_CONSTANT) {
-						_set_error("Could not resolve constant '" + base + "'.", p_class->line);
-						return;
-					}
-					const ConstantNode *cn = static_cast<const ConstantNode *>(p->constant_expressions[base].expression);
-					base_script = cn->value;
-					if (base_script.is_null()) {
-						_set_error("Constant is not a class: " + base, p_class->line);
-						return;
-					}
-					break;
-				}
+	clear();
 
 				p = p->owner;
 			}
