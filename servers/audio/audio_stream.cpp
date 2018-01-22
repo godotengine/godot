@@ -91,6 +91,13 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 }
 ////////////////////////////////
 
+void AudioStream::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
+}
+
+////////////////////////////////
+
 void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
 
 	audio_stream = p_audio_stream;
@@ -134,6 +141,14 @@ String AudioStreamRandomPitch::get_stream_name() const {
 		return "Random: " + audio_stream->get_name();
 	}
 	return "RandomPitch";
+}
+
+float AudioStreamRandomPitch::get_length() const {
+	if (audio_stream.is_valid()) {
+		return audio_stream->get_length();
+	}
+
+	return 0;
 }
 
 void AudioStreamRandomPitch::_bind_methods() {
@@ -207,14 +222,6 @@ void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scal
 			p_buffer[i] = AudioFrame(0, 0);
 		}
 	}
-}
-
-float AudioStreamPlaybackRandomPitch::get_length() const {
-	if (playing.is_valid()) {
-		return playing->get_length();
-	}
-
-	return 0;
 }
 
 AudioStreamPlaybackRandomPitch::~AudioStreamPlaybackRandomPitch() {

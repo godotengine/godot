@@ -115,17 +115,12 @@ void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 	if (!active)
 		return;
 
-	if (p_time >= get_length()) {
+	if (p_time >= vorbis_stream->get_length()) {
 		p_time = 0;
 	}
 	frames_mixed = uint32_t(vorbis_stream->sample_rate * p_time);
 
 	stb_vorbis_seek(ogg_stream, frames_mixed);
-}
-
-float AudioStreamPlaybackOGGVorbis::get_length() const {
-
-	return vorbis_stream->length;
 }
 
 AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
@@ -259,6 +254,11 @@ void AudioStreamOGGVorbis::set_loop_offset(float p_seconds) {
 
 float AudioStreamOGGVorbis::get_loop_offset() const {
 	return loop_offset;
+}
+
+float AudioStreamOGGVorbis::get_length() const {
+
+	return length;
 }
 
 void AudioStreamOGGVorbis::_bind_methods() {

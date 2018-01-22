@@ -77,7 +77,7 @@ void AudioStreamPlaybackSample::seek(float p_time) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
 		return; //no seeking in ima-adpcm
 
-	float max = get_length();
+	float max = base->get_length();
 	if (p_time < 0) {
 		p_time = 0;
 	} else if (p_time >= max) {
@@ -390,22 +390,6 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 }
 
-float AudioStreamPlaybackSample::get_length() const {
-
-	int len = base->data_bytes;
-	switch (base->format) {
-		case AudioStreamSample::FORMAT_8_BITS: len /= 1; break;
-		case AudioStreamSample::FORMAT_16_BITS: len /= 2; break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM: len *= 2; break;
-	}
-
-	if (base->stereo) {
-		len /= 2;
-	}
-
-	return float(len) / base->mix_rate;
-}
-
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {
 
 	active = false;
@@ -467,6 +451,22 @@ void AudioStreamSample::set_stereo(bool p_enable) {
 bool AudioStreamSample::is_stereo() const {
 
 	return stereo;
+}
+
+float AudioStreamSample::get_length() const {
+
+	int len = data_bytes;
+	switch (format) {
+		case AudioStreamSample::FORMAT_8_BITS: len /= 1; break;
+		case AudioStreamSample::FORMAT_16_BITS: len /= 2; break;
+		case AudioStreamSample::FORMAT_IMA_ADPCM: len *= 2; break;
+	}
+
+	if (stereo) {
+		len /= 2;
+	}
+
+	return float(len) / mix_rate;
 }
 
 void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
