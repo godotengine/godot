@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-16 17:46+0000\n"
+"PO-Revision-Date: 2018-01-20 21:46+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -1326,9 +1326,8 @@ msgid "Description"
 msgstr "Περιγραφή"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Βοηθήματα"
+msgstr "Online Tutorial:"
 
 #: editor/editor_help.cpp
 #, fuzzy

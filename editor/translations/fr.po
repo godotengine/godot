@@ -10,7 +10,7 @@
 # Chenebel Dorian <LoubiTek54@gmail.com>, 2016-2017.
 # derderder77 <derderder77380@gmail.com>, 2016.
 # finkiki <specialpopol@gmx.fr>, 2016.
-# Gilles Roudiere <gilles.roudiere@gmail.com>, 2017.
+# Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2017.
 # Kanabenki <lucien.menassol@gmail.com>, 2017.
 # keltwookie <keltwookie@protonmail.com>, 2017.
@@ -35,8 +35,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
-"Last-Translator: Arthur Templé <tuturtemple@gmail.com>\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"Last-Translator: Gilles Roudiere <gilles.roudiere@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -539,9 +539,8 @@ msgid "Signals"
 msgstr "Signaux"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Changer le type"
+msgstr "Changer le type de %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -662,9 +661,8 @@ msgstr ""
 "Les supprimer tout de même ? (annulation impossible)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "Impossible à enlever :\n"
+msgstr "Impossible à enlever :"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -747,9 +745,8 @@ msgid "Lead Developer"
 msgstr "Développeur principal"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Gestionnaire de projets"
+msgstr "Gestionnaire de projets "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -858,9 +855,8 @@ msgid "Rename Audio Bus"
 msgstr "Renommer bus audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Basculer vers transport audio solo"
+msgstr "Modifier le volume audio du bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1106,7 +1102,6 @@ msgid "Updating scene.."
 msgstr "Mise à jour de la scène…"
 
 #: editor/editor_data.cpp
-#, fuzzy
 msgid "[empty]"
 msgstr "(vide)"
 
@@ -1152,9 +1147,8 @@ msgid "Packing"
 msgstr "Empaquetage"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Fichier modèle introuvable :\n"
+msgstr "Fichier modèle introuvable :"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1365,9 +1359,8 @@ msgid "Description"
 msgstr "Description"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Tutoriels"
+msgstr "Tutoriels en ligne :"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1433,7 +1426,7 @@ msgstr "Effacer"
 #: editor/editor_log.cpp
 #, fuzzy
 msgid "Clear Output"
-msgstr "Sortie"
+msgstr "Effacer la sortie"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1497,13 +1490,12 @@ msgid "This operation can't be done without a tree root."
 msgstr "Cette opération ne peut être réalisée sans une arborescence racine."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Impossible d'enregistrer la scène. Les dépendances (instances) n'ont sans "
-"doute pas pu être satisfaites."
+"Impossible d'enregistrer la scène. Les dépendances (instances ou héritage) "
+"n'ont sans doute pas pu être satisfaites."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1592,12 +1584,10 @@ msgstr ""
 "comprendre ce fonctionnement."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand all properties"
 msgstr "Développer tout"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Collapse all properties"
 msgstr "Réduire tout"
 
@@ -2407,14 +2397,12 @@ msgid "Frame #:"
 msgstr "Frame # :"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Time"
 msgstr "Temps :"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Calls"
-msgstr "Appel"
+msgstr "Appels"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2521,9 +2509,8 @@ msgid "No version.txt found inside templates."
 msgstr "Aucun version.txt n'a été trouvé dans les modèles."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Erreur lors de la création du chemin pour les modèles:\n"
+msgstr "Erreur lors de la création du chemin pour les modèles :"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2559,9 +2546,8 @@ msgstr "Pas de réponse."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request Failed."
-msgstr "Req. a Échoué."
+msgstr "Requête échouée."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2598,7 +2584,6 @@ msgid "Resolving"
 msgstr "Résolution"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Resolve"
 msgstr "Impossible à résoudre."
 
@@ -2608,7 +2593,6 @@ msgid "Connecting.."
 msgstr "Connexion en cours.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Connect"
 msgstr "Connexion impossible"
 
@@ -2684,10 +2668,8 @@ msgid "View items as a list"
 msgstr "Afficher les éléments sous forme de liste"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
 "Statut : L'importation du fichier a échoué. Veuillez corriger le fichier et "
 "le réimporter manuellement."
 
@@ -2696,24 +2678,20 @@ msgid "Cannot move/rename resources root."
 msgstr "Impossible de déplacer / renommer les ressources root."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Impossible de déplacer un dossier dans lui-même.\n"
+msgstr "Impossible de déplacer un dossier dans lui-même."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Erreur lors du déplacement :\n"
+msgstr "Erreur lors du déplacement :"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
-msgstr "Erreur au chargement :"
+msgstr "Erreur à la duplication :"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Impossible de mettre à jour les dépendences :\n"
+msgstr "Impossible de mettre à jour les dépendences :"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -2744,14 +2722,12 @@ msgid "Renaming folder:"
 msgstr "Renommer le dossier :"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating file:"
-msgstr "Dupliquer"
+msgstr "Duplication du fichier :"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Renommer le dossier :"
+msgstr "Duplication du dossier :"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2770,9 +2746,8 @@ msgid "Move To.."
 msgstr "Déplacer vers…"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scene(s)"
-msgstr "Ouvrir une scène"
+msgstr "Ouvrir une(des) scène(s)"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2888,14 +2863,12 @@ msgid "Importing Scene.."
 msgstr "Importation de la scène…"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Transfert vers des lightmaps :"
+msgstr "Génération des lightmaps :"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh: "
-msgstr "Générer AABB"
+msgstr "Généreration pour le Mesh : "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3158,7 +3131,7 @@ msgstr "Directions"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Past"
-msgstr "Coller"
+msgstr "Passé"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
@@ -3367,9 +3340,8 @@ msgid "Filters.."
 msgstr "Filtres…"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Animation"
+msgstr "AnimationTree"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -3540,9 +3512,8 @@ msgstr ""
 "accessible en écriture."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Transfert vers des lightmaps :"
+msgstr "Précalculer les lightmaps :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3827,9 +3798,8 @@ msgid "Clear Pose"
 msgstr "Vider la pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Drag pivot from mouse position"
-msgstr "Déplacer le point de pivot à partir de la position de la souris"
+msgstr "Déplacer le point de pivot à la position de la souris"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set pivot at mouse position"
@@ -3856,8 +3826,9 @@ msgid "Ok"
 msgstr "OK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Impossible d'instancier plusieurs nœuds sans nœud racine."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -4119,12 +4090,12 @@ msgstr "Créer un maillage de contour…"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "View UV1"
-msgstr "Affichage"
+msgstr "Afficher l'UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "View UV2"
-msgstr "Affichage"
+msgstr "Afficher l'UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
@@ -4248,9 +4219,8 @@ msgid "Bake!"
 msgstr "Calculer !"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "Créer un maillage de navigation\n"
+msgstr "Précalculer le maillage de navigation."
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -4267,21 +4237,19 @@ msgstr "Calcul de la taille de la grille..."
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Creating heightfield..."
-msgstr "Création de l'octree de lumière"
+msgstr "Création de la heightmap..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "Marquage des triangles parcourables..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Constructing compact heightfield..."
-msgstr "Construction d'un terrain compact..."
+msgstr "Construction d'une heightmap compacte..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Eroding walkable area..."
-msgstr "Abrasion de la zone parcourable..."
+msgstr "Réduction de la zone parcourable..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -4292,7 +4260,6 @@ msgid "Creating contours..."
 msgstr "Création des coutours..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Creating polymesh..."
 msgstr "Création d'un maillage de contour…"
 
@@ -4519,9 +4486,8 @@ msgid "Set Curve In Position"
 msgstr "Définir courbe en position"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Out Position"
-msgstr "Définir courbe hors position"
+msgstr "Définir la position de sortie de la courbe"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
@@ -4655,9 +4621,8 @@ msgid "Clear Recent Files"
 msgstr "Effacer les fichiers récents"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr "Quitter et sauvegarder les modifications?"
+msgstr "Quitter et sauvegarder les modifications ?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4728,14 +4693,12 @@ msgid "Soft Reload Script"
 msgstr "Recharger le script (mode doux)"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Script Path"
-msgstr "Copier le chemin"
+msgstr "Copier le chemin du script"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Show In File System"
-msgstr "Montrer dans le système de fichiers"
+msgstr "Afficher dans le système de fichiers"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
@@ -4928,9 +4891,8 @@ msgid "Clone Down"
 msgstr "Cloner en dessous"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
-msgstr "Dérouler la ligne"
+msgstr "Réduire/Développer la ligne"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -5348,9 +5310,8 @@ msgid "XForm Dialog"
 msgstr "Dialogue XForm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)"
-msgstr "Sélectionner le mode (Q)\n"
+msgstr "Sélectionner le mode (Q)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -5379,14 +5340,12 @@ msgid "Local Coords"
 msgstr "Coordonnées locales"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Local Space Mode (%s)"
-msgstr "Mode de mise à l'échelle (R)"
+msgstr "Mode d'échelle local (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode (%s)"
-msgstr "Mode d'aimantation :"
+msgstr "Mode d'aimantation (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -5633,7 +5592,7 @@ msgstr "Déplacer (Après)"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "SpriteFrames"
-msgstr "Pile des appels"
+msgstr "Images du sprite"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5642,7 +5601,7 @@ msgstr "Aperçu de la StyleBox :"
 #: editor/plugins/style_box_editor_plugin.cpp
 #, fuzzy
 msgid "StyleBox"
-msgstr "Style"
+msgstr "Style Box"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"

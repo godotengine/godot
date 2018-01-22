@@ -22,8 +22,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
-"POT-Creation-Date: 2018-01-06 09:18+0200\n"
-"PO-Revision-Date: 2018-01-20 08:53+0000\n"
+"POT-Creation-Date: 2018-01-20 12:15+0200\n"
+"PO-Revision-Date: 2018-01-20 12:54+0000\n"
 "Last-Translator: Geequlim <geequlim@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -503,7 +503,7 @@ msgstr "连接'%s'到'%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr "连接事件:"
+msgstr "连接信号:"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
@@ -511,12 +511,12 @@ msgstr "取消'%s'的连接'%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr "连接事件。"
+msgstr "连接信号.."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "删除事件连接"
+msgstr "删除信号连接"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -637,7 +637,6 @@ msgid ""
 msgstr "要删除的文件被其他资源所依赖，仍然要删除吗？（无法撤销）"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
 msgstr "无法移除:"
 
@@ -1116,7 +1115,6 @@ msgid "Packing"
 msgstr "打包中"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
 msgstr "找不到模板文件:"
 
@@ -1302,7 +1300,7 @@ msgstr "GUI主题:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr "事件:"
+msgstr "信号:"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -1329,19 +1327,17 @@ msgid "Description"
 msgstr "描述"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "教程"
+msgstr "在线教程:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"当前没有此方法的说明。请帮助我们通过 [color=$color] [url=$url] 贡献一个 [/"
-"url][/color]!"
+"暂时没有此类型的说明。请帮通过[color=$color][url=$url] 补充文档或提交请求 [/"
+"url][/color]的方式帮助我们完善文档!"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -2593,24 +2589,20 @@ msgid "Cannot move/rename resources root."
 msgstr "无法移动/重命名根资源。"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself."
 msgstr "无法将文件夹移动到其自身。"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "移动时出错:"
+msgstr "移动出错:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error duplicating:"
 msgstr "复制出错:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "无法更新依赖关系:"
+msgstr "无法更新依赖:"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -4116,9 +4108,8 @@ msgid "Bake!"
 msgstr "烘焙！"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh."
-msgstr "烘焙导航网格(mesh)."
+msgstr "烘焙导航网格(mesh)。"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -5792,9 +5783,8 @@ msgid "Select current edited sub-tile."
 msgstr "保存当前编辑的子地砖(sub-tile)。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
-msgstr "选择修改优先级的子地砖（sub-tile）。"
+msgstr "选择要修改优先级的子地砖（sub-tile）。"
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -5903,9 +5893,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "请选择一个'project.godot'文件。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "请选择一个'project.godot'文件。"
+msgstr "请选择一个空目录。"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
@@ -5916,13 +5905,12 @@ msgid "Imported Project"
 msgstr "已导入的项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
-msgstr "无法创建目录。"
+msgstr "无法创建文件夹。"
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "已存在与给定名称相同的目录。"
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -5965,7 +5953,6 @@ msgid "Import Existing Project"
 msgstr "导入现有项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
 msgstr "导入|打开"
 
@@ -5974,18 +5961,16 @@ msgid "Create New Project"
 msgstr "新建项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "创建发射器(Emitter)"
+msgstr "创建|编辑"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "安装项目:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "安装"
+msgstr "安装|编辑"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -6256,7 +6241,7 @@ msgstr "'%s'是内置设定，不能删除。"
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
-msgstr "删除输入事件"
+msgstr "删除条目"
 
 #: editor/project_settings_editor.cpp
 msgid "Can't contain '/' or ':'"
@@ -6436,11 +6421,11 @@ msgstr "目录.."
 
 #: editor/property_editor.cpp
 msgid "Assign"
-msgstr "分配(Assign)"
+msgstr "分配"
 
 #: editor/property_editor.cpp
 msgid "Select Node"
-msgstr "选择一个节点"
+msgstr "选择节点"
 
 #: editor/property_editor.cpp
 msgid "New Script"
@@ -6521,7 +6506,7 @@ msgstr "重设父节点"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "重设位置（选择父节点）:"
+msgstr "重设位置（选择新的父节点）:"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -6616,7 +6601,7 @@ msgstr "加载为占位符"
 
 #: editor/scene_tree_dock.cpp
 msgid "Discard Instancing"
-msgstr "废弃实例化"
+msgstr "放弃实例化"
 
 #: editor/scene_tree_dock.cpp
 msgid "Makes Sense!"
@@ -6649,9 +6634,8 @@ msgid "Error duplicating scene to save it."
 msgstr "复制场景出错。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "子资源:"
+msgstr "子资源"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -6846,7 +6830,7 @@ msgstr "文件路径为空"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local"
-msgstr "必须是项目路径"
+msgstr "必须是项目内的路径"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid base path"
@@ -6962,9 +6946,8 @@ msgid "Child Process Connected"
 msgstr "子进程已连接"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "加载错误"
+msgstr "复制错误信息"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -6976,7 +6959,7 @@ msgstr "编辑下一个实例"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr "堆栈帧（Frames）"
+msgstr "堆栈帧（Stack Frames）"
 
 #: editor/script_editor_debugger.cpp
 msgid "Variable"
@@ -6988,7 +6971,7 @@ msgstr "错误:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace (if applicable):"
-msgstr "调用堆栈:"
+msgstr "调用堆栈(若适用):"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -7186,7 +7169,7 @@ msgstr "没有基于脚本"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a resource file"
-msgstr "没有基于一个资源文件"
+msgstr "没有基于资源文件"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -7206,11 +7189,11 @@ msgstr "非法的字典实例（派生类非法）"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
-msgstr "对象不能提供长度。"
+msgstr "对象无法提供长度。"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
-msgstr "删除选择的栅格图"
+msgstr "删除选择的GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -7218,7 +7201,7 @@ msgstr "复制选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr "地板:"
+msgstr "层："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7236,7 +7219,7 @@ msgstr "上一个目录"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
-msgstr "下一个目录"
+msgstr "下一层"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7308,61 +7291,53 @@ msgstr "清空选中"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
-msgstr "栅格图设置"
+msgstr "GridMap设置"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
 msgstr "拾取距离:"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Generating solution..."
-msgstr "正在创建轮廓... "
+msgstr "正在创生成决方案... "
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "正在生成C#项目..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create solution."
-msgstr "无法创建轮廓(outlines)！"
+msgstr "创建解决方案失败。"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "加载资源失败。"
+msgstr "保存解决方案失败。"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "完成 !"
+msgstr "完成"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "加载资源失败。"
+msgstr "创建C#项目失败"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
-msgstr "单声道"
+msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "创建轮廓(outlines)"
+msgstr "创建C#解决方案"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "构建"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "项目"
+msgstr "构建项目"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
 msgstr "警告"
 
@@ -7431,7 +7406,7 @@ msgstr "名称不是有效的标识符："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr "名称已经被其他的函数/变量/事件占用："
+msgstr "名称已经被其他的函数/变量/信号占用："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -7443,7 +7418,7 @@ msgstr "重命名变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
-msgstr "重命名事件"
+msgstr "重命名信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Function"
@@ -7455,7 +7430,7 @@ msgstr "添加变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr "添加事件"
+msgstr "添加信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -7503,15 +7478,15 @@ msgstr "添加Preload节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "从场景导入节点"
+msgstr "从树中添加节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr "添加 Getter Property"
+msgstr "添加属性Getter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr "添加 Setter Property"
+msgstr "添加属性Setter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Base Type"
@@ -7531,31 +7506,31 @@ msgstr "连接节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
-msgstr "条件节点（Condition）"
+msgstr "条件（Condition）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr "序列节点（Sequence）"
+msgstr "序列（Sequence）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "选择节点（Switch）"
+msgstr "选择（Switch）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr "遍历节点（Iterator）"
+msgstr "遍历（Iterator）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr "条件循环节点（While）"
+msgstr "条件循环（While）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
-msgstr "返回节点（Return）"
+msgstr "返回"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr "调用到"
+msgstr "调用"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
@@ -7567,7 +7542,7 @@ msgstr "脚本已存在函数 '%s'"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
-msgstr "更改输入的值"
+msgstr "更改输入值"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -7599,7 +7574,7 @@ msgstr "编辑信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr "删除事件"
+msgstr "删除信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
@@ -7607,7 +7582,7 @@ msgstr "编辑变量："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
-msgstr "编辑事件:"
+msgstr "编辑信号:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -7619,11 +7594,11 @@ msgstr "有效节点："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr "选择或创建一个函数来编辑图"
+msgstr "选择或创建一个函数来编辑"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr "编辑事件参数:"
+msgstr "编辑信号参数:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
@@ -7631,7 +7606,7 @@ msgstr "编辑变量:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr "删除选择的节点"
+msgstr "删除已选中"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
@@ -7675,7 +7650,7 @@ msgstr "路径必须指向节点！"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "节点 '%s' 的 '%s' 为无效索引属性名。"
+msgstr "'%s'这个属性名的在节点'%s'中不存在。"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -7709,37 +7684,31 @@ msgstr "在浏览器中运行"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr "使用默认浏览器打开导出的HTML文件."
+msgstr "使用默认浏览器打开导出的HTML文件。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "无法写入文件:\n"
+msgstr "无法写入文件:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:"
-msgstr "无法打开导出模板：\n"
+msgstr "无法打开导出模板："
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "无效的导出模板：\n"
+msgstr "导出模板无效："
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "无法读取自定义HTML命令:\n"
+msgstr "无法读取自定义HTML命令:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "无法读取启动图片文件：\n"
+msgstr "无法读取启动图片:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "无法读取启动图片文件：\n"
+msgstr "使用默认启动图片。"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7763,6 +7732,8 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define it's shape."
 msgstr ""
+"该节点没有描述其形状的子节点，因此它将无法进行碰撞交互。\n"
+"请添加CollisionShape2D或CollisionPolygon2D类型的子节点来定义它的形状。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7836,7 +7807,7 @@ msgstr "粒子材质没有指定，该行为无效。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D类型的节点只有放在Path2D节点下才能正常工作。"
+msgstr "PathFollow2D类型的节点只有作为Path2D的子节点节才能正常工作。"
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -7844,13 +7815,13 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"运行时，修改RigidBody2D （character或rigid模式）的尺寸，会修改物理引擎的大小"
-"尺寸。\n"
-"修改子节点碰撞形状的大小作为代替。"
+"对RigidBody2D （在character或rigid模式想）的尺寸修改在运行时会被物理引擎的覆"
+"盖。\n"
+"建议您修改子节点的碰撞形状。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "path属性必须指向一个合法的Node2D节点才能正常工作。"
+msgstr "Path属性必须指向一个合法的Node2D节点才能正常工作。"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -7911,6 +7882,8 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "it's shape."
 msgstr ""
+"该节点没有描述其形状的子节点，因此它将无法进行碰撞交互。\n"
+"请添加CollisionShape或CollisionPolygon类型的子节点来定义它的形状。"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7948,7 +7921,7 @@ msgstr "正在绘制网格"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "此节点需要设置NavigationMesh资源才能工作。"
+msgstr "此节点需要设置NavigationMesh资源才能正常工作。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
@@ -7960,7 +7933,7 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr "粒子不可见，因为没有网格(meshes)指定到绘制通道(draw passes)。"
+msgstr "粒子不可见，因为没有网格(meshe)指定到绘制通道(draw passes)。"
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -7968,9 +7941,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"运行时，修改RigidBody（character或rigid模式）的尺寸，会修改物理引擎的大小尺"
-"寸。\n"
-"修改子节点碰撞形状的大小作为代替。"
+"对RigidBody（在character或rigid模式下）的尺寸修改，在运行时会被物理引擎的覆"
+"盖。\n"
+"建议您修改子节点的碰撞形状。"
 
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
@@ -7994,7 +7967,8 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
-"VehicleWheel 为 VehicleBody 提供一个车轮系统。请将它作为VehicleBody的子节点。"
+"VehicleWheel 为 VehicleBody 提供一个车轮系统（Wheel System）。请将它作为"
+"VehicleBody的子节点。"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -8022,8 +7996,8 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
-"Popup对象默认保持隐藏，除非你调用popup()方法。编辑时可以让它们保持可见，但运"
-"行时它们会自动隐藏。"
+"Popup对象默认保持隐藏，除非你调用popup()或其他popup相关方法。编辑时可以让它们"
+"保持可见，但它在运行时们会自动隐藏。"
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -8032,19 +8006,17 @@ msgid ""
 "minimum size manually."
 msgstr ""
 "ScrollContainer旨在与单个子控件配合使用。\n"
-"使用Container（VBox，HBox等）作为其子控件并手动或设置Control的自定义最小尺"
-"寸。"
+"请使用Container（VBox，HBox等）作为其子控件或手动设置Control的最小尺寸。"
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
 msgstr "(其它)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
-msgstr "项目设置中的默认环境无法加载，详见（渲染->视图->默认环境） 。"
+msgstr "无法加载项目设置中的默认环境，详见（渲染->视图->默认环境）。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -8053,9 +8025,9 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"这个Viewport未设置为render target。如果你刻意打算让其直接在屏幕上显示其内容，"
-"使其成为子控件的所以它可以有一个尺寸大小值。否则请设置为Render target，并将其"
-"内部纹理分配给一些节点以显示。"
+"这个Viewport未设置为渲染目标(render target)。如果你刻意打算让其直接在屏幕上显"
+"示其内容，使其成为子控件的所以它可以有一个尺寸大小值。否则请设置为Render "
+"target，并将其内部纹理分配给一些节点以显示。"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."

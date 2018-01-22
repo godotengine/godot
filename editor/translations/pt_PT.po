@@ -16,7 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -1336,19 +1336,18 @@ msgid "Description"
 msgstr "Descrição"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Documentação Online"
+msgstr "Tutoriais Online:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Atualmente não existe descrição para este Método. Por favor ajude-nos [color="
-"$color][url=$url]contribuindo com uma[/url][/color]!"
+"Atualmente não existem tutoriais para esta classe, pode [color=$color][url="
+"$url]contribuir com um[/url][/color] ou [color=$color][url=$url2]solicitar "
+"um[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -2480,7 +2479,7 @@ msgstr "A Extrair os Modelos de Exportação"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "Importando:"
+msgstr "A Importar:"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3779,7 +3778,7 @@ msgstr "Ok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Impossível instanciar nós múltiplos sem raiz."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5840,9 +5839,8 @@ msgid "Select current edited sub-tile."
 msgstr "Selecionar o sub-tile editado."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
-msgstr "Selecionar sub-tile para alterar prioridade."
+msgstr "Selecionar sub-tile para alterar a sua prioridade."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -5957,9 +5955,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Escolha um Ficheiro 'project.godot'."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "Escolha um Ficheiro 'project.godot'."
+msgstr "Por favor escolha uma pasta vazia."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
@@ -7817,6 +7814,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define it's shape."
 msgstr ""
+"Este nó não tem formas filhos, não conseguindo assim interagir com o "
+"espaço.\n"
+"Considere adicionar nós filhos CollisionShape2D ou CollisionPolygon2D para "
+"definir a sua forma."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7983,6 +7984,10 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "it's shape."
 msgstr ""
+"Este nó não tem formas filhos, não conseguindo assim interagir com o "
+"espaço.\n"
+"Considere adicionar nós filhos CollisionShape ou CollisionPolygon para "
+"definir a sua forma."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8124,7 +8129,6 @@ msgid "(Other)"
 msgstr "(Outro)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."

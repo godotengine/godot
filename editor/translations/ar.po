@@ -19,7 +19,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:53+0000\n"
+"PO-Revision-Date: 2018-01-22 08:07+0000\n"
 "Last-Translator: omar anwar aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -1333,19 +1333,18 @@ msgid "Description"
 msgstr "الوصف"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "مستندات الإنترنت"
+msgstr "الدورس علي الإنترنت:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"لا يوجد حاليا وصف لهذه الطريقة. الرجاء المساعدة من خلال [color=$color][url="
-"$url]المساهمة واحد[/url][/color] !"
+"ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] المساهمة "
+"في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها [/url][/"
+"color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"

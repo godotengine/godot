@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"PO-Revision-Date: 2018-01-20 09:49+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -1319,17 +1319,17 @@ msgid "Description"
 msgstr "รายละเอียด"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "คู่มือ"
+msgstr "สอนใช้งานออนไลน์:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
-msgstr "เมท็อดนี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
+msgstr ""
+"คลาสนี้ยังไม่มีการสอนการใช้งาน ท่านสามารถ[color=$color][url=$url]ช่วยเขียน[/url][/"
+"color] หรือ [color=$color][url=$url2]ขอให้จัดทำ[/url][/color]"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -3712,7 +3712,7 @@ msgstr "ตกลง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "อินสแตนซ์หลาย ๆ โหนดโดยที่ไม่มีโหนดรากไม่ได้"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5769,7 +5769,6 @@ msgid "Select current edited sub-tile."
 msgstr "เลือกไทล์ย่อยที่กำลังปรับแต่ง"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
 msgstr "เลือกไทล์ย่อยเพื่อจัดลำดับความสำคัญ"
 
@@ -5880,9 +5879,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "กรุณาเลือกไฟล์ 'project.godot'"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "กรุณาเลือกไฟล์ 'project.godot'"
+msgstr "กรุณาเลือกโฟลเดอร์ว่างเปล่า"
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
@@ -7687,12 +7685,11 @@ msgstr "ไม่สามารถอ่านโครงสร้าง HTML:
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read boot splash image file:"
-msgstr "ไม่สามารถอ่านไฟล์ภาพขณะบูต:"
+msgstr "ไม่สามารถอ่านไฟล์ภาพขณะเริ่มเกม:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "ใช้ภาพขณะบูตปริยาย"
+msgstr "ใช้ภาพขณะเริ่มเกมปริยาย"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7714,6 +7711,8 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define it's shape."
 msgstr ""
+"โหนดนี้ไม่มีโหนดรูปทรงเป็นโหนดลูก จึงไม่มีผลทางกายภาพ\n"
+"กรุณาเพิ่ม CollisionShape2D หรือ CollisionPolygon2D เป็นโหนดลูกเพื่อให้มีรูปทรง"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7859,6 +7858,8 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "it's shape."
 msgstr ""
+"โหนดนี้ไม่มีโหนดรูปทรงเป็นโหนดลูก จึงไม่มีผลทางกายภาพ\n"
+"กรุณาเพิ่ม CollisionShape หรือ CollisionPolygon เป็นโหนดลูกเพื่อให้มีรูปทรง"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7983,7 +7984,6 @@ msgid "(Other)"
 msgstr "(อื่น)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."

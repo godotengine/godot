@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-20 08:54+0000\n"
-"Last-Translator: paijai 송 (fivejobi) <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2018-01-20 17:48+0000\n"
+"Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -1328,19 +1328,18 @@ msgid "Description"
 msgstr "설명"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "튜토리얼"
+msgstr "온라인 튜토리얼:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"현재 이 메서드에 대한 상세설명이 없습니다. [color=$color][url=$url]관련 정보"
-"를 기여하여[/url][/color] 더 나아지게 도와주세요!"
+"현재 이 클래스에 대한 튜토리얼이 없습니다. [color=$color][url=$url]도움을 주"
+"시거나[/url][/color] [color=$color][url=$url2]요청 하실 수[/url][/color] 있습"
+"니다."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -3760,7 +3759,7 @@ msgstr "확인"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "루트 노드없이 여러개의 노드를 생성할 수 없습니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5819,7 +5818,6 @@ msgid "Select current edited sub-tile."
 msgstr "현재 편집된 서브 타일 선택."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
 msgstr "서브 타일을 선택해 우선 순위를 바꿉니다."
 
@@ -5930,9 +5928,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "'project.godot' 파일을 선택하세요."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "'project.godot' 파일을 선택하세요."
+msgstr "비어있는 폴더를 선택하세요."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
@@ -7784,6 +7781,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define it's shape."
 msgstr ""
+"이 노드는 모양을 갖는 자식 노드가 없어서, 공간상에서 상호작용할 수 없습니"
+"다.\n"
+"CollisionShape2D 또는 CollisionPolygon2D을 자식 노드로 추가하여 모양을 정의하"
+"세요."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7939,6 +7940,10 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "it's shape."
 msgstr ""
+"이 노드는 모양을 갖는 자식 노드가 없어서, 공간상에서 상호작용할 수 없습니"
+"다.\n"
+"CollisionShape 또는 CollisionPolygon을 자식 노드로 추가하여 모양을 정의하세"
+"요."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8074,7 +8079,6 @@ msgid "(Other)"
 msgstr "(기타)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."

@@ -13,8 +13,9 @@
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
 # Kamil Lewan <lewan.kamil@gmail.com>, 2016.
 # Karol Walasek <coreconviction@gmail.com>, 2016.
-# Maksymilian Świąć <maksymilian.swiac@gmail.com>, 2017.
+# Maksymilian Świąć <maksymilian.swiac@gmail.com>, 2017-2018.
 # Mietek Szcześniak <ravaging@go2.pl>, 2016.
+# NeverK <neverkoxu@gmail.com>, 2018.
 # Rafal Brozio <rafal.brozio@gmail.com>, 2016.
 # Rafał Ziemniak <synaptykq@gmail.com>, 2017.
 # Sebastian Krzyszkowiak <dos@dosowisko.net>, 2017.
@@ -25,8 +26,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:55+0000\n"
-"Last-Translator: Daniel Lewan <vision360.daniel@gmail.com>\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"Last-Translator: Maksymilian Świąć <maksymilian.swiac@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -3190,7 +3191,7 @@ msgstr "Mieszanie"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr "Mix"
+msgstr "Miks"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
@@ -3309,7 +3310,7 @@ msgstr "Filtry.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationTree"
+msgstr "Drzewo animacji"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -4022,7 +4023,7 @@ msgstr "Model nie posiada UV w tej warstwie"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "MeshInstance nie posiada siatki! "
+msgstr "MeshInstance nie posiada siatki!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy

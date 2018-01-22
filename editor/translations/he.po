@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:54+0000\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
@@ -1513,27 +1513,27 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Expand all properties"
-msgstr ""
+msgstr "הרחבת כל המאפיינים"
 
 #: editor/editor_node.cpp
 msgid "Collapse all properties"
-msgstr ""
+msgstr "צמצום כל המאפיינים"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
-msgstr ""
+msgstr "העתקת משתנים"
 
 #: editor/editor_node.cpp
 msgid "Paste Params"
-msgstr ""
+msgstr "הדבקת משתנים"
 
 #: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
-msgstr ""
+msgstr "הדבקת משאב"
 
 #: editor/editor_node.cpp
 msgid "Copy Resource"
-msgstr ""
+msgstr "העתקת משאב"
 
 #: editor/editor_node.cpp
 msgid "Make Built-In"
@@ -1545,11 +1545,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
-msgstr ""
+msgstr "פתיחה בעזרה"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "אין סצנה מוגדרת להרצה."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1578,47 +1578,47 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "לא ניתן להפעיל תהליך משנה!"
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "פתיחת סצנה"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "פתיחת סצנת בסיס"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "פתיחת סצנה מהירה…"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr ""
+msgstr "פתיחת סקריפט מהירה…"
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr ""
+msgstr "שמירה וסגירה"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "לשמור את השינויים ל־‚%s’ לפני הסגירה?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "שמירת סצנה בשם…"
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "לא"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "כן"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "סצנה זאת מעולם לא נשמרה. לשמור לפני ההרצה?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -7513,23 +7513,23 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
-msgstr ""
+msgstr "איתור סוג מפרק"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr ""
+msgstr "העתקת מפרקים"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
+msgstr "גזירת מפרקים"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
-msgstr ""
+msgstr "הדבקת מפרקים"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "סוג הקלט לא זמין למחזוריות: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
@@ -7541,15 +7541,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr ""
+msgstr "שם מאפיין האינדקס שגוי."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "עצם הבסיס איננו מפרק!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "הנתיב לא מוביל מפרק!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
@@ -7557,23 +7557,23 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ""
+msgstr ": ארגומנט שגוי מסוג: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ""
+msgstr ": ארגומנטים שגויים: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "לא נמצא VariableGet בסקריפט: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "לא נמצא VariableSet בסקריפט: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr ""
+msgstr "למפרק המותאם אין שיטת ‎_step()‎, אין אפשרות לעבד תרשים."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
@@ -7583,35 +7583,35 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
-msgstr ""
+msgstr "הפעלה בדפדפן"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr ""
+msgstr "הפעלת ה־HTML המיוצא בדפדפן בררת המחדל של המערכת."
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
-msgstr ""
+msgstr "לא ניתן לכתוב קובץ:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not open template for export:"
-msgstr ""
+msgstr "לא ניתן לפתוח תבנית לייצוא:"
 
 #: platform/javascript/export/export.cpp
 msgid "Invalid export template:"
-msgstr ""
+msgstr "תבנית יצוא שגויה:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read custom HTML shell:"
-msgstr ""
+msgstr "לא ניתן לקרוא מעטפת HTML מותאמת:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read boot splash image file:"
-msgstr ""
+msgstr "לא ניתן לקרוא קובץ תמונת פתיח:"
 
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
-msgstr ""
+msgstr "נעשה שימוש בתמונת הפתיח כבררת מחדל."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7687,16 +7687,17 @@ msgstr ""
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
+"מפרק ParallaxLayer עובד רק כאשר הוא מוגדר כצאצא של מפרק ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
-msgstr ""
+msgstr "לא מוקצה חומר לעיבוד חלקיקים, לכן לא תוטבע התנהגות."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
+msgstr "PathFollow2D עובד רק כאשר הוא מוגדר כצאצא של מפרק Path2D."
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -7717,7 +7718,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ל־ARVRCamera חייב להיות מפרק ARVROrigin כהורה שלו"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent"
@@ -7741,7 +7742,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node"
-msgstr ""
+msgstr "ARVROrigin דורש מפרק צאצא מסוג ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -7775,7 +7776,7 @@ msgstr ""
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "ל־CollisionPolygon ריק אין כל השפעה על התנגשות."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -7895,11 +7896,11 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "מבנה הגופן לא ידוע."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "שגיאה בטעינת הגופן."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."

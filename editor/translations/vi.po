@@ -3,6 +3,7 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Dlean Jeans <dleanjeans@gmail.com>, 2018.
 # Hai Le <dark.hades.1102@gmail.com>, 2017.
 # Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
 # Tung Le <tungkradle@gmail.com>, 2017.
@@ -10,15 +11,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-25 13:51+0000\n"
-"Last-Translator: Hai Le <dark.hades.1102@gmail.com>\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"Last-Translator: Dlean Jeans <dleanjeans@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 #, fuzzy
@@ -680,7 +681,7 @@ msgstr ""
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr ""
+msgstr "Xóa"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
@@ -696,7 +697,7 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr ""
+msgstr "Cảm ơn!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -5970,41 +5971,43 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr ""
+msgstr "List Project"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Quét"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr ""
+msgstr "Chọn một Folder để Quét"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Tạo Project"
 
 #: editor/project_manager.cpp
 msgid "Templates"
-msgstr ""
+msgstr "Khung project"
 
 #: editor/project_manager.cpp
 msgid "Exit"
-msgstr ""
+msgstr "Thoát"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr ""
+msgstr "Restart ngay"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
-msgstr ""
+msgstr "Không thể chạy project"
 
 #: editor/project_manager.cpp
 msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"Hiện giờ bạn không có project nào.\n"
+"Bạn có muốn xem các project official ví dụ trên Asset Library không?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7859,7 +7862,7 @@ msgstr "Xin hãy xác nhận..."
 
 #: scene/gui/file_dialog.cpp
 msgid "Select this Folder"
-msgstr ""
+msgstr "Chọn folder này"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7867,6 +7870,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"Các popup sẽ mặc định là ẩn trừ khi bạn gọi popup() hoặc bất kì function nào "
+"có dạng popup*(). Có thể để popup nhìn thấy được để chỉnh sửa, nhưng chúng "
+"sẽ ẩn khi chạy."
 
 #: scene/gui/scroll_container.cpp
 msgid ""

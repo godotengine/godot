@@ -11,6 +11,7 @@
 # Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 # jonathan railarem <railarem@gmail.com>, 2017.
+# Lucas Silva <lucasb.hpp@gmail.com>, 2018.
 # Luiz G. Correia <luizgabriell2.0@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 # MalcomRF <malcomkbk@gmail.com>, 2017.
@@ -24,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"PO-Revision-Date: 2018-01-22 08:08+0000\n"
 "Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
 "com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
@@ -176,7 +177,7 @@ msgstr "Constante"
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr "In"
+msgstr "Em"
 
 #: editor/animation_editor.cpp
 msgid "Out"
@@ -1343,19 +1344,18 @@ msgid "Description"
 msgstr "Descrição"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Tutoriais"
+msgstr "Tutoriais Online:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Atualmente não existe descrição para este método. Por favor nos ajude [color="
-"$color][url=$url]contribuindo uma[/url][/color]!"
+"Atualmente não há tutoriais para essa classe. Você pode [color=$color][url="
+"$url]contribuir criando um[/url][/color] ou [color=$color][url="
+"$url2]solicitar[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -3793,7 +3793,7 @@ msgstr "Ok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Impossível instanciar múltiplos nós sem uma raiz."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5857,7 +5857,6 @@ msgid "Select current edited sub-tile."
 msgstr "Selecione o sub-tile editado atual."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
 msgstr "Selecione o sub-tile para alterar sua prioridade."
 
@@ -5976,9 +5975,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Por favor, escolha um arquivo 'project.godot'."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "Por favor, escolha um arquivo 'project.godot'."
+msgstr "Por favor, escolha uma pasta vazia."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
@@ -6907,7 +6905,7 @@ msgstr "Erro ao carregar modelo '%s'"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
-msgstr "Erro - Não foi possível criar o script no sistema de arquivos."
+msgstr "Erro - Não se pôde criar o script no sistema de arquivos."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
@@ -7838,6 +7836,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define it's shape."
 msgstr ""
+"Este nó não possui filhos com formas, então não pode interagir com o "
+"espaço.\n"
+"Considere adicionar os nós CollisionShape2D ou CollisionPolygon2D como filho "
+"para definir sua forma."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -8004,6 +8006,10 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "it's shape."
 msgstr ""
+"Este nó não possui filhos com formas, então não pode interagir com o "
+"espaço.\n"
+"Considere adicionar os nós CollisionShape2D ou CollisionPolygon2D como filho "
+"para definir sua forma."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8143,13 +8149,12 @@ msgid "(Other)"
 msgstr "(Outro)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"O Ambiente Padrão como especificado nas Configurações de Projeto (Rendering -"
-"> Environment -> Default Environment)  não pôde ser carregado."
+"O Ambiente Padrão especificado nas Configurações de Projeto (Rendering -> "
+"Environment -> Default Environment)  não pôde ser carregado."
 
 #: scene/main/viewport.cpp
 msgid ""
