@@ -7628,7 +7628,7 @@ msgstr ""
 msgid ""
 "This node has no children shapes, so it can't interact with the space.\n"
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
-"define it's shape."
+"define its shape."
 msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -7762,7 +7762,7 @@ msgstr ""
 msgid ""
 "This node has no children shapes, so it can't interact with the space.\n"
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
-"it's shape."
+"its shape."
 msgstr ""
 
 #: scene/3d/collision_polygon.cpp
