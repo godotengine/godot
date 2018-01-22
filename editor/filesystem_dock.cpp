@@ -958,7 +958,12 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	//Present a more user friendly warning for name conflict
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+#if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
+	// Workaround case insensitivity on Windows
+	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
+#else
 	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
+#endif
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
 		memdelete(da);
 		return;
