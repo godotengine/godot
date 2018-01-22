@@ -955,7 +955,8 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
 
-		ERR_FAIL_COND(PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode);
+		if (PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode)
+			return;
 
 		m_isStatic = false;
 		compoundShape->calculateLocalInertia(p_mass, localInertia);
@@ -975,7 +976,8 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 		}
 	} else {
 
-		ERR_FAIL_COND(PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode);
+		if (PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode)
+			return;
 
 		m_isStatic = true;
 		if (PhysicsServer::BODY_MODE_STATIC == mode) {
