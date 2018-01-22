@@ -903,7 +903,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
-	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps", 60));
+	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
