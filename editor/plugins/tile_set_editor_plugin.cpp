@@ -420,7 +420,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_DELETE]);
-	tool_containers[TOOLBAR_SHAPE]->add_change_receptor(memnew(VSeparator));
+	tool_containers[TOOLBAR_SHAPE]->add_child(memnew(VSeparator));
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
@@ -546,6 +546,10 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	preview->set_centered(false);
 	preview->set_draw_behind_parent(true);
 	preview->set_region(true);
+}
+
+AutotileEditor::~AutotileEditor() {
+	memdelete(helper);
 }
 
 void AutotileEditor::_bind_methods() {

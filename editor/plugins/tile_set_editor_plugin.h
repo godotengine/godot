@@ -120,6 +120,7 @@ class AutotileEditor : public Control {
 	AutotileEditorHelper *helper;
 
 	AutotileEditor(EditorNode *p_editor);
+	~AutotileEditor();
 
 protected:
 	static void _bind_methods();
