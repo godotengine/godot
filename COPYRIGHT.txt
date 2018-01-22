@@ -1050,11 +1050,11 @@ License: MPL-2.0
      means
  .
      (a) that the initial Contributor has attached the notice described
-	 in Exhibit B to the Covered Software; or
+         in Exhibit B to the Covered Software; or
  .
      (b) that the Covered Software was made available under the terms of
-	 version 1.1 or earlier of the License, but not also under the
-	 terms of a Secondary License.
+         version 1.1 or earlier of the License, but not also under the
+         terms of a Secondary License.
  .
  1.6. "Executable Form"
      means any form of the work other than Source Code Form.
@@ -1075,11 +1075,11 @@ License: MPL-2.0
      means any of the following:
  .
      (a) any file in Source Code Form that results from an addition to,
-	 deletion from, or modification of the contents of Covered
-	 Software; or
+         deletion from, or modification of the contents of Covered
+         Software; or
  .
      (b) any new file in Source Code Form that contains any Covered
-	 Software.
+         Software.
  .
  1.11. "Patent Claims" of a Contributor
      means any patent claim(s), including without limitation, method,
