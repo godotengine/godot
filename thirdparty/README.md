@@ -26,9 +26,9 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: ?
-
-TODO.
+- Upstream: Mozilla, via https://packages.ubuntu.com/xenial-updates/ca-certificates
+- Version: 2016-ish
+- License: MPL 2.0
 
 
 ## enet
