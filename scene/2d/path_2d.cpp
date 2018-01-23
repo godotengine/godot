@@ -39,7 +39,7 @@
 
 Rect2 Path2D::_edit_get_rect() const {
 
-	if (curve->get_point_count() == 0)
+	if (!curve.is_valid() || curve->get_point_count() == 0)
 		return Rect2(0, 0, 0, 0);
 
 	Rect2 aabb = Rect2(curve->get_point_position(0), Vector2(0, 0));
