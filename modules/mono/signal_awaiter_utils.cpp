@@ -102,7 +102,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	GDMonoUtils::SignalAwaiter_SignalCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback);
 
 	MonoObject *ex = NULL;
-	thunk(get_target(), &signal_args, &ex);
+	thunk(get_target(), signal_args, &ex);
 
 	if (ex) {
 		mono_print_unhandled_exception(ex);
