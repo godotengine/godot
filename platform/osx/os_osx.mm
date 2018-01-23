@@ -34,11 +34,11 @@
 #include "main/main.h"
 #include "os/keyboard.h"
 #include "print_string.h"
+#include "scene/resources/texture.h"
 #include "sem_osx.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include "scene/resources/texture.h"
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -502,9 +502,10 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 
-	if (OS_OSX::singleton->input)
+	if (OS_OSX::singleton->input) {
 		OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
 		OS_OSX::singleton->set_cursor_shape(OS::CURSOR_ARROW);
+	}
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -1193,7 +1194,7 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){
+void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<ImageTexture> texture = p_cursor;
 		Image image = texture->get_data();
@@ -1203,16 +1204,16 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
 
 		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
-						initWithBitmapDataPlanes:NULL
-						pixelsWide:image.get_width()
-						pixelsHigh:image.get_height()
-						bitsPerSample:8
-						samplesPerPixel:4
-						hasAlpha:YES
-						isPlanar:NO
-						colorSpaceName:NSDeviceRGBColorSpace
-						bytesPerRow:image.get_width() * 4
-						bitsPerPixel:32] autorelease];
+				initWithBitmapDataPlanes:NULL
+							  pixelsWide:image.get_width()
+							  pixelsHigh:image.get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:image.get_width() * 4
+							bitsPerPixel:32] autorelease];
 		ERR_FAIL_COND(imgrep == nil);
 		uint8_t *pixels = [imgrep bitmapData];
 
@@ -1229,10 +1230,10 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			pixels[i * 4 + 3] = alpha;
 		}
 
-		NSImage * nsimage = [[[NSImage alloc] initWithSize: NSMakeSize(image.get_width(), image.get_height())] autorelease];
-		[nsimage addRepresentation: imgrep];
-		
-		NSCursor *cursor = [[NSCursor alloc] initWithImage: nsimage hotSpot: NSMakePoint(p_hotspot.x, p_hotspot.y)];
+		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(image.get_width(), image.get_height())] autorelease];
+		[nsimage addRepresentation:imgrep];
+
+		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
 
 		cursors[p_shape] = cursor;
 
@@ -1816,6 +1817,8 @@ OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
 			layout = LATIN_KEYBOARD_DVORAK;
 		} else if ([test isEqualToString:@"xvlcwk"]) {
 			layout = LATIN_KEYBOARD_NEO;
+		} else if ([test isEqualToString:@"qwfpgj"]) {
+			layout = LATIN_KEYBOARD_COLEMAK;
 		}
 
 		[test release];

@@ -68,6 +68,8 @@
 
 #undef CursorShape
 
+#include <X11/XKBlib.h>
+
 int OS_X11::get_video_driver_count() const {
 	return 1;
 }
@@ -2199,6 +2201,38 @@ void OS_X11::set_context(int p_context) {
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
 	}
+}
+
+OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
+
+	XkbDescRec *xkbdesc = XkbAllocKeyboard();
+	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
+
+	XkbGetNames(x11_display, XkbSymbolsNameMask, xkbdesc);
+	ERR_FAIL_COND_V(!xkbdesc->names, LATIN_KEYBOARD_QWERTY);
+	ERR_FAIL_COND_V(!xkbdesc->names->symbols, LATIN_KEYBOARD_QWERTY);
+
+	char *layout = XGetAtomName(x11_display, xkbdesc->names->symbols);
+	ERR_FAIL_COND_V(!layout, LATIN_KEYBOARD_QWERTY);
+
+	Vector<String> info = String(layout).split("+");
+	ERR_FAIL_INDEX_V(1, info.size(), LATIN_KEYBOARD_QWERTY);
+
+	if (info[1].find("colemak") != -1) {
+		return LATIN_KEYBOARD_COLEMAK;
+	} else if (info[1].find("qwertz") != -1) {
+		return LATIN_KEYBOARD_QWERTZ;
+	} else if (info[1].find("azerty") != -1) {
+		return LATIN_KEYBOARD_AZERTY;
+	} else if (info[1].find("qzerty") != -1) {
+		return LATIN_KEYBOARD_QZERTY;
+	} else if (info[1].find("dvorak") != -1) {
+		return LATIN_KEYBOARD_DVORAK;
+	} else if (info[1].find("neo") != -1) {
+		return LATIN_KEYBOARD_NEO;
+	}
+
+	return LATIN_KEYBOARD_QWERTY;
 }
 
 OS_X11::OS_X11() {
