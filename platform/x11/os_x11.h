@@ -285,6 +285,8 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+
 	OS_X11();
 };
 
