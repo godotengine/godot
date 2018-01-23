@@ -479,6 +479,9 @@ void FileAccess::store_double(double p_dest) {
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
 
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V(!fa, 0);
 
