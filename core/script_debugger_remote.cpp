@@ -598,7 +598,13 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	Array send_props;
 	for (int i = 0; i < properties.size(); i++) {
 		const PropertyInfo &pi = properties[i].first;
-		const Variant &var = properties[i].second;
+		Variant &var = properties[i].second;
+
+		WeakRef *ref = Object::cast_to<WeakRef>(var);
+		if (ref) {
+			var = ref->get_ref();
+		}
+
 		RES res = var;
 
 		Array prop;
