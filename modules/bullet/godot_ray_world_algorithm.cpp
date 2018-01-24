@@ -35,6 +35,8 @@
 
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 
+#define RAY_STABILITY_MARGIN 0.1
+
 /**
 	@author AndreaCatania
 */
@@ -97,10 +99,15 @@ void GodotRayWorldAlgorithm::processCollision(const btCollisionObjectWrapper *bo
 	m_world->rayTestSingleInternal(ray_transform, to, other_co_wrapper, btResult);
 
 	if (btResult.hasHit()) {
-		btVector3 ray_normal(to.getOrigin() - ray_transform.getOrigin());
+
+		btVector3 ray_normal(ray_transform.getOrigin() - to.getOrigin());
 		ray_normal.normalize();
-		ray_normal *= -1;
-		resultOut->addContactPoint(ray_normal, btResult.m_hitPointWorld, ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
+		btScalar depth(ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
+
+		if (depth >= -RAY_STABILITY_MARGIN)
+			depth = 0;
+
+		resultOut->addContactPoint(ray_normal, btResult.m_hitPointWorld, depth);
 	}
 }
 
