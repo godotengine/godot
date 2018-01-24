@@ -430,16 +430,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	// can't fulfil fullscreen request due to browser security
 	video_mode.fullscreen = false;
 	/* clang-format off */
-	bool resize_canvas_on_start = EM_ASM_INT_V(
-		return Module.resizeCanvasOnStart;
-	);
-	/* clang-format on */
-	if (resize_canvas_on_start) {
+	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {
+		/* clang-format on */
 		set_window_size(Size2(video_mode.width, video_mode.height));
 	} else {
-		Size2 canvas_size = get_window_size();
-		video_mode.width = canvas_size.width;
-		video_mode.height = canvas_size.height;
+		set_window_size(get_window_size());
 	}
 
 	char locale_ptr[16];
