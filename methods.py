@@ -1504,7 +1504,6 @@ def split_lib(self, libname, src_list = None, env_lib = None):
         if base != cur_base and len(list) > max_src:
             if num > 0:
                 lib = env_lib.add_library(libname + str(num), list)
-                print("adding library ", libname, num)
                 lib_list.append(lib)
                 list = []
             num = num + 1
