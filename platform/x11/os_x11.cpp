@@ -217,7 +217,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 			XIFreeDeviceInfo(info);
 
-			if (!touch.devices.size()) {
+			if (is_stdout_verbose() && !touch.devices.size()) {
 				fprintf(stderr, "No touch devices found\n");
 			}
 		}
