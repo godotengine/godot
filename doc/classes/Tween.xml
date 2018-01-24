@@ -350,7 +350,7 @@
 		<signal name="tween_completed">
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="NodePath">
 			</argument>
 			<description>
 				This signal is emitted when a tween ends.
@@ -359,7 +359,7 @@
 		<signal name="tween_started">
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="NodePath">
 			</argument>
 			<description>
 				This signal is emitted when a tween starts.
@@ -368,7 +368,7 @@
 		<signal name="tween_step">
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="NodePath">
 			</argument>
 			<argument index="2" name="elapsed" type="float">
 			</argument>
