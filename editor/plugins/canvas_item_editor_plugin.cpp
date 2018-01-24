@@ -1953,9 +1953,9 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 					if (node) {
 						real_t angle = node->get_rotation();
-						node->set_rotation(snap_angle(angle + (dfrom - center).angle_to(dto - center), angle));
 						display_rotate_to = dto;
-						display_rotate_from = center;
+						display_rotate_from = center + node->get_pivot_offset().rotated(angle);
+						node->set_rotation(snap_angle(angle + (dfrom - display_rotate_from).angle_to(display_rotate_to - display_rotate_from), angle));
 						viewport->update();
 					}
 				}
