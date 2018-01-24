@@ -204,8 +204,7 @@
 				var c = Color(1, .5, .2)
 				print(str(c.to_32())) # prints 4294934323
 				[/codeblock]
-
-				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
+				[i]This is same as [method to_argb32] but may be changed later to support RGBA format instead[/i].
 			</description>
 		</method>
 	</methods>
