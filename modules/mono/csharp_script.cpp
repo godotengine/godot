@@ -1133,10 +1133,13 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 
 	MonoObject *mono_object = get_mono_object();
 
-	ERR_FAIL_NULL_V(mono_object, Variant());
+	if (!mono_object) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		ERR_FAIL_V(Variant());
+	}
 
 	if (!script.is_valid())
-		return Variant();
+		ERR_FAIL_V(Variant());
 
 	GDMonoClass *top = script->script_class;
 
@@ -1145,6 +1148,8 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 
 		if (method) {
 			MonoObject *return_value = method->invoke(mono_object, p_args);
+
+			r_error.error = Variant::CallError::CALL_OK;
 
 			if (return_value) {
 				return GDMonoMarshal::mono_object_to_variant(return_value, method->get_return_type());
