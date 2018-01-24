@@ -5,21 +5,21 @@
 #
 # basse <basse@roiske.org>, 2017.
 # Bastian Salmela <bastian.salmela@gmail.com>, 2017.
-# ekeimaja <ekeimaja@gmail.com>, 2017.
+# ekeimaja <ekeimaja@gmail.com>, 2017-2018.
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-03 11:31+0000\n"
-"Last-Translator: Bastian Salmela <bastian.salmela@gmail.com>\n"
+"PO-Revision-Date: 2018-01-24 12:10+0000\n"
+"Last-Translator: ekeimaja <ekeimaja@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1104,7 +1104,7 @@ msgstr "(tyhjä)"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[ei tallennettu]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1234,8 +1234,9 @@ msgid "Toggle Mode"
 msgstr "Näytä/piilota"
 
 #: editor/editor_file_dialog.cpp
+#, fuzzy
 msgid "Focus Path"
-msgstr ""
+msgstr "Kohdista polku"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
@@ -3496,7 +3497,7 @@ msgstr "edellinen"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "next"
-msgstr ""
+msgstr "seuraava"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "last"
@@ -4293,11 +4294,11 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "Luodaan konfiguraatiota..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "Lasketaan ruudukon kokoa..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
@@ -6512,7 +6513,7 @@ msgstr "Yhdistä Nodeen:"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
-msgstr ""
+msgstr "On jo olemassa"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -6574,7 +6575,7 @@ msgstr "Projektin asetukset"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Yleinen"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
@@ -6699,7 +6700,7 @@ msgstr "Uusi skripti"
 
 #: editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Uusi %s"
 
 #: editor/property_editor.cpp
 #, fuzzy
@@ -6802,7 +6803,7 @@ msgstr "Pääskenen argumentit:"
 
 #: editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
-msgstr ""
+msgstr "Scenen suorittamisasetukset"
 
 #: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 #: scene/gui/dialogs.cpp
@@ -6841,7 +6842,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr ""
+msgstr "Monista node(t)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -7102,7 +7103,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Directory of the same name exists"
-msgstr ""
+msgstr "Samanniminen hakemisto on jo olemassa"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -7256,7 +7257,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Value"
-msgstr ""
+msgstr "Arvo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
@@ -7268,7 +7269,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
+msgstr "Yhteensä:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video Mem"
@@ -7280,7 +7281,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
-msgstr ""
+msgstr "Tyyppi"
 
 #: editor/script_editor_debugger.cpp
 msgid "Format"
@@ -7288,7 +7289,7 @@ msgstr "Muoto"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr ""
+msgstr "Käyttö"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
@@ -7385,11 +7386,11 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
-msgstr ""
+msgstr "Alusta:"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform"
-msgstr ""
+msgstr "Alusta"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 #, fuzzy
@@ -7417,7 +7418,7 @@ msgstr "Tila:"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Kirjastot: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
@@ -7517,15 +7518,15 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
-msgstr ""
+msgstr "Muokkaa X-akselia"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Y Axis"
-msgstr ""
+msgstr "Muokkaa Y-akselia"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Z Axis"
-msgstr ""
+msgstr "Muokkaa Z-akselia"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7593,7 +7594,7 @@ msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "Luodaan C# projekti..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 #, fuzzy
@@ -8294,7 +8295,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Muu)"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy

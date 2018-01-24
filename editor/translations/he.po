@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"PO-Revision-Date: 2018-01-24 15:47+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
@@ -1427,7 +1427,7 @@ msgstr "מתבצע ניתוח"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr ""
+msgstr "נוצרת תמונה ממוזערת"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
@@ -1495,6 +1495,8 @@ msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"משאב זה עבר יבוא, לכן אין אפשרות לערוך אותו. יש לשנות את ההגדרות שלו בחלונית "
+"הייבוא ואז לייבא שוב."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1574,7 +1576,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "הסצנה הנוכחית מעולם לא נשמרה, נא לשמור אותה בטרם ההרצה."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1622,7 +1624,7 @@ msgstr "סצנה זאת מעולם לא נשמרה. לשמור לפני ההרצ
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "לא ניתן לבצע פעולה זו ללא סצנה."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
@@ -1630,7 +1632,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr ""
+msgstr "לא ניתן לבצע פעולה זו ללא מפרק עליון."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -1638,23 +1640,23 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr ""
+msgstr "לא ניתן לבצע פעולה זו ללא בחירה של מפרק."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr ""
+msgstr "הסצנה הנוכחית לא נשמרה. לפתוח בכל זאת?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr ""
+msgstr "לא ניתן לרענן סצנה שמעולם לא נשמרה."
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr ""
+msgstr "שחזור"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr ""
+msgstr "לא ניתן לבטל פעולה זו. לשחזר בכל זאת?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene.."
@@ -1662,49 +1664,51 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "יציאה"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "לצאת מהעורך?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "לפתוח את מנהל המיזמים?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr ""
+msgstr "לשמור ולצאת"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "לשמור את השינויים לסצנות הבאות לפני היציאה?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "לשמור את הסצנות הבאות לפני פתיחת מנהל המיזמים?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"אפשרות זו אינה זמינה עוד. מצבים בהם יש לאלץ רענון נחשבים לבאגים. נא לדווח "
+"עליהם."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "נא לבחור סצנה ראשית"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr ""
+msgstr "לא ניתן לפתוח את תוסף ההרחבות תחת: ‚%s’ פענוח ההגדרות נכשל."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
+msgstr "לא ניתן למצוא שדה סקריפט עבור תוסף הרחבה תחת ‚res://addons/%s’."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr ""
+msgstr "לא ניתן לטעון סקריפט הרחבה מהנתיב: ‚%s’."
 
 #: editor/editor_node.cpp
 msgid ""

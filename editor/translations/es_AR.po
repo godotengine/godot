@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-20 22:01+0000\n"
+"PO-Revision-Date: 2018-01-24 20:49+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -1566,11 +1566,11 @@ msgstr "Colapsar todas las propiedades"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
-msgstr "Copiar Params"
+msgstr "Copiar Parámetros"
 
 #: editor/editor_node.cpp
 msgid "Paste Params"
-msgstr "Pegar Parametros"
+msgstr "Pegar Parámetros"
 
 #: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
@@ -2279,7 +2279,7 @@ msgstr "Abrir en Editor de Script"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "Exportar Libreria de Assets"
+msgstr "Abrir Biblioteca de Assets"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"

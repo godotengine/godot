@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"PO-Revision-Date: 2018-01-24 12:35+0000\n"
 "Last-Translator: Dlean Jeans <dleanjeans@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -22,7 +22,6 @@ msgstr ""
 "X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Disabled"
 msgstr "Tắt"
 
@@ -31,34 +30,32 @@ msgid "All Selection"
 msgstr "Chọn tất cả"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Đổi giá trị"
+msgstr "Đổi thời gian khung hình"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Đổi Transition Animation"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Đổi Transform Animation"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Đổi giá trị"
+msgstr "Đổi giá trị khung hình"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Đổi Function Gọi Animation"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "Thêm Track Animation"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Nhân đôi Các Key của Animation"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
@@ -74,7 +71,7 @@ msgstr "Xóa Anim Track"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "Đặt Transtions thành:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -107,7 +104,7 @@ msgstr "Xóa phím Anim"
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Nhân đôi lựa chọn"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
@@ -164,7 +161,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "Trong"
 
 #: editor/animation_editor.cpp
 msgid "Out"
@@ -240,7 +237,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Thêm Track Gọi Function"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -248,7 +245,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "Độ dài (giây):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -292,7 +289,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Tối ưu hóa Animation"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
@@ -312,7 +309,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "Chọn một AnimationPlayer từ Scene Tree để chỉnh sửa animation."
 
 #: editor/animation_editor.cpp
 msgid "Key"
@@ -522,9 +519,8 @@ msgid "Change"
 msgstr ""
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Tạo"
+msgstr "Tạo %s Mới"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -610,7 +606,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Mở"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -1577,7 +1573,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "Scene hiện tại chưa được lưu, hãy lưu nó trước khi chạy."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1609,7 +1605,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "Lưu Scene với tên.."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1621,7 +1617,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "Scene này chưa được lưu. Lưu trước khi chạy?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -1681,11 +1677,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "Lưu thay đổi trong các scene sau trước khi thoát?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "Lưu thay đổi trong các scene sau trước khi mở Project Manager?"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1723,6 +1719,8 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Scene '%s' được load tự động, vì vậy không thể chỉnh sửa.\n"
+"Tạo một scene con để chỉnh sửa."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1786,7 +1784,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr ""
+msgstr "Thêm một scene mới."
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -1814,11 +1812,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Tạo Scene Mới"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr ""
+msgstr "Tạo Scene Con.."
 
 #: editor/editor_node.cpp
 msgid "Open Scene.."
@@ -2120,7 +2118,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Nhập từ bên ngoài"
 
 #: editor/editor_node.cpp
 msgid "Node"
@@ -2140,7 +2138,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Nhập Template từ file ZIP"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -2319,7 +2317,7 @@ msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "Chọn Node để Nhập"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
@@ -2327,7 +2325,7 @@ msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "Nhập từ Node:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
@@ -2359,7 +2357,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "Xóa template phiên bản '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2546,9 +2544,8 @@ msgid "Cannot move a folder into itself."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:"
-msgstr "Lỗi tải font."
+msgstr "Lỗi di chuyển:"
 
 #: editor/filesystem_dock.cpp
 msgid "Error duplicating:"
@@ -2572,79 +2569,79 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr ""
+msgstr "Tên có kí tự không hợp lệ."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
-msgstr ""
+msgstr "Đã có một file hoặc folder trùng tên."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr ""
+msgstr "Đổi tên file:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr ""
+msgstr "Đổi tên folder:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating file:"
-msgstr ""
+msgstr "Tạo bản sao file:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating folder:"
-msgstr ""
+msgstr "Tạo bản sao folder:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
-msgstr ""
+msgstr "Mở rộng tất cả"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "Thu gọn tất cả"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename.."
-msgstr ""
+msgstr "Đổi tên..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To.."
-msgstr ""
+msgstr "Di chuyển đến..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
-msgstr ""
+msgstr "Mở Scene"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr ""
+msgstr "Thêm vào scene"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies.."
-msgstr ""
+msgstr "Chỉnh sửa các File phụ thuộc.."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
-msgstr ""
+msgstr "Xem các scene sở hữu.."
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate.."
-msgstr ""
+msgstr "Nhân đôi..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
-msgstr ""
+msgstr "Thư mục trước"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Directory"
-msgstr ""
+msgstr "Thư mục tiếp theo"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr ""
+msgstr "Quét lại hệ thống tập tin"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle folder status as Favorite"
-msgstr ""
+msgstr "(Bỏ) Chọn thư mục Hay sử dụng"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
@@ -2655,23 +2652,25 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"Đang quét file,\n"
+"Chờ môt chút.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "Di chuyển"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Rename"
-msgstr ""
+msgstr "Đổi tên"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "Thêm vào Nhóm"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
+msgstr "Xóa khỏi Nhóm"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -2679,31 +2678,31 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr ""
+msgstr "Load với các Animation riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "Load với các Material riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "Load với các Object riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "Load với các Object+Material riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "Load với các Object+Animation riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "Load với Material+Animation riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "Load với các Object+Material+Animation riêng biệt"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -2850,85 +2849,85 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Xóa Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr ""
+msgstr "LỖI: Tên animation không hợp lệ!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr ""
+msgstr "LỖI: Tên animation trùng lặp!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Đổi tên Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "Thêm Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "Chuyển đổi animation Tiếp theo Thay đổi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Đổi Thời gian Chuyển Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Load Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Tạo Animation bản sao"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to copy!"
-msgstr ""
+msgstr "LỖI: Không có animation để copy!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation resource on clipboard!"
-msgstr ""
+msgstr "LỖI: Không có animation trên clipboard!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr ""
+msgstr "Animation đã Dán"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
+msgstr "Dán Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to edit!"
-msgstr ""
+msgstr "LỖI: Không có animation để chỉnh!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Chạy animation ngược lại từ vị trí hiện tại. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Chạy animation ngược lại từ cuối. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Ngưng chạy animation. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Chạy animation từ đầu. (Shift+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Chạy animation từ vị trí hiện tại. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "Vị trí animation (đơn vị giây)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
@@ -2936,35 +2935,35 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
-msgstr ""
+msgstr "Tạo animation mới trong player."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load animation from disk."
-msgstr ""
+msgstr "Load animation từ disk."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
-msgstr ""
+msgstr "Load một animation từ disk."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
-msgstr ""
+msgstr "Lưu animation này"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "Hiển thị danh sách các animation trong player."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Tự động chạy khi Load"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
-msgstr ""
+msgstr "Chỉnh Thời gian Chuyển Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "Các Công cụ Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
@@ -2972,11 +2971,11 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr ""
+msgstr "Khung hình Liên tiếp"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Xem Khung hình Liên tiếp"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4942,7 +4941,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Plane Transform."
-msgstr ""
+msgstr "Xem Transform của Plane."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -5892,9 +5891,8 @@ msgid "Create New Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Tạo"
+msgstr "Tạo & Sửa"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
@@ -7556,7 +7554,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "Path không chỉ đến Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."

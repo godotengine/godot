@@ -6,12 +6,13 @@
 # Bojidar Marinov <bojidar.marinov.bg@gmail.com>, 2016.
 # Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>, 2016-2017.
 # Любомир Василев <lyubomirv@abv.bg>, 2018.
+# MaresPW <marespw206@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
-"Last-Translator: Любомир Василев <lyubomirv@abv.bg>\n"
+"PO-Revision-Date: 2018-01-24 18:44+0000\n"
+"Last-Translator: MaresPW <marespw206@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -518,9 +519,8 @@ msgid "Change"
 msgstr ""
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Създаване на нов проект"
+msgstr "Създайте нов/а  %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -708,9 +708,8 @@ msgid "Lead Developer"
 msgstr ""
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Диспечер на проектите"
+msgstr "Ръководител на проекта "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -781,9 +780,8 @@ msgid "Error opening package file, not in zip format."
 msgstr ""
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Uncompressing Assets"
-msgstr "Извършва се повторно внасяне"
+msgstr "Разархивиране на активи"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"

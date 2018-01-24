@@ -12,14 +12,14 @@
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
 # razah <icnikerazah@gmail.com>, 2017-2018.
-# stnmycri <satenmeycri@gmail.com>, 2017.
+# stnmycri <satenmeycri@gmail.com>, 2017-2018.
 # Yavuz Günay <yavuzgunay@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 08:55+0000\n"
-"Last-Translator: razah <icnikerazah@gmail.com>\n"
+"PO-Revision-Date: 2018-01-24 12:32+0000\n"
+"Last-Translator: anonymous <>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -1333,19 +1333,18 @@ msgid "Description"
 msgstr "Açıklama"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Öğreticiler"
+msgstr "Çevrimiçi Rehberler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Bu metot için henüz bir açıklama yok. Bize [color=$color][url=$url]katkıda "
-"bulunarak[/url][/color] yardım edebilirsiniz!"
+"Bu metot için henüz bir rehber yok. Siz de\n"
+"[color=$color][url=$url]hazırlayabilir[/url][/color] ya da \n"
+"[color=$color][url=$url2]öneride bulunabilirsiniz[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -3778,7 +3777,7 @@ msgstr "Tamam"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Kök olmadan çoklu düğüm oluşturulamaz."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5954,9 +5953,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "Lütfen bir 'proje.godot' dosyası seçin."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "Lütfen bir 'proje.godot' dosyası seçin."
+msgstr "Lütfen boş bir klasör seçin."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."

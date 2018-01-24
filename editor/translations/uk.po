@@ -13,8 +13,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
-"Last-Translator: Марс Ямбар <mjambarmeta@gmail.com>\n"
+"PO-Revision-Date: 2018-01-24 17:51+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -26,11 +26,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "Відключено"
+msgstr "Вимкнено"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Усі вибранні елементи"
+msgstr "Усе позначене"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -970,11 +970,11 @@ msgstr "Зберегти цей макет шини у файлі."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Завантажити за промовчанням"
+msgstr "Завантажити типовий"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Завантажити макет шини за промовчанням."
+msgstr "Завантажити типовий макет шини."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1435,7 +1435,7 @@ msgstr "Помилка при синтаксичному аналізі '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "Неочикуваний кінець рядку '%s'."
+msgstr "Неочікуваний кінець рядка «%s»."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
@@ -1455,7 +1455,7 @@ msgstr "Аналіз"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr "Створити екскіз"
+msgstr "Створюємо мініатюру"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
@@ -1495,7 +1495,7 @@ msgstr "Помилка при спробі зберегти макет!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Макет редактора за промовчуванням перевизначено."
+msgstr "Типове компонування редактора перевизначено."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -1503,7 +1503,7 @@ msgstr "Назву макета не знайдено!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Поновити макет за промовчуванням до базових налаштувань."
+msgstr "Відновлено типове компонування за базовими параметрами."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1819,7 +1819,7 @@ msgstr "Видалити макет"
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "За промовчанням"
+msgstr "Типовий"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2401,7 +2401,7 @@ msgstr "Ви забули метод \"_run\"?"
 
 #: editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
-msgstr "За промовчанням (так само, як редактор)"
+msgstr "Типовий (так само, як редактор)"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -2548,7 +2548,7 @@ msgstr "Не вдається вирішити"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting.."
-msgstr "З’єдання.."
+msgstr "З’єднання.."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -3352,7 +3352,7 @@ msgstr "Помилка перевірки хешування sha256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr "Помилка завантаження актива:"
+msgstr "Помилка завантаження активу:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Fetching:"
@@ -3380,7 +3380,7 @@ msgstr "Помилка завантаження"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr "Завантаження цього актива вже виконується!"
+msgstr "Завантаження цього активу вже виконується!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "first"
@@ -3796,7 +3796,7 @@ msgstr "Помилка додавання сцени з %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
-msgstr "Змінити тип за промовчанням"
+msgstr "Змінити типовий тип"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -3983,7 +3983,7 @@ msgstr "Створити вигнуту форму"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr "Створити навигаційну сітку"
+msgstr "Створити навігаційну сітку"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
@@ -7355,7 +7355,7 @@ msgstr "Створити область"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Create Exterior Connector"
-msgstr "Створти зовнішнє з'єднання"
+msgstr "Створити зовнішнє з'єднання"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Erase Area"
@@ -7735,7 +7735,7 @@ msgstr "Шлях не веде до вузла!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "Некоректна назва властивості індекса, «%s», у вузлі %s."
+msgstr "Некоректна назва властивості індексу, «%s», у вузлі %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -8103,7 +8103,7 @@ msgstr "Увага!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Будь-ласка підтвердіть..."
+msgstr "Будь ласка, підтвердьте..."
 
 #: scene/gui/file_dialog.cpp
 msgid "Select this Folder"
@@ -8168,7 +8168,7 @@ msgstr "Помилка завантаження шрифту."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr "Недійсний розмір шрифту."
+msgstr "Некоректний розмір шрифту."
 
 #~ msgid "Next"
 #~ msgstr "Далі"

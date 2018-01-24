@@ -19,8 +19,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-22 08:07+0000\n"
-"Last-Translator: omar anwar aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2018-01-24 11:45+0000\n"
+"Last-Translator: anonymous <>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -1150,7 +1150,7 @@ msgstr "تحديث"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr "جميع الأنواع المعتمدة"
+msgstr "جميع الأنواع المعتمدة\"المعروفة\""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
@@ -1842,7 +1842,7 @@ msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "أضف مشهد جديدة."
+msgstr "أضف مشهد جديد"
 
 #: editor/editor_node.cpp
 msgid "Scene"
