@@ -1477,7 +1477,7 @@ def use_windows_spawn_fix(self, platform=None):
     self['SPAWN'] = mySpawn
 
 
-def split_lib(self, libname):
+def split_lib(self, libname, src_list = None, env_lib = None):
     import string
     env = self
 
@@ -1487,7 +1487,13 @@ def split_lib(self, libname):
     list = []
     lib_list = []
 
-    for f in getattr(env, libname + "_sources"):
+    if src_list == None:
+        src_list = getattr(env, libname + "_sources")
+		
+	if type(env_lib) == type(None):
+		env_lib = env
+
+    for f in src_list:
         fname = ""
         if type(f) == type(""):
             fname = env.File(f).path
@@ -1497,26 +1503,27 @@ def split_lib(self, libname):
         base = string.join(fname.split("/")[:2], "/")
         if base != cur_base and len(list) > max_src:
             if num > 0:
-                lib = env.add_library(libname + str(num), list)
+                lib = env_lib.add_library(libname + str(num), list)
+                print("adding library ", libname, num)
                 lib_list.append(lib)
                 list = []
             num = num + 1
         cur_base = base
         list.append(f)
 
-    lib = env.add_library(libname + str(num), list)
+    lib = env_lib.add_library(libname + str(num), list)
     lib_list.append(lib)
 
     if len(lib_list) > 0:
         import os, sys
         if os.name == 'posix' and sys.platform == 'msys':
             env.Replace(ARFLAGS=['rcsT'])
-            lib = env.add_library(libname + "_collated", lib_list)
+            lib = env_lib.add_library(libname + "_collated", lib_list)
             lib_list = [lib]
 
     lib_base = []
-    env.add_source_files(lib_base, "*.cpp")
-    lib = env.add_library(libname, lib_base)
+    env_lib.add_source_files(lib_base, "*.cpp")
+    lib = env_lib.add_library(libname, lib_base)
     lib_list.insert(0, lib)
 
     env.Prepend(LIBS=lib_list)

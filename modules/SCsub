@@ -18,7 +18,7 @@ for x in env.module_list:
     SConscript(x + "/SCsub")
 
 if env.split_modules:
-    env.split_lib("modules")
+    env.split_lib("modules", env_lib = env_modules)
 else:
 
     lib = env_modules.add_library("modules", env.modules_sources)
