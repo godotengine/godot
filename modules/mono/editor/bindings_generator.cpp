@@ -250,8 +250,15 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 
 		const TypeInterface *return_type = _get_type_by_name_or_placeholder(imethod.return_type);
 
-		String im_sig = "IntPtr " CS_PARAM_METHODBIND ", IntPtr " CS_PARAM_INSTANCE;
-		String im_unique_sig = imethod.return_type.operator String() + ",IntPtr,IntPtr";
+		String im_sig;
+		String im_unique_sig;
+
+		if (p_itype.is_object_type) {
+			im_sig += "IntPtr " CS_PARAM_METHODBIND ", ";
+			im_unique_sig += imethod.return_type.operator String() + ",IntPtr,IntPtr";
+		}
+
+		im_sig += "IntPtr " CS_PARAM_INSTANCE;
 
 		// Get arguments information
 		int i = 0;
@@ -263,25 +270,37 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 			im_sig += " arg";
 			im_sig += itos(i + 1);
 
-			im_unique_sig += ",";
-			im_unique_sig += get_unique_sig(*arg_type);
+			if (p_itype.is_object_type) {
+				im_unique_sig += ",";
+				im_unique_sig += get_unique_sig(*arg_type);
+			}
 
 			i++;
 		}
 
-		// godot_icall_{argc}_{icallcount}
-		String icall_method = ICALL_PREFIX + itos(imethod.arguments.size()) + "_" + itos(method_icalls.size());
+		String icall_method = ICALL_PREFIX;
+
+		if (p_itype.is_object_type) {
+			icall_method += itos(imethod.arguments.size()) + "_" + itos(method_icalls.size()); // godot_icall_{argc}_{icallcount}
+		} else {
+			icall_method += p_itype.name + "_" + imethod.name; // godot_icall_{Type}_{method}
+		}
 
 		InternalCall im_icall = InternalCall(p_itype.api_type, icall_method, return_type->im_type_out, im_sig, im_unique_sig);
 
-		List<InternalCall>::Element *match = method_icalls.find(im_icall);
+		if (p_itype.is_object_type) {
+			List<InternalCall>::Element *match = method_icalls.find(im_icall);
 
-		if (match) {
-			if (p_itype.api_type != ClassDB::API_EDITOR)
-				match->get().editor_only = false;
-			method_icalls_map.insert(&E->get(), &match->get());
+			if (match) {
+				if (p_itype.api_type != ClassDB::API_EDITOR)
+					match->get().editor_only = false;
+				method_icalls_map.insert(&E->get(), &match->get());
+			} else {
+				List<InternalCall>::Element *added = method_icalls.push_back(im_icall);
+				method_icalls_map.insert(&E->get(), &added->get());
+			}
 		} else {
-			List<InternalCall>::Element *added = method_icalls.push_back(im_icall);
+			List<InternalCall>::Element *added = builtin_method_icalls.push_back(im_icall);
 			method_icalls_map.insert(&E->get(), &added->get());
 		}
 	}
@@ -525,6 +544,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 		ADD_INTERNAL_CALL(E->get());
 	for (const List<InternalCall>::Element *E = method_icalls.front(); E; E = E->next())
 		ADD_INTERNAL_CALL(E->get());
+	for (const List<InternalCall>::Element *E = builtin_method_icalls.front(); E; E = E->next())
+		ADD_INTERNAL_CALL(E->get());
 
 #undef ADD_INTERNAL_CALL
 
@@ -616,6 +637,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 		cs_icalls_content.push_back(m_icall.im_sig + ");\n");                                  \
 	}
 
+	// No need to add builtin_method_icalls. Builtin types are core only
+
 	for (const List<InternalCall>::Element *E = editor_custom_icalls.front(); E; E = E->next())
 		ADD_INTERNAL_CALL(E->get());
 	for (const List<InternalCall>::Element *E = method_icalls.front(); E; E = E->next())
@@ -694,9 +717,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.push_back(itype.is_singleton ? "static class " : "class ");
 	output.push_back(itype.proxy_name);
 
-	if (itype.is_singleton || !itype.is_object_type) {
+	if (itype.is_singleton) {
 		output.push_back("\n");
-	} else if (!is_derived_type) {
+	} else if (!is_derived_type || !itype.is_object_type /* assuming only object types inherit */) {
 		output.push_back(" : IDisposable\n");
 	} else if (obj_types.has(itype.base_name)) {
 		output.push_back(" : ");
@@ -838,7 +861,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.push_back(MEMBER_BEGIN "public void Dispose()\n" OPEN_BLOCK_L2 "Dispose(true);\n" INDENT3 "GC.SuppressFinalize(this);\n" CLOSE_BLOCK_L2);
 
 		// Add the virtual Dispose
-		output.push_back(MEMBER_BEGIN "public virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
+		output.push_back(MEMBER_BEGIN "protected virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
 									  "if (disposed) return;\n" INDENT3
 									  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3 "NativeCalls.godot_icall_");
 		output.push_back(itype.proxy_name);
@@ -929,7 +952,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.push_back(MEMBER_BEGIN "public void Dispose()\n" OPEN_BLOCK_L2 "Dispose(true);\n" INDENT3 "GC.SuppressFinalize(this);\n" CLOSE_BLOCK_L2);
 
 			// Add the virtual Dispose
-			output.push_back(MEMBER_BEGIN "public virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
+			output.push_back(MEMBER_BEGIN "protected virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
 										  "if (disposed) return;\n" INDENT3
 										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
 										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
@@ -1122,9 +1145,13 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	String method_bind_field = "method_bind_" + itos(p_method_bind_count);
 
-	String icall_params = method_bind_field + ", " + sformat(p_itype.cs_in, "this");
 	String arguments_sig;
 	String cs_in_statements;
+
+	String icall_params;
+	if (p_itype.is_object_type)
+		icall_params += method_bind_field + ", ";
+	icall_params += sformat(p_itype.cs_in, "this");
 
 	List<String> default_args_doc;
 
@@ -1200,7 +1227,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	// Generate method
 	{
-		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
+		if (p_itype.is_object_type && !p_imethod.is_virtual && !p_imethod.requires_object_call) {
 			p_output.push_back(MEMBER_BEGIN "private ");
 			p_output.push_back(p_itype.is_singleton ? "static IntPtr " : "IntPtr ");
 			p_output.push_back(method_bind_field + " = " CS_CLASS_NATIVECALLS "." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
@@ -1381,6 +1408,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	output.push_back(itos(GDMono::get_singleton()->get_api_editor_hash()) +
 					 "; }\n#endif // TOOLS_ENABLED\n");
 	output.push_back("void register_generated_icalls() " OPEN_BLOCK);
+	output.push_back("\tgodot_register_header_icalls();");
 
 #define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                     \
 	{                                                                                               \
@@ -1442,6 +1470,9 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 		tools_sequence = false;
 		output.push_back("#endif\n");
 	}
+
+	for (const List<InternalCall>::Element *E = builtin_method_icalls.front(); E; E = E->next())
+		ADD_INTERNAL_CALL_REGISTRATION(E->get());
 
 #undef ADD_INTERNAL_CALL_REGISTRATION
 
@@ -1517,6 +1548,9 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 
 		i++;
 	}
+
+	if (!p_itype.is_object_type)
+		return OK; // no auto-generated icall functions for builtin types
 
 	const Map<const MethodInterface *, const InternalCall *>::Element *match = method_icalls_map.find(&p_imethod);
 	ERR_FAIL_NULL_V(match, ERR_BUG);
@@ -2113,35 +2147,33 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #undef INSERT_STRUCT_TYPE
 
-#define INSERT_PRIMITIVE_TYPE(m_type)                              \
-	{                                                              \
-		itype = TypeInterface::create_value_type(String(#m_type)); \
-		itype.c_arg_in = "&%s";                                    \
-		itype.c_type_in = #m_type;                                 \
-		itype.c_type_out = #m_type;                                \
-		itype.im_type_in = #m_type;                                \
-		itype.im_type_out = #m_type;                               \
-		builtin_types.insert(itype.cname, itype);                  \
-	}
-
-	INSERT_PRIMITIVE_TYPE(bool)
-	//INSERT_PRIMITIVE_TYPE(int)
-
-	// int
-	itype = TypeInterface::create_value_type(String("int"));
-	itype.c_arg_in = "&%s_in";
-	//* ptrcall only supports int64_t and uint64_t
+	// bool
+	itype = TypeInterface::create_value_type(String("bool"));
+	itype.c_arg_in = "&%s";
+	// /* MonoBoolean <---> bool
 	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
 	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "int64_t";
-	//*/
-	itype.c_type_in = itype.name;
-	itype.c_type_out = itype.name;
+	itype.c_type = "bool";
+	// */
+	itype.c_type_in = "MonoBoolean";
+	itype.c_type_out = itype.c_type_in;
 	itype.im_type_in = itype.name;
 	itype.im_type_out = itype.name;
 	builtin_types.insert(itype.cname, itype);
 
-#undef INSERT_PRIMITIVE_TYPE
+	// int
+	itype = TypeInterface::create_value_type(String("int"));
+	itype.c_arg_in = "&%s_in";
+	// /* ptrcall only supports int64_t and uint64_t
+	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+	itype.c_out = "\treturn (%0)%1;\n";
+	itype.c_type = "int64_t";
+	// */
+	itype.c_type_in = "int32_t";
+	itype.c_type_out = itype.c_type_in;
+	itype.im_type_in = itype.name;
+	itype.im_type_out = itype.name;
+	builtin_types.insert(itype.cname, itype);
 
 	// real_t
 	itype = TypeInterface();
