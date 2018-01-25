@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.0-rc1">
+<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.0-stable">
 	<brief_description>
 		Texture Based 3x3 scale style.
 	</brief_description>

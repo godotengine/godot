@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody" inherits="PhysicsBody" category="Core" version="3.0-rc1">
+<class name="RigidBody" inherits="PhysicsBody" category="Core" version="3.0-stable">
 	<brief_description>
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
@@ -33,7 +33,7 @@
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
+				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the position are in global coordinates, and the position is relative to the object's origin.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
