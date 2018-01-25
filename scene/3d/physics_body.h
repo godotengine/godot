@@ -242,6 +242,7 @@ public:
 	Array get_colliding_bodies() const;
 
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	void apply_torque_impulse(const Vector3 &p_impulse);
 
 	virtual String get_configuration_warning() const;
 

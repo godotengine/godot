@@ -694,6 +694,10 @@ void RigidBody::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
 	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
 }
 
+void RigidBody::apply_torque_impulse(const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
+}
+
 void RigidBody::set_use_continuous_collision_detection(bool p_enable) {
 
 	ccd = p_enable;
@@ -833,6 +837,7 @@ void RigidBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody::set_axis_velocity);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &RigidBody::apply_impulse);
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidBody::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidBody::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidBody::is_sleeping);
