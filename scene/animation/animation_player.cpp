@@ -78,9 +78,6 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 			set_blend_time(from, to, time);
 		}
 
-	} else if (p_name == SceneStringNames::get_singleton()->autoplay) {
-		autoplay = p_value;
-
 	} else
 		return false;
 
@@ -123,9 +120,6 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		r_ret = array;
-	} else if (name == "autoplay") {
-		r_ret = autoplay;
-
 	} else
 		return false;
 
@@ -172,7 +166,6 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-	p_list->push_back(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 }
 
 void AnimationPlayer::advance(float p_time) {
