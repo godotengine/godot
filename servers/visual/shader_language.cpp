@@ -612,6 +612,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 	}
 	ERR_PRINT("BUG");
 	return Token();
+
+#undef GETCHAR
 }
 
 String ShaderLanguage::token_debug(const String &p_code) {
@@ -4073,13 +4075,58 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	return OK;
 }
 
+// skips over whitespace and /* */ and // comments
+static int _get_first_ident_pos(const String &p_code) {
+
+	int idx = 0;
+
+#define GETCHAR(m_idx) (((idx + m_idx) < p_code.length()) ? p_code[idx + m_idx] : CharType(0))
+
+	while (true) {
+		if (GETCHAR(0) == '/' && GETCHAR(1) == '/') {
+			idx += 2;
+			while (true) {
+				if (GETCHAR(0) == 0) return 0;
+				if (GETCHAR(0) == '\n') {
+					idx++;
+					break; // loop
+				}
+				idx++;
+			}
+		} else if (GETCHAR(0) == '/' && GETCHAR(1) == '*') {
+			idx += 2;
+			while (true) {
+				if (GETCHAR(0) == 0) return 0;
+				if (GETCHAR(0) == '*' && GETCHAR(1) == '/') {
+					idx += 2;
+					break; // loop
+				}
+				idx++;
+			}
+		} else {
+			switch (GETCHAR(0)) {
+				case ' ':
+				case '\t':
+				case '\r':
+				case '\n': {
+					idx++;
+				} break; // switch
+				default:
+					return idx;
+			}
+		}
+	}
+
+#undef GETCHAR
+}
+
 String ShaderLanguage::get_shader_type(const String &p_code) {
 
 	bool reading_type = false;
 
 	String cur_identifier;
 
-	for (int i = 0; i < p_code.length(); i++) {
+	for (int i = _get_first_ident_pos(p_code); i < p_code.length(); i++) {
 
 		if (p_code[i] == ';') {
 			break;
