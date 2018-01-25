@@ -1489,9 +1489,9 @@ def split_lib(self, libname, src_list = None, env_lib = None):
 
     if src_list == None:
         src_list = getattr(env, libname + "_sources")
-		
-	if type(env_lib) == type(None):
-		env_lib = env
+
+    if type(env_lib) == type(None):
+        env_lib = env
 
     for f in src_list:
         fname = ""
