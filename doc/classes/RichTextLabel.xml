@@ -8,7 +8,7 @@
 		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/gui/bbcode_in_richtextlabel.html
+		http://docs.godotengine.org/en/3.0/tutorials/gui/bbcode_in_richtextlabel.html
 	</tutorials>
 	<demos>
 	</demos>

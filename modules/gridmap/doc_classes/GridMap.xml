@@ -10,7 +10,7 @@
 		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/3d/using_gridmaps.html
+		http://docs.godotengine.org/en/3.0/tutorials/3d/using_gridmaps.html
 	</tutorials>
 	<demos>
 	</demos>

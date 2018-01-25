@@ -10,8 +10,8 @@
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/networking/http_client_class.html
-	http://docs.godotengine.org/en/3.0/learning/features/networking/ssl_certificates.html
+		http://docs.godotengine.org/en/3.0/tutorials/networking/http_client_class.html
+	http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html
 	</tutorials>
 	<demos>
 	</demos>

@@ -11,7 +11,7 @@
 		As a warning, don't change RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/physics/physics_introduction.html
+		http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html
 	</tutorials>
 	<demos>
 	</demos>

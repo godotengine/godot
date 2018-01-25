@@ -8,7 +8,7 @@
 		Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/animation/index.html
+		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>

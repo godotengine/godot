@@ -7,7 +7,7 @@
 		Base class for audio streams. Audio streams are used for music playback, or other types of streamed sounds that don't fit or require more flexibility than a [Sample].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/audio/audio_streams.html
+		http://docs.godotengine.org/en/3.0/tutorials/audio/audio_streams.html
 	</tutorials>
 	<demos>
 	</demos>

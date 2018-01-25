@@ -7,7 +7,7 @@
 		Base class for all 3D shape resources. All 3D shapes that inherit from this can be set into a [PhysicsBody] or [Area].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/physics/physics_introduction.html
+		http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html
 	</tutorials>
 	<demos>
 	</demos>

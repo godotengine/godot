@@ -11,8 +11,8 @@
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/2d/2d_transforms.html
-	http://docs.godotengine.org/en/3.0/learning/features/2d/custom_drawing_in_2d.html
+		http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html
+	http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html
 	</tutorials>
 	<demos>
 	</demos>

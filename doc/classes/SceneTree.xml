@@ -5,8 +5,8 @@
 	<description>
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/step_by_step/scene_tree.html
-	http://docs.godotengine.org/en/3.0/learning/features/viewports/multiple_resolutions.html
+		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/scene_tree.html
+	http://docs.godotengine.org/en/3.0/tutorials/viewports/multiple_resolutions.html
 	</tutorials>
 	<demos>
 	</demos>

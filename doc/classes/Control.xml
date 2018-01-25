@@ -13,8 +13,8 @@
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [code]Control[/code] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/learning/features/gui/index.html
-	http://docs.godotengine.org/en/3.0/learning/features/2d/custom_drawing_in_2d.html
+		http://docs.godotengine.org/en/3.0/tutorials/gui/index.html
+	http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html
 	</tutorials>
 	<demos>
 	</demos>
