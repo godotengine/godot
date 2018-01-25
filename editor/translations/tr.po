@@ -18,8 +18,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 12:32+0000\n"
-"Last-Translator: anonymous <>\n"
+"PO-Revision-Date: 2018-01-24 23:40+0000\n"
+"Last-Translator: razah <icnikerazah@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -5838,7 +5838,6 @@ msgid "Select current edited sub-tile."
 msgstr "Şuanki düzenlenmiş alt-döşemeyi seç."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select sub-tile to change its priority."
 msgstr "Önceliğini değiştirmek için alt-karo seçin."
 
@@ -7809,6 +7808,9 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define its shape."
 msgstr ""
+"Bu düğüm alt şekillere sahip değil, bu yüzden uzayla etkileşime giremez.\n"
+"Şeklini belirlemek için CollisionShape2D ya da CollisionPolygon2D eklemeyi "
+"düşünebilirsiniz."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7974,6 +7976,9 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "its shape."
 msgstr ""
+"Bu düğüm alt şekillere sahip değil, bu yüzden uzayla etkileşime giremez.\n"
+"Şeklini belirlemek için CollisionShape ya da CollisionPolygon eklemeyi "
+"düşünebilirsiniz."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8115,7 +8120,6 @@ msgid "(Other)"
 msgstr "(Diğer)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
