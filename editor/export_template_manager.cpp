@@ -30,6 +30,8 @@
 
 #include "export_template_manager.h"
 
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "io/json.h"
@@ -422,6 +424,11 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 
 void ExportTemplateManager::_begin_template_download(const String &p_url) {
 
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		OS::get_singleton()->shell_open(p_url);
+		return;
+	}
+
 	for (int i = 0; i < template_list->get_child_count(); i++) {
 		BaseButton *b = Object::cast_to<BaseButton>(template_list->get_child(0));
 		if (b) {
@@ -576,7 +583,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	template_downloader->add_child(vbc);
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
-	vbc->add_margin_child(TTR("Select mirror from list: "), sc);
+	vbc->add_margin_child(TTR("Select mirror from list: (Shift+Click: Open in Browser)"), sc);
 	template_list = memnew(VBoxContainer);
 	sc->add_child(template_list);
 	sc->set_enable_v_scroll(true);
