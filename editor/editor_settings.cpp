@@ -371,6 +371,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/line_numbers/line_numbers_zero_padded", false);
 	_initial_set("text_editor/line_numbers/show_breakpoint_gutter", true);
 	_initial_set("text_editor/line_numbers/code_folding", true);
+	_initial_set("text_editor/line_numbers/word_wrap", false);
 	_initial_set("text_editor/line_numbers/show_line_length_guideline", false);
 	_initial_set("text_editor/line_numbers/line_length_guideline_column", 80);
 	hints["text_editor/line_numbers/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
