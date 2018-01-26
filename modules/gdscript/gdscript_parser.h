@@ -467,6 +467,7 @@ private:
 	int pending_newline;
 
 	List<int> tab_level;
+	int inline_indent;
 
 	String base_path;
 	String self_path;
@@ -498,6 +499,8 @@ private:
 	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
 	bool _recover_from_completion();
 
+	bool _parse_argument_names(Vector<StringName> &p_args);
+	bool _parse_captures(Vector<StringName> &p_args, Vector<bool> &p_weak);
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
 	bool _enter_indent_block(BlockNode *p_block = NULL);
 	bool _parse_newline();
