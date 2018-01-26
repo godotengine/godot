@@ -172,7 +172,19 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 	return dst_addr;
 }
 
-int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer) {
+int GDScriptCompiler::_create_builtin_call(CodeGen &codegen, int p_stack_level, int p_op, int p_pos) {
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL_BUILT_IN);
+	codegen.opcodes.push_back(p_op);
+	codegen.opcodes.push_back(1);
+	codegen.alloc_call(1);
+	codegen.opcodes.push_back(p_pos);
+	int dst_addr = (p_stack_level) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	codegen.opcodes.push_back(dst_addr); // append the stack level as destination address of the opcode
+	codegen.alloc_stack(p_stack_level);
+	return dst_addr;
+}
+
+int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer, bool *r_write_weakref) {
 
 	switch (p_expression->type) {
 		//should parse variable declaration and adjust stack accordingly...
@@ -213,7 +225,15 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				if (codegen.script->member_indices.has(identifier)) {
 
 					int idx = codegen.script->member_indices[identifier].index;
-					return idx | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS); //argument (stack root)
+					int pos = idx | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS); //argument (stack root)
+					if (r_write_weakref) {
+						*r_write_weakref = codegen.script->member_indices[identifier].weakref;
+						return pos;
+					} else if (codegen.script->member_indices[identifier].weakref) {
+						return _create_builtin_call(codegen, p_stack_level, GDScriptFunctions::OBJ_WEAKREF_TO_REF, pos);
+					} else {
+						return pos;
+					}
 				}
 			}
 
@@ -867,6 +887,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						/* Chain of gets */
 
 						//get at (potential) root stack pos, so it can be returned
+						bool write_weakref = false;
 						int prev_pos = _parse_expression(codegen, chain.back()->get()->arguments[0], slevel);
 						if (prev_pos < 0)
 							return prev_pos;
@@ -1000,8 +1021,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						//REGULAR ASSIGNMENT MODE!!
 
 						int slevel = p_stack_level;
+						bool write_weakref = false;
 
-						int dst_address_a = _parse_expression(codegen, on->arguments[0], slevel, false, on->op == GDScriptParser::OperatorNode::OP_INIT_ASSIGN);
+						int dst_address_a = _parse_expression(codegen, on->arguments[0], slevel, false, on->op == GDScriptParser::OperatorNode::OP_INIT_ASSIGN, &write_weakref);
 						if (dst_address_a < 0)
 							return -1;
 
@@ -1013,6 +1035,14 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						int src_address_b = _parse_assign_right_expression(codegen, on, slevel);
 						if (src_address_b < 0)
 							return -1;
+
+						if (src_address_b & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+							slevel++;
+							codegen.alloc_stack(slevel);
+						}
+
+						if (write_weakref)
+							src_address_b = _create_builtin_call(codegen, slevel, GDScriptFunctions::OBJ_WEAKREF, src_address_b);
 
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN); // perform operator
 						codegen.opcodes.push_back(dst_address_a); // argument 1
@@ -1823,6 +1853,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 		minfo.setter = p_class->variables[i].setter;
 		minfo.getter = p_class->variables[i].getter;
 		minfo.rpc_mode = p_class->variables[i].rpc_mode;
+		minfo.weakref = p_class->variables[i].weakref;
 
 		p_script->member_indices[name] = minfo;
 		p_script->members.insert(name);

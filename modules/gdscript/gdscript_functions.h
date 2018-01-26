@@ -113,6 +113,7 @@ public:
 		PRINT_STACK,
 		INSTANCE_FROM_ID,
 		LEN,
+		OBJ_WEAKREF_TO_REF,
 		FUNC_MAX
 
 	};

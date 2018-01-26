@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "gdscript_function.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
 #include "map.h"
@@ -90,6 +91,7 @@ public:
 			int line;
 			Node *expression;
 			ScriptInstance::RPCMode rpc_mode;
+			bool weakref;
 		};
 		struct Constant {
 			StringName identifier;

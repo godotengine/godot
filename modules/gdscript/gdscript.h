@@ -64,6 +64,7 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		ScriptInstance::RPCMode rpc_mode;
+		bool weakref;
 	};
 
 	friend class GDScriptInstance;
