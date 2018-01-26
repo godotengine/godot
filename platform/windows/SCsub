@@ -39,5 +39,5 @@ if env['vsproj']:
         env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]
 
 if not os.getenv("VCINSTALLDIR"):
-    if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
+    if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
         env.AddPostAction(prog, make_debug_mingw)
