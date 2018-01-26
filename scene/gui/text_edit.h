@@ -76,6 +76,7 @@ public:
 			bool marked : 1;
 			bool breakpoint : 1;
 			bool hidden : 1;
+			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
 			String data;
 		};
@@ -94,6 +95,9 @@ public:
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
+		int get_char_width(char c, char next_c, int px) const;
+		void set_line_wrap_amount(int p_line, int p_wrap_amount) const;
+		int get_line_wrap_amount(int p_line) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
@@ -106,7 +110,8 @@ public:
 		void remove(int p_at);
 		int size() const { return text.size(); }
 		void clear();
-		void clear_caches();
+		void clear_width_cache();
+		void clear_wrap_cache();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 		Text() { indent_size = 4; }
 	};
