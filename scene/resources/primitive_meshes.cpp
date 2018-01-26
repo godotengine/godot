@@ -245,7 +245,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
 			points.push_back(p + Vector3(0.0, 0.0, 0.5 * mid_height));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(y, -x, 0.0, -1.0)
+			ADD_TANGENT(-y, x, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
 			point++;
 
@@ -284,7 +284,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius, y * radius, z);
 			points.push_back(p);
 			normals.push_back(Vector3(x, y, 0.0));
-			ADD_TANGENT(y, -x, 0.0, -1.0)
+			ADD_TANGENT(-y, x, 0.0, 1.0)
 			uvs.push_back(Vector2(u, onethird + (v * onethird)));
 			point++;
 
@@ -324,7 +324,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
 			points.push_back(p + Vector3(0.0, 0.0, -0.5 * mid_height));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(y, -x, 0.0, -1.0)
+			ADD_TANGENT(-y, x, 0.0, 1.0)
 			uvs.push_back(Vector2(u, twothirds + ((v - 1.0) * onethird)));
 			point++;
 
@@ -453,14 +453,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// front
 			points.push_back(Vector3(x, -y, -start_pos.z)); // double negative on the Z!
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(u, v));
 			point++;
 
 			// back
 			points.push_back(Vector3(-x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, v));
 			point++;
 
@@ -507,14 +507,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// right
 			points.push_back(Vector3(-start_pos.x, -y, -z));
 			normals.push_back(Vector3(1.0, 0.0, 0.0));
-			ADD_TANGENT(0.0, 0.0, 1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
 			point++;
 
 			// left
 			points.push_back(Vector3(start_pos.x, -y, z));
 			normals.push_back(Vector3(-1.0, 0.0, 0.0));
-			ADD_TANGENT(0.0, 0.0, -1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
 			point++;
 
@@ -561,14 +561,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// top
 			points.push_back(Vector3(-x, -start_pos.y, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, 0.5 + v));
 			point++;
 
 			// bottom
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
 			point++;
 
@@ -712,7 +712,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
 			normals.push_back(Vector3(x, 0.0, z));
-			ADD_TANGENT(-z, 0.0, x, -1.0)
+			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
 			point++;
 
@@ -774,7 +774,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 		points.push_back(Vector3(0.0, y, 0.0));
 		normals.push_back(Vector3(0.0, -1.0, 0.0));
-		ADD_TANGENT(-1.0, 0.0, 0.0, -1.0)
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 		uvs.push_back(Vector2(0.75, 0.75));
 		point++;
 
@@ -791,7 +791,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * bottom_radius, y, z * bottom_radius);
 			points.push_back(p);
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0)
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v));
 			point++;
 
@@ -921,7 +921,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 			points.push_back(Vector3(-x, 0.0, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(u, v));
 			point++;
 
@@ -1047,14 +1047,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* front */
 			points.push_back(Vector3(start_x + x, -y, -start_pos.z)); // double negative on the Z!
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(offset_front + u, v));
 			point++;
 
 			/* back */
 			points.push_back(Vector3(start_x + scaled_size_x - x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + offset_back + u, v));
 			point++;
 
@@ -1126,14 +1126,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* right */
 			points.push_back(Vector3(right, -y, -z));
 			normals.push_back(normal_right);
-			ADD_TANGENT(0.0, 0.0, 1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
 			point++;
 
 			/* left */
 			points.push_back(Vector3(left, -y, z));
 			normals.push_back(normal_left);
-			ADD_TANGENT(0.0, 0.0, -1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
 			point++;
 
@@ -1180,7 +1180,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* bottom */
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
 			point++;
 
@@ -1401,7 +1401,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 				points.push_back(p);
 				normals.push_back(p.normalized());
 			};
-			ADD_TANGENT(-z, 0.0, x, -1.0)
+			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));
 			point++;
 

@@ -310,7 +310,7 @@ Array SurfaceTool::commit_to_arrays() {
 
 					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx + 3] = d < 0 ? -1 : 1;
+					w[idx + 3] = d >= 0 ? -1 : 1;
 				}
 
 				w = PoolVector<float>::Write();
