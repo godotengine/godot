@@ -19,7 +19,7 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import EnumVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
