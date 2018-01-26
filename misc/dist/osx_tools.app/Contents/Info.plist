@@ -4,28 +4,177 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>godot</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>GodotFileIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Godot Project File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.godotengine.Godot.godot</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>gd</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>GodotGDScriptIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Godot GDScript File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.script</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>scn</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Binary Scene File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tscn</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Text Scene File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tres</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Text Resource File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>res</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Binary Resource File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>import</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Import File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vs</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Godot Binary Visual Script File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
-	<string>Godot</string>
-	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
 	<string>(c) 2007-2018 Juan Linietsky, Ariel Manzur.</string>
 	<key>CFBundleIconFile</key>
-	<string>Godot.icns</string>
+	<string>GodotAppIcon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.godotengine.godot</string>
+	<string>org.godotengine.Godot</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Godot</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>3.0</string>
 	<key>CFBundleSignature</key>
-	<string>godot</string>
+	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>3.0</string>
-	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2018 Juan Linietsky, Ariel Manzur.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.9.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -35,34 +184,149 @@
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	<true/>
-	<key>CFBundleDocumentTypes</key>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2007-2018 Juan Linietsky, Ariel Manzur.</string>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeExtensions</key>
+			<key>UTTypeConformsTo</key>
 			<array>
-				<string>scn</string>
-				<string>SCN</string>
+				<string>public.plain-text</string>
 			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>Godot.icns</string>
-			<key>CFBundleTypeMIMETypes</key>
+			<key>UTTypeDescription</key>
+			<string>Godot Project File</string>
+			<key>UTTypeIconFile</key>
+			<string>GodotFileIcon.icns</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.godot</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>godot</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
 			<array>
-				<string>scene/x-scn</string>
+				<string>public.script</string>
 			</array>
-			<key>CFBundleTypeName</key>
-			<string>Godot Scene</string>
-			<key>CFBundleTypeOSTypes</key>
+			<key>UTTypeDescription</key>
+			<string>Godot GDScript File</string>
+			<key>UTTypeIconFile</key>
+			<string>GodotGDScriptIcon.icns</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.gd</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gd</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
 			<array>
-				<string>SCN </string>
+				<string>public.data</string>
 			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSIsAppleDefaultForType</key>
-			<true/>
-			<key>LSItemContentTypes</key>
+			<key>UTTypeDescription</key>
+			<string>Godot Binary Scene File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.scn</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>scn</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
 			<array>
-				<string>org.godotengine.scn</string>
+				<string>public.plain-text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Godot Text Scene File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.tscn</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tscn</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Godot Text Resource File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.tres</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tres</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Godot Binary Resource File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.res</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>res</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Godot Import File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.import</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>import</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Godot Binary Visual Script File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.Godot.vs</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>vs</string>
+				</array>
+			</dict>
 		</dict>
 	</array>
 </dict>
