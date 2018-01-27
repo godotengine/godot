@@ -34,15 +34,10 @@
 #include "safe_refcount.h"
 #include "variant.h"
 
-struct _DictionaryVariantHash {
-
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
 struct DictionaryPrivate {
 
 	SafeRefCount refcount;
-	OrderedHashMap<Variant, Variant, _DictionaryVariantHash> variant_map;
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> variant_map;
 };
 
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
@@ -50,7 +45,7 @@ void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	if (_p->variant_map.empty())
 		return;
 
-	for (OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.front(); E; E = E.next()) {
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
 		p_keys->push_back(E.key());
 	}
 }
@@ -66,7 +61,7 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 }
 const Variant *Dictionary::getptr(const Variant &p_key) const {
 
-	OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::ConstElement E = ((const OrderedHashMap<Variant, Variant, _DictionaryVariantHash> *)&_p->variant_map)->find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
 	if (!E)
 		return NULL;
@@ -75,7 +70,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 
 Variant *Dictionary::getptr(const Variant &p_key) {
 
-	OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(p_key);
 
 	if (!E)
 		return NULL;
@@ -84,7 +79,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
 
-	OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::ConstElement E = ((const OrderedHashMap<Variant, Variant, _DictionaryVariantHash> *)&_p->variant_map)->find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
 	if (!E)
 		return Variant();
@@ -177,7 +172,7 @@ Array Dictionary::keys() const {
 		return varr;
 
 	int i = 0;
-	for (OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.front(); E; E = E.next()) {
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
 		varr[i] = E.key();
 		i++;
 	}
@@ -193,7 +188,7 @@ Array Dictionary::values() const {
 		return varr;
 
 	int i = 0;
-	for (OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.front(); E; E = E.next()) {
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
 		varr[i] = E.get();
 		i++;
 	}
@@ -209,7 +204,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 			return &_p->variant_map.front().key();
 		return NULL;
 	}
-	OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.find(*p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(*p_key);
 
 	if (E && E.next())
 		return &E.next().key();
