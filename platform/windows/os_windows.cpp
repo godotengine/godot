@@ -1655,7 +1655,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
 
 	bool has_dll_directory_api = ((add_dll_directory != NULL) && (remove_dll_directory != NULL));
-	DLL_DIRECTORY_COOKIE cookie;
+	DLL_DIRECTORY_COOKIE cookie = NULL;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
 		cookie = add_dll_directory(path.get_base_dir().c_str());
@@ -1663,7 +1663,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	p_library_handle = (void *)LoadLibraryExW(path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 
-	if (p_also_set_library_path && has_dll_directory_api) {
+	if (cookie) {
 		remove_dll_directory(cookie);
 	}
 
