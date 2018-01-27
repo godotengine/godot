@@ -1228,8 +1228,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (p_itype.is_object_type && !p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output.push_back(MEMBER_BEGIN "private ");
-			p_output.push_back(p_itype.is_singleton ? "static IntPtr " : "IntPtr ");
+			p_output.push_back(MEMBER_BEGIN "private static IntPtr ");
 			p_output.push_back(method_bind_field + " = " CS_CLASS_NATIVECALLS "." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
 			p_output.push_back(p_imethod.name);
 			p_output.push_back("\");\n");
