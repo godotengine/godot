@@ -55,6 +55,7 @@ def get_opts():
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
         BoolVariable('touch', 'Enable touch events', True),
     ]
 
@@ -173,12 +174,12 @@ def configure(env):
         env.ParseConfig('pkg-config libpng --cflags --libs')
 
     if not env['builtin_bullet']:
-        # We need at least version 2.87
+        # We need at least version 2.88
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if bullet_version < "2.87":
+        if bullet_version < "2.88":
             # Abort as system bullet was requested but too old
-            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.87"))
+            print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
 

@@ -5,13 +5,14 @@
 #
 # matevž lapajne <sivar.lapajne@gmail.com>, 2016-2017.
 # Matjaž Vitas <matjaz.vitas@gmail.com>, 2017.
+# Miha Komatar <miha.komatar@gmail.com>, 2018.
 # Simon Šander <simon.sand3r@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-07 02:49+0000\n"
-"Last-Translator: Matjaž Vitas <matjaz.vitas@gmail.com>\n"
+"PO-Revision-Date: 2018-01-25 22:27+0000\n"
+"Last-Translator: Miha Komatar <miha.komatar@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -35,7 +36,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Anim spremeni prehod"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -47,7 +48,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Anim izberi klic"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
@@ -7993,7 +7994,7 @@ msgstr "Neznani format pisave."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr "Napaka naložitve pisave."
+msgstr "Napaka nalaganja pisave."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."

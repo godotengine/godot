@@ -1,4 +1,4 @@
-.TH GODOT "6" "September 2017" "godot 3.0-alpha" "Games"
+.TH GODOT "6" "January 2018" "godot 3.0" "Games"
 .SH NAME
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
@@ -36,6 +36,9 @@ Use a specific locale (<locale> being a two\-letter code).
 .TP
 \fB\-\-path\fR <directory>
 Path to a project (<directory> must contain a 'project.godot' file).
+.TP
+\fB\-u\fR, \fB\-\-upwards\fR
+Scan folders upwards for project.godot file.
 .TP
 \fB\-\-main\-pack\fR <file>
 Path to a pack (.pck) file to load.
@@ -133,17 +136,17 @@ Generate JSON dump of the Godot API for GDNative bindings.
 \fB\-\-test\fR <test>
 Run a unit test ('string', 'containers', 'math', 'render', 'multimesh', 'gui', 'io', 'shaderlang', 'physics', 'oa_hash_map').
 .SH FILES
-~/.godot/
+XDG_DATA_CONFIG/godot/ or ~/.config/godot/
 .RS
-User\-specific configuration and cache folder, contains persistent editor and game configuration and saved files, temporary metadata, etc.
+User\-specific configuration folder, contains persistent editor settings, script and text editor templates and projects metadata.
 .RE
-~/.godot/app_userdata/
+XDG_DATA_HOME/godot/ or ~/.local/share/godot/
 .RS
-Contains the default configuration and user data folders for Godot\-made games (\fIuser://\fR path).
+Contains the default configuration and user data folders for Godot\-made games (\fIuser://\fR path), as well as export templates.
 .RE
-~/.godot/templates/
+XDG_DATA_CACHE/godot or ~/.cache/godot/
 .RS
-Installation folder for "export templates", compiled binaries of the engine to deploy on the many supported platforms.
+Cache folder for generated thumbnails and scene previews, as well as temporary location for downloads.
 .RE
 /usr/share/doc/godot/
 .RS

@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 15:47+0000\n"
+"PO-Revision-Date: 2018-01-25 22:27+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
@@ -1787,23 +1787,23 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr ""
+msgstr "הוספת סצנה חדשה."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr ""
+msgstr "סצנה"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr ""
+msgstr "מעבר לסצנה שנפתחה קודם לכן."
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr ""
+msgstr "הלשונית הבאה"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr ""
+msgstr "הלשונית הקודמת"
 
 #: editor/editor_node.cpp
 msgid "Filter Files.."
@@ -1811,39 +1811,39 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "פעולות עם קובצי סצנות."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "סצנה חדשה"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr ""
+msgstr "סצנה חדשה בירושה…"
 
 #: editor/editor_node.cpp
 msgid "Open Scene.."
-msgstr ""
+msgstr "פתיחת סצנה…"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "שמירת סצנה"
 
 #: editor/editor_node.cpp
 msgid "Save all Scenes"
-msgstr ""
+msgstr "שמירת כל הסצנות"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "סגירת סצנה"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "פתיחה מהאחרונים"
 
 #: editor/editor_node.cpp
 msgid "Convert To.."
-msgstr ""
+msgstr "המרה אל…"
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary.."
@@ -1856,62 +1856,64 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "ביטול"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "ביצוע חוזר"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr ""
+msgstr "שחזור סצנה"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "כלים שונים למיזם או למגוון סצנות."
 
 #: editor/editor_node.cpp
 msgid "Project"
-msgstr ""
+msgstr "מיזם"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "הגדרות מיזם"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
-msgstr ""
+msgstr "הרצת סקריפט"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "ייצוא"
 
 #: editor/editor_node.cpp
 msgid "Tools"
-msgstr ""
+msgstr "כלים"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "יציאה לרשימת המיזמים"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "ניפוי שגיאות"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr ""
+msgstr "הטעמה עם ניפוי שגיאות מרחוק"
 
 #: editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
+"בעת ייצוא או הטמעה, קובץ ההפעלה ינסה להתחבר לכתובת ה־IP של המחשב הזה לצורך "
+"ניפוי שגיאות."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "הטמעה קטנה עם מערכת קבצים ברשת"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1935,7 +1937,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr ""
+msgstr "ניווט גלוי"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1945,7 +1947,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "סנכרון השינויים בסצנה"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1957,7 +1959,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr ""
+msgstr "סנכרון השינויים בסקריפט"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1969,31 +1971,31 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Editor"
-msgstr ""
+msgstr "עורך"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr ""
+msgstr "הגדרות עורך"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr ""
+msgstr "פריסת עורך"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "כניסה אל/יציאה ממסך מלא"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr ""
+msgstr "ניהול תבניות ייצוא"
 
 #: editor/editor_node.cpp
 msgid "Help"
-msgstr ""
+msgstr "עזרה"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
-msgstr ""
+msgstr "מחלקות"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2004,188 +2006,188 @@ msgstr "חיפוש"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "מסמכים מקוונים"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "שו״ת"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr ""
+msgstr "עוקב תקלות"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "קהילה"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "על אודות"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "נגינת המיזם…"
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr ""
+msgstr "נגינה"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
-msgstr ""
+msgstr "השהיית הסצנה"
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr ""
+msgstr "השהיית סצנה"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr ""
+msgstr "עצירת הסצנה."
 
 #: editor/editor_node.cpp
 msgid "Stop"
-msgstr ""
+msgstr "עצירה"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "נגינת הסצנה שנערכה."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "נגינת הסצנה"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "נגינת סצנה מותאמת אישית"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "נגינת סצנה בהתאמה אישית"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
-msgstr ""
+msgstr "מסתובב כאשר חלון העורך מצויר מחדש!"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
-msgstr ""
+msgstr "לעדכן תמיד"
 
 #: editor/editor_node.cpp
 msgid "Update Changes"
-msgstr ""
+msgstr "עדכון שינויים"
 
 #: editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "השבתת שבשבת עדכון"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr ""
+msgstr "חוקר"
 
 #: editor/editor_node.cpp
 msgid "Create a new resource in memory and edit it."
-msgstr ""
+msgstr "יצירת משאב חדש בזיכרון ועריכתו."
 
 #: editor/editor_node.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr ""
+msgstr "טעינת משאב קיים מהכונן ועריכתו."
 
 #: editor/editor_node.cpp
 msgid "Save the currently edited resource."
-msgstr ""
+msgstr "שמירת המשאב שנערך כרגע."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
-msgstr ""
+msgstr "שמירה בשם…"
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
-msgstr ""
+msgstr "מעבר לפריט האחרון שנערך מההיסטוריה."
 
 #: editor/editor_node.cpp
 msgid "Go to the next edited object in history."
-msgstr ""
+msgstr "מעבר לפריט הבא שנערך מההיסטוריה."
 
 #: editor/editor_node.cpp
 msgid "History of recently edited objects."
-msgstr ""
+msgstr "היסטוריה של הפריטים שנערכו לאחרונה."
 
 #: editor/editor_node.cpp
 msgid "Object properties."
-msgstr ""
+msgstr "מאפייני פריט."
 
 #: editor/editor_node.cpp
 msgid "Changes may be lost!"
-msgstr ""
+msgstr "השינויים עשויים ללכת לאיבוד!"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "ייבוא"
 
 #: editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "מפרק"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "מערכת קבצים"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "פלט"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "לא לשמור"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "ייבוא תבניות מקובץ ZIP"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "ייצוא מיזם"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "ייצוא ספריה"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr ""
+msgstr "מיזוג עם נוכחיים"
 
 #: editor/editor_node.cpp
 msgid "Password:"
-msgstr ""
+msgstr "ססמה:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr ""
+msgstr "פתיחה והרצה של סקריפט"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
-msgstr ""
+msgstr "חדש בירושה"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr ""
+msgstr "שגיאות טעינה"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr ""
+msgstr "בחירה"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr ""
+msgstr "פתיחת עורך דו־ממד"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr ""
+msgstr "פתיחת עורך תלת־ממד"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr ""
+msgstr "פתיחת עורך סקריפטים"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
@@ -2193,11 +2195,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr ""
+msgstr "פתיחת העורך הבא"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr ""
+msgstr "פתיחת העורך הקודם"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -2205,28 +2207,28 @@ msgstr ""
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
-msgstr ""
+msgstr "תמונה ממוזערת…"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "תוספים מותקנים:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Update"
-msgstr ""
+msgstr "עדכון"
 
 #: editor/editor_plugin_settings.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr ""
+msgstr "גרסה:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
-msgstr ""
+msgstr "יוצר:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "מצב:"
 
 #: editor/editor_profiler.cpp
 msgid "Stop Profiling"
@@ -2238,27 +2240,27 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
-msgstr ""
+msgstr "מדידה:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "זמן שקופית (שניות)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "זמן ממוצע (שניות)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr ""
+msgstr "שקופית %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr ""
+msgstr "שקופית פיזיקלית %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
-msgstr ""
+msgstr "זמן:"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -2266,23 +2268,23 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr ""
+msgstr "עצמי"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr ""
+msgstr "שקופית מס׳:"
 
 #: editor/editor_profiler.cpp
 msgid "Time"
-msgstr ""
+msgstr "זמן"
 
 #: editor/editor_profiler.cpp
 msgid "Calls"
-msgstr ""
+msgstr "קריאות"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
-msgstr ""
+msgstr "נא לבחור התקן מהרשימה"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -2292,11 +2294,11 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr ""
+msgstr "ניתן לכתוב את הלוגיקה שלך בשיטה ‎_run()‎."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr ""
+msgstr "כבר יש סצנה בעריכה."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
@@ -2304,55 +2306,55 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr ""
+msgstr "יכול להיות ששכחת את מילת המפתח ‚tool’?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr ""
+msgstr "לא ניתן להריץ את הסקריפט:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr ""
+msgstr "שכחת את השיטה ‚‎_run’?"
 
 #: editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
-msgstr ""
+msgstr "בררת מחדל (כמו העורך)"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "נא לבחור מפרקים לייצוא"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "נתיב סצנות:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "ייבוא ממפרק:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
-msgstr ""
+msgstr "הורדה מחדש"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr ""
+msgstr "הסרה"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(מותקן)"
 
 #: editor/export_template_manager.cpp
 msgid "Download"
-msgstr ""
+msgstr "הורדה"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(חסר)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(נוכחי)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait.."
@@ -2360,15 +2362,15 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "להסיר את גרסת התבנית ‚%s’?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr ""
+msgstr "לא ניתן לייצא zip של תבניות."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "תבנית ה־version.txt שגויה בתוך התבניות."
 
 #: editor/export_template_manager.cpp
 msgid ""

@@ -19,11 +19,12 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import EnumVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
     ]
 
 

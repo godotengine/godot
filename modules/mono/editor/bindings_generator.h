@@ -441,6 +441,7 @@ class BindingsGenerator {
 	Map<StringName, String> extra_members;
 
 	List<InternalCall> method_icalls;
+	List<InternalCall> builtin_method_icalls;
 	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	List<const InternalCall *> generated_icall_funcs;
