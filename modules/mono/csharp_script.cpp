@@ -447,6 +447,7 @@ String CSharpLanguage::_get_indentation() const {
 
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 
+#ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
 
 	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_api_assembly() || !GDMonoUtils::mono_cache.corlib_cache_updated)
@@ -463,8 +464,12 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	si = stack_trace_get_info(stack_trace);
 
 	return si;
+#else
+	return Vector<StackInfo>();
+#endif
 }
 
+#ifdef DEBUG_ENABLED
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
 
 	// Printing an error here could result in endless recursion, so we must be careful
@@ -514,6 +519,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 	return si;
 }
+#endif
 
 void CSharpLanguage::frame() {
 
@@ -1546,6 +1552,7 @@ bool CSharpScript::_update_exports() {
 	return false;
 }
 
+#ifdef TOOLS_ENABLED
 bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
 
 	StringName name = p_member->get_name();
@@ -1616,6 +1623,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p
 
 	return true;
 }
+#endif
 
 void CSharpScript::_clear() {
 
