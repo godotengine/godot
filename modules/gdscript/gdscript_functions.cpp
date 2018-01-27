@@ -329,10 +329,24 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		} break;
 		case MATH_LERP: {
 			VALIDATE_ARG_COUNT(3);
-			VALIDATE_ARG_NUM(0);
-			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+			const double t = (double)*p_args[2];
+			switch (p_args[0]->get_type() == p_args[1]->get_type() ? p_args[0]->get_type() : Variant::REAL) {
+				case Variant::VECTOR2: {
+					r_ret = ((Vector2)*p_args[0]).linear_interpolate((Vector2)*p_args[1], t);
+				} break;
+				case Variant::VECTOR3: {
+					r_ret = ((Vector3)*p_args[0]).linear_interpolate((Vector3)*p_args[1], t);
+				} break;
+				case Variant::COLOR: {
+					r_ret = ((Color)*p_args[0]).linear_interpolate((Color)*p_args[1], t);
+				} break;
+				default: {
+					VALIDATE_ARG_NUM(0);
+					VALIDATE_ARG_NUM(1);
+					r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], t);
+				} break;
+			}
 		} break;
 		case MATH_INVERSE_LERP: {
 			VALIDATE_ARG_COUNT(3);
@@ -1478,7 +1492,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_LERP: {
-			MethodInfo mi("lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, "from"), PropertyInfo(Variant::NIL, "to"), PropertyInfo(Variant::REAL, "weight"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
