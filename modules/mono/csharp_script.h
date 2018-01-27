@@ -105,7 +105,9 @@ class CSharpScript : public Script {
 	void _clear();
 
 	bool _update_exports();
+#ifdef TOOLS_ENABLED
 	bool _get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+#endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
@@ -335,7 +337,9 @@ public:
 	virtual void *alloc_instance_binding_data(Object *p_object);
 	virtual void free_instance_binding_data(void *p_data);
 
+#ifdef DEBUG_ENABLED
 	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);
+#endif
 
 	CSharpLanguage();
 	~CSharpLanguage();
