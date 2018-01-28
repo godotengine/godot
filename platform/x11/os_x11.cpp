@@ -1862,8 +1862,12 @@ void OS_X11::process_xevents() {
 				e = event;
 
 				req = &(e.xselectionrequest);
-				if (req->target == XA_STRING || req->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-						req->target == XInternAtom(x11_display, "UTF8_STRING", 0)) {
+				if (req->target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
+						req->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
+						req->target == XInternAtom(x11_display, "TEXT", 0) ||
+						req->target == XA_STRING ||
+						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
+						req->target == XInternAtom(x11_display, "text/plain", 0)) {
 					CharString clip = OS::get_clipboard().utf8();
 					XChangeProperty(x11_display,
 							req->requestor,
@@ -1876,26 +1880,40 @@ void OS_X11::process_xevents() {
 					respond.xselection.property = req->property;
 				} else if (req->target == XInternAtom(x11_display, "TARGETS", 0)) {
 
-					Atom data[2];
-					data[0] = XInternAtom(x11_display, "UTF8_STRING", 0);
-					data[1] = XA_STRING;
-					XChangeProperty(x11_display, req->requestor, req->property, req->target,
-							8, PropModeReplace, (unsigned char *)&data,
-							sizeof(data));
+					Atom data[7];
+					data[0] = XInternAtom(x11_display, "TARGETS", 0);
+					data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
+					data[2] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
+					data[3] = XInternAtom(x11_display, "TEXT", 0);
+					data[4] = XA_STRING;
+					data[5] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
+					data[6] = XInternAtom(x11_display, "text/plain", 0);
+
+					XChangeProperty(x11_display,
+							req->requestor,
+							req->property,
+							XA_ATOM,
+							32,
+							PropModeReplace,
+							(unsigned char *)&data,
+							sizeof(data) / sizeof(data[0]));
 					respond.xselection.property = req->property;
 
 				} else {
-					printf("No String %x\n",
-							(int)req->target);
+					char *targetname = XGetAtomName(x11_display, req->target);
+					printf("No Target '%s'\n", targetname);
+					if (targetname)
+						XFree(targetname);
 					respond.xselection.property = None;
 				}
+
 				respond.xselection.type = SelectionNotify;
 				respond.xselection.display = req->display;
 				respond.xselection.requestor = req->requestor;
 				respond.xselection.selection = req->selection;
 				respond.xselection.target = req->target;
 				respond.xselection.time = req->time;
-				XSendEvent(x11_display, req->requestor, 0, 0, &respond);
+				XSendEvent(x11_display, req->requestor, True, NoEventMask, &respond);
 				XFlush(x11_display);
 			} break;
 
