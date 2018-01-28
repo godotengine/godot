@@ -152,7 +152,7 @@ private:
 				return "";
 			}
 
-		} else if (mode == MODE_NEW) {
+		} else {
 
 			// check if the specified folder is empty, even though this is not an error, it is good to check here
 			d->list_dir_begin();
@@ -174,13 +174,6 @@ private:
 				get_ok()->set_disabled(true);
 				return "";
 			}
-
-		} else if (d->file_exists("project.godot")) {
-
-			set_message(TTR("Please choose a folder that does not contain a 'project.godot' file."), MESSAGE_ERROR);
-			memdelete(d);
-			get_ok()->set_disabled(true);
-			return "";
 		}
 
 		set_message("");
@@ -531,11 +524,17 @@ public:
 			set_title(TTR("Rename Project"));
 			get_ok()->set_text(TTR("Rename"));
 			name_container->show();
+			status_rect->hide();
+			msg->hide();
+			get_ok()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
 
 			if (current->setup(project_path->get_text(), "")) {
 				set_message(TTR("Couldn't get project.godot in the project path."), MESSAGE_ERROR);
+				status_rect->show();
+				msg->show();
+				get_ok()->set_disabled(true);
 			} else if (current->has_setting("application/config/name")) {
 				project_name->set_text(current->get("application/config/name"));
 			}
@@ -543,8 +542,6 @@ public:
 			project_name->call_deferred("grab_focus");
 
 			create_dir->hide();
-			status_rect->hide();
-			msg->hide();
 
 		} else {
 
@@ -632,7 +629,7 @@ public:
 		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		pphb->add_child(project_path);
 
-		// status button
+		// status icon
 		status_rect = memnew(TextureRect);
 		status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		pphb->add_child(status_rect);
