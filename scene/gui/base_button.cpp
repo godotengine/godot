@@ -311,10 +311,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 	status.disabled = p_disabled;
 	update();
 	_change_notify("disabled");
-	if (p_disabled)
-		set_focus_mode(FOCUS_NONE);
-	else
-		set_focus_mode(enabled_focus_mode);
 }
 
 bool BaseButton::is_disabled() const {
