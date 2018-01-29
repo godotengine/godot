@@ -83,7 +83,7 @@ public:
 	uint64_t get_u64();
 	int64_t get_64();
 	float get_float();
-	float get_double();
+	double get_double();
 	String get_string(int p_bytes);
 	String get_utf8_string(int p_bytes);
 	Variant get_var();
