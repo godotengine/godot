@@ -253,6 +253,9 @@ public:
 	virtual String get_executable_path() const;
 
 	virtual String get_locale() const;
+
+	virtual int get_processor_count() const;
+
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	virtual void enable_for_stealing_focus(ProcessID pid);
