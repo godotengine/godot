@@ -2211,6 +2211,36 @@ String OS_Windows::get_locale() const {
 	return "en";
 }
 
+// We need this because GetSystemInfo() is unreliable on WOW64
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724381(v=vs.85).aspx
+// Taken from MSDN
+typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+LPFN_ISWOW64PROCESS fnIsWow64Process;
+
+BOOL is_wow64() {
+	BOOL wow64 = FALSE;
+
+	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+
+	if (fnIsWow64Process) {
+		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
+			wow64 = FALSE;
+		}
+	}
+
+	return wow64;
+}
+
+int OS_Windows::get_processor_count() const {
+	SYSTEM_INFO sysinfo;
+	if (is_wow64())
+		GetNativeSystemInfo(&sysinfo);
+	else
+		GetSystemInfo(&sysinfo);
+
+	return sysinfo.dwNumberOfProcessors;
+}
+
 OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 
 	unsigned long azerty[] = {
