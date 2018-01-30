@@ -1760,12 +1760,14 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case COLOR8: {
 
 			MethodInfo mi("Color8", PropertyInfo(Variant::INT, "r8"), PropertyInfo(Variant::INT, "g8"), PropertyInfo(Variant::INT, "b8"), PropertyInfo(Variant::INT, "a8"));
+			mi.default_arguments.push_back(255);
 			mi.return_val.type = Variant::COLOR;
 			return mi;
 		} break;
 		case COLORN: {
 
 			MethodInfo mi("ColorN", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::REAL, "alpha"));
+			mi.default_arguments.push_back(1.0f);
 			mi.return_val.type = Variant::COLOR;
 			return mi;
 		} break;
