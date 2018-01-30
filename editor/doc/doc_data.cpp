@@ -611,6 +611,14 @@ void DocData::generate(bool p_basic_types) {
 
 					ArgumentDoc ad;
 					argument_doc_from_arginfo(ad, mi.arguments[i]);
+
+					int darg_idx = i - (mi.arguments.size() - mi.default_arguments.size());
+
+					if (darg_idx >= 0) {
+						Variant default_arg = E->get().default_arguments[darg_idx];
+						ad.default_value = default_arg.get_construct_string();
+					}
+
 					md.arguments.push_back(ad);
 				}
 

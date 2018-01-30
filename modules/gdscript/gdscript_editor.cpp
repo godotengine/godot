@@ -369,8 +369,8 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		mi.name = "yield";
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
-		mi.default_arguments.push_back(Variant::NIL);
-		mi.default_arguments.push_back(Variant::STRING);
+		mi.default_arguments.push_back(Variant());
+		mi.default_arguments.push_back(String());
 		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDScriptFunctionState");
 		p_functions->push_back(mi);
 	}
