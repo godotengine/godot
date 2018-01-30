@@ -1891,6 +1891,20 @@ void OS_OSX::move_window_to_foreground() {
 	[window_object orderFrontRegardless];
 }
 
+void OS_OSX::set_window_always_on_top(bool p_enabled) {
+	if (is_window_always_on_top() == p_enabled)
+		return;
+
+	if (p_enabled)
+		[window_object setLevel:NSFloatingWindowLevel];
+	else
+		[window_object setLevel:NSNormalWindowLevel];
+}
+
+bool OS_OSX::is_window_always_on_top() const {
+	return [window_object level] == NSFloatingWindowLevel;
+}
+
 void OS_OSX::request_attention() {
 
 	[NSApp requestUserAttention:NSCriticalRequest];
