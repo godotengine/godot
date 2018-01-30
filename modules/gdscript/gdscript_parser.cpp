@@ -1518,11 +1518,11 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						String errwhere;
 						if (op->arguments[0]->type == Node::TYPE_TYPE) {
 							TypeNode *tn = static_cast<TypeNode *>(op->arguments[0]);
-							errwhere = "'" + Variant::get_type_name(tn->vtype) + "'' constructor";
+							errwhere = "'" + Variant::get_type_name(tn->vtype) + "' constructor";
 
 						} else {
 							GDScriptFunctions::Function func = static_cast<BuiltInFunctionNode *>(op->arguments[0])->function;
-							errwhere = String("'") + GDScriptFunctions::get_func_name(func) + "'' intrinsic function";
+							errwhere = String("'") + GDScriptFunctions::get_func_name(func) + "' intrinsic function";
 						}
 
 						switch (ce.error) {

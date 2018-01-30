@@ -358,13 +358,16 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			r_ret = Math::dectime((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
 		case MATH_RANDOMIZE: {
+			VALIDATE_ARG_COUNT(0);
 			Math::randomize();
 			r_ret = Variant();
 		} break;
 		case MATH_RAND: {
+			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::rand();
 		} break;
 		case MATH_RANDF: {
+			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::randf();
 		} break;
 		case MATH_RANDOM: {
@@ -593,7 +596,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			r_ret = String(result);
 		} break;
 		case TEXT_STR: {
+			if (p_arg_count < 1) {
+				r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument = 1;
+				r_ret = Variant();
 
+				return;
+			}
 			String str;
 			for (int i = 0; i < p_arg_count; i++) {
 
@@ -1180,6 +1189,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		} break;
 
 		case PRINT_STACK: {
+			VALIDATE_ARG_COUNT(0);
 
 			ScriptLanguage *script = GDScriptLanguage::get_singleton();
 			for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
