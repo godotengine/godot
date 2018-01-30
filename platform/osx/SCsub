@@ -10,6 +10,7 @@ def make_debug(target, source, env):
         os.system(mpprefix + '/libexec/llvm-' + mpclangver + '/bin/llvm-dsymutil %s -o %s.dSYM' % (target[0], target[0]))
     else:
         os.system('dsymutil %s -o %s.dSYM' % (target[0], target[0]))
+    os.system('strip -u -r %s' % (target[0]))
 
 files = [
     'crash_handler_osx.mm',
