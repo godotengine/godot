@@ -52,7 +52,7 @@
 			</description>
 		</method>
 		<method name="basis_xform">
-			<return type="Transform2D">
+			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="var">
 			</argument>
@@ -61,7 +61,7 @@
 			</description>
 		</method>
 		<method name="basis_xform_inv">
-			<return type="Transform2D">
+			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="var">
 			</argument>
@@ -143,7 +143,7 @@
 			</description>
 		</method>
 		<method name="xform">
-			<return type="Transform2D">
+			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="var">
 			</argument>
@@ -152,7 +152,7 @@
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="Transform2D">
+			<return type="Vector2">
 			</return>
 			<argument index="0" name="v" type="var">
 			</argument>
