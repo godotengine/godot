@@ -46,6 +46,7 @@
 #include "scene/resources/box_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
+#include "scene/resources/scene_format_text.h"
 #include "scene/resources/sphere_shape.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
@@ -1394,4 +1395,26 @@ ResourceImporterScene *ResourceImporterScene::singleton = NULL;
 
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
+}
+///////////////////////////////////////
+
+uint32_t EditorSceneImporterESCN::get_import_flags() const {
+	return IMPORT_SCENE;
+}
+void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("escn");
+}
+Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+
+	Error error;
+	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
+	ERR_FAIL_COND_V(!ps.is_valid(), NULL);
+
+	Node *scene = ps->instance();
+	ERR_FAIL_COND_V(!scene, NULL);
+
+	return scene;
+}
+Ref<Animation> EditorSceneImporterESCN::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+	ERR_FAIL_V(Ref<Animation>());
 }
