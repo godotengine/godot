@@ -100,6 +100,15 @@
 				Shows the given property on the given [code]object[/code] in the Editor's Inspector dock.
 			</description>
 		</method>
+		<method name="is_plugin_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="plugin" type="String">
+			</argument>
+			<description>
+				Returns the enabled status of a plugin. The plugin name is the same as its directory name.
+			</description>
+		</method>
 		<method name="make_mesh_previews">
 			<return type="Array">
 			</return>
@@ -153,6 +162,17 @@
 			<argument index="0" name="p_file" type="String">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="set_plugin_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="String">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets the enabled status of a plugin. The plugin name is the same as its directory name.
 			</description>
 		</method>
 	</methods>
