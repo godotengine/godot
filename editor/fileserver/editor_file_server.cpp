@@ -55,7 +55,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 	ClientData *cd = (ClientData *)s;
 
-	cd->connection->set_nodelay(true);
+	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
 	Error err = cd->connection->get_data(buf4, 4);
 	if (err != OK) {

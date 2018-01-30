@@ -304,7 +304,7 @@ Error StreamPeerTCPPosix::read(uint8_t *p_buffer, int p_bytes, int &r_received, 
 	return OK;
 };
 
-void StreamPeerTCPPosix::set_nodelay(bool p_enabled) {
+void StreamPeerTCPPosix::set_no_delay(bool p_enabled) {
 
 	ERR_FAIL_COND(!is_connected_to_host());
 	int flag = p_enabled ? 1 : 0;
