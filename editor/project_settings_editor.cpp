@@ -750,7 +750,16 @@ void ProjectSettingsEditor::_item_add() {
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
-	String name = catname != "" ? catname + "/" + propname : propname;
+
+	if (propname.empty()) {
+		return;
+	}
+
+	if (catname.empty()) {
+		catname = "global";
+	}
+
+	String name = catname + "/" + propname;
 
 	undo_redo->create_action(TTR("Add Global Property"));
 
