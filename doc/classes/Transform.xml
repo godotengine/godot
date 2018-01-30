@@ -143,7 +143,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms the given vector "v" by this transform.
+				Transforms the given [Vector3], [Plane], or [AABB] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -152,7 +152,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms the given vector "v" by this transform.
+				Inverse-transforms the given [Vector3], [Plane], or [AABB] by this transform.
 			</description>
 		</method>
 	</methods>
