@@ -1312,6 +1312,8 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	return ria->rename_dependencies(f, p_path, p_map);
 }
 
+ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = NULL;
+
 Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path, const String &p_dst_path) {
 
 	Error err;
