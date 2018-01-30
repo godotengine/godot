@@ -50,8 +50,6 @@ public:
 	virtual void seek(float p_time) = 0;
 
 	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) = 0;
-
-	virtual float get_length() const = 0; //if supported, otherwise return 0
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -85,9 +83,14 @@ class AudioStream : public Resource {
 	GDCLASS(AudioStream, Resource)
 	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
 	virtual String get_stream_name() const = 0;
+
+	virtual float get_length() const = 0; //if supported, otherwise return 0
 };
 
 class AudioStreamPlaybackRandomPitch;
@@ -114,6 +117,8 @@ public:
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
 
+	virtual float get_length() const; //if supported, otherwise return 0
+
 	AudioStreamRandomPitch();
 };
 
@@ -138,8 +143,6 @@ public:
 	virtual void seek(float p_time);
 
 	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
-
-	virtual float get_length() const; //if supported, otherwise return 0
 
 	~AudioStreamPlaybackRandomPitch();
 };
