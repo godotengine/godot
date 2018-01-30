@@ -77,7 +77,7 @@ public:
 	virtual Status get_status() const;
 	virtual void disconnect_from_host();
 
-	virtual void set_nodelay(bool p_enabled);
+	virtual void set_no_delay(bool p_enabled);
 
 	static void make_default();
 

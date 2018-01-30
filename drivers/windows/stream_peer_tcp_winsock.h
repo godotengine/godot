@@ -81,7 +81,7 @@ public:
 	static void make_default();
 	static void cleanup();
 
-	virtual void set_nodelay(bool p_enabled);
+	virtual void set_no_delay(bool p_enabled);
 
 	StreamPeerTCPWinsock();
 	~StreamPeerTCPWinsock();
