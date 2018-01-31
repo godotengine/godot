@@ -147,4 +147,54 @@ public:
 	~AudioStreamPlaybackRandomPitch();
 };
 
+class AudioStreamPlaybackTempo;
+
+class AudioStreamTempo : public AudioStream {
+
+	GDCLASS(AudioStreamTempo, AudioStream)
+	friend class AudioStreamPlaybackTempo;
+
+	Ref<AudioStream> audio_stream;
+	float tempo;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_audio_stream(const Ref<AudioStream> &p_audio_stream);
+	Ref<AudioStream> get_audio_stream() const;
+
+	void set_tempo(float p_tempo);
+	float get_tempo() const;
+
+	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual String get_stream_name() const;
+
+	virtual float get_length() const; //if supported, otherwise return 0
+
+	AudioStreamTempo();
+};
+
+class AudioStreamPlaybackTempo : public AudioStreamPlayback {
+
+	GDCLASS(AudioStreamPlaybackTempo, AudioStreamPlayback)
+	friend class AudioStreamTempo;
+
+	Ref<AudioStreamTempo> stream;
+	Ref<AudioStreamPlayback> playback;
+	Ref<AudioStreamPlayback> playing;
+
+public:
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
+
+	virtual int get_loop_count() const; //times it looped
+
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
+
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+};
+
 #endif // AUDIO_STREAM_H

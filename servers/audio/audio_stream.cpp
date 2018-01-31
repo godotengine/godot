@@ -227,3 +227,122 @@ void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scal
 AudioStreamPlaybackRandomPitch::~AudioStreamPlaybackRandomPitch() {
 	random_pitch->playbacks.erase(this);
 }
+
+////////////////////////////////
+
+void AudioStreamTempo::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
+
+	audio_stream = p_audio_stream;
+	if (audio_stream.is_valid()) {
+	}
+}
+
+Ref<AudioStream> AudioStreamTempo::get_audio_stream() const {
+
+	return audio_stream;
+}
+
+void AudioStreamTempo::set_tempo(float p_tempo) {
+
+	tempo = p_tempo > 0.01 ? p_tempo : 0.01;
+}
+
+float AudioStreamTempo::get_tempo() const {
+	return tempo;
+}
+
+Ref<AudioStreamPlayback> AudioStreamTempo::instance_playback() {
+	Ref<AudioStreamPlaybackTempo> p;
+	p.instance();
+	if (audio_stream.is_valid())
+		p->playback = audio_stream->instance_playback();
+
+	p->stream = Ref<AudioStreamTempo>((AudioStreamTempo *)this);
+	return p;
+}
+
+String AudioStreamTempo::get_stream_name() const {
+
+	if (audio_stream.is_valid()) {
+		return "AudioStreamTempo: " + audio_stream->get_name();
+	}
+	return "AudioStreamTempo";
+}
+
+float AudioStreamTempo::get_length() const {
+	if (audio_stream.is_valid()) {
+		return audio_stream->get_length();
+	}
+
+	return 0;
+}
+
+void AudioStreamTempo::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_audio_stream", "stream"), &AudioStreamTempo::set_audio_stream);
+	ClassDB::bind_method(D_METHOD("get_audio_stream"), &AudioStreamTempo::get_audio_stream);
+
+	ClassDB::bind_method(D_METHOD("set_tempo", "scale"), &AudioStreamTempo::set_tempo);
+	ClassDB::bind_method(D_METHOD("get_tempo"), &AudioStreamTempo::get_tempo);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "audio_stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_audio_stream", "get_audio_stream");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tempo", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_tempo", "get_tempo");
+}
+
+AudioStreamTempo::AudioStreamTempo() {
+	tempo = 1.0;
+}
+
+void AudioStreamPlaybackTempo::start(float p_from_pos) {
+	playing = playback;
+
+	if (playing.is_valid()) {
+		playing->start(p_from_pos);
+	}
+}
+
+void AudioStreamPlaybackTempo::stop() {
+	if (playing.is_valid()) {
+		playing->stop();
+		;
+	}
+}
+bool AudioStreamPlaybackTempo::is_playing() const {
+	if (playing.is_valid()) {
+		return playing->is_playing();
+	}
+
+	return false;
+}
+
+int AudioStreamPlaybackTempo::get_loop_count() const {
+	if (playing.is_valid()) {
+		return playing->get_loop_count();
+	}
+
+	return 0;
+}
+
+float AudioStreamPlaybackTempo::get_playback_position() const {
+	if (playing.is_valid()) {
+		return playing->get_playback_position();
+	}
+
+	return 0;
+}
+void AudioStreamPlaybackTempo::seek(float p_time) {
+	if (playing.is_valid()) {
+		playing->seek(p_time);
+	}
+}
+
+void AudioStreamPlaybackTempo::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	if (playing.is_valid()) {
+		playing->mix(p_buffer, p_rate_scale / stream->tempo, p_frames);
+	} else {
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] = AudioFrame(0, 0);
+		}
+	}
+}
+
