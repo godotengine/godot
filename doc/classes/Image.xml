@@ -217,7 +217,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Returns the image's raw data.
+				Returns the image’s format. See [code]FORMAT_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
