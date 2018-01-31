@@ -76,11 +76,6 @@ namespace Godot
 
         public static real_t Cosh(real_t s)
         {
-            return (real_t)Math.Cosh(s);
-        }
-
-        public static int Decimals(real_t step)
-        {
             return Decimals((decimal)step);
         }
 
