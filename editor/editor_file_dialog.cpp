@@ -458,6 +458,23 @@ void EditorFileDialog::_item_selected(int p_item) {
 	get_ok()->set_disabled(_is_open_should_be_disabled());
 }
 
+void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
+
+	int current = p_item;
+	if (current < 0 || current >= item_list->get_item_count())
+		return;
+
+	Dictionary d = item_list->get_item_metadata(current);
+
+	if (!d["dir"] && p_selected) {
+
+		file->set_text(d["name"]);
+		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+	}
+
+	get_ok()->set_disabled(_is_open_should_be_disabled());
+}
+
 void EditorFileDialog::_items_clear_selection() {
 
 	item_list->unselect_all();
@@ -1290,6 +1307,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorFileDialog::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("_item_selected"), &EditorFileDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_multi_selected"), &EditorFileDialog::_multi_selected);
 	ClassDB::bind_method(D_METHOD("_items_clear_selection"), &EditorFileDialog::_items_clear_selection);
 	ClassDB::bind_method(D_METHOD("_item_list_item_rmb_selected"), &EditorFileDialog::_item_list_item_rmb_selected);
 	ClassDB::bind_method(D_METHOD("_item_list_rmb_clicked"), &EditorFileDialog::_item_list_rmb_clicked);
@@ -1598,6 +1616,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	connect("confirmed", this, "_action_pressed");
 	item_list->connect("item_selected", this, "_item_selected", varray(), CONNECT_DEFERRED);
+	item_list->connect("multi_selected", this, "_multi_selected", varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", this, "_item_db_selected", varray());
 	item_list->connect("nothing_selected", this, "_items_clear_selection");
 	dir->connect("text_entered", this, "_dir_entered");
