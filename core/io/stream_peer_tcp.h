@@ -65,7 +65,7 @@ public:
 	virtual void disconnect_from_host() = 0;
 	virtual IP_Address get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
-	virtual void set_nodelay(bool p_enabled) = 0;
+	virtual void set_no_delay(bool p_enabled) = 0;
 
 	static Ref<StreamPeerTCP> create_ref();
 	static StreamPeerTCP *create();

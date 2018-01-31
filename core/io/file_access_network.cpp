@@ -83,7 +83,7 @@ int64_t FileAccessNetworkClient::get_64() {
 
 void FileAccessNetworkClient::_thread_func() {
 
-	client->set_nodelay(true);
+	client->set_no_delay(true);
 	while (!quit) {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
