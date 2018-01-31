@@ -12,6 +12,42 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="add_valid_connection_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_type" type="int">
+			</argument>
+			<argument index="1" name="to_type" type="int">
+			</argument>
+			<description>
+				Makes possible the connection between two different slot types. The type is defined with the [method GraphNode.set_slot] method.
+			</description>
+		</method>
+		<method name="add_valid_left_disconnect_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Makes possible to disconnect nodes when dragging from the slot at the left if it has the specified type.
+			</description>
+		</method>
+		<method name="add_valid_right_disconnect_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Makes possible to disconnect nodes when dragging from the slot at the right if it has the specified type.
+			</description>
+		</method>
+		<method name="clear_connections">
+			<return type="void">
+			</return>
+			<description>
+				Remove all connections between nodes.
+			</description>
+		</method>
 		<method name="connect_node">
 			<return type="int" enum="Error">
 			</return>
@@ -64,12 +100,53 @@
 				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
+		<method name="is_valid_connection_type" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from_type" type="int">
+			</argument>
+			<argument index="1" name="to_type" type="int">
+			</argument>
+			<description>
+				Returns whether it's possible to connect slots of the specified types.
+			</description>
+		</method>
+		<method name="remove_valid_connection_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_type" type="int">
+			</argument>
+			<argument index="1" name="to_type" type="int">
+			</argument>
+			<description>
+				Makes it not possible to connect between two different slot types. The type is defined with the [method GraphNode.set_slot] method.
+			</description>
+		</method>
+		<method name="remove_valid_left_disconnect_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Removes the possibility to disconnect nodes when dragging from the slot at the left if it has the specified type.
+			</description>
+		</method>
+		<method name="remove_valid_right_disconnect_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+				Removes the possibility to disconnect nodes when dragging from the slot at the right if it has the specified type.
+			</description>
+		</method>
 		<method name="set_selected">
 			<return type="void">
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
+				Sets the specified [code]node[/code] as the one selected.
 			</description>
 		</method>
 	</methods>
