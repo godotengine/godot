@@ -144,6 +144,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	Label *line_nb;
 	Label *col_nb;
+	Label *zoom_nb;
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;
