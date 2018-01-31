@@ -59,6 +59,7 @@
 			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo">
 			</argument>
 			<description>
+				Get the specific information about the viewport from rendering pipeline.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">
@@ -182,58 +183,82 @@
 	</methods>
 	<members>
 		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr">
+			If [code]true[/code] the viewport will be used in AR/VR process. Default value: [code]false[/code].
 		</member>
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d">
+			If [code]true[/code] the viewport will process 2D audio streams. Default value: [code]false[/code].
 		</member>
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener">
+			If [code]true[/code] the viewport will process 3D audio streams. Default value: [code]false[/code].
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw">
+			The overlay mode for test rendered geometry in debug purposes. Default value: [code]DEBUG_DRAW_DISABLED[/code].
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled">
+			If [code]true[/code] the viewport will disable 3D rendering. For actual disabling use [code]usage[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled">
+			If [code]true[/code] the viewport will not receive input event. Default value: [code]false[/code].
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled">
+			If [code]true[/code] the GUI controls on the viewport will lay pixel perfectly. Default value: [code]true[/code].
 		</member>
 		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr">
+			If [code]true[/code] the viewport rendering will receive benefits from High Dynamic Range algorithm. Default value: [code]true[/code].
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA">
+			The multisample anti-aliasing mode. Default value: [code]MSAA_DISABLED[/code].
 		</member>
 		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world">
+			If [code]true[/code] the viewport will use [World] defined in [code]world[/code] property. Default value: [code]false[/code].
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking">
+			If [code]true[/code] the objects rendered by viewport become subjects of mouse picking process. Default value: [code]false[/code].
 		</member>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode">
+			The clear mode when viewport used as a render target. Default value: [code]CLEAR_MODE_ALWAYS[/code].
 		</member>
 		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode">
+			The update mode when viewport used as a render target. Default value: [code]UPDATE_WHEN_VISIBLE[/code].
 		</member>
 		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip">
+			If [code]true[/code] the result of rendering will be flipped vertically. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+			The subdivision amount of first quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_4[/code].
 		</member>
 		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+			The subdivision amount of second quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_4[/code].
 		</member>
 		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+			The subdivision amount of third quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_16[/code].
 		</member>
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+			The subdivision amount of fourth quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_64[/code].
 		</member>
 		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size">
+			The resolution of shadow atlas. Both width and height is equal to one value.
 		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size">
+			The width and height of viewport.
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background">
+			If [code]true[/code] the viewport should render its background as transparent. Default value: [code]false[/code].
 		</member>
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage">
+			The rendering mode of viewport. Default value: [code]USAGE_3D[/code].
 		</member>
 		<member name="world" type="World" setter="set_world" getter="get_world">
+			The custom [World] which can be used as 3D environment source.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
+			The custom [World2D] which can be used as 2D environment source.
 		</member>
 	</members>
 	<signals>
@@ -254,6 +279,7 @@
 			Update the render target only when it is visible. This is the default value.
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="3" enum="UpdateMode">
+			Always update the render target.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
@@ -270,30 +296,42 @@
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
+			Enum limiter. Do not use it directly.
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
+			Amount of objects in frame.
 		</constant>
 		<constant name="RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
+			Amount of vertices in frame. 
 		</constant>
 		<constant name="RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
+			Amount of material changes in frame.
 		</constant>
 		<constant name="RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
+			Amount of shader changes in frame.
 		</constant>
 		<constant name="RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
+			Amount of surface changes in frame.
 		</constant>
 		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
+			Amount of draw calls in frame.
 		</constant>
 		<constant name="RENDER_INFO_MAX" value="6" enum="RenderInfo">
+			Enum limiter. Do not use it directly.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
+			Objects are displayed normally.
 		</constant>
 		<constant name="DEBUG_DRAW_UNSHADED" value="1" enum="DebugDraw">
+			Objects are displayed without light information.
 		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="2" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="3" enum="DebugDraw">
+			Objects are displayed in wireframe style.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
+			Multisample anti-aliasing mode disabled. This is the default value.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
 		</constant>
