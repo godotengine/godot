@@ -159,25 +159,6 @@ private:
 	void setup(real_t p_height, real_t p_radius);
 };
 
-class CylinderShapeBullet : public ShapeBullet {
-
-	real_t height;
-	real_t radius;
-
-public:
-	CylinderShapeBullet();
-
-	_FORCE_INLINE_ real_t get_height() { return height; }
-	_FORCE_INLINE_ real_t get_radius() { return radius; }
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
-
-private:
-	void setup(real_t p_height, real_t p_radius);
-};
-
 class ConvexPolygonShapeBullet : public ShapeBullet {
 
 public:
