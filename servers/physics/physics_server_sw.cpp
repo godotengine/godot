@@ -795,12 +795,12 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_v
 	body->wakeup();
 };
 
-void PhysicsServerSW::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool lock) {
+void PhysicsServerSW::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_axis_lock(p_axis, lock);
+	body->set_axis_lock(p_axis, p_lock);
 	body->wakeup();
 }
 

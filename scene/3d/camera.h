@@ -97,7 +97,7 @@ protected:
 	void _update_camera_mode();
 
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 

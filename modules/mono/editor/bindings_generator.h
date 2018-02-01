@@ -504,8 +504,8 @@ class BindingsGenerator {
 	const TypeInterface *_get_type_by_name_or_null(const StringName &p_cname);
 	const TypeInterface *_get_type_by_name_or_placeholder(const StringName &p_cname);
 
-	void _default_argument_from_variant(const Variant &p_var, ArgumentInterface &r_iarg);
-	void _populate_builtin_type(TypeInterface &r_type, Variant::Type vtype);
+	void _default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
+	void _populate_builtin_type(TypeInterface &r_itype, Variant::Type vtype);
 
 	void _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();
@@ -514,14 +514,14 @@ class BindingsGenerator {
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
-	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_prop_doc, List<String> &p_output);
+	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, List<String> &p_output);
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output);
 
 	void _generate_global_constants(List<String> &p_output);
 
 	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, List<String> &p_output);
 
-	Error _save_file(const String &path, const List<String> &content);
+	Error _save_file(const String &p_path, const List<String> &p_content);
 
 	BindingsGenerator() {}
 

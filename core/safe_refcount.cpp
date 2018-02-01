@@ -119,8 +119,8 @@ _ALWAYS_INLINE_ uint64_t _atomic_exchange_if_greater_impl(register uint64_t *pw,
 
 // The actual advertised functions; they'll call the right implementation
 
-uint32_t atomic_conditional_increment(register uint32_t *counter) {
-	return _atomic_conditional_increment_impl(counter);
+uint32_t atomic_conditional_increment(register uint32_t *pw) {
+	return _atomic_conditional_increment_impl(pw);
 }
 
 uint32_t atomic_decrement(register uint32_t *pw) {
@@ -143,8 +143,8 @@ uint32_t atomic_exchange_if_greater(register uint32_t *pw, register uint32_t val
 	return _atomic_exchange_if_greater_impl(pw, val);
 }
 
-uint64_t atomic_conditional_increment(register uint64_t *counter) {
-	return _atomic_conditional_increment_impl(counter);
+uint64_t atomic_conditional_increment(register uint64_t *pw) {
+	return _atomic_conditional_increment_impl(pw);
 }
 
 uint64_t atomic_decrement(register uint64_t *pw) {

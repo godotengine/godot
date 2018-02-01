@@ -49,7 +49,7 @@ class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
 	bool m_isSwapped;
 
 public:
-	GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *m_world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
+	GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
 	virtual ~GodotRayWorldAlgorithm();
 
 	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);

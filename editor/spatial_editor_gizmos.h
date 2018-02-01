@@ -105,7 +105,7 @@ protected:
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const AABB &p_bounds = AABB());
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
 	void add_handles(const Vector<Vector3> &p_handles, bool p_billboard = false, bool p_secondary = false);
-	void add_solid_box(Ref<Material> &p_material, Vector3 size);
+	void add_solid_box(Ref<Material> &p_material, Vector3 p_size);
 
 	void set_spatial_node(Spatial *p_node);
 	const Spatial *get_spatial_node() const { return spatial_node; }
@@ -376,13 +376,13 @@ public:
 
 class JointGizmosDrawer {
 public:
-	static Basis look_body(const Transform &joint_transform, const Transform &body_transform);
+	static Basis look_body(const Transform &p_joint_transform, const Transform &p_body_transform);
 	static Basis look_body_toward(Vector3::Axis p_axis, const Transform &joint_transform, const Transform &body_transform);
-	static Basis look_body_toward_x(const Transform &joint_transform, const Transform &body_transform);
-	static Basis look_body_toward_y(const Transform &joint_transform, const Transform &body_transform);
+	static Basis look_body_toward_x(const Transform &p_joint_transform, const Transform &p_body_transform);
+	static Basis look_body_toward_y(const Transform &p_joint_transform, const Transform &p_body_transform);
 	/// Special function just used for physics joints, it that returns a basis constrained toward Joint Z axis
 	/// with axis X and Y that are looking toward the body and oriented toward up
-	static Basis look_body_toward_z(const Transform &joint_transform, const Transform &body_transform);
+	static Basis look_body_toward_z(const Transform &p_joint_transform, const Transform &p_body_transform);
 
 	// Draw circle around p_axis
 	static void draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse = false);

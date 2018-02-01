@@ -1603,19 +1603,19 @@ float Animation::get_step() const {
 	return step;
 }
 
-void Animation::copy_track(int src_track, Ref<Animation> p_to_animation) {
+void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	ERR_FAIL_COND(p_to_animation.is_null());
-	ERR_FAIL_INDEX(src_track, get_track_count());
+	ERR_FAIL_INDEX(p_track, get_track_count());
 	int dst_track = p_to_animation->get_track_count();
-	p_to_animation->add_track(track_get_type(src_track));
+	p_to_animation->add_track(track_get_type(p_track));
 
-	p_to_animation->track_set_path(dst_track, track_get_path(src_track));
-	p_to_animation->track_set_imported(dst_track, track_is_imported(src_track));
-	p_to_animation->track_set_enabled(dst_track, track_is_enabled(src_track));
-	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(src_track));
-	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(src_track));
-	for (int i = 0; i < track_get_key_count(src_track); i++) {
-		p_to_animation->track_insert_key(dst_track, track_get_key_time(src_track, i), track_get_key_value(src_track, i), track_get_key_transition(src_track, i));
+	p_to_animation->track_set_path(dst_track, track_get_path(p_track));
+	p_to_animation->track_set_imported(dst_track, track_is_imported(p_track));
+	p_to_animation->track_set_enabled(dst_track, track_is_enabled(p_track));
+	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(p_track));
+	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(p_track));
+	for (int i = 0; i < track_get_key_count(p_track); i++) {
+		p_to_animation->track_insert_key(dst_track, track_get_key_time(p_track, i), track_get_key_value(p_track, i), track_get_key_transition(p_track, i));
 	}
 }
 

@@ -43,7 +43,7 @@ class MonoDevelopInstance {
 
 public:
 	void execute(const Vector<String> &p_files);
-	void execute(const String &p_files);
+	void execute(const String &p_file);
 
 	MonoDevelopInstance(const String &p_solution);
 };
