@@ -304,17 +304,23 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	int limit_rate_hz = p_options["force/max_rate_hz"];
 	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
 		//resampleeee!!!
-		int new_data_frames = frames * limit_rate_hz / rate;
+		int new_data_frames = (int)(frames * (float)limit_rate_hz / (float)rate);
+
+		print_line("\tresampling ratio: " + rtos((float)limit_rate_hz / (float)rate));
+		print_line("\tnew frames: " + itos(new_data_frames));
+
 		Vector<float> new_data;
 		new_data.resize(new_data_frames * format_channels);
 		for (int c = 0; c < format_channels; c++) {
 
+			float frac = .0f;
+			int ipos = 0;
+
 			for (int i = 0; i < new_data_frames; i++) {
 
 				//simple cubic interpolation should be enough.
-				float pos = float(i) * frames / new_data_frames;
-				float mu = pos - Math::floor(pos);
-				int ipos = int(Math::floor(pos));
+
+				float mu = frac;
 
 				float y0 = data[MAX(0, ipos - 1) * format_channels + c];
 				float y1 = data[ipos * format_channels + c];
@@ -330,14 +336,22 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 
 				new_data[i * format_channels + c] = res;
+
+				// update position and always keep fractional part within ]0...1]
+				// in order to avoid 32bit floating point precision errors
+
+				frac += (float)rate / (float)limit_rate_hz;
+				int tpos = (int)Math::floor(frac);
+				ipos += tpos;
+				frac -= tpos;
 			}
 		}
 
 		if (loop) {
-
-			loop_begin = loop_begin * new_data_frames / frames;
-			loop_end = loop_end * new_data_frames / frames;
+			loop_begin = (int)(loop_begin * (float)new_data_frames / (float)frames);
+			loop_end = (int)(loop_end * (float)new_data_frames / (float)frames);
 		}
+
 		data = new_data;
 		rate = limit_rate_hz;
 		frames = new_data_frames;
