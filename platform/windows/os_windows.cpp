@@ -434,6 +434,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			}
 
 			input->set_mouse_pos(Point2(mm.x, mm.y));
+			mm.global_x = mm.x;
+			mm.global_y = mm.y;
 			mm.speed_x = input->get_mouse_speed().x;
 			mm.speed_y = input->get_mouse_speed().y;
 
