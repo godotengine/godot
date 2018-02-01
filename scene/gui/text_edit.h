@@ -169,7 +169,8 @@ class TextEdit : public Control {
 		enum Type {
 			TYPE_NONE,
 			TYPE_INSERT,
-			TYPE_REMOVE
+			TYPE_REMOVE,
+			TYPE_CLEAR
 		};
 
 		Type type;

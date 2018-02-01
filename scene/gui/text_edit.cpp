@@ -2773,7 +2773,7 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	op.chain_forward = false;
 	op.chain_backward = false;
 
-	//see if it shold just be set as current op
+	//see if it should just be set as current op
 	if (current_op.type != op.type) {
 		op.prev_version = get_version();
 		_push_current_op();
@@ -2824,7 +2824,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.chain_forward = false;
 	op.chain_backward = false;
 
-	//see if it shold just be set as current op
+	//see if it should just be set as current op
 	if (current_op.type != op.type) {
 		op.prev_version = get_version();
 		_push_current_op();
@@ -2838,13 +2838,6 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 		current_op.from_line = p_from_line;
 		current_op.from_column = p_from_column;
 		return; //update current op
-	}
-	if (current_op.from_line == p_from_line && current_op.from_column == p_from_column) {
-
-		//current_op.text=text+current_op.text;
-		//current_op.from_line=p_from_line;
-		//current_op.from_column=p_from_column;
-		//return; //update current op
 	}
 
 	op.prev_version = get_version();
@@ -3210,7 +3203,29 @@ String TextEdit::get_line(int line) const {
 
 void TextEdit::_clear() {
 
-	clear_undo_history();
+	if (undo_enabled) {
+		_clear_redo();
+		String undo_text = get_text();
+
+		/* UNDO!! */
+		TextOperation op;
+		op.type = TextOperation::TYPE_CLEAR;
+		op.from_line = 0;
+		op.from_column = 0;
+		op.to_line = get_line_count() - 1;
+		op.to_column = get_line(op.to_line).length();
+		op.text = undo_text;
+		op.version = ++version;
+		op.chain_forward = false;
+		op.chain_backward = false;
+
+		op.prev_version = get_version();
+		_push_current_op();
+		current_op = op;
+	} else {
+		clear_undo_history();
+	}
+
 	text.clear();
 	cursor.column = 0;
 	cursor.line = 0;
@@ -3831,7 +3846,7 @@ void TextEdit::undo() {
 		}
 	}
 
-	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
+	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE || undo_stack_pos->get().type == TextOperation::TYPE_CLEAR) {
 		cursor_set_line(undo_stack_pos->get().to_line);
 		cursor_set_column(undo_stack_pos->get().to_column);
 		_cancel_code_hint();
