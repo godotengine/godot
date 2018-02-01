@@ -335,7 +335,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 
-				new_data.write[i * format_channels + c] = res;
+				new_data[i * format_channels + c] = res;
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
