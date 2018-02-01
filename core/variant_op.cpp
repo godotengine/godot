@@ -388,6 +388,18 @@ bool Variant::booleanize() const {
 		_RETURN(sum);                                                                                      \
 	}
 
+#define DEFAULT_OP_ARRAY_MUL(m_prefix, m_op_name, m_name, m_type) \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                      \
+		if (p_b.type == INT) {                                    \
+			const m_type array = p_a.operator m_type();           \
+			m_type new_array;                                     \
+			new_array.append_array(array, (int)p_b);              \
+			_RETURN(new_array);                                   \
+		} else {                                                  \
+			_RETURN_FAIL;                                         \
+		}                                                         \
+	}
+
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 		const Variant &p_b, Variant &r_ret, bool &r_valid) {
 
@@ -787,14 +799,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 				const Array &array_a = *reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array &array_b = *reinterpret_cast<const Array *>(p_b._data._mem);
-				Array sum;
-				int asize = array_a.size();
-				int bsize = array_b.size();
-				sum.resize(asize + bsize);
-				for (int i = 0; i < asize; i++)
-					sum[i] = array_a[i];
-				for (int i = 0; i < bsize; i++)
-					sum[i + asize] = array_b[i];
+				Array sum = array_a;
+				sum.append_array(array_b);
 				_RETURN(sum);
 			}
 
@@ -919,6 +925,15 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3, *, Vector3);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, COLOR, *, Color);
 
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, ARRAY, Array)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_BYTE_ARRAY, PoolVector<uint8_t>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_INT_ARRAY, PoolVector<int>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_REAL_ARRAY, PoolVector<real_t>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_STRING_ARRAY, PoolVector<String>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_VECTOR2_ARRAY, PoolVector<Vector2>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_VECTOR3_ARRAY, PoolVector<Vector3>)
+			DEFAULT_OP_ARRAY_MUL(math, OP_MULTIPLY, POOL_COLOR_ARRAY, PoolVector<Color>)
+
 			CASE_TYPE(math, OP_MULTIPLY, NIL)
 			CASE_TYPE(math, OP_MULTIPLY, BOOL)
 			CASE_TYPE(math, OP_MULTIPLY, STRING)
@@ -929,14 +944,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MULTIPLY, _RID)
 			CASE_TYPE(math, OP_MULTIPLY, OBJECT)
 			CASE_TYPE(math, OP_MULTIPLY, DICTIONARY)
-			CASE_TYPE(math, OP_MULTIPLY, ARRAY)
-			CASE_TYPE(math, OP_MULTIPLY, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
