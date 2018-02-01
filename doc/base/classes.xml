@@ -44949,7 +44949,7 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
-				Like "slide", but reflects the Vector instead of continuing along the wall.
+				Reflects the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="rotated">
@@ -44967,7 +44967,7 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
-				Slides the vector by the other vector.
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="snapped">
