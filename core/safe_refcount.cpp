@@ -119,7 +119,7 @@ _ALWAYS_INLINE_ uint64_t _atomic_exchange_if_greater_impl(volatile uint64_t *pw,
 
 // The actual advertised functions; they'll call the right implementation
 
-uint32_t atomic_conditional_increment(volatile uint32_t *pw) {
+uint32_t atomic_conditional_increment(register uint32_t *pw) {
 	return _atomic_conditional_increment_impl(pw);
 }
 
@@ -143,7 +143,7 @@ uint32_t atomic_exchange_if_greater(volatile uint32_t *pw, volatile uint32_t val
 	return _atomic_exchange_if_greater_impl(pw, val);
 }
 
-uint64_t atomic_conditional_increment(volatile uint64_t *pw) {
+uint64_t atomic_conditional_increment(register uint64_t *pw) {
 	return _atomic_conditional_increment_impl(pw);
 }
 
