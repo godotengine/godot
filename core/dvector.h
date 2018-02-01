@@ -390,16 +390,18 @@ public:
 	void set(int p_index, const T &p_val);
 	void push_back(const T &p_val);
 	void append(const T &p_val) { push_back(p_val); }
-	void append_array(const PoolVector<T> &p_arr) {
+	void append_array(const PoolVector<T> &p_arr, int p_n = 1) {
 		int ds = p_arr.size();
 		if (ds == 0)
 			return;
 		int bs = size();
-		resize(bs + ds);
+		resize(bs + ds * p_n);
 		Write w = write();
 		Read r = p_arr.read();
-		for (int i = 0; i < ds; i++)
-			w[bs + i] = r[i];
+		int k = bs;
+		for (int j = 0; j < p_n; j++)
+			for (int i = 0; i < ds; i++)
+				w[k++] = r[i];
 	}
 
 	PoolVector<T> subarray(int p_from, int p_to) {
