@@ -560,10 +560,7 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 
-			if (accept_quit) {
-				_quit = true;
-				break;
-			}
+			_quit = accept_quit;
 		} break;
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_WM_FOCUS_IN:
