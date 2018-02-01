@@ -71,7 +71,7 @@ namespace Godot
 
         public static int Decimals(float step)
         {
-            return Decimals(step);
+            return Decimals((decimal)step);
         }
 
         public static int Decimals(decimal step)
