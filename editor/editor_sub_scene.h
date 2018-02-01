@@ -50,7 +50,7 @@ class EditorSubScene : public ConfirmationDialog {
 	void _fill_tree(Node *p_node, TreeItem *p_parent);
 	void _selected_changed();
 	void _item_multi_selected(Object *p_object, int p_cell, bool p_selected);
-	void _remove_selection_child(Node *c);
+	void _remove_selection_child(Node *p_node);
 	void _reown(Node *p_node, List<Node *> *p_to_reown);
 
 	void ok_pressed();

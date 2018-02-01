@@ -199,7 +199,7 @@ protected:
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
-	void _window_changed(XEvent *xevent);
+	void _window_changed(XEvent *event);
 
 	bool is_window_maximize_allowed();
 

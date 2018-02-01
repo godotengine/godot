@@ -118,7 +118,7 @@ public:
 	void set_margin(float p_margin);
 	float get_margin() const;
 
-	void set_collision_mask(int p_collision_layer);
+	void set_collision_mask(int p_collision_mask);
 	int get_collision_mask() const;
 
 	void set_exclude(const Vector<RID> &p_exclude);
