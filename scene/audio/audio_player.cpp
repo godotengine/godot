@@ -126,8 +126,8 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
 			active = false;
-			emit_signal("finished");
 			set_process_internal(false);
+			emit_signal("finished");
 		}
 	}
 
