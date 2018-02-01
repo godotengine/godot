@@ -492,7 +492,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		Ref<Texture> folderIcon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
 
 		if (path != "res://") {
-			files->add_item("..", folderIcon, false);
+			files->add_item("..", folderIcon, true);
 
 			String bd = path.get_base_dir();
 			if (bd != "res://" && !bd.ends_with("/"))
