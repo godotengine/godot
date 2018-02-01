@@ -154,6 +154,7 @@ void FileSystemDock::_notification(int p_what) {
 				} else {
 
 					tree->set_v_size_flags(SIZE_FILL);
+					button_tree->hide();
 					if (!tree->is_visible()) {
 						tree->show();
 						button_favorite->show();
@@ -163,7 +164,6 @@ void FileSystemDock::_notification(int p_what) {
 
 					if (!file_list_vb->is_visible()) {
 						file_list_vb->show();
-						button_tree->hide();
 						_update_files(true);
 					}
 				}
