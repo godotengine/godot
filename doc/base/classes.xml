@@ -45013,7 +45013,13 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
-				Like "slide", but reflects the Vector instead of continuing along the wall.
+				Reflects the vector along the given plane, specified by its normal vector.
+				Note that the normal vector is the one you call the method on:
+				[codeblock]
+				var vector = Vector2(4, 2)
+				var x_reflection = Vector2(1, 0).reflect(vector)  # (-4, 2)
+				var y_reflection = Vector2(0, 1).reflect(vector)  # (4, -2)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rotated">
@@ -45031,7 +45037,13 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
-				Slides the vector by the other vector.
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
+				Note that the normal vector is the one you call the method on:
+				[codeblock]
+				var vector = Vector2(4, 2)
+				var x_slide = Vector2(1, 0).slide(vector)  # (0, 2)
+				var y_slide = Vector2(0, 1).slide(vector)  # (4, 0)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="snapped">
