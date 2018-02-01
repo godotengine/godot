@@ -205,6 +205,6 @@ struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
 		return m_pointCollisionObject;
 	}
 
-	virtual void addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorld, btScalar depth);
+	virtual void addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorldOnB, btScalar depth);
 };
 #endif // GODOT_RESULT_CALLBACKS_H

@@ -262,12 +262,12 @@ public:
 	Variant get_state(PhysicsServer::BodyState p_state) const;
 
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
-	void apply_central_impulse(const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
 	void apply_force(const Vector3 &p_force, const Vector3 &p_pos);
 	void apply_central_force(const Vector3 &p_force);
-	void apply_torque(const Vector3 &p_force);
+	void apply_torque(const Vector3 &p_torque);
 
 	void set_applied_force(const Vector3 &p_force);
 	Vector3 get_applied_force() const;
