@@ -157,7 +157,7 @@ private:
 	bool import_dock_needs_update;
 
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
-	void _update_tree(bool keep_collapse_state);
+	void _update_tree(bool keep_collapse_state, bool p_uncollapse_root = false);
 
 	void _update_files(bool p_keep_selection);
 	void _update_file_display_toggle_button();
