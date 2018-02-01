@@ -77,7 +77,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	return true;
 }
 
-void FileSystemDock::_update_tree(bool keep_collapse_state) {
+void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_root) {
 
 	Vector<String> uncollapsed_paths;
 	if (keep_collapse_state) {
@@ -127,6 +127,10 @@ void FileSystemDock::_update_tree(bool keep_collapse_state) {
 		ti->set_icon(0, folder_icon);
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, fave);
+	}
+
+	if (p_uncollapse_root) {
+		uncollapsed_paths.push_back("res://");
 	}
 
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths);
@@ -204,7 +208,7 @@ void FileSystemDock::_notification(int p_what) {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				_set_scanning_mode();
 			} else {
-				_update_tree(false);
+				_update_tree(false, true);
 			}
 
 		} break;
