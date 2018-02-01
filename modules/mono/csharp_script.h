@@ -172,8 +172,6 @@ class CSharpInstance : public ScriptInstance {
 	bool base_ref;
 	bool ref_dying;
 
-	void _ml_call_reversed(MonoObject *p_mono_object, GDMonoClass *klass, const StringName &p_method, const Variant **p_args, int p_argcount);
-
 	void _reference_owner_unsafe();
 	void _unreference_owner_unsafe();
 

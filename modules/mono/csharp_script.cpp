@@ -951,19 +951,6 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 #endif
 }
 
-void CSharpInstance::_ml_call_reversed(MonoObject *p_mono_object, GDMonoClass *p_klass, const StringName &p_method, const Variant **p_args, int p_argcount) {
-
-	GDMonoClass *base = p_klass->get_parent_class();
-	if (base && base != script->native)
-		_ml_call_reversed(p_mono_object, base, p_method, p_args, p_argcount);
-
-	GDMonoMethod *method = p_klass->get_method(p_method, p_argcount);
-
-	if (method) {
-		method->invoke(p_mono_object, p_args);
-	}
-}
-
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle) {
 
 	CSharpInstance *instance = memnew(CSharpInstance);
@@ -1032,6 +1019,8 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret) == true)
 				return true;
+
+			break;
 		}
 
 		top = top->get_parent_class();
@@ -1092,6 +1081,8 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = GDMonoMarshal::mono_object_to_variant(ret);
 				return true;
 			}
+
+			break;
 		}
 
 		top = top->get_parent_class();
@@ -1194,8 +1185,10 @@ void CSharpInstance::_call_multilevel(MonoObject *p_mono_object, const StringNam
 	while (top && top != script->native) {
 		GDMonoMethod *method = top->get_method(p_method, p_argcount);
 
-		if (method)
+		if (method) {
 			method->invoke(p_mono_object, p_args);
+			return;
+		}
 
 		top = top->get_parent_class();
 	}
@@ -1203,13 +1196,9 @@ void CSharpInstance::_call_multilevel(MonoObject *p_mono_object, const StringNam
 
 void CSharpInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
 
-	if (script.is_valid()) {
-		MonoObject *mono_object = get_mono_object();
+	// Sorry, the method is the one that controls the call order
 
-		ERR_FAIL_NULL(mono_object);
-
-		_ml_call_reversed(mono_object, script->script_class, p_method, p_args, p_argcount);
-	}
+	call_multilevel(p_method, p_args, p_argcount);
 }
 
 void CSharpInstance::_reference_owner_unsafe() {
