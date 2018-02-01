@@ -890,7 +890,7 @@ void TextEdit::_notification(int p_what) {
 				} else {
 					// if it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
 					if (line == cursor.line && highlight_current_line) {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg, get_row_height()), cache.current_line_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg + ofs_x, get_row_height()), cache.current_line_color);
 					}
 				}
 
@@ -1122,14 +1122,14 @@ void TextEdit::_notification(int p_what) {
 
 						// line highlighting handle horizontal clipping
 						if (line == cursor.line && highlight_current_line) {
-							// char next to margin is skipped
-							if ((char_ofs + char_margin) > xmargin_beg) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
-							}
 
-							// end of line when last char is skipped
 							if (j == str.length() - 1) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
+								// end of line when last char is skipped
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
+
+							} else if ((char_ofs + char_margin) > xmargin_beg) {
+								// char next to margin is skipped
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - xmargin_beg, get_row_height()), cache.current_line_color);
 							}
 						}
 						continue;
