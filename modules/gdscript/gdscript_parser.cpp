@@ -95,8 +95,6 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 			int indent = tokenizer->get_token_line_indent();
 			int current = tab_level.back()->get();
 			if (indent <= current) {
-				print_line("current: " + itos(current) + " indent: " + itos(indent));
-				print_line("less than current");
 				return false;
 			}
 
