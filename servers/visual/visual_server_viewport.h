@@ -139,7 +139,8 @@ public:
 
 private:
 	Color clear_color;
-	void _draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye = ARVRInterface::EYE_MONO);
+	void _draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye = ARVRInterface::EYE_MONO, bool force = false);
+	void _draw_viewport(Viewport *vp, Ref<ARVRInterface> p_arvr_interface, bool force = false);
 
 public:
 	RID viewport_create();
@@ -186,6 +187,8 @@ public:
 	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);
 
 	void draw_viewports();
+
+	void draw_viewport(RID p_viewport, bool force = false);
 
 	bool free(RID p_rid);
 

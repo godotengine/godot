@@ -35,14 +35,16 @@
 #include "visual_server_global.h"
 #include "visual_server_scene.h"
 
-void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
+void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye, bool force) {
 
 	/* Camera should always be BEFORE any other 3D */
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
 
-	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
+	bool draw = !p_viewport->hide_canvas || force;
+
+	if (draw && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
 
 		VisualServerScene::Scenario *scenario = VSG::scene->scenario_owner.get(p_viewport->scenario);
 		if (VSG::scene_render->is_environment(scenario->environment)) {
@@ -71,7 +73,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		}
 	}
 
-	if (!p_viewport->hide_canvas) {
+	if (draw) {
 		int i = 0;
 
 		Map<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
@@ -251,70 +253,87 @@ void VisualServerViewport::draw_viewports() {
 
 	//draw viewports
 	for (int i = 0; i < active_viewports.size(); i++) {
-
-		Viewport *vp = active_viewports[i];
-
-		if (vp->update_mode == VS::VIEWPORT_UPDATE_DISABLED)
-			continue;
-
-		ERR_CONTINUE(!vp->render_target.is_valid());
-
-		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
-		visible = visible && vp->size.x > 0 && vp->size.y > 0;
-
-		if (!visible)
-			continue;
-
-		VSG::storage->render_target_clear_used(vp->render_target);
-
-		if (vp->use_arvr && arvr_interface.is_valid()) {
-			// override our size, make sure it matches our required size
-			Size2 size = arvr_interface->get_render_targetsize();
-			VSG::storage->render_target_set_size(vp->render_target, size.x, size.y);
-
-			// render mono or left eye first
-			ARVRInterface::Eyes leftOrMono = arvr_interface->is_stereo() ? ARVRInterface::EYE_LEFT : ARVRInterface::EYE_MONO;
-			VSG::rasterizer->set_current_render_target(vp->render_target);
-			_draw_viewport(vp, leftOrMono);
-			arvr_interface->commit_for_eye(leftOrMono, vp->render_target, vp->viewport_to_screen_rect);
-
-			// render right eye
-			if (leftOrMono == ARVRInterface::EYE_LEFT) {
-				// commit for eye may have changed the render target
-				VSG::rasterizer->set_current_render_target(vp->render_target);
-
-				_draw_viewport(vp, ARVRInterface::EYE_RIGHT);
-				arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
-			}
-		} else {
-			VSG::rasterizer->set_current_render_target(vp->render_target);
-
-			VSG::scene_render->set_debug_draw_mode(vp->debug_draw);
-			VSG::storage->render_info_begin_capture();
-
-			// render standard mono camera
-			_draw_viewport(vp);
-
-			VSG::storage->render_info_end_capture();
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_OBJECTS_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_VERTICES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
-
-			if (vp->viewport_to_screen_rect != Rect2()) {
-				//copy to screen if set as such
-				VSG::rasterizer->set_current_render_target(RID());
-				VSG::rasterizer->blit_render_target_to_screen(vp->render_target, vp->viewport_to_screen_rect, vp->viewport_to_screen);
-			}
-		}
-
-		if (vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
-			vp->update_mode = VS::VIEWPORT_UPDATE_DISABLED;
-		}
-		VSG::scene_render->set_debug_draw_mode(VS::VIEWPORT_DEBUG_DRAW_DISABLED);
+		_draw_viewport(active_viewports[i], arvr_interface);
 	}
+}
+
+void VisualServerViewport::draw_viewport(RID p_viewport, bool force) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+	if (arvr_interface.is_valid()) {
+		// update our positioning information as late as possible...
+		arvr_interface->process();
+	}
+
+	clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
+
+	_draw_viewport(viewport, arvr_interface, force);
+}
+
+void VisualServerViewport::_draw_viewport(Viewport *vp, Ref<ARVRInterface> arvr_interface, bool force) {
+	if (vp->update_mode == VS::VIEWPORT_UPDATE_DISABLED && !force)
+		return;
+
+	ERR_FAIL_COND(!vp->render_target.is_valid());
+
+	bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
+	visible = visible || force;
+	visible = visible && vp->size.x > 0 && vp->size.y > 0;
+
+	if (!visible)
+		return;
+
+	VSG::storage->render_target_clear_used(vp->render_target);
+
+	if (vp->use_arvr && arvr_interface.is_valid()) {
+		// override our size, make sure it matches our required size
+		Size2 size = arvr_interface->get_render_targetsize();
+		VSG::storage->render_target_set_size(vp->render_target, size.x, size.y);
+
+		// render mono or left eye first
+		ARVRInterface::Eyes leftOrMono = arvr_interface->is_stereo() ? ARVRInterface::EYE_LEFT : ARVRInterface::EYE_MONO;
+		VSG::rasterizer->set_current_render_target(vp->render_target);
+		_draw_viewport(vp, leftOrMono);
+		arvr_interface->commit_for_eye(leftOrMono, vp->render_target, vp->viewport_to_screen_rect);
+
+		// render right eye
+		if (leftOrMono == ARVRInterface::EYE_LEFT) {
+			// commit for eye may have changed the render target
+			VSG::rasterizer->set_current_render_target(vp->render_target);
+
+			_draw_viewport(vp, ARVRInterface::EYE_RIGHT);
+			arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
+		}
+	} else {
+		VSG::rasterizer->set_current_render_target(vp->render_target);
+
+		VSG::scene_render->set_debug_draw_mode(vp->debug_draw);
+		VSG::storage->render_info_begin_capture();
+
+		// render standard mono camera
+		_draw_viewport(vp, ARVRInterface::EYE_MONO, force);
+
+		VSG::storage->render_info_end_capture();
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_OBJECTS_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_VERTICES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
+
+		if (vp->viewport_to_screen_rect != Rect2()) {
+			//copy to screen if set as such
+			VSG::rasterizer->set_current_render_target(RID());
+			VSG::rasterizer->blit_render_target_to_screen(vp->render_target, vp->viewport_to_screen_rect, vp->viewport_to_screen);
+		}
+	}
+
+	if (vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
+		vp->update_mode = VS::VIEWPORT_UPDATE_DISABLED;
+	}
+	VSG::scene_render->set_debug_draw_mode(VS::VIEWPORT_DEBUG_DRAW_DISABLED);
 }
 
 RID VisualServerViewport::viewport_create() {
