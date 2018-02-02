@@ -1595,7 +1595,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	props_base->add_child(hbc);
 
-	search_button = memnew(ToolButton);
+	search_button = memnew(Button);
 	search_button->set_toggle_mode(true);
 	search_button->set_pressed(false);
 	search_button->set_text(TTR("Search"));
