@@ -338,7 +338,7 @@ msgstr "缩放比率："
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "在那个节点中调用函数？"
+msgstr "在哪个节点中调用函数？"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -354,11 +354,11 @@ msgstr "清除所有动画"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "清除所有动画吗（无法撤销！）"
+msgstr "清除所有动画（无法撤销！）"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr "清理"
+msgstr "清空"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -430,7 +430,7 @@ msgstr "列:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "必须设置方法的对象节点！"
+msgstr "必须设置目标节点的方法！"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1075,7 +1075,7 @@ msgstr "[空]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[位保存]"
+msgstr "[未保存]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
