@@ -504,9 +504,9 @@ namespace Godot
 
         public Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
         {
-            _x = new Vector3(xx, xy, xz);
-            _y = new Vector3(yx, yy, yz);
-            _z = new Vector3(zx, zy, zz);
+            this.x = new Vector3(xx, yx, zx);
+            this.y = new Vector3(xy, yy, zy);
+            this.z = new Vector3(xz, yz, zz);
         }
 
         public static Basis operator *(Basis left, Basis right)
