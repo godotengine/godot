@@ -159,6 +159,7 @@ def configure(env):
             mono_so_name = ''
 
             tmpenv = Environment()
+            tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
             tmpenv.ParseConfig('pkg-config monosgen-2 --libs-only-L')
 
             for hint_dir in tmpenv['LIBPATH']:
