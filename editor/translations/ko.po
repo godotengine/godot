@@ -2098,7 +2098,7 @@ msgstr "프로젝트 실행."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "재성"
+msgstr "재생"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
