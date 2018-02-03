@@ -299,13 +299,24 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	}
 }
 
-void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size) {
+void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position) {
 	ERR_FAIL_COND(!spatial_node);
 
 	CubeMesh cubem;
 	cubem.set_size(p_size);
+
+	Array arrays = cubem.surface_get_arrays(0);
+	PoolVector3Array vertex = arrays[VS::ARRAY_VERTEX];
+	PoolVector3Array::Write w = vertex.write();
+
+	for (int i = 0; i < vertex.size(); ++i) {
+		w[i] += p_position;
+	}
+
+	arrays[VS::ARRAY_VERTEX] = vertex;
+
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
-	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
+	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), arrays);
 	m->surface_set_material(0, p_material);
 	add_mesh(m);
 }
@@ -2411,7 +2422,7 @@ void ParticlesGizmo::redraw() {
 
 		gizmo_color.a = 0.1;
 		Ref<Material> solid_material = create_material("particles_solid_material", gizmo_color);
-		add_solid_box(solid_material, aabb.get_size());
+		add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
 	}
 
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);

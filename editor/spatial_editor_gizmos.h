@@ -105,7 +105,7 @@ protected:
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const AABB &p_bounds = AABB());
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
 	void add_handles(const Vector<Vector3> &p_handles, bool p_billboard = false, bool p_secondary = false);
-	void add_solid_box(Ref<Material> &p_material, Vector3 p_size);
+	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3());
 
 	void set_spatial_node(Spatial *p_node);
 	const Spatial *get_spatial_node() const { return spatial_node; }
