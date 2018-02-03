@@ -374,6 +374,11 @@ void EditorNode::_notification(int p_what) {
 		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
+
+		PopupMenu *p = object_menu->get_popup();
+		bool code_folding = EDITOR_GET("interface/editor/disable_inspector_folding");
+		p->set_item_disabled(p->get_item_index(EXPAND_ALL), code_folding);
+		p->set_item_disabled(p->get_item_index(COLLAPSE_ALL), code_folding);
 	}
 
 	if (p_what == Control::NOTIFICATION_RESIZED) {
@@ -1618,6 +1623,9 @@ void EditorNode::_edit_current() {
 	p->clear();
 	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand all properties")), EXPAND_ALL);
 	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse all properties")), COLLAPSE_ALL);
+	bool code_folding = EDITOR_GET("interface/editor/disable_inspector_folding");
+	p->set_item_disabled(p->get_item_index(EXPAND_ALL), code_folding);
+	p->set_item_disabled(p->get_item_index(COLLAPSE_ALL), code_folding);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Params")), OBJECT_PASTE_PARAMS);
