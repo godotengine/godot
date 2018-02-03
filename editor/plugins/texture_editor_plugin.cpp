@@ -75,6 +75,9 @@ void TextureEditor::_notification(int p_what) {
 			// In the case of CurveTextures we know they are 1 in height, so fill the preview to see the gradient
 			ofs_y = 0;
 			tex_height = size.height;
+		} else if (Object::cast_to<GradientTexture>(*texture)) {
+			ofs_y = size.height / 4.0;
+			tex_height = size.height / 2.0;
 		}
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
