@@ -216,7 +216,7 @@
 		<method name="snapped">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="by" type="float">
+			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
 				Returns a copy of the vector, snapped to the lowest neared multiple.
