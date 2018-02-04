@@ -1690,28 +1690,42 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
 
-		Dictionary keys;
-		keys["project"] = ProjectSettings::get_singleton()->get_resource_path();
-		keys["file"] = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
-		keys["line"] = p_line >= 0 ? p_line : 0;
-		keys["col"] = p_col;
-
-		flags = flags.format(keys).strip_edges().replace("\\\\", "\\");
-
 		List<String> args;
 
 		if (flags.size()) {
-			int from = 0, to = 0;
+			String project_path = ProjectSettings::get_singleton()->get_resource_path();
+			String script_path = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
+
+			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
+			flags = flags.replacen("{col}", itos(p_col));
+			flags = flags.strip_edges().replace("\\\\", "\\");
+
+			int from = 0;
+			int num_chars = 0;
 			bool inside_quotes = false;
+
 			for (int i = 0; i < flags.size(); i++) {
+
 				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+
+					if (!inside_quotes) {
+						from++;
+					}
 					inside_quotes = !inside_quotes;
+
 				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
-					args.push_back(flags.substr(from, to));
+
+					String arg = flags.substr(from, num_chars);
+
+					// do path replacement here, else there will be issues with spaces and quotes
+					arg = arg.replacen("{project}", project_path);
+					arg = arg.replacen("{file}", script_path);
+					args.push_back(arg);
+
 					from = i + 1;
-					to = 0;
+					num_chars = 0;
 				} else {
-					to++;
+					num_chars++;
 				}
 			}
 		}
