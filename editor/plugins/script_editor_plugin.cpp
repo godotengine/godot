@@ -1886,7 +1886,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 		if (flags.size()) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-			String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
+			String script_path = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
 
 			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
 			flags = flags.replacen("{col}", itos(p_col));
