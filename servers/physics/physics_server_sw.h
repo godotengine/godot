@@ -275,6 +275,9 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
 	virtual int joint_get_solver_priority(RID p_joint) const;
 
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable);
+	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const;
+
 	/* MISC */
 
 	virtual void free(RID p_rid);

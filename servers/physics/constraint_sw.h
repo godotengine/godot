@@ -41,6 +41,7 @@ class ConstraintSW : public RID_Data {
 	ConstraintSW *island_next;
 	ConstraintSW *island_list_next;
 	int priority;
+	bool disabled_collisions_between_bodies;
 
 	RID self;
 
@@ -50,6 +51,7 @@ protected:
 		_body_count = p_body_count;
 		island_step = 0;
 		priority = 1;
+		disabled_collisions_between_bodies = true;
 	}
 
 public:
@@ -70,6 +72,9 @@ public:
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
+
+	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
+	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
 
 	virtual bool setup(real_t p_step) = 0;
 	virtual void solve(real_t p_step) = 0;

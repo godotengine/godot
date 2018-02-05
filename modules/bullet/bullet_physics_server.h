@@ -290,6 +290,9 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
 	virtual int joint_get_solver_priority(RID p_joint) const;
 
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable);
+	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const;
+
 	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B);
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, float p_value);
