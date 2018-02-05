@@ -67,6 +67,7 @@ private:
 
 	bool editable;
 	bool pass;
+	bool text_changed_dirty;
 
 	String undo_text;
 	String text;
