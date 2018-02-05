@@ -263,6 +263,9 @@ public:
 	FUNC3(joint_set_param, RID, JointParam, real_t);
 	FUNC2RC(real_t, joint_get_param, RID, JointParam);
 
+	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
+	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
+
 	///FUNC3RID(pin_joint,const Vector2&,RID,RID);
 	///FUNC5RID(groove_joint,const Vector2&,const Vector2&,const Vector2&,RID,RID);
 	///FUNC4RID(damped_spring_joint,const Vector2&,const Vector2&,RID,RID);

@@ -1015,6 +1015,33 @@ real_t Physics2DServerSW::joint_get_param(RID p_joint, JointParam p_param) const
 	return 0;
 }
 
+void Physics2DServerSW::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+	Joint2DSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+
+	joint->disable_collisions_between_bodies(p_disable);
+
+	if (2 == joint->get_body_count()) {
+		Body2DSW *body_a = *joint->get_body_ptr();
+		Body2DSW *body_b = *(joint->get_body_ptr() + 1);
+
+		if (p_disable) {
+			body_add_collision_exception(body_a->get_self(), body_b->get_self());
+			body_add_collision_exception(body_b->get_self(), body_a->get_self());
+		} else {
+			body_remove_collision_exception(body_a->get_self(), body_b->get_self());
+			body_remove_collision_exception(body_b->get_self(), body_a->get_self());
+		}
+	}
+}
+
+bool Physics2DServerSW::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+	const Joint2DSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, true);
+
+	return joint->is_disabled_collisions_between_bodies();
+}
+
 RID Physics2DServerSW::pin_joint_create(const Vector2 &p_pos, RID p_body_a, RID p_body_b) {
 
 	Body2DSW *A = body_owner.get(p_body_a);

@@ -1093,6 +1093,33 @@ int PhysicsServerSW::joint_get_solver_priority(RID p_joint) const {
 	return joint->get_priority();
 }
 
+void PhysicsServerSW::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+
+	joint->disable_collisions_between_bodies(p_disable);
+
+	if (2 == joint->get_body_count()) {
+		BodySW *body_a = *joint->get_body_ptr();
+		BodySW *body_b = *(joint->get_body_ptr() + 1);
+
+		if (p_disable) {
+			body_add_collision_exception(body_a->get_self(), body_b->get_self());
+			body_add_collision_exception(body_b->get_self(), body_a->get_self());
+		} else {
+			body_remove_collision_exception(body_a->get_self(), body_b->get_self());
+			body_remove_collision_exception(body_b->get_self(), body_a->get_self());
+		}
+	}
+}
+
+bool PhysicsServerSW::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, true);
+
+	return joint->is_disabled_collisions_between_bodies();
+}
+
 PhysicsServerSW::JointType PhysicsServerSW::joint_get_type(RID p_joint) const {
 
 	JointSW *joint = joint_owner.get(p_joint);

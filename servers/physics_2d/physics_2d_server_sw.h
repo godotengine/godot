@@ -242,6 +242,9 @@ public:
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);
 	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const;
 
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disabled);
+	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const;
+
 	virtual RID pin_joint_create(const Vector2 &p_pos, RID p_body_a, RID p_body_b = RID());
 	virtual RID groove_joint_create(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b);
 	virtual RID damped_spring_joint_create(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID());

@@ -70,8 +70,8 @@
 		return RID();                                                                             \
 	}
 
-#define AddJointToSpace(body, joint, disableCollisionsBetweenLinkedBodies) \
-	body->get_space()->add_constraint(joint, disableCollisionsBetweenLinkedBodies);
+#define AddJointToSpace(body, joint) \
+	body->get_space()->add_constraint(joint, joint->is_disabled_collisions_between_bodies());
 // <--------------- Joint creation asserts
 
 btEmptyShape *BulletPhysicsServer::emptyShape(ShapeBullet::create_shape_empty());
@@ -989,6 +989,20 @@ int BulletPhysicsServer::joint_get_solver_priority(RID p_joint) const {
 	return 0;
 }
 
+void BulletPhysicsServer::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+
+	joint->disable_collisions_between_bodies(p_disable);
+}
+
+bool BulletPhysicsServer::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+	JointBullet *joint(joint_owner.get(p_joint));
+	ERR_FAIL_COND_V(!joint, false);
+
+	return joint->is_disabled_collisions_between_bodies();
+}
+
 RID BulletPhysicsServer::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
@@ -1005,7 +1019,7 @@ RID BulletPhysicsServer::joint_create_pin(RID p_body_A, const Vector3 &p_local_A
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
 	JointBullet *joint = bulletnew(PinJointBullet(body_A, p_local_A, body_B, p_local_B));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1073,7 +1087,7 @@ RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform &p_hin
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
 	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1093,7 +1107,7 @@ RID BulletPhysicsServer::joint_create_hinge_simple(RID p_body_A, const Vector3 &
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
 	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1145,7 +1159,7 @@ RID BulletPhysicsServer::joint_create_slider(RID p_body_A, const Transform &p_lo
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
 	JointBullet *joint = bulletnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1179,7 +1193,7 @@ RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform &
 	}
 
 	JointBullet *joint = bulletnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
@@ -1215,7 +1229,7 @@ RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
 	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B, true));
-	AddJointToSpace(body_A, joint, true);
+	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
 }
