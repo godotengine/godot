@@ -1529,7 +1529,6 @@ LineEdit::LineEdit() {
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
-	secret_character = "*";
 	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 
