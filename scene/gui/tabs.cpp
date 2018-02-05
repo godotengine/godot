@@ -882,4 +882,6 @@ Tabs::Tabs() {
 
 	min_width = 0;
 	scrolling_enabled = true;
+	buttons_visible = false;
+	hover = -1;
 }
