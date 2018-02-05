@@ -762,7 +762,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
-	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
+	if (p_status == HTTPRequest::RESULT_SUCCESS) {
 
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
