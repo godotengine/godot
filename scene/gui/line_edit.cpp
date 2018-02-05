@@ -30,6 +30,7 @@
 
 #include "line_edit.h"
 #include "label.h"
+#include "message_queue.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -800,7 +801,12 @@ void LineEdit::paste_text() {
 		if (selection.enabled) selection_delete();
 		append_at_cursor(paste_buffer);
 
-		_text_changed();
+		if (!text_changed_dirty) {
+			if (is_inside_tree()) {
+				MessageQueue::get_singleton()->push_call(this, "_text_changed");
+			}
+			text_changed_dirty = true;
+		}
 	}
 }
 
@@ -974,7 +980,12 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 		window_pos = cursor_pos;
 	}
 
-	_text_changed();
+	if (!text_changed_dirty) {
+		if (is_inside_tree()) {
+			MessageQueue::get_singleton()->push_call(this, "_text_changed");
+		}
+		text_changed_dirty = true;
+	}
 }
 
 void LineEdit::set_text(String p_text) {
@@ -1341,6 +1352,7 @@ void LineEdit::_text_changed() {
 void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
 	_change_notify("text");
+	text_changed_dirty = false;
 }
 
 void LineEdit::_clear_redo() {
@@ -1373,6 +1385,7 @@ void LineEdit::_create_undo_state() {
 
 void LineEdit::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_text_changed"), &LineEdit::_text_changed);
 	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &LineEdit::_toggle_draw_caret);
 
 #ifdef TOOLS_ENABLED
@@ -1458,6 +1471,7 @@ LineEdit::LineEdit() {
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
+	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 
 	deselect();
