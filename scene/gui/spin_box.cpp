@@ -185,17 +185,22 @@ void SpinBox::_line_edit_focus_exit() {
 	_text_entered(line_edit->get_text());
 }
 
+inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> icon) {
+
+	int w = icon->get_width();
+	if (w != last_w) {
+		line_edit->set_margin(MARGIN_RIGHT, -w);
+		last_w = w;
+	}
+}
+
 void SpinBox::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
 		Ref<Texture> updown = get_icon("updown");
 
-		int w = updown->get_width();
-		if (w != last_w) {
-			line_edit->set_margin(MARGIN_RIGHT, -w);
-			last_w = w;
-		}
+		_adjust_width_for_icon(updown);
 
 		RID ci = get_canvas_item();
 		Size2i size = get_size();
@@ -207,6 +212,7 @@ void SpinBox::_notification(int p_what) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		_adjust_width_for_icon(get_icon("updown"));
 		_value_changed(0);
 	}
 }
