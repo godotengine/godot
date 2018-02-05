@@ -4478,7 +4478,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 					if (autoexport && !member.data_type.has_type) {
 
-						if (subexpr->type != Node::TYPE_CONSTANT) {
+							member._export.type=Variant::DICTIONARY;
+
+						} else*/
+						{
+
+							if (subexpr->type != Node::TYPE_CONSTANT) {
 
 							_set_error("Type-less export needs a constant expression assigned to infer type.");
 							return;
