@@ -4916,7 +4916,6 @@ void RasterizerSceneGLES3::initialize() {
 		const int ubo_light_size = 160;
 		state.ubo_light_size = ubo_light_size;
 		state.max_ubo_lights = MIN(RenderList::MAX_LIGHTS, max_ubo_size / ubo_light_size);
-		print_line("GLES3: max ubo light: " + itos(state.max_ubo_lights));
 
 		state.spot_array_tmp = (uint8_t *)memalloc(ubo_light_size * state.max_ubo_lights);
 		state.omni_array_tmp = (uint8_t *)memalloc(ubo_light_size * state.max_ubo_lights);
@@ -4942,7 +4941,6 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_FORWARD_LIGHTS " + itos(state.max_forward_lights_per_object) + "\n");
 
 		state.max_ubo_reflections = MIN(RenderList::MAX_REFLECTIONS, max_ubo_size / sizeof(ReflectionProbeDataUBO));
-		print_line("GLES3: max ubo reflections: " + itos(state.max_ubo_reflections) + ", ubo size: " + itos(sizeof(ReflectionProbeDataUBO)));
 
 		state.reflection_array_tmp = (uint8_t *)memalloc(sizeof(ReflectionProbeDataUBO) * state.max_ubo_reflections);
 
