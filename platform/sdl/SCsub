@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import os
+Import('env')
+
+def make_debug(target, source, env):
+    os.system('objcopy --only-keep-debug %s %s.debugsymbols' % (target[0], target[0]))
+    os.system('strip --strip-debug --strip-unneeded %s' % (target[0]))
+    os.system('objcopy --add-gnu-debuglink=%s.debugsymbols %s' % (target[0], target[0]))
+
+common_sdl = [
+    "context_gl_sdl.cpp",
+    "crash_handler_sdl.cpp",
+    "os_sdl.cpp",
+    "key_mapping_sdl.cpp",
+    "joypad_linux.cpp",
+    "power_sdl.cpp",
+]
+
+prog = env.add_program('#bin/godot', ['godot_sdl.cpp'] + common_sdl)
+
+if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
+    env.AddPostAction(prog, make_debug)
