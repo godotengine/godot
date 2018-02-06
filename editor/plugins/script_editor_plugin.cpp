@@ -512,12 +512,6 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	_show_error_dialog(path);
 }
 
-void ScriptEditor::_show_error_dialog(String p_path) {
-
-	error_dialog->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_path));
-	error_dialog->popup_centered_minsize();
-}
-
 void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	int selected = p_idx;
