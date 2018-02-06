@@ -497,7 +497,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	}
 }
 
-void ScriptEditor::_close_tab(int p_idx, bool p_save) {
+void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	int selected = p_idx;
 	if (selected < 0 || selected >= tab_container->get_child_count())
@@ -517,7 +517,9 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	}
 
 	// roll back to previous tab
-	_history_back();
+	if (p_history_back) {
+		_history_back();
+	}
 
 	//remove from history
 	history.resize(history_pos + 1);
@@ -575,7 +577,7 @@ void ScriptEditor::_close_docs_tab() {
 		EditorHelp *se = Object::cast_to<EditorHelp>(tab_container->get_child(i));
 
 		if (se) {
-			_close_tab(i);
+			_close_tab(i, true, false);
 		}
 	}
 }
