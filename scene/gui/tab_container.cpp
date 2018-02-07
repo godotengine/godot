@@ -579,6 +579,141 @@ void TabContainer::_update_current_tab() {
 		set_current_tab(current);
 }
 
+Variant TabContainer::get_drag_data(const Point2 &p_point) {
+
+	if (!drag_to_rearrange_enabled)
+		return Variant();
+
+	int tab_over = get_tab_idx_at_point(p_point);
+
+	if (tab_over < 0)
+		return Variant();
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+
+	Ref<Texture> icon = get_tab_icon(tab_over);
+	if (!icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(icon);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(get_tab_title(tab_over)));
+	drag_preview->add_child(label);
+	set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "tabc_element";
+	drag_data["tabc_element"] = tab_over;
+	drag_data["from_path"] = get_path();
+	return drag_data;
+}
+
+bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+
+	if (!drag_to_rearrange_enabled)
+		return false;
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			return true;
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between other TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
+
+	if (!drag_to_rearrange_enabled)
+		return;
+
+	int hover_now = get_tab_idx_at_point(p_point);
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		int tab_from_id = d["tabc_element"];
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			if (hover_now < 0)
+				hover_now = get_tab_count() - 1;
+			move_child(get_tab_control(tab_from_id), hover_now);
+			set_current_tab(hover_now);
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
+				from_tabc->remove_child(moving_tabc);
+				add_child(moving_tabc);
+				if (hover_now < 0)
+					hover_now = get_tab_count() - 1;
+				move_child(moving_tabc, hover_now);
+				set_current_tab(hover_now);
+				emit_signal("tab_changed", hover_now);
+			}
+		}
+	}
+	update();
+}
+
+int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
+
+	if (get_tab_count() == 0)
+		return -1;
+
+	// must be on tabs in the tab header area.
+	if (p_point.x < tabs_ofs_cache || p_point.y > _get_top_margin())
+		return -1;
+
+	Size2 size = get_size();
+	int right_ofs = 0;
+
+	if (popup) {
+		Ref<Texture> menu = get_icon("menu");
+		right_ofs += menu->get_width();
+	}
+	if (buttons_visible_cache) {
+		Ref<Texture> increment = get_icon("increment");
+		Ref<Texture> decrement = get_icon("decrement");
+		right_ofs += increment->get_width() + decrement->get_width();
+	}
+	if (p_point.x > size.width - right_ofs) {
+		return -1;
+	}
+
+	// get the tab at the point
+	Vector<Control *> tabs = _get_tabs();
+	int px = p_point.x;
+	px -= tabs_ofs_cache;
+	for (int i = first_tab_cache; i <= last_tab_cache; i++) {
+		int tab_width = _get_tab_width(i);
+		if (px < tab_width) {
+			return i;
+		}
+		px -= tab_width;
+	}
+	return -1;
+}
+
 void TabContainer::set_tab_align(TabAlign p_align) {
 
 	ERR_FAIL_INDEX(p_align, 3);

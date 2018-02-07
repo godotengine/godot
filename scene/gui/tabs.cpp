@@ -920,14 +920,6 @@ int Tabs::get_tabs_rearrange_group() const {
 	return tabs_rearrange_group;
 }
 
-void Tabs::set_select_with_rmb(bool p_enabled) {
-	select_with_rmb = p_enabled;
-}
-
-bool Tabs::get_select_with_rmb() const {
-	return select_with_rmb;
-}
-
 void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
@@ -957,9 +949,6 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &Tabs::get_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &Tabs::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &Tabs::get_tabs_rearrange_group);
-
-	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &Tabs::set_select_with_rmb);
-	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &Tabs::get_select_with_rmb);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
@@ -1005,4 +994,6 @@ Tabs::Tabs() {
 	scrolling_enabled = true;
 	buttons_visible = false;
 	hover = -1;
+	drag_to_rearrange_enabled = false;
+	tabs_rearrange_group = -1;
 }
