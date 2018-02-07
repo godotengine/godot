@@ -31,6 +31,9 @@
 #include "tabs.h"
 
 #include "message_queue.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
 
 Size2 Tabs::get_minimum_size() const {
 
@@ -624,20 +627,105 @@ void Tabs::remove_tab(int p_idx) {
 
 Variant Tabs::get_drag_data(const Point2 &p_point) {
 
-	return get_tab_idx_at_point(p_point);
+	if (!drag_to_rearrange_enabled)
+		return Variant();
+
+	int tab_over = get_tab_idx_at_point(p_point);
+
+	if (tab_over < 0)
+		return Variant();
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+
+	if (!tabs[tab_over].icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(tabs[tab_over].icon);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(tabs[tab_over].text));
+	drag_preview->add_child(label);
+	if (!tabs[tab_over].right_button.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(tabs[tab_over].right_button);
+		drag_preview->add_child(tf);
+	}
+	set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "tab_element";
+	drag_data["tab_element"] = tab_over;
+	drag_data["from_path"] = get_path();
+	return drag_data;
 }
 
 bool Tabs::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 
-	return get_tab_idx_at_point(p_point) > -1;
+	if (!drag_to_rearrange_enabled)
+		return false;
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"]) == "tab_element") {
+
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			return true;
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between other Tabs
+			Node *from_node = get_node(from_path);
+			Tabs *from_tabs = Object::cast_to<Tabs>(from_node);
+			if (from_tabs && from_tabs->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 
+	if (!drag_to_rearrange_enabled)
+		return;
+
 	int hover_now = get_tab_idx_at_point(p_point);
 
-	ERR_FAIL_INDEX(hover_now, tabs.size());
-	emit_signal("reposition_active_tab_request", hover_now);
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "tab_element") {
+
+		int tab_from_id = d["tab_element"];
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			if (hover_now < 0)
+				hover_now = get_tab_count() - 1;
+			move_tab(tab_from_id, hover_now);
+			emit_signal("reposition_active_tab_request", hover_now);
+			set_current_tab(hover_now);
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between Tabs
+			Node *from_node = get_node(from_path);
+			Tabs *from_tabs = Object::cast_to<Tabs>(from_node);
+			if (from_tabs && from_tabs->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				if (tab_from_id >= from_tabs->get_tab_count())
+					return;
+				Tab moving_tab = from_tabs->tabs[tab_from_id];
+				if (hover_now < 0)
+					hover_now = get_tab_count();
+				tabs.insert(hover_now, moving_tab);
+				from_tabs->remove_tab(tab_from_id);
+				set_current_tab(hover_now);
+				emit_signal("tab_changed", hover_now);
+				_update_cache();
+			}
+		}
+	}
+	update();
 }
 
 int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
@@ -817,6 +905,21 @@ bool Tabs::get_scrolling_enabled() const {
 	return scrolling_enabled;
 }
 
+void Tabs::set_drag_to_rearrange_enabled(bool p_enabled) {
+	drag_to_rearrange_enabled = p_enabled;
+}
+
+bool Tabs::get_drag_to_rearrange_enabled() const {
+	return drag_to_rearrange_enabled;
+}
+void Tabs::set_tabs_rearrange_group(int p_group_id) {
+	tabs_rearrange_group = p_group_id;
+}
+
+int Tabs::get_tabs_rearrange_group() const {
+	return tabs_rearrange_group;
+}
+
 void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
@@ -842,6 +945,10 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &Tabs::get_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("set_scrolling_enabled", "enabled"), &Tabs::set_scrolling_enabled);
 	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &Tabs::get_scrolling_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &Tabs::set_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &Tabs::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &Tabs::set_tabs_rearrange_group);
+	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &Tabs::get_tabs_rearrange_group);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
@@ -854,6 +961,7 @@ void Tabs::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -884,4 +992,6 @@ Tabs::Tabs() {
 	scrolling_enabled = true;
 	buttons_visible = false;
 	hover = -1;
+	drag_to_rearrange_enabled = false;
+	tabs_rearrange_group = -1;
 }

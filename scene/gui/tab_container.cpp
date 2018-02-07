@@ -31,6 +31,9 @@
 #include "tab_container.h"
 
 #include "message_queue.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
 
 int TabContainer::_get_top_margin() const {
 
@@ -492,6 +495,141 @@ void TabContainer::_update_current_tab() {
 		set_current_tab(current);
 }
 
+Variant TabContainer::get_drag_data(const Point2 &p_point) {
+
+	if (!drag_to_rearrange_enabled)
+		return Variant();
+
+	int tab_over = get_tab_idx_at_point(p_point);
+
+	if (tab_over < 0)
+		return Variant();
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+
+	Ref<Texture> icon = get_tab_icon(tab_over);
+	if (!icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(icon);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(get_tab_title(tab_over)));
+	drag_preview->add_child(label);
+	set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "tabc_element";
+	drag_data["tabc_element"] = tab_over;
+	drag_data["from_path"] = get_path();
+	return drag_data;
+}
+
+bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+
+	if (!drag_to_rearrange_enabled)
+		return false;
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			return true;
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between other TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
+
+	if (!drag_to_rearrange_enabled)
+		return;
+
+	int hover_now = get_tab_idx_at_point(p_point);
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		int tab_from_id = d["tabc_element"];
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			if (hover_now < 0)
+				hover_now = get_tab_count() - 1;
+			move_child(get_tab_control(tab_from_id), hover_now);
+			set_current_tab(hover_now);
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
+				from_tabc->remove_child(moving_tabc);
+				add_child(moving_tabc);
+				if (hover_now < 0)
+					hover_now = get_tab_count() - 1;
+				move_child(moving_tabc, hover_now);
+				set_current_tab(hover_now);
+				emit_signal("tab_changed", hover_now);
+			}
+		}
+	}
+	update();
+}
+
+int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
+
+	if (get_tab_count() == 0)
+		return -1;
+
+	// must be on tabs in the tab header area.
+	if (p_point.x < tabs_ofs_cache || p_point.y > _get_top_margin())
+		return -1;
+
+	Size2 size = get_size();
+	int right_ofs = 0;
+
+	if (popup) {
+		Ref<Texture> menu = get_icon("menu");
+		right_ofs += menu->get_width();
+	}
+	if (buttons_visible_cache) {
+		Ref<Texture> increment = get_icon("increment");
+		Ref<Texture> decrement = get_icon("decrement");
+		right_ofs += increment->get_width() + decrement->get_width();
+	}
+	if (p_point.x > size.width - right_ofs) {
+		return -1;
+	}
+
+	// get the tab at the point
+	Vector<Control *> tabs = _get_tabs();
+	int px = p_point.x;
+	px -= tabs_ofs_cache;
+	for (int i = first_tab_cache; i <= last_tab_cache; i++) {
+		int tab_width = _get_tab_width(i);
+		if (px < tab_width) {
+			return i;
+		}
+		px -= tab_width;
+	}
+	return -1;
+}
+
 void TabContainer::set_tab_align(TabAlign p_align) {
 
 	ERR_FAIL_INDEX(p_align, 3);
@@ -500,6 +638,7 @@ void TabContainer::set_tab_align(TabAlign p_align) {
 
 	_change_notify("tab_align");
 }
+
 TabContainer::TabAlign TabContainer::get_tab_align() const {
 
 	return align;
@@ -643,6 +782,21 @@ Popup *TabContainer::get_popup() const {
 	return popup;
 }
 
+void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
+	drag_to_rearrange_enabled = p_enabled;
+}
+
+bool TabContainer::get_drag_to_rearrange_enabled() const {
+	return drag_to_rearrange_enabled;
+}
+void TabContainer::set_tabs_rearrange_group(int p_group_id) {
+	tabs_rearrange_group = p_group_id;
+}
+
+int TabContainer::get_tabs_rearrange_group() const {
+	return tabs_rearrange_group;
+}
+
 void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
@@ -664,6 +818,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabContainer::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
+	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
 
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
@@ -676,6 +834,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -694,4 +853,6 @@ TabContainer::TabContainer() {
 	align = ALIGN_CENTER;
 	tabs_visible = true;
 	popup = NULL;
+	drag_to_rearrange_enabled = false;
+	tabs_rearrange_group = -1;
 }
