@@ -61,6 +61,8 @@ public:
 
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
+	void append_array(const Array &p_arr, int p_n = 1);
+	Array repeat(int p_n) const;
 	Error resize(int p_new_size);
 
 	void insert(int p_pos, const Variant &p_value);
