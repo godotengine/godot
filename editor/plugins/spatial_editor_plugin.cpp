@@ -318,6 +318,9 @@ void SpatialEditorViewport::_select(Spatial *p_node, bool p_append, bool p_singl
 		editor_selection->clear();
 		editor_selection->add_node(p_node);
 
+		if (Engine::get_singleton()->is_editor_hint())
+			editor->call("edit_node", p_node);
+
 	} else {
 
 		if (editor_selection->is_selected(p_node) && p_single) {
