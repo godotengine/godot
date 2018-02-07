@@ -399,7 +399,7 @@ void Area2D::set_monitoring(bool p_enable) {
 	if (p_enable == monitoring)
 		return;
 	if (locked) {
-		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_enable_monitoring\",true/false)");
+		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_monitoring\",true/false)");
 	}
 	ERR_FAIL_COND(locked);
 
