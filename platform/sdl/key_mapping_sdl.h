@@ -34,23 +34,15 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-#include <X11/XF86keysym.h>
-#include <X11/Xlib.h>
-#define XK_MISCELLANY
-#define XK_LATIN1
-#define XK_XKB_KEYS
-#include <X11/keysymdef.h>
 
 #include "os/keyboard.h"
+#include <SDL.h>
 
-class KeyMappingX11 {
-	KeyMappingX11(){};
+class KeyMappingSDL {
+	KeyMappingSDL(){};
 
 public:
-	static unsigned int get_keycode(KeySym p_keysym);
-	static KeySym get_keysym(unsigned int p_code);
-	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
-	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
+	static unsigned int get_non_printable_keycode(SDL_Keycode p_keycode);
 };
 
 #endif

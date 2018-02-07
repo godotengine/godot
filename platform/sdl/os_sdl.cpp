@@ -45,7 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
 // ICCCM
 #define WM_NormalState 1L // window normal state
 #define WM_IconicState 3L // window minimized
@@ -126,50 +125,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		fprintf(stderr, "Could not list displays from SDL, Error: %s\n", SDL_GetError());
 	}
 
-
-#ifdef TOUCH_ENABLED
-	// if (!XQueryExtension(x11_display, "XInputExtension", &touch.opcode, &event_base, &error_base)) {
-	// 	fprintf(stderr, "XInput extension not available");
-	// } else {
-		// 2.2 is the first release with multitouch
-	// 	int xi_major = 2;
-	// 	int xi_minor = 2;
-	// 	if (XIQueryVersion(x11_display, &xi_major, &xi_minor) != Success) {
-	// 		fprintf(stderr, "XInput 2.2 not available (server supports %d.%d)\n", xi_major, xi_minor);
-	// 		touch.opcode = 0;
-	// 	} else {
-	// 		int dev_count;
-	// 		XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
-
-	// 		for (int i = 0; i < dev_count; i++) {
-	// 			XIDeviceInfo *dev = &info[i];
-	// 			if (!dev->enabled)
-	// 				continue;
-	// 			if (!(dev->use == XIMasterPointer || dev->use == XIFloatingSlave))
-	// 				continue;
-
-	// 			bool direct_touch = false;
-	// 			for (int j = 0; j < dev->num_classes; j++) {
-	// 				if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
-	// 					direct_touch = true;
-	// 					break;
-	// 				}
-	// 			}
-	// 			if (direct_touch) {
-	// 				touch.devices.push_back(dev->deviceid);
-	// 				fprintf(stderr, "Using touch device: %s\n", dev->name);
-	// 			}
-	// 		}
-
-	// 		XIFreeDeviceInfo(info);
-
-	// 		if (is_stdout_verbose() && !touch.devices.size()) {
-	// 			fprintf(stderr, "No touch devices found\n");
-	// 		}
-	// 	}
-	// }
-#endif
-
 // maybe contextgl wants to be in charge of creating the window
 //print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED)
@@ -216,34 +171,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(sdl_window < 0, ERR_UNAVAILABLE);
 
-#ifdef TOUCH_ENABLED
-	// if (touch.devices.size()) {
-
-		// Must be alive after this block
-	// 	static unsigned char mask_data[XIMaskLen(XI_LASTEVENT)] = {};
-
-	// 	touch.event_mask.deviceid = XIAllDevices;
-	// 	touch.event_mask.mask_len = sizeof(mask_data);
-	// 	touch.event_mask.mask = mask_data;
-
-	// 	XISetMask(touch.event_mask.mask, XI_TouchBegin);
-	// 	XISetMask(touch.event_mask.mask, XI_TouchUpdate);
-	// 	XISetMask(touch.event_mask.mask, XI_TouchEnd);
-	// 	XISetMask(touch.event_mask.mask, XI_TouchOwnership);
-
-	// 	XISelectEvents(x11_display, x11_window, &touch.event_mask, 1);
-
-		// Disabled by now since grabbing also blocks mouse events
-		// (they are received as extended events instead of standard events)
-	// 	/*XIClearMask(touch.event_mask.mask, XI_TouchOwnership);
-
-		// Grab touch devices to avoid OS gesture interference
-	// 	for (int i = 0; i < touch.devices.size(); ++i) {
-	// 		XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
-	// 	}*/
-	// }
-#endif
-
 	visual_server->init();
 
 	input = memnew(InputDefault);
@@ -260,12 +187,22 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 }
 
 void OS_SDL::set_ime_position(const Point2 &p_pos) {
+	int x = static_cast<int>(p_pos.x);
+	int y = static_cast<int>(p_pos.y);
+
+	// I'm not sure this is a good way to handle things.
+	if(x != 0 && y != 0) {
+		SDL_StartTextInput();
+	} else {
+		SDL_StopTextInput();
+	}
+
 	SDL_Rect ime_position;
-	ime_position.x = p_pos.x / 2;
-	ime_position.y = p_pos.y / 2;
+	ime_position.x = x;
+	ime_position.y = y;
 	// FIXME: What should these values be?
-	ime_position.w = 1;
-	ime_position.h = 1;
+	ime_position.w = 100;
+	ime_position.h = 32;
 
 	SDL_SetTextInputRect(&ime_position);
 }
@@ -581,6 +518,9 @@ void OS_SDL::process_events() {
 	do_mouse_warp = false;
  	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
 	Size2i window_size;
+	SDL_Scancode current_scancode;
+	bool current_echo = false;
+	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 
 	while (SDL_PollEvent(&event)) {
 
@@ -632,26 +572,27 @@ void OS_SDL::process_events() {
 					event.button.y = last_mouse_pos.y;
 				}
 
-				Ref<InputEventMouseButton> mb;
-				mb.instance();
+				Ref<InputEventMouseButton> sc;
+				sc.instance();
 
-				get_key_modifier_state(mb);
-				mb->set_button_mask(get_mouse_button_state(0, true));
-				mb->set_position(Vector2(event.button.x, event.button.y));
-				mb->set_global_position(mb->get_position());
-				mb->set_button_index(event.button.button);
+				get_key_modifier_state(sc);
+				sc->set_button_mask(get_mouse_button_state(0, true));
+				sc->set_position(Vector2(event.button.x, event.button.y));
+				sc->set_global_position(sc->get_position());
+				sc->set_button_index(event.button.button);
 
 				// Swapping buttons around?
-				if (mb->get_button_index() == 2)
-					mb->set_button_index(3);
-				else if (mb->get_button_index() == 3)
-					mb->set_button_index(2);
+				if (sc->get_button_index() == 2)
+					sc->set_button_index(3);
+				else if (sc->get_button_index() == 3)
+					sc->set_button_index(2);
 
-				mb->set_pressed(event.button.state == SDL_PRESSED);
+				sc->set_pressed(event.button.state == SDL_PRESSED);
 
-				mb->set_doubleclick(event.button.clicks > 1);
+				sc->set_doubleclick(event.button.clicks > 1);
 
-				input->parse_input_event(mb);
+				input->parse_input_event(sc);
+				continue;
 		}
 
 		// Ahh, good ol' abstractions. :3
@@ -663,26 +604,7 @@ void OS_SDL::process_events() {
 				// to be able to send relative motion events.
 				Point2i pos(event.motion.x, event.motion.y);
 
-				// TODO: See if this can be replaced.
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
-					if (pos == Point2i(current_videomode.width / 2, current_videomode.height / 2)) {
-						//this sucks, it's a hack, etc and is a little inaccurate, etc.
-
-						center = pos;
-						break;
-					}
-
-					Point2i new_center = pos;
-					pos = last_mouse_pos + (pos - center);
-					center = new_center;
-					do_mouse_warp = window_has_focus; // warp the cursor if we're focused in
-				}
-
-				if (!last_mouse_pos_valid) {
-					last_mouse_pos = pos;
-					last_mouse_pos_valid = true;
-				}
+				// TODO: Handle mouse warp. Is this needed in SDL?
 
 				Point2i rel(event.motion.xrel, event.motion.yrel);
 
@@ -709,13 +631,51 @@ void OS_SDL::process_events() {
 				continue;
 		}
 
-		if(event.type == SDL_KEYDOWN) {
+		if(event.type == SDL_MOUSEWHEEL) {
+			last_timestamp = event.wheel.timestamp;
+
+			uint32_t dir = event.wheel.direction;
+			int32_t amount_x = event.wheel.x;
+			int32_t amount_y = event.wheel.y;
+			int position_x = 0;
+			int position_y = 0;
+			ButtonList button;
+
+			if(dir == SDL_MOUSEWHEEL_FLIPPED) {
+				amount_x *= -1;
+				amount_y *= -1;
+			}
+
+			if(amount_y < 0) button = BUTTON_WHEEL_DOWN;
+			else if(amount_y > 0) button = BUTTON_WHEEL_UP;
+			else if(amount_x < 0) button = BUTTON_WHEEL_RIGHT;
+			else if(amount_x > 0) button = BUTTON_WHEEL_LEFT;
+
+			uint32_t button_state = SDL_GetMouseState(&position_x, &position_y);
+
+			Ref<InputEventMouseButton> sc;
+			sc.instance();
+
+			get_key_modifier_state(sc);
+			sc->set_button_mask(get_mouse_button_state(button_state, false));
+			sc->set_position(Vector2(position_x, position_y));
+			sc->set_global_position(sc->get_position());
+			sc->set_button_index(button);
+			sc->set_pressed(true);
+			input->parse_input_event(sc);
+			sc->set_pressed(false);
+			input->parse_input_event(sc);
+
+			continue;
+		}
+
+		// Outside of text input mode. Events created here won't have unicode mappings.
+		if(event.type == SDL_KEYDOWN && text_edit_mode == SDL_FALSE) {
 			last_timestamp = event.key.timestamp;
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Scancode scancode = keysym.scancode;
 			SDL_Keycode keycode = keysym.sym;
 
-			Status status;
 			Ref<InputEventKey> k;
 
 			k.instance();
@@ -724,13 +684,63 @@ void OS_SDL::process_events() {
 			}
 
 			get_key_modifier_state(k);
+			unsigned int non_printable_keycode = KeyMappingSDL::get_non_printable_keycode(keycode);
 
 			k->set_pressed(event.key.state == SDL_PRESSED);
-			k->set_scancode(scancode);
 			k->set_echo(event.key.repeat > 0);
+
+			// Not quite sure how we should handle this to be honest.
+			if(non_printable_keycode != 0) {
+				k->set_scancode(non_printable_keycode);
+			} else {
+				k->set_scancode(scancode);
+			}
 
 			input->parse_input_event(k);
 			continue;
+		// If we're in text input mode.
+		} else if (text_edit_mode == SDL_TRUE) {
+			SDL_Keysym keysym = event.key.keysym;
+			SDL_Keycode keycode = keysym.sym;
+
+			unsigned int non_printable_keycode = KeyMappingSDL::get_non_printable_keycode(keycode);
+
+			// If a modifier / non-printable key is hit, handle that directly
+			if(non_printable_keycode != 0) {
+				Ref<InputEventKey> k;
+				k.instance();
+				get_key_modifier_state(k);
+				k->set_pressed(event.key.state == SDL_PRESSED);
+				k->set_scancode(non_printable_keycode);
+				k->set_echo(event.key.repeat > 0);
+				input->parse_input_event(k);
+				continue;
+			// Otherwise wait until TextInput events to emit the key event with unicode.
+			} else {
+				current_scancode = keysym.scancode;
+				current_echo = event.key.repeat > 0;
+			}
+		}
+
+		if(event.type == SDL_TEXTINPUT && text_edit_mode == SDL_TRUE) {
+			last_timestamp = event.text.timestamp;
+
+			String tmp;
+			tmp.parse_utf8(event.text.text);
+			for (int i = 0; i < tmp.length(); i++) {
+				if (tmp[i] == 0) continue;
+
+				Ref<InputEventKey> k;
+				k.instance();
+				get_key_modifier_state(k);
+				k->set_unicode(tmp[i]);
+				k->set_pressed(true);
+				if(current_scancode) k->set_scancode(current_scancode);
+				k->set_echo(current_echo);
+
+				input->parse_input_event(k);
+				continue;
+			}
 		}
 
 		if(event.type == SDL_KEYUP) {
@@ -739,7 +749,6 @@ void OS_SDL::process_events() {
 			SDL_Scancode scancode = keysym.scancode;
 			SDL_Keycode keycode = keysym.sym;
 
-			Status status;
 			Ref<InputEventKey> k;
 			k.instance();
 			if (keycode == 0) {
@@ -758,358 +767,8 @@ void OS_SDL::process_events() {
 		}
 	}
 
-	// if(pending_key_event != None) {
-	// 	printf("TRYING TO PARSE PENDING\n");
-	// 	input->parse_input_event(pending_key_event);
-	// }
-		
-	//printf("checking events %i\n", XPending(x11_display));
-
-// 	do_mouse_warp = false;
-
-// 	// Is the current mouse mode one where it needs to be grabbed.
-// 	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
-
-// 	while (XPending(x11_display) > 0) {
-// 		XEvent event;
-// 		XNextEvent(x11_display, &event);
-
-// 		if (XFilterEvent(&event, None)) {
-// 			continue;
-// 		}
-
-// #ifdef TOUCH_ENABLED
-// 		if (XGetEventData(x11_display, &event.xcookie)) {
-
-// 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == touch.opcode) {
-
-// 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
-// 				int index = event_data->detail;
-// 				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
-
-// 				switch (event_data->evtype) {
-
-// 					case XI_TouchBegin: // Fall-through
-// 							// Disabled hand-in-hand with the grabbing
-// 							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
-
-// 					case XI_TouchEnd: {
-
-// 						bool is_begin = event_data->evtype == XI_TouchBegin;
-
-// 						Ref<InputEventScreenTouch> st;
-// 						st.instance();
-// 						st->set_index(index);
-// 						st->set_position(pos);
-// 						st->set_pressed(is_begin);
-
-// 						if (is_begin) {
-// 							if (touch.state.has(index)) // Defensive
-// 								break;
-// 							touch.state[index] = pos;
-// 							input->parse_input_event(st);
-// 						} else {
-// 							if (!touch.state.has(index)) // Defensive
-// 								break;
-// 							touch.state.erase(index);
-// 							input->parse_input_event(st);
-// 						}
-// 					} break;
-
-// 					case XI_TouchUpdate: {
-
-// 						Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
-// 						if (!curr_pos_elem) { // Defensive
-// 							break;
-// 						}
-
-// 						if (curr_pos_elem->value() != pos) {
-
-// 							Ref<InputEventScreenDrag> sd;
-// 							sd.instance();
-// 							sd->set_index(index);
-// 							sd->set_position(pos);
-// 							sd->set_relative(pos - curr_pos_elem->value());
-// 							input->parse_input_event(sd);
-
-// 							curr_pos_elem->value() = pos;
-// 						}
-// 					} break;
-// 				}
-// 			}
-// 		}
-// 		XFreeEventData(x11_display, &event.xcookie);
-// #endif
-
-// 		switch (event.type) {
-// 			case Expose:
-// 				Main::force_redraw();
-// 				break;
-
-// 			case NoExpose:
-// 				minimized = true;
-// 				break;
-
-// 			case VisibilityNotify: {
-// 				XVisibilityEvent *visibility = (XVisibilityEvent *)&event;
-// 				minimized = (visibility->state == VisibilityFullyObscured);
-// 			} break;
-// 			case LeaveNotify: {
-// 				if (main_loop && !mouse_mode_grab)
-// 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-// 				if (input)
-// 					input->set_mouse_in_window(false);
-
-// 			} break;
-// 			case EnterNotify: {
-// 				if (main_loop && !mouse_mode_grab)
-// 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-// 				if (input)
-// 					input->set_mouse_in_window(true);
-// 			} break;
-// 			case FocusIn:
-// 				minimized = false;
-// 				window_has_focus = true;
-// 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-// 				if (mouse_mode_grab) {
-// 					// Show and update the cursor if confined and the window regained focus.
-// 					if (mouse_mode == MOUSE_MODE_CONFINED)
-// 						XUndefineCursor(x11_display, x11_window);
-// 					else if (mouse_mode == MOUSE_MODE_CAPTURED) // or re-hide it in captured mode
-// 						XDefineCursor(x11_display, x11_window, null_cursor);
-
-// 					XGrabPointer(
-// 							x11_display, x11_window, True,
-// 							ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-// 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
-// 				}
-// #ifdef TOUCH_ENABLED
-// 					// Grab touch devices to avoid OS gesture interference
-// 					/*for (int i = 0; i < touch.devices.size(); ++i) {
-// 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
-// 				}*/
-// #endif
-// 				if (xic) {
-// 					XSetICFocus(xic);
-// 				}
-// 				break;
-
-// 			case FocusOut:
-// 				window_has_focus = false;
-// 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-// 				if (mouse_mode_grab) {
-// 					//dear X11, I try, I really try, but you never work, you do whathever you want.
-// 					if (mouse_mode == MOUSE_MODE_CAPTURED) {
-// 						// Show the cursor if we're in captured mode so it doesn't look weird.
-// 						XUndefineCursor(x11_display, x11_window);
-// 					}
-// 					XUngrabPointer(x11_display, CurrentTime);
-// 				}
-// #ifdef TOUCH_ENABLED
-// 				// Ungrab touch devices so input works as usual while we are unfocused
-// 				/*for (int i = 0; i < touch.devices.size(); ++i) {
-// 					XIUngrabDevice(x11_display, touch.devices[i], CurrentTime);
-// 				}*/
-
-// 				// Release every pointer to avoid sticky points
-// 				for (Map<int, Vector2>::Element *E = touch.state.front(); E; E = E->next()) {
-
-// 					Ref<InputEventScreenTouch> st;
-// 					st.instance();
-// 					st->set_index(E->key());
-// 					st->set_position(E->get());
-// 					input->parse_input_event(st);
-// 				}
-// 				touch.state.clear();
-// #endif
-// 				if (xic) {
-// 					XUnsetICFocus(xic);
-// 				}
-// 				break;
-
-// 			case ConfigureNotify:
-// 				_window_changed(&event);
-// 				break;
-// 			case KeyPress:
-// 			case KeyRelease: {
-
-// 				last_timestamp = event.xkey.time;
-
-// 				// key event is a little complex, so
-// 				// it will be handled in it's own function.
-// 				handle_key_event((XKeyEvent *)&event);
-// 			} break;
-// 			case SelectionRequest: {
-
-// 				XSelectionRequestEvent *req;
-// 				XEvent e, respond;
-// 				e = event;
-
-// 				req = &(e.xselectionrequest);
-// 				if (req->target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
-// 						req->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-// 						req->target == XInternAtom(x11_display, "TEXT", 0) ||
-// 						req->target == XA_STRING ||
-// 						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-// 						req->target == XInternAtom(x11_display, "text/plain", 0)) {
-// 					CharString clip = OS::get_clipboard().utf8();
-// 					XChangeProperty(x11_display,
-// 							req->requestor,
-// 							req->property,
-// 							req->target,
-// 							8,
-// 							PropModeReplace,
-// 							(unsigned char *)clip.get_data(),
-// 							clip.length());
-// 					respond.xselection.property = req->property;
-// 				} else if (req->target == XInternAtom(x11_display, "TARGETS", 0)) {
-
-// 					Atom data[7];
-// 					data[0] = XInternAtom(x11_display, "TARGETS", 0);
-// 					data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
-// 					data[2] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
-// 					data[3] = XInternAtom(x11_display, "TEXT", 0);
-// 					data[4] = XA_STRING;
-// 					data[5] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
-// 					data[6] = XInternAtom(x11_display, "text/plain", 0);
-
-// 					XChangeProperty(x11_display,
-// 							req->requestor,
-// 							req->property,
-// 							XA_ATOM,
-// 							32,
-// 							PropModeReplace,
-// 							(unsigned char *)&data,
-// 							sizeof(data) / sizeof(data[0]));
-// 					respond.xselection.property = req->property;
-
-// 				} else {
-// 					char *targetname = XGetAtomName(x11_display, req->target);
-// 					printf("No Target '%s'\n", targetname);
-// 					if (targetname)
-// 						XFree(targetname);
-// 					respond.xselection.property = None;
-// 				}
-
-// 				respond.xselection.type = SelectionNotify;
-// 				respond.xselection.display = req->display;
-// 				respond.xselection.requestor = req->requestor;
-// 				respond.xselection.selection = req->selection;
-// 				respond.xselection.target = req->target;
-// 				respond.xselection.time = req->time;
-// 				XSendEvent(x11_display, req->requestor, True, NoEventMask, &respond);
-// 				XFlush(x11_display);
-// 			} break;
-
-// 			case SelectionNotify:
-
-// 				if (event.xselection.target == requested) {
-
-// 					Property p = read_property(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0));
-
-// 					Vector<String> files = String((char *)p.data).split("\n", false);
-// 					for (int i = 0; i < files.size(); i++) {
-// 						files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
-// 					}
-// 					main_loop->drop_files(files);
-
-// 					//Reply that all is well.
-// 					XClientMessageEvent m;
-// 					memset(&m, 0, sizeof(m));
-// 					m.type = ClientMessage;
-// 					m.display = x11_display;
-// 					m.window = xdnd_source_window;
-// 					m.message_type = xdnd_finished;
-// 					m.format = 32;
-// 					m.data.l[0] = x11_window;
-// 					m.data.l[1] = 1;
-// 					m.data.l[2] = xdnd_action_copy; //We only ever copy.
-
-// 					XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent *)&m);
-// 				}
-// 				break;
-
-// 			case ClientMessage:
-
-// 				if ((unsigned int)event.xclient.data.l[0] == (unsigned int)wm_delete)
-// 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
-
-// 				else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
-
-// 					//File(s) have been dragged over the window, check for supported target (text/uri-list)
-// 					xdnd_version = (event.xclient.data.l[1] >> 24);
-// 					Window source = event.xclient.data.l[0];
-// 					bool more_than_3 = event.xclient.data.l[1] & 1;
-// 					if (more_than_3) {
-// 						Property p = read_property(x11_display, source, XInternAtom(x11_display, "XdndTypeList", False));
-// 						requested = pick_target_from_list(x11_display, (Atom *)p.data, p.nitems);
-// 					} else
-// 						requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2], event.xclient.data.l[3], event.xclient.data.l[4]);
-// 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_position) {
-
-// 					//xdnd position event, reply with an XDND status message
-// 					//just depending on type of data for now
-// 					XClientMessageEvent m;
-// 					memset(&m, 0, sizeof(m));
-// 					m.type = ClientMessage;
-// 					m.display = event.xclient.display;
-// 					m.window = event.xclient.data.l[0];
-// 					m.message_type = xdnd_status;
-// 					m.format = 32;
-// 					m.data.l[0] = x11_window;
-// 					m.data.l[1] = (requested != None);
-// 					m.data.l[2] = 0; //empty rectangle
-// 					m.data.l[3] = 0;
-// 					m.data.l[4] = xdnd_action_copy;
-
-// 					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
-// 					XFlush(x11_display);
-// 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
-
-// 					if (requested != None) {
-// 						xdnd_source_window = event.xclient.data.l[0];
-// 						if (xdnd_version >= 1)
-// 							XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, event.xclient.data.l[2]);
-// 						else
-// 							XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, CurrentTime);
-// 					} else {
-// 						//Reply that we're not interested.
-// 						XClientMessageEvent m;
-// 						memset(&m, 0, sizeof(m));
-// 						m.type = ClientMessage;
-// 						m.display = event.xclient.display;
-// 						m.window = event.xclient.data.l[0];
-// 						m.message_type = xdnd_finished;
-// 						m.format = 32;
-// 						m.data.l[0] = x11_window;
-// 						m.data.l[1] = 0;
-// 						m.data.l[2] = None; //Failed.
-// 						XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
-// 					}
-// 				}
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 	}
-
-	// XFlush(x11_display);
-
 	if (do_mouse_warp) {
-
-		// XWarpPointer(x11_display, None, x11_window,
-		// 		0, 0, 0, 0, (int)current_videomode.width / 2, (int)current_videomode.height / 2);
-
-		/*
-		Window root, child;
-		int root_x, root_y;
-		int win_x, win_y;
-		unsigned int mask;
-		XQueryPointer( x11_display, x11_window, &root, &child, &root_x, &root_y, &win_x, &win_y, &mask );
-
-		printf("Root: %d,%d\n", root_x, root_y);
-		printf("Win: %d,%d\n", win_x, win_y);
-		*/
+		// Handle mouse warp here if needed. Not sure.
 	}
 }
 
