@@ -402,19 +402,10 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 			if (p_code != 200) {
 				template_list_state->set_text(TTR("Failed:") + " " + itos(p_code));
 			} else {
-				String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz");
-				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
-				if (!f) {
-					template_list_state->set_text(TTR("Can't write file."));
-				} else {
-					int size = p_data.size();
-					PoolVector<uint8_t>::Read r = p_data.read();
-					f->store_buffer(r.ptr(), size);
-					memdelete(f);
-					template_list_state->set_text(TTR("Download Complete."));
-					template_downloader->hide();
-					_install_from_file(path, false);
-				}
+				String path = download_templates->get_download_file();
+				template_list_state->set_text(TTR("Download Complete."));
+				template_downloader->hide();
+				_install_from_file(path, false);
 			}
 		} break;
 	}
@@ -437,6 +428,8 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	}
 
 	download_data.clear();
+	download_templates->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
+	download_templates->set_use_threads(true);
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
