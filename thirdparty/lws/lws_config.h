@@ -18,7 +18,7 @@
 /* #undef USE_OLD_CYASSL */
 /* #undef LWS_WITH_BORINGSSL */
 
-/* #undef LWS_WITH_MBEDTLS */
+#define LWS_WITH_MBEDTLS
 /* #undef LWS_WITH_POLARSSL */
 /* #undef LWS_WITH_ESP8266 */
 /* #undef LWS_WITH_ESP32 */
