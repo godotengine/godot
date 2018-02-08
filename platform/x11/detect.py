@@ -65,7 +65,6 @@ def get_flags():
     return [
         ('builtin_freetype', False),
         ('builtin_libpng', False),
-        ('builtin_openssl', False),
         ('builtin_zlib', False),
     ]
 
@@ -152,9 +151,6 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
-
-    if not env['builtin_openssl']:
-        env.ParseConfig('pkg-config openssl --cflags --libs')
 
     if not env['builtin_libwebp']:
         env.ParseConfig('pkg-config libwebp --cflags --libs')
