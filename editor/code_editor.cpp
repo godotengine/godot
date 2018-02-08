@@ -771,6 +771,14 @@ void CodeTextEditor::set_error(const String &p_error) {
 void CodeTextEditor::_update_font() {
 
 	text_editor->add_font_override("font", get_font("source", "EditorFonts"));
+
+	Ref<Font> status_bar_font = get_font("status_source", "EditorFonts");
+	int count = status_bar->get_child_count();
+	for (int i = 0; i < count; i++) {
+		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
+		if (n)
+			n->add_font_override("font", status_bar_font);
+	}
 }
 
 void CodeTextEditor::_on_settings_change() {
@@ -851,7 +859,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
 
-	HBoxContainer *status_bar = memnew(HBoxContainer);
+	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 
