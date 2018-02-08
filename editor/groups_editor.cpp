@@ -29,11 +29,425 @@
 /*************************************************************************/
 
 #include "groups_editor.h"
-
+#include "editor/scene_tree_editor.h"
 #include "editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
+
+void GroupDialog::ok_pressed() {
+}
+
+void GroupDialog::_cancel_pressed() {
+}
+
+void GroupDialog::_group_selected() {
+	nodes_to_add->clear();
+	add_node_root = nodes_to_add->create_item();
+
+	nodes_to_remove->clear();
+	remove_node_root = nodes_to_remove->create_item();
+
+	if (!groups->is_anything_selected()) {
+		return;
+	}
+
+	selected_group = groups->get_selected()->get_text(0);
+	_load_nodes(scene_tree->get_edited_scene_root());
+}
+
+void GroupDialog::_load_nodes(Node *p_current) {
+	String item_name = p_current->get_name();
+	if (p_current != scene_tree->get_edited_scene_root()) {
+		item_name = String(p_current->get_parent()->get_name()) + "/" + String(item_name);
+	}
+
+	bool keep = true;
+	Node *root = scene_tree->get_edited_scene_root();
+	Node *owner = p_current->get_owner();
+	if (owner != root && p_current != root && !owner && !root->is_editable_instance(owner)) {
+		keep = false;
+	}
+
+	TreeItem *node;
+	NodePath path = scene_tree->get_edited_scene_root()->get_path_to(p_current);
+	if (keep && p_current->is_in_group(selected_group)) {
+		if (remove_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
+			node = nodes_to_remove->create_item(remove_node_root);
+			keep = true;
+		} else {
+			keep = false;
+		}
+	} else if (keep && add_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
+		node = nodes_to_add->create_item(add_node_root);
+		keep = true;
+	} else {
+		keep = false;
+	}
+
+	if (keep) {
+		node->set_text(0, item_name);
+		node->set_metadata(0, path);
+		node->set_tooltip(0, path);
+
+		Ref<Texture> icon;
+		if (p_current->has_meta("_editor_icon")) {
+			icon = p_current->get_meta("_editor_icon");
+		} else {
+			icon = get_icon((has_icon(p_current->get_class(), "EditorIcons") ? p_current->get_class() : String("Object")), "EditorIcons");
+		}
+		node->set_icon(0, icon);
+
+		if (!_can_edit(p_current, selected_group)) {
+			node->set_selectable(0, false);
+			node->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		}
+	}
+
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		_load_nodes(p_current->get_child(i));
+	}
+}
+
+bool GroupDialog::_can_edit(Node *p_node, String p_group) {
+	Node *n = p_node;
+	bool can_edit = true;
+	while (n) {
+		Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
+		if (ss.is_valid()) {
+			int path = ss->find_node_by_path(n->get_path_to(p_node));
+			if (path != -1) {
+				if (ss->is_node_in_group(path, p_group)) {
+					can_edit = false;
+				}
+			}
+		}
+		n = n->get_owner();
+	}
+	return can_edit;
+}
+
+void GroupDialog::_add_pressed() {
+	TreeItem *selected = nodes_to_add->get_selected();
+
+	if (!selected) {
+		return;
+	}
+
+	while (selected) {
+		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
+		node->add_to_group(selected_group, true);
+
+		selected = nodes_to_add->get_next_selected(selected);
+	}
+
+	_group_selected();
+	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+}
+
+void GroupDialog::_removed_pressed() {
+	TreeItem *selected = nodes_to_remove->get_selected();
+
+	if (!selected) {
+		return;
+	}
+
+	while (selected) {
+		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
+		node->remove_from_group(selected_group);
+
+		selected = nodes_to_add->get_next_selected(selected);
+	}
+
+	_group_selected();
+	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+}
+
+void GroupDialog::_remove_filter_changed(const String &p_filter) {
+	_group_selected();
+}
+
+void GroupDialog::_add_filter_changed(const String &p_filter) {
+	_group_selected();
+}
+
+void GroupDialog::_add_group_pressed() {
+	_add_group(add_group_text->get_text());
+	add_group_text->clear();
+}
+
+void GroupDialog::_group_renamed() {
+	TreeItem *renamed_group = groups->get_edited();
+	if (!renamed_group) {
+		return;
+	}
+
+	String name = renamed_group->get_text(0).strip_edges();
+	for (TreeItem *E = groups_root->get_children(); E; E = E->get_next()) {
+		if (E != renamed_group && E->get_text(0) == name) {
+			renamed_group->set_text(0, selected_group);
+			error->set_text(TTR("Group name already exists."));
+			error->popup_centered();
+			return;
+		}
+	}
+
+	if (name == "") {
+		renamed_group->set_text(0, selected_group);
+		error->set_text(TTR("invalid Group name."));
+		error->popup_centered();
+		return;
+	}
+
+	List<Node *> nodes;
+	scene_tree->get_nodes_in_group(selected_group, &nodes);
+	bool removed_all = true;
+	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
+		Node *node = E->get();
+		if (_can_edit(node, selected_group)) {
+			node->remove_from_group(selected_group);
+			node->add_to_group(name, true);
+		} else {
+			removed_all = false;
+		}
+	}
+
+	if (!removed_all) {
+		_add_group(selected_group);
+	}
+
+	selected_group = renamed_group->get_text(0);
+	_group_selected();
+}
+
+void GroupDialog::_add_group(String p_name) {
+
+	String name = p_name.strip_edges();
+	if (name == "" || groups->search_item_text(name)) {
+		return;
+	}
+
+	TreeItem *new_group = groups->create_item(groups_root);
+	new_group->set_text(0, name);
+	new_group->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+	new_group->set_editable(0, true);
+}
+
+void GroupDialog::_load_groups(Node *p_current) {
+	List<Node::GroupInfo> gi;
+	p_current->get_groups(&gi);
+
+	for (List<Node::GroupInfo>::Element *E = gi.front(); E; E = E->next()) {
+		if (!E->get().persistent) {
+			continue;
+		}
+		_add_group(E->get().name);
+	}
+
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		_load_groups(p_current->get_child(i));
+	}
+}
+
+void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	if (!ti)
+		return;
+
+	String name = ti->get_text(0);
+
+	List<Node *> nodes;
+	scene_tree->get_nodes_in_group(name, &nodes);
+	bool removed_all = true;
+	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
+		if (_can_edit(E->get(), name)) {
+			E->get()->remove_from_group(name);
+		} else {
+			removed_all = false;
+		}
+	}
+
+	if (removed_all) {
+		if (selected_group == name) {
+			add_filter->clear();
+			remove_filter->clear();
+			nodes_to_remove->clear();
+			nodes_to_add->clear();
+			groups->deselect_all();
+			selected_group = "";
+		}
+		groups_root->remove_child(ti);
+	}
+	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+}
+
+void GroupDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			add_button->set_icon(get_icon("Forward", "EditorIcons"));
+			remove_button->set_icon(get_icon("Back", "EditorIcons"));
+		} break;
+	}
+}
+
+void GroupDialog::edit() {
+
+	popup_centered(Size2(600, 400));
+
+	groups->clear();
+	groups_root = groups->create_item();
+
+	nodes_to_add->clear();
+	nodes_to_remove->clear();
+
+	add_group_text->clear();
+	add_filter->clear();
+	remove_filter->clear();
+
+	_load_groups(scene_tree->get_edited_scene_root());
+}
+
+void GroupDialog::_bind_methods() {
+	ClassDB::bind_method("_cancel", &GroupDialog::_cancel_pressed);
+
+	ClassDB::bind_method("_add_pressed", &GroupDialog::_add_pressed);
+	ClassDB::bind_method("_removed_pressed", &GroupDialog::_removed_pressed);
+	ClassDB::bind_method("_delete_group_pressed", &GroupDialog::_delete_group_pressed);
+
+	ClassDB::bind_method("_group_selected", &GroupDialog::_group_selected);
+	ClassDB::bind_method("_add_group_pressed", &GroupDialog::_add_group_pressed);
+
+	ClassDB::bind_method("_add_filter_changed", &GroupDialog::_add_filter_changed);
+	ClassDB::bind_method("_remove_filter_changed", &GroupDialog::_remove_filter_changed);
+
+	ClassDB::bind_method("_group_renamed", &GroupDialog::_group_renamed);
+}
+
+GroupDialog::GroupDialog() {
+
+	scene_tree = SceneTree::get_singleton();
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
+
+	HBoxContainer *hbc = memnew(HBoxContainer);
+	vbc->add_child(hbc);
+	hbc->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	VBoxContainer *vbc_left = memnew(VBoxContainer);
+	hbc->add_child(vbc_left);
+	vbc_left->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	Label *group_title = memnew(Label);
+	group_title->set_text(TTR("Groups"));
+	vbc_left->add_child(group_title);
+
+	groups = memnew(Tree);
+	vbc_left->add_child(groups);
+	groups->set_hide_root(true);
+	groups->set_v_size_flags(SIZE_EXPAND_FILL);
+	groups->set_select_mode(Tree::SELECT_SINGLE);
+	groups->set_allow_reselect(true);
+	groups->set_allow_rmb_select(true);
+	groups->connect("item_selected", this, "_group_selected");
+	groups->connect("button_pressed", this, "_delete_group_pressed");
+	groups->connect("item_edited", this, "_group_renamed");
+
+	HBoxContainer *chbc = memnew(HBoxContainer);
+	vbc_left->add_child(chbc);
+	chbc->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	add_group_text = memnew(LineEdit);
+	chbc->add_child(add_group_text);
+	add_group_text->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	Button *add_group_button = memnew(Button);
+	add_group_button->set_text("Add");
+	chbc->add_child(add_group_button);
+	add_group_button->connect("pressed", this, "_add_group_pressed");
+
+	VBoxContainer *vbc_add = memnew(VBoxContainer);
+	hbc->add_child(vbc_add);
+	vbc_add->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	Label *out_of_group_title = memnew(Label);
+	out_of_group_title->set_text(TTR("Nodes not in Group"));
+	vbc_add->add_child(out_of_group_title);
+
+	nodes_to_add = memnew(Tree);
+	vbc_add->add_child(nodes_to_add);
+	nodes_to_add->set_hide_root(true);
+	nodes_to_add->set_hide_folding(true);
+	nodes_to_add->set_v_size_flags(SIZE_EXPAND_FILL);
+	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
+	nodes_to_add->connect("item_selected", this, "_nodes_to_add_selected");
+
+	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
+	add_filter_hbc->add_constant_override("separate", 0);
+	vbc_add->add_child(add_filter_hbc);
+
+	add_filter = memnew(LineEdit);
+	add_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_filter->set_placeholder(TTR("Filter nodes"));
+	add_filter_hbc->add_child(add_filter);
+	add_filter->connect("text_changed", this, "_add_filter_changed");
+
+	VBoxContainer *vbc_buttons = memnew(VBoxContainer);
+	hbc->add_child(vbc_buttons);
+	vbc_buttons->set_h_size_flags(SIZE_SHRINK_CENTER);
+	vbc_buttons->set_v_size_flags(SIZE_SHRINK_CENTER);
+
+	add_button = memnew(ToolButton);
+	add_button->set_text(TTR("Add"));
+	add_button->connect("pressed", this, "_add_pressed");
+
+	vbc_buttons->add_child(add_button);
+	vbc_buttons->add_spacer();
+	vbc_buttons->add_spacer();
+	vbc_buttons->add_spacer();
+
+	remove_button = memnew(ToolButton);
+	remove_button->set_text(TTR("Remove"));
+	remove_button->connect("pressed", this, "_removed_pressed");
+
+	vbc_buttons->add_child(remove_button);
+
+	VBoxContainer *vbc_remove = memnew(VBoxContainer);
+	hbc->add_child(vbc_remove);
+	vbc_remove->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	Label *in_group_title = memnew(Label);
+	in_group_title->set_text(TTR("Nodes in Group"));
+	vbc_remove->add_child(in_group_title);
+
+	nodes_to_remove = memnew(Tree);
+	vbc_remove->add_child(nodes_to_remove);
+	nodes_to_remove->set_v_size_flags(SIZE_EXPAND_FILL);
+	nodes_to_remove->set_hide_root(true);
+	nodes_to_remove->set_hide_folding(true);
+	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
+	nodes_to_remove->connect("item_selected", this, "_node_to_remove_selected");
+
+	HBoxContainer *remove_filter_hbc = memnew(HBoxContainer);
+	remove_filter_hbc->add_constant_override("separate", 0);
+	vbc_remove->add_child(remove_filter_hbc);
+
+	remove_filter = memnew(LineEdit);
+	remove_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	remove_filter->set_placeholder(TTR("Filter nodes"));
+	remove_filter_hbc->add_child(remove_filter);
+	remove_filter->connect("text_changed", this, "_remove_filter_changed");
+
+	set_title("Group Editor");
+	get_cancel()->hide();
+	set_as_toplevel(true);
+
+	error = memnew(ConfirmationDialog);
+	add_child(error);
+	error->get_ok()->set_text(TTR("Close"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 void GroupsEditor::_add_group(const String &p_group) {
 
@@ -146,11 +560,22 @@ void GroupsEditor::set_current(Node *p_node) {
 	update_tree();
 }
 
+void GroupsEditor::_show_group_dialog() {
+	group_dialog->edit();
+}
+
+void GroupsEditor::_group_dialog_closed() {
+	update_tree();
+}
+
 void GroupsEditor::_bind_methods() {
 
 	ClassDB::bind_method("_add_group", &GroupsEditor::_add_group);
 	ClassDB::bind_method("_remove_group", &GroupsEditor::_remove_group);
 	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
+
+	ClassDB::bind_method("_show_group_dialog", &GroupsEditor::_show_group_dialog);
+	ClassDB::bind_method("_group_dialog_closed", &GroupsEditor::_group_dialog_closed);
 }
 
 GroupsEditor::GroupsEditor() {
@@ -158,6 +583,16 @@ GroupsEditor::GroupsEditor() {
 	node = NULL;
 
 	VBoxContainer *vbc = this;
+
+	group_dialog = memnew(GroupDialog);
+	group_dialog->set_as_toplevel(true);
+	add_child(group_dialog);
+	group_dialog->connect("popup_hide", this, "_group_dialog_closed");
+
+	Button *group_dialog_button = memnew(Button);
+	group_dialog_button->set_text(TTR("Manage Groups"));
+	vbc->add_child(group_dialog_button);
+	group_dialog_button->connect("pressed", this, "_show_group_dialog");
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
