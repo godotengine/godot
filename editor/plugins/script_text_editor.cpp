@@ -373,8 +373,10 @@ void ScriptTextEditor::tag_saved_version() {
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-
-	code_editor->goto_line(p_line);
+	TextEdit *tx = code_editor->get_text_edit();
+	tx->deselect();
+	tx->unfold_line(p_line);
+	tx->call_deferred("cursor_set_line", p_line);
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
