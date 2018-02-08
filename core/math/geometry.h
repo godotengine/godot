@@ -502,16 +502,15 @@ public:
 	}
 
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
-		int as_x = s.x - a.x;
-		int as_y = s.y - a.y;
+		Vector2 an = a - s;
+		Vector2 bn = b - s;
+		Vector2 cn = c - s;
 
-		bool s_ab = (b.x - a.x) * as_y - (b.y - a.y) * as_x > 0;
+		bool orientation = an.cross(bn) > 0;
 
-		if (((c.x - a.x) * as_y - (c.y - a.y) * as_x > 0) == s_ab) return false;
+		if ((bn.cross(cn) > 0) != orientation) return false;
 
-		if (((c.x - b.x) * (s.y - b.y) - (c.y - b.y) * (s.x - b.x) > 0) != s_ab) return false;
-
-		return true;
+		return (cn.cross(an) > 0) == orientation;
 	}
 
 	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
