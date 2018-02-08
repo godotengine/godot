@@ -62,6 +62,7 @@ public:
 	virtual Status get_status() const = 0;
 
 	virtual void disconnect_from_stream() = 0;
+	virtual void poll() = 0;
 
 	static StreamPeerSSL *create();
 
