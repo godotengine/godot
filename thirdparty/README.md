@@ -365,7 +365,6 @@ Files extracted from the upstream source:
 - All .h files in `src/`
 - LICENSE.txt
 
-
 ## opus
 
 - Upstream: https://opus-codec.org
