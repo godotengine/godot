@@ -347,7 +347,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, bounce);
 	VCALL_LOCALMEM1R(Vector2, reflect);
 	VCALL_LOCALMEM0R(Vector2, angle);
-	//VCALL_LOCALMEM1R(Vector2,cross);
+	VCALL_LOCALMEM1R(Vector2, cross);
 	VCALL_LOCALMEM0R(Vector2, abs);
 	VCALL_LOCALMEM1R(Vector2, clamped);
 
@@ -1517,7 +1517,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, slide, VECTOR2, "n", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, bounce, VECTOR2, "n", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, reflect, VECTOR2, "n", varray());
-	//ADDFUNC1R(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, cross, VECTOR2, "with", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, abs, varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, clamped, REAL, "length", varray());
 
