@@ -32,7 +32,7 @@ def get_flags():
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
         # manages TLS.
-        ('module_openssl_enabled', False),
+        #('module_openssl_enabled', False),
     ]
 
 
