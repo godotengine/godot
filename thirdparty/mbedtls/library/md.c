@@ -33,7 +33,6 @@
 
 #include "mbedtls/md.h"
 #include "mbedtls/md_internal.h"
-#include "mbedtls/platform_util.h"
 
 #if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
@@ -48,6 +47,11 @@
 #if defined(MBEDTLS_FS_IO)
 #include <stdio.h>
 #endif
+
+/* Implementation that should never be optimized out by the compiler */
+static void mbedtls_zeroize( void *v, size_t n ) {
+    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
+}
 
 /*
  * Reminder: update profiles in x509_crt.c when adding a new hash!
@@ -189,12 +193,11 @@ void mbedtls_md_free( mbedtls_md_context_t *ctx )
 
     if( ctx->hmac_ctx != NULL )
     {
-        mbedtls_platform_zeroize( ctx->hmac_ctx,
-                                  2 * ctx->md_info->block_size );
+        mbedtls_zeroize( ctx->hmac_ctx, 2 * ctx->md_info->block_size );
         mbedtls_free( ctx->hmac_ctx );
     }
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md_context_t ) );
+    mbedtls_zeroize( ctx, sizeof( mbedtls_md_context_t ) );
 }
 
 int mbedtls_md_clone( mbedtls_md_context_t *dst,
@@ -308,7 +311,7 @@ int mbedtls_md_file( const mbedtls_md_info_t *md_info, const char *path, unsigne
         ret = md_info->finish_func( ctx.md_ctx, output );
 
 cleanup:
-    mbedtls_platform_zeroize( buf, sizeof( buf ) );
+    mbedtls_zeroize( buf, sizeof( buf ) );
     fclose( f );
     mbedtls_md_free( &ctx );
 
@@ -358,7 +361,7 @@ int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key,
         goto cleanup;
 
 cleanup:
-    mbedtls_platform_zeroize( sum, sizeof( sum ) );
+    mbedtls_zeroize( sum, sizeof( sum ) );
 
     return( ret );
 }

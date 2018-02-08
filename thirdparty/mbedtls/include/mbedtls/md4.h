@@ -40,13 +40,18 @@
 
 #define MBEDTLS_ERR_MD4_HW_ACCEL_FAILED                   -0x002D  /**< MD4 hardware accelerator failed */
 
-#ifdef __cplusplus
-extern "C" {
+#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+    !defined(inline) && !defined(__cplusplus)
+#define inline __inline
 #endif
 
 #if !defined(MBEDTLS_MD4_ALT)
 // Regular implementation
 //
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * \brief          MD4 context structure
@@ -63,10 +68,6 @@ typedef struct
     unsigned char buffer[64];   /*!< data block being processed */
 }
 mbedtls_md4_context;
-
-#else  /* MBEDTLS_MD4_ALT */
-#include "md4_alt.h"
-#endif /* MBEDTLS_MD4_ALT */
 
 /**
  * \brief          Initialize MD4 context
@@ -187,7 +188,11 @@ int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED void mbedtls_md4_starts( mbedtls_md4_context *ctx );
+MBEDTLS_DEPRECATED static inline void mbedtls_md4_starts(
+                                                    mbedtls_md4_context *ctx )
+{
+    mbedtls_md4_starts_ret( ctx );
+}
 
 /**
  * \brief          MD4 process buffer
@@ -203,9 +208,13 @@ MBEDTLS_DEPRECATED void mbedtls_md4_starts( mbedtls_md4_context *ctx );
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED void mbedtls_md4_update( mbedtls_md4_context *ctx,
-                                            const unsigned char *input,
-                                            size_t ilen );
+MBEDTLS_DEPRECATED static inline void mbedtls_md4_update(
+                                                    mbedtls_md4_context *ctx,
+                                                    const unsigned char *input,
+                                                    size_t ilen )
+{
+    mbedtls_md4_update_ret( ctx, input, ilen );
+}
 
 /**
  * \brief          MD4 final digest
@@ -220,8 +229,12 @@ MBEDTLS_DEPRECATED void mbedtls_md4_update( mbedtls_md4_context *ctx,
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED void mbedtls_md4_finish( mbedtls_md4_context *ctx,
-                                            unsigned char output[16] );
+MBEDTLS_DEPRECATED static inline void mbedtls_md4_finish(
+                                                    mbedtls_md4_context *ctx,
+                                                    unsigned char output[16] )
+{
+    mbedtls_md4_finish_ret( ctx, output );
+}
 
 /**
  * \brief          MD4 process data block (internal use only)
@@ -236,11 +249,27 @@ MBEDTLS_DEPRECATED void mbedtls_md4_finish( mbedtls_md4_context *ctx,
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED void mbedtls_md4_process( mbedtls_md4_context *ctx,
-                                             const unsigned char data[64] );
+MBEDTLS_DEPRECATED static inline void mbedtls_md4_process(
+                                                mbedtls_md4_context *ctx,
+                                                const unsigned char data[64] )
+{
+    mbedtls_internal_md4_process( ctx, data );
+}
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
+
+#ifdef __cplusplus
+}
+#endif
+
+#else  /* MBEDTLS_MD4_ALT */
+#include "md4_alt.h"
+#endif /* MBEDTLS_MD4_ALT */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * \brief          Output = MD4( input buffer )
@@ -280,9 +309,12 @@ int mbedtls_md4_ret( const unsigned char *input,
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED void mbedtls_md4( const unsigned char *input,
-                                     size_t ilen,
-                                     unsigned char output[16] );
+MBEDTLS_DEPRECATED static inline void mbedtls_md4( const unsigned char *input,
+                                                   size_t ilen,
+                                                   unsigned char output[16] )
+{
+    mbedtls_md4_ret( input, ilen, output );
+}
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */

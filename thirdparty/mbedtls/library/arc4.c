@@ -33,7 +33,6 @@
 #if defined(MBEDTLS_ARC4_C)
 
 #include "mbedtls/arc4.h"
-#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -48,6 +47,11 @@
 
 #if !defined(MBEDTLS_ARC4_ALT)
 
+/* Implementation that should never be optimized out by the compiler */
+static void mbedtls_zeroize( void *v, size_t n ) {
+    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
+}
+
 void mbedtls_arc4_init( mbedtls_arc4_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_arc4_context ) );
@@ -58,7 +62,7 @@ void mbedtls_arc4_free( mbedtls_arc4_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_arc4_context ) );
+    mbedtls_zeroize( ctx, sizeof( mbedtls_arc4_context ) );
 }
 
 /*

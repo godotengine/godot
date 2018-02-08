@@ -27,7 +27,7 @@
 #include "md.h"
 
 #if defined(MBEDTLS_THREADING_C)
-#include "threading.h"
+#include "mbedtls/threading.h"
 #endif
 
 /*

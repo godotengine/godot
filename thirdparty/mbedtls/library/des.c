@@ -34,7 +34,6 @@
 #if defined(MBEDTLS_DES_C)
 
 #include "mbedtls/des.h"
-#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -48,6 +47,11 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_DES_ALT)
+
+/* Implementation that should never be optimized out by the compiler */
+static void mbedtls_zeroize( void *v, size_t n ) {
+    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
+}
 
 /*
  * 32-bit integer manipulation macros (big endian)
@@ -312,7 +316,7 @@ void mbedtls_des_free( mbedtls_des_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_des_context ) );
+    mbedtls_zeroize( ctx, sizeof( mbedtls_des_context ) );
 }
 
 void mbedtls_des3_init( mbedtls_des3_context *ctx )
@@ -325,7 +329,7 @@ void mbedtls_des3_free( mbedtls_des3_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_des3_context ) );
+    mbedtls_zeroize( ctx, sizeof( mbedtls_des3_context ) );
 }
 
 static const unsigned char odd_parity_table[128] = { 1,  2,  4,  7,  8,
@@ -549,7 +553,7 @@ int mbedtls_des3_set2key_enc( mbedtls_des3_context *ctx,
     uint32_t sk[96];
 
     des3_set2key( ctx->sk, sk, key );
-    mbedtls_platform_zeroize( sk,  sizeof( sk ) );
+    mbedtls_zeroize( sk,  sizeof( sk ) );
 
     return( 0 );
 }
@@ -563,7 +567,7 @@ int mbedtls_des3_set2key_dec( mbedtls_des3_context *ctx,
     uint32_t sk[96];
 
     des3_set2key( sk, ctx->sk, key );
-    mbedtls_platform_zeroize( sk,  sizeof( sk ) );
+    mbedtls_zeroize( sk,  sizeof( sk ) );
 
     return( 0 );
 }
@@ -600,7 +604,7 @@ int mbedtls_des3_set3key_enc( mbedtls_des3_context *ctx,
     uint32_t sk[96];
 
     des3_set3key( ctx->sk, sk, key );
-    mbedtls_platform_zeroize( sk,  sizeof( sk ) );
+    mbedtls_zeroize( sk,  sizeof( sk ) );
 
     return( 0 );
 }
@@ -614,7 +618,7 @@ int mbedtls_des3_set3key_dec( mbedtls_des3_context *ctx,
     uint32_t sk[96];
 
     des3_set3key( sk, ctx->sk, key );
-    mbedtls_platform_zeroize( sk,  sizeof( sk ) );
+    mbedtls_zeroize( sk,  sizeof( sk ) );
 
     return( 0 );
 }

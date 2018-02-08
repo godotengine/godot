@@ -35,13 +35,18 @@
 
 #define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031  /**< RIPEMD160 hardware accelerator failed */
 
-#ifdef __cplusplus
-extern "C" {
+#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+    !defined(inline) && !defined(__cplusplus)
+#define inline __inline
 #endif
 
 #if !defined(MBEDTLS_RIPEMD160_ALT)
 // Regular implementation
 //
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * \brief          RIPEMD-160 context structure
@@ -53,10 +58,6 @@ typedef struct
     unsigned char buffer[64];   /*!< data block being processed */
 }
 mbedtls_ripemd160_context;
-
-#else  /* MBEDTLS_RIPEMD160_ALT */
-#include "ripemd160.h"
-#endif /* MBEDTLS_RIPEMD160_ALT */
 
 /**
  * \brief          Initialize RIPEMD-160 context
@@ -138,8 +139,11 @@ int mbedtls_internal_ripemd160_process( mbedtls_ripemd160_context *ctx,
  *
  * \param ctx      context to be initialized
  */
-MBEDTLS_DEPRECATED void mbedtls_ripemd160_starts(
-                                            mbedtls_ripemd160_context *ctx );
+MBEDTLS_DEPRECATED static inline void mbedtls_ripemd160_starts(
+                                            mbedtls_ripemd160_context *ctx )
+{
+    mbedtls_ripemd160_starts_ret( ctx );
+}
 
 /**
  * \brief          RIPEMD-160 process buffer
@@ -150,10 +154,13 @@ MBEDTLS_DEPRECATED void mbedtls_ripemd160_starts(
  * \param input    buffer holding the data
  * \param ilen     length of the input data
  */
-MBEDTLS_DEPRECATED void mbedtls_ripemd160_update(
+MBEDTLS_DEPRECATED static inline void mbedtls_ripemd160_update(
                                                 mbedtls_ripemd160_context *ctx,
                                                 const unsigned char *input,
-                                                size_t ilen );
+                                                size_t ilen )
+{
+    mbedtls_ripemd160_update_ret( ctx, input, ilen );
+}
 
 /**
  * \brief          RIPEMD-160 final digest
@@ -163,9 +170,12 @@ MBEDTLS_DEPRECATED void mbedtls_ripemd160_update(
  * \param ctx      RIPEMD-160 context
  * \param output   RIPEMD-160 checksum result
  */
-MBEDTLS_DEPRECATED void mbedtls_ripemd160_finish(
+MBEDTLS_DEPRECATED static inline void mbedtls_ripemd160_finish(
                                                 mbedtls_ripemd160_context *ctx,
-                                                unsigned char output[20] );
+                                                unsigned char output[20] )
+{
+    mbedtls_ripemd160_finish_ret( ctx, output );
+}
 
 /**
  * \brief          RIPEMD-160 process data block (internal use only)
@@ -175,12 +185,27 @@ MBEDTLS_DEPRECATED void mbedtls_ripemd160_finish(
  * \param ctx      RIPEMD-160 context
  * \param data     buffer holding one block of data
  */
-MBEDTLS_DEPRECATED void mbedtls_ripemd160_process(
+MBEDTLS_DEPRECATED static inline void mbedtls_ripemd160_process(
                                             mbedtls_ripemd160_context *ctx,
-                                            const unsigned char data[64] );
+                                            const unsigned char data[64] )
+{
+    mbedtls_internal_ripemd160_process( ctx, data );
+}
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
+
+#ifdef __cplusplus
+}
+#endif
+
+#else  /* MBEDTLS_RIPEMD160_ALT */
+#include "ripemd160_alt.h"
+#endif /* MBEDTLS_RIPEMD160_ALT */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * \brief          Output = RIPEMD-160( input buffer )
@@ -210,9 +235,13 @@ int mbedtls_ripemd160_ret( const unsigned char *input,
  * \param ilen     length of the input data
  * \param output   RIPEMD-160 checksum result
  */
-MBEDTLS_DEPRECATED void mbedtls_ripemd160( const unsigned char *input,
-                                           size_t ilen,
-                                           unsigned char output[20] );
+MBEDTLS_DEPRECATED static inline void mbedtls_ripemd160(
+                                                    const unsigned char *input,
+                                                    size_t ilen,
+                                                    unsigned char output[20] )
+{
+    mbedtls_ripemd160_ret( input, ilen, output );
+}
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
