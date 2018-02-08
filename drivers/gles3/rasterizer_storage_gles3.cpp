@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
+#include "engine.h"
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
@@ -5855,6 +5856,8 @@ void RasterizerStorageGLES3::update_particles() {
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EMITTING, particles->emitting);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::RANDOMNESS, particles->randomness);
 
+		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
+
 		if (particles->clear && particles->pre_process_time > 0.0) {
 
 			float frame_time;
@@ -5872,7 +5875,15 @@ void RasterizerStorageGLES3::update_particles() {
 		}
 
 		if (particles->fixed_fps > 0) {
-			float frame_time = 1.0 / particles->fixed_fps;
+			float frame_time;
+			float decr;
+			if (zero_time_scale) {
+				frame_time = 0.0;
+				decr = 1.0 / particles->fixed_fps;
+			} else {
+				frame_time = 1.0 / particles->fixed_fps;
+				decr = frame_time;
+			}
 			float delta = frame.delta;
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
@@ -5883,13 +5894,16 @@ void RasterizerStorageGLES3::update_particles() {
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);
-				todo -= frame_time;
+				todo -= decr;
 			}
 
 			particles->frame_remainder = todo;
 
 		} else {
-			_particles_process(particles, frame.delta);
+			if (zero_time_scale)
+				_particles_process(particles, 0.0);
+			else
+				_particles_process(particles, frame.delta);
 		}
 
 		particle_update_list.remove(particle_update_list.first());
