@@ -9,7 +9,6 @@ env_lws = env_modules.Clone()
 
 thirdparty_dir = "#thirdparty/lws/"
 helper_dir = "win32helpers/"
-openssl_dir = "#thirdparty/openssl/"
 thirdparty_sources = [
     "client/client.c",
     "client/client-handshake.c",
@@ -42,6 +41,14 @@ thirdparty_sources = [
     "service.c",
     "ssl.c",
 
+    "mbedtls_wrapper/library/ssl_cert.c",
+    "mbedtls_wrapper/library/ssl_pkey.c",
+    "mbedtls_wrapper/library/ssl_stack.c",
+    "mbedtls_wrapper/library/ssl_methods.c",
+    "mbedtls_wrapper/library/ssl_lib.c",
+    "mbedtls_wrapper/library/ssl_x509.c",
+    "mbedtls_wrapper/platform/ssl_port.c",
+    "mbedtls_wrapper/platform/ssl_pm.c",
 ]
 
 if env_lws["platform"] == "android": # Builtin getifaddrs
@@ -61,8 +68,11 @@ else:
     env_lws.add_source_files(env.modules_sources, thirdparty_sources)
     env_lws.Append(CPPPATH=[thirdparty_dir])
 
-    if env['builtin_openssl']:
-        env_lws.Append(CPPPATH=[openssl_dir])
+    wrapper_includes = ["#thirdparty/lws/mbedtls_wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
+    env_lws.Append(CPPPATH=wrapper_includes)
+
+    mbedtls_includes = "#thirdparty/mbedtls/include"
+    env_lws.Append(CPPPATH=[mbedtls_includes])
 
     if env_lws["platform"] == "windows":
         env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])
