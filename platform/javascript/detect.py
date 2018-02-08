@@ -28,11 +28,11 @@ def get_flags():
     return [
         ('tools', False),
         ('module_theora_enabled', False),
-        # Disabling the OpenSSL module noticeably reduces file size.
+        # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
         # manages TLS.
-        #('module_openssl_enabled', False),
+        ('module_mbedtls_enabled', False),
     ]
 
 
