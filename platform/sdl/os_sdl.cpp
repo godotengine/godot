@@ -29,11 +29,11 @@
 /*************************************************************************/
 
 #include "os_sdl.h"
+#include "core/string_builder.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_sdl.h"
 #include "print_string.h"
-#include "core/string_builder.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -95,8 +95,6 @@ void OS_SDL::initialize_core() {
 }
 
 Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
-	long im_event_mask = 0;
 	last_button_state = 0;
 
 	sdl_window = NULL;
@@ -107,7 +105,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	last_timestamp = 0;
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
-	const SDL_RendererInfo* info = 0;
 
 	// ** SDL INIT ** //
 
@@ -116,14 +113,9 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		return ERR_UNAVAILABLE;
 	}
 
-	const char *err;
-	int sdl_displays = 0;
-	int event_base, error_base;
-
-	sdl_displays = SDL_GetNumVideoDisplays();
-	if (sdl_displays < 0) {
-		fprintf(stderr, "Could not list displays from SDL, Error: %s\n", SDL_GetError());
-	}
+	// ** ENABLE DRAG AND DROP SUPPORT ** //
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+	SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
 
 // maybe contextgl wants to be in charge of creating the window
 //print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
@@ -191,7 +183,7 @@ void OS_SDL::set_ime_position(const Point2 &p_pos) {
 	int y = static_cast<int>(p_pos.y);
 
 	// I'm not sure this is a good way to handle things.
-	if(x != 0 && y != 0) {
+	if (x != 0 && y != 0) {
 		SDL_StartTextInput();
 	} else {
 		SDL_StopTextInput();
@@ -209,9 +201,9 @@ void OS_SDL::set_ime_position(const Point2 &p_pos) {
 
 void OS_SDL::finalize() {
 
- 	if (main_loop)
- 		memdelete(main_loop);
- 	main_loop = NULL;
+	if (main_loop)
+		memdelete(main_loop);
+	main_loop = NULL;
 
 	/*
 	if (debugger_connection_console) {
@@ -232,7 +224,7 @@ void OS_SDL::finalize() {
 	memdelete(visual_server);
 	//memdelete(rasterizer);
 
- 	memdelete(power_manager);
+	memdelete(power_manager);
 
 #if defined(OPENGL_ENABLED)
 	memdelete(context_gl);
@@ -249,8 +241,10 @@ void OS_SDL::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == mouse_mode) return;
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE)	SDL_ShowCursor(SDL_ENABLE);
-	else if (mouse_mode == MOUSE_MODE_HIDDEN) SDL_ShowCursor(SDL_DISABLE);
+	if (mouse_mode == MOUSE_MODE_VISIBLE)
+		SDL_ShowCursor(SDL_ENABLE);
+	else if (mouse_mode == MOUSE_MODE_HIDDEN)
+		SDL_ShowCursor(SDL_DISABLE);
 
 	// Allow for undoing of previously made changes.
 	SDL_SetRelativeMouseMode(mouse_mode == MOUSE_MODE_CAPTURED ? SDL_TRUE : SDL_FALSE);
@@ -378,7 +372,7 @@ int OS_SDL::get_screen_dpi(int p_screen) const {
 
 Point2 OS_SDL::get_window_position() const {
 	int x, y;
-	
+
 	SDL_GetWindowPosition(sdl_window, &x, &y);
 
 	return Point2i(x, y);
@@ -449,9 +443,9 @@ void OS_SDL::set_window_maximized(bool p_enabled) {
 	}
 
 	if (is_window_maximize_allowed()) {
-	 	while (p_enabled && !is_window_maximized()) {
+		while (p_enabled && !is_window_maximized()) {
 			// Wait for effective resizing (so the GLX context is too).
-	 	}
+		}
 	}
 
 	maximized = p_enabled;
@@ -498,7 +492,7 @@ void OS_SDL::get_key_modifier_state(Ref<InputEventWithModifiers> state) {
 }
 
 unsigned int OS_SDL::get_mouse_button_state(uint32_t button_mask, bool refresh) {
-	if(refresh) button_mask = SDL_GetMouseState(NULL, NULL);
+	if (refresh) button_mask = SDL_GetMouseState(NULL, NULL);
 
 	unsigned int state = 0;
 
@@ -516,17 +510,18 @@ void OS_SDL::process_events() {
 	SDL_Event event;
 
 	do_mouse_warp = false;
- 	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
+	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
 	Size2i window_size;
 	SDL_Scancode current_scancode;
 	bool current_echo = false;
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
+	Vector<String> dropped_files;
 
 	while (SDL_PollEvent(&event)) {
 
-		if(event.type == SDL_WINDOWEVENT) {
+		if (event.type == SDL_WINDOWEVENT) {
 
-			switch(event.window.event) {
+			switch (event.window.event) {
 				case SDL_WINDOWEVENT_EXPOSED:
 					Main::force_redraw();
 					break;
@@ -565,73 +560,73 @@ void OS_SDL::process_events() {
 		}
 
 		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-				/* exit in case of a mouse button press */
-				last_timestamp = event.button.timestamp;
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
-					event.button.x = last_mouse_pos.x;
-					event.button.y = last_mouse_pos.y;
-				}
+			/* exit in case of a mouse button press */
+			last_timestamp = event.button.timestamp;
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				event.button.x = last_mouse_pos.x;
+				event.button.y = last_mouse_pos.y;
+			}
 
-				Ref<InputEventMouseButton> sc;
-				sc.instance();
+			Ref<InputEventMouseButton> sc;
+			sc.instance();
 
-				get_key_modifier_state(sc);
-				sc->set_button_mask(get_mouse_button_state(0, true));
-				sc->set_position(Vector2(event.button.x, event.button.y));
-				sc->set_global_position(sc->get_position());
-				sc->set_button_index(event.button.button);
+			get_key_modifier_state(sc);
+			sc->set_button_mask(get_mouse_button_state(0, true));
+			sc->set_position(Vector2(event.button.x, event.button.y));
+			sc->set_global_position(sc->get_position());
+			sc->set_button_index(event.button.button);
 
-				// Swapping buttons around?
-				if (sc->get_button_index() == 2)
-					sc->set_button_index(3);
-				else if (sc->get_button_index() == 3)
-					sc->set_button_index(2);
+			// Swapping buttons around?
+			if (sc->get_button_index() == 2)
+				sc->set_button_index(3);
+			else if (sc->get_button_index() == 3)
+				sc->set_button_index(2);
 
-				sc->set_pressed(event.button.state == SDL_PRESSED);
+			sc->set_pressed(event.button.state == SDL_PRESSED);
 
-				sc->set_doubleclick(event.button.clicks > 1);
+			sc->set_doubleclick(event.button.clicks > 1);
 
-				input->parse_input_event(sc);
-				continue;
+			input->parse_input_event(sc);
+			continue;
 		}
 
 		// Ahh, good ol' abstractions. :3
-		if(event.type == SDL_MOUSEMOTION) {
-				last_timestamp = event.motion.timestamp;
+		if (event.type == SDL_MOUSEMOTION) {
+			last_timestamp = event.motion.timestamp;
 
-				// Motion is also simple.
-				// A little hack is in order
-				// to be able to send relative motion events.
-				Point2i pos(event.motion.x, event.motion.y);
+			// Motion is also simple.
+			// A little hack is in order
+			// to be able to send relative motion events.
+			Point2i pos(event.motion.x, event.motion.y);
 
-				// TODO: Handle mouse warp. Is this needed in SDL?
+			// TODO: Handle mouse warp. Is this needed in SDL?
 
-				Point2i rel(event.motion.xrel, event.motion.yrel);
+			Point2i rel(event.motion.xrel, event.motion.yrel);
 
-				Ref<InputEventMouseMotion> mm;
-				mm.instance();
+			Ref<InputEventMouseMotion> mm;
+			mm.instance();
 
-				get_key_modifier_state(mm);
-				mm->set_button_mask(get_mouse_button_state(event.motion.state, false));
-				mm->set_position(pos);
-				mm->set_global_position(pos);
-				input->set_mouse_position(pos);
-				mm->set_speed(input->get_last_mouse_speed());
-				mm->set_relative(rel);
+			get_key_modifier_state(mm);
+			mm->set_button_mask(get_mouse_button_state(event.motion.state, false));
+			mm->set_position(pos);
+			mm->set_global_position(pos);
+			input->set_mouse_position(pos);
+			mm->set_speed(input->get_last_mouse_speed());
+			mm->set_relative(rel);
 
-				last_mouse_pos = pos;
+			last_mouse_pos = pos;
 
-				// Don't propagate the motion event unless we have focus
-				// this is so that the relative motion doesn't get messed up
-				// after we regain focus.
-				// FIXME: Not sure if we need this or not.
-				if (window_has_focus || !mouse_mode_grab)
-					input->parse_input_event(mm);
+			// Don't propagate the motion event unless we have focus
+			// this is so that the relative motion doesn't get messed up
+			// after we regain focus.
+			// FIXME: Not sure if we need this or not.
+			if (window_has_focus || !mouse_mode_grab)
+				input->parse_input_event(mm);
 
-				continue;
+			continue;
 		}
 
-		if(event.type == SDL_MOUSEWHEEL) {
+		if (event.type == SDL_MOUSEWHEEL) {
 			last_timestamp = event.wheel.timestamp;
 
 			uint32_t dir = event.wheel.direction;
@@ -641,15 +636,19 @@ void OS_SDL::process_events() {
 			int position_y = 0;
 			ButtonList button;
 
-			if(dir == SDL_MOUSEWHEEL_FLIPPED) {
+			if (dir == SDL_MOUSEWHEEL_FLIPPED) {
 				amount_x *= -1;
 				amount_y *= -1;
 			}
 
-			if(amount_y < 0) button = BUTTON_WHEEL_DOWN;
-			else if(amount_y > 0) button = BUTTON_WHEEL_UP;
-			else if(amount_x < 0) button = BUTTON_WHEEL_RIGHT;
-			else if(amount_x > 0) button = BUTTON_WHEEL_LEFT;
+			if (amount_y < 0)
+				button = BUTTON_WHEEL_DOWN;
+			else if (amount_y > 0)
+				button = BUTTON_WHEEL_UP;
+			else if (amount_x < 0)
+				button = BUTTON_WHEEL_RIGHT;
+			else if (amount_x > 0)
+				button = BUTTON_WHEEL_LEFT;
 
 			uint32_t button_state = SDL_GetMouseState(&position_x, &position_y);
 
@@ -670,7 +669,7 @@ void OS_SDL::process_events() {
 		}
 
 		// Outside of text input mode. Events created here won't have unicode mappings.
-		if(event.type == SDL_KEYDOWN && text_edit_mode == SDL_FALSE) {
+		if (event.type == SDL_KEYDOWN && text_edit_mode == SDL_FALSE) {
 			last_timestamp = event.key.timestamp;
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Scancode scancode = keysym.scancode;
@@ -690,7 +689,7 @@ void OS_SDL::process_events() {
 			k->set_echo(event.key.repeat > 0);
 
 			// Not quite sure how we should handle this to be honest.
-			if(non_printable_keycode != 0) {
+			if (non_printable_keycode != 0) {
 				k->set_scancode(non_printable_keycode);
 			} else {
 				k->set_scancode(scancode);
@@ -698,7 +697,7 @@ void OS_SDL::process_events() {
 
 			input->parse_input_event(k);
 			continue;
-		// If we're in text input mode.
+			// If we're in text input mode.
 		} else if (text_edit_mode == SDL_TRUE) {
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Keycode keycode = keysym.sym;
@@ -706,7 +705,7 @@ void OS_SDL::process_events() {
 			unsigned int non_printable_keycode = KeyMappingSDL::get_non_printable_keycode(keycode);
 
 			// If a modifier / non-printable key is hit, handle that directly
-			if(non_printable_keycode != 0) {
+			if (non_printable_keycode != 0) {
 				Ref<InputEventKey> k;
 				k.instance();
 				get_key_modifier_state(k);
@@ -715,14 +714,14 @@ void OS_SDL::process_events() {
 				k->set_echo(event.key.repeat > 0);
 				input->parse_input_event(k);
 				continue;
-			// Otherwise wait until TextInput events to emit the key event with unicode.
+				// Otherwise wait until TextInput events to emit the key event with unicode.
 			} else {
 				current_scancode = keysym.scancode;
 				current_echo = event.key.repeat > 0;
 			}
 		}
 
-		if(event.type == SDL_TEXTINPUT && text_edit_mode == SDL_TRUE) {
+		if (event.type == SDL_TEXTINPUT && text_edit_mode == SDL_TRUE) {
 			last_timestamp = event.text.timestamp;
 
 			String tmp;
@@ -735,7 +734,7 @@ void OS_SDL::process_events() {
 				get_key_modifier_state(k);
 				k->set_unicode(tmp[i]);
 				k->set_pressed(true);
-				if(current_scancode) k->set_scancode(current_scancode);
+				if (current_scancode) k->set_scancode(current_scancode);
 				k->set_echo(current_echo);
 
 				input->parse_input_event(k);
@@ -743,7 +742,7 @@ void OS_SDL::process_events() {
 			}
 		}
 
-		if(event.type == SDL_KEYUP) {
+		if (event.type == SDL_KEYUP) {
 			last_timestamp = event.key.timestamp;
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Scancode scancode = keysym.scancode;
@@ -765,10 +764,42 @@ void OS_SDL::process_events() {
 			input->parse_input_event(k);
 			continue;
 		}
+
+		if (event.type == SDL_DROPFILE) {
+
+			dropped_files.push_back(event.drop.file);
+			continue;
+		}
+
+		// Allow dragging and dropping text into text inputs.
+		if (event.type == SDL_DROPTEXT) {
+			last_timestamp = event.text.timestamp;
+
+			String tmp;
+			tmp.parse_utf8(event.drop.file);
+			for (int i = 0; i < tmp.length(); i++) {
+				if (tmp[i] == 0) continue;
+
+				Ref<InputEventKey> k;
+				k.instance();
+				get_key_modifier_state(k);
+				k->set_unicode(tmp[i]);
+				k->set_pressed(true);
+				k->set_echo(false);
+
+				input->parse_input_event(k);
+			}
+
+			continue;
+		}
 	}
 
 	if (do_mouse_warp) {
 		// Handle mouse warp here if needed. Not sure.
+	}
+
+	if (dropped_files.size() > 0) {
+		main_loop->drop_files(dropped_files);
 	}
 }
 
@@ -801,7 +832,7 @@ void OS_SDL::set_clipboard(const String &p_text) {
 
 String OS_SDL::get_clipboard() const {
 
-	StringBuilder *sb = new StringBuilder();	
+	StringBuilder *sb = new StringBuilder();
 	sb->append(SDL_GetClipboardText());
 
 	return sb->as_string();
@@ -927,7 +958,7 @@ void OS_SDL::set_cursor_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_shape == current_cursor) return;
 
-	SDL_Cursor* sdl_cursor;
+	SDL_Cursor *sdl_cursor;
 
 	if (cursors[p_shape] == NULL) {
 		SDL_SystemCursor sdl_cursor_id;
@@ -977,7 +1008,7 @@ void OS_SDL::set_cursor_shape(CursorShape p_shape) {
 
 		cursors[p_shape] = SDL_CreateSystemCursor(sdl_cursor_id);
 	}
-	
+
 	sdl_cursor = cursors[p_shape];
 	current_cursor = p_shape;
 
@@ -987,33 +1018,33 @@ void OS_SDL::set_cursor_shape(CursorShape p_shape) {
 // TODO: Not sure if this works..
 void OS_SDL::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
-	 	Ref<Texture> texture = p_cursor;
-	 	Ref<Image> img = texture->get_data()->duplicate();
+		Ref<Texture> texture = p_cursor;
+		Ref<Image> img = texture->get_data()->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
 
-	 	// FIXME: Should this fail with SDL?
-	 	ERR_FAIL_COND(w != 32 || h != 32);
+		// FIXME: Should this fail with SDL?
+		ERR_FAIL_COND(w != 32 || h != 32);
 
 		PoolVector<uint8_t>::Read r = img->get_data().read();
 
-		uint8_t *pr = const_cast<uint8_t*>(r.ptr());
+		uint8_t *pr = const_cast<uint8_t *>(r.ptr());
 
-		SDL_Surface* cursor_surface = SDL_CreateRGBSurfaceFrom(pr, w, h, 32, w*4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+		SDL_Surface *cursor_surface = SDL_CreateRGBSurfaceFrom(pr, w, h, 32, w * 4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 		if (cursor_surface == NULL) {
-		  fprintf(stderr, "Creating window icon surface failed: %s", SDL_GetError());
+			fprintf(stderr, "Creating window icon surface failed: %s", SDL_GetError());
 		}
 
-		SDL_Cursor* prev_cursor = cursors[p_shape];
+		SDL_Cursor *prev_cursor = cursors[p_shape];
 		cursors[p_shape] = SDL_CreateColorCursor(cursor_surface, p_hotspot.x, p_hotspot.y);
 		SDL_SetCursor(cursors[p_shape]);
 		// Don't free the previous cursor set for this shape until it is no longer in use.
-		if(prev_cursor) SDL_FreeCursor(cursors[p_shape]);
+		if (prev_cursor) SDL_FreeCursor(cursors[p_shape]);
 
- 		// FIXME: I can't tell from the SDL docs whether or not the surface should be freed after setting the cursor or not.
- 		// I assume yes based on the implementation of SetWindowIcon, but this should be tested.
+		// FIXME: I can't tell from the SDL docs whether or not the surface should be freed after setting the cursor or not.
+		// I assume yes based on the implementation of SetWindowIcon, but this should be tested.
 		SDL_FreeSurface(cursor_surface);
 	}
 }
@@ -1035,8 +1066,8 @@ void OS_SDL::swap_buffers() {
 
 void OS_SDL::alert(const String &p_alert, const String &p_title) {
 
-	const char* alert = p_alert.utf8().get_data();
-	const char* title = p_title.utf8().get_data();
+	const char *alert = p_alert.utf8().get_data();
+	const char *title = p_title.utf8().get_data();
 
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, title, alert, sdl_window);
 }
@@ -1052,11 +1083,11 @@ void OS_SDL::set_icon(const Ref<Image> &p_icon) {
 
 		PoolVector<uint8_t>::Read r = img->get_data().read();
 
-		uint8_t *pr = const_cast<uint8_t*>(r.ptr());
+		uint8_t *pr = const_cast<uint8_t *>(r.ptr());
 
-		SDL_Surface* icon_surface = SDL_CreateRGBSurfaceFrom(pr, w, h, 32, w*4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+		SDL_Surface *icon_surface = SDL_CreateRGBSurfaceFrom(pr, w, h, 32, w * 4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 		if (icon_surface == NULL) {
-		  fprintf(stderr, "Creating window icon surface failed: %s", SDL_GetError());
+			fprintf(stderr, "Creating window icon surface failed: %s", SDL_GetError());
 		}
 
 		SDL_SetWindowIcon(sdl_window, icon_surface);
@@ -1229,49 +1260,44 @@ OS::LatinKeyboardVariant OS_SDL::get_latin_keyboard_variant() const {
 	};
 
 	if (
-		keysFromScanCodes[0] == SDLK_q &&
-		keysFromScanCodes[1] == SDLK_w &&
-		keysFromScanCodes[2] == SDLK_e &&
-		keysFromScanCodes[3] == SDLK_r &&
-		keysFromScanCodes[4] == SDLK_t &&
-		keysFromScanCodes[5] == SDLK_z
-	) return LATIN_KEYBOARD_QWERTZ;
+			keysFromScanCodes[0] == SDLK_q &&
+			keysFromScanCodes[1] == SDLK_w &&
+			keysFromScanCodes[2] == SDLK_e &&
+			keysFromScanCodes[3] == SDLK_r &&
+			keysFromScanCodes[4] == SDLK_t &&
+			keysFromScanCodes[5] == SDLK_z) return LATIN_KEYBOARD_QWERTZ;
 
 	if (
-		keysFromScanCodes[0] == SDLK_a &&
-		keysFromScanCodes[1] == SDLK_z &&
-		keysFromScanCodes[2] == SDLK_e &&
-		keysFromScanCodes[3] == SDLK_r &&
-		keysFromScanCodes[4] == SDLK_t &&
-		keysFromScanCodes[5] == SDLK_y
-	) return LATIN_KEYBOARD_AZERTY;
+			keysFromScanCodes[0] == SDLK_a &&
+			keysFromScanCodes[1] == SDLK_z &&
+			keysFromScanCodes[2] == SDLK_e &&
+			keysFromScanCodes[3] == SDLK_r &&
+			keysFromScanCodes[4] == SDLK_t &&
+			keysFromScanCodes[5] == SDLK_y) return LATIN_KEYBOARD_AZERTY;
 
 	if (
-		keysFromScanCodes[0] == SDLK_QUOTE &&
-		keysFromScanCodes[1] == SDLK_COMMA &&
-		keysFromScanCodes[2] == SDLK_PERIOD &&
-		keysFromScanCodes[3] == SDLK_p &&
-		keysFromScanCodes[4] == SDLK_y &&
-		keysFromScanCodes[5] == SDLK_f
-	) return LATIN_KEYBOARD_DVORAK;
+			keysFromScanCodes[0] == SDLK_QUOTE &&
+			keysFromScanCodes[1] == SDLK_COMMA &&
+			keysFromScanCodes[2] == SDLK_PERIOD &&
+			keysFromScanCodes[3] == SDLK_p &&
+			keysFromScanCodes[4] == SDLK_y &&
+			keysFromScanCodes[5] == SDLK_f) return LATIN_KEYBOARD_DVORAK;
 
 	if (
-		keysFromScanCodes[0] == SDLK_x &&
-		keysFromScanCodes[1] == SDLK_v &&
-		keysFromScanCodes[2] == SDLK_l &&
-		keysFromScanCodes[3] == SDLK_c &&
-		keysFromScanCodes[4] == SDLK_w &&
-		keysFromScanCodes[5] == SDLK_k
-	) return LATIN_KEYBOARD_NEO;
+			keysFromScanCodes[0] == SDLK_x &&
+			keysFromScanCodes[1] == SDLK_v &&
+			keysFromScanCodes[2] == SDLK_l &&
+			keysFromScanCodes[3] == SDLK_c &&
+			keysFromScanCodes[4] == SDLK_w &&
+			keysFromScanCodes[5] == SDLK_k) return LATIN_KEYBOARD_NEO;
 
 	if (
-		keysFromScanCodes[0] == SDLK_q &&
-		keysFromScanCodes[1] == SDLK_w &&
-		keysFromScanCodes[2] == SDLK_f &&
-		keysFromScanCodes[3] == SDLK_p &&
-		keysFromScanCodes[4] == SDLK_g &&
-		keysFromScanCodes[5] == SDLK_j
-	) return LATIN_KEYBOARD_COLEMAK;
+			keysFromScanCodes[0] == SDLK_q &&
+			keysFromScanCodes[1] == SDLK_w &&
+			keysFromScanCodes[2] == SDLK_f &&
+			keysFromScanCodes[3] == SDLK_p &&
+			keysFromScanCodes[4] == SDLK_g &&
+			keysFromScanCodes[5] == SDLK_j) return LATIN_KEYBOARD_COLEMAK;
 
 	return LATIN_KEYBOARD_QWERTY;
 }
