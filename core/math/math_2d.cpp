@@ -100,11 +100,6 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 
 Vector2 Vector2::floor() const {
 
-	return Vector2(Math::floor(x), Math::floor(y));
-}
-
-Vector2 Vector2::ceil() const {
-
 	return Vector2(Math::ceil(x), Math::ceil(y));
 }
 
