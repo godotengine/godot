@@ -24,7 +24,12 @@
 #include "esp_log.h"
 */
 #include "string.h"
+
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include "malloc.h"
+#endif
 
 void *ssl_mem_zalloc(size_t size);
 
