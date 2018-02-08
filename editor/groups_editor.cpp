@@ -286,9 +286,6 @@ void GroupDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			add_button->set_icon(get_icon("Forward", "EditorIcons"));
 			remove_button->set_icon(get_icon("Back", "EditorIcons"));
-
-			add_filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
-			remove_filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -444,7 +441,6 @@ GroupDialog::GroupDialog() {
 	set_title("Group Editor");
 	get_cancel()->hide();
 	set_as_toplevel(true);
-	set_resizable(true);
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
