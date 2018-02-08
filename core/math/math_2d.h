@@ -104,7 +104,6 @@ struct Vector2 {
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
-	Vector2 cross(real_t p_other) const;
 	Vector2 project(const Vector2 &p_vec) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
