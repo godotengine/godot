@@ -499,6 +499,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	return YES;
 }
 
+- (BOOL)mouseDownCanMoveWindow {
+	return YES;
+}
+
 - (BOOL)acceptsFirstResponder {
 	return YES;
 }
@@ -532,10 +536,13 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
+
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 	} else {
 		mouse_down_control = false;
-		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		if (OS_OSX::singleton->drag_mode != OS::DRAG_MODE_MOVE) {
+			_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		}
 	}
 }
 
@@ -654,7 +661,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	trackingArea = [[NSTrackingArea alloc]
 			initWithRect:[self bounds]
 				 options:options
-				   owner:self
+					 owner:self
 				userInfo:nil];
 
 	[self addTrackingArea:trackingArea];
@@ -953,6 +960,10 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 	return YES;
 }
 
+- (BOOL)mouseDownCanMoveWindow {
+	return YES;
+}
+
 @end
 
 void OS_OSX::set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {
@@ -1032,9 +1043,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	window_object = [[GodotWindow alloc]
 			initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
-					  styleMask:styleMask
+						styleMask:styleMask
 						backing:NSBackingStoreBuffered
-						  defer:NO];
+							defer:NO];
 
 	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
@@ -1354,13 +1365,13 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:NULL
-							  pixelsWide:image->get_width()
-							  pixelsHigh:image->get_height()
-						   bitsPerSample:8
+								pixelsWide:image->get_width()
+								pixelsHigh:image->get_height()
+							 bitsPerSample:8
 						 samplesPerPixel:4
 								hasAlpha:YES
 								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
+							colorSpaceName:NSDeviceRGBColorSpace
 							 bytesPerRow:image->get_width() * 4
 							bitsPerPixel:32] autorelease];
 
@@ -1452,13 +1463,13 @@ void OS_OSX::set_icon(const Ref<Image> &p_icon) {
 	img->convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
 			initWithBitmapDataPlanes:NULL
-						  pixelsWide:img->get_width()
-						  pixelsHigh:img->get_height()
-					   bitsPerSample:8
+							pixelsWide:img->get_width()
+							pixelsHigh:img->get_height()
+						 bitsPerSample:8
 					 samplesPerPixel:4
 							hasAlpha:YES
 							isPlanar:NO
-					  colorSpaceName:NSDeviceRGBColorSpace
+						colorSpaceName:NSDeviceRGBColorSpace
 						 bytesPerRow:img->get_width() * 4
 						bitsPerPixel:32] autorelease];
 	ERR_FAIL_COND(imgrep == nil);
@@ -1578,7 +1589,7 @@ void OS_OSX::set_clipboard(const String &p_text) {
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 	[pasteboard declareTypes:types owner:nil];
 	[pasteboard setString:[NSString stringWithUTF8String:p_text.utf8().get_data()]
-				  forType:NSStringPboardType];
+					forType:NSStringPboardType];
 }
 
 String OS_OSX::get_clipboard() const {
@@ -2075,8 +2086,8 @@ void OS_OSX::process_events() {
 		NSEvent *event = [NSApp
 				nextEventMatchingMask:NSEventMaskAny
 							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+								 inMode:NSDefaultRunLoopMode
+								dequeue:YES];
 
 		if (event == nil)
 			break;
@@ -2195,6 +2206,20 @@ OS::MouseMode OS_OSX::get_mouse_mode() const {
 	return mouse_mode;
 }
 
+void OS_OSX::set_drag_mode(DragMode p_drag_mode) {
+	if (p_drag_mode == DRAG_MODE_MOVE) {
+		[window_object setMovableByWindowBackground:YES];
+	} else {
+		[window_object setMovableByWindowBackground:NO];
+	}
+
+	drag_mode = p_drag_mode;
+}
+
+OS::DragMode OS_OSX::get_drag_mode() const {
+	return drag_mode;
+}
+
 String OS_OSX::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
@@ -2247,6 +2272,7 @@ OS_OSX::OS_OSX() {
 
 	key_event_pos = 0;
 	mouse_mode = OS::MOUSE_MODE_VISIBLE;
+	drag_mode = OS::DRAG_MODE_NONE;
 	main_loop = NULL;
 	singleton = this;
 	im_position = Point2();
@@ -2344,8 +2370,8 @@ OS_OSX::OS_OSX() {
 		NSEvent *event = [NSApp
 				nextEventMatchingMask:NSEventMaskAny
 							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+								 inMode:NSDefaultRunLoopMode
+								dequeue:YES];
 
 		if (event == nil)
 			break;

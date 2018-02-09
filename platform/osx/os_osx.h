@@ -102,6 +102,7 @@ public:
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX] = { NULL };
 	MouseMode mouse_mode;
+	DragMode drag_mode;
 
 	String title;
 	bool minimized;
@@ -242,6 +243,10 @@ public:
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+
+	void set_drag_mode(DragMode p_drag_mode);
+	OS::DragMode get_drag_mode() const;
+	bool process_drag_mode(NSEvent *event);
 
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
