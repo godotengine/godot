@@ -5823,23 +5823,6 @@
             ]
           },
           {
-            "name": "godot_nativescript_set_global_type_tag",
-            "return_type": "void",
-            "arguments": [
-              ["int", "p_idx"],
-              ["const char *", "p_name"],
-              ["const void *", "p_type_tag"]
-            ]
-          },
-          {
-            "name": "godot_nativescript_get_global_type_tag",
-            "return_type": "const void *",
-            "arguments": [
-              ["int", "p_idx"],
-              ["const char *", "p_name"]
-            ]
-          },
-          {
             "name": "godot_nativescript_set_type_tag",
             "return_type": "void",
             "arguments": [
@@ -5967,29 +5950,6 @@
       "version": {
         "major": 1,
         "minor": 0
-      },
-      "next": null,
-      "api": [
-        {
-          "name": "godot_android_get_env",
-          "return_type": "JNIEnv*",
-          "arguments": [
-          ]
-        },
-        {
-          "name": "godot_android_get_activity",
-          "return_type": "jobject",
-          "arguments": [
-          ]
-        }
-      ]
-    },
-    {
-      "name": "arvr",
-      "type": "ARVR",
-      "version": {
-        "major": 1,
-        "minor": 1
       },
       "next": null,
       "api": [

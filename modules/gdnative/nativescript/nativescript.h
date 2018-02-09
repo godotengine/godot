@@ -244,8 +244,6 @@ private:
 	Vector<Pair<bool, godot_instance_binding_functions> > binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
-	Map<int, HashMap<StringName, const void *> > global_type_tags;
-
 public:
 	// These two maps must only be touched on the main thread
 	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
@@ -329,9 +327,6 @@ public:
 
 	virtual void *alloc_instance_binding_data(Object *p_object);
 	virtual void free_instance_binding_data(void *p_data);
-
-	void set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag);
-	const void *get_global_type_tag(int p_idx, StringName p_class_name) const;
 };
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {

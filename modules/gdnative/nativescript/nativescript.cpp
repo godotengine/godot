@@ -932,6 +932,18 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			gdn = E->get();
 		}
 
+		if (gdn.is_valid() && gdn->get_library().is_valid()) {
+			Ref<GDNativeLibrary> lib = gdn->get_library();
+			void *terminate_fn;
+			Error err = gdn->get_symbol(lib->get_symbol_prefix() + _terminate_call_name, terminate_fn, true);
+
+			if (err == OK) {
+				void (*terminate)(void *) = (void (*)(void *))terminate_fn;
+
+				terminate((void *)&lib_path);
+			}
+		}
+
 		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
 
 			// free property stuff first
@@ -1161,8 +1173,8 @@ int NativeScriptLanguage::register_binding_functions(godot_instance_binding_func
 	}
 
 	// set the functions
-	binding_functions.write[idx].first = true;
-	binding_functions.write[idx].second = p_binding_functions;
+	binding_functions[idx].first = true;
+	binding_functions[idx].second = p_binding_functions;
 
 	return idx;
 }
@@ -1177,7 +1189,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
-	binding_functions.write[p_idx].first = false;
+	binding_functions[p_idx].first = false;
 
 	if (binding_functions[p_idx].second.free_func)
 		binding_functions[p_idx].second.free_func(binding_functions[p_idx].second.data);
@@ -1203,16 +1215,13 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		binding_data->resize(p_idx + 1);
 
 		for (int i = old_size; i <= p_idx; i++) {
-			(*binding_data).write[i] = NULL;
+			(*binding_data)[i] = NULL;
 		}
 	}
 
 	if (!(*binding_data)[p_idx]) {
-
-		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
-
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
+		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1225,7 +1234,7 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_data->resize(binding_functions.size());
 
 	for (int i = 0; i < binding_functions.size(); i++) {
-		(*binding_data).write[i] = NULL;
+		(*binding_data)[i] = NULL;
 	}
 
 	binding_instances.insert(binding_data);
@@ -1252,27 +1261,6 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	binding_instances.erase(&binding_data);
 
 	delete &binding_data;
-}
-
-void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
-	if (!global_type_tags.has(p_idx)) {
-		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
-	}
-
-	HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
-
-	tags.set(p_class_name, p_type_tag);
-}
-
-const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_class_name) const {
-	if (!global_type_tags.has(p_idx))
-		return NULL;
-
-	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
-
-	const void *tag = tags.get(p_class_name);
-
-	return tag;
 }
 
 #ifndef NO_THREADS
