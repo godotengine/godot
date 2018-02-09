@@ -188,6 +188,16 @@ int _OS::get_mouse_button_state() const {
 	return OS::get_singleton()->get_mouse_button_state();
 }
 
+void _OS::set_drag_mode(DragMode p_drag_mode) {
+
+	OS::get_singleton()->set_drag_mode(OS::DragMode(p_drag_mode));
+}
+
+_OS::DragMode _OS::get_drag_mode() const {
+
+	return DragMode(OS::get_singleton()->get_drag_mode());
+}
+
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
@@ -1032,6 +1042,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"), &_OS::has_touchscreen_ui_hint);
 
 	ClassDB::bind_method(D_METHOD("set_window_title", "title"), &_OS::set_window_title);
+	ClassDB::bind_method(D_METHOD("set_drag_mode", "drag_mode"), &_OS::set_drag_mode);
+	ClassDB::bind_method(D_METHOD("get_drag_mode"), &_OS::get_drag_mode);
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
@@ -1137,6 +1149,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor"), "set_screen_orientation", "get_screen_orientation");
 	ADD_GROUP("Window", "window_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "drag_mode", PROPERTY_HINT_ENUM, "None,Move,Resize Top,Resize Left,Resize Bottom,Resize Right,Resize Top Left,Resize Top Right,Resize Bottom Right,Resize Bottom Left"), "set_drag_mode", "get_drag_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_fullscreen"), "set_window_fullscreen", "is_window_fullscreen");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_maximized"), "set_window_maximized", "is_window_maximized");
@@ -1165,6 +1178,17 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONTH_OCTOBER);
 	BIND_ENUM_CONSTANT(MONTH_NOVEMBER);
 	BIND_ENUM_CONSTANT(MONTH_DECEMBER);
+
+	BIND_ENUM_CONSTANT(DRAG_MODE_NONE);
+	BIND_ENUM_CONSTANT(DRAG_MODE_MOVE);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_TOP);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_RIGHT);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_BOTTOM);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_LEFT);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_TOPLEFT);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_TOPRIGHT);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_BOTTOMRIGHT);
+	BIND_ENUM_CONSTANT(DRAG_MODE_RESIZE_BOTTOMLEFT);
 
 	BIND_ENUM_CONSTANT(SCREEN_ORIENTATION_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_ORIENTATION_PORTRAIT);

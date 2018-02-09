@@ -218,6 +218,13 @@
 				Returns the current state of the device regarding battery and power. See [code]POWERSTATE_*[/code] constants.
 			</description>
 		</method>
+		<method name="get_drag_mode">
+			<return type="int" enum="OS.DragMode">
+			</return>
+			<description>
+				Returns the current window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window. Only valid on the [code]X11[/code] paltform at the moment. See [code]DRAG_MODE_*[/code] constants.
+			</description>
+		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -559,6 +566,15 @@
 				Sets the game's icon.
 			</description>
 		</method>
+		<method name="set_drag_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="drag_mode" type="int" enum="OS.DragMode">
+			</argument>
+			<description>
+				Sets the window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Useful for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] paltform at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
+			</description>
+		</method>
 		<method name="set_ime_position">
 			<return type="void">
 			</return>
@@ -654,6 +670,9 @@
 		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size">
 			The size of the window (without counting window manager decorations).
 		</member>
+		<member name="drag_mode" type="int" enum="OS.DragMode" setter="set_drag_mode" getter="get_drag_mode">
+			The window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Used for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] paltform at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
+		</member>
 	</members>
 	<constants>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
@@ -733,6 +752,39 @@
 		<constant name="POWERSTATE_CHARGING" value="3" enum="PowerState">
 		</constant>
 		<constant name="POWERSTATE_CHARGED" value="4" enum="PowerState">
+		</constant>
+		<constant name="DRAG_MODE_NONE" value="0" enum="DragMode">
+			Tells the window manager to ignore the click / drag and passes it to your game (default).
+			While any state other than [code]DRAG_MODE_NONE[/code] is active, mouse events will not be passed to your game.
+			[code]DRAG_MODE_NONE[/code] is the only valid mode when the mouse is constrained or grabbed by your window.
+			Once the window manager has completed an action other than [code]DRAG_MODE_NONE[/code] the mode will be automatically reset to [code]DRAG_MODE_NONE[/code].
+		</constant>
+		<constant name="DRAG_MODE_MOVE" value="1" enum="DragMode">
+			Tells the window manger to start moving your window.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_TOP" value="2" enum="DragMode">
+			Tells the window manger to resize your window from the top.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_RIGHT" value="3" enum="DragMode">
+			Tells the window manger to resize your window from the right.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_BOTTOM" value="4" enum="DragMode">
+			Tells the window manger to resize your window from the bottom.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_LEFT" value="5" enum="DragMode">
+			Tells the window manger to resize your window from the left.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_TOPLEFT" value="6" enum="DragMode">
+			Tells the window manger to resize your window from the top-left corner.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_TOPRIGHT" value="7" enum="DragMode">
+			Tells the window manger to resize your window from the top-right corner.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_BOTTOMRIGHT" value="8" enum="DragMode">
+			Tells the window manger to resize your window from the bottom-right corner.
+		</constant>
+		<constant name="DRAG_MODE_RESIZE_BOTTOMLEFT" value="9" enum="DragMode">
+			Tells the window manger to resize your window from the bottom-left corner.
 		</constant>
 	</constants>
 </class>

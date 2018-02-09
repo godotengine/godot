@@ -161,6 +161,22 @@ public:
 	virtual void set_mouse_mode(MouseMode p_mode);
 	virtual MouseMode get_mouse_mode() const;
 
+	enum DragMode {
+		DRAG_MODE_NONE,
+		DRAG_MODE_MOVE,
+		DRAG_MODE_RESIZE_TOP,
+		DRAG_MODE_RESIZE_RIGHT,
+		DRAG_MODE_RESIZE_BOTTOM,
+		DRAG_MODE_RESIZE_LEFT,
+		DRAG_MODE_RESIZE_TOPLEFT,
+		DRAG_MODE_RESIZE_TOPRIGHT,
+		DRAG_MODE_RESIZE_BOTTOMRIGHT,
+		DRAG_MODE_RESIZE_BOTTOMLEFT
+	};
+
+	virtual void set_drag_mode(DragMode p_drag_mode);
+	virtual DragMode get_drag_mode() const;
+
 	virtual void warp_mouse_position(const Point2 &p_to) {}
 	virtual Point2 get_mouse_position() const = 0;
 	virtual int get_mouse_button_state() const = 0;

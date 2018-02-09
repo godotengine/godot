@@ -508,6 +508,9 @@ void OS::native_video_stop(){
 void OS::set_mouse_mode(MouseMode p_mode) {
 }
 
+void OS::set_drag_mode(DragMode p_drag_mode) {
+}
+
 bool OS::can_use_threads() const {
 
 #ifdef NO_THREADS
@@ -521,6 +524,8 @@ OS::MouseMode OS::get_mouse_mode() const {
 
 	return MOUSE_MODE_VISIBLE;
 }
+
+OS::DragMode OS::get_drag_mode() const { return DRAG_MODE_NONE; }
 
 OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
 

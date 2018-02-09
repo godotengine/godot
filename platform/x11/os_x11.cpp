@@ -55,6 +55,15 @@
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
 #define _NET_WM_STATE_TOGGLE 2L // toggle property
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT 0
+#define _NET_WM_MOVERESIZE_SIZE_TOP 1
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT 2
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT 3
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT 4
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM 5
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT 6
+#define _NET_WM_MOVERESIZE_SIZE_LEFT 7
+#define _NET_WM_MOVERESIZE_MOVE 8
 
 #include "main/main.h"
 
@@ -341,18 +350,18 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	XSetWindowAttributes new_attr;
 
 	new_attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
-						  ButtonReleaseMask | EnterWindowMask |
-						  LeaveWindowMask | PointerMotionMask |
-						  Button1MotionMask |
-						  Button2MotionMask | Button3MotionMask |
-						  Button4MotionMask | Button5MotionMask |
-						  ButtonMotionMask | KeymapStateMask |
-						  ExposureMask | VisibilityChangeMask |
-						  StructureNotifyMask |
-						  SubstructureNotifyMask | SubstructureRedirectMask |
-						  FocusChangeMask | PropertyChangeMask |
-						  ColormapChangeMask | OwnerGrabButtonMask |
-						  im_event_mask;
+							ButtonReleaseMask | EnterWindowMask |
+							LeaveWindowMask | PointerMotionMask |
+							Button1MotionMask |
+							Button2MotionMask | Button3MotionMask |
+							Button4MotionMask | Button5MotionMask |
+							ButtonMotionMask | KeymapStateMask |
+							ExposureMask | VisibilityChangeMask |
+							StructureNotifyMask |
+							SubstructureNotifyMask | SubstructureRedirectMask |
+							FocusChangeMask | PropertyChangeMask |
+							ColormapChangeMask | OwnerGrabButtonMask |
+							im_event_mask;
 
 	XChangeWindowAttributes(x11_display, x11_window, CWEventMask, &new_attr);
 
@@ -689,6 +698,14 @@ int OS_X11::get_mouse_button_state() const {
 
 Point2 OS_X11::get_mouse_position() const {
 	return last_mouse_pos;
+}
+
+void OS_X11::set_drag_mode(DragMode p_drag_mode) {
+	drag_mode = p_drag_mode;
+}
+
+OS::DragMode OS_X11::get_drag_mode() const {
+	return drag_mode;
 }
 
 void OS_X11::set_window_title(const String &p_title) {
@@ -1718,7 +1735,14 @@ void OS_X11::process_xevents() {
 			case ConfigureNotify:
 				_window_changed(&event);
 				break;
-			case ButtonPress:
+			case ButtonPress: {
+				if (event.xbutton.button == 1) {
+					// If the WM has taken over drag control, don't send any events to the
+					// game.
+					if (process_drag_mode(&event))
+						break;
+				}
+			}
 			case ButtonRelease: {
 
 				/* exit in case of a mouse button press */
@@ -2027,6 +2051,67 @@ void OS_X11::process_xevents() {
 		printf("Win: %d,%d\n", win_x, win_y);
 		*/
 	}
+}
+
+// Handle native window manager drag modes. (Move, Resize, etc.)
+bool OS_X11::process_drag_mode(XEvent *event) {
+
+	if (drag_mode == DRAG_MODE_NONE || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED)
+		return false;
+
+	int resize_direction = -1;
+
+	switch (drag_mode) {
+	case DRAG_MODE_MOVE:
+		resize_direction = _NET_WM_MOVERESIZE_MOVE;
+		break;
+	case DRAG_MODE_RESIZE_TOP:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_TOP;
+		break;
+	case DRAG_MODE_RESIZE_RIGHT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_RIGHT;
+		break;
+	case DRAG_MODE_RESIZE_BOTTOM:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_BOTTOM;
+		break;
+	case DRAG_MODE_RESIZE_LEFT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_LEFT;
+		break;
+	case DRAG_MODE_RESIZE_TOPLEFT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_TOPLEFT;
+		break;
+	case DRAG_MODE_RESIZE_TOPRIGHT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
+		break;
+	case DRAG_MODE_RESIZE_BOTTOMRIGHT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
+		break;
+	case DRAG_MODE_RESIZE_BOTTOMLEFT:
+		resize_direction = _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
+		break;
+	default:
+		return false;
+	}
+
+	XEvent evt;
+	XUngrabPointer(x11_display, 0L);
+	XFlush(x11_display);
+
+	evt.xclient.type = ClientMessage;
+	evt.xclient.window = x11_window;
+	evt.xclient.message_type = XInternAtom(x11_display, "_NET_WM_MOVERESIZE", True);
+	evt.xclient.format = 32;
+	evt.xclient.data.l[0] = event->xbutton.x_root;
+	evt.xclient.data.l[1] = event->xbutton.y_root;
+	evt.xclient.data.l[2] = resize_direction;
+	evt.xclient.data.l[3] = Button1;
+	evt.xclient.data.l[4] = 0;
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
+
+	XSync(x11_display, 0);
+
+	set_drag_mode(DRAG_MODE_NONE);
+	return true;
 }
 
 MainLoop *OS_X11::get_main_loop() const {

@@ -134,6 +134,7 @@ class OS_X11 : public OS_Unix {
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 
 	MouseMode mouse_mode;
+	DragMode drag_mode;
 	Point2i center;
 
 	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
@@ -211,6 +212,10 @@ public:
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+
+	virtual void set_drag_mode(DragMode p_drag_mode);
+	virtual OS::DragMode get_drag_mode() const;
+	bool process_drag_mode(XEvent *event);
 
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
