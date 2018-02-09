@@ -68,6 +68,11 @@ void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &NativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_library"), &NativeScript::get_library);
 
+	ClassDB::bind_method(D_METHOD("get_class_documentation"), &NativeScript::get_class_documentation);
+	ClassDB::bind_method(D_METHOD("get_method_documentation", "method"), &NativeScript::get_method_documentation);
+	ClassDB::bind_method(D_METHOD("get_signal_documentation", "signal_name"), &NativeScript::get_signal_documentation);
+	ClassDB::bind_method(D_METHOD("get_property_documentation", "path"), &NativeScript::get_property_documentation);
+
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
 
@@ -373,6 +378,86 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+String NativeScript::get_class_documentation() const {
+	NativeScriptDesc *script_data = get_script_desc();
+
+	if (!script_data) {
+		ERR_EXPLAIN("Attempt to get class documentation on invalid NativeScript");
+		ERR_FAIL_V("");
+	}
+
+	return script_data->documentation;
+}
+
+String NativeScript::get_method_documentation(const StringName &p_method) const {
+	NativeScriptDesc *script_data = get_script_desc();
+
+	if (!script_data) {
+		ERR_EXPLAIN("Attempt to get method documentation on invalid NativeScript");
+		ERR_FAIL_V("");
+	}
+
+	while (script_data) {
+
+		Map<StringName, NativeScriptDesc::Method>::Element *method = script_data->methods.find(p_method);
+
+		if (method) {
+			return method->get().documentation;
+		}
+
+		script_data = script_data->base_data;
+	}
+
+	ERR_EXPLAIN("Attempt to get method documentation for non-existent method");
+	ERR_FAIL_V("");
+}
+
+String NativeScript::get_signal_documentation(const StringName &p_signal_name) const {
+	NativeScriptDesc *script_data = get_script_desc();
+
+	if (!script_data) {
+		ERR_EXPLAIN("Attempt to get signal documentation on invalid NativeScript");
+		ERR_FAIL_V("");
+	}
+
+	while (script_data) {
+
+		Map<StringName, NativeScriptDesc::Signal>::Element *signal = script_data->signals_.find(p_signal_name);
+
+		if (signal) {
+			return signal->get().documentation;
+		}
+
+		script_data = script_data->base_data;
+	}
+
+	ERR_EXPLAIN("Attempt to get signal documentation for non-existent signal");
+	ERR_FAIL_V("");
+}
+
+String NativeScript::get_property_documentation(const StringName &p_path) const {
+	NativeScriptDesc *script_data = get_script_desc();
+
+	if (!script_data) {
+		ERR_EXPLAIN("Attempt to get property documentation on invalid NativeScript");
+		ERR_FAIL_V("");
+	}
+
+	while (script_data) {
+
+		OrderedHashMap<StringName, NativeScriptDesc::Property>::Element property = script_data->properties.find(p_path);
+
+		if (property) {
+			return property.get().documentation;
+		}
+
+		script_data = script_data->base_data;
+	}
+
+	ERR_EXPLAIN("Attempt to get property documentation for non-existent signal");
+	ERR_FAIL_V("");
+}
+
 Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	if (lib_path.empty() || class_name.empty() || library.is_null()) {
@@ -610,7 +695,7 @@ Variant::Type NativeScriptInstance::get_property_type(const StringName &p_name, 
 }
 
 void NativeScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
-	script->get_method_list(p_list);
+	script->get_script_method_list(p_list);
 }
 
 bool NativeScriptInstance::has_method(const StringName &p_method) const {
@@ -824,6 +909,25 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			}
 		}
 
+		Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
+		Ref<GDNative> gdn;
+
+		if (E) {
+			gdn = E->get();
+		}
+
+		if (gdn.is_valid() && gdn->get_library().is_valid()) {
+			Ref<GDNativeLibrary> lib = gdn->get_library();
+			void *terminate_fn;
+			Error err = gdn->get_symbol(lib->get_symbol_prefix() + _terminate_call_name, terminate_fn, true);
+
+			if (err == OK) {
+				void (*terminate)(void *) = (void (*)(void *))terminate_fn;
+
+				terminate((void *)&lib_path);
+			}
+		}
+
 		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
 
 			// free property stuff first
@@ -1009,6 +1113,116 @@ int NativeScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_a
 
 int NativeScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
 	return 0;
+}
+
+int NativeScriptLanguage::register_binding_functions(godot_instance_binding_functions p_binding_functions) {
+
+	// find index
+
+	int idx = -1;
+
+	for (int i = 0; i < binding_functions.size(); i++) {
+		if (!binding_functions[i].first) {
+			// free, we'll take it
+			idx = i;
+			break;
+		}
+	}
+
+	if (idx == -1) {
+		idx = binding_functions.size();
+		binding_functions.resize(idx + 1);
+	}
+
+	// set the functions
+	binding_functions[idx].first = true;
+	binding_functions[idx].second = p_binding_functions;
+
+	return idx;
+}
+
+void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, binding_functions.size());
+
+	for (Set<Vector<void *> *>::Element *E = binding_instances.front(); E; E = E->next()) {
+		Vector<void *> &binding_data = *E->get();
+
+		if (binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
+			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
+	}
+
+	binding_functions[p_idx].first = false;
+
+	if (binding_functions[p_idx].second.free_func)
+		binding_functions[p_idx].second.free_func(binding_functions[p_idx].second.data);
+}
+
+void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_object) {
+	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), NULL);
+
+	if (!binding_functions[p_idx].first) {
+		ERR_EXPLAIN("Tried to get binding data for a nativescript binding that does not exist");
+		ERR_FAIL_V(NULL);
+	}
+
+	Vector<void *> *binding_data = (Vector<void *> *)p_object->get_script_instance_binding(lang_idx);
+
+	if (!binding_data)
+		return NULL; // should never happen.
+
+	if (binding_data->size() <= p_idx) {
+		// okay, add new elements here.
+		int old_size = binding_data->size();
+
+		binding_data->resize(p_idx + 1);
+
+		for (int i = old_size; i <= p_idx; i++) {
+			(*binding_data)[i] = NULL;
+		}
+	}
+
+	if (!(*binding_data)[p_idx]) {
+		// no binding data yet, soooooo alloc new one \o/
+		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, (godot_object *)p_object);
+	}
+
+	return (*binding_data)[p_idx];
+}
+
+void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
+
+	Vector<void *> *binding_data = new Vector<void *>;
+
+	binding_data->resize(binding_functions.size());
+
+	for (int i = 0; i < binding_functions.size(); i++) {
+		(*binding_data)[i] = NULL;
+	}
+
+	binding_instances.insert(binding_data);
+
+	return (void *)binding_data;
+}
+
+void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
+
+	if (!p_data)
+		return;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)p_data;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (binding_functions[i].first && binding_functions[i].second.free_instance_binding_data) {
+			binding_functions[i].second.free_instance_binding_data(binding_functions[i].second.data, binding_data[i]);
+		}
+	}
+
+	binding_instances.erase(&binding_data);
+
+	delete &binding_data;
 }
 
 #ifndef NO_THREADS

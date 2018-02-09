@@ -47,6 +47,7 @@ void register_nativescript_types() {
 
 	ClassDB::register_class<NativeScript>();
 
+	native_script_language->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(native_script_language);
 
 	resource_saver_gdns = memnew(ResourceFormatSaverNativeScript);
