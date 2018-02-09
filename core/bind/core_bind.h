@@ -142,6 +142,23 @@ public:
 	void set_window_title(const String &p_title);
 	int get_mouse_button_state() const;
 
+  enum DragMode {
+
+    DRAG_MODE_NONE,
+    DRAG_MODE_MOVE,
+    DRAG_MODE_RESIZE_TOP,
+    DRAG_MODE_RESIZE_RIGHT,
+    DRAG_MODE_RESIZE_BOTTOM,
+    DRAG_MODE_RESIZE_LEFT,
+    DRAG_MODE_RESIZE_TOPLEFT,
+    DRAG_MODE_RESIZE_TOPRIGHT,
+    DRAG_MODE_RESIZE_BOTTOMRIGHT,
+    DRAG_MODE_RESIZE_BOTTOMLEFT
+  };
+
+  void set_drag_mode(DragMode p_drag_mode);
+  DragMode get_drag_mode() const;
+
 	void set_clipboard(const String &p_text);
 	String get_clipboard() const;
 
@@ -357,6 +374,7 @@ VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 VARIANT_ENUM_CAST(_OS::ScreenOrientation);
+VARIANT_ENUM_CAST(_OS::DragMode);
 
 class _Geometry : public Object {
 

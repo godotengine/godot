@@ -556,6 +556,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	return YES;
 }
 
+- (BOOL)mouseDownCanMoveWindow {
+	return YES;
+}
+
 - (BOOL)acceptsFirstResponder {
 	return YES;
 }
@@ -591,18 +595,75 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
+
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 	} else {
 		mouse_down_control = false;
-		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		if (OS_OSX::singleton->drag_mode != OS::DRAG_MODE_MOVE) {
+			_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		}
 	}
 }
 
 - (void)mouseDragged:(NSEvent *)event {
-	[self mouseMoved:event];
+	// Prevent from being both movable and recieving drag events.
+	if ([[event window] isMovableByWindowBackground]) {
+		return;
+	}
+
+	NSRect frame = [[event window] frame];
+	switch (OS_OSX::singleton->drag_mode) {
+		case OS::DRAG_MODE_RESIZE_TOP:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x, frame.origin.y, frame.size.width, frame.size.height - event.deltaY)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_BOTTOM:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x, frame.origin.y - event.deltaY, frame.size.width, frame.size.height + event.deltaY)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_LEFT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x + event.deltaX, frame.origin.y, frame.size.width - event.deltaX, frame.size.height)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_RIGHT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x, frame.origin.y, frame.size.width + event.deltaX, frame.size.height)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_TOPLEFT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x + event.deltaX, frame.origin.y, frame.size.width - event.deltaX, frame.size.height - event.deltaY)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_BOTTOMLEFT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x + event.deltaX, frame.origin.y - event.deltaY, frame.size.width - event.deltaX, frame.size.height + event.deltaY)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_TOPRIGHT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x, frame.origin.y, frame.size.width + event.deltaX, frame.size.height - event.deltaY)
+							 display:YES];
+			break;
+		case OS::DRAG_MODE_RESIZE_BOTTOMRIGHT:
+			[[event window] setFrame:NSMakeRect(
+											 frame.origin.x, frame.origin.y - event.deltaY, frame.size.width + event.deltaX, frame.size.height + event.deltaY)
+							 display:YES];
+			break;
+		default:
+			[self mouseMoved:event];
+	}
 }
 
 - (void)mouseUp:(NSEvent *)event {
+	if (OS_OSX::singleton->drag_mode == OS::DRAG_MODE_MOVE && [event clickCount] == 2) {
+		OS_OSX::singleton->set_window_maximized(!OS_OSX::singleton->is_window_maximized());
+		return;
+	}
+
 	if (mouse_down_control) {
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
 	} else {
@@ -623,8 +684,8 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_position(pos);
 	mm->set_global_position(pos);
 	Vector2 relativeMotion = Vector2();
-	relativeMotion.x = [event deltaX] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
-	relativeMotion.y = [event deltaY] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
+	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale(backingScaleFactor);
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
@@ -1134,6 +1195,10 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 	return YES;
 }
 
+- (BOOL)mouseDownCanMoveWindow {
+	return YES;
+}
+
 @end
 
 void OS_OSX::set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {
@@ -1273,6 +1338,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	[window_object center];
 
 	[window_object setRestorable:NO];
+	if (p_desired.borderless_window) {
+		[window_object setHasShadow:YES];
+	}
 
 	unsigned int attributeCount = 0;
 
@@ -2321,6 +2389,7 @@ void OS_OSX::set_borderless_window(bool p_borderless) {
 
 	if (p_borderless) {
 		[window_object setStyleMask:NSWindowStyleMaskBorderless];
+		[window_object setHasShadow:YES];
 	} else {
 		if (layered_window)
 			set_window_per_pixel_transparency_enabled(false);
@@ -2580,6 +2649,20 @@ OS::MouseMode OS_OSX::get_mouse_mode() const {
 	return mouse_mode;
 }
 
+void OS_OSX::set_drag_mode(DragMode p_drag_mode) {
+	if (p_drag_mode == DRAG_MODE_MOVE) {
+		[window_object setMovableByWindowBackground:YES];
+	} else {
+		[window_object setMovableByWindowBackground:NO];
+	}
+
+	drag_mode = p_drag_mode;
+}
+
+OS::DragMode OS_OSX::get_drag_mode() const {
+	return drag_mode;
+}
+
 String OS_OSX::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
@@ -2633,6 +2716,7 @@ OS_OSX::OS_OSX() {
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;
 	mouse_mode = OS::MOUSE_MODE_VISIBLE;
+	drag_mode = OS::DRAG_MODE_NONE;
 	main_loop = NULL;
 	singleton = this;
 	im_active = false;

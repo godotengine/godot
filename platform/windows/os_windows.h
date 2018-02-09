@@ -117,6 +117,8 @@ class OS_Windows : public OS {
 	Vector2 im_position;
 
 	MouseMode mouse_mode;
+	DragMode drag_mode;
+
 	bool alt_mem;
 	bool gr_mem;
 	bool shift_mem;
@@ -196,6 +198,8 @@ public:
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+	virtual void set_drag_mode(DragMode p_drag_mode);
+	virtual OS::DragMode get_drag_mode() const;
 
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
