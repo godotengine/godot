@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.cpp                                                  */
+/*  stream_peer_openssl.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,41 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "stream_peer_ssl.h"
+#ifndef STREAM_PEER_OPEN_SSL_H
+#define STREAM_PEER_OPEN_SSL_H
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
+#include "io/stream_peer_ssl.h"
+#include "os/file_access.h"
+#include "project_settings.h"
 
-StreamPeerSSL *StreamPeerSSL::create() {
+#include "mbedtls/config.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/debug.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/net.h"
+#include "mbedtls/ssl.h"
 
-	return _create();
-}
+#include <stdio.h>
+#include <stdlib.h>
 
-StreamPeerSSL::LoadCertsFromMemory StreamPeerSSL::load_certs_func = NULL;
-bool StreamPeerSSL::available = false;
-bool StreamPeerSSL::initialize_certs = true;
+class StreamPeerMbedTLS : public StreamPeerSSL {
+private:
+	Status status;
+	String hostname;
 
-void StreamPeerSSL::load_certs_from_memory(const PoolByteArray &p_memory) {
-	if (load_certs_func)
-		load_certs_func(p_memory);
-}
+	bool connected;
 
-bool StreamPeerSSL::is_available() {
-	return available;
-}
+	Ref<StreamPeer> base;
 
-void StreamPeerSSL::_bind_methods() {
+	static StreamPeerSSL *_create_func();
+	static void _load_certs(const PoolByteArray &p_array);
 
-	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &StreamPeerSSL::accept_stream);
-	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
-	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
+	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
+	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
 
-	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_NO_CERTIFICATE);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
-}
+protected:
+	static mbedtls_x509_crt cacert;
+	mbedtls_entropy_context entropy;
+	mbedtls_ctr_drbg_context ctr_drbg;
+	mbedtls_ssl_context ssl;
+	mbedtls_ssl_config conf;
 
-StreamPeerSSL::StreamPeerSSL() {
-}
+	static void _bind_methods();
+
+public:
+	virtual void poll();
+	virtual Error accept_stream(Ref<StreamPeer> p_base);
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String());
+	virtual Status get_status() const;
+
+	virtual void disconnect_from_stream();
+
+	virtual Error put_data(const uint8_t *p_data, int p_bytes);
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+
+	virtual int get_available_bytes() const;
+
+	static void initialize_ssl();
+	static void finalize_ssl();
+
+	StreamPeerMbedTLS();
+	~StreamPeerMbedTLS();
+};
+
+#endif // STREAM_PEER_SSL_H
