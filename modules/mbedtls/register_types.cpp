@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.cpp                                                  */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,41 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "stream_peer_ssl.h"
+#include "register_types.h"
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
+#include "stream_peer_mbed_tls.h"
 
-StreamPeerSSL *StreamPeerSSL::create() {
+void register_mbedtls_types() {
 
-	return _create();
+	ClassDB::register_class<StreamPeerMbedTLS>();
+	StreamPeerMbedTLS::initialize_ssl();
 }
 
-StreamPeerSSL::LoadCertsFromMemory StreamPeerSSL::load_certs_func = NULL;
-bool StreamPeerSSL::available = false;
-bool StreamPeerSSL::initialize_certs = true;
+void unregister_mbedtls_types() {
 
-void StreamPeerSSL::load_certs_from_memory(const PoolByteArray &p_memory) {
-	if (load_certs_func)
-		load_certs_func(p_memory);
-}
-
-bool StreamPeerSSL::is_available() {
-	return available;
-}
-
-void StreamPeerSSL::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &StreamPeerSSL::accept_stream);
-	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
-	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
-
-	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_NO_CERTIFICATE);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
-}
-
-StreamPeerSSL::StreamPeerSSL() {
+	StreamPeerMbedTLS::finalize_ssl();
 }
