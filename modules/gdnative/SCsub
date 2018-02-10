@@ -28,7 +28,7 @@ def _build_gdnative_api_struct_header(api):
             '\textern const godot_gdnative_ext_{0}_api_struct *_gdnative_wrapper_{0}_api_struct;'.format(name))
 
     gdnative_api_init_macro.append('\t_gdnative_wrapper_api_struct = options->api_struct;')
-    gdnative_api_init_macro.append('\tfor (int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
+    gdnative_api_init_macro.append('\tfor (unsigned int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
     gdnative_api_init_macro.append('\t\tswitch (_gdnative_wrapper_api_struct->extensions[i]->type) {')
 
     for name in api['extensions']:
