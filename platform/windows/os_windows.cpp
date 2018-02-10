@@ -510,7 +510,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						mb->set_button_index(2);
 					} break;
 					case WM_LBUTTONDBLCLK: {
-
 						mb->set_pressed(true);
 						mb->set_button_index(1);
 						mb->set_doubleclick(true);
@@ -780,7 +779,25 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			}
 
 		} break;
+		case WM_NCHITTEST: {
+			// Only handle the hit test if the left mouse button is pressed.
+			bool buttons_swapped = GetSystemMetrics(SM_SWAPBUTTON);
+			if (!GetAsyncKeyState(VK_LBUTTON) && !buttons_swapped || !GetAsyncKeyState(VK_RBUTTON) && buttons_swapped) break;
 
+			switch (drag_mode) {
+				case DRAG_MODE_MOVE: return HTCAPTION;
+				case DRAG_MODE_RESIZE_TOP: return HTTOP;
+				case DRAG_MODE_RESIZE_RIGHT: return HTRIGHT;
+				case DRAG_MODE_RESIZE_BOTTOM: return HTBOTTOM;
+				case DRAG_MODE_RESIZE_LEFT: return HTLEFT;
+				case DRAG_MODE_RESIZE_TOPLEFT: return HTTOPLEFT;
+				case DRAG_MODE_RESIZE_TOPRIGHT: return HTTOPRIGHT;
+				case DRAG_MODE_RESIZE_BOTTOMRIGHT: return HTBOTTOMRIGHT;
+				case DRAG_MODE_RESIZE_BOTTOMLEFT: return HTBOTTOMLEFT;
+				case DRAG_MODE_NONE: return HTCLIENT;
+				default: return HTCLIENT;
+			}
+		} break;
 		default: {
 
 			if (user_proc) {
@@ -1332,6 +1349,16 @@ Point2 OS_Windows::get_mouse_position() const {
 int OS_Windows::get_mouse_button_state() const {
 
 	return last_button_state;
+}
+
+void OS_Windows::set_drag_mode(DragMode p_drag_mode) {
+
+	drag_mode = p_drag_mode;
+}
+
+OS::DragMode OS_Windows::get_drag_mode() const {
+
+	return drag_mode;
 }
 
 void OS_Windows::set_window_title(const String &p_title) {
