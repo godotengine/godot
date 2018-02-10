@@ -222,7 +222,7 @@
 			<return type="int" enum="OS.DragMode">
 			</return>
 			<description>
-				Returns the current window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window. Only valid on the [code]X11[/code] paltform at the moment. See [code]DRAG_MODE_*[/code] constants.
+				Returns the current window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window. Only valid on the [code]X11[/code] and [code]OSX[/code] platforms at the moment. See [code]DRAG_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -572,7 +572,7 @@
 			<argument index="0" name="drag_mode" type="int" enum="OS.DragMode">
 			</argument>
 			<description>
-				Sets the window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Useful for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] paltform at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
+				Sets the window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Useful for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] and [code]OSX[/code] platforms at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -671,7 +671,7 @@
 			The size of the window (without counting window manager decorations).
 		</member>
 		<member name="drag_mode" type="int" enum="OS.DragMode" setter="set_drag_mode" getter="get_drag_mode">
-			The window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Used for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] paltform at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
+			The window manager drag mode. (What action the window manager will take when the left mouse button is pressed and dragged in the window.) Used for implementing custom window dragging and resize handles. Only valid on the [code]X11[/code] and [code]OSX[/code] platforms at the moment. Valid arguments are the [code]DRAG_MODE_*[/code] constants.
 		</member>
 	</members>
 	<constants>
