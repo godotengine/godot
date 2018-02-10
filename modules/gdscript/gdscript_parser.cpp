@@ -2739,6 +2739,10 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				cf_for->body->parent_block = p_block;
 				p_block->sub_blocks.push_back(cf_for->body);
 
+                LocalVarNode *lvn = alloc_node<LocalVarNode>();
+                lvn->name = id->name;
+                cf_for->body->statements.push_back(lvn);
+
 				if (!_enter_indent_block(cf_for->body)) {
 					_set_error("Expected indented block after 'for'");
 					p_block->end_line = tokenizer->get_token_line();
