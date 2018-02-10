@@ -181,6 +181,7 @@ opts.Add(BoolVariable('builtin_libtheora', "Use the builtin libtheora library", 
 opts.Add(BoolVariable('builtin_libvorbis', "Use the builtin libvorbis library", True))
 opts.Add(BoolVariable('builtin_libvpx', "Use the builtin libvpx library", True))
 opts.Add(BoolVariable('builtin_libwebp', "Use the builtin libwebp library", True))
+opts.Add(BoolVariable('builtin_mbedtls', "Use the builtin mbedTLS library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the builtin opus library", True))
 opts.Add(BoolVariable('builtin_pcre2', "Use the builtin pcre2 library)", True))
 opts.Add(BoolVariable('builtin_recast', "Use the builtin recast library", True))
