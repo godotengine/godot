@@ -30,6 +30,7 @@
 
 #include "particles_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
+#include "editor/spatial_editor_gizmos.h"
 #include "io/resource_loader.h"
 
 void ParticlesEditor::_node_removed(Node *p_node) {
@@ -93,6 +94,9 @@ void ParticlesEditor::_menu_option(int p_option) {
 		case MENU_OPTION_GENERATE_AABB: {
 			generate_aabb->popup_centered_minsize();
 		} break;
+		case MENU_OPTION_TOGGLE_AABB: {
+			_toggle_aabb_display();
+		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
 
 			Ref<ParticlesMaterial> material = node->get_process_material();
@@ -142,6 +146,13 @@ void ParticlesEditor::_generate_aabb() {
 	}
 
 	node->set_visibility_aabb(rect);
+}
+
+void ParticlesEditor::_toggle_aabb_display() {
+
+	Ref<ParticlesGizmo> gizmo = node->get_gizmo();
+	gizmo->set_aabb_display(!gizmo->get_aabb_display());
+	node->update_gizmo();
 }
 
 void ParticlesEditor::edit(Particles *p_particles) {
@@ -345,6 +356,7 @@ void ParticlesEditor::_bind_methods() {
 	ClassDB::bind_method("_node_selected", &ParticlesEditor::_node_selected);
 	ClassDB::bind_method("_generate_emission_points", &ParticlesEditor::_generate_emission_points);
 	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
+	ClassDB::bind_method("_toggle_aabb_display", &ParticlesEditor::_toggle_aabb_display);
 }
 
 ParticlesEditor::ParticlesEditor() {
@@ -357,6 +369,7 @@ ParticlesEditor::ParticlesEditor() {
 
 	options->set_text(TTR("Particles"));
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
+	options->get_popup()->add_item(TTR("Toggle AABB display"), MENU_OPTION_TOGGLE_AABB);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
