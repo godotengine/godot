@@ -1773,27 +1773,23 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 
 static void _find_enumeration_candidates(const String p_enum_hint, Set<String> &r_result) {
 
-	if (p_enum_hint.find(".") == -1) {
-		// Global constant
-		StringName current_enum = p_enum_hint;
-		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
-			if (GlobalConstants::get_global_constant_enum(i) == current_enum) {
-				r_result.insert(GlobalConstants::get_global_constant_name(i));
+		GDScriptParser::Node *statement = context.block->statements[i];
+		if (statement->line > p_line)
+			continue;
+
+		GDScriptParser::BlockNode::Type statementType = statement->type;
+		if (statementType == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
+
+			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(statement);
+			result.insert(lv->name.operator String());
+		} else if (statementType == GDScriptParser::BlockNode::TYPE_CONTROL_FLOW) {
+
+			const GDScriptParser::ControlFlowNode *cf = static_cast<const GDScriptParser::ControlFlowNode *>(statement);
+			if (cf->cf_type == GDScriptParser::ControlFlowNode::CF_FOR) {
+
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(cf->arguments[0]);
+				result.insert(id->name.operator String());
 			}
-		}
-	} else {
-		String class_name = p_enum_hint.get_slice(".", 0);
-		String enum_name = p_enum_hint.get_slice(".", 1);
-
-		if (!ClassDB::class_exists(class_name)) {
-			return;
-		}
-
-		List<StringName> enum_constants;
-		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
-		for (List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
-			String candidate = class_name + "." + E->get();
-			r_result.insert(candidate);
 		}
 	}
 }
