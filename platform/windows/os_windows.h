@@ -294,6 +294,7 @@ public:
 
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
+	virtual void initialize_debugging();
 
 	void force_process_input();
 

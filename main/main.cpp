@@ -730,6 +730,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	} else if (debug_mode == "local") {
 
 		script_debugger = memnew(ScriptDebuggerLocal);
+		OS::get_singleton()->initialize_debugging();
 	}
 
 	FileAccessNetwork::configure();
