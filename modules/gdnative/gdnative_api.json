@@ -3964,7 +3964,7 @@
         "name": "godot_variant_new_bool",
         "return_type": "void",
         "arguments": [
-          ["godot_variant *", "p_v"],
+          ["godot_variant *", "r_dest"],
           ["const godot_bool", "p_b"]
         ]
       },
