@@ -167,6 +167,7 @@ public:
 	virtual void set_window_title(const String &p_title);
 
 	virtual Size2 get_window_size() const;
+	virtual Size2 get_real_window_size() const;
 
 	virtual void set_icon(const Ref<Image> &p_icon);
 
