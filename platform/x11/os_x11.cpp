@@ -924,6 +924,26 @@ Size2 OS_X11::get_window_size() const {
 	return Size2i(current_videomode.width, current_videomode.height);
 }
 
+Size2 OS_X11::get_real_window_size() const {
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	int w = xwa.width;
+	int h = xwa.height;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = NULL;
+	if (XGetWindowProperty(x11_display, x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+		long *extents = (long *)data;
+		w += extents[0] + extents[1]; // left, right
+		h += extents[2] + extents[3]; // top, bottom
+	}
+	return Size2(w, h);
+}
+
 void OS_X11::set_window_size(const Size2 p_size) {
 	// If window resizable is disabled we need to update the attributes first
 	if (is_window_resizable() == false) {
