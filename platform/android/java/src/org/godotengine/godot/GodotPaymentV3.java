@@ -165,11 +165,11 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	}
 
 	public void callbackDisconnected() {
-		GodotLib.calldeferred(purchaseCallbackId, "iap_disconnected", new Object[] {});
+		GodotLib.calldeferred(purchaseCallbackId, "iap_disconnected", new Object[]{});
 	}
 
 	public void callbackConnected() {
-		GodotLib.calldeferred(purchaseCallbackId, "iap_connected", new Object[] {});
+		GodotLib.calldeferred(purchaseCallbackId, "iap_connected", new Object[]{});
 	}
 
 	// true if connected, false otherwise
