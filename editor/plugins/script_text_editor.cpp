@@ -529,6 +529,14 @@ void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
 	tx->call_deferred("cursor_set_line", p_line);
 }
 
+void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+	TextEdit *tx = code_editor->get_text_edit();
+	tx->unfold_line(p_line);
+	tx->call_deferred("cursor_set_line", p_line);
+	tx->call_deferred("cursor_set_column", p_begin);
+	tx->select(p_line, p_begin, p_line, p_end);
+}
+
 void ScriptTextEditor::ensure_focus() {
 
 	code_editor->get_text_edit()->grab_focus();
@@ -1173,6 +1181,15 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
+		case SEARCH_IN_FILES: {
+
+			String selected_text = code_editor->get_text_edit()->get_selection_text();
+
+			// Yep, because it doesn't make sense to instance this dialog for every single script open...
+			// So this will be delegated to the ScriptEditor
+			emit_signal("search_in_files_requested", selected_text);
+
+		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 
 			quick_open->popup(get_functions());
@@ -1660,6 +1677,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->add_separator();
@@ -1739,7 +1758,9 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
 	ED_SHORTCUT("script_text_editor/replace", TTR("Replace.."), KEY_MASK_CMD | KEY_R);
 
-	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function.."), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_F);
+	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
+
+	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function.."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
 	ED_SHORTCUT("script_text_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD | KEY_L);
 
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_SHIFT | KEY_F1);
