@@ -429,36 +429,32 @@ void ScriptEditor::_add_recent_script(String p_path) {
 		return;
 	}
 
-	// remove if already stored
-	int already_recent = previous_scripts.find(p_path);
-	if (already_recent >= 0) {
-		previous_scripts.remove(already_recent);
+	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
+	if (rc.find(p_path) != -1) {
+		rc.erase(p_path);
+	}
+	rc.push_front(p_path);
+	if (rc.size() > 10) {
+		rc.resize(10);
 	}
 
-	// add to list
-	previous_scripts.insert(0, p_path);
-
+	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
 	_update_recent_scripts();
 }
 
 void ScriptEditor::_update_recent_scripts() {
 
-	// make sure we don't exceed max size
-	const int max_history = EDITOR_DEF("text_editor/files/maximum_recent_files", 20);
-	if (previous_scripts.size() > max_history) {
-		previous_scripts.resize(max_history);
-	}
-
+	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
 	recent_scripts->clear();
 
 	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T));
 	recent_scripts->add_separator();
 
-	const int max_shown = 8;
-	for (int i = 0; i < previous_scripts.size() && i <= max_shown; i++) {
-		String path = previous_scripts.get(i);
-		// just show script name and last dir
-		recent_scripts->add_item(path.get_slice("/", path.get_slice_count("/") - 2) + "/" + path.get_file());
+	String path;
+	for (int i = 0; i < rc.size(); i++) {
+
+		path = rc[i];
+		recent_scripts->add_item(path.replace("res://", ""));
 	}
 
 	recent_scripts->add_separator();
@@ -471,7 +467,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 
 	// clear button
 	if (p_idx == recent_scripts->get_item_count() - 1) {
-		previous_scripts.clear();
+		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", Array());
 		call_deferred("_update_recent_scripts");
 		return;
 	}
@@ -481,22 +477,34 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		p_idx -= 2;
 	}
 
-	if (p_idx < previous_scripts.size() && p_idx >= 0) {
+	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
+	ERR_FAIL_INDEX(p_idx, rc.size());
 
-		String path = previous_scripts.get(p_idx);
-		// if its not on disk its a help file or deleted
-		if (FileAccess::exists(path)) {
-			Ref<Script> script = ResourceLoader::load(path);
-			if (script.is_valid()) {
-				edit(script, true);
-			}
-			// if it's a path then its most likely a delted file not help
-		} else if (!path.is_resource_file()) {
-			_help_class_open(path);
+	String path = rc[p_idx];
+	// if its not on disk its a help file or deleted
+	if (FileAccess::exists(path)) {
+		Ref<Script> script = ResourceLoader::load(path);
+		if (script.is_valid()) {
+			edit(script, true);
+			return;
 		}
-		previous_scripts.remove(p_idx);
-		_update_recent_scripts();
+
+		// if it's a path then its most likely a deleted file not help
+	} else if (!path.is_resource_file()) {
+		_help_class_open(path);
+		return;
 	}
+
+	rc.remove(p_idx);
+	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
+	_update_recent_scripts();
+	_show_error_dialog(path);
+}
+
+void ScriptEditor::_show_error_dialog(String p_path) {
+
+	error_dialog->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_path));
+	error_dialog->popup_centered_minsize();
 }
 
 void ScriptEditor::_close_tab(int p_idx, bool p_save) {
@@ -508,14 +516,10 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	Node *tselected = tab_container->get_child(selected);
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (current) {
-		_add_recent_script(current->get_edited_script()->get_path());
 		if (p_save) {
 			apply_scripts();
 		}
 		notify_script_close(current->get_edited_script());
-	} else {
-		EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_child(selected));
-		_add_recent_script(help->get_class());
 	}
 
 	// roll back to previous tab
@@ -1787,6 +1791,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 		se->goto_line(p_line - 1);
 
 	notify_script_changed(p_script);
+	_add_recent_script(p_script->get_path());
 	return true;
 }
 
@@ -2304,6 +2309,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class, 0);
 	eh->connect("go_to_help", this, "_help_class_goto");
+	_add_recent_script(p_class);
 	_update_script_names();
 	_save_layout();
 }
@@ -2332,6 +2338,7 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", this, "_help_class_goto");
+	_add_recent_script(eh->get_class());
 	_update_script_names();
 	_save_layout();
 }
@@ -2737,6 +2744,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_dialog = memnew(EditorFileDialog);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_file_dialog_action");
+
+	error_dialog = memnew(AcceptDialog);
+	add_child(error_dialog);
+	error_dialog->get_ok()->set_text(TTR("I see.."));
 
 	debugger = memnew(ScriptEditorDebugger(editor));
 	debugger->connect("goto_script_line", this, "_goto_script_line");
