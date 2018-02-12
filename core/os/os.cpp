@@ -639,56 +639,6 @@ void OS::center_window() {
 	set_window_position(Vector2(x, y));
 }
 
-int OS::get_video_driver_count() const {
-
-	return 2;
-}
-
-const char *OS::get_video_driver_name(int p_driver) const {
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
-		default:
-			return "GLES3";
-	}
-}
-
-int OS::get_audio_driver_count() const {
-
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OS::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
-void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
-	restart_on_exit = p_restart;
-	restart_commandline = p_restart_arguments;
-}
-
-bool OS::is_restart_on_exit_set() const {
-	return restart_on_exit;
-}
-
-List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
-}
-
-PoolStringArray OS::get_connected_midi_inputs() {
-
-	if (MIDIDriver::get_singleton())
-		return MIDIDriver::get_singleton()->get_connected_inputs();
-
-	PoolStringArray list;
-	return list;
-}
-
 OS::OS() {
 	void *volatile stack_bottom;
 
