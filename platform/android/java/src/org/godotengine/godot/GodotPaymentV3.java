@@ -67,7 +67,7 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 
 	public GodotPaymentV3(Activity p_activity) {
 
-		registerClass("GodotPayments", new String[] { "purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature", "consumeUnconsumedPurchases", "requestPurchased", "setAutoConsume", "consume", "querySkuDetails" });
+		registerClass("GodotPayments", new String[] { "purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature", "consumeUnconsumedPurchases", "requestPurchased", "setAutoConsume", "consume", "querySkuDetails", "isConnected" });
 		activity = (Godot)p_activity;
 		mPaymentManager = activity.getPaymentsManager();
 		mPaymentManager.setBaseSingleton(this);
@@ -162,6 +162,19 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	// callback for requestPurchased()
 	public void callbackPurchased(String receipt, String signature, String sku) {
 		GodotLib.calldeferred(purchaseCallbackId, "has_purchased", new Object[] { receipt, signature, sku });
+	}
+
+	public void callbackDisconnected() {
+		GodotLib.calldeferred(purchaseCallbackId, "iap_disconnected", new Object[]{});
+	}
+
+	public void callbackConnected() {
+		GodotLib.calldeferred(purchaseCallbackId, "iap_connected", new Object[]{});
+	}
+
+	// true if connected, false otherwise
+	public boolean isConnected() {
+		return mPaymentManager.isConnected();
 	}
 
 	// consume item automatically after purchase. default is true.
