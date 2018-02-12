@@ -60,7 +60,8 @@ public:
 
 	enum GrowDirection {
 		GROW_DIRECTION_BEGIN,
-		GROW_DIRECTION_END
+		GROW_DIRECTION_END,
+		GROW_DIRECTION_BOTH
 	};
 
 	enum FocusMode {
