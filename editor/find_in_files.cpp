@@ -109,7 +109,6 @@ void FindInFiles::start() {
 	_current_dir = "";
 	PoolStringArray init_folder;
 	init_folder.append(_root_dir);
-	_folders_stack.clear();
 	_folders_stack.push_back(init_folder);
 
 	_initial_files_count = 0;
@@ -128,12 +127,11 @@ void FindInFiles::_process() {
 	// This part can be moved to a thread if needed
 
 	OS &os = *OS::get_singleton();
-	float time_before = os.get_ticks_msec();
-	while (is_processing()) {
+	float duration = 0.0;
+	while (duration < 1.0 / 120.0) {
+		float time_before = os.get_ticks_msec();
 		_iterate();
-		float elapsed = (os.get_ticks_msec() - time_before);
-		if (elapsed > 1000.0 / 120.0)
-			break;
+		duration += (os.get_ticks_msec() - time_before);
 	}
 }
 
@@ -143,7 +141,7 @@ void FindInFiles::_iterate() {
 
 		// Scan folders first so we can build a list of files and have progress info later
 
-		PoolStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
+		PoolStringArray &folders_to_scan = _folders_stack[_folders_stack.size() - 1];
 
 		if (folders_to_scan.size() != 0) {
 			// Scan one folder below
@@ -156,7 +154,9 @@ void FindInFiles::_iterate() {
 			PoolStringArray sub_dirs;
 			_scan_dir(_root_prefix + _current_dir, sub_dirs);
 
-			_folders_stack.push_back(sub_dirs);
+			if (sub_dirs.size() != 0) {
+				_folders_stack.push_back(sub_dirs);
+			}
 
 		} else {
 			// Go back one level
@@ -176,7 +176,7 @@ void FindInFiles::_iterate() {
 
 		String fpath = _files_to_scan[_files_to_scan.size() - 1];
 		pop_back(_files_to_scan);
-		_scan_file(fpath);
+		_scan_file(_root_prefix + fpath);
 
 	} else {
 		print_line("Search complete");
@@ -202,6 +202,8 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		return;
 	}
 
+	//print_line(String("Scanning ") + path);
+
 	dir->list_dir_begin();
 
 	for (int i = 0; i < 1000; ++i) {
@@ -220,7 +222,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
-				_files_to_scan.push_back(path.plus_file(file));
+				_files_to_scan.push_back(file);
 			}
 		}
 	}
@@ -230,6 +232,7 @@ void FindInFiles::_scan_file(String fpath) {
 
 	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
 	if (f == NULL) {
+		f->close();
 		print_line(String("Cannot open file ") + fpath);
 		return;
 	}
@@ -430,7 +433,6 @@ FindInFilesDialog::FindInFilesDialog() {
 
 void FindInFilesDialog::set_search_text(String text) {
 	_search_text_line_edit->set_text(text);
-	_on_search_text_modified(text);
 }
 
 String FindInFilesDialog::get_search_text() const {

@@ -591,7 +591,7 @@ void ScriptEditor::_close_docs_tab() {
 
 void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = _get_current_editor();
-	RES script = se->get_edited_resource();
+	Ref<Script> script = se->get_edited_script();
 	OS::get_singleton()->set_clipboard(script->get_path());
 }
 
@@ -1126,7 +1126,8 @@ void ScriptEditor::_menu_option(int p_option) {
 				_copy_script_path();
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
-				RES script = current->get_edited_resource();
+				ScriptEditorBase *se = _get_current_editor();
+				Ref<Script> script = se->get_edited_script();
 				FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 				file_system_dock->navigate_to_path(script->get_path());
 				// Ensure that the FileSystem dock is visible.
@@ -2772,7 +2773,7 @@ void ScriptEditor::_on_find_in_files_requested(String text) {
 
 void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {
 
-	RES res = ResourceLoader::load(fpath);
+	Ref<Resource> res = ResourceLoader::load(fpath);
 	edit(res);
 
 	ScriptEditorBase *seb = _get_current_editor();

@@ -422,6 +422,14 @@ void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+	TextEdit *tx = code_editor->get_text_edit();
+	tx->unfold_line(p_line);
+	tx->call_deferred("cursor_set_line", p_line);
+	tx->call_deferred("cursor_set_column", p_begin);
+	tx->select(p_line, p_begin, p_line, p_end);
+}
+
+void ScriptTextEditor::ensure_focus() {
 
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
@@ -1576,8 +1584,10 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
 	ED_SHORTCUT("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
 
-	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function..."), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_F);
-	ED_SHORTCUT("script_text_editor/goto_line", TTR("Goto Line..."), KEY_MASK_CMD | KEY_L);
+	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
+
+	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function.."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
+	ED_SHORTCUT("script_text_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD | KEY_L);
 
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
