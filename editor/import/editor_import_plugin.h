@@ -47,6 +47,8 @@ public:
 	virtual int get_preset_count() const;
 	virtual String get_save_extension() const;
 	virtual String get_resource_type() const;
+	virtual float get_priority() const;
+	virtual int get_import_order() const;
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files);
