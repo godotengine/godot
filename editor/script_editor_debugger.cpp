@@ -193,6 +193,12 @@ public:
 	}
 };
 
+void ScriptEditorDebugger::debug_copy() {
+	String msg = reason->get_text();
+	if (msg == "") return;
+	OS::get_singleton()->set_clipboard(msg);
+}
+
 void ScriptEditorDebugger::debug_next() {
 
 	ERR_FAIL_COND(!breaked);
@@ -338,6 +344,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		step->set_disabled(!can_continue);
 		next->set_disabled(!can_continue);
 		_set_reason_text(error, MESSAGE_ERROR);
+		copy->set_disabled(false);
 		breaked = true;
 		dobreak->set_disabled(true);
 		docontinue->set_disabled(false);
@@ -354,6 +361,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "debug_exit") {
 
 		breaked = false;
+		copy->set_disabled(true);
 		step->set_disabled(true);
 		next->set_disabled(true);
 		reason->set_text("");
@@ -939,6 +947,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			inspector->edit(variables);
+
+			copy->set_icon(get_icon("Duplicate", "EditorIcons"));
 
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
 			next->set_icon(get_icon("DebugNext", "EditorIcons"));
@@ -1741,6 +1751,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_stack_dump_frame_selected"), &ScriptEditorDebugger::_stack_dump_frame_selected);
+
+	ClassDB::bind_method(D_METHOD("debug_copy"), &ScriptEditorDebugger::debug_copy);
+
 	ClassDB::bind_method(D_METHOD("debug_next"), &ScriptEditorDebugger::debug_next);
 	ClassDB::bind_method(D_METHOD("debug_step"), &ScriptEditorDebugger::debug_step);
 	ClassDB::bind_method(D_METHOD("debug_break"), &ScriptEditorDebugger::debug_break);
@@ -1813,6 +1826,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		hbc->add_child(memnew(VSeparator));
+
+		copy = memnew(ToolButton);
+		hbc->add_child(copy);
+		copy->set_tooltip(TTR("Copy Error"));
+		copy->connect("pressed", this, "debug_copy");
 
 		hbc->add_child(memnew(VSeparator));
 
