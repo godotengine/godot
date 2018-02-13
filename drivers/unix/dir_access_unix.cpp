@@ -361,6 +361,7 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 
 	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
 }
+
 Error DirAccessUnix::remove(String p_path) {
 
 	if (p_path.is_rel_path())
