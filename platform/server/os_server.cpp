@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_server.h"
+#include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
@@ -48,12 +49,12 @@ const char *OS_Server::get_video_driver_name(int p_driver) const {
 }
 
 int OS_Server::get_audio_driver_count() const {
-	return 0;
+	return 1;
 }
 
 const char *OS_Server::get_audio_driver_name(int p_driver) const {
 
-	return "";
+	return "Dummy";
 }
 
 void OS_Server::initialize_core() {
