@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  rasterizer.h                                                         */
+/*  rasterizer_dummy.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #define RASTERIZER_DUMMY_H
 
 #include "camera_matrix.h"
+#include "scene/resources/mesh.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -244,7 +245,11 @@ public:
 
 	RID mesh_create() { return RID(); }
 
+	void mesh_add_surface_from_arrays(RID p_mesh, VS::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = Mesh::ARRAY_COMPRESS_DEFAULT) {}
 	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {}
+
+	void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data) {}
+	void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes) {}
 
 	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {}
 	int mesh_get_blend_shape_count(RID p_mesh) const { return 0; }
@@ -446,6 +451,16 @@ public:
 	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
 
 	/* LIGHTMAP CAPTURE */
+	struct LightmapCaptureOctree {
+
+		enum {
+			CHILD_EMPTY = 0xFFFFFFFF
+		};
+
+		uint16_t light[6][3]; //anisotropic light
+		float alpha;
+		uint32_t children[8];
+	};
 
 	RID lightmap_capture_create() { return RID(); }
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
@@ -461,7 +476,10 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {}
+	const PoolVector<RasterizerStorage::LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
+		PoolVector<RasterizerStorage::LightmapCaptureOctree> p;
+		return &p;
+	}
 
 	/* PARTICLES */
 
