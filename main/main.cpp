@@ -124,6 +124,7 @@ static bool force_lowdpi = false;
 static int init_screen = -1;
 static bool use_vsync = true;
 static bool editor = false;
+static bool project_manager = false;
 static bool show_help = false;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
@@ -536,11 +537,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
-		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
-
-			auto_build_solutions = true;
-			editor = true;
-#endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -845,11 +841,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	GLOBAL_DEF("rendering/quality/driver/driver_name", "GLES3");
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES2,GLES3"));
-	if (video_driver == "") {
-		video_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
+#ifdef TOOLS_ENABLED
+
+	if (!project_manager) {
+		// Determine if the project manager should be requested
+		project_manager =
+				main_args.size() == 0 &&
+				!ProjectSettings::get_singleton()->has_setting("application/run/main_loop_type") &&
+				(!ProjectSettings::get_singleton()->has_setting("application/run/main_scene") ||
+						String(ProjectSettings::get_singleton()->get("application/run/main_scene")) == "");
 	}
+
+	if (project_manager) {
+		use_custom_res = false; //project manager (run without arguments)
+	}
+
+#endif
+
+	if (editor)
+		input_map->load_default(); //keys for editor
+	else
+		input_map->load_from_globals(); //keys for game
+
+	//if (video_driver == "") // useless for now, so removing
+	//	video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	GLOBAL_DEF("display/window/size/height", 600);
@@ -900,7 +915,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
-		OS::get_singleton()->_allow_layered = false;
 	}
 
 	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
@@ -1261,9 +1275,6 @@ bool Main::start() {
 	String test;
 	String _export_preset;
 	bool export_debug = false;
-	bool check_only = false;
-
-	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i = 0; i < args.size(); i++) {
@@ -1275,7 +1286,6 @@ bool Main::start() {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
-#endif
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
 			game_path = args[i];
 		} else if (args[i] == "--check-only") {
@@ -1688,7 +1698,91 @@ bool Main::start() {
 #endif
 		}
 
-		if (!project_manager && !editor) { // game
+		if (!project_manager && !editor) {
+			if (game_path != "" || script != "") {
+				//autoload
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+
+				//first pass, add the constants so they exist before any script is loaded
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+					}
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+							ScriptServer::get_language(i)->add_global_constant(name, Variant());
+						}
+					}
+				}
+
+				//second pass, load into global constants
+				List<Node *> to_add;
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+						path = path.substr(1, path.length() - 1);
+					}
+
+					RES res = ResourceLoader::load(path);
+					ERR_EXPLAIN("Can't autoload: " + path);
+					ERR_CONTINUE(res.is_null());
+					Node *n = NULL;
+					if (res->is_class("PackedScene")) {
+						Ref<PackedScene> ps = res;
+						n = ps->instance();
+					} else if (res->is_class("Script")) {
+						Ref<Script> s = res;
+						StringName ibt = s->get_instance_base_type();
+						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+						ERR_EXPLAIN("Script does not inherit a Node: " + path);
+						ERR_CONTINUE(!valid_type);
+
+						Object *obj = ClassDB::instance(ibt);
+
+						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE(obj == NULL);
+
+						n = Object::cast_to<Node>(obj);
+						n->set_script(s.get_ref_ptr());
+					}
+
+					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
+					ERR_CONTINUE(!n);
+					n->set_name(name);
+
+					//defer so references are all valid on _ready()
+					to_add.push_back(n);
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+							ScriptServer::get_language(i)->add_global_constant(name, n);
+						}
+					}
+				}
+
+				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
+
+					sml->get_root()->add_child(E->get());
+				}
+				//singletons
+			}
+
 			if (game_path != "") {
 				Node *scene = NULL;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
