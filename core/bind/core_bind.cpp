@@ -267,6 +267,10 @@ Size2 _OS::get_window_size() const {
 	return OS::get_singleton()->get_window_size();
 }
 
+Size2 _OS::get_real_window_size() const {
+	return OS::get_singleton()->get_real_window_size();
+}
+
 void _OS::set_window_size(const Size2 &p_size) {
 	OS::get_singleton()->set_window_size(p_size);
 }
@@ -942,6 +946,11 @@ void _OS::request_attention() {
 	OS::get_singleton()->request_attention();
 }
 
+void _OS::center_window() {
+
+	OS::get_singleton()->center_window();
+}
+
 bool _OS::is_debug_build() const {
 
 #ifdef DEBUG_ENABLED
@@ -1039,6 +1048,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"), &_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"), &_OS::is_window_maximized);
 	ObjectTypeDB::bind_method(_MD("request_attention"), &_OS::request_attention);
+	ObjectTypeDB::bind_method(_MD("get_real_window_size"), &_OS::get_real_window_size);
+	ObjectTypeDB::bind_method(_MD("center_window"), &_OS::center_window);
 
 	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
