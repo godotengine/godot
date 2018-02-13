@@ -956,7 +956,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			inspector->edit(variables);
 
-			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			copy->set_icon(get_icon("Duplicate", "EditorIcons"));
 
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
 			next->set_icon(get_icon("DebugNext", "EditorIcons"));
@@ -1883,6 +1883,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		reason->set_autowrap(true);
 		reason->set_max_lines_visible(3);
 		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+
+		hbc->add_child(memnew(VSeparator));
+
+		copy = memnew(ToolButton);
+		hbc->add_child(copy);
+		copy->set_tooltip(TTR("Copy Error"));
+		copy->connect("pressed", this, "debug_copy");
 
 		hbc->add_child(memnew(VSeparator));
 
