@@ -1487,6 +1487,12 @@ Size2 OS_Windows::get_window_size() const {
 	GetClientRect(hWnd, &r);
 	return Vector2(r.right - r.left, r.bottom - r.top);
 }
+Size2 OS_Windows::get_real_window_size() const {
+
+	RECT r;
+	GetWindowRect(hWnd, &r);
+	return Vector2(r.right - r.left, r.bottom - r.top);
+}
 void OS_Windows::set_window_size(const Size2 p_size) {
 
 	video_mode.width = p_size.width;

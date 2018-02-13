@@ -182,6 +182,7 @@ public:
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
 	virtual Size2 get_window_size() const = 0;
+	virtual Size2 get_real_window_size() const { return get_window_size(); }
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
@@ -192,6 +193,7 @@ public:
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
 	virtual void request_attention() {}
+	virtual void center_window();
 
 	virtual void set_borderless_window(bool p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }

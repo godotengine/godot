@@ -616,6 +616,17 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
+void OS::center_window() {
+
+	if (is_window_fullscreen()) return;
+
+	Size2 scr = get_screen_size(get_current_screen());
+	Size2 wnd = get_real_window_size();
+	int x = scr.width / 2 - wnd.width / 2;
+	int y = scr.height / 2 - wnd.height / 2;
+	set_window_position(Vector2(x, y));
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 
