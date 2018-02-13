@@ -2661,6 +2661,7 @@ void PropertyEditor::_notification(int p_what) {
 	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		set_use_folding(!bool(EDITOR_GET("interface/editor/disable_inspector_folding")));
 		update_tree();
 	}
 }
@@ -4238,7 +4239,7 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 void PropertyEditor::set_use_folding(bool p_enable) {
 
 	use_folding = p_enable;
-	tree->set_hide_folding(false);
+	tree->set_hide_folding(!p_enable);
 }
 
 void PropertyEditor::collapse_all_folding() {
