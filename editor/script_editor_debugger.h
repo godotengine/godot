@@ -104,6 +104,7 @@ class ScriptEditorDebugger : public Control {
 
 	Label *reason;
 
+	Button *copy;
 	Button *step;
 	Button *next;
 	Button *back;
@@ -196,6 +197,8 @@ public:
 	void pause();
 	void unpause();
 	void stop();
+
+	void debug_copy();
 
 	void debug_next();
 	void debug_step();
