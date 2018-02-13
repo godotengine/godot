@@ -64,6 +64,13 @@
 				Get the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: "name", "default_value", "property_hint" (optional), "hint_string" (optional), "usage" (optional).
 			</description>
 		</method>
+		<method name="get_import_order" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+				Get the order of this importer to be run when importing resources. Higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported.
+			</description>
+		</method>
 		<method name="get_importer_name" qualifiers="virtual">
 			<return type="String">
 			</return>
@@ -95,6 +102,13 @@
 			</argument>
 			<description>
 				Get the name of the options preset at this index.
+			</description>
+		</method>
+		<method name="get_priority" qualifiers="virtual">
+			<return type="float">
+			</return>
+			<description>
+				Get the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. Default value is 1.0.
 			</description>
 		</method>
 		<method name="get_recognized_extensions" qualifiers="virtual">
