@@ -926,7 +926,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 				} else {
 					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
 
-					if (strcmp(rawString, "-main_pack") == 0)
+					if (strcmp(rawString, "--main-pack") == 0)
 						use_apk_expansion = true;
 				}
 

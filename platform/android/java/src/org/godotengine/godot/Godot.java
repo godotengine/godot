@@ -404,7 +404,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				new_cmdline = new String[2];
 			}
 
-			new_cmdline[cll] = "--main_pack";
+			new_cmdline[cll] = "--main-pack";
 			new_cmdline[cll + 1] = expansion_pack_path;
 			command_line = new_cmdline;
 		}
