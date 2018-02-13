@@ -83,8 +83,6 @@ void EditorPluginSettings::update_plugins() {
 
 	plugins.sort();
 
-	Vector<String> active_plugins = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
-
 	for (int i = 0; i < plugins.size(); i++) {
 
 		Ref<ConfigFile> cf;
