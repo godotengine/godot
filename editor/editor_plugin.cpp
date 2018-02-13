@@ -373,6 +373,53 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 	}
 }
 
+void EditorPlugin::remove_control_from_container(CustomControlContainer p_location, Control *p_control) {
+
+	switch (p_location) {
+
+		case CONTAINER_TOOLBAR: {
+
+			EditorNode::get_menu_hb()->remove_child(p_control);
+		} break;
+
+		case CONTAINER_SPATIAL_EDITOR_MENU: {
+
+			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
+
+		} break;
+		case CONTAINER_SPATIAL_EDITOR_SIDE: {
+
+			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
+
+			SpatialEditor::get_singleton()->get_shader_split()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_MENU: {
+
+			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_SIDE: {
+
+			CanvasItemEditor::get_singleton()->get_palette_split()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
+
+			CanvasItemEditor::get_singleton()->get_bottom_split()->remove_child(p_control);
+
+		} break;
+		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
+
+			EditorNode::get_singleton()->get_property_editor_vb()->remove_child(p_control);
+
+		} break;
+	}
+}
+
 void EditorPlugin::add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud) {
 
 	//EditorNode::get_singleton()->add_tool_menu_item(p_name, p_handler, p_callback, p_ud);
@@ -651,6 +698,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
+	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
 	//ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "handler", "callback", "ud"),&EditorPlugin::add_tool_menu_item,DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	//ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"),&EditorPlugin::remove_tool_menu_item);

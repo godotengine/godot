@@ -274,6 +274,17 @@
 				Remove the control from the bottom panel. Don't forget to call this if you added one, so the editor can remove it cleanly.
 			</description>
 		</method>
+		<method name="remove_control_from_container">
+			<return type="void">
+			</return>
+			<argument index="0" name="container" type="int" enum="EditorPlugin.CustomControlContainer">
+			</argument>
+			<argument index="1" name="control" type="Control">
+			</argument>
+			<description>
+				Remove the control from the specified container. Use it when cleaning up after adding a control with [method add_control_to_container]. Note that you can simply free the control if you won't use it anymore.
+			</description>
+		</method>
 		<method name="remove_control_from_docks">
 			<return type="void">
 			</return>
