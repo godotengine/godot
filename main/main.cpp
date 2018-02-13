@@ -124,6 +124,7 @@ static bool force_lowdpi = false;
 static int init_screen = -1;
 static bool use_vsync = true;
 static bool editor = false;
+static bool project_manager = false;
 static bool show_help = false;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
@@ -536,10 +537,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
-		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
-
-			auto_build_solutions = true;
-#endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -1301,7 +1298,6 @@ bool Main::start() {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
-#endif
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
 			game_path = args[i];
 		} else if (args[i] == "--check-only") {
