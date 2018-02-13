@@ -4002,6 +4002,11 @@ void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	hb->add_child(p_control);
 }
 
+void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
+
+	hb->remove_child(p_control);
+}
+
 HSplitContainer *CanvasItemEditor::get_palette_split() {
 
 	return palette_split;

@@ -4778,6 +4778,11 @@ void SpatialEditor::add_control_to_menu_panel(Control *p_control) {
 	hbc_menu->add_child(p_control);
 }
 
+void SpatialEditor::remove_control_from_menu_panel(Control *p_control) {
+
+	hbc_menu->remove_child(p_control);
+}
+
 void SpatialEditor::set_can_preview(Camera *p_preview) {
 
 	for (int i = 0; i < 4; i++) {
