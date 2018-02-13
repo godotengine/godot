@@ -62,6 +62,8 @@ class SpinBox : public Range {
 
 	void _line_edit_focus_exit();
 
+	inline void _adjust_width_for_icon(const Ref<Texture> icon);
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 
