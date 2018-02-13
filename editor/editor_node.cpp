@@ -5482,7 +5482,7 @@ EditorNode::EditorNode() {
 	property_editor->set_use_doc_hints(true);
 	property_editor->set_hide_script(false);
 	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	property_editor->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	property_editor->set_use_folding(true);
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
