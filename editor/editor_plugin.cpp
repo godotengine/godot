@@ -383,7 +383,6 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 }
 
 void EditorPlugin::remove_control_from_container(CustomControlContainer p_location, Control *p_control) {
-	ERR_FAIL_NULL(p_control);
 
 	switch (p_location) {
 
@@ -424,11 +423,13 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		} break;
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
 
-			EditorNode::get_singleton()->get_inspector_dock_addon_area()->remove_child(p_control);
+			EditorNode::get_singleton()->get_property_editor_vb()->remove_child(p_control);
 
 		} break;
 	}
 }
+
+void EditorPlugin::add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud) {
 
 void EditorPlugin::add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud) {
 	EditorNode::get_singleton()->add_tool_menu_item(p_name, p_handler, p_callback, p_ud);
@@ -731,7 +732,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
-	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "handler", "callback", "ud"), &EditorPlugin::add_tool_menu_item, DEFVAL(Variant()));
+	//ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "handler", "callback", "ud"),&EditorPlugin::add_tool_menu_item,DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
