@@ -141,9 +141,6 @@ int StreamPeerOpenSSL::_cert_verify_callback(X509_STORE_CTX *x509_ctx, void *arg
 	X509_NAME_oneline(X509_get_subject_name(server_cert),
 			cert_str, sizeof(cert_str));
 
-	print_line("CERT STR: " + String(cert_str));
-	print_line("VALID: " + itos(base_cert_valid));
-
 	if (!base_cert_valid)
 		return 0;
 
@@ -382,7 +379,6 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	// Same as before, try to connect.
 	int result = SSL_connect(ssl);
 
-	print_line("CONNECTION RESULT: " + itos(result));
 	if (result < 1) {
 		ERR_print_errors_fp(stdout);
 		_print_error(result);
@@ -392,7 +388,6 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 
 	if (peer) {
 		bool cert_ok = SSL_get_verify_result(ssl) == X509_V_OK;
-		print_line("cert_ok: " + itos(cert_ok));
 
 	} else if (validate_certs) {
 		status = STATUS_ERROR_NO_CERTIFICATE;
