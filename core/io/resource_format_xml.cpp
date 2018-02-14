@@ -2209,6 +2209,106 @@ static bool _check_type(const Variant& p_property) {
 	return true;
 }*/
 
+template <typename T>
+void ResourceFormatSaverXMLInstance::write_array(const T *p_ptr, int p_len, const int p_cols, const String p_comma, const String p_space) {
+	const String cm_sp = p_comma + p_space;
+	int rows = p_len / p_cols; // the number of full rows
+	int remaind = p_len % p_cols; // how many elements in the last row (if less that p_cols)
+	;
+
+	if (p_cols > 1) { // multiple columns
+
+		for (int i = 0; i < rows; i++) {
+
+			write_tabs();
+			int start = i * p_cols;
+
+			// write the first element outside the loop, so we don't
+			// have to check whether to write the separator inside the loop
+			write_element(p_ptr + start, cm_sp);
+
+			for (int j = 1; j < p_cols; j++) {
+
+				write_string(cm_sp, false); // the separator
+				write_element(p_ptr + start + j, cm_sp);
+			}
+
+			if (remaind > 0) // write separator if there are elements in the last row
+				write_string(p_comma, false);
+
+			write_string("\n", false);
+		}
+
+		if (remaind > 0) { // last row of elements
+			write_tabs();
+			int start = rows * p_cols;
+
+			// write the first element outside the loop, so we don't
+			// have to check whether to write the separator inside the loop
+			write_element(p_ptr + start, cm_sp);
+
+			for (int i = 1; i < remaind; i++) {
+
+				write_string(cm_sp, false); // the separator
+				write_element(p_ptr + start + i, cm_sp);
+			}
+
+			write_string("\n", false);
+		}
+
+	} else { // if number of columns is one
+
+		// loop through all elements except the last one so we
+		// don't have to check whether to write the separator
+		// inside the loop
+		for (int i = 0; i < p_len - 1; i++) {
+
+			write_tabs();
+			write_element(p_ptr + i, p_comma);
+			write_string(p_comma, false); // the separator
+			write_string("\n", false);
+		}
+
+		if (p_len > 0) { // the last element
+			write_tabs();
+			write_element(p_ptr + (p_len - 1), p_comma);
+			write_string("\n", false);
+		}
+	}
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const int *p_ptr, const String &p_separator) {
+	write_string(itos(*p_ptr), false);
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const real_t *p_ptr, const String &p_separator) {
+	write_string(rtoss(*p_ptr), false);
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const String *p_ptr, const String &p_separator) {
+	String str = *p_ptr;
+	escape(str);
+	write_string("<string> \"" + str + "\" </string>", false);
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const Vector2 *p_ptr, const String &p_separator) {
+	write_string(rtoss(p_ptr->x), false);
+	write_string(p_separator + rtoss(p_ptr->y), false);
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const Vector3 *p_ptr, const String &p_separator) {
+	write_string(rtoss(p_ptr->x), false);
+	write_string(p_separator + rtoss(p_ptr->y), false);
+	write_string(p_separator + rtoss(p_ptr->z), false);
+}
+
+void ResourceFormatSaverXMLInstance::write_element(const Color *p_ptr, const String &p_separator) {
+	write_string(rtoss(p_ptr->r), false);
+	write_string(p_separator + rtoss(p_ptr->g), false);
+	write_string(p_separator + rtoss(p_ptr->b), false);
+	write_string(p_separator + rtoss(p_ptr->a), false);
+}
+
 void ResourceFormatSaverXMLInstance::write_property(const String &p_name, const Variant &p_property, bool *r_ok) {
 
 	if (r_ok)
@@ -2332,10 +2432,12 @@ void ResourceFormatSaverXMLInstance::write_property(const String &p_name, const 
 		case Variant::INT_ARRAY:
 			type = "int_array";
 			params = "len=\"" + itos(p_property.operator DVector<int>().size()) + "\"";
+			oneliner = false;
 			break;
 		case Variant::REAL_ARRAY:
 			type = "real_array";
 			params = "len=\"" + itos(p_property.operator DVector<real_t>().size()) + "\"";
+			oneliner = false;
 			break;
 		case Variant::STRING_ARRAY:
 			oneliner = false;
@@ -2345,14 +2447,17 @@ void ResourceFormatSaverXMLInstance::write_property(const String &p_name, const 
 		case Variant::VECTOR2_ARRAY:
 			type = "vector2_array";
 			params = "len=\"" + itos(p_property.operator DVector<Vector2>().size()) + "\"";
+			oneliner = false;
 			break;
 		case Variant::VECTOR3_ARRAY:
 			type = "vector3_array";
 			params = "len=\"" + itos(p_property.operator DVector<Vector3>().size()) + "\"";
+			oneliner = false;
 			break;
 		case Variant::COLOR_ARRAY:
 			type = "color_array";
 			params = "len=\"" + itos(p_property.operator DVector<Color>().size()) + "\"";
+			oneliner = false;
 			break;
 		default: {
 
@@ -2600,112 +2705,66 @@ void ResourceFormatSaverXMLInstance::write_property(const String &p_name, const 
 
 			DVector<int> data = p_property;
 			int len = data.size();
-			DVector<int>::Read r = data.read();
-			const int *ptr = r.ptr();
+			const int *ptr = data.read().ptr();
+			int columns = 10;
 			;
-			write_tabs();
 
-			for (int i = 0; i < len; i++) {
-
-				if (i > 0)
-					write_string(", ", false);
-
-				write_string(itos(ptr[i]), false);
-			}
+			write_array(ptr, len, columns, ",", " ");
 
 		} break;
 		case Variant::REAL_ARRAY: {
 
 			DVector<real_t> data = p_property;
 			int len = data.size();
-			DVector<real_t>::Read r = data.read();
-			const real_t *ptr = r.ptr();
+			const real_t *ptr = data.read().ptr();
+			int columns = 10;
 			;
-			write_tabs();
-			String cm = ", ";
 
-			for (int i = 0; i < len; i++) {
-
-				if (i > 0)
-					write_string(cm, false);
-				write_string(rtoss(ptr[i]), false);
-			}
+			write_array(ptr, len, columns, ",", " ");
 
 		} break;
 		case Variant::STRING_ARRAY: {
 
 			DVector<String> data = p_property;
 			int len = data.size();
-			DVector<String>::Read r = data.read();
-			const String *ptr = r.ptr();
+			const String *ptr = data.read().ptr();
+			int columns = 10;
 			;
-			String s;
-			//write_string("\n");
 
-			for (int i = 0; i < len; i++) {
+			write_array(ptr, len);
 
-				write_tabs(0);
-				String str = ptr[i];
-				escape(str);
-				write_string("<string> \"" + str + "\" </string>\n", false);
-			}
 		} break;
 		case Variant::VECTOR2_ARRAY: {
 
 			DVector<Vector2> data = p_property;
-			int len = data.size();
-			DVector<Vector2>::Read r = data.read();
-			const Vector2 *ptr = r.ptr();
+			int len = data.size() * 2;
+			const float *ptr = (float *)data.read().ptr();
+			int columns = 10;
 			;
-			write_tabs();
 
-			for (int i = 0; i < len; i++) {
-
-				if (i > 0)
-					write_string(", ", false);
-				write_string(rtoss(ptr[i].x), false);
-				write_string(", " + rtoss(ptr[i].y), false);
-			}
+			write_array(ptr, len, columns, ",", " ");
 
 		} break;
 		case Variant::VECTOR3_ARRAY: {
 
 			DVector<Vector3> data = p_property;
-			int len = data.size();
-			DVector<Vector3>::Read r = data.read();
-			const Vector3 *ptr = r.ptr();
+			int len = data.size() * 3;
+			const real_t *ptr = (real_t *)data.read().ptr();
+			int columns = 10;
 			;
-			write_tabs();
 
-			for (int i = 0; i < len; i++) {
-
-				if (i > 0)
-					write_string(", ", false);
-				write_string(rtoss(ptr[i].x), false);
-				write_string(", " + rtoss(ptr[i].y), false);
-				write_string(", " + rtoss(ptr[i].z), false);
-			}
+			write_array(ptr, len, columns, ",", " ");
 
 		} break;
 		case Variant::COLOR_ARRAY: {
 
 			DVector<Color> data = p_property;
-			int len = data.size();
-			DVector<Color>::Read r = data.read();
-			const Color *ptr = r.ptr();
+			int len = data.size() * 4;
+			const float *ptr = (float *)data.read().ptr();
+			int columns = 10;
 			;
-			write_tabs();
 
-			for (int i = 0; i < len; i++) {
-
-				if (i > 0)
-					write_string(", ", false);
-
-				write_string(rtoss(ptr[i].r), false);
-				write_string(", " + rtoss(ptr[i].g), false);
-				write_string(", " + rtoss(ptr[i].b), false);
-				write_string(", " + rtoss(ptr[i].a), false);
-			}
+			write_array(ptr, len, columns, ",", " ");
 
 		} break;
 		default: {}

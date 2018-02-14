@@ -138,6 +138,14 @@ class ResourceFormatSaverXMLInstance {
 	void escape(String &p_str);
 	void write_tabs(int p_diff = 0);
 	void write_string(String p_str, bool p_escape = true);
+	template <typename T>
+	void write_array(const T *p_ptr, int p_len, const int p_cols = 1, const String p_comma = "", const String p_space = "");
+	void write_element(const int *p_ptr, const String &p_separator);
+	void write_element(const real_t *p_ptr, const String &p_separator);
+	void write_element(const String *p_ptr, const String &p_separator);
+	void write_element(const Vector2 *p_ptr, const String &p_separator);
+	void write_element(const Vector3 *p_ptr, const String &p_separator);
+	void write_element(const Color *p_ptr, const String &p_separator);
 
 public:
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
