@@ -229,15 +229,32 @@ void ResourcePreloaderEditor::_update_library() {
 		ERR_CONTINUE(r.is_null());
 
 		ti->set_tooltip(0, r->get_path());
-		String type = r->get_class();
-		ti->set_text(1, type);
+		ti->set_text(1, r->get_path());
+		ti->add_button(1, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+		ti->set_tooltip(1, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + r->get_class());
+		ti->set_editable(1, false);
 		ti->set_selectable(1, false);
+		String type = r->get_class();
+		ti->set_text(2, type);
+		ti->set_selectable(2, false);
 
 		if (has_icon(type, "EditorIcons"))
-			ti->set_icon(1, get_icon(type, "EditorIcons"));
+			ti->set_icon(2, get_icon(type, "EditorIcons"));
 	}
 
 	//player->add_resource("default",resource);
+}
+
+void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_COND(!item);
+
+	String rpath = item->get_text(p_column);
+
+	if (p_id == BUTTON_SUBSCENE) {
+		EditorInterface::get_singleton()->open_scene_from_path(rpath);
+	}
 }
 
 void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
@@ -354,6 +371,7 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_delete_confirm_pressed"), &ResourcePreloaderEditor::_delete_confirm_pressed);
 	ClassDB::bind_method(D_METHOD("_files_load_request"), &ResourcePreloaderEditor::_files_load_request);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
+	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &ResourcePreloaderEditor::_cell_button_pressed);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
@@ -385,11 +403,14 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	add_child(file);
 
 	tree = memnew(Tree);
-	tree->set_columns(2);
+	tree->connect("button_pressed", this, "_cell_button_pressed");
+	tree->set_columns(3);
 	tree->set_column_min_width(0, 3);
 	tree->set_column_min_width(1, 1);
+	tree->set_column_min_width(2, 1);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, true);
+	tree->set_column_expand(2, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tree->set_drag_forwarding(this);
