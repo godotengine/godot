@@ -205,6 +205,11 @@ void FileAccessUnix::store_8(uint8_t p_dest) {
 	fwrite(&p_dest, 1, 1, f);
 }
 
+void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
+	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+}
+
 bool FileAccessUnix::file_exists(const String &p_path) {
 
 	FILE *g;
