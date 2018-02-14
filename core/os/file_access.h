@@ -53,6 +53,7 @@ public:
 	typedef FileAccess *(*CreateFunc)();
 	bool endian_swap;
 	bool real_is_double;
+	String file_path;
 
 protected:
 	String fix_path(const String &p_path) const;
@@ -115,6 +116,9 @@ public:
 
 	virtual void set_endian_swap(bool p_swap) { endian_swap = p_swap; }
 	inline bool get_endian_swap() const { return endian_swap; }
+
+	virtual void set_file_name_string(const String path) { file_path = path; }
+	inline String get_file_name_string() const { return file_path; }
 
 	virtual Error get_error() const = 0; ///< get last error
 

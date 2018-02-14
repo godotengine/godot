@@ -85,6 +85,7 @@ FileAccess *FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_FILESYSTEM);
 	}
 
+	ret->file_path = p_path;
 	return ret;
 }
 
@@ -96,7 +97,6 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 
 	//try packed data first
-
 	FileAccess *ret = NULL;
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
