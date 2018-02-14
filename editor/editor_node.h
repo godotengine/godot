@@ -618,6 +618,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
+	ProjectSettingsEditor *get_project_settings() { return project_settings; }
+
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 

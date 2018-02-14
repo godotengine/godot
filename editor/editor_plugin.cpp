@@ -310,6 +310,8 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 }
 
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+
+ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 	ERR_FAIL_NULL_V(p_control, NULL);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
 }
