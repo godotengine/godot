@@ -37,7 +37,7 @@
 #define kOutputBus 0
 
 #ifdef OSX_ENABLED
-static OSStatus outputDeviceAddressCB(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *__nullable inClientData) {
+static OSStatus outputDeviceAddressCB(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *inClientData) {
 	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
 
 	driver->reopen();
