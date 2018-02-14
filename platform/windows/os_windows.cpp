@@ -2448,6 +2448,24 @@ String OS_Windows::get_user_data_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
+String OS_Windows::get_unique_id() const {
+
+	HW_PROFILE_INFO HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
+	return String(HwProfInfo.szHwProfileGuid);
+}
+
+void OS_Windows::set_ime_position(const Point2 &p_pos) {
+
+	HIMC himc = ImmGetContext(hWnd);
+	COMPOSITIONFORM cps;
+	cps.dwStyle = CFS_FORCE_POSITION;
+	cps.ptCurrentPos.x = p_pos.x;
+	cps.ptCurrentPos.y = p_pos.y;
+	ImmSetCompositionWindow(himc, &cps);
+	ImmReleaseContext(hWnd, himc);
+}
+
 bool OS_Windows::is_joy_known(int p_device) {
 	return input->is_joy_mapped(p_device);
 }

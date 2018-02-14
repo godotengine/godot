@@ -549,6 +549,21 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 	XFree(preedit_attr);
 }
 
+String OS_X11::get_unique_id() const {
+
+	static String machine_id;
+	if (machine_id.empty()) {
+		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
+			while (machine_id.empty() && !f->eof_reached()) {
+				machine_id = f->get_line().strip_edges();
+			}
+			f->close();
+			memdelete(f);
+		}
+	}
+	return machine_id;
+}
+
 void OS_X11::finalize() {
 
 	if (main_loop)
