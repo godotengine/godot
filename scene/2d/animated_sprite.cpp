@@ -354,23 +354,32 @@ void AnimatedSprite::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 
 			if (frames.is_null()) {
-				print_line("no draw no faemos");
+				print_line("no draw no faemos: " + String(get_path()));
 				return;
 			}
 
 			if (frame < 0) {
-				print_line("no draw frame <0");
+				print_line("no draw frame <0: " + String(get_path()));
 				return;
 			}
 
 			if (!frames->has_animation(animation)) {
-				print_line("no draw no anim: " + String(animation));
+				print_line("no draw no anim: "
+					+ String(get_path()) + " " + String(animation));
+				return;
+			}
+
+			int frames_count = frames->get_frame_count(animation);
+			if (frames_count == 0){
+				print_line("no draw frames are empty for anim: "
+					+ String(get_path()) + " " + String(animation));
 				return;
 			}
 
 			Ref<Texture> texture = frames->get_frame(animation, frame);
 			if (texture.is_null()) {
-				print_line("no draw texture is null");
+				print_line("no draw texture is null for anim: "
+					+ String(get_path()) + " " + String(animation));
 				return;
 			}
 
