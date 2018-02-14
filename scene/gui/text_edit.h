@@ -162,7 +162,7 @@ class TextEdit : public Control {
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
-		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line);
+		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
@@ -450,6 +450,7 @@ public:
 	void indent_left();
 	void indent_right();
 	int get_indent_level(int p_line) const;
+	bool is_line_comment(int p_line) const;
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
