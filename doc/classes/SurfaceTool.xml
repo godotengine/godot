@@ -196,8 +196,11 @@
 		<method name="generate_normals">
 			<return type="void">
 			</return>
+			<argument index="0" name="flip" type="bool" default="false">
+			</argument>
 			<description>
 				Generates normals from Vertices so you do not have to do it manually.
+				Setting "flip" [code]true[/code] inverts resulting normals.
 			</description>
 		</method>
 		<method name="generate_tangents">
