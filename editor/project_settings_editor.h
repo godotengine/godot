@@ -176,6 +176,8 @@ public:
 	void popup_project_settings();
 	void set_plugins_page();
 
+	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
+
 	TabContainer *get_tabs();
 
 	void queue_save();

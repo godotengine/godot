@@ -92,45 +92,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 void EditorAutoloadSettings::_autoload_add() {
 
-	String name = autoload_add_name->get_text();
-
-	String error;
-	if (!_autoload_name_is_valid(name, &error)) {
-		EditorNode::get_singleton()->show_warning(error);
-		return;
-	}
-
-	String path = autoload_add_path->get_line_edit()->get_text();
-	if (!FileAccess::exists(path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("File does not exist."));
-		return;
-	}
-
-	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("Not in resource path."));
-		return;
-	}
-
-	name = "autoload/" + name;
-
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
-	undo_redo->create_action(TTR("Add AutoLoad"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
-
-	if (ProjectSettings::get_singleton()->has_setting(name)) {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
-	} else {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
-	}
-
-	undo_redo->add_do_method(this, "update_autoload");
-	undo_redo->add_undo_method(this, "update_autoload");
-
-	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
-	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
-
-	undo_redo->commit_action();
+	autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text());
 
 	autoload_add_path->get_line_edit()->set_text("");
 	autoload_add_name->set_text("");
@@ -539,6 +501,74 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	undo_redo->commit_action();
 }
 
+void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
+
+	String name = p_name;
+
+	String error;
+	if (!_autoload_name_is_valid(name, &error)) {
+		EditorNode::get_singleton()->show_warning(error);
+		return;
+	}
+
+	String path = p_path;
+	if (!FileAccess::exists(path)) {
+		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("File does not exist."));
+		return;
+	}
+
+	if (!path.begins_with("res://")) {
+		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("Not in resource path."));
+		return;
+	}
+
+	name = "autoload/" + name;
+
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+	undo_redo->create_action(TTR("Add AutoLoad"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
+
+	if (ProjectSettings::get_singleton()->has_setting(name)) {
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
+	} else {
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+	}
+
+	undo_redo->add_do_method(this, "update_autoload");
+	undo_redo->add_undo_method(this, "update_autoload");
+
+	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
+	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
+
+	undo_redo->commit_action();
+}
+
+void EditorAutoloadSettings::autoload_remove(const String &p_name) {
+
+	String name = "autoload/" + p_name;
+
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+	int order = ProjectSettings::get_singleton()->get_order(name);
+
+	undo_redo->create_action(TTR("Remove Autoload"));
+
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
+
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_persisting", name, true);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", order);
+
+	undo_redo->add_do_method(this, "update_autoload");
+	undo_redo->add_undo_method(this, "update_autoload");
+
+	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
+	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
+
+	undo_redo->commit_action();
+}
+
 void EditorAutoloadSettings::_bind_methods() {
 
 	ClassDB::bind_method("_autoload_add", &EditorAutoloadSettings::_autoload_add);
@@ -554,6 +584,8 @@ void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
 
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
+	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
+	ClassDB::bind_method("autoload_remove", &EditorAutoloadSettings::autoload_remove);
 
 	ADD_SIGNAL(MethodInfo("autoload_changed"));
 }
