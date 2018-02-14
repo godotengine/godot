@@ -307,6 +307,14 @@ bool _OS::is_window_maximized() const {
 	return OS::get_singleton()->is_window_maximized();
 }
 
+void _OS::set_window_always_on_top(bool p_enabled) {
+	OS::get_singleton()->set_window_always_on_top(p_enabled);
+}
+
+bool _OS::is_window_always_on_top() const {
+	return OS::get_singleton()->is_window_always_on_top();
+}
+
 void _OS::set_borderless_window(bool p_borderless) {
 	OS::get_singleton()->set_borderless_window(p_borderless);
 }
@@ -1047,6 +1055,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_window_minimized"), &_OS::is_window_minimized);
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"), &_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"), &_OS::is_window_maximized);
+	ObjectTypeDB::bind_method(_MD("set_window_always_on_top", "enabled"), &_OS::set_window_always_on_top);
+	ObjectTypeDB::bind_method(_MD("is_window_always_on_top"), &_OS::is_window_always_on_top);
 	ObjectTypeDB::bind_method(_MD("request_attention"), &_OS::request_attention);
 	ObjectTypeDB::bind_method(_MD("get_real_window_size"), &_OS::get_real_window_size);
 	ObjectTypeDB::bind_method(_MD("center_window"), &_OS::center_window);
