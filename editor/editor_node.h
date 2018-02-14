@@ -653,6 +653,8 @@ public:
 	PropertyEditor *get_property_editor() { return property_editor; }
 	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
 
+	ProjectSettingsEditor *get_project_settings() { return project_settings; }
+
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 

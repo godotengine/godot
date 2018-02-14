@@ -301,6 +301,14 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
+void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
+	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
+}
+
+void EditorPlugin::remove_autoload_singleton(const String &p_name) {
+	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
+}
+
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
@@ -704,6 +712,9 @@ void EditorPlugin::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"),&EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+
+	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
+	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
 
