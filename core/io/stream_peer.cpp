@@ -310,7 +310,7 @@ float StreamPeer::get_float() {
 	return decode_float(buf);
 }
 
-float StreamPeer::get_double() {
+double StreamPeer::get_double() {
 
 	uint8_t buf[8];
 	get_data(buf, 8);
