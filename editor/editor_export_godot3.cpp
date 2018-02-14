@@ -2219,9 +2219,69 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 			}
 		}
 
-		if (file.extension().to_lower() == "fnt") {
+		// Changing all the old extensions to new Godot 3.0 extensions.
+		// Refer PR #9201
+		String extension = file.extension().to_lower();
+		if (extension == "anm") {
+			resource_replace_map[file] = file.basename() + ".anim";
+			resource_replace_map[file_local] = file_local.basename() + ".anim";
+		} else if (extension == "asogg") {
+			resource_replace_map[file] = file.basename() + ".oggstr";
+			resource_replace_map[file_local] = file_local.basename() + ".oggstr";
+		} else if (extension == "atex") {
+			resource_replace_map[file] = file.basename() + ".atlastex";
+			resource_replace_map[file_local] = file_local.basename() + ".atlastex";
+		} else if (extension == "cbm") {
+			resource_replace_map[file] = file.basename() + ".cubemap";
+			resource_replace_map[file_local] = file_local.basename() + ".cubemap";
+		} else if (extension == "cvtex") {
+			resource_replace_map[file] = file.basename() + ".curvetex";
+			resource_replace_map[file_local] = file_local.basename() + ".curvetex";
+		} else if (extension == "fnt") {
 			resource_replace_map[file] = file.basename() + ".font";
 			resource_replace_map[file_local] = file_local.basename() + ".font";
+		} else if (extension == "gt") {
+			resource_replace_map[file] = file.basename() + ".meshlib";
+			resource_replace_map[file_local] = file_local.basename() + ".meshlib";
+		} else if (extension == "ltex") {
+			resource_replace_map[file] = file.basename() + ".largetex";
+			resource_replace_map[file_local] = file_local.basename() + ".largetex";
+		} else if (extension == "mmsh") {
+			resource_replace_map[file] = file.basename() + ".multimesh";
+			resource_replace_map[file_local] = file_local.basename() + ".multimesh";
+		} else if (extension == "msh") {
+			resource_replace_map[file] = file.basename() + ".mesh";
+			resource_replace_map[file_local] = file_local.basename() + ".mesh";
+		} else if (extension == "mtl") {
+			resource_replace_map[file] = file.basename() + ".material";
+			resource_replace_map[file_local] = file_local.basename() + ".material";
+		} else if (extension == "sbx") {
+			resource_replace_map[file] = file.basename() + ".stylebox";
+			resource_replace_map[file_local] = file_local.basename() + ".stylebox";
+		} else if (extension == "sgp") {
+			resource_replace_map[file] = file.basename() + ".vshader";
+			resource_replace_map[file_local] = file_local.basename() + ".vshader";
+		} else if (extension == "shd") {
+			resource_replace_map[file] = file.basename() + ".shader";
+			resource_replace_map[file_local] = file_local.basename() + ".shader";
+		} else if (extension == "shp") {
+			resource_replace_map[file] = file.basename() + ".shape";
+			resource_replace_map[file_local] = file_local.basename() + ".shape";
+		} else if (extension == "smp") {
+			resource_replace_map[file] = file.basename() + ".sample";
+			resource_replace_map[file_local] = file_local.basename() + ".sample";
+		} else if (extension == "tex") {
+			resource_replace_map[file] = file.basename() + ".texture";
+			resource_replace_map[file_local] = file_local.basename() + ".texture";
+		} else if (extension == "thm") {
+			resource_replace_map[file] = file.basename() + ".theme";
+			resource_replace_map[file_local] = file_local.basename() + ".theme";
+		} else if (extension == "wrd") {
+			resource_replace_map[file] = file.basename() + ".world";
+			resource_replace_map[file_local] = file_local.basename() + ".world";
+		} else if (extension == "xl") {
+			resource_replace_map[file] = file.basename() + ".translation";
+			resource_replace_map[file_local] = file_local.basename() + ".translation";
 		}
 	}
 
@@ -2243,8 +2303,48 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 
 		target_path = p_path.plus_file(path.replace("res://", ""));
 
+		// Changing all the old extensions to new Godot 3.0 extensions.
+		// Refer PR #9201
 		if (extension == "fnt") {
 			target_path = target_path.basename() + ".font";
+		} else if (extension == "asogg") {
+			target_path = target_path.basename() + ".oggstr";
+		} else if (extension == "atex") {
+			target_path = target_path.basename() + ".atlastex";
+		} else if (extension == "cbm") {
+			target_path = target_path.basename() + ".cubemap";
+		} else if (extension == "cvtex") {
+			target_path = target_path.basename() + ".curvetex";
+		} else if (extension == "fnt") {
+			target_path = target_path.basename() + ".font";
+		} else if (extension == "gt") {
+			target_path = target_path.basename() + ".meshlib";
+		} else if (extension == "ltex") {
+			target_path = target_path.basename() + ".largetex";
+		} else if (extension == "mmsh") {
+			target_path = target_path.basename() + ".multimesh";
+		} else if (extension == "msh") {
+			target_path = target_path.basename() + ".mesh";
+		} else if (extension == "mtl") {
+			target_path = target_path.basename() + ".material";
+		} else if (extension == "sbx") {
+			target_path = target_path.basename() + ".stylebox";
+		} else if (extension == "sgp") {
+			target_path = target_path.basename() + ".vshader";
+		} else if (extension == "shd") {
+			target_path = target_path.basename() + ".shader";
+		} else if (extension == "shp") {
+			target_path = target_path.basename() + ".shape";
+		} else if (extension == "smp") {
+			target_path = target_path.basename() + ".sample";
+		} else if (extension == "tex") {
+			target_path = target_path.basename() + ".texture";
+		} else if (extension == "thm") {
+			target_path = target_path.basename() + ".theme";
+		} else if (extension == "wrd") {
+			target_path = target_path.basename() + ".world";
+		} else if (extension == "xl") {
+			target_path = target_path.basename() + ".translation";
 		}
 
 		progress.step(target_path.get_file(), idx++);
