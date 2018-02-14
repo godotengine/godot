@@ -596,7 +596,6 @@ private:
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	void _save_default_environment();
 
-	bool _call_build();
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 
@@ -634,6 +633,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool call_build();
+
 	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
 
 	enum EditorTable {
