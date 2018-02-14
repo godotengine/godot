@@ -19,10 +19,10 @@ matrix:
     - env: STATIC_CHECKS=yes
       os: linux
       compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools OPTIONS="${OPTIONS} builtin_openssl=yes"
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools"
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang OPTIONS="${OPTIONS} builtin_openssl=yes"
+    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
       os: linux
       compiler: clang
     #- env: GODOT_TARGET=windows TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
@@ -56,7 +56,6 @@ addons:
       - libglu1-mesa-dev
       - libasound2-dev
       - libfreetype6-dev
-      - libssl-dev
 
       # For cross-compiling to Windows.
       #- binutils-mingw-w64-i686
