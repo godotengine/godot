@@ -81,7 +81,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);
-	void _browse_path(bool browse_parent);
+	void _browse_path(bool browse_parent, bool p_save);
 	void _file_selected(const String &p_file);
 	virtual void ok_pressed();
 	void _create_new();
