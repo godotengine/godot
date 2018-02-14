@@ -366,11 +366,17 @@ void Sprite3D::_draw() {
 		final_rect.position * pixel_size,
 
 	};
+
+	// Properly setup UVs for impostor textures (AtlasTexture).
+	RID texture_rid = texture->get_rid();
+	Vector2 src_tsize = Vector2(
+			VS::get_singleton()->texture_get_width(texture_rid),
+			VS::get_singleton()->texture_get_height(texture_rid));
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -649,18 +655,23 @@ void AnimatedSprite3D::_draw() {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
 		final_rect.position * pixel_size,
 
 	};
+
+	// Properly setup UVs for impostor textures (AtlasTexture).
+	RID texture_rid = texture->get_rid();
+	Vector2 src_tsize = Vector2(
+			VS::get_singleton()->texture_get_width(texture_rid),
+			VS::get_singleton()->texture_get_height(texture_rid));
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
