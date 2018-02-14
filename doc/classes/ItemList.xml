@@ -308,7 +308,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
+			If [code]true[/code] the currently selected item may be selected again.
+		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
+			If [code]true[/code] a right mouse button click can select items.
 		</member>
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height">
 		</member>
@@ -327,6 +331,7 @@
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width">
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode">
+			Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
 		</member>
 	</members>
 	<signals>

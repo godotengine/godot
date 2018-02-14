@@ -148,8 +148,6 @@ public:
 	}
 };
 
-#define SORT_SCRIPT_LIST
-
 void ScriptEditorQuickOpen::popup(const Vector<String> &p_functions, bool p_dontclear) {
 
 	popup_centered_ratio(0.6);
@@ -2608,11 +2606,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);
+	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	help_overview = memnew(ItemList);
 	list_split->add_child(help_overview);
+	help_overview->set_allow_reselect(true);
 	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 

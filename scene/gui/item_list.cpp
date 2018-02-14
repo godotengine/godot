@@ -517,11 +517,11 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 					emit_signal("item_rmb_selected", i, get_local_mouse_position());
 				} else {
-					bool selected = !items[i].selected;
+					bool selected = items[i].selected;
 
 					select(i, select_mode == SELECT_SINGLE || !mb->get_command());
 
-					if (selected) {
+					if (!selected || allow_reselect) {
 						if (select_mode == SELECT_SINGLE) {
 							emit_signal("item_selected", i);
 						} else
@@ -1241,12 +1241,23 @@ int ItemList::find_metadata(const Variant &p_metadata) const {
 }
 
 void ItemList::set_allow_rmb_select(bool p_allow) {
+
 	allow_rmb_select = p_allow;
 }
 
 bool ItemList::get_allow_rmb_select() const {
 
 	return allow_rmb_select;
+}
+
+void ItemList::set_allow_reselect(bool p_allow) {
+
+	allow_reselect = p_allow;
+}
+
+bool ItemList::get_allow_reselect() const {
+
+	return allow_reselect;
 }
 
 void ItemList::set_icon_scale(real_t p_scale) {
@@ -1404,6 +1415,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_rmb_select", "allow"), &ItemList::set_allow_rmb_select);
 	ClassDB::bind_method(D_METHOD("get_allow_rmb_select"), &ItemList::get_allow_rmb_select);
 
+	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &ItemList::set_allow_reselect);
+	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &ItemList::get_allow_reselect);
+
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
 
@@ -1422,6 +1436,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "max_text_lines"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
@@ -1476,6 +1491,7 @@ ItemList::ItemList() {
 	ensure_selected_visible = false;
 	defer_select_single = -1;
 	allow_rmb_select = false;
+	allow_reselect = false;
 	do_autoscroll_to_bottom = false;
 
 	icon_scale = 1.0f;
