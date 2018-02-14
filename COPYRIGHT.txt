@@ -218,20 +218,10 @@ Comment: WebP codec
 Copyright: 2010, Google Inc.
 License: BSD-3-clause
 
-Files: ./thirdparty/libwebsockets/
-Comment: libwebsockets
-Copyright: 2010-2017, Andy Green
-License: LGPL-2.1+SLE (libwebsockets)
-
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
 Copyright: 2006-2015, ARM Limited
 License: Apache-2.0
-
-Files: ./thirdparty/miniupnpc/
-Comment: MiniUPnPc
-Copyright: 2005-2016, Thomas Bernard
-License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
 Comment: MiniZip
