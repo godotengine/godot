@@ -106,6 +106,8 @@ private:
 
 	bool allow_rmb_select;
 
+	bool allow_reselect;
+
 	real_t icon_scale;
 
 	bool do_autoscroll_to_bottom;
@@ -197,6 +199,9 @@ public:
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
+
+	void set_allow_reselect(bool p_allow);
+	bool get_allow_reselect() const;
 
 	void ensure_current_is_visible();
 
