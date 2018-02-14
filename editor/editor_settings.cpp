@@ -256,8 +256,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 		String best;
 
-		for (int i = 0; i < translations.size(); i++) {
-			String locale = translations[i]->get_locale();
+		EditorTranslationList *etl = _editor_translations;
+
+		while (etl->data) {
+
+			const String &locale = etl->lang;
 			lang_hint += ",";
 			lang_hint += locale;
 
@@ -268,6 +271,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (best == String() && host_lang.begins_with(locale)) {
 				best = locale;
 			}
+
+			etl++;
 		}
 
 		if (best == String()) {
@@ -883,11 +888,29 @@ void EditorSettings::setup_language() {
 	if (lang == "en")
 		return; //none to do
 
-	for (int i = 0; i < translations.size(); i++) {
-		if (translations[i]->get_locale() == lang) {
-			TranslationServer::get_singleton()->set_tool_translation(translations[i]);
-			break;
+	EditorTranslationList *etl = _editor_translations;
+
+	while (etl->data) {
+
+		if (etl->lang == lang) {
+
+			Vector<uint8_t> data;
+			data.resize(etl->uncomp_size);
+			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+
+			FileAccessMemory *fa = memnew(FileAccessMemory);
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL, "translation_" + String(etl->lang));
+
+			if (tr.is_valid()) {
+				tr->set_locale(etl->lang);
+				TranslationServer::get_singleton()->set_tool_translation(tr);
+				break;
+			}
 		}
+
+		etl++;
 	}
 }
 
@@ -1456,27 +1479,6 @@ EditorSettings::EditorSettings() {
 	last_order = 0;
 	optimize_save = true;
 	save_changed_setting = true;
-
-	EditorTranslationList *etl = _editor_translations;
-
-	while (etl->data) {
-
-		Vector<uint8_t> data;
-		data.resize(etl->uncomp_size);
-		Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-		FileAccessMemory *fa = memnew(FileAccessMemory);
-		fa->open_custom(data.ptr(), data.size());
-
-		Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL, "translation_" + String(etl->lang));
-
-		if (tr.is_valid()) {
-			tr->set_locale(etl->lang);
-			translations.push_back(tr);
-		}
-
-		etl++;
-	}
 
 	_load_defaults();
 }
