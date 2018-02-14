@@ -1075,6 +1075,10 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		}
 	};
 
+	if (video_mode.always_on_top) {
+		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
+
 #if defined(OPENGL_ENABLED)
 	gl_context = memnew(ContextGL_Win(hWnd, true));
 	gl_context->initialize();
@@ -1614,6 +1618,19 @@ bool OS_Windows::is_window_maximized() const {
 	return maximized;
 }
 
+void OS_Windows::set_window_always_on_top(bool p_enabled) {
+	if (video_mode.always_on_top == p_enabled)
+		return;
+
+	video_mode.always_on_top = p_enabled;
+
+	_update_window_style();
+}
+
+bool OS_Windows::is_window_always_on_top() const {
+	return video_mode.always_on_top;
+}
+
 void OS_Windows::set_borderless_window(bool p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
@@ -1637,6 +1654,8 @@ void OS_Windows::_update_window_style(bool repaint) {
 			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE);
 		}
 	}
+
+	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	if (repaint) {
 		RECT rect;
