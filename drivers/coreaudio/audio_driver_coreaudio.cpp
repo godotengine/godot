@@ -37,9 +37,7 @@
 #define kOutputBus 0
 
 #ifdef OSX_ENABLED
-OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID,
-		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
-		void *inClientData) {
+static OSStatus outputDeviceAddressCB(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *inClientData) {
 	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
 
 	// If our selected device is the Default call set_device to update the
