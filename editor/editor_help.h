@@ -54,7 +54,30 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Tree *search_options;
 	String base_type;
 
-	class IncrementalSearch;
+	class IncrementalSearch : public Reference {
+		String term;
+		TreeItem *root;
+
+		EditorHelpSearch *search;
+		Tree *search_options;
+
+		DocData *doc;
+		Ref<Texture> def_icon;
+
+		int phase;
+		Map<String, DocData::ClassDoc>::Element *iterator;
+
+		void phase1(Map<String, DocData::ClassDoc>::Element *E);
+		void phase2(Map<String, DocData::ClassDoc>::Element *E);
+		bool slice();
+
+	public:
+		IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term);
+
+		bool empty() const;
+		bool work(uint64_t slot = 1000000 / 10);
+	};
+
 	Ref<IncrementalSearch> search;
 
 	void _update_search();
