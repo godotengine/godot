@@ -308,6 +308,10 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
 	return get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
 }
 
+float InputEventKey::get_input_axis_value(const StringName &p_axis) const {
+	return InputEvent::get_input_axis_value(p_axis) * (is_pressed() ? 1.0 : 0.0);
+}
+
 bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
 
 	Ref<InputEventKey> key = p_event;
@@ -435,6 +439,10 @@ void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
 bool InputEventMouseButton::is_doubleclick() const {
 
 	return doubleclick;
+}
+
+float InputEventMouseButton::get_input_axis_value(const StringName &p_axis) const {
+	return InputEvent::get_input_axis_value(p_axis) * (is_pressed() ? 1.0 : 0.0);
 }
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -645,7 +653,8 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event) const 
 	if (jm.is_null())
 		return false;
 
-	return (axis == jm->axis && ((axis_value < 0) == (jm->axis_value < 0) || jm->axis_value == 0));
+	// A match event having a value of 0 matches everything, not just negative values.
+	return (axis == jm->axis && ((axis_value == 0) || (axis_value < 0) == (jm->axis_value <= 0)));
 }
 
 String InputEventJoypadMotion::as_text() const {
@@ -709,6 +718,10 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event) const 
 	return button_index == jb->button_index;
 }
 
+float InputEventJoypadButton::get_input_axis_value(const StringName &p_axis) const {
+	return InputEvent::get_input_axis_value(p_axis) * (is_pressed() ? 1.0 : 0.0);
+}
+
 String InputEventJoypadButton::as_text() const {
 
 	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
@@ -764,6 +777,10 @@ void InputEventScreenTouch::set_pressed(bool p_pressed) {
 bool InputEventScreenTouch::is_pressed() const {
 
 	return pressed;
+}
+
+float InputEventScreenTouch::get_input_axis_value(const StringName &p_axis) const {
+	return InputEvent::get_input_axis_value(p_axis) * (is_pressed() ? 1.0 : 0.0);
 }
 
 Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -955,7 +972,7 @@ float InputEventAxis::get_axis_value() const {
 }
 
 float InputEventAxis::get_input_axis_value(const StringName &p_axis) const {
-	return is_axis(p_axis) ? axis_value : 0.0f;
+	return InputEvent::get_input_axis_value(p_axis) * (is_axis(p_axis) ? axis_value : 0.0f);
 }
 
 String InputEventAxis::as_text() const {

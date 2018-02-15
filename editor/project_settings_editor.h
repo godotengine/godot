@@ -88,7 +88,13 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *action_name;
 	Button *action_add;
 	Label *action_add_error;
-	Tree *input_editor;
+	Tree *input_action_editor;
+
+	LineEdit *axis_name;
+	Button *axis_add;
+	Label *axis_add_error;
+	Tree *input_axis_editor;
+
 	bool setting;
 	bool updating_translations;
 
@@ -117,6 +123,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _item_add();
 	void _item_del();
 	void _update_actions();
+	void _update_axes();
 	void _save();
 	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = NULL);
 	void _edit_item(Ref<InputEvent> p_exiting_event);
@@ -124,16 +131,27 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_check(String p_action);
 	void _action_adds(String);
 	void _action_add();
+
+	void _axis_check(String p_axis);
+	void _axis_adds(String);
+	void _axis_add();
+
 	void _device_input_add();
+	float _get_axis_mul_value(String p_name, int axis_idx);
 
 	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
 	void _action_edited();
 	void _action_activated();
 	void _action_button_pressed(Object *p_obj, int p_column, int p_id);
+	void _axis_selected();
+	void _axis_edited();
+	void _axis_activated();
+	void _axis_button_pressed(Object *p_obj, int p_column, int p_id);
 	void _wait_for_key(const Ref<InputEvent> &p_event);
 	void _press_a_key_confirm();
-	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
+	void _show_last_added_action(const Ref<InputEvent> &p_event, const String &p_name);
+	void _show_last_added_axis(const Ref<InputEvent> &p_event, const String &p_name);
 
 	void _settings_prop_edited(const String &p_name);
 	void _settings_changed();

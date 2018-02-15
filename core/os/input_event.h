@@ -248,6 +248,8 @@ public:
 
 	uint32_t get_scancode_with_modifiers() const;
 
+	virtual float get_input_axis_value(const StringName &p_axis) const;
+
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 
@@ -307,6 +309,8 @@ public:
 
 	void set_doubleclick(bool p_doubleclick);
 	bool is_doubleclick() const;
+
+	virtual float get_input_axis_value(const StringName &p_axis) const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
@@ -385,6 +389,7 @@ public:
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
 
+	virtual float get_input_axis_value(const StringName &p_axis) const;
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -411,6 +416,8 @@ public:
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
+
+	virtual float get_input_axis_value(const StringName &p_axis) const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;

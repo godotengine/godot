@@ -381,8 +381,8 @@ void InputMap::load_from_globals() {
 			if (binding.size() < 2)
 				continue;
 
-			Ref<InputEvent> ie = binding[1];
-			float val = binding[2];
+			Ref<InputEvent> ie = binding[0];
+			float val = binding[1];
 			if (ie.is_null())
 				continue;
 
