@@ -319,10 +319,10 @@ void FileDialog::deselect_items() {
 
 			case MODE_OPEN_FILE:
 			case MODE_OPEN_FILES:
-				get_ok()->set_text(RTR("Open"));
+				get_ok()->set_text(TTR("Open"));
 				break;
 			case MODE_OPEN_DIR:
-				get_ok()->set_text(RTR("Select Current Folder"));
+				get_ok()->set_text(TTR("Select Current Folder"));
 				break;
 		}
 	}
@@ -345,7 +345,7 @@ void FileDialog::_tree_selected() {
 	get_ok()->set_disabled(_is_open_should_be_disabled());
 }
 
-void FileDialog::_tree_dc_selected() {
+void FileDialog::_tree_item_activated() {
 
 	TreeItem *ti = tree->get_selected();
 	if (!ti)
@@ -754,7 +754,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &FileDialog::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("_tree_selected"), &FileDialog::_tree_selected);
-	ClassDB::bind_method(D_METHOD("_tree_db_selected"), &FileDialog::_tree_dc_selected);
+	ClassDB::bind_method(D_METHOD("_tree_item_activated"), &FileDialog::_tree_item_activated);
 	ClassDB::bind_method(D_METHOD("_dir_entered"), &FileDialog::_dir_entered);
 	ClassDB::bind_method(D_METHOD("_file_entered"), &FileDialog::_file_entered);
 	ClassDB::bind_method(D_METHOD("_action_pressed"), &FileDialog::_action_pressed);
@@ -889,7 +889,7 @@ FileDialog::FileDialog() {
 
 	connect("confirmed", this, "_action_pressed");
 	tree->connect("cell_selected", this, "_tree_selected", varray(), CONNECT_DEFERRED);
-	tree->connect("item_activated", this, "_tree_db_selected", varray());
+	tree->connect("item_activated", this, "_tree_item_activated", varray());
 	tree->connect("nothing_selected", this, "deselect_items");
 	dir->connect("text_entered", this, "_dir_entered");
 	file->connect("text_entered", this, "_file_entered");
