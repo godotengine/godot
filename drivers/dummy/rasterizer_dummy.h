@@ -451,24 +451,70 @@ public:
 	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
 
 	/* LIGHTMAP CAPTURE */
-	struct LightmapCaptureOctree {
+	struct Instantiable : public RID_Data {
 
-		enum {
-			CHILD_EMPTY = 0xFFFFFFFF
-		};
+		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		uint16_t light[6][3]; //anisotropic light
-		float alpha;
-		uint32_t children[8];
+		_FORCE_INLINE_ void instance_change_notify() {
+
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while (instances) {
+
+				instances->self()->base_changed();
+				instances = instances->next();
+			}
+		}
+
+		_FORCE_INLINE_ void instance_material_change_notify() {
+
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while (instances) {
+
+				instances->self()->base_material_changed();
+				instances = instances->next();
+			}
+		}
+
+		_FORCE_INLINE_ void instance_remove_deps() {
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while (instances) {
+
+				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
+				instances->self()->base_removed();
+				instances = next;
+			}
+		}
+
+		Instantiable() {}
+		virtual ~Instantiable() {
+		}
 	};
 
-	RID lightmap_capture_create() { return RID(); }
+	struct LightmapCapture : public Instantiable {
+
+		PoolVector<LightmapCaptureOctree> octree;
+		AABB bounds;
+		Transform cell_xform;
+		int cell_subdiv;
+		float energy;
+		LightmapCapture() {
+			energy = 1.0;
+			cell_subdiv = 1;
+		}
+	};
+
+	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
 	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
+	RID lightmap_capture_create() {
+		LightmapCapture *capture = memnew(LightmapCapture);
+		return lightmap_capture_data_owner.make_rid(capture);
+	}
 	PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		PoolVector<uint8_t> p;
-		return p;
+		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+		ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
+		return PoolVector<uint8_t>();
 	}
 	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
 	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
@@ -476,9 +522,10 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const PoolVector<RasterizerStorage::LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		PoolVector<RasterizerStorage::LightmapCaptureOctree> p;
-		return &p;
+	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
+		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+		ERR_FAIL_COND_V(!capture, NULL);
+		return &capture->octree;
 	}
 
 	/* PARTICLES */
