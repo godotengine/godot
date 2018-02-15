@@ -311,6 +311,8 @@ void Spatial::set_translation(const Vector3 &p_translation) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+
+	_change_notify("transform");
 }
 
 void Spatial::set_rotation(const Vector3 &p_euler_rad) {
@@ -326,6 +328,8 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+
+	_change_notify("transform");
 }
 
 void Spatial::set_rotation_degrees(const Vector3 &p_euler_deg) {
@@ -346,6 +350,8 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+
+	_change_notify("transform");
 }
 
 Vector3 Spatial::get_translation() const {
