@@ -2001,6 +2001,11 @@ struct _ScriptEditorItemData {
 };
 
 void ScriptEditor::_update_members_overview_visibility() {
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count()) {
+		return;
+	}
+
 	if (members_overview_enabled) {
 		members_overview->set_hidden(false);
 	} else {
@@ -2010,6 +2015,11 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count()) {
+		return;
+	}
 
 	if (tab_container->get_child_count() <= 0)
 		return;
