@@ -155,8 +155,9 @@ def rstize_text(text, cclass):
 
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
+    next_brac_pos = text.find('[');
     while True:
-        pos = text.find('*', pos)
+        pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
             break
         text = text[:pos] + "\*" + text[pos + 1:]
@@ -165,7 +166,7 @@ def rstize_text(text, cclass):
     # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
     pos = 0
     while True:
-        pos = text.find('_', pos)
+        pos = text.find('_', pos, next_brac_pos)
         if pos == -1:
             break
         if not text[pos + 1].isalnum():  # don't escape within a snake_case word
@@ -263,6 +264,27 @@ def rstize_text(text, cclass):
         # Properly escape things like `[Node]s`
         if escape_post and post_text and post_text[0].isalnum(): # not punctuation, escape
             post_text = '\ ' + post_text
+
+        next_brac_pos = post_text.find('[',0)
+        iter_pos = 0
+        while not inside_code:
+            iter_pos = post_text.find('*', iter_pos, next_brac_pos)
+            if iter_pos == -1:
+                break
+            post_text = post_text[:iter_pos] + "\*" + post_text[iter_pos + 1:]
+            iter_pos += 2
+
+        iter_pos = 0
+        while not inside_code:
+            iter_pos = post_text.find('_', iter_pos, next_brac_pos)
+            if iter_pos == -1:
+                break
+            if not post_text[iter_pos + 1].isalnum():  # don't escape within a snake_case word
+                post_text = post_text[:iter_pos] + "\_" + post_text[iter_pos + 1:]
+                iter_pos += 2
+            else:
+                iter_pos += 1
+
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
@@ -500,7 +522,7 @@ def make_rst_class(node):
                 enums.append(c)
             else:
                 consts.append(c)
-    
+
     if len(consts) > 0:
         f.write(make_heading('Numeric Constants', '-'))
         for c in list(consts):
@@ -512,7 +534,7 @@ def make_rst_class(node):
                 s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
         f.write('\n')
-    
+
     if len(enum_names) > 0:
         f.write(make_heading('Enums', '-'))
         for e in enum_names:
