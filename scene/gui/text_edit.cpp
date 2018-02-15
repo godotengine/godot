@@ -3212,7 +3212,7 @@ void TextEdit::_clear() {
 		op.type = TextOperation::TYPE_CLEAR;
 		op.from_line = 0;
 		op.from_column = 0;
-		op.to_line = get_line_count() - 1;
+		op.to_line = MAX(0, get_line_count() - 1);
 		op.to_column = get_line(op.to_line).length();
 		op.text = undo_text;
 		op.version = ++version;
