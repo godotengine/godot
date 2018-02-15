@@ -308,15 +308,6 @@ void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size
 	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
 	m->surface_set_material(0, p_material);
 	add_mesh(m);
-
-	Instance ins;
-	ins.mesh = m;
-	if (valid) {
-		ins.create_instance(spatial_node);
-		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
-	}
-
-	instances.push_back(ins);
 }
 
 void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {
@@ -1130,7 +1121,7 @@ void CameraSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p
 	if (camera->get_projection() == Camera::PROJECTION_PERSPECTIVE) {
 		Transform gt = camera->get_global_transform();
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], 1.0, gt);
-		camera->set("fov", a);
+		camera->set("fov", a * 2.0);
 	} else {
 
 		Vector3 ra, rb;
@@ -1187,7 +1178,8 @@ void CameraSpatialGizmo::redraw() {
 
 		case Camera::PROJECTION_PERSPECTIVE: {
 
-			float fov = camera->get_fov();
+			// The real FOV is halved for accurate representation
+			float fov = camera->get_fov() / 2.0;
 
 			Vector3 side = Vector3(Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)));
 			Vector3 nside = side;

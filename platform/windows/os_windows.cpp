@@ -1075,6 +1075,10 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		}
 	};
 
+	if (video_mode.always_on_top) {
+		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
+
 #if defined(OPENGL_ENABLED)
 	gl_context = memnew(ContextGL_Win(hWnd, true));
 	gl_context->initialize();
@@ -1487,6 +1491,12 @@ Size2 OS_Windows::get_window_size() const {
 	GetClientRect(hWnd, &r);
 	return Vector2(r.right - r.left, r.bottom - r.top);
 }
+Size2 OS_Windows::get_real_window_size() const {
+
+	RECT r;
+	GetWindowRect(hWnd, &r);
+	return Vector2(r.right - r.left, r.bottom - r.top);
+}
 void OS_Windows::set_window_size(const Size2 p_size) {
 
 	video_mode.width = p_size.width;
@@ -1608,6 +1618,19 @@ bool OS_Windows::is_window_maximized() const {
 	return maximized;
 }
 
+void OS_Windows::set_window_always_on_top(bool p_enabled) {
+	if (video_mode.always_on_top == p_enabled)
+		return;
+
+	video_mode.always_on_top = p_enabled;
+
+	_update_window_style();
+}
+
+bool OS_Windows::is_window_always_on_top() const {
+	return video_mode.always_on_top;
+}
+
 void OS_Windows::set_borderless_window(bool p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
@@ -1631,6 +1654,8 @@ void OS_Windows::_update_window_style(bool repaint) {
 			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE);
 		}
 	}
+
+	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	if (repaint) {
 		RECT rect;
@@ -2440,6 +2465,24 @@ String OS_Windows::get_user_data_dir() const {
 	}
 
 	return ProjectSettings::get_singleton()->get_resource_path();
+}
+
+String OS_Windows::get_unique_id() const {
+
+	HW_PROFILE_INFO HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
+	return String(HwProfInfo.szHwProfileGuid);
+}
+
+void OS_Windows::set_ime_position(const Point2 &p_pos) {
+
+	HIMC himc = ImmGetContext(hWnd);
+	COMPOSITIONFORM cps;
+	cps.dwStyle = CFS_FORCE_POSITION;
+	cps.ptCurrentPos.x = p_pos.x;
+	cps.ptCurrentPos.y = p_pos.y;
+	ImmSetCompositionWindow(himc, &cps);
+	ImmReleaseContext(hWnd, himc);
 }
 
 bool OS_Windows::is_joy_known(int p_device) {

@@ -155,6 +155,7 @@ public:
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
+	virtual Size2 get_real_window_size() const;
 	virtual void set_window_size(const Size2 &p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -164,7 +165,10 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
+	virtual void set_window_always_on_top(bool p_enabled);
+	virtual bool is_window_always_on_top() const;
 	virtual void request_attention();
+	virtual void center_window();
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;

@@ -28,7 +28,7 @@ def _build_gdnative_api_struct_header(api):
             '\textern const godot_gdnative_ext_{0}_api_struct *_gdnative_wrapper_{0}_api_struct;'.format(name))
 
     gdnative_api_init_macro.append('\t_gdnative_wrapper_api_struct = options->api_struct;')
-    gdnative_api_init_macro.append('\tfor (int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
+    gdnative_api_init_macro.append('\tfor (unsigned int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
     gdnative_api_init_macro.append('\t\tswitch (_gdnative_wrapper_api_struct->extensions[i]->type) {')
 
     for name in api['extensions']:
@@ -66,19 +66,30 @@ def _build_gdnative_api_struct_header(api):
 
     out += ['};', '']
 
-    for name in api['extensions']:
-        out += [
-            'typedef struct godot_gdnative_ext_' + name + '_api_struct {',
+
+    def generate_extension_struct(name, ext, include_version=True):
+        ret_val = []
+        if ext['next']:
+            ret_val += generate_extension_struct(name, ext['next'])
+        
+        ret_val += [
+            'typedef struct godot_gdnative_ext_' + name + ('' if not include_version else ('_{0}_{1}'.format(ext['version']['major'], ext['version']['minor']))) + '_api_struct {',
             '\tunsigned int type;',
             '\tgodot_gdnative_api_version version;',
             '\tconst godot_gdnative_api_struct *next;'
         ]
 
-        for funcdef in api['extensions'][name]['api']:
+        for funcdef in ext['api']:
             args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
-            out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
+            ret_val.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
-        out += ['} godot_gdnative_ext_' + name + '_api_struct;', '']
+        ret_val += ['} godot_gdnative_ext_' + name + ('' if not include_version else ('_{0}_{1}'.format(ext['version']['major'], ext['version']['minor']))) + '_api_struct;', '']
+
+        return ret_val
+
+
+    for name in api['extensions']:
+        out += generate_extension_struct(name, api['extensions'][name], False)
 
     out += [
         'typedef struct godot_gdnative_core_api_struct {',
@@ -113,18 +124,35 @@ def _build_gdnative_api_struct_source(api):
         ''
     ]
 
-    for name in api['extensions']:
-        out += [
-            'extern const godot_gdnative_ext_' + name + '_api_struct api_extension_' + name + '_struct = {',
-            '\tGDNATIVE_EXT_' + api['extensions'][name]['type'] + ',',
-            '\t{' + str(api['extensions'][name]['version']['major']) + ', ' + str(api['extensions'][name]['version']['minor']) + '},',
-            '\tNULL,'
+    def get_extension_struct_name(name, ext, include_version=True):
+        return 'godot_gdnative_ext_' + name + ('' if not include_version else ('_{0}_{1}'.format(ext['version']['major'], ext['version']['minor']))) + '_api_struct'
+
+    def get_extension_struct_instance_name(name, ext, include_version=True):
+        return 'api_extension_' + name + ('' if not include_version else ('_{0}_{1}'.format(ext['version']['major'], ext['version']['minor']))) + '_struct'
+
+    def get_extension_struct_definition(name, ext, include_version=True):
+
+        ret_val = []
+
+        if ext['next']:
+            ret_val += get_extension_struct_definition(name, ext['next'])
+
+        ret_val += [
+            'extern const ' + get_extension_struct_name(name, ext, include_version) + ' ' + get_extension_struct_instance_name(name, ext, include_version) + ' = {',
+            '\tGDNATIVE_EXT_' + ext['type'] + ',',
+            '\t{' + str(ext['version']['major']) + ', ' + str(ext['version']['minor']) + '},',
+            '\t' + ('NULL' if not ext['next'] else ('(const godot_gdnative_api_struct *)&' + get_extension_struct_instance_name(name, ext['next']))) + ','
         ]
 
-        for funcdef in api['extensions'][name]['api']:
-            out.append('\t%s,' % funcdef['name'])
+        for funcdef in ext['api']:
+            ret_val.append('\t%s,' % funcdef['name'])
 
-        out += ['};\n']
+        ret_val += ['};\n']
+
+        return ret_val
+
+    for name in api['extensions']:
+        out += get_extension_struct_definition(name, api['extensions'][name], False)
 
     out += ['', 'const godot_gdnative_api_struct *gdnative_extensions_pointers[] = {']
 

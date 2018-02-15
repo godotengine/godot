@@ -42,13 +42,20 @@
 	#define HAVE_SSE2 1
 	#define HAVE_SSSE3 1
 	#define HAVE_AVX2 1
-#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__aarch64__)
+#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM)
 	#define ARCH_X86 0
 	#define ARCH_X86_64 0
 
 	#define ARCH_ARM 1
 	#define HAVE_NEON 1
 	#define HAVE_NEON_ASM 1
+#elif defined(__aarch64__)
+	#define ARCH_X86 0
+	#define ARCH_X86_64 0
+
+	#define ARCH_ARM 1
+	#define HAVE_NEON 0
+	#define HAVE_NEON_ASM 0
 #else
 	#define ARCH_X86 0
 	#define ARCH_X86_64 0

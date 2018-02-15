@@ -67,7 +67,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	SectionedPropertyEditor *globals_editor;
 
 	HBoxContainer *search_bar;
-	ToolButton *search_button;
+	Button *search_button;
 	LineEdit *search_box;
 	ToolButton *clear_button;
 

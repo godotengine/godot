@@ -605,6 +605,7 @@ public:
 	UndoRedo *get_undo_redo() { return undo_redo; }
 
 	void add_control_to_menu_panel(Control *p_control);
+	void remove_control_from_menu_panel(Control *p_control);
 
 	VSplitContainer *get_shader_split();
 	HSplitContainer *get_palette_split();

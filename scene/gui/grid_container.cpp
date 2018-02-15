@@ -43,107 +43,118 @@ void GridContainer::_notification(int p_what) {
 
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
+			int max_col = MIN(get_child_count(), columns);
+			int max_row = get_child_count() / columns;
 
-			int idx = 0;
-			int max_row = 0;
-			int max_col = 0;
-
-			Size2 size = get_size();
-
+			// Compute the per-column/per-row data
 			for (int i = 0; i < get_child_count(); i++) {
-
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c || !c->is_visible_in_tree())
 					continue;
 
-				int row = idx / columns;
-				int col = idx % columns;
+				int row = i / columns;
+				int col = i % columns;
 
 				Size2i ms = c->get_combined_minimum_size();
 				if (col_minw.has(col))
 					col_minw[col] = MAX(col_minw[col], ms.width);
 				else
 					col_minw[col] = ms.width;
-
 				if (row_minh.has(row))
 					row_minh[row] = MAX(row_minh[row], ms.height);
 				else
 					row_minh[row] = ms.height;
 
-				//print_line("store row "+itos(row)+" mw "+itos(ms.height));
-
-				if (c->get_h_size_flags() & SIZE_EXPAND)
+				if (c->get_h_size_flags() & SIZE_EXPAND) {
 					col_expanded.insert(col);
-				if (c->get_v_size_flags() & SIZE_EXPAND)
+				}
+				if (c->get_v_size_flags() & SIZE_EXPAND) {
 					row_expanded.insert(row);
-
-				max_col = MAX(col, max_col);
-				max_row = MAX(row, max_row);
-				idx++;
+				}
 			}
 
-			Size2 ms;
-			int expand_rows = 0;
-			int expand_cols = 0;
-
+			// Evaluate the remaining space for expanded columns/rows
+			Size2 remaining_space = get_size();
 			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-				ms.width += E->get();
-				if (col_expanded.has(E->key()))
-					expand_cols++;
+				if (!col_expanded.has(E->key()))
+					remaining_space.width -= E->get();
 			}
 
 			for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-				ms.height += E->get();
-				if (row_expanded.has(E->key()))
-					expand_rows++;
+				if (!row_expanded.has(E->key()))
+					remaining_space.height -= E->get();
+			}
+			remaining_space.height -= vsep * (max_row - 1);
+			remaining_space.width -= hsep * (max_col - 1);
+
+			bool can_fit = false;
+			while (!can_fit) {
+				// Check if all minwidth constraints are ok if we use the remaining space
+				can_fit = true;
+				int max_index = 0;
+				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
+					if (col_minw[E->get()] > col_minw[max_index]) {
+						max_index = col_minw[E->get()];
+					}
+					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E->get()]) {
+						can_fit = false;
+					}
+				}
+
+				// If not, the column with maximum minwidth is not expanded
+				if (!can_fit) {
+					col_expanded.erase(max_index);
+					remaining_space.width -= col_minw[max_index];
+				}
 			}
 
-			ms.height += vsep * max_row;
-			ms.width += hsep * max_col;
+			can_fit = false;
+			while (!can_fit) {
+				// Check if all minwidth constraints are ok if we use the remaining space
+				can_fit = true;
+				int max_index = 0;
+				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
+					if (row_minh[E->get()] > row_minh[max_index]) {
+						max_index = row_minh[E->get()];
+					}
+					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E->get()]) {
+						can_fit = false;
+					}
+				}
 
-			int row_expand = expand_rows ? (size.y - ms.y) / expand_rows : 0;
-			int col_expand = expand_cols ? (size.x - ms.x) / expand_cols : 0;
+				// If not, the row with maximum minwidth is not expanded
+				if (!can_fit) {
+					row_expanded.erase(max_index);
+					remaining_space.height -= row_minh[max_index];
+				}
+			}
+
+			// Finally, fit the nodes
+			int col_expand = remaining_space.width / col_expanded.size();
+			int row_expand = remaining_space.height / row_expanded.size();
 
 			int col_ofs = 0;
 			int row_ofs = 0;
-			idx = 0;
 
 			for (int i = 0; i < get_child_count(); i++) {
-
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c || !c->is_visible_in_tree())
 					continue;
-				int row = idx / columns;
-				int col = idx % columns;
+				int row = i / columns;
+				int col = i % columns;
 
 				if (col == 0) {
 					col_ofs = 0;
-					if (row > 0 && row_minh.has(row - 1))
-						row_ofs += row_minh[row - 1] + vsep + (row_expanded.has(row - 1) ? row_expand : 0);
+					if (row > 0)
+						row_ofs += ((row_expanded.has(row - 1)) ? row_expand : row_minh[row - 1]) + vsep;
 				}
-
-				Size2 s;
-				if (col_minw.has(col))
-					s.width = col_minw[col];
-				if (row_minh.has(row))
-					s.height = row_minh[row];
-
-				if (row_expanded.has(row))
-					s.height += row_expand;
-				if (col_expanded.has(col))
-					s.width += col_expand;
 
 				Point2 p(col_ofs, row_ofs);
+				Size2 s((col_expanded.has(col)) ? col_expand : col_minw[col], (row_expanded.has(row)) ? row_expand : row_minh[row]);
 
-				//print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
 				fit_child_in_rect(c, Rect2(p, s));
-				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 
-				if (col_minw.has(col)) {
-					col_ofs += col_minw[col] + hsep + (col_expanded.has(col) ? col_expand : 0);
-				}
-
-				idx++;
+				col_ofs += s.width + hsep;
 			}
 
 		} break;

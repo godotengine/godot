@@ -52,6 +52,7 @@ bool StreamPeerSSL::is_available() {
 
 void StreamPeerSSL::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
 	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &StreamPeerSSL::accept_stream);
 	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);

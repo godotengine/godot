@@ -93,11 +93,21 @@ public class PaymentsManager {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			mService = null;
+
+			// At this stage, godotPaymentV3 might not have been initialized yet.
+			if (godotPaymentV3 != null) {
+				godotPaymentV3.callbackDisconnected();
+			}
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mService = IInAppBillingService.Stub.asInterface(service);
+
+			// At this stage, godotPaymentV3 might not have been initialized yet.
+			if (godotPaymentV3 != null) {
+				godotPaymentV3.callbackConnected();
+			}
 		}
 	};
 
@@ -121,6 +131,10 @@ public class PaymentsManager {
 
 		}
 				.purchase(sku, transactionId);
+	}
+
+	public boolean isConnected() {
+		return mService != null;
 	}
 
 	public void consumeUnconsumedPurchases() {

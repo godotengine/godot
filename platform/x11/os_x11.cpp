@@ -333,6 +333,11 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		XFree(xsh);
 	}
 
+	if (current_videomode.always_on_top) {
+		current_videomode.always_on_top = false;
+		set_window_always_on_top(true);
+	}
+
 	AudioDriverManager::initialize(p_audio_driver);
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
@@ -549,6 +554,21 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 	XFree(preedit_attr);
 }
 
+String OS_X11::get_unique_id() const {
+
+	static String machine_id;
+	if (machine_id.empty()) {
+		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
+			while (machine_id.empty() && !f->eof_reached()) {
+				machine_id = f->get_line().strip_edges();
+			}
+			f->close();
+			memdelete(f);
+		}
+	}
+	return machine_id;
+}
+
 void OS_X11::finalize() {
 
 	if (main_loop)
@@ -710,9 +730,6 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) con
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
-	if (current_videomode.fullscreen == p_enabled)
-		return;
-
 	if (p_enabled && !is_window_resizable()) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		XSizeHints *xsh;
@@ -771,6 +788,22 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	}
+}
+
+void OS_X11::set_wm_above(bool p_enabled) {
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
+
+	XClientMessageEvent xev;
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.window = x11_window;
+	xev.message_type = wm_state;
+	xev.format = 32;
+	xev.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+	xev.data.l[1] = wm_above;
+	xev.data.l[3] = 1;
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 }
 
 int OS_X11::get_screen_count() const {
@@ -924,6 +957,26 @@ Size2 OS_X11::get_window_size() const {
 	return Size2i(current_videomode.width, current_videomode.height);
 }
 
+Size2 OS_X11::get_real_window_size() const {
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	int w = xwa.width;
+	int h = xwa.height;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = NULL;
+	if (XGetWindowProperty(x11_display, x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+		long *extents = (long *)data;
+		w += extents[0] + extents[1]; // left, right
+		h += extents[2] + extents[3]; // top, bottom
+	}
+	return Size2(w, h);
+}
+
 void OS_X11::set_window_size(const Size2 p_size) {
 	// If window resizable is disabled we need to update the attributes first
 	if (is_window_resizable() == false) {
@@ -947,7 +1000,19 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
+	if (current_videomode.fullscreen == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.always_on_top) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
 	set_wm_fullscreen(p_enabled);
+	if (!p_enabled && !current_videomode.always_on_top) {
+		// Restore
+		set_window_maximized(false);
+	}
+
 	current_videomode.fullscreen = p_enabled;
 }
 
@@ -1152,6 +1217,27 @@ bool OS_X11::is_window_maximized() const {
 	}
 
 	return false;
+}
+
+void OS_X11::set_window_always_on_top(bool p_enabled) {
+	if (is_window_always_on_top() == p_enabled)
+		return;
+
+	if (p_enabled && current_videomode.fullscreen) {
+		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
+		set_window_maximized(true);
+	}
+	set_wm_above(p_enabled);
+	if (!p_enabled && !current_videomode.fullscreen) {
+		// Restore
+		set_window_maximized(false);
+	}
+
+	current_videomode.always_on_top = p_enabled;
+}
+
+bool OS_X11::is_window_always_on_top() const {
+	return current_videomode.always_on_top;
 }
 
 void OS_X11::set_borderless_window(bool p_borderless) {

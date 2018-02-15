@@ -4,7 +4,7 @@
 		Helper class for parsing JSON data.
 	</brief_description>
 	<description>
-		Helper class for parsing JSON data. For usage example, see [JSONParseResult].
+		Helper class for parsing JSON data. For usage example and other important hints, see [JSONParseResult].
 	</description>
 	<tutorials>
 	</tutorials>

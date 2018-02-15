@@ -47,6 +47,13 @@
 				Return the status of the connection, one of STATUS_* enum.
 			</description>
 		</method>
+		<method name="poll">
+			<return type="void">
+			</return>
+			<description>
+				Poll the connection to check for incoming bytes. Call this right before "get_available_bytes()" for it to work properly.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">

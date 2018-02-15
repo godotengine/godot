@@ -67,6 +67,9 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
 
+	if (get_focus_owner() && get_focus_owner()->is_text_field())
+		return;
+
 	if (!p_event->is_pressed() || p_event->is_echo())
 		return;
 

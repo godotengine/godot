@@ -832,7 +832,8 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 
 void RigidBodyBullet::reload_space_override_modificator() {
 
-	if (!is_active())
+	// Make sure that kinematic bodies have their total gravity calculated
+	if (!is_active() && PhysicsServer::BODY_MODE_KINEMATIC != mode)
 		return;
 
 	Vector3 newGravity(space->get_gravity_direction() * space->get_gravity_magnitude());

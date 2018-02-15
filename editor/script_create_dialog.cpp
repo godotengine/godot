@@ -51,7 +51,9 @@ void ScriptCreateDialog::_notification(int p_what) {
 void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path) {
 
 	class_name->set_text("");
+	class_name->deselect();
 	parent_name->set_text(p_base_name);
+	parent_name->deselect();
 	if (p_base_path != "") {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
@@ -59,8 +61,9 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 		initial_bp = "";
 		file_path->set_text("");
 	}
+	file_path->deselect();
+
 	_lang_changed(current_language);
-	_parent_name_changed(parent_name->get_text());
 	_class_name_changed("");
 	_path_changed(file_path->get_text());
 }
@@ -290,6 +293,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	_template_changed(template_menu->get_selected());
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
 
+	_parent_name_changed(parent_name->get_text());
 	_update_dialog();
 }
 
@@ -303,11 +307,19 @@ void ScriptCreateDialog::_built_in_pressed() {
 	_update_dialog();
 }
 
-void ScriptCreateDialog::_browse_path(bool browse_parent) {
+void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 
 	is_browsing_parent = browse_parent;
 
-	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	if (p_save) {
+		file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+		file_browse->set_title(TTR("Open Script/Choose Location"));
+		file_browse->get_ok()->set_text(TTR("Open"));
+	} else {
+		file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+		file_browse->set_title(TTR("Open Script"));
+	}
+
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
 	List<String> extensions;
@@ -380,8 +392,6 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		is_new_script_created = false;
 		is_path_valid = true;
 		_msg_path_valid(true, TTR("File exists, will be reused"));
-	} else {
-		path_error_label->set_text("");
 	}
 	memdelete(f);
 	_update_dialog();
@@ -533,10 +543,8 @@ void ScriptCreateDialog::_update_dialog() {
 		internal->set_disabled(!supports_built_in);
 		if (is_built_in) {
 			_msg_path_valid(true, TTR("Built-in script (into scene file)"));
-		} else {
-			if (script_ok) {
-				_msg_path_valid(true, TTR("Create new script file"));
-			}
+		} else if (is_path_valid) {
+			_msg_path_valid(true, TTR("Create new script file"));
 		}
 	} else {
 		// Script Loaded
@@ -544,7 +552,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(false);
 		parent_browse_button->set_disabled(true);
 		internal->set_disabled(true);
-		if (script_ok) {
+		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Load existing script file"));
 		}
 	}
@@ -678,7 +686,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_name);
 	parent_browse_button = memnew(Button);
 	parent_browse_button->set_flat(true);
-	parent_browse_button->connect("pressed", this, "_browse_path", varray(true));
+	parent_browse_button->connect("pressed", this, "_browse_path", varray(true, false));
 	hb->add_child(parent_browse_button);
 	l = memnew(Label);
 	l->set_text(TTR("Inherits"));
@@ -730,7 +738,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(file_path);
 	path_button = memnew(Button);
 	path_button->set_flat(true);
-	path_button->connect("pressed", this, "_browse_path", varray(false));
+	path_button->connect("pressed", this, "_browse_path", varray(false, true));
 	hb->add_child(path_button);
 	l = memnew(Label);
 	l->set_text(TTR("Path"));
@@ -742,6 +750,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	file_browse = memnew(EditorFileDialog);
 	file_browse->connect("file_selected", this, "_file_selected");
+	file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_browse);
 	get_ok()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);

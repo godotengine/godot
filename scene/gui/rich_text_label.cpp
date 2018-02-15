@@ -121,6 +121,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	if (p_mode == PROCESS_CACHE) {
 		l.offset_caches.clear();
 		l.height_caches.clear();
+		l.ascent_caches.clear();
+		l.descent_caches.clear();
 		l.char_count = 0;
 		l.minimum_width = 0;
 	}
@@ -140,6 +142,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 	//line height should be the font height for the first time, this ensures that an empty line will never have zero height and successive newlines are displayed
 	int line_height = cfont->get_height();
+	int line_ascent = cfont->get_ascent();
+	int line_descent = cfont->get_descent();
 
 	int nonblank_line_count = 0; //number of nonblank lines as counted during PROCESS_DRAW
 
@@ -169,16 +173,22 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				case ALIGN_FILL: l.offset_caches.push_back((p_width - margin) - used /*+spaces_size*/); break;                                                  \
 			}                                                                                                                                                   \
 			l.height_caches.push_back(line_height);                                                                                                             \
+			l.ascent_caches.push_back(line_ascent);                                                                                                             \
+			l.descent_caches.push_back(line_descent);                                                                                                           \
 			l.space_caches.push_back(spaces);                                                                                                                   \
 		}                                                                                                                                                       \
 		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                    \
 		line_height = 0;                                                                                                                                        \
+		line_ascent = 0;                                                                                                                                        \
+		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
 		spaces_size = 0;                                                                                                                                        \
 		wofs = begin;                                                                                                                                           \
 		align_ofs = 0;                                                                                                                                          \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
 			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
+			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
+			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
 		}                                                                                                                                                       \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x < p_ofs.x + wofs) { \
 			if (r_outside) *r_outside = true;                                                                                                                   \
@@ -254,6 +264,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				const CharType *cf = c;
 				int fh = font->get_height();
 				int ascent = font->get_ascent();
+				int descent = font->get_descent();
+
+				line_ascent = MAX(line_ascent, ascent);
+				line_descent = MAX(line_descent, descent);
+				fh = MAX(fh, line_ascent + line_descent); // various fonts!
+
 				Color color;
 				bool underline = false;
 
@@ -280,6 +296,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					lh = 0;
 					if (p_mode != PROCESS_CACHE) {
 						lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+						line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;
+						line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;
 					}
 
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
@@ -348,7 +366,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								int cw = 0;
 
-								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - (fh - 0 * ascent), fh); //getting rid of ascent seems to work??
+								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent);
 								if (visible)
 									line_is_blank = false;
 
@@ -360,11 +378,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									cw = font->get_char_size(c[i], c[i + 1]).x;
 									draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									if (visible)
-										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
+										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
 
 								} else {
 									if (visible)
-										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], color);
+										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], color);
 								}
 
 								p_char_count++;
@@ -379,7 +397,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (underline) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - fh + ascent + 2;
+							int uy = y + lh - line_descent + 2;
 							float underline_width = 1.0;
 #ifdef TOOLS_ENABLED
 							underline_width *= EDSCALE;

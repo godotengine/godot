@@ -509,6 +509,7 @@ public:
 	void set_state(const Dictionary &p_state);
 
 	void add_control_to_menu_panel(Control *p_control);
+	void remove_control_from_menu_panel(Control *p_control);
 
 	HSplitContainer *get_palette_split();
 	VSplitContainer *get_bottom_split();

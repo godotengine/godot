@@ -81,7 +81,7 @@
 
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #define LWS_HAVE_SYS_PRCTL_H
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #undef LWS_HAVE_SYS_PRCTL_H
 #endif
 
