@@ -99,6 +99,20 @@ void GridMapEditor::_menu_option(int p_option) {
 				int idx = options->get_popup()->get_item_index(MENU_OPTION_X_AXIS + i);
 				options->get_popup()->set_item_checked(idx, i == new_axis);
 			}
+
+			if (edit_axis != new_axis) {
+				int item1 = options->get_popup()->get_item_id(MENU_OPTION_NEXT_LEVEL);
+				int item2 = options->get_popup()->get_item_id(MENU_OPTION_PREV_LEVEL);
+				if (edit_axis == Vector3::AXIS_Y) {
+					options->get_popup()->set_item_text(item1, TTR("Next Plane"));
+					options->get_popup()->set_item_text(item2, TTR("Previous Plane"));
+					spin_box_label->set_text(TTR("Plane:"));
+				} else if (new_axis == Vector3::AXIS_Y) {
+					options->get_popup()->set_item_text(item1, TTR("Next Floor"));
+					options->get_popup()->set_item_text(item2, TTR("Previous Floor"));
+					spin_box_label->set_text(TTR("Floor:"));
+				}
+			}
 			edit_axis = Vector3::Axis(new_axis);
 			update_grid();
 			_update_clip();
@@ -998,9 +1012,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
-	Label *fl = memnew(Label);
-	fl->set_text(TTR("Floor:"));
-	spatial_editor_hb->add_child(fl);
+	spin_box_label = memnew(Label);
+	spin_box_label->set_text(TTR("Floor:"));
+	spatial_editor_hb->add_child(spin_box_label);
 
 	floor = memnew(SpinBox);
 	floor->set_min(-32767);
