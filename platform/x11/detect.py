@@ -49,7 +49,7 @@ def get_opts():
 
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
-        BoolVariable('use_static_cpp', 'Link stdc++ statically', False),
+        BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
         BoolVariable('use_sanitizer', 'Use LLVM compiler address sanitizer', False),
         BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
@@ -275,6 +275,6 @@ def configure(env):
         env.Append(CPPFLAGS=['-m64'])
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
 
-
+    # Link those statically for portability
     if env['use_static_cpp']:
-        env.Append(LINKFLAGS=['-static-libstdc++'])
+        env.Append(LINKFLAGS=['-static-libgcc', '-static-libstdc++'])
