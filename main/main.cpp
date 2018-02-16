@@ -1120,7 +1120,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: END");
 
 	GLOBAL_DEF("application/config/icon", String());
-	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.jpg,*.webp"));
 
 	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
 		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
@@ -1139,7 +1139,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
-	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image", PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image", PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.jpg,*.webp"));
 
 	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
 
