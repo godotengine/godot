@@ -2365,7 +2365,7 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 
 		imethod.name = mi.name;
 		imethod.cname = imethod.name;
-		imethod.proxy_name = mi.name;
+		imethod.proxy_name = escape_csharp_keyword(snake_to_pascal_case(mi.name));
 
 		for (int i = 0; i < mi.arguments.size(); i++) {
 			ArgumentInterface iarg;
