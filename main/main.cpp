@@ -514,12 +514,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			//video_mode.fullscreen=false;
 			init_fullscreen = true;
+#ifdef TOOLS_ENABLED
 		} else if (I->get() == "-e" || I->get() == "--editor") { // starts editor
 
 			editor = true;
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
+#endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -1226,24 +1228,27 @@ bool Main::start() {
 		//parameters that do not have an argument to the right
 		if (args[i] == "--no-docbase") {
 			doc_base = false;
+#ifdef TOOLS_ENABLED
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
+#endif
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
 			game_path = args[i];
 		}
 		//parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {
 			bool parsed_pair = true;
-			if (args[i] == "--doctool") {
-				doc_tool = args[i + 1];
-				for (int j = i + 2; j < args.size(); j++)
-					removal_docs.push_back(args[j]);
-			} else if (args[i] == "-s" || args[i] == "--script") {
+			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
 			} else if (args[i] == "--test") {
 				test = args[i + 1];
+#ifdef TOOLS_ENABLED
+			} else if (args[i] == "--doctool") {
+				doc_tool = args[i + 1];
+				for (int j = i + 2; j < args.size(); j++)
+					removal_docs.push_back(args[j]);
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
 				if (i + 1 < args.size()) {
@@ -1261,6 +1266,7 @@ bool Main::start() {
 					return false;
 				}
 				export_debug = true;
+#endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
 				parsed_pair = false;
