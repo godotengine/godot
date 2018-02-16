@@ -318,7 +318,7 @@ private:
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
 
-	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
 	Transform2D last_valid_transform;
@@ -329,17 +329,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision);
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia);
-
-	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
 	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_infinite_inertia = true, float p_slope_stop_min_velocity = 5, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
-	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction = Vector2(0, 0), bool p_infinite_inertia = true, float p_slope_stop_min_velocity = 5, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
