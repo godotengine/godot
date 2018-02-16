@@ -2231,7 +2231,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 												   "this." BINDINGS_PTR_FIELD " = NativeCalls.godot_icall_NodePath_Ctor(path);\n" CLOSE_BLOCK_L2
 														   MEMBER_BEGIN "public static implicit operator NodePath(string from)\n" OPEN_BLOCK_L2 "return new NodePath(from);\n" CLOSE_BLOCK_L2
 																   MEMBER_BEGIN "public static implicit operator string(NodePath from)\n" OPEN_BLOCK_L2
-												   "return NativeCalls." ICALL_PREFIX "NodePath_operator_String(NodePath." CS_SMETHOD_GETINSTANCE "(from));\n" CLOSE_BLOCK_L2);
+												   "return NativeCalls." ICALL_PREFIX "NodePath_operator_String(NodePath." CS_SMETHOD_GETINSTANCE "(from));\n" CLOSE_BLOCK_L2
+														   MEMBER_BEGIN "public override string ToString()\n" OPEN_BLOCK_L2 "return (string)this;\n" CLOSE_BLOCK_L2);
 	builtin_types.insert(itype.cname, itype);
 
 	// RID
