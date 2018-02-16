@@ -122,7 +122,6 @@ static bool force_lowdpi = false;
 static int init_screen = -1;
 static bool use_vsync = true;
 static bool editor = false;
-static bool project_manager = false;
 static bool show_help = false;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
