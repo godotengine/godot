@@ -52,7 +52,7 @@ def get_opts():
 
     return [
         ('use_llvm', 'Use llvm compiler', 'no'),
-        ('use_static_cpp', 'link stdc++ statically', 'no'),
+        ('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', 'no'),
         ('use_sanitizer', 'Use llvm compiler sanitize address', 'no'),
         ('use_leak_sanitizer', 'Use llvm compiler sanitize memory leaks', 'no'),
         ('use_lto', 'Use link time optimization', 'no'),
@@ -254,8 +254,9 @@ def configure(env):
     env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
     #env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.gen.h',src_suffix = '.hlsl') } )
 
+    # Link those statically for portability
     if (env["use_static_cpp"] == "yes"):
-        env.Append(LINKFLAGS=['-static-libstdc++'])
+        env.Append(LINKFLAGS=['-static-libgcc', '-static-libstdc++'])
 
     list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
     if any(platform.machine() in s for s in list_of_x86):
