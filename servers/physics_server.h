@@ -66,7 +66,6 @@ public:
 	virtual void add_central_force(const Vector3 &p_force) = 0;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;
-	virtual void apply_central_impulse(const Vector3 &p_j) = 0;
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
 
 	void _apply_torqe_impulse_deprecated(const Vector3 &p_j) {
