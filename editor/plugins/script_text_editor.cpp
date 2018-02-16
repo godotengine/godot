@@ -935,13 +935,27 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			Ref<Script> scr = get_edited_script();
 			if (scr.is_null())
 				return;
-
 			tx->begin_complex_operation();
-			int line = tx->cursor_get_line();
-			tx->set_line(tx->cursor_get_line(), "");
-			tx->backspace_at_cursor();
-			tx->unfold_line(line);
-			tx->cursor_set_line(line);
+			if (tx->is_selection_active()) {
+				int to_line = tx->get_selection_to_line();
+				int from_line = tx->get_selection_from_line();
+				int count = Math::abs(to_line - from_line) + 1;
+				while (count) {
+					tx->set_line(tx->cursor_get_line(), "");
+					tx->backspace_at_cursor();
+					count--;
+					if (count)
+						tx->unfold_line(from_line);
+				}
+				tx->cursor_set_line(from_line - 1);
+				tx->deselect();
+			} else {
+				int line = tx->cursor_get_line();
+				tx->set_line(tx->cursor_get_line(), "");
+				tx->backspace_at_cursor();
+				tx->unfold_line(line);
+				tx->cursor_set_line(line);
+			}
 			tx->end_complex_operation();
 		} break;
 		case EDIT_CLONE_DOWN: {
