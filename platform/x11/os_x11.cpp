@@ -691,10 +691,14 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	hints.decorations = 0;
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-	XMapRaised(x11_display, x11_window);
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-	XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+	if (p_enabled) {
+		XMapRaised(x11_display, x11_window);
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+	} else {
+		XResizeWindow(x11_display, x11_window, current_videomode.width, current_videomode.height);
+	}
 
 	// code for netwm-compliants
 	XEvent xev;
@@ -706,11 +710,16 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.window = x11_window;
 	xev.xclient.message_type = wm_state;
 	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
 	xev.xclient.data.l[1] = fullscreen;
 	xev.xclient.data.l[2] = 0;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+
+	// set bypass compositor hint
+	Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
+	unsigned long compositing_disable_on = p_enabled ? 1 : 0;
+	XChangeProperty(x11_display, x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
 
 	XFlush(x11_display);
 
@@ -900,7 +909,7 @@ Size2 OS_X11::get_real_window_size() const {
 	unsigned long remaining;
 	unsigned char *data = NULL;
 	if (XGetWindowProperty(x11_display, x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-		long *extents = (long*) data;
+		long *extents = (long *)data;
 		w += extents[0] + extents[1]; // left, right
 		h += extents[2] + extents[3]; // top, bottom
 	}
