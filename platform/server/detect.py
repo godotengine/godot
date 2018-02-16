@@ -12,9 +12,6 @@ def get_name():
 
 def can_build():
 
-    # Doesn't build against Godot 3.0 for now, disable to avoid confusing users
-    return False
-
     if (os.name != "posix" or sys.platform == "darwin"):
         return False
 
@@ -31,6 +28,7 @@ def get_opts():
 def get_flags():
 
     return [
+            ("module_mobile_vr_enabled", False),
     ]
 
 
@@ -133,3 +131,4 @@ def configure(env):
     env.Append(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
     env.Append(LIBS=['pthread'])
+    env.Append(LIBS=['dl'])

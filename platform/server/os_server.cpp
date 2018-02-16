@@ -27,11 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
-//#include "servers/visual/visual_server_raster.h"
-//#include "servers/visual/rasterizer_dummy.h"
 #include "os_server.h"
+#include "drivers/dummy/audio_driver_dummy.h"
+#include "drivers/dummy/rasterizer_dummy.h"
 #include "print_string.h"
+#include "servers/visual/visual_server_raster.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -48,31 +48,38 @@ const char *OS_Server::get_video_driver_name(int p_driver) const {
 	return "Dummy";
 }
 
+int OS_Server::get_audio_driver_count() const {
+	return 1;
+}
+
+const char *OS_Server::get_audio_driver_name(int p_driver) const {
+
+	return "Dummy";
+}
+
+void OS_Server::initialize_core() {
+
+	crash_handler.initialize();
+
+	OS_Unix::initialize_core();
+}
+
 Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
 	main_loop = NULL;
 
-	//rasterizer = memnew( RasterizerDummy );
+	RasterizerDummy::make_current();
 
-	//visual_server = memnew( VisualServerRaster(rasterizer) );
+	visual_server = memnew(VisualServerRaster);
+	visual_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	sample_manager = memnew(SampleManagerMallocSW);
-	audio_server = memnew(AudioServerSW(sample_manager));
-	audio_server->init();
-	spatial_sound_server = memnew(SpatialSoundServerSW);
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
-	spatial_sound_2d_server->init();
-
-	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
-
-	visual_server->init();
-
 	input = memnew(InputDefault);
+
+	power_manager = memnew(PowerX11);
 
 	_ensure_user_data_dir();
 
@@ -85,37 +92,24 @@ void OS_Server::finalize() {
 		memdelete(main_loop);
 	main_loop = NULL;
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
-
 	visual_server->finish();
 	memdelete(visual_server);
-	//memdelete(rasterizer);
 
 	memdelete(input);
+
+	memdelete(power_manager);
 
 	args.clear();
 }
 
 void OS_Server::set_mouse_show(bool p_show) {
 }
+
 void OS_Server::set_mouse_grab(bool p_grab) {
 
 	grab = p_grab;
 }
+
 bool OS_Server::is_mouse_grab_enabled() const {
 
 	return grab;
@@ -136,6 +130,7 @@ void OS_Server::set_window_title(const String &p_title) {
 
 void OS_Server::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
+
 OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
 
 	return current_videomode;
@@ -198,6 +193,10 @@ int OS_Server::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
+bool OS_Server::_check_internal_feature_support(const String &p_feature) {
+	return p_feature == "pc";
+}
+
 void OS_Server::run() {
 
 	force_quit = false;
@@ -214,6 +213,102 @@ void OS_Server::run() {
 	};
 
 	main_loop->finish();
+}
+
+String OS_Server::get_config_path() const {
+
+	if (has_environment("XDG_CONFIG_HOME")) {
+		return get_environment("XDG_CONFIG_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".config");
+	} else {
+		return ".";
+	}
+}
+
+String OS_Server::get_data_path() const {
+
+	if (has_environment("XDG_DATA_HOME")) {
+		return get_environment("XDG_DATA_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".local/share");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_Server::get_cache_path() const {
+
+	if (has_environment("XDG_CACHE_HOME")) {
+		return get_environment("XDG_CACHE_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".cache");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_Server::get_system_dir(SystemDir p_dir) const {
+
+	String xdgparam;
+
+	switch (p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+
+			xdgparam = "DESKTOP";
+		} break;
+		case SYSTEM_DIR_DCIM: {
+
+			xdgparam = "PICTURES";
+
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+
+			xdgparam = "DOCUMENTS";
+
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+
+			xdgparam = "DOWNLOAD";
+
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+
+			xdgparam = "VIDEOS";
+
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+
+			xdgparam = "MUSIC";
+
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+
+			xdgparam = "PICTURES";
+
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+
+			xdgparam = "MUSIC";
+
+		} break;
+	}
+
+	String pipe;
+	List<String> arg;
+	arg.push_back(xdgparam);
+	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
+	if (err != OK)
+		return ".";
+	return pipe.strip_edges();
+}
+
+void OS_Server::disable_crash_handler() {
+	crash_handler.disable();
+}
+
+bool OS_Server::is_disable_crash_handler() const {
+	return crash_handler.is_disabled();
 }
 
 OS_Server::OS_Server() {

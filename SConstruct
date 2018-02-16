@@ -445,7 +445,7 @@ if selected_platform in platform_list:
     if not env['verbose']:
         methods.no_verbose(sys, env)
 
-    if (True): # FIXME: detect GLES3
+    if (not env["platform"] == "server"): # FIXME: detect GLES3
         env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.gen.h',src_suffix = '.glsl') } )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
