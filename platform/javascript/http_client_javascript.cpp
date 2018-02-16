@@ -158,7 +158,7 @@ int HTTPClient::get_response_code() const {
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
 
-	if (!polled_response_header.size())
+	if (polled_response_header.empty())
 		return ERR_INVALID_PARAMETER;
 
 	Vector<String> header_lines = polled_response_header.split("\r\n", false);
@@ -250,9 +250,11 @@ Error HTTPClient::poll() {
 
 			PoolByteArray bytes;
 			int len = godot_xhr_get_response_headers_length(xhr_id);
-			bytes.resize(len);
+			bytes.resize(len + 1);
+
 			PoolByteArray::Write write = bytes.write();
 			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(write.ptr()), len);
+			write[len] = 0;
 			write = PoolByteArray::Write();
 
 			PoolByteArray::Read read = bytes.read();
