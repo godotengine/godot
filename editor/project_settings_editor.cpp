@@ -351,7 +351,6 @@ void ProjectSettingsEditor::_device_input_add() {
 		} else {
 			Array ev = arr[idx];
 			ev[0] = ie;
-			ev[1] = _get_axis_mul_value(name, idx);
 			arr[idx] = ev;
 		}
 
@@ -366,12 +365,6 @@ void ProjectSettingsEditor::_device_input_add() {
 
 		_show_last_added_axis(ie, name);
 	}
-}
-
-float ProjectSettingsEditor::_get_axis_mul_value(String p_name, int axis_idx) {
-	// TODO: implement me
-
-	return 1.0; // Didn't find anything.
 }
 
 void ProjectSettingsEditor::_press_a_key_confirm() {
@@ -444,7 +437,6 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		} else {
 			Array ev = arr[idx];
 			ev[0] = ie;
-			ev[1] = _get_axis_mul_value(name, idx);
 			arr[idx] = ev;
 		}
 
@@ -728,12 +720,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 			ERR_FAIL_INDEX(idx, va.size());
 
-			for (int i = idx; i < va.size() - 1; i++) {
-
-				va[i] = va[i + 1];
-			}
-
-			va.resize(va.size() - 1);
+			va.remove(idx);
 
 			undo_redo->create_action(TTR("Erase Input Action Event"));
 			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
@@ -797,6 +784,33 @@ void ProjectSettingsEditor::_axis_activated() {
 	add_at = name;
 	edit_idx = idx;
 	_edit_item(ie);
+}
+
+void ProjectSettingsEditor::_set_axis_mul_value() {
+
+	String name = add_at;
+	int idx = edit_idx;
+
+	Variant old_arr = ProjectSettings::get_singleton()->get(name);
+	Array arr = old_arr;
+
+	ERR_FAIL_INDEX(idx, arr.size());
+
+	Array ev = arr[idx];
+
+	ERR_FAIL_INDEX(1, ev.size());
+
+	ev[1] = axis_mul_edit->get_value();
+	arr[idx] = ev;
+
+	undo_redo->create_action(TTR("Set Input Axis Event Multiplier"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_arr);
+	undo_redo->add_do_method(this, "_update_axes");
+	undo_redo->add_undo_method(this, "_update_axes");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
 }
 
 void ProjectSettingsEditor::_axis_button_pressed(Object *p_obj, int p_column, int p_id) {
@@ -875,9 +889,9 @@ void ProjectSettingsEditor::_axis_button_pressed(Object *p_obj, int p_column, in
 
 			Array ev = va[idx];
 
-			ERR_FAIL_INDEX(2, va.size());
+			ERR_FAIL_INDEX(1, va.size());
 
-			Ref<InputEvent> ie = ev[1];
+			Ref<InputEvent> ie = ev[0];
 
 			if (ie.is_null())
 				return;
@@ -887,6 +901,27 @@ void ProjectSettingsEditor::_axis_button_pressed(Object *p_obj, int p_column, in
 			edit_idx = idx;
 			_edit_item(ie);
 		}
+	} else if (p_id == 4) {
+		// edit axis multiplier
+		if (ti->get_parent() == input_axis_editor->get_root()) {
+			return;
+		}
+
+		String name = "input_axes/" + ti->get_parent()->get_text(0);
+		int idx = ti->get_metadata(0);
+		Array va = ProjectSettings::get_singleton()->get(name);
+
+		ERR_FAIL_INDEX(idx, va.size());
+		Array ev = va[idx];
+
+		ERR_FAIL_INDEX(1, va.size());
+		float ie_mul = ev[1];
+
+		ti->set_as_cursor(0);
+		add_at = name;
+		edit_idx = idx;
+		axis_mul_edit->set_value(ie_mul);
+		axis_mul_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 	}
 }
 
@@ -1103,7 +1138,8 @@ void ProjectSettingsEditor::_update_axes() {
 				axis->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
 
-			// TODO: add button for multiplier option.
+			// TODO: more accurate icon.
+			axis->add_button(0, get_icon("Node", "EditorIcons"), 4, false, TTR("Edit Multiplier"));
 			axis->add_button(0, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			axis->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			axis->set_metadata(0, i);
@@ -2023,6 +2059,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
+	ClassDB::bind_method(D_METHOD("_set_axis_mul_value"), &ProjectSettingsEditor::_set_axis_mul_value);
 	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettingsEditor::_settings_prop_edited);
 	ClassDB::bind_method(D_METHOD("_copy_to_platform"), &ProjectSettingsEditor::_copy_to_platform);
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
@@ -2202,7 +2239,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		add->connect("pressed", this, "_action_add");
 		action_add = add;
 
-		Tree* input_editor = memnew(Tree);
+		Tree *input_editor = memnew(Tree);
 		vbc->add_child(input_editor);
 		input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 		input_editor->connect("item_edited", this, "_action_edited");
@@ -2242,7 +2279,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		add->connect("pressed", this, "_axis_add");
 		axis_add = add;
 
-		Tree* input_editor = memnew(Tree);
+		Tree *input_editor = memnew(Tree);
 		vbc->add_child(input_editor);
 		input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 		input_editor->connect("item_edited", this, "_axis_edited");
@@ -2250,6 +2287,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		input_editor->connect("cell_selected", this, "_axis_selected");
 		input_editor->connect("button_pressed", this, "_axis_button_pressed");
 		input_axis_editor = input_editor;
+
+		axis_mul_input = memnew(ConfirmationDialog);
+		add_child(axis_mul_input);
+		axis_mul_input->connect("confirmed", this, "_set_axis_mul_value");
+
+		axis_mul_edit = memnew(SpinBox);
+		axis_mul_input->add_child(axis_mul_edit);
+		axis_mul_edit->set_step(0.01);
+		axis_mul_edit->set_min(-100.0);
 	}
 
 	// Common InputMap dialogs.

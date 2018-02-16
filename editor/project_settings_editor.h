@@ -95,6 +95,9 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Label *axis_add_error;
 	Tree *input_axis_editor;
 
+	ConfirmationDialog *axis_mul_input;
+	SpinBox *axis_mul_edit;
+
 	bool setting;
 	bool updating_translations;
 
@@ -137,7 +140,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _axis_add();
 
 	void _device_input_add();
-	float _get_axis_mul_value(String p_name, int axis_idx);
 
 	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
@@ -150,6 +152,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _axis_button_pressed(Object *p_obj, int p_column, int p_id);
 	void _wait_for_key(const Ref<InputEvent> &p_event);
 	void _press_a_key_confirm();
+	void _set_axis_mul_value();
 	void _show_last_added_action(const Ref<InputEvent> &p_event, const String &p_name);
 	void _show_last_added_axis(const Ref<InputEvent> &p_event, const String &p_name);
 
