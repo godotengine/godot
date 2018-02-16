@@ -1030,6 +1030,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						}
 					}
 				} else if (tools[SHAPE_NEW_POLYGON]->is_pressed()) {
+					if (!tools[TOOL_SELECT]->is_disabled())
+						tools[TOOL_SELECT]->set_disabled(true);
 
 					if (mb.is_valid()) {
 						if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
@@ -1102,6 +1104,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT && current_shape.size() > 2) {
 							if (creating_shape) {
 								close_shape(shape_anchor);
+								if (tools[TOOL_SELECT]->is_disabled())
+									tools[TOOL_SELECT]->set_disabled(false);
 							}
 						}
 					} else if (mm.is_valid()) {
