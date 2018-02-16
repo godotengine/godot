@@ -5,11 +5,7 @@
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
-		A RigidBody2D has 4 behavior modes (see [member mode]):
-		- [b]Rigid[/b]: The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
-		- [b]Static[/b]: The body behaves like a [StaticBody2D] and does not move.
-		- [b]Character[/b]: Similar to [code]Rigid[/code] mode, but the body can not rotate.
-		- [b]Kinematic[/b]: The body behaves like a [KinematicBody2D], and must be moved by code.
+		A RigidBody2D has 4 behavior [member mode]s: Rigid, Static, Character, and Kinematic.
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
 	</description>
