@@ -164,6 +164,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("search_result_color", search_result_color);
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
 	text_edit->add_color_override("symbol_color", symbol_color);
+	text_edit->add_color_override("basetype_color", basetype_color);
 
 	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 4));
 

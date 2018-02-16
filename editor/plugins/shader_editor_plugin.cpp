@@ -117,6 +117,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("search_result_color", search_result_color);
 	get_text_edit()->add_color_override("search_result_border_color", search_result_border_color);
 	get_text_edit()->add_color_override("symbol_color", symbol_color);
+	get_text_edit()->add_color_override("basetype_color", basetype_color);
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);

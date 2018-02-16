@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "text_edit.h"
-
 #include "message_queue.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -1418,11 +1417,49 @@ void TextEdit::_notification(int p_what) {
 					int l = line_from + i;
 					ERR_CONTINUE(l < 0 || l >= completion_options.size());
 					Color text_color = cache.completion_font_color;
+
+					if (syntax_coloring) {
+						String upper = completion_options[l].to_upper();
+
+						if (keywords.has(completion_options[l])) {
+							if (completion_options[l].get(0) == L'_' || completion_options[l].get(0) != upper[0]) {
+								// colorize functions name
+								text_color = cache.function_color;
+							} else {
+
+								if (completion_options[l] == upper &&
+										completion_options[l] != "IP" &&
+										completion_options[l] != "RID" &&
+										completion_options[l] != "AABB" &&
+										completion_options[l] != "JSON" &&
+										completion_options[l] != "OS") {
+									// colorize constants
+									//text_color = cache.member_variable_color;
+								} else
+									// colorize engine class names
+									text_color = cache.basetype_color;
+							}
+						} else if (completion_options[l] == upper) {
+							// colorize constants
+							// text_color = cache.member_variable_color;
+						} else if (completion_options[l].get(0) != L'_' && completion_options[l].get(0) == upper[0]) {
+							// colorize non-engine class names
+							// text_color = cache.member_variable_color;
+						} else if (completion_options[l].get(completion_options[l].length() - 1) == ')' || completion_options[l].get(completion_options[l].length() - 1) == '(') {
+							// colorize functions names
+							text_color = cache.function_color;
+						} else {
+							// colorize variables/properties names
+							// text_color = cache.member_variable_color;
+						}
+					}
+
 					for (int j = 0; j < color_regions.size(); j++) {
 						if (completion_options[l].begins_with(color_regions[j].begin_key)) {
 							text_color = color_regions[j].color;
 						}
 					}
+
 					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
 				}
 
@@ -4122,6 +4159,7 @@ void TextEdit::_update_caches() {
 	cache.line_number_color = get_color("line_number_color");
 	cache.font_color = get_color("font_color");
 	cache.font_selected_color = get_color("font_selected_color");
+	cache.basetype_color = get_color("basetype_color");
 	cache.keyword_color = get_color("keyword_color");
 	cache.function_color = get_color("function_color");
 	cache.member_variable_color = get_color("member_variable_color");
