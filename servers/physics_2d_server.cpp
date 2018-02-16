@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "physics_2d_server.h"
+#include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 #include "print_string.h"
 
@@ -476,12 +477,12 @@ Physics2DTestMotionResult::Physics2DTestMotionResult() {
 
 ///////////////////////////////////////
 
-bool Physics2DServer::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, float p_margin, const Ref<Physics2DTestMotionResult> &p_result) {
+bool Physics2DServer::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<Physics2DTestMotionResult> &p_result) {
 
 	MotionResult *r = NULL;
 	if (p_result.is_valid())
 		r = p_result->get_result_ptr();
-	return body_test_motion(p_body, p_from, p_motion, p_margin, r);
+	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r);
 }
 
 void Physics2DServer::_bind_methods() {
@@ -598,7 +599,7 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "receiver", "method", "userdata"), &Physics2DServer::body_set_force_integration_callback, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result"), &Physics2DServer::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "margin", "result"), &Physics2DServer::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &Physics2DServer::body_get_direct_state);
 

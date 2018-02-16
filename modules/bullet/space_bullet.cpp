@@ -804,8 +804,7 @@ static Ref<SpatialMaterial> red_mat;
 static Ref<SpatialMaterial> blue_mat;
 #endif
 
-#define IGNORE_AREAS_TRUE true
-bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, PhysicsServer::MotionResult *r_result) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result) {
 
 #if debug_test_motion
 	/// Yes I know this is not good, but I've used it as fast debugging hack.
@@ -839,16 +838,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	}
 #endif
 
-	///// Release all generated manifolds
-	//{
-	//    if(p_body->get_kinematic_utilities()){
-	//        for(int i= p_body->get_kinematic_utilities()->m_generatedManifold.size()-1; 0<=i; --i){
-	//            dispatcher->releaseManifold( p_body->get_kinematic_utilities()->m_generatedManifold[i] );
-	//        }
-	//        p_body->get_kinematic_utilities()->m_generatedManifold.clear();
-	//    }
-	//}
-
 	btTransform body_safe_position;
 	G_TO_B(p_from, body_safe_position);
 	UNSCALE_BT_BASIS(body_safe_position);
@@ -857,7 +846,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	btVector3 recover_initial_position(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-			if (!recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, recover_initial_position)) {
+			if (!recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, recover_initial_position)) {
 				break;
 			}
 		}
@@ -900,7 +889,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			btTransform shape_world_to(shape_world_from);
 			shape_world_to.getOrigin() += motion;
 
-			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, IGNORE_AREAS_TRUE);
+			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, p_infinite_inertia);
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
 			btResult.m_collisionFilterMask = p_body->get_collision_mask();
 
@@ -926,7 +915,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		real_t l_penetration_distance = 1e20;
 
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-			l_has_penetration = recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, delta_recover_movement, &r_recover_result);
+			l_has_penetration = recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, delta_recover_movement, &r_recover_result);
 
 			if (r_result) {
 #if PERFORM_INITIAL_UNSTACK
@@ -954,15 +943,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 					r_result->collider_id = collisionObject->get_instance_id();
 					r_result->collider_shape = r_recover_result.other_compound_shape_index;
 					r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
-
-					//{ /// Add manifold point to manage collisions
-					//    btPersistentManifold* manifold = dynamicsWorld->getDispatcher()->getNewManifold(p_body->getBtBody(), btRigid);
-					//    btManifoldPoint manifoldPoint(result_callabck.m_pointWorld, result_callabck.m_pointWorld, result_callabck.m_pointNormalWorld, result_callabck.m_penetration_distance);
-					//    manifoldPoint.m_index0 = r_result->collision_local_shape;
-					//    manifoldPoint.m_index1 = r_result->collider_shape;
-					//    manifold->addManifoldPoint(manifoldPoint);
-					//    p_body->get_kinematic_utilities()->m_generatedManifold.push_back(manifold);
-					//}
 
 #if debug_test_motion
 					Vector3 sup_line2;
@@ -1022,7 +1002,7 @@ public:
 	}
 };
 
-bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result) {
+bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result) {
 
 	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask());
 
@@ -1053,7 +1033,7 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		for (int i = recover_broad_result.result_collision_objects.size() - 1; 0 <= i; --i) {
 			btCollisionObject *otherObject = recover_broad_result.result_collision_objects[i];
-			if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
+			if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()) || (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()))
 				continue;
 
 			if (otherObject->getCollisionShape()->isCompound()) {
