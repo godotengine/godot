@@ -114,8 +114,16 @@ Transform BulletPhysicsDirectBodyState::get_transform() const {
 	return body->get_transform();
 }
 
+void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
+	body->apply_central_force(p_force);
+}
+
 void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
 	body->apply_force(p_force, p_pos);
+}
+
+void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
+	body->apply_torque(p_torque);
 }
 
 void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {

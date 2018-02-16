@@ -245,10 +245,19 @@ public:
 		biased_angular_velocity += _inv_inertia_tensor.xform(p_j);
 	}
 
+	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
+
+		applied_force += p_force;
+	}
+
 	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
 
 		applied_force += p_force;
 		applied_torque += p_pos.cross(p_force);
+	}
+
+	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
+		applied_torque += p_torque;
 	}
 
 	void set_active(bool p_active);
@@ -401,7 +410,9 @@ public:
 	virtual void set_transform(const Transform &p_transform) { body->set_state(PhysicsServer::BODY_STATE_TRANSFORM, p_transform); }
 	virtual Transform get_transform() const { return body->get_transform(); }
 
+	virtual void add_central_force(const Vector3 &p_force) { body->add_central_force(p_force); }
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) { body->add_force(p_force, p_pos); }
+	virtual void add_torque(const Vector3 &p_torque) { body->add_torque(p_torque); }
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
 	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
 
