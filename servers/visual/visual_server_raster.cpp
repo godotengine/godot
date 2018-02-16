@@ -32,6 +32,7 @@
 
 #include "default_mouse_cursor.xpm"
 #include "io/marshalls.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include "project_settings.h"
 #include "sort.h"
@@ -183,7 +184,7 @@ void VisualServerRaster::set_debug_generate_wireframes(bool p_generate) {
 }
 
 void VisualServerRaster::call_set_use_vsync(bool p_enable) {
-	OS::get_singleton()->_set_use_vsync(p_enable);
+	DisplayDriver::get_singleton()->_set_use_vsync(p_enable);
 }
 
 VisualServerRaster::VisualServerRaster() {

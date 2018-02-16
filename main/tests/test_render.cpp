@@ -31,6 +31,7 @@
 #include "test_render.h"
 
 #include "math_funcs.h"
+#include "os/displaydriver.h"
 #include "os/keyboard.h"
 #include "os/main_loop.h"
 #include "os/os.h"
@@ -163,7 +164,7 @@ public:
 		// 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 
 		viewport = vs->viewport_create();
-		Size2i screen_size = OS::get_singleton()->get_window_size();
+		Size2i screen_size = DisplayDriver::get_singleton()->get_window_size();
 		vs->viewport_set_size(viewport, screen_size.x, screen_size.y);
 		vs->viewport_attach_to_screen(viewport, Rect2(Vector2(), screen_size));
 		vs->viewport_set_active(viewport, true);

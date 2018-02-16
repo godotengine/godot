@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_run.h                                                         */
+/*  os_freedesktop.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,92 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#ifndef OS_FREEDESKTOP_H
+#define OS_FREEDESKTOP_H
 
-#include "os/displaydriver.h"
-#include "os/os.h"
-#include "scene/main/node.h"
-class EditorRun {
+#include "crash_handler_x11.h"
+#include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/unix/os_unix.h"
+#include "os/input.h"
+#include "power_x11.h"
+#include "servers/audio_server.h"
+/**
+	@author Juan Linietsky <reduzio@gmail.com>
+*/
+
+class OS_Freedesktop : public OS_Unix {
+
+	List<String> args;
+	MainLoop *main_loop;
+	char *xmbstring;
+	int xmblen;
+	unsigned long last_timestamp;
+
+	virtual void delete_main_loop();
+	IP_Unix *ip_unix;
+
+	bool force_quit;
+	bool minimized;
+	bool window_has_focus;
+	bool do_mouse_warp;
+
+#ifdef ALSA_ENABLED
+	AudioDriverALSA driver_alsa;
+#endif
+
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+	PowerX11 *power_manager;
+
+	CrashHandler crash_handler;
+
+	int audio_driver_index;
+	unsigned int capture_idle;
+
+protected:
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual void initialize_core();
+	virtual Error initialize(int p_audio_driver);
+	virtual void finalize();
+
+	virtual void set_main_loop(MainLoop *p_main_loop);
+
 public:
-	enum Status {
+	virtual String get_name();
 
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+	virtual MainLoop *get_main_loop() const;
 
-	OS::ProcessID pid;
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
 
-private:
-	bool debug_collisions;
-	bool debug_navigation;
-	Status status;
+	virtual String get_system_dir(SystemDir p_dir) const;
 
-public:
-	Status get_status() const;
-	Error run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints);
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
+	virtual Error shell_open(String p_uri);
 
-	OS::ProcessID get_pid() const { return pid; }
+	virtual String get_unique_id() const;
 
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
+	virtual OS::PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
-	EditorRun();
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void run();
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
+
+	virtual Error move_to_trash(const String &p_path);
+
+	OS_Freedesktop();
 };
 
-#endif // EDITOR_RUN_H
+#endif

@@ -68,7 +68,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 	if (screen == 0) {
-		screen = OS::get_singleton()->get_current_screen();
+		screen = DisplayDriver::get_singleton()->get_current_screen();
 	} else {
 		screen--;
 	}
@@ -78,8 +78,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	}
 
 	Rect2 screen_rect;
-	screen_rect.position = OS::get_singleton()->get_screen_position(screen);
-	screen_rect.size = OS::get_singleton()->get_screen_size(screen);
+	screen_rect.position = DisplayDriver::get_singleton()->get_screen_position(screen);
+	screen_rect.size = DisplayDriver::get_singleton()->get_screen_size(screen);
 
 	Size2 desired_size;
 	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");

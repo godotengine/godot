@@ -31,6 +31,7 @@
 #include "line_edit.h"
 #include "label.h"
 #include "message_queue.h"
+#include "os/displaydriver.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -106,8 +107,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->show_virtual_keyboard(text, get_global_rect());
 		}
 
 		update();
@@ -234,8 +235,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_ENTER: {
 
 					emit_signal("text_entered", text);
-					if (OS::get_singleton()->has_virtual_keyboard())
-						OS::get_singleton()->hide_virtual_keyboard();
+					if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+						DisplayDriver::get_singleton()->hide_virtual_keyboard();
 
 					return;
 				} break;
@@ -744,8 +745,8 @@ void LineEdit::_notification(int p_what) {
 
 			if (has_focus()) {
 
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
-				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
+				DisplayDriver::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
+				DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -755,22 +756,22 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
-			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
+			DisplayDriver::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->show_virtual_keyboard(text, get_global_rect());
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
-			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
+			DisplayDriver::get_singleton()->set_ime_position(Point2());
+			DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->hide_virtual_keyboard();
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->hide_virtual_keyboard();
 
 		} break;
 	}
@@ -780,21 +781,21 @@ void LineEdit::copy_text() {
 
 	if (selection.enabled) {
 
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayDriver::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 	}
 }
 
 void LineEdit::cut_text() {
 
 	if (selection.enabled) {
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayDriver::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 		selection_delete();
 	}
 }
 
 void LineEdit::paste_text() {
 
-	String paste_buffer = OS::get_singleton()->get_clipboard();
+	String paste_buffer = DisplayDriver::get_singleton()->get_clipboard();
 
 	if (paste_buffer != "") {
 

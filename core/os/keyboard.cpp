@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "keyboard.h"
-#include "os/os.h"
+#include "os/displaydriver.h"
 
 struct _KeyCodeText {
 	int code;
@@ -578,15 +578,15 @@ const char *keycode_get_name_by_index(int p_index) {
 int latin_keyboard_keycode_convert(int p_keycode) {
 
 	const _KeyCodeReplace *kcr = NULL;
-	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
+	switch (DisplayDriver::get_singleton()->get_latin_keyboard_variant()) {
 
-		case OS::LATIN_KEYBOARD_QWERTY: return p_keycode; break;
-		case OS::LATIN_KEYBOARD_QWERTZ: kcr = _keycode_replace_qwertz; break;
-		case OS::LATIN_KEYBOARD_AZERTY: kcr = _keycode_replace_azerty; break;
-		case OS::LATIN_KEYBOARD_QZERTY: kcr = _keycode_replace_qzerty; break;
-		case OS::LATIN_KEYBOARD_DVORAK: kcr = _keycode_replace_dvorak; break;
-		case OS::LATIN_KEYBOARD_NEO: kcr = _keycode_replace_neo; break;
-		case OS::LATIN_KEYBOARD_COLEMAK: kcr = _keycode_replace_colemak; break;
+		case DisplayDriver::LATIN_KEYBOARD_QWERTY: return p_keycode; break;
+		case DisplayDriver::LATIN_KEYBOARD_QWERTZ: kcr = _keycode_replace_qwertz; break;
+		case DisplayDriver::LATIN_KEYBOARD_AZERTY: kcr = _keycode_replace_azerty; break;
+		case DisplayDriver::LATIN_KEYBOARD_QZERTY: kcr = _keycode_replace_qzerty; break;
+		case DisplayDriver::LATIN_KEYBOARD_DVORAK: kcr = _keycode_replace_dvorak; break;
+		case DisplayDriver::LATIN_KEYBOARD_NEO: kcr = _keycode_replace_neo; break;
+		case DisplayDriver::LATIN_KEYBOARD_COLEMAK: kcr = _keycode_replace_colemak; break;
 		default: return p_keycode;
 	}
 

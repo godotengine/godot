@@ -33,12 +33,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "display_x11.h"
 #include "main/main.h"
-#include "os_x11.h"
+#include "os_freedesktop.h"
 
 int main(int argc, char *argv[]) {
 
-	OS_X11 os;
+	OS_Freedesktop os;
+	Display_X11 display;
 
 	setlocale(LC_CTYPE, "");
 

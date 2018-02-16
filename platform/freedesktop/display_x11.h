@@ -32,18 +32,12 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
-#include "crash_handler_x11.h"
-#include "drivers/unix/os_unix.h"
-#include "os/input.h"
-#include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
+#include "os/input.h"
 #include "power_x11.h"
-#include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
@@ -81,7 +75,7 @@ typedef struct _xrr_monitor_info {
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_X11 : public OS_Unix {
+class Display_X11 : public DisplayDriver {
 
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -137,11 +131,8 @@ class OS_X11 : public OS_Unix {
 	Point2i center;
 
 	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
-	void process_xevents();
-	virtual void delete_main_loop();
-	IP_Unix *ip_unix;
+	virtual void process_events();
 
-	bool force_quit;
 	bool minimized;
 	bool window_has_focus;
 	bool do_mouse_warp;
@@ -159,19 +150,9 @@ class OS_X11 : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
-
 	Atom net_wm_icon;
 
 	PowerX11 *power_manager;
-
-	CrashHandler crash_handler;
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -191,20 +172,16 @@ protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
-
-	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver);
 	virtual void finalize();
-
-	virtual void set_main_loop(MainLoop *p_main_loop);
 
 	void _window_changed(XEvent *event);
 
 	bool is_window_maximize_allowed();
 
 public:
+	virtual void set_main_loop(MainLoop *p_main_loop);
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
@@ -230,14 +207,6 @@ public:
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
-
-	virtual String get_config_path() const;
-	virtual String get_data_path() const;
-	virtual String get_cache_path() const;
-
-	virtual String get_system_dir(SystemDir p_dir) const;
-
-	virtual Error shell_open(String p_uri);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
@@ -270,36 +239,21 @@ public:
 	virtual bool get_borderless_window();
 	virtual void set_ime_position(const Point2 &p_pos);
 
-	virtual String get_unique_id() const;
-
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 
-	virtual void set_context(int p_context);
-
 	virtual void _set_use_vsync(bool p_enable);
 	//virtual bool is_vsync_enabled() const;
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
-	virtual bool _check_internal_feature_support(const String &p_feature);
-
 	virtual void force_process_input();
-	void run();
-
-	void disable_crash_handler();
-	bool is_disable_crash_handler() const;
-
-	virtual Error move_to_trash(const String &p_path);
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
-	OS_X11();
+	virtual void set_context(int p_context);
+	Display_X11();
 };
 
 #endif

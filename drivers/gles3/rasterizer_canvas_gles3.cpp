@@ -29,10 +29,12 @@
 /*************************************************************************/
 
 #include "rasterizer_canvas_gles3.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include "project_settings.h"
 #include "rasterizer_scene_gles3.h"
 #include "servers/visual/visual_server_raster.h"
+
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -1588,7 +1590,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 		canvas_transform.translate(-(storage->frame.current_rt->width / 2.0f), -(storage->frame.current_rt->height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
-		Vector2 ssize = OS::get_singleton()->get_window_size();
+		Vector2 ssize = DisplayDriver::get_singleton()->get_window_size();
 		canvas_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / ssize.width, -2.0f / ssize.height, 1.0f));
 	}
@@ -1616,7 +1618,7 @@ void RasterizerCanvasGLES3::draw_generic_textured_rect(const Rect2 &p_rect, cons
 
 void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_image) {
 
-	Vector2 window_size = OS::get_singleton()->get_window_size();
+	Vector2 window_size = DisplayDriver::get_singleton()->get_window_size();
 	int window_h = window_size.height;
 	int window_w = window_size.width;
 

@@ -35,6 +35,7 @@
 #include "editor_settings.h"
 #include "io/resource_loader.h"
 #include "os/dir_access.h"
+#include "os/displaydriver.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "project_settings.h"
@@ -1195,7 +1196,7 @@ void FileSystemDock::_file_option(int p_option) {
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
 			String fpath = files->get_item_metadata(idx);
-			OS::get_singleton()->set_clipboard(fpath);
+			DisplayDriver::get_singleton()->set_clipboard(fpath);
 		} break;
 	}
 }
@@ -1261,7 +1262,7 @@ void FileSystemDock::_folder_option(int p_option) {
 		} break;
 		case FOLDER_COPY_PATH: {
 			String fpath = selected->get_metadata(tree->get_selected_column());
-			OS::get_singleton()->set_clipboard(fpath);
+			DisplayDriver::get_singleton()->set_clipboard(fpath);
 		} break;
 		case FOLDER_SHOW_IN_EXPLORER: {
 			String fpath = selected->get_metadata(tree->get_selected_column());

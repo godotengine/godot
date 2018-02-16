@@ -11,7 +11,8 @@ def make_debug(target, source, env):
 common_x11 = [
     "context_gl_x11.cpp",
     "crash_handler_x11.cpp",
-    "os_x11.cpp",
+    "os_freedesktop.cpp",
+    "display_x11.cpp",
     "key_mapping_x11.cpp",
     "joypad_linux.cpp",
     "power_x11.cpp",

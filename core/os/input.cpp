@@ -30,6 +30,7 @@
 
 #include "input.h"
 #include "input_map.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include "project_settings.h"
 Input *Input::singleton = NULL;
@@ -41,12 +42,12 @@ Input *Input::get_singleton() {
 
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, 4);
-	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
+	DisplayDriver::get_singleton()->set_mouse_mode((DisplayDriver::MouseMode)p_mode);
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
 
-	return (MouseMode)OS::get_singleton()->get_mouse_mode();
+	return (MouseMode)DisplayDriver::get_singleton()->get_mouse_mode();
 }
 
 void Input::_bind_methods() {

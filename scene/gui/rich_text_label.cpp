@@ -1913,7 +1913,7 @@ void RichTextLabel::selection_copy() {
 	}
 
 	if (text != "") {
-		OS::get_singleton()->set_clipboard(text);
+		DisplayDriver::get_singleton()->set_clipboard(text);
 		//print_line("COPY: "+text);
 	}
 }

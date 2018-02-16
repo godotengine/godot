@@ -39,6 +39,7 @@
 #if defined(OPENGL_ENABLED)
 
 #include "drivers/gl_context/context_gl.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include <X11/Xlib.h>
 
@@ -47,7 +48,7 @@ struct ContextGL_X11_Private;
 class ContextGL_X11 : public ContextGL {
 
 	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
+	DisplayDriver::VideoMode default_video_mode;
 	//::Colormap x11_colormap;
 	::Display *x11_display;
 	::Window &x11_window;
@@ -69,7 +70,7 @@ public:
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context);
+	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const DisplayDriver::VideoMode &p_default_video_mode, bool p_opengl_3_context);
 	~ContextGL_X11();
 };
 
