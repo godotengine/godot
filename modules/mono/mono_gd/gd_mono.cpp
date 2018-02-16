@@ -47,6 +47,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "../editor/godotsharp_editor.h"
+#include "main/main.h"
 #endif
 
 void gdmono_unhandled_exception_hook(MonoObject *exc, void *user_data) {
@@ -94,21 +95,6 @@ static bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 }
 #endif
 
-#ifdef TOOLS_ENABLED
-// temporary workaround. should be provided from Main::setup/setup2 instead
-bool _is_project_manager_requested() {
-
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
-	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
-		const String &arg = E->get();
-		if (arg == "-p" || arg == "--project-manager")
-			return true;
-	}
-
-	return false;
-}
-#endif
-
 #ifdef DEBUG_ENABLED
 void gdmono_debug_init() {
 
@@ -121,7 +107,7 @@ void gdmono_debug_init() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().empty() ||
-			_is_project_manager_requested()) {
+			Main::is_project_manager()) {
 		return;
 	}
 #endif

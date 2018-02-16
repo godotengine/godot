@@ -56,6 +56,7 @@ public:
 	static bool iteration();
 	static void cleanup();
 	static void force_redraw();
+	static bool is_project_manager();
 };
 
 #endif
