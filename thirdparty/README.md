@@ -26,9 +26,14 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: Mozilla, via https://packages.ubuntu.com/xenial-updates/ca-certificates
-- Version: 2016-ish
+- Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
+- Version: 2018.2.22
 - License: MPL 2.0
+
+File extracted from a recent Fedora install:
+/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+(It can't be extracted directly from the package,
+as it's generated on the user's system.)
 
 
 ## enet
