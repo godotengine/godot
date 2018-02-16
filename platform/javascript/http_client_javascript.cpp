@@ -239,15 +239,11 @@ Error HTTPClient::poll() {
 
 		case STATUS_REQUESTING:
 			polled_response_code = godot_xhr_get_status(xhr_id);
-			int response_length = godot_xhr_get_response_length(xhr_id);
-			if (response_length == 0) {
-				godot_xhr_ready_state_t ready_state = godot_xhr_get_ready_state(xhr_id);
-				if (ready_state == XHR_READY_STATE_HEADERS_RECEIVED || ready_state == XHR_READY_STATE_LOADING) {
-					return OK;
-				} else {
-					status = STATUS_CONNECTION_ERROR;
-					return ERR_CONNECTION_ERROR;
-				}
+			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
+				return OK;
+			} else if (!polled_response_code) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
 			}
 
 			status = STATUS_BODY;
@@ -263,9 +259,9 @@ Error HTTPClient::poll() {
 			polled_response_header = String::utf8(reinterpret_cast<const char *>(read.ptr()));
 			read = PoolByteArray::Read();
 
-			polled_response.resize(response_length);
+			polled_response.resize(godot_xhr_get_response_length(xhr_id));
 			write = polled_response.write();
-			godot_xhr_get_response(xhr_id, write.ptr(), response_length);
+			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
 			write = PoolByteArray::Write();
 			break;
 	}
