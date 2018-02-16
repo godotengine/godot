@@ -101,8 +101,8 @@ void GridMapEditor::_menu_option(int p_option) {
 			}
 
 			if (edit_axis != new_axis) {
-				int item1 = options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL);
-				int item2 = options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL);
+				int item1 = options->get_popup()->get_item_id(MENU_OPTION_NEXT_LEVEL);
+				int item2 = options->get_popup()->get_item_id(MENU_OPTION_PREV_LEVEL);
 				if (edit_axis == Vector3::AXIS_Y) {
 					options->get_popup()->set_item_text(item1, TTR("Next Plane"));
 					options->get_popup()->set_item_text(item2, TTR("Previous Plane"));
