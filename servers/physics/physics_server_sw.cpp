@@ -902,7 +902,7 @@ bool PhysicsServerSW::body_is_ray_pickable(RID p_body) const {
 	return body->is_ray_pickable();
 }
 
-bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result) {
+bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
@@ -911,7 +911,7 @@ bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, cons
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, body->get_kinematic_margin(), r_result);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, body->get_kinematic_margin(), r_result);
 }
 
 PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
