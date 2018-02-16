@@ -30,8 +30,8 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-#include "../x11/crash_handler_x11.h"
-#include "../x11/power_x11.h"
+#include "../freedesktop/crash_handler_x11.h"
+#include "../freedesktop/power_x11.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
