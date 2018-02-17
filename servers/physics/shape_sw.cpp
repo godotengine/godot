@@ -672,7 +672,7 @@ Vector3 CapsuleShapeSW::get_closest_point_to(const Vector3 &p_point) const {
 
 Vector3 CapsuleShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
-	// use crappy AABB approximation
+	// use bad AABB approximation
 	Vector3 extents = get_aabb().size * 0.5;
 
 	return Vector3(
@@ -943,7 +943,7 @@ Vector3 ConvexPolygonShapeSW::get_closest_point_to(const Vector3 &p_point) const
 
 Vector3 ConvexPolygonShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
-	// use crappy AABB approximation
+	// use bad AABB approximation
 	Vector3 extents = get_aabb().size * 0.5;
 
 	return Vector3(
@@ -1331,7 +1331,7 @@ void ConcavePolygonShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, 
 
 Vector3 ConcavePolygonShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
-	// use crappy AABB approximation
+	// use bad AABB approximation
 	Vector3 extents = get_aabb().size * 0.5;
 
 	return Vector3(
@@ -1594,7 +1594,7 @@ void HeightMapShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, void 
 
 Vector3 HeightMapShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
-	// use crappy AABB approximation
+	// use bad AABB approximation
 	Vector3 extents = get_aabb().size * 0.5;
 
 	return Vector3(

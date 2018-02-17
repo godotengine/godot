@@ -418,8 +418,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 		if (page != last_page) {
 			buffer_mutex->lock();
 			if (pages[page].buffer.empty()) {
-				//fuck
-
 				waiting_on_page = page;
 				for (int j = 0; j < read_ahead; j++) {
 

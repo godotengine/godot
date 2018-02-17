@@ -398,8 +398,6 @@ void SpriteFramesEditor::_animation_add() {
 	animations->grab_focus();
 }
 void SpriteFramesEditor::_animation_remove() {
-
-	//fuck everything
 	if (updating)
 		return;
 

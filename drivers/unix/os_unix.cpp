@@ -296,7 +296,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 		Vector<char *> args;
 		for (int i = 0; i < cs.size(); i++)
-			args.push_back((char *)cs[i].get_data()); // shitty C cast
+			args.push_back((char *)cs[i].get_data());
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);

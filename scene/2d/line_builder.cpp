@@ -347,7 +347,7 @@ void LineBuilder::build() {
 			}
 
 			if (intersection_result != SEGMENT_INTERSECT)
-				// In this case the joint is too fucked up to be re-used,
+				// In this case the joint is too corrputed to be re-used,
 				// start again the strip with fallback points
 				strip_begin(pos_up0, pos_down0, color1, uvx1);
 		}
