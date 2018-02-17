@@ -298,24 +298,28 @@ void TileMapEditor::_update_palette() {
 			palette->add_item(String());
 		}
 
-		Ref<Texture> tex = tileset->tile_get_texture(entries[i].id);
+		int index = palette->get_item_count() - 1;
+		int tileid = entries[i].id;
+
+		Ref<Texture> tex = tileset->tile_get_texture(tileid);
 
 		if (tex.is_valid()) {
-			Rect2 region = tileset->tile_get_region(entries[i].id);
+			Rect2 region = tileset->tile_get_region(tileid);
 
-			if (tileset->tile_get_is_autotile(entries[i].id)) {
-				int spacing = tileset->autotile_get_spacing(entries[i].id);
-				region.size = tileset->autotile_get_size(entries[i].id);
-				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
+			if (tileset->tile_get_is_autotile(tileid)) {
+				int spacing = tileset->autotile_get_spacing(tileid);
+				region.size = tileset->autotile_get_size(tileid);
+				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(tileid);
 			}
 
 			if (!region.has_no_area())
-				palette->set_item_icon_region(palette->get_item_count() - 1, region);
+				palette->set_item_icon_region(index, region);
 
-			palette->set_item_icon(palette->get_item_count() - 1, tex);
+			palette->set_item_icon(index, tex);
+			palette->set_item_icon_modulate(index, tileset->tile_get_modulate(tileid));
 		}
 
-		palette->set_item_metadata(palette->get_item_count() - 1, entries[i].id);
+		palette->set_item_metadata(index, tileid);
 	}
 
 	palette->set_same_column_width(true);
@@ -498,18 +502,19 @@ void TileMapEditor::_select(const Point2i &p_from, const Point2i &p_to) {
 
 void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
 
-	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
+	Ref<TileSet> tileset = node->get_tileset();
+	Ref<Texture> t = tileset->tile_get_texture(p_cell);
 
 	if (t.is_null())
 		return;
 
-	Vector2 tile_ofs = node->get_tileset()->tile_get_texture_offset(p_cell);
+	Vector2 tile_ofs = tileset->tile_get_texture_offset(p_cell);
 
-	Rect2 r = node->get_tileset()->tile_get_region(p_cell);
-	if (node->get_tileset()->tile_get_is_autotile(p_cell)) {
-		int spacing = node->get_tileset()->autotile_get_spacing(p_cell);
-		r.size = node->get_tileset()->autotile_get_size(p_cell);
-		r.position += (r.size + Vector2(spacing, spacing)) * node->get_tileset()->autotile_get_icon_coordinate(p_cell);
+	Rect2 r = tileset->tile_get_region(p_cell);
+	if (tileset->tile_get_is_autotile(p_cell)) {
+		int spacing = tileset->autotile_get_spacing(p_cell);
+		r.size = tileset->autotile_get_size(p_cell);
+		r.position += (r.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(p_cell);
 	}
 	Size2 sc = p_xform.get_scale();
 
@@ -581,10 +586,13 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 	rect.position = p_xform.xform(rect.position);
 	rect.size *= sc;
 
+	Color modulate = tileset->tile_get_modulate(p_cell);
+	modulate.a *= 0.5;
+
 	if (r.has_no_area())
-		canvas_item_editor->draw_texture_rect(t, rect, false, Color(1, 1, 1, 0.5), p_transpose);
+		canvas_item_editor->draw_texture_rect(t, rect, false, modulate, p_transpose);
 	else
-		canvas_item_editor->draw_texture_rect_region(t, rect, r, Color(1, 1, 1, 0.5), p_transpose);
+		canvas_item_editor->draw_texture_rect_region(t, rect, r, modulate, p_transpose);
 }
 
 void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
