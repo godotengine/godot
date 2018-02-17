@@ -3204,24 +3204,27 @@ String TextEdit::get_line(int line) const {
 void TextEdit::_clear() {
 
 	if (undo_enabled) {
-		_clear_redo();
 		String undo_text = get_text();
 
-		/* UNDO!! */
-		TextOperation op;
-		op.type = TextOperation::TYPE_CLEAR;
-		op.from_line = 0;
-		op.from_column = 0;
-		op.to_line = MAX(0, get_line_count() - 1);
-		op.to_column = get_line(op.to_line).length();
-		op.text = undo_text;
-		op.version = ++version;
-		op.chain_forward = false;
-		op.chain_backward = false;
+		if (undo_text.length() > 0) {
+			_clear_redo();
 
-		op.prev_version = get_version();
-		_push_current_op();
-		current_op = op;
+			/* UNDO!! */
+			TextOperation op;
+			op.type = TextOperation::TYPE_CLEAR;
+			op.from_line = 0;
+			op.from_column = 0;
+			op.to_line = MAX(0, get_line_count() - 1);
+			op.to_column = get_line(op.to_line).length();
+			op.text = undo_text;
+			op.version = ++version;
+			op.chain_forward = false;
+			op.chain_backward = false;
+
+			op.prev_version = get_version();
+			_push_current_op();
+			current_op = op;
+		}
 	} else {
 		clear_undo_history();
 	}
