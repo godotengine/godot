@@ -119,8 +119,7 @@ private:
 		// Default modulate for back-compat
 		explicit TileData() :
 				tile_mode(SINGLE_TILE),
-				modulate(1, 1, 1),
-				z_index(0) {}
+				modulate(1, 1, 1) {}
 	};
 
 	Map<int, TileData> tile_map;

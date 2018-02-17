@@ -677,14 +677,6 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 
 	Rect2 r = node->get_tileset()->tile_get_region(p_cell);
 	if (node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::AUTO_TILE) {
-		Vector2 offset;
-		int selected = manual_palette->get_current();
-		if (manual_autotile && selected != -1) {
-			offset = manual_palette->get_item_metadata(selected);
-		} else {
-			offset = node->get_tileset()->autotile_get_icon_coordinate(p_cell);
-		}
-
 		int spacing = node->get_tileset()->autotile_get_spacing(p_cell);
 		r.size = node->get_tileset()->autotile_get_size(p_cell);
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;

@@ -243,7 +243,6 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_name_dialog_confirm", &TileSetEditor::_name_dialog_confirm);
 	ClassDB::bind_method("_on_tile_list_selected", &TileSetEditor::_on_tile_list_selected);
 	ClassDB::bind_method("_on_edit_mode_changed", &TileSetEditor::_on_edit_mode_changed);
-	ClassDB::bind_method("_on_workspace_overlay_draw", &TileSetEditor::_on_workspace_overlay_draw);
 	ClassDB::bind_method("_on_workspace_draw", &TileSetEditor::_on_workspace_draw);
 	ClassDB::bind_method("_on_workspace_input", &TileSetEditor::_on_workspace_input);
 	ClassDB::bind_method("_on_tool_clicked", &TileSetEditor::_on_tool_clicked);
@@ -258,7 +257,7 @@ void TileSetEditor::_bind_methods() {
 }
 
 void TileSetEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
 		tools[TOOL_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
 		tools[BITMASK_COPY]->set_icon(get_icon("Duplicate", "EditorIcons"));
 		tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));
@@ -279,11 +278,10 @@ void TileSetEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 	} else if (p_prop == StringName("name")) {
 		update_tile_list_icon();
-	} else if (p_prop == StringName("texture") || p_prop == StringName("modulate") || p_prop == StringName("tile_mode")) {
+	} else if (p_prop == StringName("texture") || p_prop == StringName("tile_mode")) {
 		_on_tile_list_selected(get_current_tile());
 		workspace->update();
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
-		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE)
 			property_editor->show();
@@ -404,7 +402,7 @@ void TileSetEditor::initialize_bottom_editor() {
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_DELETE]);
-	tool_containers[TOOLBAR_SHAPE]->add_child(memnew(VSeparator));
+	tool_containers[TOOLBAR_SHAPE]->add_change_receptor(memnew(VSeparator));
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
@@ -566,21 +564,13 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	add_child(err_dialog);
 	err_dialog->set_title(TTR("Error"));
 
-	draw_handles = false;
-
 	initialize_bottom_editor();
-}
-
-TileSetEditor::~TileSetEditor() {
-	if (helper)
-		memdelete(helper);
 }
 
 void TileSetEditor::_on_tile_list_selected(int p_index) {
 	if (get_current_tile() >= 0) {
 		current_item_index = p_index;
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
-		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		workspace->set_custom_minimum_size(tileset->tile_get_region(get_current_tile()).size);
 		update_workspace_tile_mode();
@@ -667,7 +657,7 @@ void TileSetEditor::_on_workspace_draw() {
 							if (mask & TileSet::BIND_BOTTOMRIGHT) {
 								workspace->draw_rect(Rect2(anchor + size / 2, size / 2), c);
 							}
-						} else {
+						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
 							if (mask & TileSet::BIND_TOPLEFT) {
 								workspace->draw_rect(Rect2(anchor, size / 3), c);
 							}
@@ -753,20 +743,7 @@ void TileSetEditor::_on_workspace_draw() {
 	workspace_overlay->update();
 }
 
-void TileSetEditor::_on_workspace_overlay_draw() {
-
-	int t_id = get_current_tile();
-	if (t_id < 0 || !draw_handles)
-		return;
-
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
-
-	for (int i = 0; i < current_shape.size(); i++) {
-		workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
-	}
-}
-
-#define MIN_DISTANCE_SQUARED 6
+#define MIN_DISTANCE_SQUARED 10
 void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 	if (get_current_tile() >= 0 && !tileset.is_null()) {
@@ -806,7 +783,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							Vector2 coord((int)(mb->get_position().x / (spacing + size.x)), (int)(mb->get_position().y / (spacing + size.y)));
 							Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 							pos = mb->get_position() - pos;
-							uint16_t bit = 0;
+							uint16_t bit;
 							if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 								if (pos.x < size.x / 2) {
 									if (pos.y < size.y / 2) {
@@ -821,7 +798,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										bit = TileSet::BIND_BOTTOMRIGHT;
 									}
 								}
-							} else {
+							} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
 								if (pos.x < size.x / 3) {
 									if (pos.y < size.y / 3) {
 										bit = TileSet::BIND_TOPLEFT;
@@ -869,7 +846,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						Vector2 coord((int)(mm->get_position().x / (spacing + size.x)), (int)(mm->get_position().y / (spacing + size.y)));
 						Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 						pos = mm->get_position() - pos;
-						uint16_t bit = 0;
+						uint16_t bit;
 						if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 							if (pos.x < size.x / 2) {
 								if (pos.y < size.y / 2) {
@@ -884,7 +861,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									bit = TileSet::BIND_BOTTOMRIGHT;
 								}
 							}
-						} else {
+						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
 							if (pos.x < size.x / 3) {
 								if (pos.y < size.y / 3) {
 									bit = TileSet::BIND_TOPLEFT;
@@ -1030,8 +1007,6 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						}
 					}
 				} else if (tools[SHAPE_NEW_POLYGON]->is_pressed()) {
-					if (!tools[TOOL_SELECT]->is_disabled())
-						tools[TOOL_SELECT]->set_disabled(true);
 
 					if (mb.is_valid()) {
 						if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
@@ -1104,8 +1079,6 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT && current_shape.size() > 2) {
 							if (creating_shape) {
 								close_shape(shape_anchor);
-								if (tools[TOOL_SELECT]->is_disabled())
-									tools[TOOL_SELECT]->set_disabled(false);
 							}
 						}
 					} else if (mm.is_valid()) {
@@ -1151,7 +1124,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				case EDITMODE_COLLISION: {
 					if (!edited_collision_shape.is_null()) {
 						Vector<TileSet::ShapeData> sd = tileset->tile_get_shapes(get_current_tile());
-						int index = -1;
+						int index;
 						for (int i = 0; i < sd.size(); i++) {
 							if (sd[i].shape == edited_collision_shape) {
 								index = i;
@@ -1202,7 +1175,6 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 		scale *= 2;
 		workspace->set_scale(Vector2(scale, scale));
 		workspace_container->set_custom_minimum_size(preview->get_region_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(preview->get_region_rect().size * scale);
 	} else if (p_tool == TOOL_SELECT) {
 		if (creating_shape) {
 			//Cancel Creation
@@ -1399,7 +1371,9 @@ void TileSetEditor::draw_polygon_shapes() {
 					}
 					workspace->draw_line(shape->get_polygon()[shape->get_polygon().size() - 1], shape->get_polygon()[0], c_border, 1, true);
 					if (shape == edited_occlusion_shape) {
-						draw_handles = true;
+						for (int j = 0; j < current_shape.size(); j++) {
+							workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
+						}
 					}
 				}
 			} else {
@@ -1442,7 +1416,9 @@ void TileSetEditor::draw_polygon_shapes() {
 							}
 							workspace->draw_line(shape->get_polygon()[shape->get_polygon().size() - 1] + anchor, shape->get_polygon()[0] + anchor, c_border, 1, true);
 							if (shape == edited_occlusion_shape) {
-								draw_handles = true;
+								for (int j = 0; j < current_shape.size(); j++) {
+									workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
+								}
 							}
 						}
 					}
@@ -1473,7 +1449,9 @@ void TileSetEditor::draw_polygon_shapes() {
 							workspace->draw_line(vertices[shape->get_polygon(0)[j]], vertices[shape->get_polygon(0)[j + 1]], c_border, 1, true);
 						}
 						if (shape == edited_navigation_shape) {
-							draw_handles = true;
+							for (int j = 0; j < current_shape.size(); j++) {
+								workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
+							}
 						}
 					}
 				}
@@ -1520,7 +1498,9 @@ void TileSetEditor::draw_polygon_shapes() {
 									workspace->draw_line(vertices[shape->get_polygon(0)[j]] + anchor, vertices[shape->get_polygon(0)[j + 1]] + anchor, c_border, 1, true);
 								}
 								if (shape == edited_navigation_shape) {
-									draw_handles = true;
+									for (int j = 0; j < current_shape.size(); j++) {
+										workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
+									}
 								}
 							}
 						}
@@ -1743,7 +1723,6 @@ void TileSetEditor::update_tile_list() {
 			region.position += pos;
 		}
 		tile_list->set_item_icon_region(tile_list->get_item_count() - 1, region);
-		tile_list->set_item_icon_modulate(tile_list->get_item_count() - 1, tileset->tile_get_modulate(E->get()));
 	}
 	if (tile_list->get_item_count() > 0 && selected_tile < tile_list->get_item_count()) {
 		tile_list->select(selected_tile);
@@ -1771,7 +1750,6 @@ void TileSetEditor::update_tile_list_icon() {
 		tile_list->set_item_metadata(current_idx, E->get());
 		tile_list->set_item_icon(current_idx, tileset->tile_get_texture(E->get()));
 		tile_list->set_item_icon_region(current_idx, region);
-		tile_list->set_item_icon_modulate(current_idx, tileset->tile_get_modulate(E->get()));
 		tile_list->set_item_text(current_idx, tileset->tile_get_name(E->get()));
 		current_idx += 1;
 	}
@@ -1835,8 +1813,6 @@ bool TileSetEditorHelper::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (selected_tile < 0 || tileset.is_null())
 		return false;
-	if (!tileset->has_tile(selected_tile))
-		return false;
 
 	String name = p_name.operator String();
 	bool v = false;
@@ -1861,7 +1837,6 @@ void TileSetEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {
 TileSetEditorHelper::TileSetEditorHelper(TileSetEditor *p_tileset_editor) {
 
 	tileset_editor = p_tileset_editor;
-	selected_tile = -1;
 }
 
 void TileSetEditorPlugin::edit(Object *p_node) {

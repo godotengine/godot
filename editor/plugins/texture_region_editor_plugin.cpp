@@ -57,9 +57,8 @@ void TextureRegionEditor::_region_draw() {
 		base_tex = obj_styleBox->get_texture();
 	else if (atlas_tex.is_valid())
 		base_tex = atlas_tex->get_atlas();
-	else if (tile_set.is_valid() && selected_tile != -1 && tile_set->has_tile(selected_tile))
+	else if (tile_set.is_valid() && selected_tile != -1)
 		base_tex = tile_set->tile_get_texture(selected_tile);
-
 	if (base_tex.is_null())
 		return;
 
@@ -724,7 +723,7 @@ void TextureRegionEditor::_edit_region() {
 		texture = obj_styleBox->get_texture();
 	else if (atlas_tex.is_valid())
 		texture = atlas_tex->get_atlas();
-	else if (tile_set.is_valid() && selected_tile != -1 && tile_set->has_tile(selected_tile))
+	else if (tile_set.is_valid() && selected_tile != -1)
 		texture = tile_set->tile_get_texture(selected_tile);
 
 	if (texture.is_null()) {
@@ -966,12 +965,8 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region())) {
-			editor->make_bottom_panel_item_visible(region_editor);
-		} else {
-			if (texture_region_button->is_pressed())
-				region_editor->show();
-		}
+		if (texture_region_button->is_pressed())
+			region_editor->show();
 	} else {
 		texture_region_button->hide();
 		region_editor->edit(NULL);
@@ -1027,7 +1022,7 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	region_editor = memnew(TextureRegionEditor(p_node));
 
-	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
+	texture_region_button = p_node->add_bottom_panel_item(TTR("Texture Region"), region_editor);
 	texture_region_button->set_tooltip(TTR("Texture Region Editor"));
 
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
