@@ -81,6 +81,8 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers) {
 
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
+	ERR_EXPLAIN("HTTP methods TRACE and CONNECT are not supported for the HTML5 platform");
+	ERR_FAIL_COND_V(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(host.empty(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
