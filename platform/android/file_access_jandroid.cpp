@@ -190,43 +190,16 @@ void FileAccessJAndroid::setup(jobject p_io) {
 	io = p_io;
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "STEP5");
-
 	jclass c = env->GetObjectClass(io);
-	__android_log_print(ANDROID_LOG_INFO, "godot", "STEP6");
 	cls = (jclass)env->NewGlobalRef(c);
 
 	_file_open = env->GetMethodID(cls, "file_open", "(Ljava/lang/String;Z)I");
-	if (_file_open != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_open ok!!");
-	}
 	_file_get_size = env->GetMethodID(cls, "file_get_size", "(I)I");
-	if (_file_get_size != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_get_size ok!!");
-	}
 	_file_tell = env->GetMethodID(cls, "file_tell", "(I)I");
-	if (_file_tell != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_tell ok!!");
-	}
 	_file_eof = env->GetMethodID(cls, "file_eof", "(I)Z");
-
-	if (_file_eof != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_eof ok!!");
-	}
 	_file_seek = env->GetMethodID(cls, "file_seek", "(II)V");
-	if (_file_seek != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_seek ok!!");
-	}
 	_file_read = env->GetMethodID(cls, "file_read", "(II)[B");
-	if (_file_read != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_read ok!!");
-	}
 	_file_close = env->GetMethodID(cls, "file_close", "(I)V");
-	if (_file_close != 0) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _file_close ok!!");
-	}
-
-	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
 FileAccessJAndroid::FileAccessJAndroid() {

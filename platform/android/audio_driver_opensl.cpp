@@ -117,8 +117,6 @@ Error AudioDriverOpenSL::init() {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
 
-	print_line("OpenSL Init OK!");
-
 	return OK;
 }
 

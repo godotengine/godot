@@ -150,20 +150,15 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			Method[] methods = clazz.getDeclaredMethods();
 			for (Method method : methods) {
 				boolean found = false;
-				Log.d("XXX", "METHOD: %s\n" + method.getName());
 
 				for (String s : p_methods) {
-					Log.d("XXX", "METHOD CMP WITH: %s\n" + s);
 					if (s.equals(method.getName())) {
 						found = true;
-						Log.d("XXX", "METHOD CMP VALID");
 						break;
 					}
 				}
 				if (!found)
 					continue;
-
-				Log.d("XXX", "METHOD FOUND: %s\n" + method.getName());
 
 				List<String> ptr = new ArrayList<String>();
 
@@ -281,7 +276,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				godot.mView.getWindowVisibleDisplayFrame(gameSize);
 
 				final int keyboardHeight = fullSize.y - gameSize.bottom;
-				Log.d("GODOT", "setVirtualKeyboardHeight: " + keyboardHeight);
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
 			}
 		});
@@ -351,8 +345,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			byte[] len = new byte[4];
 			int r = is.read(len);
 			if (r < 4) {
-				Log.d("XXX", "**ERROR** Wrong cmdline length.\n");
-				Log.d("GODOT", "**ERROR** Wrong cmdline length.\n");
 				return new String[0];
 			}
 			int argc = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
@@ -362,12 +354,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				r = is.read(len);
 				if (r < 4) {
 
-					Log.d("GODOT", "**ERROR** Wrong cmdline param length.\n");
 					return new String[0];
 				}
 				int strlen = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
 				if (strlen > 65535) {
-					Log.d("GODOT", "**ERROR** Wrong command len\n");
 					return new String[0];
 				}
 				byte[] arg = new byte[strlen];
@@ -379,7 +369,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			return cmdline;
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.d("GODOT", "**ERROR** Exception " + e.getClass().getName() + ":" + e.getMessage());
 			return new String[0];
 		}
 	}
@@ -393,14 +382,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			String[] new_cmdline;
 			int cll = 0;
 			if (command_line != null) {
-				Log.d("GODOT", "initializeGodot: command_line: is not null");
 				new_cmdline = new String[command_line.length + 2];
 				cll = command_line.length;
 				for (int i = 0; i < command_line.length; i++) {
 					new_cmdline[i] = command_line[i];
 				}
 			} else {
-				Log.d("GODOT", "initializeGodot: command_line: is null");
 				new_cmdline = new String[2];
 			}
 
@@ -412,13 +399,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		io = new GodotIO(this);
 		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 		GodotLib.io = io;
-		Log.d("GODOT", "command_line is null? " + ((command_line == null) ? "yes" : "no"));
-		/*if(command_line != null){
-		    Log.d("GODOT", "Command Line:");
-		    for(int w=0;w <command_line.length;w++){
-		        Log.d("GODOT","   " + command_line[w]);
-		    }
-		}*/
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -446,8 +426,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	@Override
 	protected void onCreate(Bundle icicle) {
-
-		Log.d("GODOT", "** GODOT ACTIVITY CREATED HERE ***\n");
 
 		super.onCreate(icicle);
 		_self = this;
@@ -509,7 +487,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			if (use_apk_expansion && main_pack_md5 != null && main_pack_key != null) {
 				//check that environment is ok!
 				if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-					Log.d("GODOT", "**ERROR! No media mounted!");
 					//show popup and die
 				}
 
@@ -524,25 +501,20 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				File f = new File(expansion_pack_path);
 
 				boolean pack_valid = true;
-				Log.d("GODOT", "**PACK** - Path " + expansion_pack_path);
 
 				if (!f.exists()) {
 
 					pack_valid = false;
-					Log.d("GODOT", "**PACK** - File does not exist");
 
 				} else if (obbIsCorrupted(expansion_pack_path, main_pack_md5)) {
-					Log.d("GODOT", "**PACK** - Expansion pack (obb) is corrupted");
 					pack_valid = false;
 					try {
 						f.delete();
 					} catch (Exception e) {
-						Log.d("GODOT", "**PACK** - Error deleting corrupted expansion pack (obb)");
 					}
 				}
 
 				if (!pack_valid) {
-					Log.d("GODOT", "Pack Invalid, try re-downloading.");
 
 					Intent notifierIntent = new Intent(this, this.getClass());
 					notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
@@ -553,15 +525,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 					int startResult;
 					try {
-						Log.d("GODOT", "INITIALIZING DOWNLOAD");
 						startResult = DownloaderClientMarshaller.startDownloadServiceIfRequired(
 								getApplicationContext(),
 								pendingIntent,
 								GodotDownloaderService.class);
-						Log.d("GODOT", "DOWNLOAD SERVICE FINISHED:" + startResult);
 
 						if (startResult != DownloaderClientMarshaller.NO_DOWNLOAD_REQUIRED) {
-							Log.d("GODOT", "DOWNLOAD REQUIRED");
 							// This is where you do set up to display the download
 							// progress (next step)
 							mDownloaderClientStub = DownloaderClientMarshaller.CreateStub(this,
@@ -581,11 +550,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 							return;
 						} else {
-							Log.d("GODOT", "NO DOWNLOAD REQUIRED");
 						}
 					} catch (NameNotFoundException e) {
 						// TODO Auto-generated catch block
-						Log.d("GODOT", "Error downloading expansion package:" + e.getMessage());
 					}
 				}
 			}
@@ -763,7 +730,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 		}
 
-		System.out.printf("** BACK REQUEST!\n");
 		if (shouldQuit && mView != null) {
 			mView.queueEvent(new Runnable() {
 				@Override
@@ -812,15 +778,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 			String md5str = hexString.toString();
 
-			//Log.d("GODOT","**PACK** - My MD5: "+hexString+" - APK md5: "+main_pack_md5);
 			if (!md5str.equals(main_pack_md5)) {
-				Log.d("GODOT", "**PACK MD5 MISMATCH???** - MD5 Found: " + md5str + " " + Integer.toString(md5str.length()) + " - MD5 Expected: " + main_pack_md5 + " " + Integer.toString(main_pack_md5.length()));
 				return true;
 			}
 			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.d("GODOT", "**PACK FAIL**");
 			return true;
 		}
 	}
@@ -936,7 +899,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
      */
 	@Override
 	public void onDownloadStateChanged(int newState) {
-		Log.d("GODOT", "onDownloadStateChanged:" + newState);
 		setState(newState);
 		boolean showDashboard = true;
 		boolean showCellMessage = false;
@@ -944,7 +906,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		boolean indeterminate;
 		switch (newState) {
 			case IDownloaderClient.STATE_IDLE:
-				Log.d("GODOT", "DOWNLOAD STATE IDLE");
 				// STATE_IDLE means the service is listening, so it's
 				// safe to start making calls via mRemoteService.
 				paused = false;
@@ -952,13 +913,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				break;
 			case IDownloaderClient.STATE_CONNECTING:
 			case IDownloaderClient.STATE_FETCHING_URL:
-				Log.d("GODOT", "DOWNLOAD STATE CONNECTION / FETCHING URL");
 				showDashboard = true;
 				paused = false;
 				indeterminate = true;
 				break;
 			case IDownloaderClient.STATE_DOWNLOADING:
-				Log.d("GODOT", "DOWNLOAD STATE DOWNLOADING");
 				paused = false;
 				showDashboard = true;
 				indeterminate = false;
@@ -968,14 +927,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			case IDownloaderClient.STATE_FAILED:
 			case IDownloaderClient.STATE_FAILED_FETCHING_URL:
 			case IDownloaderClient.STATE_FAILED_UNLICENSED:
-				Log.d("GODOT", "DOWNLOAD STATE: FAILED, CANCELLED, UNLICENSED OR FAILED TO FETCH URL");
 				paused = true;
 				showDashboard = false;
 				indeterminate = false;
 				break;
 			case IDownloaderClient.STATE_PAUSED_NEED_CELLULAR_PERMISSION:
 			case IDownloaderClient.STATE_PAUSED_WIFI_DISABLED_NEED_CELLULAR_PERMISSION:
-				Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY MISSING CELLULAR PERMISSION");
 				showDashboard = false;
 				paused = true;
 				indeterminate = false;
@@ -983,26 +940,21 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				break;
 
 			case IDownloaderClient.STATE_PAUSED_BY_REQUEST:
-				Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY USER");
 				paused = true;
 				indeterminate = false;
 				break;
 			case IDownloaderClient.STATE_PAUSED_ROAMING:
 			case IDownloaderClient.STATE_PAUSED_SDCARD_UNAVAILABLE:
-				Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY ROAMING OR SDCARD UNAVAILABLE");
 				paused = true;
 				indeterminate = false;
 				break;
 			case IDownloaderClient.STATE_COMPLETED:
-				Log.d("GODOT", "DOWNLOAD STATE: COMPLETED");
 				showDashboard = false;
 				paused = false;
 				indeterminate = false;
-				//                validateXAPKZipFiles();
 				initializeGodot();
 				return;
 			default:
-				Log.d("GODOT", "DOWNLOAD STATE: DEFAULT");
 				paused = true;
 				indeterminate = true;
 				showDashboard = true;

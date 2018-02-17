@@ -76,14 +76,11 @@ public:
 
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-		print_line("attempt to call " + String(p_method));
-
 		r_error.error = Variant::CallError::CALL_OK;
 
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 		if (!E) {
 
-			print_line("no exists");
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
@@ -91,7 +88,6 @@ public:
 		int ac = E->get().argtypes.size();
 		if (ac < p_argcount) {
 
-			print_line("fewargs");
 			r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
@@ -99,7 +95,6 @@ public:
 
 		if (ac > p_argcount) {
 
-			print_line("manyargs");
 			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
@@ -181,26 +176,21 @@ public:
 			}
 		}
 
-		print_line("calling method!!");
-
 		Variant ret;
 
 		switch (E->get().ret_type) {
 
 			case Variant::NIL: {
 
-				print_line("call void");
 				env->CallVoidMethodA(instance, E->get().method, v);
 			} break;
 			case Variant::BOOL: {
 
 				ret = env->CallBooleanMethodA(instance, E->get().method, v);
-				print_line("call bool");
 			} break;
 			case Variant::INT: {
 
 				ret = env->CallIntMethodA(instance, E->get().method, v);
-				print_line("call int");
 			} break;
 			case Variant::REAL: {
 
@@ -255,12 +245,9 @@ public:
 			} break;
 			default: {
 
-				print_line("failure..");
 				ERR_FAIL_V(Variant());
 			} break;
 		}
-
-		print_line("success");
 
 		return ret;
 	}
@@ -389,7 +376,6 @@ static int engine_init_display(struct engine *engine, bool p_gl2) {
 
 	eglQuerySurface(display, surface, EGL_WIDTH, &w);
 	eglQuerySurface(display, surface, EGL_HEIGHT, &h);
-	print_line("INIT VIDEO MODE: " + itos(w) + "," + itos(h));
 
 	//engine->os->set_egl_extensions(eglQueryString(display,EGL_EXTENSIONS));
 	engine->os->init_video_mode(w, h);
@@ -942,7 +928,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *e
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 
-		print_line("FAILED GETTING METHOID " + mname);
+		print_line("FAILED GETTING METHOD ID " + mname);
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));
