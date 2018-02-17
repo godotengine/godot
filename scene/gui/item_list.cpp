@@ -166,6 +166,20 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 	return items[p_idx].custom_fg;
 }
 
+void ItemList::set_item_icon_modulate(int p_idx, const Color &p_icon_modulate) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items[p_idx].icon_modulate = p_icon_modulate;
+}
+
+Color ItemList::get_item_icon_modulate(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
+
+	return items[p_idx].icon_modulate;
+}
+
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
@@ -1035,7 +1049,7 @@ void ItemList::_notification(int p_what) {
 					draw_rect.size = adj.size;
 				}
 
-				Color modulate = Color(1, 1, 1, 1);
+				Color modulate = items[i].icon_modulate != Color() ? items[i].icon_modulate : Color(1, 1, 1, 1);
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
@@ -1370,6 +1384,9 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color", "idx", "custom_bg_color"), &ItemList::set_item_custom_bg_color);
 	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color", "idx"), &ItemList::get_item_custom_bg_color);
+
+	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "idx", "icon_modulate"), &ItemList::set_item_icon_modulate);
+	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "idx"), &ItemList::get_item_icon_modulate);
 
 	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled", "idx", "enable"), &ItemList::set_item_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled);
