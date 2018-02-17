@@ -193,8 +193,6 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 	if (response_read_offset == polled_response.size()) {
 		status = STATUS_CONNECTED;
 		polled_response.resize(0);
-		polled_response_code = 0;
-		polled_response_header = String();
 		godot_xhr_reset(xhr_id);
 	}
 
