@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventJoypadMotion" inherits="InputEvent" category="Core" version="3.0-stable">
 	<brief_description>
-		Input event type for gamepad joysticks and other motions. For buttons see [code]InputEventJoypadMotion[/code].
+		Input event type for gamepad joysticks and other motions. For buttons see [code]InputEventJoypadButton[/code].
 	</brief_description>
 	<description>
 		Stores information about joystick motions. One [code]InputEventJoypadMotion[/code] represents one axis at a time.
