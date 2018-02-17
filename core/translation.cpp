@@ -34,6 +34,14 @@
 #include "os/os.h"
 #include "project_settings.h"
 
+// ISO 639-1 language codes, with the addition of glibc locales with their
+// regional identifiers. This list must match the language names (in English)
+// of locale_names.
+//
+// References:
+// - https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+// - https://lh.2xlibre.net/locales/
+
 static const char *locale_list[] = {
 	"aa", //  Afar
 	"aa_DJ", //  Afar (Djibouti)
@@ -756,8 +764,17 @@ static const char *locale_names[] = {
 	0
 };
 
+// Windows has some weird locale identifiers which do not honor the ISO 639-1
+// standardized nomenclature. Whenever those don't conflict with existing ISO
+// identifiers, we override them.
+//
+// Reference:
+// - https://msdn.microsoft.com/en-us/library/windows/desktop/ms693062(v=vs.85).aspx
+
 static const char *locale_renames[][2] = {
-	{ "no", "nb" },
+	{ "in", "id" }, //  Indonesian
+	{ "iw", "he" }, //  Hebrew
+	{ "no", "nb" }, //  Norwegian Bokmål
 	{ NULL, NULL }
 };
 
