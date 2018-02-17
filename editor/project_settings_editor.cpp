@@ -59,18 +59,17 @@ static const char *_button_names[JOY_BUTTON_MAX] = {
 	"D-Pad Right"
 };
 
-static const char *_axis_names[JOY_AXIS_MAX * 2] = {
-	" (Left Stick Left)",
-	" (Left Stick Right)",
-	" (Left Stick Up)",
-	" (Left Stick Down)",
-	" (Right Stick Left)",
-	" (Right Stick Right)",
-	" (Right Stick Up)",
-	" (Right Stick Down)",
-	"", "", "", "",
-	"", " (L2)",
-	"", " (R2)"
+static const char *_axis_names[JOY_AXIS_MAX] = {
+	" (Left Stick X)",
+	" (Left Stick Y)",
+	" (Right Stick X)",
+	" (Right Stick Y)",
+	"",
+	"",
+	" (L2)",
+	" (R2)",
+	"",
+	""
 };
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -201,7 +200,9 @@ void ProjectSettingsEditor::_device_input_add() {
 
 	Ref<InputEvent> ie;
 	String name = add_at;
-	int idx = edit_idx;
+	const bool want_simulate_axis = sim_axis_cb->is_pressed();
+	const float axis_factor = sim_axis_sb->get_value();
+	const int idx = edit_idx;
 	Array old_val = ProjectSettings::get_singleton()->get(name);
 	Array arr = old_val.duplicate();
 
@@ -213,13 +214,14 @@ void ProjectSettingsEditor::_device_input_add() {
 			mb.instance();
 			mb->set_button_index(device_index->get_selected() + 1);
 			mb->set_device(device_id->get_value());
+			mb->set_axis_factor(want_simulate_axis ? axis_factor : 0);
 
 			for (int i = 0; i < arr.size(); i++) {
 
 				Ref<InputEventMouseButton> aie = arr[i];
 				if (aie.is_null())
 					continue;
-				if (aie->get_device() == mb->get_device() && aie->get_button_index() == mb->get_button_index()) {
+				if (aie->get_device() == mb->get_device() && aie->get_button_index() == mb->get_button_index() && aie->get_axis_factor() == mb->get_axis_factor()) {
 					return;
 				}
 			}
@@ -231,16 +233,16 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
-			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			jm->set_axis(device_index->get_selected());
 			jm->set_device(device_id->get_value());
+			jm->set_axis_factor(want_simulate_axis ? axis_factor : 0);
 
 			for (int i = 0; i < arr.size(); i++) {
 
 				Ref<InputEventJoypadMotion> aie = arr[i];
 				if (aie.is_null())
 					continue;
-				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
+				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_factor() == jm->get_axis_factor()) {
 					return;
 				}
 			}
@@ -255,13 +257,14 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			jb->set_button_index(device_index->get_selected());
 			jb->set_device(device_id->get_value());
+			jb->set_axis_factor(want_simulate_axis ? axis_factor : 0);
 
 			for (int i = 0; i < arr.size(); i++) {
 
 				Ref<InputEventJoypadButton> aie = arr[i];
 				if (aie.is_null())
 					continue;
-				if (aie->get_device() == jb->get_device() && aie->get_button_index() == jb->get_button_index()) {
+				if (aie->get_device() == jb->get_device() && aie->get_button_index() == jb->get_button_index() && aie->get_axis_factor() == jb->get_axis_factor()) {
 					return;
 				}
 			}
@@ -301,6 +304,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_metakey(last_wait_for_key->get_metakey());
+	ie->set_axis_factor(sim_axis_cb->is_pressed() ? sim_axis_sb->get_value() : 0);
 
 	String name = add_at;
 	int idx = edit_idx;
@@ -313,7 +317,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		Ref<InputEventKey> aie = arr[i];
 		if (aie.is_null())
 			continue;
-		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
+		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers() && aie->get_axis_factor() == ie->get_axis_factor()) {
 			return;
 		}
 	}
@@ -369,6 +373,10 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 	if (found) input_editor->ensure_cursor_is_visible();
 }
 
+void ProjectSettingsEditor::_toggle_sim_axis(bool p_button_pressed) {
+	sim_axis_sb->set_visible(p_button_pressed);
+}
+
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
@@ -394,13 +402,18 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 	add_type = InputType(p_item);
+	bool def_want_simulate_axis = false;
 
+	if (sim_axis_vbc->get_parent()) {
+		sim_axis_vbc->get_parent()->remove_child(sim_axis_vbc);
+	}
 	switch (add_type) {
 
 		case INPUT_KEY: {
 
 			press_a_key_label->set_text(TTR("Press a Key.."));
 			last_wait_for_key = Ref<InputEvent>();
+			press_a_key_vbc->add_child(sim_axis_vbc);
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
 		} break;
@@ -417,6 +430,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			device_index->add_item(TTR("Button 7"));
 			device_index->add_item(TTR("Button 8"));
 			device_index->add_item(TTR("Button 9"));
+			device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
 			Ref<InputEventMouseButton> mb = p_exiting_event;
@@ -433,12 +447,14 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
-			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
+			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
 				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + (i & 1 ? "+" : "-") + desc);
+				device_index->add_item(TTR("Axis") + " " + itos(i) + " " + desc);
 			}
+			device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
+			def_want_simulate_axis = true;
 
 			Ref<InputEventJoypadMotion> jm = p_exiting_event;
 			if (jm.is_valid()) {
@@ -459,6 +475,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 				device_index->add_item(itos(i) + ": " + String(_button_names[i]));
 			}
+			device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
 			Ref<InputEventJoypadButton> jb = p_exiting_event;
@@ -473,6 +490,16 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 		} break;
 		default: {}
+	}
+
+	if (p_exiting_event.is_valid() && p_exiting_event->is_simulating_axis()) {
+		sim_axis_cb->set_pressed(p_exiting_event->is_simulating_axis());
+		_toggle_sim_axis(sim_axis_cb->is_pressed());
+		sim_axis_sb->set_value(p_exiting_event->get_axis_factor());
+	} else {
+		sim_axis_cb->set_pressed(def_want_simulate_axis);
+		_toggle_sim_axis(def_want_simulate_axis);
+		sim_axis_sb->set_value(1);
 	}
 }
 
@@ -655,6 +682,11 @@ void ProjectSettingsEditor::_update_actions() {
 
 			TreeItem *action = input_editor->create_item(item);
 
+			String sim_axis_factor = "[    ] ";
+			if (ie->is_simulating_axis()) {
+				sim_axis_factor = "[ " + rtos(ie->get_axis_factor()) + " ] ";
+			}
+
 			Ref<InputEventKey> k = ie;
 			if (k.is_valid()) {
 
@@ -668,7 +700,7 @@ void ProjectSettingsEditor::_update_actions() {
 				if (k->get_control())
 					str = TTR("Control+") + str;
 
-				action->set_text(0, str);
+				action->set_text(0, sim_axis_factor + str);
 				action->set_icon(0, get_icon("Keyboard", "EditorIcons"));
 			}
 
@@ -682,7 +714,7 @@ void ProjectSettingsEditor::_update_actions() {
 				else
 					str += ".";
 
-				action->set_text(0, str);
+				action->set_text(0, sim_axis_factor + str);
 				action->set_icon(0, get_icon("JoyButton", "EditorIcons"));
 			}
 
@@ -699,7 +731,7 @@ void ProjectSettingsEditor::_update_actions() {
 					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
 				}
 
-				action->set_text(0, str);
+				action->set_text(0, sim_axis_factor + str);
 				action->set_icon(0, get_icon("Mouse", "EditorIcons"));
 			}
 
@@ -708,10 +740,9 @@ void ProjectSettingsEditor::_update_actions() {
 			if (jm.is_valid()) {
 
 				int ax = jm->get_axis();
-				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
-				String desc = _axis_names[n];
-				String str = TTR("Device") + " " + itos(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
-				action->set_text(0, str);
+				String desc = _axis_names[ax];
+				String str = TTR("Device") + " " + itos(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + desc + ".";
+				action->set_text(0, sim_axis_factor + str);
 				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
 			action->add_button(0, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
@@ -1559,6 +1590,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
+	ClassDB::bind_method(D_METHOD("_toggle_sim_axis"), &ProjectSettingsEditor::_toggle_sim_axis);
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
@@ -1755,24 +1787,42 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
 
-	l = memnew(Label);
-	l->set_text(TTR("Press a Key.."));
-	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	l->set_align(Label::ALIGN_CENTER);
-	l->set_margin(MARGIN_TOP, 20);
-	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
-	press_a_key_label = l;
-	press_a_key->add_child(l);
-	press_a_key->connect("gui_input", this, "_wait_for_key");
-	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+	sim_axis_cb = memnew(CheckBox(TTR("Simulate axis")));
+	sim_axis_cb->connect("toggled", this, "_toggle_sim_axis");
+	sim_axis_sb = memnew(SpinBox);
+	sim_axis_sb->set_min(-1000);
+	sim_axis_sb->set_max(1000);
+	sim_axis_sb->set_step(0.1);
+	sim_axis_vbc = memnew(VBoxContainer);
+	sim_axis_vbc->add_child(sim_axis_cb);
+	sim_axis_vbc->add_child(sim_axis_sb);
+
+	{
+		press_a_key_vbc = memnew(VBoxContainer);
+		press_a_key->add_child(press_a_key_vbc);
+		press_a_key->connect("gui_input", this, "_wait_for_key");
+		press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+
+		l = memnew(Label);
+		l->set_text(TTR("Press a Key.."));
+		l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+		l->set_align(Label::ALIGN_CENTER);
+		l->set_margin(MARGIN_TOP, 20);
+		l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+		press_a_key_label = l;
+		press_a_key_vbc->add_child(l);
+	}
 
 	device_input = memnew(ConfirmationDialog);
 	add_child(device_input);
 	device_input->get_ok()->set_text(TTR("Add"));
 	device_input->connect("confirmed", this, "_device_input_add");
 
+	device_input_vbc = memnew(VBoxContainer);
+	device_input->add_child(device_input_vbc);
+
 	hbc = memnew(HBoxContainer);
-	device_input->add_child(hbc);
+	device_input_vbc->add_child(hbc);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	hbc->add_child(vbc_left);

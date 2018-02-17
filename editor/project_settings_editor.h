@@ -77,9 +77,14 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *property;
 	OptionButton *type;
 	PopupMenu *popup_add;
+	VBoxContainer *sim_axis_vbc;
+	CheckBox *sim_axis_cb;
+	SpinBox *sim_axis_sb;
 	ConfirmationDialog *press_a_key;
+	VBoxContainer *press_a_key_vbc;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
+	VBoxContainer *device_input_vbc;
 	SpinBox *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
@@ -134,6 +139,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _wait_for_key(const Ref<InputEvent> &p_event);
 	void _press_a_key_confirm();
 	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
+	void _toggle_sim_axis(bool p_button_pressed);
 
 	void _settings_prop_edited(const String &p_name);
 	void _settings_changed();

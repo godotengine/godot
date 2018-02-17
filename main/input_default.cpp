@@ -103,7 +103,7 @@ bool InputDefault::is_action_pressed(const StringName &p_action) const {
 
 bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	const Map<StringName, ActionState>::Element *E = action_state.find(p_action);
 	if (!E)
 		return false;
 
@@ -116,7 +116,7 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 
 bool InputDefault::is_action_just_released(const StringName &p_action) const {
 
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	const Map<StringName, ActionState>::Element *E = action_state.find(p_action);
 	if (!E)
 		return false;
 
@@ -125,6 +125,22 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	} else {
 		return !E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
 	}
+}
+
+bool InputDefault::is_action_just_changed(const StringName &p_action) const {
+	const Map<StringName, ActionState>::Element *E = action_state.find(p_action);
+	if (!E)
+		return false;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+	}
+}
+
+float InputDefault::get_action_axis_value(const StringName &p_action) const {
+	return action_state.has(p_action) ? action_state[p_action].axis_value : 0;
 }
 
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
@@ -333,12 +349,16 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 	if (!p_event->is_echo()) {
 		for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event, E->key()) && is_action_pressed(E->key()) != p_event->is_pressed()) {
-				Action action;
-				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.idle_frame = Engine::get_singleton()->get_idle_frames();
-				action.pressed = p_event->is_pressed();
-				action_state[E->key()] = action;
+			Ref<InputEvent> action_ie = InputMap::get_singleton()->event_get_input_event_if_action(p_event, E->key());
+			if (action_ie.is_valid()) {
+				ActionState &a = action_state[E->key()];
+				const float new_axis_value = action_ie->get_axis_factor() * p_event->get_axis_value();
+				if (a.idle_frame == -1 || a.axis_value != new_axis_value) {
+					a.physics_frame = Engine::get_singleton()->get_physics_frames();
+					a.idle_frame = Engine::get_singleton()->get_idle_frames();
+					a.pressed = p_event->is_pressed();
+					a.axis_value = new_axis_value;
+				}
 			}
 		}
 	}
@@ -469,7 +489,7 @@ void InputDefault::iteration(float p_step) {
 
 void InputDefault::action_press(const StringName &p_action) {
 
-	Action action;
+	ActionState action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
@@ -480,7 +500,7 @@ void InputDefault::action_press(const StringName &p_action) {
 
 void InputDefault::action_release(const StringName &p_action) {
 
-	Action action;
+	ActionState action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();

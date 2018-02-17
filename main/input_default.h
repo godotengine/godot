@@ -51,13 +51,20 @@ class InputDefault : public Input {
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
 
-	struct Action {
+	struct ActionState {
 		uint64_t physics_frame;
 		uint64_t idle_frame;
 		bool pressed;
+		float axis_value;
+
+		ActionState() :
+				physics_frame(-1),
+				idle_frame(-1),
+				pressed(false),
+				axis_value(0.) {}
 	};
 
-	Map<StringName, Action> action_state;
+	Map<StringName, ActionState> action_state;
 
 	bool emulate_touch;
 
@@ -182,6 +189,8 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
+	virtual bool is_action_just_changed(const StringName &p_action) const;
+	virtual float get_action_axis_value(const StringName &p_action) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);

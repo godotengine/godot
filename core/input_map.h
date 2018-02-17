@@ -70,6 +70,7 @@ public:
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 
 	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
+	Ref<InputEvent> event_get_input_event_if_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
 
 	const Map<StringName, Action> &get_action_map() const;

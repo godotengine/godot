@@ -165,20 +165,30 @@ const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_acti
 	return &E->get().inputs;
 }
 
-bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
+Ref<InputEvent> InputMap::event_get_input_event_if_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
 
 	Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E) {
 		ERR_EXPLAIN("Request for nonexistent InputMap action: " + String(p_action));
-		ERR_FAIL_COND_V(!E, false);
+		ERR_FAIL_COND_V(!E, Ref<InputEvent>());
 	}
 
 	Ref<InputEventAction> iea = p_event;
 	if (iea.is_valid()) {
-		return iea->get_action() == p_action;
+		if (iea->get_action() == p_action)
+			return iea;
 	}
 
-	return _find_event(E->get().inputs, p_event, true) != NULL;
+	List<Ref<InputEvent> >::Element *E_ie = _find_event(E->get().inputs, p_event, true);
+	if (E_ie)
+		return E_ie->get();
+	else
+		return Ref<InputEvent>();
+}
+
+bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
+
+	return event_get_input_event_if_action(p_event, p_action).is_valid();
 }
 
 const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
