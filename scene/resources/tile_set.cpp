@@ -142,6 +142,8 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_navigation_polygon(id, p_value);
 	else if (what == "navigation_offset")
 		tile_set_navigation_polygon_offset(id, p_value);
+	else if (what == "z_index")
+		tile_set_z_index(id, p_value);
 	else
 		return false;
 
@@ -239,6 +241,8 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_navigation_polygon(id);
 	else if (what == "navigation_offset")
 		r_ret = tile_get_navigation_polygon_offset(id);
+	else if (what == "z_index")
+		r_ret = tile_get_z_index(id);
 	else
 		return false;
 
@@ -278,6 +282,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::INT, pre + "z_index", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"));
 	}
 }
 
@@ -748,6 +753,19 @@ Vector<TileSet::ShapeData> TileSet::tile_get_shapes(int p_id) const {
 	return tile_map[p_id].shapes_data;
 }
 
+int TileSet::tile_get_z_index(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	return tile_map[p_id].z_index;
+}
+
+void TileSet::tile_set_z_index(int p_id, int p_z_index) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].z_index = p_z_index;
+	emit_changed();
+}
+
 void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -929,6 +947,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_light_occluder", "id"), &TileSet::tile_get_light_occluder);
 	ClassDB::bind_method(D_METHOD("tile_set_occluder_offset", "id", "occluder_offset"), &TileSet::tile_set_occluder_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_occluder_offset", "id"), &TileSet::tile_get_occluder_offset);
+	ClassDB::bind_method(D_METHOD("tile_set_z_index", "id", "z_index"), &TileSet::tile_set_z_index);
+	ClassDB::bind_method(D_METHOD("tile_get_z_index", "id"), &TileSet::tile_get_z_index);
 
 	ClassDB::bind_method(D_METHOD("remove_tile", "id"), &TileSet::remove_tile);
 	ClassDB::bind_method(D_METHOD("clear"), &TileSet::clear);
