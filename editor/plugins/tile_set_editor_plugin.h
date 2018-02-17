@@ -33,35 +33,38 @@
 
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/plugins/texture_region_editor_plugin.h"
 #include "scene/2d/sprite.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
-class AutotileEditorHelper;
-class AutotileEditor : public Control {
+class TileSetEditorHelper;
+
+class TileSetEditor : public Control {
 
 	friend class TileSetEditorPlugin;
-	friend class AutotileEditorHelper;
-	GDCLASS(AutotileEditor, Control);
+	friend class TextureRegionEditor;
+
+	GDCLASS(TileSetEditor, Control);
 
 	enum EditMode {
-		EDITMODE_ICON,
-		EDITMODE_BITMASK,
 		EDITMODE_COLLISION,
 		EDITMODE_OCCLUSION,
 		EDITMODE_NAVIGATION,
+		EDITMODE_BITMASK,
 		EDITMODE_PRIORITY,
+		EDITMODE_ICON,
 		EDITMODE_MAX
 	};
 
-	enum AutotileToolbars {
+	enum TileSetToolbar {
 		TOOLBAR_DUMMY,
 		TOOLBAR_BITMASK,
 		TOOLBAR_SHAPE,
 		TOOLBAR_MAX
 	};
 
-	enum AutotileTools {
+	enum TileSetTools {
 		TOOL_SELECT,
 		BITMASK_COPY,
 		BITMASK_PASTE,
@@ -78,12 +81,11 @@ class AutotileEditor : public Control {
 		TOOL_MAX
 	};
 
-	Ref<TileSet> tile_set;
+	Ref<TileSet> tileset;
+
 	Ref<ConvexPolygonShape2D> edited_collision_shape;
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
-
-	EditorNode *editor;
 
 	int current_item_index;
 	Sprite *preview;
@@ -114,72 +116,14 @@ class AutotileEditor : public Control {
 	PoolVector2Array current_shape;
 	Map<Vector2, uint16_t> bitmask_map_copy;
 
-	Control *side_panel;
-	ItemList *autotile_list;
-	PropertyEditor *property_editor;
-	AutotileEditorHelper *helper;
-
-	AutotileEditor(EditorNode *p_editor);
-	~AutotileEditor();
-
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
-
-private:
-	void _on_autotile_selected(int p_index);
-	void _on_edit_mode_changed(int p_edit_mode);
-	void _on_workspace_draw();
-	void _on_workspace_input(const Ref<InputEvent> &p_ie);
-	void _on_tool_clicked(int p_tool);
-	void _on_priority_changed(float val);
-	void _on_grid_snap_toggled(bool p_val);
-	void _set_snap_step_x(float p_val);
-	void _set_snap_step_y(float p_val);
-	void _set_snap_off_x(float p_val);
-	void _set_snap_off_y(float p_val);
-	void _set_snap_sep_x(float p_val);
-	void _set_snap_sep_y(float p_val);
-
-	void draw_highlight_tile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
-	void draw_grid_snap();
-	void draw_polygon_shapes();
-	void close_shape(const Vector2 &shape_anchor);
-	void select_coord(const Vector2 &coord);
-	Vector2 snap_point(const Vector2 &point);
-
-	void edit(Object *p_node);
-	int get_current_tile();
-};
-
-class AutotileEditorHelper : public Object {
-
-	friend class AutotileEditor;
-	GDCLASS(AutotileEditorHelper, Object);
-
-	Ref<TileSet> tile_set;
-	AutotileEditor *autotile_editor;
-
-public:
-	void set_tileset(const Ref<TileSet> &p_tileset);
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	AutotileEditorHelper(AutotileEditor *p_autotile_editor);
-};
-
-class TileSetEditor : public Control {
-
-	friend class TileSetEditorPlugin;
-	GDCLASS(TileSetEditor, Control);
-
-	Ref<TileSet> tileset;
-
 	EditorNode *editor;
+	TextureRegionEditor *texture_region_editor;
+	Control *bottom_panel;
+	Control *side_panel;
+	ItemList *tile_list;
+	PropertyEditor *property_editor;
+	TileSetEditorHelper *helper;
+
 	MenuButton *menu;
 	ConfirmationDialog *cd;
 	EditorNameDialog *nd;
@@ -203,12 +147,62 @@ class TileSetEditor : public Control {
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	void edit(const Ref<TileSet> &p_tileset);
 	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml, bool p_merge = true);
 
 	TileSetEditor(EditorNode *p_editor);
+
+private:
+	void _on_tile_list_selected(int p_index);
+	void _on_edit_mode_changed(int p_edit_mode);
+	void _on_workspace_draw();
+	void _on_workspace_input(const Ref<InputEvent> &p_ie);
+	void _on_tool_clicked(int p_tool);
+	void _on_priority_changed(float val);
+	void _on_grid_snap_toggled(bool p_val);
+	void _set_snap_step_x(float p_val);
+	void _set_snap_step_y(float p_val);
+	void _set_snap_off_x(float p_val);
+	void _set_snap_off_y(float p_val);
+	void _set_snap_sep_x(float p_val);
+	void _set_snap_sep_y(float p_val);
+
+	void initialize_bottom_editor();
+	void draw_highlight_tile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
+	void draw_grid_snap();
+	void draw_polygon_shapes();
+	void close_shape(const Vector2 &shape_anchor);
+	void select_coord(const Vector2 &coord);
+	Vector2 snap_point(const Vector2 &point);
+	void update_tile_list();
+	void update_tile_list_icon();
+	void update_workspace_tile_mode();
+
+	int get_current_tile();
+};
+
+class TileSetEditorHelper : public Object {
+
+	friend class TileSetEditor;
+	GDCLASS(TileSetEditorHelper, Object);
+
+	Ref<TileSet> tileset;
+	TileSetEditor *tileset_editor;
+	int selected_tile;
+
+public:
+	void set_tileset(const Ref<TileSet> &p_tileset);
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	TileSetEditorHelper(TileSetEditor *p_tileset_editor);
 };
 
 class TileSetEditorPlugin : public EditorPlugin {
@@ -216,10 +210,10 @@ class TileSetEditorPlugin : public EditorPlugin {
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;
-	AutotileEditor *autotile_editor;
 	EditorNode *editor;
 
-	ToolButton *autotile_button;
+	ToolButton *tileset_editor_button;
+	ToolButton *texture_region_button;
 
 public:
 	virtual String get_name() const { return "TileSet"; }
