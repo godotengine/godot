@@ -253,7 +253,6 @@ void EditorResourcePreview::_thread() {
 							img.instance();
 
 							if (img->load(cache_base + ".png") != OK) {
-								//well fuck
 								cache_valid = false;
 							} else {
 

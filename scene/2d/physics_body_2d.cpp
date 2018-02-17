@@ -372,9 +372,7 @@ bool RigidBody2D::_test_motion(const Vector2 &p_motion, float p_margin, const Re
 
 void RigidBody2D::_direct_state_changed(Object *p_state) {
 
-//eh.. fuck
 #ifdef DEBUG_ENABLED
-
 	state = Object::cast_to<Physics2DDirectBodyState>(p_state);
 #else
 	state = (Physics2DDirectBodyState *)p_state; //trust it

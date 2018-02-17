@@ -370,9 +370,7 @@ struct _RigidBodyInOut {
 
 void RigidBody::_direct_state_changed(Object *p_state) {
 
-//eh.. fuck
 #ifdef DEBUG_ENABLED
-
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
 #else
 	state = (PhysicsDirectBodyState *)p_state; //trust it
