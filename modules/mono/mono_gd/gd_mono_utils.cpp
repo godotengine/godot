@@ -114,6 +114,7 @@ void MonoCache::clear_members() {
 	class_ExportAttribute = NULL;
 	field_ExportAttribute_hint = NULL;
 	field_ExportAttribute_hintString = NULL;
+	class_SignalAttribute = NULL;
 	class_ToolAttribute = NULL;
 	class_RemoteAttribute = NULL;
 	class_SyncAttribute = NULL;
@@ -201,6 +202,7 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(ExportAttribute, GODOT_API_CLASS(ExportAttribute));
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hint, CACHED_CLASS(ExportAttribute)->get_field("hint"));
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hintString, CACHED_CLASS(ExportAttribute)->get_field("hintString"));
+	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
 	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));
