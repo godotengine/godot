@@ -240,6 +240,21 @@ Error HTTPClient::poll() {
 			return ERR_CONNECTION_ERROR;
 
 		case STATUS_REQUESTING:
+
+#ifdef DEBUG_ENABLED
+			if (!has_polled) {
+				has_polled = true;
+			} else {
+				// forcing synchronous requests is not possible on the web
+				if (last_polling_frame == Engine::get_singleton()->get_idle_frames()) {
+					WARN_PRINT("HTTPClient polled multiple times in one frame, "
+							   "but request cannot progress more than once per "
+							   "frame on the HTML5 platform.");
+				}
+			}
+			last_polling_frame = Engine::get_singleton()->get_idle_frames();
+#endif
+
 			polled_response_code = godot_xhr_get_status(xhr_id);
 			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
 				return OK;
@@ -280,6 +295,10 @@ HTTPClient::HTTPClient() {
 	port = -1;
 	use_tls = false;
 	polled_response_code = 0;
+#ifdef DEBUG_ENABLED
+	has_polled = false;
+	last_polling_frame = 0;
+#endif
 }
 
 HTTPClient::~HTTPClient() {
