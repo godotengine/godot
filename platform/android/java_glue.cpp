@@ -813,7 +813,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	char wd[500];
 	getcwd(wd, 500);
 
-	env->CallVoidMethod(_godot_instance, _on_video_init);
+	//video driver is determined here, because once initialized, it can't be changed
+	// String vd = ProjectSettings::get_singleton()->get("display/driver");
+
+	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);
 }
 
 static void _initialize_java_modules() {
@@ -890,13 +893,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
 				const char *rawString = env->GetStringUTFChars(string, 0);
-				if (!rawString) {
-					__android_log_print(ANDROID_LOG_INFO, "godot", "cmdline arg %i is null\n", i);
-				} else {
-					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
-
-					if (strcmp(rawString, "--main-pack") == 0)
-						use_apk_expansion = true;
+				if (rawString && strcmp(rawString, "--main-pack") == 0) {
+					use_apk_expansion = true;
 				}
 
 				cmdline[i] = rawString;
@@ -986,9 +984,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jobject obj, jint ev, jint pointer, jint count, jintArray positions) {
-
-	if (step == 0)
-		return;
 
 	Vector<OS_Android::TouchPos> points;
 	for (int i = 0; i < count; i++) {
