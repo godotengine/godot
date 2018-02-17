@@ -335,16 +335,14 @@ void MonoBuildTab::_update_issues_list() {
 
 Ref<Texture> MonoBuildTab::get_icon_texture() const {
 
-	// FIXME these icons were removed... find something better
-
 	if (build_exited) {
 		if (build_result == RESULT_ERROR) {
-			return get_icon("DependencyChangedHl", "EditorIcons");
+			return get_icon("StatusError", "EditorIcons");
 		} else {
-			return get_icon("DependencyOkHl", "EditorIcons");
+			return get_icon("StatusSuccess", "EditorIcons");
 		}
 	} else {
-		return get_icon("GraphTime", "EditorIcons");
+		return get_icon("Stop", "EditorIcons");
 	}
 }
 
