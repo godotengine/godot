@@ -1124,7 +1124,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		da->remove(p_path + ".depren");
 		memdelete(da);
-		//fuck it, use the old approach;
+		//use the old approach
 
 		WARN_PRINT(("This file is old, so it can't refactor dependencies, opening and resaving: " + p_path).utf8().get_data());
 

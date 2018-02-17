@@ -589,7 +589,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 
 	for (int i = 0; i < point_count; i++) {
 
-		//hmm crap.. no can do..
+		//hmm.. no can do..
 		/*
 		if (d.dot(points[i].normal)>=0)
 			continue;

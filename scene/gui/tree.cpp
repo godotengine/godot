@@ -2384,7 +2384,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 	if (mm.is_valid()) {
 
-		if (cache.font.is_null()) // avoid a strange case that may fuckup stuff
+		if (cache.font.is_null()) // avoid a strange case that may corrupt stuff
 			update_cache();
 
 		Ref<StyleBox> bg = cache.bg;
@@ -2483,7 +2483,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		if (cache.font.is_null()) // avoid a strange case that may fuckup stuff
+		if (cache.font.is_null()) // avoid a strange case that may corrupt stuff
 			update_cache();
 
 		if (!b->is_pressed()) {
