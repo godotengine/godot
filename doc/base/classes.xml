@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.4.stable.custom_build" name="Engine Types">
+<doc version="2.1.5.beta.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -15816,7 +15816,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="3">
+			<argument index="1" name="ip_type" type="int">
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Addresses are returned as an Array of IPv4 or IPv6 depending on "ip_type".
@@ -16607,7 +16607,7 @@
 		<method name="set_custom_mouse_cursor">
 			<argument index="0" name="image" type="Texture">
 			</argument>
-			<argument index="1" name="hotspot" type="int" default="CURSOR_ARROW">
+			<argument index="1" name="shape" type="int" default="0">
 			</argument>
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)">
 			</argument>
@@ -16672,6 +16672,40 @@
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2">
 			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
+		</constant>
+		<constant name="CURSOR_ARROW" value="0">
+		</constant>
+		<constant name="CURSOR_IBEAM" value="1">
+		</constant>
+		<constant name="CURSOR_POINTING_HAND" value="2">
+		</constant>
+		<constant name="CURSOR_CROSS" value="3">
+		</constant>
+		<constant name="CURSOR_WAIT" value="4">
+		</constant>
+		<constant name="CURSOR_BUSY" value="5">
+		</constant>
+		<constant name="CURSOR_DRAG" value="6">
+		</constant>
+		<constant name="CURSOR_CAN_DROP" value="7">
+		</constant>
+		<constant name="CURSOR_FORBIDDEN" value="8">
+		</constant>
+		<constant name="CURSOR_VSIZE" value="9">
+		</constant>
+		<constant name="CURSOR_HSIZE" value="10">
+		</constant>
+		<constant name="CURSOR_BDIAGSIZE" value="11">
+		</constant>
+		<constant name="CURSOR_FDIAGSIZE" value="12">
+		</constant>
+		<constant name="CURSOR_MOVE" value="13">
+		</constant>
+		<constant name="CURSOR_VSPLIT" value="14">
+		</constant>
+		<constant name="CURSOR_HSPLIT" value="15">
+		</constant>
+		<constant name="CURSOR_HELP" value="16">
 		</constant>
 	</constants>
 </class>
@@ -18976,6 +19010,8 @@
 			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
 			</argument>
 			<argument index="3" name="max_bounces" type="int" default="4">
+			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
 			</description>
@@ -23219,6 +23255,10 @@
 				Returns if the current host platform is using multiple threads.
 			</description>
 		</method>
+		<method name="center_window">
+			<description>
+			</description>
+		</method>
 		<method name="delay_msec" qualifiers="const">
 			<argument index="0" name="msec" type="int">
 			</argument>
@@ -23465,6 +23505,12 @@
 			</return>
 			<description>
 				Returns the number of cores available in the host machine.
+			</description>
+		</method>
+		<method name="get_real_window_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
@@ -23730,6 +23776,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_window_always_on_top" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_window_fullscreen" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -23929,6 +23981,12 @@
 			</argument>
 			<description>
 				Change the video mode.
+			</description>
+		</method>
+		<method name="set_window_always_on_top">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_window_fullscreen">
@@ -40739,6 +40797,12 @@
 				Clear the undo history.
 			</description>
 		</method>
+		<method name="convert_case">
+			<argument index="0" name="case" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="copy">
 			<description>
 				Copy the current selection.
@@ -41085,11 +41149,11 @@
 		</constant>
 		<constant name="MENU_CLEAR" value="3">
 		</constant>
-		<constant name="MENU_SELECT_ALL" value="4">
+		<constant name="MENU_SELECT_ALL" value="6">
 		</constant>
-		<constant name="MENU_UNDO" value="5">
+		<constant name="MENU_UNDO" value="7">
 		</constant>
-		<constant name="MENU_MAX" value="6">
+		<constant name="MENU_MAX" value="8">
 		</constant>
 	</constants>
 	<theme_items>
