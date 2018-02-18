@@ -1355,7 +1355,7 @@ ProjectManager::ProjectManager() {
 	erase_btn = erase;
 
 	Button *showinfilemanager = memnew(Button);
-	showinfilemanager->set_text(TTR("Show In File Manager"));
+	showinfilemanager->set_text(TTR("Show Files"));
 	tree_vb->add_child(showinfilemanager);
 	showinfilemanager->connect("pressed", this, "_show_project");
 	show_btn = showinfilemanager;
