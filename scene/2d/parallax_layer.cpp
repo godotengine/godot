@@ -80,7 +80,8 @@ void ParallaxLayer::_update_mirroring() {
 
 		RID c = pb->get_world_2d()->get_canvas();
 		RID ci = get_canvas_item();
-		VisualServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirroring);
+		Point2 mirrorScale = mirroring * get_scale();
+		VisualServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirrorScale);
 	}
 }
 
@@ -126,15 +127,20 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 	Vector2 mirror = Vector2(1, 1);
 
 	if (mirroring.x) {
-		mirror.x = -1;
+		double den = mirroring.x * p_scale;
+		double before = new_ofs.x;
+		new_ofs.x -= den * ceil(new_ofs.x / den);
 	}
 
 	if (mirroring.y) {
-		mirror.y = -1;
+		double den = mirroring.y * p_scale;
+		new_ofs.y -= den * ceil(new_ofs.y / den);
 	}
 
 	set_pos(new_ofs);
-	set_scale(mirror * p_scale * orig_scale);
+	set_scale(Vector2(1, 1) * p_scale * orig_scale);
+
+	_update_mirroring();
 }
 
 String ParallaxLayer::get_configuration_warning() const {
