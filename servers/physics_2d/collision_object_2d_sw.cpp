@@ -100,6 +100,7 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 	shapes[p_index].shape->remove_owner(this);
 	shapes.remove(p_index);
 
+	_update_shapes();
 	_shapes_changed();
 }
 
