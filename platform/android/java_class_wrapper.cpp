@@ -1117,7 +1117,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		}
 
 		if (!valid) {
-			print_line("Method Can't be bound (unsupported arguments): " + p_class + "::" + str_method);
+			print_line("Method can't be bound (unsupported arguments): " + p_class + "::" + str_method);
 			env->DeleteLocalRef(obj);
 			env->DeleteLocalRef(param_types);
 			continue;
@@ -1130,7 +1130,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		String strsig;
 		uint32_t sig = 0;
 		if (!_get_type_sig(env, return_type, sig, strsig)) {
-			print_line("Method Can't be bound (unsupported return type): " + p_class + "::" + str_method);
+			print_line("Method can't be bound (unsupported return type): " + p_class + "::" + str_method);
 			env->DeleteLocalRef(obj);
 			env->DeleteLocalRef(param_types);
 			env->DeleteLocalRef(return_type);
@@ -1139,8 +1139,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		signature += strsig;
 		mi.return_type = sig;
-
-		print_line("METHOD: " + str_method + " SIG: " + signature + " static: " + itos(mi._static));
 
 		bool discard = false;
 
@@ -1173,11 +1171,9 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 			if (new_likeliness > existing_likeliness) {
 				java_class->methods[str_method].erase(E);
-				print_line("replace old");
 				break;
 			} else {
 				discard = true;
-				print_line("old is better");
 			}
 		}
 
