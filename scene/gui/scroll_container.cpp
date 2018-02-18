@@ -30,10 +30,6 @@
 
 #include "scroll_container.h"
 #include "os/os.h"
-bool ScrollContainer::clips_input() const {
-
-	return true;
-}
 
 Size2 ScrollContainer::get_minimum_size() const {
 
@@ -493,5 +489,6 @@ ScrollContainer::ScrollContainer() {
 	scroll_h = true;
 	scroll_v = true;
 
+	set_clips_input(true);
 	set_clip_contents(true);
 };

@@ -629,10 +629,17 @@ void Control::_notification(int p_notification) {
 	}
 }
 
-bool Control::clips_input() const {
+void Control::set_clips_input(bool p_clip) {
 
-	return false;
+	data.clips_input = p_clip;
+	update();
 }
+
+bool Control::clips_input() {
+
+	return data.clips_input;
+}
+
 bool Control::has_point(const Point2 &p_point) const {
 
 	if (get_script_instance()) {
@@ -2652,6 +2659,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 	}
 }
+
 void Control::set_clip_contents(bool p_clip) {
 
 	data.clip_contents = p_clip;
@@ -2801,6 +2809,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+	ClassDB::bind_method(D_METHOD("set_clips_input", "enable"), &Control::set_clips_input);
+	ClassDB::bind_method(D_METHOD("clips_input"), &Control::clips_input);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -2847,6 +2858,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "rect_clips_input"), "set_clips_input", "clips_input");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");
@@ -2981,6 +2993,7 @@ Control::Control() {
 	data.h_grow = GROW_DIRECTION_END;
 	data.v_grow = GROW_DIRECTION_END;
 
+	data.clips_input = false;
 	data.clip_contents = false;
 	for (int i = 0; i < 4; i++) {
 		data.anchor[i] = ANCHOR_BEGIN;

@@ -170,6 +170,7 @@ private:
 
 		MouseFilter mouse_filter;
 
+		bool clips_input;
 		bool clip_contents;
 
 		bool block_minimum_size_adjust;
@@ -299,7 +300,6 @@ public:
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
-	virtual bool clips_input() const;
 	virtual void set_drag_forwarding(Control *p_target);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
@@ -461,6 +461,9 @@ public:
 	virtual bool is_text_field() const;
 
 	Control *get_root_parent_control() const;
+
+	void set_clips_input(bool p_clip);
+	bool clips_input();
 
 	void set_clip_contents(bool p_clip);
 	bool is_clipping_contents();

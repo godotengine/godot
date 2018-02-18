@@ -86,8 +86,6 @@ public:
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
 
-	virtual bool clips_input() const;
-
 	virtual String get_configuration_warning() const;
 
 	ScrollContainer();
