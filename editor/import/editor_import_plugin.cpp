@@ -74,14 +74,14 @@ String EditorImportPlugin::get_resource_type() const {
 
 float EditorImportPlugin::get_priority() const {
 	if (!(get_script_instance() && get_script_instance()->has_method("get_priority"))) {
-		return EditorImportPlugin::get_priority();
+		return ResourceImporter::get_priority();
 	}
 	return get_script_instance()->call("get_priority");
 }
 
 int EditorImportPlugin::get_import_order() const {
 	if (!(get_script_instance() && get_script_instance()->has_method("get_import_order"))) {
-		return EditorImportPlugin::get_import_order();
+		return ResourceImporter::get_import_order();
 	}
 	return get_script_instance()->call("get_import_order");
 }
