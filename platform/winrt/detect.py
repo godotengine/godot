@@ -56,7 +56,7 @@ def configure(env):
     if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
         env["build_angle"] = True
 
-    if os.getenv('Platform') == "ARM":
+    if str(os.getenv('Platform')).lower() == "arm":
 
         print("Compiled program architecture will be an ARM executable. (forcing bits=32).")
 
@@ -104,10 +104,6 @@ def configure(env):
     env.Append(CPPPATH=['#platform/winrt','#drivers/windows'])
     env.Append(LINKFLAGS=['/MANIFEST:NO', '/NXCOMPAT', '/DYNAMICBASE', '/WINMD', '/APPCONTAINER', '/ERRORREPORT:PROMPT', '/NOLOGO', '/TLBID:1', '/NODEFAULTLIB:"kernel32.lib"', '/NODEFAULTLIB:"ole32.lib"'])
     env.Append(CPPFLAGS=['/D', '__WRL_NO_DEFAULT_LIB__', '/D', 'WIN32', '/DPNG_ABORT=abort'])
-    env.Append(CPPFLAGS=['/FU', os.environ['VCINSTALLDIR'] + 'lib/store/references/platform.winmd'])
-    env.Append(CPPFLAGS=['/AI', os.environ['VCINSTALLDIR'] + 'lib/store/references'])
-
-    env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store/references'])
 
     if (env["target"]=="release"):
 

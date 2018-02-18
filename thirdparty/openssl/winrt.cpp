@@ -88,10 +88,12 @@ BOOL __cdecl GetUserObjectInformationW(
 		_Out_opt_ LPDWORD lpnLengthNeeded) {
 	return 0;
 }
-int __cdecl GetStdHandle(
+#ifndef STD_ERROR_HANDLE
+HANDLE __cdecl GetStdHandle(
 		_In_ DWORD nStdHandle) {
 	return 0;
 }
+#endif
 BOOL DeregisterEventSource(
 		_Inout_ HANDLE hEventLog) {
 	return 0;
