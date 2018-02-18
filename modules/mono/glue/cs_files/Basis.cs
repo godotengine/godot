@@ -452,9 +452,9 @@ namespace Godot
 
         public Basis(float xx, float xy, float xz, float yx, float yy, float yz, float zx, float zy, float zz)
         {
-            this.x = new Vector3(xx, xy, xz);
-            this.y = new Vector3(yx, yy, yz);
-            this.z = new Vector3(zx, zy, zz);
+            this.x = new Vector3(xx, yx, zx);
+            this.y = new Vector3(xy, yy, zy);
+            this.z = new Vector3(xz, yz, zz);
         }
 
         public static Basis operator *(Basis left, Basis right)
