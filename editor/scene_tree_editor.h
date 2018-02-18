@@ -70,6 +70,8 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
+	void toggle_visible(Node *p_node);
+
 	bool _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
 	void _update_tree();
@@ -103,6 +105,7 @@ class SceneTreeEditor : public Control {
 	static void _bind_methods();
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _toggle_visible(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
