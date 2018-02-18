@@ -90,15 +90,15 @@ class CSharpScript : public Script {
 		Variant::Type type;
 	};
 
+	Map<StringName, Vector<Argument> > _signals;
+	bool signals_invalidated;
+
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
 	Set<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache;
 	bool exports_invalidated;
-	Map<StringName, Vector<Argument> > _signals;
-	bool signals_invalidated;
-
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
