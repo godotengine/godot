@@ -308,7 +308,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok()->set_text(TTR("Install"));
+	get_ok()->set_text(TTR("Download"));
 	get_cancel()->set_text(TTR("Close"));
 }
 ///////////////////////////////////////////////////////////////////////////////////
