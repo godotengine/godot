@@ -1374,6 +1374,17 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	//builtins - trigonometry
+
+	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "radians", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "radians", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "radians", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
+	{ "degrees", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "degrees", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "degrees", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "degrees", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "sin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "sin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "sin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
@@ -1423,6 +1434,21 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "tanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
 	{ "tanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 
+	{ "asinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "asinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "asinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "asinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
+	{ "acosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "acosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "acosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "acosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
+	{ "atanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "atanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "atanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "atanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	//builtins - exponential
 	{ "pow", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
 	{ "pow", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
@@ -1436,6 +1462,14 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "log", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "log", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
 	{ "log", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "exp2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "exp2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "exp2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "exp2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "log2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "log2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "log2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "log2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 	{ "sqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "sqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "sqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
@@ -1482,6 +1516,10 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "round", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "round", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
 	{ "round", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "roundEven", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "roundEven", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "roundEven", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "roundEven", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 	{ "ceil", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "ceil", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "ceil", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
