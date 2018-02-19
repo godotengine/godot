@@ -268,12 +268,12 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
-
-			_load_settings("res://override.cfg");
+		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		if (err == OK) {
+			// Optional, we don't mind if it fails
+			_load_settings_text("res://override.cfg");
 		}
-
-		return OK;
+		return err;
 	}
 
 	String exec_path = OS::get_singleton()->get_executable_path();
@@ -285,12 +285,13 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V(!ok, ERR_CANT_OPEN);
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
-			//load override from location of the main pack
-			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
+		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		if (err == OK) {
+			// Load override from location of the main pack
+			// Optional, we don't mind if it fails
+			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
 		}
-
-		return OK;
+		return err;
 	}
 
 	//Attempt with execname.pck
@@ -313,12 +314,13 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 
 		// if we opened our package, try and load our project...
 		if (found) {
-			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
-				// load override from location of executable
-				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
+			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+			if (err == OK) {
+				// Load override from location of executable
+				// Optional, we don't mind if it fails
+				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
-
-			return OK;
+			return err;
 		}
 	}
 
@@ -334,11 +336,13 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		// data.pck and data.zip are deprecated and no longer supported, apologies.
 		// make sure this is loaded from the resource path
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
-			_load_settings("res://override.cfg");
+		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		if (err == OK) {
+			// Optional, we don't mind if it fails
+			_load_settings_text("res://override.cfg");
 		}
 
-		return OK;
+		return err;
 	}
 
 	//Nothing was found, try to find a project.godot somewhere!
@@ -350,20 +354,23 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 
 	String candidate = d->get_current_dir();
 	String current_dir = d->get_current_dir();
+
 	bool found = false;
+	Error err;
 
 	while (true) {
-		//try to load settings in ascending through dirs shape!
 
-		if (_load_settings(current_dir + "/project.godot") == OK || _load_settings_binary(current_dir + "/project.binary") == OK) {
-
-			_load_settings(current_dir + "/override.cfg");
+		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
+		if (err == OK) {
+			// Optional, we don't mind if it fails
+			_load_settings_text(current_dir.plus_file("override.cfg"));
 			candidate = current_dir;
 			found = true;
 			break;
 		}
 
 		if (p_upwards) {
+			// Try to load settings ascending through dirs shape!
 			d->change_dir("..");
 			if (d->get_current_dir() == current_dir)
 				break; //not doing anything useful
@@ -378,7 +385,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	memdelete(d);
 
 	if (!found)
-		return ERR_FILE_NOT_FOUND;
+		return err;
 
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
@@ -440,7 +447,8 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 
 	return OK;
 }
-Error ProjectSettings::_load_settings(const String p_path) {
+
+Error ProjectSettings::_load_settings_text(const String p_path) {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -471,7 +479,7 @@ Error ProjectSettings::_load_settings(const String p_path) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ProjectSettings::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}
@@ -495,6 +503,22 @@ Error ProjectSettings::_load_settings(const String p_path) {
 	memdelete(f);
 
 	return OK;
+}
+
+Error ProjectSettings::_load_settings_text_or_binary(const String p_text_path, const String p_bin_path) {
+
+	// Attempt first to load the text-based project.godot file
+	Error err_text = _load_settings_text(p_text_path);
+	if (err_text == OK) {
+		return OK;
+	} else if (err_text != ERR_FILE_NOT_FOUND) {
+		// If the text-based file exists but can't be loaded, we want to know it
+		return err_text;
+	}
+
+	// Fallback to binary project.binary file if text-based was not found
+	Error err_bin = _load_settings_binary(p_bin_path);
+	return err_bin;
 }
 
 int ProjectSettings::get_order(const String &p_name) const {
@@ -525,7 +549,7 @@ void ProjectSettings::clear(const String &p_name) {
 
 Error ProjectSettings::save() {
 
-	return save_custom(get_resource_path() + "/project.godot");
+	return save_custom(get_resource_path().plus_file("project.godot"));
 }
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
