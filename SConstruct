@@ -139,7 +139,7 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/etc)", '')
-opts.Add('bits', "Target platform bits (default/32/64/fat)", 'default')
+opts.Add('bits', "Target platform bits (default/32/64)", 'default')
 opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform: any in " + str(platform_list), '')
 opts.Add('target', "Compilation target (debug/release_debug/release)", 'debug')
@@ -347,8 +347,6 @@ if selected_platform in platform_list:
         suffix += ".32"
     elif (env["bits"] == "64"):
         suffix += ".64"
-    elif (env["bits"] == "fat"):
-        suffix += ".fat"
 
     suffix += env.extra_suffix
 
