@@ -342,7 +342,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase,
 	}
 
 	if (id == prev_id) {
-		return PoolVector<Vector2>();
+		return DVector<Vector2>();
 	}
 
 	Rect2i r = node->get_item_rect();
