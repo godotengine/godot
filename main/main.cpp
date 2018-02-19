@@ -125,6 +125,8 @@ static bool editor = false;
 static bool show_help = false;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
+static bool auto_build_solutions = false;
+static bool auto_quit = false;
 
 static OS::ProcessID allow_focus_steal_pid = 0;
 
@@ -261,6 +263,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --export-debug                   Use together with --export, enables debug mode for the template.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
+	OS::get_singleton()->print("  --build-solutions                Builds the scripting solutions (IE. C#).\n");
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
@@ -526,6 +529,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
+		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
+
+			auto_build_solutions = true;
 #endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
@@ -552,6 +558,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
 			upwards = true;
+		} else if (I->get() == "--quit" || I->get() == "-q") { // Auto quit at the end of the first main loop iteration
+			auto_quit = true;
 		} else if (I->get().ends_with("project.godot")) {
 			String path;
 			String file = I->get();
@@ -1848,7 +1856,16 @@ bool Main::iteration() {
 		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
 	}
 
-	return exit;
+#ifdef TOOLS_ENABLED
+	if (auto_build_solutions) {
+		auto_build_solutions = false;
+		if (!EditorNode::get_singleton()->call_build()) {
+			ERR_FAIL_V(true);
+		}
+	}
+#endif
+
+	return exit || auto_quit;
 }
 
 void Main::force_redraw() {
