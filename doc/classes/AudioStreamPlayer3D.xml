@@ -86,6 +86,8 @@
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
 			Decides if audio should pause when source is outside of 'max_distance' range.
 		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 			If [code]true[/code], audio is playing.
 		</member>

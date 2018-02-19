@@ -56,6 +56,8 @@
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget">
 			If the audio configuration has more than two speakers, this sets the target channels. See [code]MIX_TARGET_*[/code] constants.
 		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 			If [code]true[/code] audio is playing.
 		</member>

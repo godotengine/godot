@@ -62,6 +62,8 @@
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 			Maximum distance from which audio is still hearable.
 		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 			If [code]true[/code] audio is playing.
 		</member>

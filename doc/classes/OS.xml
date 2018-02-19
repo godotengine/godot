@@ -36,6 +36,12 @@
 				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
+		<method name="center_window">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="delay_msec" qualifiers="const">
 			<return type="void">
 			</return>
@@ -230,6 +236,12 @@
 			</return>
 			<description>
 				Returns the number of cores available in the host machine.
+			</description>
+		</method>
+		<method name="get_real_window_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
@@ -458,6 +470,12 @@
 				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
 			</description>
 		</method>
+		<method name="is_window_always_on_top" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="kill">
 			<return type="int" enum="Error">
 			</return>
@@ -584,6 +602,14 @@
 			</argument>
 			<description>
 				Enables backup saves if [code]enabled[/code] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_window_always_on_top">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_window_title">

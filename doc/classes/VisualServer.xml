@@ -42,6 +42,80 @@
 				Sets margin size, where black bars (or images, if [method black_bars_set_images] was used) are rendered.
 			</description>
 		</method>
+		<method name="camera_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="layers" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="env" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_orthogonal">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="size" type="float">
+			</argument>
+			<argument index="2" name="z_near" type="float">
+			</argument>
+			<argument index="3" name="z_far" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_perspective">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="fovy_degrees" type="float">
+			</argument>
+			<argument index="2" name="z_near" type="float">
+			</argument>
+			<argument index="3" name="z_far" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_use_vertical_aspect">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="canvas_create">
 			<return type="RID">
 			</return>
@@ -881,6 +955,12 @@
 				Modulates all colors in the given canvas.
 			</description>
 		</method>
+		<method name="directional_light_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="draw">
 			<return type="void">
 			</return>
@@ -888,6 +968,290 @@
 			</argument>
 			<description>
 				Draws a frame.
+			</description>
+		</method>
+		<method name="environment_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_adjustment">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="brightness" type="float">
+			</argument>
+			<argument index="3" name="contrast" type="float">
+			</argument>
+			<argument index="4" name="saturation" type="float">
+			</argument>
+			<argument index="5" name="ramp" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_ambient_light">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="energy" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="sky_contibution" type="float" default="0.0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_background">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="bg" type="int" enum="VisualServer.EnvironmentBG">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_bg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_bg_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_canvas_max_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="max_layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_dof_blur_far">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="distance" type="float">
+			</argument>
+			<argument index="3" name="transition" type="float">
+			</argument>
+			<argument index="4" name="far_amount" type="float">
+			</argument>
+			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_dof_blur_near">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="distance" type="float">
+			</argument>
+			<argument index="3" name="transition" type="float">
+			</argument>
+			<argument index="4" name="far_amount" type="float">
+			</argument>
+			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_fog">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<argument index="3" name="sun_color" type="Color">
+			</argument>
+			<argument index="4" name="sun_amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_fog_depth">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="depth_begin" type="float">
+			</argument>
+			<argument index="3" name="depth_curve" type="float">
+			</argument>
+			<argument index="4" name="transmit" type="bool">
+			</argument>
+			<argument index="5" name="transmit_curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_fog_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="min_height" type="float">
+			</argument>
+			<argument index="3" name="max_height" type="float">
+			</argument>
+			<argument index="4" name="height_curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_glow">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="level_flags" type="int">
+			</argument>
+			<argument index="3" name="intensity" type="float">
+			</argument>
+			<argument index="4" name="strength" type="float">
+			</argument>
+			<argument index="5" name="bloom_threshold" type="float">
+			</argument>
+			<argument index="6" name="blend_mode" type="int" enum="VisualServer.EnvironmentGlowBlendMode">
+			</argument>
+			<argument index="7" name="hdr_bleed_threshold" type="float">
+			</argument>
+			<argument index="8" name="hdr_bleed_scale" type="float">
+			</argument>
+			<argument index="9" name="bicubic_upscale" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_sky">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="sky" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_sky_custom_fov">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_ssao">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="radius" type="float">
+			</argument>
+			<argument index="3" name="intensity" type="float">
+			</argument>
+			<argument index="4" name="radius2" type="float">
+			</argument>
+			<argument index="5" name="intensity2" type="float">
+			</argument>
+			<argument index="6" name="bias" type="float">
+			</argument>
+			<argument index="7" name="light_affect" type="float">
+			</argument>
+			<argument index="8" name="color" type="Color">
+			</argument>
+			<argument index="9" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality">
+			</argument>
+			<argument index="10" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur">
+			</argument>
+			<argument index="11" name="bilateral_sharpness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_ssr">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="max_steps" type="int">
+			</argument>
+			<argument index="3" name="fade_in" type="float">
+			</argument>
+			<argument index="4" name="fade_out" type="float">
+			</argument>
+			<argument index="5" name="depth_tolerance" type="float">
+			</argument>
+			<argument index="6" name="roughness" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_tonemap">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="tone_mapper" type="int" enum="VisualServer.EnvironmentToneMapper">
+			</argument>
+			<argument index="2" name="exposure" type="float">
+			</argument>
+			<argument index="3" name="white" type="float">
+			</argument>
+			<argument index="4" name="auto_exposure" type="bool">
+			</argument>
+			<argument index="5" name="min_luminance" type="float">
+			</argument>
+			<argument index="6" name="max_luminance" type="float">
+			</argument>
+			<argument index="7" name="auto_exp_speed" type="float">
+			</argument>
+			<argument index="8" name="auto_exp_grey" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="finish">
@@ -952,6 +1316,210 @@
 				Returns the id of a white texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="gi_probe_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_bounds" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_cell_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_dynamic_data" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_dynamic_range" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_normal_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_propagation" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_get_to_cell_xform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_is_compressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_is_interior" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_bounds">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="bounds" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_cell_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="range" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_compress">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_dynamic_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_dynamic_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="range" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_normal_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_propagation">
+			<return type="void">
+			</return>
+			<argument index="0" name="propagation" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gi_probe_set_to_cell_xform">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -976,11 +1544,603 @@
 				Returns true, if the OS supports a certain feature. Features might be s3tc, etc, etc2 and pvrtc,
 			</description>
 		</method>
+		<method name="immediate_begin">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="primitive" type="int" enum="VisualServer.PrimitiveType">
+			</argument>
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_end">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_get_material" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="normal" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="tangent" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="tex_uv" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="tex_uv" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_vertex">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="vertex" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="immediate_vertex_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="immediate" type="RID">
+			</argument>
+			<argument index="1" name="vertex" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="init">
 			<return type="void">
 			</return>
 			<description>
 				Initializes the visual server.
+			</description>
+		</method>
+		<method name="instance_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_attach_skeleton">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="skeleton" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="instance_create2">
+			<return type="RID">
+			</return>
+			<argument index="0" name="base" type="RID">
+			</argument>
+			<argument index="1" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_as_instance_lod">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="as_lod_of_instance" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_cast_shadows_setting">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="shadow_casting_setting" type="int" enum="VisualServer.ShadowCastingSetting">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_draw_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<argument index="3" name="min_margin" type="float">
+			</argument>
+			<argument index="4" name="max_margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="flag" type="int" enum="VisualServer.InstanceFlags">
+			</argument>
+			<argument index="2" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_material_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_base">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="base" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_blend_shape_weight">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="int">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="aabb" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_exterior">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_extra_visibility_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_layer_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_scenario">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_surface_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_use_lightmap">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="lightmap_instance" type="RID">
+			</argument>
+			<argument index="2" name="lightmap" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instance_set_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="visible" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instances_cull_aabb" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<argument index="1" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instances_cull_convex" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="convex" type="Array">
+			</argument>
+			<argument index="1" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="instances_cull_ray" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_directional_set_blend_splits">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_directional_set_shadow_depth_range_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="range_mode" type="int" enum="VisualServer.LightDirectionalShadowDepthRangeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_directional_set_shadow_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.LightDirectionalShadowMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_omni_set_shadow_detail">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="detail" type="int" enum="VisualServer.LightOmniShadowDetail">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_omni_set_shadow_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.LightOmniShadowMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_negative">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="VisualServer.LightParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_projector">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_reverse_cull_face_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_shadow">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="light_set_shadow_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_get_bounds" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_get_octree" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_get_octree_cell_subdiv" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_get_octree_cell_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_set_bounds">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="bounds" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_set_octree">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="octree" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_set_octree_cell_subdiv">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="subdiv" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lightmap_capture_set_octree_cell_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="xform" type="Transform">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -1327,6 +2487,472 @@
 				Sets a mesh's surface's material.
 			</description>
 		</method>
+		<method name="multimesh_allocate">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="instances" type="int">
+			</argument>
+			<argument index="2" name="transform_format" type="int" enum="VisualServer.MultimeshTransformFormat">
+			</argument>
+			<argument index="3" name="color_format" type="int" enum="VisualServer.MultimeshColorFormat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_get_instance_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_get_mesh" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_get_visible_instances" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_get_transform_2d" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_instance_set_transform_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_set_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_set_visible_instances">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="visible" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="omni_light_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="particles_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="particles_get_current_aabb">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_get_emitting">
+			<return type="bool">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_restart">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_amount">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="aabb" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_draw_order">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="order" type="int" enum="VisualServer.ParticlesDrawOrder">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_draw_pass_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="pass" type="int">
+			</argument>
+			<argument index="2" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_draw_passes">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_emission_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_emitting">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="emitting" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_explosiveness_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_fixed_fps">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_fractional_delta">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_lifetime">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="lifetime" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_one_shot">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="one_shot" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_pre_process_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="time" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_process_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_randomness_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_speed_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_set_use_local_coordinates">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_as_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="layers" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_enable_box_projection">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_enable_shadows">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_extents">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_intensity">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="intensity" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_interior_ambient">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_interior_ambient_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_interior_ambient_probe_contribution">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="contrib" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_max_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="distance" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_origin_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_update_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.ReflectionProbeUpdateMode">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="request_frame_drawn_callback">
 			<return type="void">
 			</return>
@@ -1339,6 +2965,54 @@
 			<description>
 				Schedules a callback to the corresponding named 'method' on 'where' after a frame has been drawn.
 				The callback method must use only 1 argument which will be called with 'userdata'.
+			</description>
+		</method>
+		<method name="scenario_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="scenario_set_debug">
+			<return type="void">
+			</return>
+			<argument index="0" name="scenario" type="RID">
+			</argument>
+			<argument index="1" name="debug_mode" type="int" enum="VisualServer.ScenarioDebugMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="scenario_set_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="scenario" type="RID">
+			</argument>
+			<argument index="1" name="environment" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="scenario_set_fallback_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="scenario" type="RID">
+			</argument>
+			<argument index="1" name="environment" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="scenario_set_reflection_atlas_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="scenario" type="RID">
+			</argument>
+			<argument index="1" name="p_size" type="int">
+			</argument>
+			<argument index="2" name="subdiv" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_boot_image">
@@ -1430,6 +3104,76 @@
 				Sets a shader's default texture. Overwrites the texture given by name.
 			</description>
 		</method>
+		<method name="skeleton_allocate">
+			<return type="void">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<argument index="1" name="bones" type="int">
+			</argument>
+			<argument index="2" name="is_2d_skeleton" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_bone_get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<argument index="1" name="bone" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_bone_get_transform_2d" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<argument index="1" name="bone" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_bone_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<argument index="1" name="bone" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_bone_set_transform_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<argument index="1" name="bone" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="skeleton_get_bone_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="skeleton" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="sky_create">
 			<return type="RID">
 			</return>
@@ -1448,6 +3192,12 @@
 			</argument>
 			<description>
 				Sets a sky's texture.
+			</description>
+		</method>
+		<method name="spot_light_create">
+			<return type="RID">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="sync">
@@ -2214,6 +3964,24 @@
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
 			The light parameters endpoint. Used internally.
 		</constant>
+		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
+		</constant>
+		<constant name="LIGHT_OMNI_SHADOW_CUBE" value="1" enum="LightOmniShadowMode">
+		</constant>
+		<constant name="LIGHT_OMNI_SHADOW_DETAIL_VERTICAL" value="0" enum="LightOmniShadowDetail">
+		</constant>
+		<constant name="LIGHT_OMNI_SHADOW_DETAIL_HORIZONTAL" value="1" enum="LightOmniShadowDetail">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL" value="0" enum="LightDirectionalShadowMode">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS" value="1" enum="LightDirectionalShadowMode">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE" value="0" enum="LightDirectionalShadowDepthRangeMode">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="LightDirectionalShadowDepthRangeMode">
+		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 		</constant>
 		<constant name="VIEWPORT_UPDATE_ONCE" value="1" enum="ViewportUpdateMode">
@@ -2323,6 +4091,18 @@
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
 			A combination of the flags of geometry instances (mesh, multimesh, immediate and particles).
 		</constant>
+		<constant name="INSTANCE_FLAG_USE_BAKED_LIGHT" value="0" enum="InstanceFlags">
+		</constant>
+		<constant name="INSTANCE_FLAG_MAX" value="1" enum="InstanceFlags">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="ShadowCastingSetting">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
+		</constant>
 		<constant name="NINE_PATCH_STRETCH" value="0" enum="NinePatchAxisMode">
 			The nine patch gets stretched where needed.
 		</constant>
@@ -2397,6 +4177,76 @@
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 		</constant>
 		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_2D" value="0" enum="MultimeshTransformFormat">
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
+		</constant>
+		<constant name="MULTIMESH_COLOR_NONE" value="0" enum="MultimeshColorFormat">
+		</constant>
+		<constant name="MULTIMESH_COLOR_8BIT" value="1" enum="MultimeshColorFormat">
+		</constant>
+		<constant name="MULTIMESH_COLOR_FLOAT" value="2" enum="MultimeshColorFormat">
+		</constant>
+		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
+		</constant>
+		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
+		</constant>
+		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_COLOR" value="1" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_SKY" value="2" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_COLOR_SKY" value="3" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_CANVAS" value="4" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_BG_MAX" value="6" enum="EnvironmentBG">
+		</constant>
+		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
+		</constant>
+		<constant name="ENV_DOF_BLUR_QUALITY_MEDIUM" value="1" enum="EnvironmentDOFBlurQuality">
+		</constant>
+		<constant name="ENV_DOF_BLUR_QUALITY_HIGH" value="2" enum="EnvironmentDOFBlurQuality">
+		</constant>
+		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
+		</constant>
+		<constant name="ENV_TONE_MAPPER_REINHARDT" value="1" enum="EnvironmentToneMapper">
+		</constant>
+		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
+		</constant>
+		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+		</constant>
+		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
+		</constant>
+		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
+		</constant>
+		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
+		</constant>
+		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
 		</constant>
 	</constants>
 </class>
