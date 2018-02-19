@@ -137,7 +137,7 @@ void ProjectSettingsEditor::_action_selected() {
 	if (!ti || !ti->is_editable(0))
 		return;
 
-	add_at = "input/" + ti->get_text(0);
+	add_at = "input/" + ti->get_text(0) + (updating_actions ? "" : "/axis");
 	edit_idx = -1;
 }
 
@@ -148,7 +148,7 @@ void ProjectSettingsEditor::_action_edited() {
 		return;
 
 	String new_name = ti->get_text(0);
-	String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
+	String old_name = add_at.get_slice("/", 1);
 
 	if (new_name == old_name)
 		return;
@@ -156,19 +156,19 @@ void ProjectSettingsEditor::_action_edited() {
 	if (new_name == "" || !_validate_action_name(new_name)) {
 
 		ti->set_text(0, old_name);
-		add_at = "input/" + old_name;
+		add_at = "input/" + old_name + (updating_actions ? "" : "/axis");
 
 		message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
 
-	String action_prop = "input/" + new_name;
+	String action_prop = "input/" + new_name + (updating_actions ? "" : "/axis");
 
 	if (ProjectSettings::get_singleton()->has_setting(action_prop)) {
 
 		ti->set_text(0, old_name);
-		add_at = "input/" + old_name;
+		add_at = "input/" + old_name + (updating_actions ? "" : "/axis");
 
 		message->set_text(vformat(TTR("Action '%s' already exists!"), new_name));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
@@ -200,7 +200,6 @@ void ProjectSettingsEditor::_device_input_add() {
 
 	Ref<InputEvent> ie;
 	String name = add_at;
-	const bool want_simulate_axis = sim_axis_cb->is_pressed();
 	const float axis_factor = sim_axis_sb->get_value();
 	const int idx = edit_idx;
 	Array old_val = ProjectSettings::get_singleton()->get(name);
@@ -214,7 +213,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			mb.instance();
 			mb->set_button_index(device_index->get_selected() + 1);
 			mb->set_device(device_id->get_value());
-			mb->set_axis_factor(want_simulate_axis ? axis_factor : 0);
+			mb->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -235,7 +234,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			jm.instance();
 			jm->set_axis(device_index->get_selected());
 			jm->set_device(device_id->get_value());
-			jm->set_axis_factor(want_simulate_axis ? axis_factor : 0);
+			jm->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -257,7 +256,7 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			jb->set_button_index(device_index->get_selected());
 			jb->set_device(device_id->get_value());
-			jb->set_axis_factor(want_simulate_axis ? axis_factor : 0);
+			jb->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -304,7 +303,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_metakey(last_wait_for_key->get_metakey());
-	ie->set_axis_factor(sim_axis_cb->is_pressed() ? sim_axis_sb->get_value() : 0);
+	ie->set_axis_factor(updating_actions ? 0 : sim_axis_sb->get_value());
 
 	String name = add_at;
 	int idx = edit_idx;
@@ -373,10 +372,6 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 	if (found) input_editor->ensure_cursor_is_visible();
 }
 
-void ProjectSettingsEditor::_toggle_sim_axis(bool p_button_pressed) {
-	sim_axis_sb->set_visible(p_button_pressed);
-}
-
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
@@ -402,7 +397,6 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 	add_type = InputType(p_item);
-	bool def_want_simulate_axis = false;
 
 	if (sim_axis_vbc->get_parent()) {
 		sim_axis_vbc->get_parent()->remove_child(sim_axis_vbc);
@@ -413,7 +407,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 			press_a_key_label->set_text(TTR("Press a Key.."));
 			last_wait_for_key = Ref<InputEvent>();
-			press_a_key_vbc->add_child(sim_axis_vbc);
+			if (!updating_actions)
+				press_a_key_vbc->add_child(sim_axis_vbc);
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
 		} break;
@@ -430,7 +425,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			device_index->add_item(TTR("Button 7"));
 			device_index->add_item(TTR("Button 8"));
 			device_index->add_item(TTR("Button 9"));
-			device_input_vbc->add_child(sim_axis_vbc);
+			if (!updating_actions)
+				device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
 			Ref<InputEventMouseButton> mb = p_exiting_event;
@@ -452,9 +448,9 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 				String desc = _axis_names[i];
 				device_index->add_item(TTR("Axis") + " " + itos(i) + " " + desc);
 			}
-			device_input_vbc->add_child(sim_axis_vbc);
+			if (!updating_actions)
+				device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
-			def_want_simulate_axis = true;
 
 			Ref<InputEventJoypadMotion> jm = p_exiting_event;
 			if (jm.is_valid()) {
@@ -475,7 +471,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 				device_index->add_item(itos(i) + ": " + String(_button_names[i]));
 			}
-			device_input_vbc->add_child(sim_axis_vbc);
+			if (!updating_actions)
+				device_input_vbc->add_child(sim_axis_vbc);
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
 			Ref<InputEventJoypadButton> jb = p_exiting_event;
@@ -492,13 +489,9 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		default: {}
 	}
 
-	if (p_exiting_event.is_valid() && p_exiting_event->is_simulating_axis()) {
-		sim_axis_cb->set_pressed(p_exiting_event->is_simulating_axis());
-		_toggle_sim_axis(sim_axis_cb->is_pressed());
+	if (p_exiting_event.is_valid()) {
 		sim_axis_sb->set_value(p_exiting_event->get_axis_factor());
 	} else {
-		sim_axis_cb->set_pressed(def_want_simulate_axis);
-		_toggle_sim_axis(def_want_simulate_axis);
 		sim_axis_sb->set_value(1);
 	}
 }
@@ -532,7 +525,7 @@ void ProjectSettingsEditor::_action_activated() {
 	if (!ti || ti->get_parent() == input_editor->get_root())
 		return;
 
-	String name = "input/" + ti->get_parent()->get_text(0);
+	String name = "input/" + ti->get_parent()->get_text(0) + (updating_actions ? "" : "/axis");
 	int idx = ti->get_metadata(0);
 	Array va = ProjectSettings::get_singleton()->get(name);
 
@@ -562,7 +555,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 		ofs.x -= 100;
 		popup_add->set_position(ofs);
 		popup_add->popup();
-		add_at = "input/" + ti->get_text(0);
+		add_at = "input/" + ti->get_text(0) + (updating_actions ? "" : "/axis");
 		edit_idx = -1;
 
 	} else if (p_id == 2) {
@@ -572,7 +565,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 			//remove main thing
 
-			String name = "input/" + ti->get_text(0);
+			String name = "input/" + ti->get_text(0) + (updating_actions ? "" : "/axis");
 			Variant old_val = ProjectSettings::get_singleton()->get(name);
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
@@ -588,7 +581,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 		} else {
 			//remove action
-			String name = "input/" + ti->get_parent()->get_text(0);
+			String name = "input/" + ti->get_parent()->get_text(0) + (updating_actions ? "" : "/axis");
 			Variant old_val = ProjectSettings::get_singleton()->get(name);
 			int idx = ti->get_metadata(0);
 
@@ -622,7 +615,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 		} else {
 			//edit action
-			String name = "input/" + ti->get_parent()->get_text(0);
+			String name = "input/" + ti->get_parent()->get_text(0) + (updating_actions ? "" : "/axis");
 			int idx = ti->get_metadata(0);
 			Array va = ProjectSettings::get_singleton()->get(name);
 
@@ -656,8 +649,18 @@ void ProjectSettingsEditor::_update_actions() {
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 		const PropertyInfo &pi = E->get();
-		if (!pi.name.begins_with("input/"))
+		if (!pi.name.begins_with("input/")) {
 			continue;
+		}
+		if (updating_actions) {
+			if (pi.name.ends_with("/axis")) {
+				continue;
+			}
+		} else {
+			if (!pi.name.ends_with("/axis")) {
+				continue;
+			}
+		}
 
 		String name = pi.name.get_slice("/", 1);
 		if (name == "")
@@ -682,8 +685,8 @@ void ProjectSettingsEditor::_update_actions() {
 
 			TreeItem *action = input_editor->create_item(item);
 
-			String sim_axis_factor = "[    ] ";
-			if (ie->is_simulating_axis()) {
+			String sim_axis_factor = "";
+			if (!updating_actions) {
 				sim_axis_factor = "[ " + rtos(ie->get_axis_factor()) + " ] ";
 			}
 
@@ -885,7 +888,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 			action_add->set_disabled(true);
 			return;
 		}
-		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
+		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action) || ProjectSettings::get_singleton()->has_setting("input/" + p_action + "/axis")) {
 
 			action_add_error->set_text(TTR("Already existing"));
 			action_add_error->show();
@@ -909,7 +912,7 @@ void ProjectSettingsEditor::_action_adds(String) {
 void ProjectSettingsEditor::_action_add() {
 
 	Array va;
-	String name = "input/" + action_name->get_text();
+	String name = "input/" + action_name->get_text() + (updating_actions ? "" : "/axis");
 	undo_redo->create_action(TTR("Add Input Action"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
@@ -935,6 +938,28 @@ void ProjectSettingsEditor::_action_add() {
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();
 	action_name->clear();
+}
+
+void ProjectSettingsEditor::_tab_container_changed(int p_tab) {
+
+	if (input_map_vbc->get_parent()) {
+		input_map_vbc->get_parent()->remove_child(input_map_vbc);
+	}
+
+	switch (p_tab) {
+		case 1:
+			updating_actions = true;
+			action_label->set_text(TTR("Action:"));
+			input_base_actions->add_child(input_map_vbc);
+			_update_actions();
+			break;
+		case 2:
+			updating_actions = false;
+			action_label->set_text(TTR("Axis:"));
+			input_base_axis->add_child(input_map_vbc);
+			_update_actions();
+			break;
+	}
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
@@ -1579,6 +1604,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
 	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);
 	ClassDB::bind_method(D_METHOD("_item_del"), &ProjectSettingsEditor::_item_del);
+	ClassDB::bind_method(D_METHOD("_tab_container_changed", "tab"), &ProjectSettingsEditor::_tab_container_changed);
 	ClassDB::bind_method(D_METHOD("_item_checked"), &ProjectSettingsEditor::_item_checked);
 	ClassDB::bind_method(D_METHOD("_save"), &ProjectSettingsEditor::_save);
 	ClassDB::bind_method(D_METHOD("_action_add"), &ProjectSettingsEditor::_action_add);
@@ -1590,7 +1616,6 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
-	ClassDB::bind_method(D_METHOD("_toggle_sim_axis"), &ProjectSettingsEditor::_toggle_sim_axis);
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
@@ -1632,6 +1657,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
+	tab_container->connect("tab_changed", this, "_tab_container_changed");
 	add_child(tab_container);
 
 	VBoxContainer *props_base = memnew(VBoxContainer);
@@ -1737,23 +1763,27 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	message = memnew(AcceptDialog);
 	add_child(message);
 
-	Control *input_base = memnew(Control);
-	input_base->set_name(TTR("Input Map"));
-	tab_container->add_child(input_base);
+	input_base_actions = memnew(Control);
+	input_base_actions->set_name(TTR("Input Map Action"));
+	tab_container->add_child(input_base_actions);
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	input_base->add_child(vbc);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	input_base_axis = memnew(Control);
+	input_base_axis->set_name(TTR("Input Map Axis"));
+	tab_container->add_child(input_base_axis);
+
+	// This same node is used by both Input Map tabs
+	input_map_vbc = memnew(VBoxContainer);
+	input_base_actions->add_child(input_map_vbc);
+	input_map_vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+	input_map_vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	input_map_vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
+	input_map_vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 
 	hbc = memnew(HBoxContainer);
-	vbc->add_child(hbc);
+	input_map_vbc->add_child(hbc);
 
-	l = memnew(Label);
-	hbc->add_child(l);
-	l->set_text(TTR("Action:"));
+	action_label = memnew(Label);
+	hbc->add_child(action_label);
 
 	action_name = memnew(LineEdit);
 	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1773,7 +1803,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_add = add;
 
 	input_editor = memnew(Tree);
-	vbc->add_child(input_editor);
+	input_map_vbc->add_child(input_editor);
 	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	input_editor->connect("item_edited", this, "_action_edited");
 	input_editor->connect("item_activated", this, "_action_activated");
@@ -1787,14 +1817,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
 
-	sim_axis_cb = memnew(CheckBox(TTR("Simulate axis")));
-	sim_axis_cb->connect("toggled", this, "_toggle_sim_axis");
 	sim_axis_sb = memnew(SpinBox);
 	sim_axis_sb->set_min(-1000);
 	sim_axis_sb->set_max(1000);
 	sim_axis_sb->set_step(0.1);
+
 	sim_axis_vbc = memnew(VBoxContainer);
-	sim_axis_vbc->add_child(sim_axis_cb);
 	sim_axis_vbc->add_child(sim_axis_sb);
 
 	{

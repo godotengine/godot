@@ -113,8 +113,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_factor", "factor"), &InputEvent::set_axis_factor);
 	ClassDB::bind_method(D_METHOD("get_axis_factor"), &InputEvent::get_axis_factor);
 
-	ClassDB::bind_method(D_METHOD("is_simulating_axis"), &InputEventJoypadMotion::is_simulating_axis);
-	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
+	ClassDB::bind_method(D_METHOD("is_simulating_axis"), &InputEvent::is_simulating_axis);
+	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEvent::get_axis_value);
 
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
@@ -636,7 +636,6 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventJoypadMotion::get_axis);
 
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
-	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_value"), "set_axis_value", "get_axis_value");

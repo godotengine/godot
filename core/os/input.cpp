@@ -120,7 +120,12 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 #ifdef TOOLS_ENABLED
 
 	String pf = p_function;
-	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released")) {
+
+	bool search_actions = true;
+	if (pf == "is_action_just_changed" || pf == "get_action_axis_value")
+		search_actions = false;
+
+	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released" || pf == "is_action_just_changed" || pf == "get_action_axis_value")) {
 
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
@@ -131,7 +136,10 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			if (!pi.name.begins_with("input/"))
 				continue;
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			if (!search_actions && !pi.name.ends_with("/axis"))
+				continue;
+
+			String name = pi.name.get_slice("/", 1);
 			r_options->push_back("\"" + name + "\"");
 		}
 	}

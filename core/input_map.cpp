@@ -208,7 +208,7 @@ void InputMap::load_from_globals() {
 		if (!pi.name.begins_with("input/"))
 			continue;
 
-		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+		String name = pi.name.get_slice("/", 1);
 
 		add_action(name);
 

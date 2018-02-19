@@ -353,7 +353,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			if (action_ie.is_valid()) {
 				ActionState &a = action_state[E->key()];
 				const float new_axis_value = action_ie->get_axis_factor() * p_event->get_axis_value();
-				if (a.idle_frame == -1 || a.axis_value != new_axis_value) {
+				if (a.idle_frame == -1 || a.axis_value != new_axis_value || a.pressed != p_event->is_pressed()) {
 					a.physics_frame = Engine::get_singleton()->get_physics_frames();
 					a.idle_frame = Engine::get_singleton()->get_idle_frames();
 					a.pressed = p_event->is_pressed();
