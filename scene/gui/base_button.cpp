@@ -307,6 +307,8 @@ void BaseButton::toggled(bool p_pressed) {
 }
 
 void BaseButton::set_disabled(bool p_disabled) {
+	if (status.disabled == p_disabled)
+		return;
 
 	status.disabled = p_disabled;
 	update();
