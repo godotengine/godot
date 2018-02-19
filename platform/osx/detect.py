@@ -57,22 +57,15 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2**32
-    if (env["bits"] == "default"):
-        env["bits"] = "64" if is64 else "32"
+    # Mac OS X no longer runs on 32-bit since 10.7 which is unsupported since 2014
+    # As such, we only support 64-bit
+    env["bits"] == "64"
 
     ## Compiler configuration
 
     if "OSXCROSS_ROOT" not in os.environ: # regular native build
-        if (env["bits"] == "fat"):
-            env.Append(CCFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
-            env.Append(LINKFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
-        elif (env["bits"] == "32"):
-            env.Append(CCFLAGS=['-arch', 'i386'])
-            env.Append(LINKFLAGS=['-arch', 'i386'])
-        else: # 64-bit, default
-            env.Append(CCFLAGS=['-arch', 'x86_64'])
-            env.Append(LINKFLAGS=['-arch', 'x86_64'])
+        env.Append(CCFLAGS=['-arch', 'x86_64'])
+        env.Append(LINKFLAGS=['-arch', 'x86_64'])
         if (env["macports_clang"] != 'no'):
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -86,14 +79,7 @@ def configure(env):
 
     else: # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)
-        if env["bits"] == "fat":
-            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
-            env.Append(CCFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
-            env.Append(LINKFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
-        elif env["bits"] == "32":
-            basecmd = root + "/target/bin/i386-apple-" + env["osxcross_sdk"] + "-"
-        else: # 64-bit, default
-            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
+        basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         ccache_path = os.environ.get("CCACHE")
         if ccache_path == None:

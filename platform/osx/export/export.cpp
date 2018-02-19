@@ -101,15 +101,7 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 		r_features->push_back("etc2");
 	}
 
-	int bits = p_preset->get("application/bits_mode");
-
-	if (bits == 0 || bits == 1) {
-		r_features->push_back("64");
-	}
-
-	if (bits == 0 || bits == 2) {
-		r_features->push_back("32");
-	}
+	r_features->push_back("64");
 }
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
@@ -125,7 +117,6 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 
 #ifdef OSX_ENABLED
@@ -323,11 +314,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
-	int bits_mode = p_preset->get("application/bits_mode");
-	binary_to_use += String(bits_mode == 0 ? "fat" : bits_mode == 1 ? "64" : "32");
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
-	print_line("binary: " + binary_to_use);
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
