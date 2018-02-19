@@ -31,6 +31,7 @@
 #include "test_physics_2d.h"
 
 #include "map.h"
+#include "os/displaydriver.h"
 #include "os/main_loop.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -354,7 +355,7 @@ public:
 			RID vp = vs->viewport_create();
 			canvas = vs->canvas_create();
 
-			Size2i screen_size = OS::get_singleton()->get_window_size();
+			Size2i screen_size = DisplayDriver::get_singleton()->get_window_size();
 			vs->viewport_attach_canvas(vp, canvas);
 			vs->viewport_set_size(vp, screen_size.x, screen_size.y);
 			vs->viewport_attach_to_screen(vp, Rect2(Vector2(), screen_size));

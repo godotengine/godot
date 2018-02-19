@@ -32,6 +32,7 @@
 
 #include "map.h"
 #include "math_funcs.h"
+#include "os/displaydriver.h"
 #include "os/main_loop.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -313,7 +314,7 @@ public:
 		camera = vs->camera_create();
 
 		RID viewport = vs->viewport_create();
-		Size2i screen_size = OS::get_singleton()->get_window_size();
+		Size2i screen_size = DisplayDriver::get_singleton()->get_window_size();
 		vs->viewport_set_size(viewport, screen_size.x, screen_size.y);
 		vs->viewport_attach_to_screen(viewport, Rect2(Vector2(), screen_size));
 		vs->viewport_set_active(viewport, true);

@@ -30,6 +30,7 @@
 
 #include "viewport.h"
 
+#include "os/displaydriver.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "project_settings.h"
@@ -613,7 +614,7 @@ Rect2 Viewport::get_visible_rect() const {
 
 	if (size == Size2()) {
 
-		r = Rect2(Point2(), Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height));
+		r = Rect2(Point2(), Size2(DisplayDriver::get_singleton()->get_video_mode().width, DisplayDriver::get_singleton()->get_video_mode().height));
 	} else {
 
 		r = Rect2(Point2(), size);
@@ -1804,7 +1805,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (!over) {
-			OS::get_singleton()->set_cursor_shape(OS::CURSOR_ARROW);
+			DisplayDriver::get_singleton()->set_cursor_shape(DisplayDriver::CURSOR_ARROW);
 			return;
 		}
 
@@ -1856,7 +1857,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		mm->set_position(pos);
 
 		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
-		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
+		DisplayDriver::get_singleton()->set_cursor_shape((DisplayDriver::CursorShape)cursor_shape);
 
 		if (over->can_process()) {
 			_gui_call_input(over, mm);
@@ -1869,9 +1870,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool can_drop = _gui_drop(over, pos, true);
 
 			if (!can_drop) {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
+				DisplayDriver::get_singleton()->set_cursor_shape(DisplayDriver::CURSOR_FORBIDDEN);
 			} else {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
+				DisplayDriver::get_singleton()->set_cursor_shape(DisplayDriver::CURSOR_CAN_DROP);
 			}
 			//change mouse accordingly i guess
 		}

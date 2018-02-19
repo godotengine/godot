@@ -31,15 +31,15 @@
 #include "export.h"
 
 #include "editor/editor_export.h"
-#include "platform/x11/logo.gen.h"
+#include "platform/freedesktop/logo.gen.h"
 #include "scene/resources/texture.h"
 
-void register_x11_exporter() {
+void register_freedesktop_exporter() {
 
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
-	Ref<Image> img = memnew(Image(_x11_logo));
+	Ref<Image> img = memnew(Image(_freedesktop_logo));
 	Ref<ImageTexture> logo;
 	logo.instance();
 	logo->create_from_image(img);

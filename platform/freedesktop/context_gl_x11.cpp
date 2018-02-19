@@ -137,7 +137,7 @@ Error ContextGL_X11::initialize() {
 		x11_window = atol(windowid);
 	} else {
 	*/
-	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
+	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, DisplayDriver::get_singleton()->get_video_mode().width, DisplayDriver::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
 	set_class_hint(x11_display, x11_window);
 	XMapWindow(x11_display, x11_window);
@@ -229,7 +229,7 @@ bool ContextGL_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
-ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context) :
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const DisplayDriver::VideoMode &p_default_video_mode, bool p_opengl_3_context) :
 		x11_window(p_x11_window) {
 
 	default_video_mode = p_default_video_mode;

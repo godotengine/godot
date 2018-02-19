@@ -196,7 +196,7 @@ public:
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
 	if (msg == "") return;
-	OS::get_singleton()->set_clipboard(msg);
+	DisplayDriver::get_singleton()->set_clipboard(msg);
 }
 
 void ScriptEditorDebugger::debug_next() {
@@ -240,7 +240,7 @@ void ScriptEditorDebugger::debug_continue() {
 	ERR_FAIL_COND(connection.is_null());
 	ERR_FAIL_COND(!connection->is_connected_to_host());
 
-	OS::get_singleton()->enable_for_stealing_focus(EditorNode::get_singleton()->get_child_process_id());
+	DisplayDriver::get_singleton()->enable_for_stealing_focus(EditorNode::get_singleton()->get_child_process_id());
 
 	Array msg;
 	msg.push_back("continue");
@@ -349,7 +349,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		dobreak->set_disabled(true);
 		docontinue->set_disabled(false);
 		emit_signal("breaked", true, can_continue);
-		OS::get_singleton()->move_window_to_foreground();
+		DisplayDriver::get_singleton()->move_window_to_foreground();
 		if (error != "") {
 			tabs->set_current_tab(0);
 		}
@@ -1743,7 +1743,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			String title = error_list->get_item_text(error_list->get_current());
 			String desc = error_list->get_item_tooltip(error_list->get_current());
 
-			OS::get_singleton()->set_clipboard(title + "\n----------\n" + desc);
+			DisplayDriver::get_singleton()->set_clipboard(title + "\n----------\n" + desc);
 		} break;
 	}
 }

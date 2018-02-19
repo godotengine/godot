@@ -39,6 +39,7 @@
 #include "io/stream_peer_ssl.h"
 #include "io/zip_io.h"
 #include "os/dir_access.h"
+#include "os/displaydriver.h"
 #include "os/file_access.h"
 #include "os/keyboard.h"
 #include "os/os.h"
@@ -1488,8 +1489,8 @@ ProjectManager::ProjectManager() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("interface/editor/hidpi_mode");
 		if (dpi_mode == 0) {
-			const int screen = OS::get_singleton()->get_current_screen();
-			editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+			const int screen = DisplayDriver::get_singleton()->get_current_screen();
+			editor_set_scale(DisplayDriver::get_singleton()->get_screen_dpi(screen) >= 192 && DisplayDriver::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
 		} else if (dpi_mode == 1) {
 			editor_set_scale(0.75);
 		} else if (dpi_mode == 2) {
@@ -1525,7 +1526,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	DisplayDriver::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	vb->add_child(top_hb);

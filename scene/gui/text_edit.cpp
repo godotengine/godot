@@ -31,6 +31,7 @@
 #include "text_edit.h"
 
 #include "message_queue.h"
+#include "os/displaydriver.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
@@ -1510,8 +1511,8 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
-				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
+				DisplayDriver::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
+				DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -1521,11 +1522,11 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
-			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
+			DisplayDriver::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
 			if (raised_from_completion) {
 				VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 1);
 			}
@@ -1533,13 +1534,13 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
-			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
+			DisplayDriver::get_singleton()->set_ime_position(Point2());
+			DisplayDriver::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->hide_virtual_keyboard();
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->hide_virtual_keyboard();
 			if (raised_from_completion) {
 				VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
 			}
@@ -4197,7 +4198,7 @@ void TextEdit::cut() {
 	if (!selection.active) {
 
 		String clipboard = text[cursor.line];
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayDriver::get_singleton()->set_clipboard(clipboard);
 		cursor_set_line(cursor.line);
 		cursor_set_column(0);
 		_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
@@ -4210,7 +4211,7 @@ void TextEdit::cut() {
 	} else {
 
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayDriver::get_singleton()->set_clipboard(clipboard);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		cursor_set_line(selection.from_line); // set afterwards else it causes the view to be offset
@@ -4227,18 +4228,18 @@ void TextEdit::copy() {
 
 	if (!selection.active) {
 		String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayDriver::get_singleton()->set_clipboard(clipboard);
 		cut_copy_line = clipboard;
 	} else {
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayDriver::get_singleton()->set_clipboard(clipboard);
 		cut_copy_line = "";
 	}
 }
 
 void TextEdit::paste() {
 
-	String clipboard = OS::get_singleton()->get_clipboard();
+	String clipboard = DisplayDriver::get_singleton()->get_clipboard();
 
 	if (selection.active) {
 

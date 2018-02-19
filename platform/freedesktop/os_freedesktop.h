@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.h                                                     */
+/*  os_freedesktop.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,92 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#ifndef OS_FREEDESKTOP_H
+#define OS_FREEDESKTOP_H
 
+#include "crash_handler_x11.h"
+#include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/unix/os_unix.h"
+#include "os/input.h"
+#include "power_x11.h"
+#include "servers/audio_server.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-#ifdef X11_ENABLED
 
-#if defined(OPENGL_ENABLED)
+class OS_Freedesktop : public OS_Unix {
 
-#include "drivers/gl_context/context_gl.h"
-#include "os/os.h"
-#include <X11/Xlib.h>
+	List<String> args;
+	MainLoop *main_loop;
+	char *xmbstring;
+	int xmblen;
+	unsigned long last_timestamp;
 
-struct ContextGL_X11_Private;
+	virtual void delete_main_loop();
+	IP_Unix *ip_unix;
 
-class ContextGL_X11 : public ContextGL {
+	bool force_quit;
+	bool minimized;
+	bool window_has_focus;
+	bool do_mouse_warp;
 
-	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
-	//::Colormap x11_colormap;
-	::Display *x11_display;
-	::Window &x11_window;
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool opengl_3_context;
-	bool use_vsync;
+#ifdef ALSA_ENABLED
+	AudioDriverALSA driver_alsa;
+#endif
+
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+	PowerX11 *power_manager;
+
+	CrashHandler crash_handler;
+
+	int audio_driver_index;
+	unsigned int capture_idle;
+
+protected:
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual void initialize_core();
+	virtual Error initialize(int p_audio_driver);
+	virtual void finalize();
+
+	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual void release_current();
-	virtual void make_current();
-	virtual void swap_buffers();
-	virtual int get_window_width();
-	virtual int get_window_height();
+	virtual String get_name();
 
-	virtual Error initialize();
+	virtual MainLoop *get_main_loop() const;
 
-	virtual void set_use_vsync(bool p_use);
-	virtual bool is_using_vsync() const;
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context);
-	~ContextGL_X11();
+	virtual String get_system_dir(SystemDir p_dir) const;
+
+	virtual Error shell_open(String p_uri);
+
+	virtual String get_unique_id() const;
+
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+
+	virtual OS::PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
+
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void run();
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
+
+	virtual Error move_to_trash(const String &p_path);
+
+	OS_Freedesktop();
 };
 
-#endif
-
-#endif
 #endif

@@ -30,6 +30,7 @@
 
 #include "scroll_bar.h"
 
+#include "os/displaydriver.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -596,7 +597,7 @@ void ScrollBar::_drag_slave_input(const Ref<InputEvent> &p_input) {
 				//drag_slave_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
 				drag_slave_from = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
 
-				drag_slave_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+				drag_slave_touching = DisplayDriver::get_singleton()->has_touchscreen_ui_hint();
 				drag_slave_touching_deaccel = false;
 				time_since_motion = 0;
 				if (drag_slave_touching) {

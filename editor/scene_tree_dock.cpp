@@ -617,7 +617,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
-					OS::get_singleton()->set_clipboard(path);
+					DisplayDriver::get_singleton()->set_clipboard(path);
 				}
 			}
 		} break;

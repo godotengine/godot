@@ -587,7 +587,7 @@ void ScriptEditor::_close_docs_tab() {
 void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
 	Ref<Script> script = se->get_edited_script();
-	OS::get_singleton()->set_clipboard(script->get_path());
+	DisplayDriver::get_singleton()->set_clipboard(script->get_path());
 }
 
 void ScriptEditor::_close_other_tabs() {

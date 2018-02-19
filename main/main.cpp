@@ -35,6 +35,7 @@
 #include "drivers/register_driver_types.h"
 #include "message_queue.h"
 #include "modules/register_module_types.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include "platform/register_platform_apis.h"
 #include "project_settings.h"
@@ -102,7 +103,7 @@ static ZipArchive *zip_packed_data = NULL;
 static FileAccessNetworkClient *file_access_network_client = NULL;
 static TranslationServer *translation_server = NULL;
 
-static OS::VideoMode video_mode;
+static DisplayDriver::VideoMode video_mode;
 static bool init_maximized = false;
 static bool init_windowed = false;
 static bool init_fullscreen = false;
@@ -219,10 +220,10 @@ void Main::print_help(const char *p_binary) {
 	}
 	OS::get_singleton()->print(").\n");
 	OS::get_singleton()->print("  --video-driver <driver>          Video driver (");
-	for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+	for (int i = 0; i < DisplayDriver::get_singleton()->get_video_driver_count(); i++) {
 		if (i != 0)
 			OS::get_singleton()->print(", ");
-		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_video_driver_name(i));
+		OS::get_singleton()->print("'%s'", DisplayDriver::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(").\n");
 	OS::get_singleton()->print("\n");
@@ -492,11 +493,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				if (I->next()->get() == "safe")
-					rtm = OS::RENDER_THREAD_SAFE;
+					rtm = DisplayDriver::RENDER_THREAD_SAFE;
 				else if (I->next()->get() == "unsafe")
-					rtm = OS::RENDER_THREAD_UNSAFE;
+					rtm = DisplayDriver::RENDER_THREAD_UNSAFE;
 				else if (I->next()->get() == "separate")
-					rtm = OS::RENDER_SEPARATE_THREAD;
+					rtm = DisplayDriver::RENDER_SEPARATE_THREAD;
 
 				N = I->next()->next();
 			} else {
@@ -529,7 +530,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
-			OS::get_singleton()->set_no_window_mode(true);
+			DisplayDriver::get_singleton()->set_no_window_mode(true);
 		} else if (I->get() == "--quiet") { // quieter output
 
 			quiet_stdout = true;
@@ -859,7 +860,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (!force_lowdpi) {
-		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
+		DisplayDriver::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
 
 	video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
@@ -869,27 +870,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
-		OS::get_singleton()->_allow_hidpi = true;
+		DisplayDriver::get_singleton()->_allow_hidpi = true;
 	}
 
 	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
-	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
+	DisplayDriver::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
-		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
+		rtm = GLOBAL_DEF("rendering/threads/thread_model", DisplayDriver::RENDER_THREAD_SAFE);
 	}
 
 	if (rtm >= 0 && rtm < 3) {
 		if (editor) {
-			rtm = OS::RENDER_THREAD_SAFE;
+			rtm = DisplayDriver::RENDER_THREAD_SAFE;
 		}
-		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
+		DisplayDriver::get_singleton()->_render_thread_mode = DisplayDriver::RenderThreadMode(rtm);
 	}
 
 	/* Determine audio and video drivers */
 
-	for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+	for (int i = 0; i < DisplayDriver::get_singleton()->get_video_driver_count(); i++) {
 
-		if (video_driver == OS::get_singleton()->get_video_driver_name(i)) {
+		if (video_driver == DisplayDriver::get_singleton()->get_video_driver_name(i)) {
 
 			video_driver_idx = i;
 			break;
@@ -927,19 +928,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String orientation = GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
 		if (orientation == "portrait")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_PORTRAIT);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_PORTRAIT);
 		else if (orientation == "reverse_landscape")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_LANDSCAPE);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_REVERSE_LANDSCAPE);
 		else if (orientation == "reverse_portrait")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_PORTRAIT);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_REVERSE_PORTRAIT);
 		else if (orientation == "sensor_landscape")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_LANDSCAPE);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_SENSOR_LANDSCAPE);
 		else if (orientation == "sensor_portrait")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_PORTRAIT);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_SENSOR_PORTRAIT);
 		else if (orientation == "sensor")
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_SENSOR);
 		else
-			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
+			DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::SCREEN_LANDSCAPE);
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
@@ -1025,12 +1026,18 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
 	}
 
-	Error err = OS::get_singleton()->initialize(video_mode, video_driver_idx, audio_driver_idx);
+	Error err;
+	err = OS::get_singleton()->initialize(audio_driver_idx);
 	if (err != OK) {
 		return err;
 	}
+	err = DisplayDriver::get_singleton()->initialize(video_mode, video_driver_idx);
+	if (err != OK) {
+		return err;
+	}
+
 	if (init_use_custom_pos) {
-		OS::get_singleton()->set_window_position(init_custom_pos);
+		DisplayDriver::get_singleton()->set_window_position(init_custom_pos);
 	}
 
 	// right moment to create and initialize the audio server
@@ -1052,17 +1059,17 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 
 	if (init_screen != -1) {
-		OS::get_singleton()->set_current_screen(init_screen);
+		DisplayDriver::get_singleton()->set_current_screen(init_screen);
 	}
 	if (init_windowed) {
 		//do none..
 	} else if (init_maximized) {
-		OS::get_singleton()->set_window_maximized(true);
+		DisplayDriver::get_singleton()->set_window_maximized(true);
 	} else if (init_fullscreen) {
-		OS::get_singleton()->set_window_fullscreen(true);
+		DisplayDriver::get_singleton()->set_window_fullscreen(true);
 	}
 	if (init_always_on_top) {
-		OS::get_singleton()->set_window_always_on_top(true);
+		DisplayDriver::get_singleton()->set_window_always_on_top(true);
 	}
 
 	register_server_types();
@@ -1118,7 +1125,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #ifdef TOOLS_ENABLED
 		Ref<Image> icon = memnew(Image(app_icon_png));
-		OS::get_singleton()->set_icon(icon);
+		DisplayDriver::get_singleton()->set_icon(icon);
 #endif
 	}
 
@@ -1130,7 +1137,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
 	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
+		if (!DisplayDriver::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
 			//only if no touchscreen ui hint, set emulation
 			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 			if (id)
@@ -1167,7 +1174,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 
 	if (allow_focus_steal_pid) {
-		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
+		DisplayDriver::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
 	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
@@ -1482,7 +1489,7 @@ bool Main::start() {
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			String appname = ProjectSettings::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
-			OS::get_singleton()->set_window_title(appname);
+			DisplayDriver::get_singleton()->set_window_title(appname);
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
 			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
@@ -1558,7 +1565,7 @@ bool Main::start() {
 				Error serr = editor_node->load_scene(local_game_path);
 				if (serr != OK)
 					ERR_PRINT("Failed to load scene");
-				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
+				DisplayDriver::get_singleton()->set_context(DisplayDriver::CONTEXT_EDITOR);
 			}
 #endif
 		}
@@ -1663,7 +1670,7 @@ bool Main::start() {
 					Ref<Image> icon;
 					icon.instance();
 					if (icon->load(iconpath) == OK) {
-						OS::get_singleton()->set_icon(icon);
+						DisplayDriver::get_singleton()->set_icon(icon);
 						hasicon = true;
 					}
 				}
@@ -1677,17 +1684,18 @@ bool Main::start() {
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
-			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
+			DisplayDriver::get_singleton()->set_context(DisplayDriver::CONTEXT_PROJECTMAN);
 		}
 #endif
 	}
 
 	if (!hasicon) {
 		Ref<Image> icon = memnew(Image(app_icon_png));
-		OS::get_singleton()->set_icon(icon);
+		DisplayDriver::get_singleton()->set_icon(icon);
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
+	DisplayDriver::get_singleton()->set_main_loop(main_loop);
 
 	return true;
 }
@@ -1783,7 +1791,7 @@ bool Main::iteration() {
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (OS::get_singleton()->can_draw() && !disable_render_loop) {
+	if (DisplayDriver::get_singleton()->can_draw() && !disable_render_loop) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
@@ -1837,7 +1845,7 @@ bool Main::iteration() {
 	if (fixed_fps != -1)
 		return exit;
 
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
+	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !DisplayDriver::get_singleton()->can_draw())
 		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time (results in about 60 FPS max)
 	else {
 		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
@@ -1882,7 +1890,7 @@ void Main::cleanup() {
 
 	OS::get_singleton()->_cmdline.clear();
 	OS::get_singleton()->_execpath = "";
-	OS::get_singleton()->_local_clipboard = "";
+	DisplayDriver::get_singleton()->_local_clipboard = "";
 
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();

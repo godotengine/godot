@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "visual_server_wrap_mt.h"
+#include "os/displaydriver.h"
 #include "os/os.h"
 #include "project_settings.h"
 
@@ -61,7 +62,7 @@ void VisualServerWrapMT::thread_loop() {
 
 	server_thread = Thread::get_caller_id();
 
-	OS::get_singleton()->make_rendering_thread();
+	DisplayDriver::get_singleton()->make_rendering_thread();
 
 	visual_server->init();
 
@@ -108,7 +109,7 @@ void VisualServerWrapMT::init() {
 	if (create_thread) {
 
 		print_line("CREATING RENDER THREAD");
-		OS::get_singleton()->release_rendering_thread();
+		DisplayDriver::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
 			print_line("STARTING RENDER THREAD");
@@ -171,7 +172,7 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 		command_queue(p_create_thread) {
 
 	singleton_mt = this;
-	OS::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
+	DisplayDriver::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
 
 	visual_server = p_contained;
 	create_thread = p_create_thread;

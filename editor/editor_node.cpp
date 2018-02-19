@@ -48,6 +48,7 @@
 #include "core/translation.h"
 #include "core/version.h"
 #include "main/input_default.h"
+#include "os/displaydriver.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
 
@@ -177,7 +178,7 @@ void EditorNode::_update_title() {
 	if (unsaved_cache)
 		title += " (*)";
 
-	OS::get_singleton()->set_window_title(title);
+	DisplayDriver::get_singleton()->set_window_title(title);
 }
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2373,7 +2374,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
-				OS::get_singleton()->request_attention();
+				DisplayDriver::get_singleton()->request_attention();
 				break;
 			}
 
@@ -2478,7 +2479,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREN: {
 
-			OS::get_singleton()->set_window_fullscreen(!OS::get_singleton()->is_window_fullscreen());
+			DisplayDriver::get_singleton()->set_window_fullscreen(!DisplayDriver::get_singleton()->is_window_fullscreen());
 
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
@@ -4731,7 +4732,7 @@ EditorNode::EditorNode() {
 
 	if (id) {
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+		if (!DisplayDriver::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch(false); //just disable just in case
 		}
@@ -4759,8 +4760,8 @@ EditorNode::EditorNode() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("interface/editor/hidpi_mode");
 		if (dpi_mode == 0) {
-			const int screen = OS::get_singleton()->get_current_screen();
-			editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+			const int screen = DisplayDriver::get_singleton()->get_current_screen();
+			editor_set_scale(DisplayDriver::get_singleton()->get_screen_dpi(screen) >= 192 && DisplayDriver::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
 		} else if (dpi_mode == 1) {
 			editor_set_scale(0.75);
 		} else if (dpi_mode == 2) {
@@ -5501,7 +5502,7 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(import_dock->get_index(), TTR("Import"));
 
-	bool use_single_dock_column = (OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x < 1200);
+	bool use_single_dock_column = (DisplayDriver::get_singleton()->get_screen_size(DisplayDriver::get_singleton()->get_current_screen()).x < 1200);
 
 	node_dock = memnew(NodeDock);
 	if (use_single_dock_column) {

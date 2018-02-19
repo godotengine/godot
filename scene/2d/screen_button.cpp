@@ -30,6 +30,7 @@
 
 #include "screen_button.h"
 #include "input_map.h"
+#include "os/displaydriver.h"
 #include "os/input.h"
 #include "os/os.h"
 
@@ -113,7 +114,7 @@ void TouchScreenButton::_notification(int p_what) {
 
 			if (!is_inside_tree())
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !DisplayDriver::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed != -1) {
@@ -142,7 +143,7 @@ void TouchScreenButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !DisplayDriver::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
 

@@ -1,44 +1,41 @@
 /*************************************************************************/
-/*  os_x11.cpp                                                           */
+/*  os_x11.cpp							   */
 /*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*		       This file is part of:			   */
+/*			   GODOT ENGINE				*/
+/*		      https://godotengine.org			  */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.		 */
 /* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
+/*								       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
 /* "Software"), to deal in the Software without restriction, including   */
 /* without limitation the rights to use, copy, modify, merge, publish,   */
 /* distribute, sublicense, and/or sell copies of the Software, and to    */
 /* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
+/* the following conditions:					     */
+/*								       */
+/* The above copyright notice and this permission notice shall be	*/
 /* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
+/*								       */
 /* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
 /* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
 /* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
 /* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
 /* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.		*/
 /*************************************************************************/
 
-#include "os_x11.h"
+#include "display_x11.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
 #include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-
-#ifdef HAVE_MNTENT
-#include <mntent.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,33 +72,21 @@
 
 #include <X11/XKBlib.h>
 
-int OS_X11::get_video_driver_count() const {
+void Display_X11::set_main_loop(MainLoop *p_main_loop) {
+
+	main_loop = p_main_loop;
+	input->set_main_loop(p_main_loop);
+}
+
+int Display_X11::get_video_driver_count() const {
 	return 1;
 }
 
-const char *OS_X11::get_video_driver_name(int p_driver) const {
+const char *Display_X11::get_video_driver_name(int p_driver) const {
 	return "GLES3";
 }
 
-int OS_X11::get_audio_driver_count() const {
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OS_X11::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
-void OS_X11::initialize_core() {
-
-	crash_handler.initialize();
-
-	OS_Unix::initialize_core();
-}
-
-Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error Display_X11::initialize(const VideoMode &p_desired, int p_video_driver) {
 
 	long im_event_mask = 0;
 	last_button_state = 0;
@@ -145,7 +130,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	if (modifiers == NULL) {
-		if (is_stdout_verbose()) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			WARN_PRINT("IME is disabled");
 		}
 		modifiers = XSetLocaleModifiers("@im=none");
@@ -217,7 +202,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 			XIFreeDeviceInfo(info);
 
-			if (is_stdout_verbose() && !touch.devices.size()) {
+			if (OS::get_singleton()->is_stdout_verbose() && !touch.devices.size()) {
 				fprintf(stderr, "No touch devices found\n");
 			}
 		}
@@ -338,8 +323,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		set_window_always_on_top(true);
 	}
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(x11_window == 0, ERR_UNAVAILABLE);
 
@@ -418,7 +401,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		if (is_stdout_verbose()) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_line("XcursorGetTheme could not get cursor theme");
 		}
 		cursor_theme = "default";
@@ -461,7 +444,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
 				//print_line("found cursor: "+String(cursor_file[i])+" id "+itos(cursors[i]));
 			} else {
-				if (OS::is_stdout_verbose())
+				if (OS::get_singleton()->is_stdout_verbose())
 					print_line("failed cursor: " + String(cursor_file[i]));
 			}
 		}
@@ -517,7 +500,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(input));
 #endif
-	_ensure_user_data_dir();
 
 	power_manager = memnew(PowerX11);
 
@@ -532,16 +514,16 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	return OK;
 }
 
-void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
+void Display_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
 
 	WARN_PRINT("Input method stopped");
-	OS_X11 *os = reinterpret_cast<OS_X11 *>(client_data);
+	Display_X11 *os = reinterpret_cast<Display_X11 *>(client_data);
 	os->xim = NULL;
 	os->xic = NULL;
 }
 
-void OS_X11::set_ime_position(const Point2 &p_pos) {
+void Display_X11::set_ime_position(const Point2 &p_pos) {
 
 	if (!xic)
 		return;
@@ -554,22 +536,7 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 	XFree(preedit_attr);
 }
 
-String OS_X11::get_unique_id() const {
-
-	static String machine_id;
-	if (machine_id.empty()) {
-		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
-			while (machine_id.empty() && !f->eof_reached()) {
-				machine_id = f->get_line().strip_edges();
-			}
-			f->close();
-			memdelete(f);
-		}
-	}
-	return machine_id;
-}
-
-void OS_X11::finalize() {
+void Display_X11::finalize() {
 
 	if (main_loop)
 		memdelete(main_loop);
@@ -626,7 +593,7 @@ void OS_X11::finalize() {
 	args.clear();
 }
 
-void OS_X11::set_mouse_mode(MouseMode p_mode) {
+void Display_X11::set_mouse_mode(MouseMode p_mode) {
 
 	if (p_mode == mouse_mode)
 		return;
@@ -683,7 +650,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	XFlush(x11_display);
 }
 
-void OS_X11::warp_mouse_position(const Point2 &p_to) {
+void Display_X11::warp_mouse_position(const Point2 &p_to) {
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -699,19 +666,19 @@ void OS_X11::warp_mouse_position(const Point2 &p_to) {
 	}
 }
 
-OS::MouseMode OS_X11::get_mouse_mode() const {
+DisplayDriver::MouseMode Display_X11::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-int OS_X11::get_mouse_button_state() const {
+int Display_X11::get_mouse_button_state() const {
 	return last_button_state;
 }
 
-Point2 OS_X11::get_mouse_position() const {
+Point2 Display_X11::get_mouse_position() const {
 	return last_mouse_pos;
 }
 
-void OS_X11::set_window_title(const String &p_title) {
+void Display_X11::set_window_title(const String &p_title) {
 	XStoreName(x11_display, x11_window, p_title.utf8().get_data());
 
 	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
@@ -719,17 +686,17 @@ void OS_X11::set_window_title(const String &p_title) {
 	XChangeProperty(x11_display, x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
 }
 
-void OS_X11::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
+void Display_X11::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode Display_X11::get_video_mode(int p_screen) const {
 	return current_videomode;
 }
 
-void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
+void Display_X11::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-void OS_X11::set_wm_fullscreen(bool p_enabled) {
+void Display_X11::set_wm_fullscreen(bool p_enabled) {
 	if (p_enabled && !is_window_resizable()) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		XSizeHints *xsh;
@@ -790,7 +757,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	}
 }
 
-void OS_X11::set_wm_above(bool p_enabled) {
+void Display_X11::set_wm_above(bool p_enabled) {
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
 
@@ -806,7 +773,7 @@ void OS_X11::set_wm_above(bool p_enabled) {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 }
 
-int OS_X11::get_screen_count() const {
+int Display_X11::get_screen_count() const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -818,7 +785,7 @@ int OS_X11::get_screen_count() const {
 	return count;
 }
 
-int OS_X11::get_current_screen() const {
+int Display_X11::get_current_screen() const {
 	int x, y;
 	Window child;
 	XTranslateCoordinates(x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
@@ -833,7 +800,7 @@ int OS_X11::get_current_screen() const {
 	return 0;
 }
 
-void OS_X11::set_current_screen(int p_screen) {
+void Display_X11::set_current_screen(int p_screen) {
 	int count = get_screen_count();
 	if (p_screen >= count) return;
 
@@ -850,7 +817,7 @@ void OS_X11::set_current_screen(int p_screen) {
 	}
 }
 
-Point2 OS_X11::get_screen_position(int p_screen) const {
+Point2 Display_X11::get_screen_position(int p_screen) const {
 	if (p_screen == -1) {
 		p_screen = get_current_screen();
 	}
@@ -875,7 +842,7 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 	return position;
 }
 
-Size2 OS_X11::get_screen_size(int p_screen) const {
+Size2 Display_X11::get_screen_size(int p_screen) const {
 	if (p_screen == -1) {
 		p_screen = get_current_screen();
 	}
@@ -894,7 +861,7 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	return size;
 }
 
-int OS_X11::get_screen_dpi(int p_screen) const {
+int Display_X11::get_screen_dpi(int p_screen) const {
 	if (p_screen == -1) {
 		p_screen = get_current_screen();
 	}
@@ -936,7 +903,7 @@ int OS_X11::get_screen_dpi(int p_screen) const {
 	return 96;
 }
 
-Point2 OS_X11::get_window_position() const {
+Point2 Display_X11::get_window_position() const {
 	int x, y;
 	Window child;
 	XTranslateCoordinates(x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
@@ -947,17 +914,17 @@ Point2 OS_X11::get_window_position() const {
 	return Point2i(x - screen_position.x, y - screen_position.y);
 }
 
-void OS_X11::set_window_position(const Point2 &p_position) {
+void Display_X11::set_window_position(const Point2 &p_position) {
 	XMoveWindow(x11_display, x11_window, p_position.x, p_position.y);
 }
 
-Size2 OS_X11::get_window_size() const {
+Size2 Display_X11::get_window_size() const {
 	// Use current_videomode width and height instead of XGetWindowAttributes
 	// since right after a XResizeWindow the attributes may not be updated yet
 	return Size2i(current_videomode.width, current_videomode.height);
 }
 
-Size2 OS_X11::get_real_window_size() const {
+Size2 Display_X11::get_real_window_size() const {
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
 	XGetWindowAttributes(x11_display, x11_window, &xwa);
@@ -977,7 +944,7 @@ Size2 OS_X11::get_real_window_size() const {
 	return Size2(w, h);
 }
 
-void OS_X11::set_window_size(const Size2 p_size) {
+void Display_X11::set_window_size(const Size2 p_size) {
 	// If window resizable is disabled we need to update the attributes first
 	if (is_window_resizable() == false) {
 		XSizeHints *xsh;
@@ -999,7 +966,7 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	current_videomode.height = p_size.y;
 }
 
-void OS_X11::set_window_fullscreen(bool p_enabled) {
+void Display_X11::set_window_fullscreen(bool p_enabled) {
 	if (current_videomode.fullscreen == p_enabled)
 		return;
 
@@ -1016,11 +983,11 @@ void OS_X11::set_window_fullscreen(bool p_enabled) {
 	current_videomode.fullscreen = p_enabled;
 }
 
-bool OS_X11::is_window_fullscreen() const {
+bool Display_X11::is_window_fullscreen() const {
 	return current_videomode.fullscreen;
 }
 
-void OS_X11::set_window_resizable(bool p_enabled) {
+void Display_X11::set_window_resizable(bool p_enabled) {
 	XSizeHints *xsh;
 	Size2 size = get_window_size();
 
@@ -1037,11 +1004,11 @@ void OS_X11::set_window_resizable(bool p_enabled) {
 	current_videomode.resizable = p_enabled;
 }
 
-bool OS_X11::is_window_resizable() const {
+bool Display_X11::is_window_resizable() const {
 	return current_videomode.resizable;
 }
 
-void OS_X11::set_window_minimized(bool p_enabled) {
+void Display_X11::set_window_minimized(bool p_enabled) {
 	// Using ICCCM -- Inter-Client Communication Conventions Manual
 	XEvent xev;
 	Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
@@ -1069,7 +1036,7 @@ void OS_X11::set_window_minimized(bool p_enabled) {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 }
 
-bool OS_X11::is_window_minimized() const {
+bool Display_X11::is_window_minimized() const {
 	// Using ICCCM -- Inter-Client Communication Conventions Manual
 	Atom property = XInternAtom(x11_display, "WM_STATE", True);
 	Atom type;
@@ -1100,7 +1067,7 @@ bool OS_X11::is_window_minimized() const {
 	return false;
 }
 
-void OS_X11::set_window_maximized(bool p_enabled) {
+void Display_X11::set_window_maximized(bool p_enabled) {
 	if (is_window_maximized() == p_enabled)
 		return;
 
@@ -1130,7 +1097,7 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	maximized = p_enabled;
 }
 
-bool OS_X11::is_window_maximize_allowed() {
+bool Display_X11::is_window_maximize_allowed() {
 	Atom property = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
 	Atom type;
 	int format;
@@ -1174,7 +1141,7 @@ bool OS_X11::is_window_maximize_allowed() {
 	return false;
 }
 
-bool OS_X11::is_window_maximized() const {
+bool Display_X11::is_window_maximized() const {
 	// Using EWMH -- Extended Window Manager Hints
 	Atom property = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom type;
@@ -1219,7 +1186,7 @@ bool OS_X11::is_window_maximized() const {
 	return false;
 }
 
-void OS_X11::set_window_always_on_top(bool p_enabled) {
+void Display_X11::set_window_always_on_top(bool p_enabled) {
 	if (is_window_always_on_top() == p_enabled)
 		return;
 
@@ -1236,11 +1203,11 @@ void OS_X11::set_window_always_on_top(bool p_enabled) {
 	current_videomode.always_on_top = p_enabled;
 }
 
-bool OS_X11::is_window_always_on_top() const {
+bool Display_X11::is_window_always_on_top() const {
 	return current_videomode.always_on_top;
 }
 
-void OS_X11::set_borderless_window(bool p_borderless) {
+void Display_X11::set_borderless_window(bool p_borderless) {
 
 	if (current_videomode.borderless_window == p_borderless)
 		return;
@@ -1255,11 +1222,11 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 }
 
-bool OS_X11::get_borderless_window() {
+bool Display_X11::get_borderless_window() {
 	return current_videomode.borderless_window;
 }
 
-void OS_X11::request_attention() {
+void Display_X11::request_attention() {
 	// Using EWMH -- Extended Window Manager Hints
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
@@ -1280,7 +1247,7 @@ void OS_X11::request_attention() {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 }
 
-void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
+void Display_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
 
 	state->set_shift((p_x11_state & ShiftMask));
 	state->set_control((p_x11_state & ControlMask));
@@ -1288,7 +1255,7 @@ void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWith
 	state->set_metakey((p_x11_state & Mod4Mask));
 }
 
-unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
+unsigned int Display_X11::get_mouse_button_state(unsigned int p_x11_state) {
 
 	unsigned int state = 0;
 
@@ -1321,7 +1288,7 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
 	return state;
 }
 
-void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
+void Display_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -1621,7 +1588,7 @@ static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p
 	return None;
 }
 
-void OS_X11::_window_changed(XEvent *event) {
+void Display_X11::_window_changed(XEvent *event) {
 
 	if (xic) {
 		//  Not portable.
@@ -1635,7 +1602,7 @@ void OS_X11::_window_changed(XEvent *event) {
 	current_videomode.height = event->xconfigure.height;
 }
 
-void OS_X11::process_xevents() {
+void Display_X11::process_events() {
 
 	//printf("checking events %i\n", XPending(x11_display));
 
@@ -1831,7 +1798,7 @@ void OS_X11::process_xevents() {
 
 				if (event.type == ButtonPress && event.xbutton.button == 1) {
 
-					uint64_t diff = get_ticks_usec() / 1000 - last_click_ms;
+					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (diff < 400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x, event.xbutton.y)) < 5) {
 
@@ -1954,7 +1921,7 @@ void OS_X11::process_xevents() {
 						req->target == XA_STRING ||
 						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
 						req->target == XInternAtom(x11_display, "text/plain", 0)) {
-					CharString clip = OS::get_clipboard().utf8();
+					CharString clip = DisplayDriver::get_clipboard().utf8();
 					XChangeProperty(x11_display,
 							req->requestor,
 							req->property,
@@ -2115,32 +2082,19 @@ void OS_X11::process_xevents() {
 	}
 }
 
-MainLoop *OS_X11::get_main_loop() const {
+MainLoop *Display_X11::get_main_loop() const {
 
 	return main_loop;
 }
 
-void OS_X11::delete_main_loop() {
-
-	if (main_loop)
-		memdelete(main_loop);
-	main_loop = NULL;
-}
-
-void OS_X11::set_main_loop(MainLoop *p_main_loop) {
-
-	main_loop = p_main_loop;
-	input->set_main_loop(p_main_loop);
-}
-
-bool OS_X11::can_draw() const {
+bool Display_X11::can_draw() const {
 
 	return !minimized;
 };
 
-void OS_X11::set_clipboard(const String &p_text) {
+void Display_X11::set_clipboard(const String &p_text) {
 
-	OS::set_clipboard(p_text);
+	DisplayDriver::set_clipboard(p_text);
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, x11_window, CurrentTime);
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, CurrentTime);
@@ -2215,137 +2169,29 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display *x11_di
 	return ret;
 }
 
-String OS_X11::get_clipboard() const {
+String Display_X11::get_clipboard() const {
 
 	String ret;
-	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, OS::get_clipboard());
+	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, DisplayDriver::get_clipboard());
 
 	if (ret == "") {
-		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, OS::get_clipboard());
+		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, DisplayDriver::get_clipboard());
 	};
 
 	return ret;
 }
 
-String OS_X11::get_name() {
+String Display_X11::get_name() {
 
 	return "X11";
 }
 
-Error OS_X11::shell_open(String p_uri) {
-
-	Error ok;
-	List<String> args;
-	args.push_back(p_uri);
-	ok = execute("xdg-open", args, false);
-	if (ok == OK)
-		return OK;
-	ok = execute("gnome-open", args, false);
-	if (ok == OK)
-		return OK;
-	ok = execute("kde-open", args, false);
-	return ok;
-}
-
-bool OS_X11::_check_internal_feature_support(const String &p_feature) {
-
-	return p_feature == "pc" || p_feature == "s3tc";
-}
-
-String OS_X11::get_config_path() const {
-
-	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".config");
-	} else {
-		return ".";
-	}
-}
-
-String OS_X11::get_data_path() const {
-
-	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".local/share");
-	} else {
-		return get_config_path();
-	}
-}
-
-String OS_X11::get_cache_path() const {
-
-	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".cache");
-	} else {
-		return get_config_path();
-	}
-}
-
-String OS_X11::get_system_dir(SystemDir p_dir) const {
-
-	String xdgparam;
-
-	switch (p_dir) {
-		case SYSTEM_DIR_DESKTOP: {
-
-			xdgparam = "DESKTOP";
-		} break;
-		case SYSTEM_DIR_DCIM: {
-
-			xdgparam = "PICTURES";
-
-		} break;
-		case SYSTEM_DIR_DOCUMENTS: {
-
-			xdgparam = "DOCUMENTS";
-
-		} break;
-		case SYSTEM_DIR_DOWNLOADS: {
-
-			xdgparam = "DOWNLOAD";
-
-		} break;
-		case SYSTEM_DIR_MOVIES: {
-
-			xdgparam = "VIDEOS";
-
-		} break;
-		case SYSTEM_DIR_MUSIC: {
-
-			xdgparam = "MUSIC";
-
-		} break;
-		case SYSTEM_DIR_PICTURES: {
-
-			xdgparam = "PICTURES";
-
-		} break;
-		case SYSTEM_DIR_RINGTONES: {
-
-			xdgparam = "MUSIC";
-
-		} break;
-	}
-
-	String pipe;
-	List<String> arg;
-	arg.push_back(xdgparam);
-	Error err = const_cast<OS_X11 *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
-	if (err != OK)
-		return ".";
-	return pipe.strip_edges();
-}
-
-void OS_X11::move_window_to_foreground() {
+void Display_X11::move_window_to_foreground() {
 
 	XRaiseWindow(x11_display, x11_window);
 }
 
-void OS_X11::set_cursor_shape(CursorShape p_shape) {
+void Display_X11::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
@@ -2361,7 +2207,7 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 	current_cursor = p_shape;
 }
 
-void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void Display_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
 		Ref<Image> image = texture->get_data();
@@ -2403,22 +2249,22 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	}
 }
 
-void OS_X11::release_rendering_thread() {
+void Display_X11::release_rendering_thread() {
 
 	context_gl->release_current();
 }
 
-void OS_X11::make_rendering_thread() {
+void Display_X11::make_rendering_thread() {
 
 	context_gl->make_current();
 }
 
-void OS_X11::swap_buffers() {
+void Display_X11::swap_buffers() {
 
 	context_gl->swap_buffers();
 }
 
-void OS_X11::alert(const String &p_alert, const String &p_title) {
+void Display_X11::alert(const String &p_alert, const String &p_title) {
 
 	List<String> args;
 	args.push_back("-center");
@@ -2426,10 +2272,10 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	args.push_back(p_title);
 	args.push_back(p_alert);
 
-	execute("xmessage", args, true);
+	OS::get_singleton()->execute("xmessage", args, true);
 }
 
-void OS_X11::set_icon(const Ref<Image> &p_icon) {
+void Display_X11::set_icon(const Ref<Image> &p_icon) {
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (p_icon.is_valid()) {
@@ -2454,7 +2300,7 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
 		for (int i = 0; i < w * h; i++) {
 			long v = 0;
-			//    A             R             G            B
+			//    A	     R	     G	    B
 			v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
 			*wr++ = v;
 			pr += 4;
@@ -2466,49 +2312,22 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 	XFlush(x11_display);
 }
 
-void OS_X11::force_process_input() {
-	process_xevents(); // get rid of pending events
+void Display_X11::force_process_input() {
+	process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 	joypad->process_joypads();
 #endif
 }
 
-void OS_X11::run() {
-
-	force_quit = false;
-
-	if (!main_loop)
-		return;
-
-	main_loop->init();
-
-	//uint64_t last_ticks=get_ticks_usec();
-
-	//int frames=0;
-	//uint64_t frame=0;
-
-	while (!force_quit) {
-
-		process_xevents(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
-#endif
-		if (Main::iteration() == true)
-			break;
-	};
-
-	main_loop->finish();
-}
-
-bool OS_X11::is_joy_known(int p_device) {
+bool Display_X11::is_joy_known(int p_device) {
 	return input->is_joy_mapped(p_device);
 }
 
-String OS_X11::get_joy_guid(int p_device) const {
+String Display_X11::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-void OS_X11::_set_use_vsync(bool p_enable) {
+void Display_X11::_set_use_vsync(bool p_enable) {
 	if (context_gl)
 		return context_gl->set_use_vsync(p_enable);
 }
@@ -2521,115 +2340,8 @@ bool OS_X11::is_vsync_enabled() const {
 	return true;
 }
 */
-void OS_X11::set_context(int p_context) {
 
-	XClassHint *classHint = XAllocClassHint();
-	if (classHint) {
-
-		if (p_context == CONTEXT_EDITOR)
-			classHint->res_name = (char *)"Godot_Editor";
-		if (p_context == CONTEXT_PROJECTMAN)
-			classHint->res_name = (char *)"Godot_ProjectList";
-		classHint->res_class = (char *)"Godot";
-		XSetClassHint(x11_display, x11_window, classHint);
-		XFree(classHint);
-	}
-}
-
-OS::PowerState OS_X11::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_X11::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_X11::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
-}
-
-void OS_X11::disable_crash_handler() {
-	crash_handler.disable();
-}
-
-bool OS_X11::is_disable_crash_handler() const {
-	return crash_handler.is_disabled();
-}
-
-static String get_mountpoint(const String &p_path) {
-	struct stat s;
-	if (stat(p_path.utf8().get_data(), &s)) {
-		return "";
-	}
-
-#ifdef HAVE_MNTENT
-	dev_t dev = s.st_dev;
-	FILE *fd = setmntent("/proc/mounts", "r");
-	if (!fd) {
-		return "";
-	}
-
-	struct mntent mnt;
-	char buf[1024];
-	size_t buflen = 1024;
-	while (getmntent_r(fd, &mnt, buf, buflen)) {
-		if (!stat(mnt.mnt_dir, &s) && s.st_dev == dev) {
-			endmntent(fd);
-			return String(mnt.mnt_dir);
-		}
-	}
-
-	endmntent(fd);
-#endif
-	return "";
-}
-
-Error OS_X11::move_to_trash(const String &p_path) {
-	String trashcan = "";
-	String mnt = get_mountpoint(p_path);
-
-	if (mnt != "") {
-		String path(mnt + "/.Trash-" + itos(getuid()) + "/files");
-		struct stat s;
-		if (!stat(path.utf8().get_data(), &s)) {
-			trashcan = path;
-		}
-	}
-
-	if (trashcan == "") {
-		char *dhome = getenv("XDG_DATA_HOME");
-		if (dhome) {
-			trashcan = String(dhome) + "/Trash/files";
-		}
-	}
-
-	if (trashcan == "") {
-		char *home = getenv("HOME");
-		if (home) {
-			trashcan = String(home) + "/.local/share/Trash/files";
-		}
-	}
-
-	if (trashcan == "") {
-		ERR_PRINTS("move_to_trash: Could not determine trashcan location");
-		return FAILED;
-	}
-
-	List<String> args;
-	args.push_back("-p");
-	args.push_back(trashcan);
-	Error err = execute("mkdir", args, true);
-	if (err == OK) {
-		List<String> args2;
-		args2.push_back(p_path);
-		args2.push_back(trashcan);
-		err = execute("mv", args2, true);
-	}
-
-	return err;
-}
-
-OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
+DisplayDriver::LatinKeyboardVariant Display_X11::get_latin_keyboard_variant() const {
 
 	XkbDescRec *xkbdesc = XkbAllocKeyboard();
 	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
@@ -2661,15 +2373,22 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
-OS_X11::OS_X11() {
+void Display_X11::set_context(int p_context) {
 
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverManager::add_driver(&driver_pulseaudio);
-#endif
+	XClassHint *classHint = XAllocClassHint();
+	if (classHint) {
 
-#ifdef ALSA_ENABLED
-	AudioDriverManager::add_driver(&driver_alsa);
-#endif
+		if (p_context == CONTEXT_EDITOR)
+			classHint->res_name = (char *)"Godot_Editor";
+		if (p_context == CONTEXT_PROJECTMAN)
+			classHint->res_name = (char *)"Godot_ProjectList";
+		classHint->res_class = (char *)"Godot";
+		XSetClassHint(x11_display, x11_window, classHint);
+		XFree(classHint);
+	}
+}
+
+Display_X11::Display_X11() {
 
 	minimized = false;
 	xim_style = 0L;
