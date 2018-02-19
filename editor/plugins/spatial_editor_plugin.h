@@ -531,7 +531,9 @@ private:
 
 	void _instance_scene();
 	void _init_indicators();
+	void _init_grid();
 	void _finish_indicators();
+	void _finish_grid();
 
 	void _toggle_maximize_view(Object *p_viewport);
 
