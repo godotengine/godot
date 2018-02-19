@@ -55,13 +55,10 @@ def configure(env):
     elif (env["target"] == "debug"):
         env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
-    ## Architecture
+    ## Compiler configuration
 
     # Mac OS X no longer runs on 32-bit since 10.7 which is unsupported since 2014
     # As such, we only support 64-bit
-    env["bits"] == "64"
-
-    ## Compiler configuration
 
     if "OSXCROSS_ROOT" not in os.environ: # regular native build
         env.Append(CCFLAGS=['-arch', 'x86_64'])
