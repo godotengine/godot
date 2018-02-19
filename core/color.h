@@ -190,6 +190,7 @@ struct Color {
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
 	String to_html(bool p_alpha = true) const;
+	Color from_hsv(float p_h, float p_s, float p_v, float p_a);
 
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
 	operator String() const;
