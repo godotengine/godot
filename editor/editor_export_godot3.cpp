@@ -237,7 +237,7 @@ static const char *prop_renames[][2] = {
 	{ "shadow/filter", "shadow_filter" },
 	{ "shadow/item_cull_mask", "shadow_item_cull_mask" },
 	{ "transform/pos", "position" },
-	{ "transform/rot", "rotation_deg" },
+	{ "transform/rot", "rotation_degrees" },
 	{ "transform/scale", "scale" },
 	{ "z/z", "z" },
 	{ "z/relative", "z_as_relative" },
@@ -323,7 +323,7 @@ static const char *prop_renames[][2] = {
 	{ "quad/centered", "centered" },
 	{ "transform/local", "transform" },
 	{ "transform/translation", "translation" },
-	{ "transform/rotation", "rotation_deg" },
+	{ "transform/rotation", "rotation_degrees" },
 	{ "transform/scale", "scale" },
 	{ "visibility/visible", "visible" },
 	{ "params/volume_db", "volume_db" },
@@ -522,17 +522,20 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 	for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
 
+		// 2D rotations are now clockwise to match the downward Y base
+		// Do this before the renaming, as afterwards we can't distinguish
+		// between 2D and 3D rotations_degrees
+		if (E->get().name == "transform/rot") {
+			E->get().value = E->get().value.operator real_t() * -1.0;
+		}
+
+		/* Do the actual renaming */
+
 		if (prop_rename_map.has(E->get().name)) {
 			E->get().name = prop_rename_map[E->get().name];
 		}
 
 		/* Hardcoded fixups for properties that changed definition in 3.0 */
-
-		// 2D rotations are now clockwise to match the downward Y base
-		// TODO: Make sure this doesn't break 3D rotations
-		if (E->get().name == "rotation_deg") {
-			E->get().value = E->get().value.operator real_t() * -1.0;
-		}
 
 		// Anchors changed from Begin,End,Ratio,Center to Begin,End,Center
 		if (E->get().name.begins_with("anchor_")) {
