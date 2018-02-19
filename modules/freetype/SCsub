@@ -87,6 +87,6 @@ if env['builtin_freetype']:
 
 # Godot source files
 env.add_source_files(env.modules_sources, "*.cpp")
-env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+env.Append(CCFLAGS=['-DFREETYPE_ENABLED', '-DFT_CONFIG_OPTION_USE_PNG'])
 
 Export('env')
