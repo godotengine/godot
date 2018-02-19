@@ -181,6 +181,12 @@ Comment: OggVorbis
 Copyright: 2002, Xiph.org Foundation
 License: BSD-3-clause
 
+Files: ./thirdparty/libopenmpt
+Comment: libopenmpt
+Copyright: 1997-2003, Olivier Lapicque
+ 2004-2018, OpenMPT contributors
+License: BSD
+
 Files: ./thirdparty/libpng/
 Comment: libpng
 Copyright: 1995-1996, Guy Eric Schalnat, Group 42, Inc.
