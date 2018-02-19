@@ -254,7 +254,6 @@ env_libvpx = env.Clone()
 env_libvpx.Append(CPPPATH=[libvpx_dir])
 
 cpu_bits = env["bits"]
-osx_fat = (env["platform"] == 'osx' and cpu_bits == 'fat')
 webm_cpu_x86 = False
 webm_cpu_arm = False
 if env["platform"] == 'uwp':
@@ -269,11 +268,8 @@ else:
     is_android_x86 = (env["platform"] == 'android' and env["android_arch"] == 'x86')
     if is_android_x86:
         cpu_bits = '32'
-    if osx_fat:
-        webm_cpu_x86 = True
-    else:
-        webm_cpu_x86 = not is_x11_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'x11' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
-        webm_cpu_arm = is_x11_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
+    webm_cpu_x86 = not is_x11_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'x11' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
+    webm_cpu_arm = is_x11_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
 
 if webm_cpu_x86:
     import subprocess
@@ -303,28 +299,22 @@ if webm_cpu_x86:
 webm_simd_optimizations = False
 
 if webm_cpu_x86:
-    if osx_fat:
-        #'osx' platform only: run python script which will compile using 'yasm' command and then merge 32-bit and 64-bit using 'lipo' command
-        env_libvpx["AS"] = 'python modules/webm/libvpx/yasm_osx_fat.py'
-        env_libvpx["ASFLAGS"] = '-I' + libvpx_dir[1:]
-        env_libvpx["ASCOM"] = '$AS $ASFLAGS $TARGET $SOURCES'
+    if env["platform"] == 'windows' or env["platform"] == 'uwp':
+        env_libvpx["ASFORMAT"] = 'win'
+    elif env["platform"] == 'osx' or env["platform"] == "iphone":
+        env_libvpx["ASFORMAT"] = 'macho'
     else:
-        if env["platform"] == 'windows' or env["platform"] == 'uwp':
-            env_libvpx["ASFORMAT"] = 'win'
-        elif env["platform"] == 'osx' or env["platform"] == "iphone":
-            env_libvpx["ASFORMAT"] = 'macho'
-        else:
-            env_libvpx["ASFORMAT"] = 'elf'
-        env_libvpx["ASFORMAT"] += cpu_bits
+        env_libvpx["ASFORMAT"] = 'elf'
+    env_libvpx["ASFORMAT"] += cpu_bits
 
-        env_libvpx["AS"] = 'yasm'
-        env_libvpx["ASFLAGS"] = '-I' + libvpx_dir[1:] + ' -f $ASFORMAT -D $ASCPU'
-        env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
+    env_libvpx["AS"] = 'yasm'
+    env_libvpx["ASFLAGS"] = '-I' + libvpx_dir[1:] + ' -f $ASFORMAT -D $ASCPU'
+    env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
 
-        if cpu_bits == '32':
-            env_libvpx["ASCPU"] = 'X86_32'
-        elif cpu_bits == '64':
-            env_libvpx["ASCPU"] = 'X86_64'
+    if cpu_bits == '32':
+        env_libvpx["ASCPU"] = 'X86_32'
+    elif cpu_bits == '64':
+        env_libvpx["ASCPU"] = 'X86_64'
 
     env_libvpx.Append(CCFLAGS=['-DWEBM_X86ASM'])
 
@@ -375,7 +365,7 @@ if webm_cpu_x86:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_intrin_x86)
 
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86asm)
-    if cpu_bits == '64' or osx_fat:
+    if cpu_bits == '64':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86_64asm)
 elif webm_cpu_arm:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm)
