@@ -87,6 +87,8 @@ protected:
 
 public:
 	void update_autoload();
+	void autoload_add(const String &p_name, const String &p_path);
+	void autoload_remove(const String &p_name);
 
 	EditorAutoloadSettings();
 };
