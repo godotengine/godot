@@ -165,6 +165,10 @@ real_t RayShapeSW::get_length() const {
 	return length;
 }
 
+bool RayShapeSW::get_slips_on_slope() const {
+	return slips_on_slope;
+}
+
 void RayShapeSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
 
 	// don't think this will be even used
@@ -221,25 +225,31 @@ Vector3 RayShapeSW::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3();
 }
 
-void RayShapeSW::_setup(real_t p_length) {
+void RayShapeSW::_setup(real_t p_length, bool p_slips_on_slope) {
 
 	length = p_length;
+	slips_on_slope = p_slips_on_slope;
 	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
 }
 
 void RayShapeSW::set_data(const Variant &p_data) {
 
-	_setup(p_data);
+	Dictionary d = p_data;
+	_setup(d["length"], d["slips_on_slope"]);
 }
 
 Variant RayShapeSW::get_data() const {
 
-	return length;
+	Dictionary d;
+	d["length"] = length;
+	d["slips_on_slope"] = slips_on_slope;
+	return d;
 }
 
 RayShapeSW::RayShapeSW() {
 
 	length = 1;
+	slips_on_slope = false;
 }
 
 /********** SPHERE *************/

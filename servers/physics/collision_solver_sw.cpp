@@ -90,6 +90,10 @@ bool CollisionSolverSW::solve_ray(const ShapeSW *p_shape_A, const Transform &p_t
 		return false;
 
 	Vector3 support_B = p_transform_B.xform(p);
+	if (ray->get_slips_on_slope()) {
+		Vector3 global_n = ai.basis.xform_inv(n).normalized();
+		support_B = support_A + (support_B - support_A).length() * global_n;
+	}
 
 	if (p_result_callback) {
 		if (p_swap_result)
