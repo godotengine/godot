@@ -316,7 +316,7 @@ bool BakedLightmap::_bake_time(void *ud, float p_secs, float p_progress) {
 		int mins_left = p_secs / 60;
 		int secs_left = Math::fmod(p_secs, 60.0f);
 		int percent = p_progress * 100;
-		bool abort = bake_step_function(btd->pass + percent, btd->text + " " + itos(percent) + "% (Time Left: " + itos(mins_left) + ":" + itos(secs_left) + "s)");
+		bool abort = bake_step_function(btd->pass + percent, btd->text + " " + vformat(RTR("%d%%"), percent) + " " + vformat(RTR("(Time Left: %d:%02d s)"), mins_left, secs_left));
 		btd->last_step = time;
 		if (abort)
 			return true;
