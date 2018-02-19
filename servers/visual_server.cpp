@@ -1656,6 +1656,12 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("draw", "swap_buffers", "frame_step"), &VisualServer::draw, DEFVAL(true), DEFVAL(0.0));
 
+	// "draw" and "sync" are deprecated duplicates of "force_draw" and "force_sync"
+	// FIXME: Add deprecation messages using GH-4397 once available, and retire
+	// once the warnings have been enabled for a full release cycle
+	ClassDB::bind_method(D_METHOD("sync"), &VisualServer::sync);
+	ClassDB::bind_method(D_METHOD("draw", "swap_buffers"), &VisualServer::draw, DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "format", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
