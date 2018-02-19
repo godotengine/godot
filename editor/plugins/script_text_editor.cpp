@@ -1540,6 +1540,8 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
+	code_editor->set_font_name("source");
+	code_editor->set_font_size_name("interface/editor/code_font_size");
 	code_editor->add_constant_override("separation", 0);
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->connect("validate_script", this, "_validate_script");
