@@ -95,6 +95,10 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Transf
 	}
 
 	Vector2 support_B = p_transform_B.xform(p);
+	if (ray->get_slips_on_slope()) {
+		Vector2 global_n = invb.basis_xform_inv(n).normalized();
+		support_B = support_A + (support_B - support_A).length() * global_n;
+	}
 
 	if (p_result_callback) {
 		if (p_swap_result)
