@@ -165,6 +165,7 @@ class ScriptEditor : public PanelContainer {
 	enum ScriptSortBy {
 		SORT_BY_NAME,
 		SORT_BY_PATH,
+		SORT_BY_NONE
 	};
 
 	enum ScriptListName {
