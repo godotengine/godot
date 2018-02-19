@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" category="Core" version="3.0-stable">
+<class name="Control" inherits="CanvasItem" category="Core" version="3.1-dev">
 	<brief_description>
 		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
 	</brief_description>
