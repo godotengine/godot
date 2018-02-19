@@ -776,7 +776,6 @@ void TextEdit::_notification(int p_what) {
 												j--;
 											}
 											if (escaped) {
-												j--;
 												cc = '\\';
 												continue;
 											}
