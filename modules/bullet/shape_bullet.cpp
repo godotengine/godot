@@ -135,8 +135,10 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<rea
 	return bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, -fieldHeight, fieldHeight, YAxis, PHY_FLOAT, flipQuadEdges));
 }
 
-btRayShape *ShapeBullet::create_shape_ray(real_t p_length) {
-	return bulletnew(btRayShape(p_length));
+btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope) {
+	btRayShape *r(bulletnew(btRayShape(p_length)));
+	r->setSlipsOnSlope(p_slips_on_slope);
+	return r;
 }
 
 /* PLANE */
@@ -435,25 +437,33 @@ btCollisionShape *HeightMapShapeBullet::create_bt_shape(const btVector3 &p_impli
 /* Ray shape */
 RayShapeBullet::RayShapeBullet() :
 		ShapeBullet(),
-		length(1) {}
+		length(1),
+		slips_on_slope(false) {}
 
 void RayShapeBullet::set_data(const Variant &p_data) {
-	setup(p_data);
+
+	Dictionary d = p_data;
+	setup(d["length"], d["slips_on_slope"]);
 }
 
 Variant RayShapeBullet::get_data() const {
-	return length;
+
+	Dictionary d;
+	d["length"] = length;
+	d["slips_on_slope"] = slips_on_slope;
+	return d;
 }
 
 PhysicsServer::ShapeType RayShapeBullet::get_type() const {
 	return PhysicsServer::SHAPE_RAY;
 }
 
-void RayShapeBullet::setup(real_t p_length) {
+void RayShapeBullet::setup(real_t p_length, bool p_slips_on_slope) {
 	length = p_length;
+	slips_on_slope = p_slips_on_slope;
 	notifyShapeChanged();
 }
 
 btCollisionShape *RayShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin) {
-	return prepare(ShapeBullet::create_shape_ray(length * p_implicit_scale[1] + p_margin));
+	return prepare(ShapeBullet::create_shape_ray(length * p_implicit_scale[1] + p_margin, slips_on_slope));
 }

@@ -36,6 +36,7 @@ class RayShape : public Shape {
 
 	GDCLASS(RayShape, Shape);
 	float length;
+	bool slips_on_slope;
 
 protected:
 	static void _bind_methods();
@@ -45,6 +46,9 @@ protected:
 public:
 	void set_length(float p_length);
 	float get_length() const;
+
+	void set_slips_on_slope(bool p_active);
+	bool get_slips_on_slope() const;
 
 	RayShape();
 };

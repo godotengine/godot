@@ -197,9 +197,11 @@ public:
 class RayShape2DSW : public Shape2DSW {
 
 	real_t length;
+	bool slips_on_slope;
 
 public:
 	_FORCE_INLINE_ real_t get_length() const { return length; }
+	_FORCE_INLINE_ bool get_slips_on_slope() const { return slips_on_slope; }
 
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_RAY; }
 
