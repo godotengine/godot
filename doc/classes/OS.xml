@@ -40,7 +40,6 @@
 			<return type="void">
 			</return>
 			<description>
-				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -243,7 +242,6 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the window size including decorations like window borders.
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
@@ -487,7 +485,6 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the window should always be on top of other windows.
 			</description>
 		</method>
 		<method name="kill">
@@ -624,7 +621,6 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Sets whether the window should always be on top.
 			</description>
 		</method>
 		<method name="set_window_title">
