@@ -780,6 +780,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
+#ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
@@ -787,7 +788,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			init_maximized = true;
 			video_mode.maximized = true;
 		}
+	}
+
+	if (!project_manager) {
+		// Determine if the project manager should be requested
+		project_manager =
+				main_args.size() == 0 &&
+				!ProjectSettings::get_singleton()->has_setting("application/run/main_loop_type") &&
+				(!ProjectSettings::get_singleton()->has_setting("application/run/main_scene") ||
+						String(ProjectSettings::get_singleton()->get("application/run/main_scene")) == "");
+	}
+#endif
+
+	if (editor || project_manager) {
 		use_custom_res = false;
+		input_map->load_default(); //keys for editor
+	} else {
+		input_map->load_from_globals(); //keys for game
 	}
 
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stdout"))) {
@@ -801,28 +818,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		_print_line_enabled = false;
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
-
-#ifdef TOOLS_ENABLED
-
-	if (!project_manager) {
-		// Determine if the project manager should be requested
-		project_manager =
-				main_args.size() == 0 &&
-				!ProjectSettings::get_singleton()->has_setting("application/run/main_loop_type") &&
-				(!ProjectSettings::get_singleton()->has_setting("application/run/main_scene") ||
-						String(ProjectSettings::get_singleton()->get("application/run/main_scene")) == "");
-	}
-
-	if (project_manager) {
-		use_custom_res = false; //project manager (run without arguments)
-	}
-
-#endif
-
-	if (editor)
-		input_map->load_default(); //keys for editor
-	else
-		input_map->load_from_globals(); //keys for game
 
 	//if (video_driver == "") // useless for now, so removing
 	//	video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
@@ -1104,7 +1099,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			MAIN_PRINT("Main: Create bootsplash");
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 
-			Ref<Image> splash = editor ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
+			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
 #else
 			Ref<Image> splash = memnew(Image(boot_splash_png));
 #endif
@@ -1130,7 +1125,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
 	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
+		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !(editor || project_manager)) {
 			//only if no touchscreen ui hint, set emulation
 			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 			if (id)
@@ -1218,7 +1213,6 @@ bool Main::start() {
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool hasicon = false;
-	bool editor = false;
 	String doc_tool;
 	List<String> removal_docs;
 	bool doc_base = true;
@@ -1452,7 +1446,7 @@ bool Main::start() {
 		{
 		}
 
-		if (!editor) {
+		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
 
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
@@ -1563,7 +1557,7 @@ bool Main::start() {
 #endif
 		}
 
-		if (!project_manager && !editor) {
+		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
 				//autoload
 				List<PropertyInfo> props;
@@ -1645,7 +1639,6 @@ bool Main::start() {
 
 					sml->get_root()->add_child(E->get());
 				}
-				//singletons
 			}
 
 			if (game_path != "") {
