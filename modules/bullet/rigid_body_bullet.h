@@ -110,7 +110,9 @@ public:
 	virtual void set_transform(const Transform &p_transform);
 	virtual Transform get_transform() const;
 
+	virtual void add_central_force(const Vector3 &p_force);
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	virtual void add_torque(const Vector3 &p_torque);
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j);
 	virtual void apply_torque_impulse(const Vector3 &p_j);
 
