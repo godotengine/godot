@@ -965,6 +965,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
+			bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+			Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+
+			if (enable_rl) {
+				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
+				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
+			} else
+				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
 		} break;
 		case NOTIFICATION_PROCESS: {
 
