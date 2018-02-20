@@ -54,7 +54,7 @@ thirdparty_sources = [
 if env_lws["platform"] == "android": # Builtin getifaddrs
     thirdparty_sources += ["misc/getifaddrs.c"]
 
-if env_lws["platform"] == "windows": # Winsock
+if env_lws["platform"] == "windows" or env_lws["platform"] == "uwp": # Winsock
     thirdparty_sources += ["plat/lws-plat-win.c", helper_dir + "getopt.c", helper_dir + "getopt_long.c", helper_dir + "gettimeofday.c"]
 else: # Unix socket
     thirdparty_sources += ["plat/lws-plat-unix.c"]
@@ -75,7 +75,10 @@ else:
         mbedtls_includes = "#thirdparty/mbedtls/include"
         env_lws.Append(CPPPATH=[mbedtls_includes])
 
-    if env_lws["platform"] == "windows":
+    if env_lws["platform"] == "windows" or env_lws["platform"] == "uwp":
         env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])
+
+    if env_lws["platform"] == "uwp":
+        env_lws.Append(CCFLAGS=["/DLWS_MINGW_SUPPORT"])
 
 env_lws.add_source_files(env.modules_sources, "*.cpp")
