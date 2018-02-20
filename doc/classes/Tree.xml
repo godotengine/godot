@@ -280,7 +280,7 @@
 		</signal>
 		<signal name="item_activated">
 			<description>
-				Emitted when an item is activated (double-clicked).
+				Emitted when an item's label is double-clicked.
 			</description>
 		</signal>
 		<signal name="item_collapsed">
@@ -296,7 +296,7 @@
 		</signal>
 		<signal name="item_double_clicked">
 			<description>
-				Emitted when an item is double clicked.
+				Emitted when an item's icon is double-clicked.
 			</description>
 		</signal>
 		<signal name="item_edited">
