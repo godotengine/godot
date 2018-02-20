@@ -83,6 +83,7 @@ private:
 	StringName current_func_name;
 	StringName vertex_name;
 	StringName fragment_name;
+	StringName light_name;
 	StringName time_name;
 
 	Set<StringName> used_name_defines;
