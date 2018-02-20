@@ -1734,7 +1734,7 @@ void ScriptEditorDebugger::_error_list_item_rmb_selected(int p_item, const Vecto
 	bool single_item_selected = error_list->get_selected_items().size() == 1;
 
 	if (single_item_selected) {
-		item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
+		item_menu->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
 	}
 
 	if (item_menu->get_item_count() > 0) {
