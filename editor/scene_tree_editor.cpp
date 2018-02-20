@@ -536,6 +536,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		tree->connect("item_collapsed", this, "_cell_collapsed");
 
 		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+		_editor_settings_changed();
 
 		//get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
 		//get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
