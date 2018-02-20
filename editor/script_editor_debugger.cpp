@@ -1873,6 +1873,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		stack_dump = memnew(Tree);
+		stack_dump->set_allow_reselect(true);
 		stack_dump->set_columns(1);
 		stack_dump->set_column_titles_visible(true);
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
