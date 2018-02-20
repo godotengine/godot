@@ -3138,60 +3138,6 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 			}
 		}
 
-		// Passed a single argument
-		if (op->arguments.size() <= 2) {
-			if (op->get_datatype() < TYPE_MAT2) {
-				// Scalar or vector
-				int dimensions = 0;
-				switch (op->get_datatype()) {
-					case TYPE_VEC2:
-					case TYPE_BVEC2:
-					case TYPE_UVEC2:
-					case TYPE_IVEC2: {
-						dimensions = 2;
-					} break;
-					case TYPE_VEC3:
-					case TYPE_BVEC3:
-					case TYPE_UVEC3:
-					case TYPE_IVEC3: {
-						dimensions = 3;
-					} break;
-					case TYPE_VEC4:
-					case TYPE_BVEC4:
-					case TYPE_UVEC4:
-					case TYPE_IVEC4: {
-						dimensions = 4;
-					} break;
-				}
-
-				if (dimensions) {
-					ConstantNode::Value val = values[0];
-					for (int i = 1; i < dimensions; i++) {
-
-						values.push_back(val);
-					}
-				}
-			} else if (op->get_datatype() <= TYPE_MAT4) {
-				// Matrix
-				int dimensions = 0;
-				switch (op->get_datatype()) {
-					case TYPE_MAT2: dimensions = 2; break;
-					case TYPE_MAT3: dimensions = 3; break;
-					case TYPE_MAT4: dimensions = 4; break;
-				}
-
-				// Fill the diagonal with the value, the rest with zeroes
-				ConstantNode::Value val = values[0];
-				for (int i = 1; i < dimensions * dimensions; i++) {
-					if (i % (dimensions + 1) == 0) {
-						values.push_back(val);
-					} else {
-						values.push_back(ConstantNode::Value());
-					}
-				}
-			}
-		}
-
 		ConstantNode *cn = alloc_node<ConstantNode>();
 		cn->datatype = op->get_datatype();
 		cn->values = values;
