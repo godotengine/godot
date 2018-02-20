@@ -2419,8 +2419,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
-	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
-	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap","bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
@@ -2533,76 +2532,45 @@ void Image::normalmap_to_xy() {
 	convert(Image::FORMAT_LA8);
 }
 
-Ref<Image> Image::rgbe_to_srgb() {
-
-	if (data.size() == 0)
-		return Ref<Image>();
-
-	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
-
-	Ref<Image> new_image;
-	new_image.instance();
-	new_image->create(width, height, 0, Image::FORMAT_RGB8);
-
-	lock();
-
-	new_image->lock();
-
-	for (int row = 0; row < height; row++) {
-		for (int col = 0; col < width; col++) {
-			new_image->set_pixel(col, row, get_pixel(col, row).to_srgb());
-		}
-	}
-
-	unlock();
-	new_image->unlock();
-
-	if (has_mipmaps()) {
-		new_image->generate_mipmaps();
-	}
-
-	return new_image;
-}
-
 void Image::bumpmap_to_normalmap(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
 	convert(Image::FORMAT_RF);
 
-	PoolVector<uint8_t> result_image; //rgba output
-	result_image.resize(width * height * 4);
+	PoolVector<uint8_t> result_image;  //rgba output
+	result_image.resize(width * height* 4);
 
 	{
 		PoolVector<uint8_t>::Read rp = data.read();
 		PoolVector<uint8_t>::Write wp = result_image.write();
 
 		unsigned char *write_ptr = wp.ptr();
-		float *read_ptr = (float *)rp.ptr();
+		float *read_ptr = (float*) rp.ptr();
 
 		for (int ty = 0; ty < height; ty++) {
-			int py = ty + 1;
-			if (py >= height) py -= height;
+			int py = ty+1;
+			if (py >= height) py-=height;
 
 			for (int tx = 0; tx < width; tx++) {
-				int px = tx + 1;
-				if (px >= width) px -= width;
-				float here = read_ptr[ty * width + tx];
-				float to_right = read_ptr[ty * width + px];
-				float above = read_ptr[py * width + tx];
-				Vector3 up = Vector3(0, 1, (here - above) * bump_scale);
-				Vector3 across = Vector3(1, 0, (to_right - here) * bump_scale);
+				int px=tx+1;
+				if (px >= width) px-=width;
+				float here = read_ptr[ty*width + tx];
+				float to_right= read_ptr[ty*width + px];
+				float above= read_ptr[py*width + tx];
+				Vector3 up = Vector3(0,1,(here-above)*bump_scale);
+				Vector3 across = Vector3(1,0,(to_right-here)*bump_scale);
 
 				Vector3 normal = across.cross(up);
 				normal.normalize();
 
-				write_ptr[((ty * width + tx) << 2) + 0] = (127.5 + normal.x * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 1] = (127.5 + normal.y * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 2] = (127.5 + normal.z * 127.5);
-				write_ptr[((ty * width + tx) << 2) + 3] = 255;
+				write_ptr[ ((ty*width + tx) <<2) +0 ]= (128.0 + normal.x * 127.0);
+				write_ptr[ ((ty*width + tx) <<2) +1 ]= (128.0 + normal.y * 127.0);
+				write_ptr[ ((ty*width + tx) <<2) +2 ]= (128.0 + normal.z * 127.0);
+				write_ptr[ ((ty*width + tx) <<2) +3 ]= 255;
 			}
 		}
 	}
-	format = FORMAT_RGBA8;
-	data = result_image;
+	format=FORMAT_RGBA8;
+	data=result_image;
 }
 
 void Image::srgb_to_linear() {
