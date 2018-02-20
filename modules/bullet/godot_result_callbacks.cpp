@@ -98,11 +98,16 @@ bool GodotKinClosestConvexResultCallback::needsCollision(btBroadphaseProxy *prox
 		if (gObj == m_self_object) {
 			return false;
 		} else {
-			if (m_ignore_areas && gObj->getType() == CollisionObjectBullet::TYPE_AREA) {
+
+			// A kinematic body can't be stopped by a rigid body since the mass of kinematic body is infinite
+			if (m_infinite_inertia && !btObj->isStaticOrKinematicObject())
 				return false;
-			} else if (m_self_object->has_collision_exception(gObj)) {
+
+			if (gObj->getType() == CollisionObjectBullet::TYPE_AREA)
 				return false;
-			}
+
+			if (m_self_object->has_collision_exception(gObj))
+				return false;
 		}
 		return true;
 	} else {

@@ -182,7 +182,7 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, Physics2DServer::MotionResult *r_result);
+	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
