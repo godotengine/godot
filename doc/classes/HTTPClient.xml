@@ -384,7 +384,7 @@
 			HTTP status code [code]429 Too Many Requests[/code]. The user has sent too many requests in a given amount of time (see "rate limiting"). Back off and increase time between requests or try again later.
 		</constant>
 		<constant name="RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE" value="431" enum="ResponseCode">
-			HTTP status code [code]431 Rquest Header Fields Too Large[/code]. The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
+			HTTP status code [code]431 Request Header Fields Too Large[/code]. The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
 		</constant>
 		<constant name="RESPONSE_UNAVAILABLE_FOR_LEGAL_REASONS" value="451" enum="ResponseCode">
 			HTTP status code [code]451 Response Unavailable For Legal Reasons[/code]. The server is denying access to the resource as a consequence of a legal demand.

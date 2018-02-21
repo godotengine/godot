@@ -187,7 +187,7 @@ read_file(const char*  pathname, char*  buffer, size_t  buffsize)
     return count;
 }
 
-/* Extract the content of a the first occurence of a given field in
+/* Extract the content of a the first occurrence of a given field in
  * the content of /proc/cpuinfo and return it as a heap-allocated
  * string that must be freed by the caller.
  *
@@ -202,7 +202,7 @@ extract_cpuinfo_field(const char* buffer, int buflen, const char* field)
     int len, ignore;
     const char *p, *q;
 
-    /* Look for first field occurence, and ensures it starts the line. */
+    /* Look for first field occurrence, and ensures it starts the line. */
     p = buffer;
     for (;;) {
         p = memmem(p, bufend-p, field, fieldlen);
@@ -1033,11 +1033,11 @@ android_setCpuArm(int cpu_count, uint64_t cpu_features, uint32_t cpu_id)
  *   |
  * ARCH_NEON_FP16 (+EXT_FP16)
  *
- * -fpu=<name> values and their correspondance with FPU architectures above:
+ * -fpu=<name> values and their correspondence with FPU architectures above:
  *
  *   {"vfp",               FPU_ARCH_VFP_V2},
  *   {"vfp9",              FPU_ARCH_VFP_V2},
- *   {"vfp3",              FPU_ARCH_VFP_V3}, // For backwards compatbility.
+ *   {"vfp3",              FPU_ARCH_VFP_V3}, // For backwards compatibility.
  *   {"vfp10",             FPU_ARCH_VFP_V2},
  *   {"vfp10-r0",          FPU_ARCH_VFP_V1},
  *   {"vfpxd",             FPU_ARCH_VFP_V1xD},
