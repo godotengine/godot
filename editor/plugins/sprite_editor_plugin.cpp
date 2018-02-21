@@ -130,6 +130,7 @@ void SpriteEditor::_update_mesh_data() {
 	uv_lines.clear();
 
 	computed_vertices.clear();
+	computed_uv.clear();
 	computed_indices.clear();
 
 	Size2 img_size = Vector2(image->get_width(), image->get_height());
