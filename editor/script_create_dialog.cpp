@@ -525,26 +525,28 @@ void ScriptCreateDialog::_update_dialog() {
 
 	/* Is Script created or loaded from existing file */
 
-	if (is_new_script_created) {
+	if (is_built_in) {
+		get_ok()->set_text(TTR("Create"));
+		parent_name->set_editable(true);
+		parent_browse_button->set_disabled(false);
+		internal->set_disabled(!supports_built_in);
+		_msg_path_valid(true, TTR("Built-in script (into scene file)"));
+	} else if (is_new_script_created) {
 		// New Script Created
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
 		internal->set_disabled(!supports_built_in);
-		if (is_built_in) {
-			_msg_path_valid(true, TTR("Built-in script (into scene file)"));
-		} else {
-			if (script_ok) {
-				_msg_path_valid(true, TTR("Create new script file"));
-			}
+		if (is_path_valid) {
+			_msg_path_valid(true, TTR("Create new script file"));
 		}
 	} else {
 		// Script Loaded
 		get_ok()->set_text(TTR("Load"));
 		parent_name->set_editable(false);
 		parent_browse_button->set_disabled(true);
-		internal->set_disabled(true);
-		if (script_ok) {
+		internal->set_disabled(!supports_built_in);
+		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Load existing script file"));
 		}
 	}
