@@ -659,6 +659,36 @@ void TextEdit::_notification(int p_what) {
 				if (cache.background_color.a > 0.01) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 				}
+				//compute actual region to start (may be inside say, a comment).
+				//slow in very large documents :( but ok for source!
+
+				for (int i = 0; i < cursor.line_ofs; i++) {
+
+					const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
+
+					if (in_region >= 0 && color_regions[in_region].line_only) {
+						in_region = -1; //reset regions that end at end of line
+					}
+
+					for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
+
+						const Text::ColorRegionInfo &cri = E->get();
+
+						if (in_region == -1) {
+
+							if (!cri.end) {
+
+								in_region = cri.region;
+							}
+						} else if (in_region == cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
+
+							if (cri.end || color_regions[cri.region].eq) {
+
+								in_region = -1;
+							}
+						}
+					}
+				}
 			}
 
 			int brace_open_match_line = -1;
