@@ -4,7 +4,7 @@ void MeshInstance2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		if (mesh.is_valid()) {
-			draw_mesh(mesh, texture, normal_map, RID());
+			draw_mesh(mesh, texture, normal_map);
 		}
 	}
 }
