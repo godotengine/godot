@@ -887,7 +887,7 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidBody2D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody2D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("test_motion", "motion", "margin", "result"), &RigidBody2D::_test_motion, DEFVAL(0.08), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("test_motion", "motion", "infinite_inertia", "margin", "result"), &RigidBody2D::_test_motion, DEFVAL(true), DEFVAL(0.08), DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &RigidBody2D::_direct_state_changed);
 	ClassDB::bind_method(D_METHOD("_body_enter_tree"), &RigidBody2D::_body_enter_tree);
