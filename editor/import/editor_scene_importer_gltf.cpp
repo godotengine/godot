@@ -1108,7 +1108,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		if (d.has("uri")) {
 			String uri = d["uri"];
 
-			if (uri.findn("data:application/octet-stream;base64") == 0) {
+			if (uri.findn("data:application/octet-stream;base64") == 0 ||
+					uri.findn("data:" + mimetype + ";base64") == 0) {
 				//embedded data
 				data = _parse_base64_uri(uri);
 				data_ptr = data.ptr();
