@@ -312,7 +312,7 @@ void ScriptEditor::_goto_script_line2(int p_line) {
 void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
 
 	Ref<Script> script = Object::cast_to<Script>(*p_script);
-	if (!script.is_null() && script->get_path().is_resource_file()) {
+	if (!script.is_null() && script->has_source_code()) {
 		if (edit(p_script, p_line, 0)) {
 			editor->push_item(p_script.ptr());
 
