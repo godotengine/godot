@@ -1042,7 +1042,7 @@ void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 	glEnable(GL_BLEND);
 }
 
-void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light) {
+void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_transform) {
 
 	Item *current_clip = NULL;
 	RasterizerStorageGLES3::Shader *shader_cache = NULL;
