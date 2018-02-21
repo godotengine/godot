@@ -65,6 +65,7 @@ class ScriptEditorDebugger : public Control {
 
 	enum ItemMenu {
 		ITEM_MENU_COPY_ERROR,
+		ITEM_MENU_SAVE_REMOTE_NODE,
 	};
 
 	AcceptDialog *msgdialog;
@@ -92,6 +93,7 @@ class ScriptEditorDebugger : public Control {
 	Tree *inspect_scene_tree;
 	Button *clearbutton;
 	PopupMenu *item_menu;
+	EditorFileDialog *file_dialog;
 
 	int error_count;
 	int last_error_count;
@@ -155,6 +157,8 @@ class ScriptEditorDebugger : public Control {
 
 	void _scene_tree_folded(Object *obj);
 	void _scene_tree_selected();
+	void _scene_tree_rmb_selected(const Vector2 &p_position);
+	void _file_selected(const String &p_file);
 	void _scene_tree_request();
 	void _parse_message(const String &p_msg, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);

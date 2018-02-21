@@ -46,6 +46,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/packed_scene.h"
 #include "ustring.h"
 
 class ScriptEditorDebuggerVariables : public Object {
@@ -284,6 +285,30 @@ void ScriptEditorDebugger::_scene_tree_selected() {
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
 	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
+
+	TreeItem *item = inspect_scene_tree->get_item_at_position(p_position);
+	if (!item)
+		return;
+
+	item->select(0);
+
+	item_menu->clear();
+	item_menu->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->set_global_position(get_global_mouse_position());
+	item_menu->popup();
+}
+
+void ScriptEditorDebugger::_file_selected(const String &p_file) {
+	if (file_dialog->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+		Array msg;
+		msg.push_back("save_node");
+		msg.push_back(inspected_object_id);
+		msg.push_back(p_file);
+		ppeer->put_var(msg);
+	}
 }
 
 void ScriptEditorDebugger::_scene_tree_property_value_edited(const String &p_prop, const Variant &p_value) {
@@ -1753,6 +1778,21 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			OS::get_singleton()->set_clipboard(title + "\n----------\n" + desc);
 		} break;
+		case ITEM_MENU_SAVE_REMOTE_NODE: {
+
+			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+
+			List<String> extensions;
+			Ref<PackedScene> sd = memnew(PackedScene);
+			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			file_dialog->clear_filters();
+			for (int i = 0; i < extensions.size(); i++) {
+				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+			}
+
+			file_dialog->popup_centered_ratio();
+		} break;
 	}
 }
 
@@ -1787,6 +1827,8 @@ void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_scene_tree_selected"), &ScriptEditorDebugger::_scene_tree_selected);
 	ClassDB::bind_method(D_METHOD("_scene_tree_folded"), &ScriptEditorDebugger::_scene_tree_folded);
+	ClassDB::bind_method(D_METHOD("_scene_tree_rmb_selected"), &ScriptEditorDebugger::_scene_tree_rmb_selected);
+	ClassDB::bind_method(D_METHOD("_file_selected"), &ScriptEditorDebugger::_file_selected);
 
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
 	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
@@ -1959,12 +2001,19 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspect_scene_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
-
+		inspect_scene_tree->set_allow_rmb_select(true);
+		inspect_scene_tree->connect("item_rmb_selected", this, "_scene_tree_rmb_selected");
 		auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
 		inspect_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 		inspected_object_id = 0;
 		updating_scene_tree = false;
+	}
+
+	{ // File dialog
+		file_dialog = memnew(EditorFileDialog);
+		file_dialog->connect("file_selected", this, "_file_selected");
+		add_child(file_dialog);
 	}
 
 	{ //profiler
