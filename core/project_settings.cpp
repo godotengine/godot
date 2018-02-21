@@ -516,6 +516,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String p_text_path, c
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
+		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
 		return err_text;
 	}
 
