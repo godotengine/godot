@@ -763,6 +763,7 @@ public:
 		struct CommandMesh : public Command {
 
 			RID mesh;
+			RID skeleton;
 			RID texture;
 			RID normal_map;
 			CommandMesh() { type = TYPE_MESH; }
@@ -771,6 +772,7 @@ public:
 		struct CommandMultiMesh : public Command {
 
 			RID multimesh;
+			RID skeleton;
 			RID texture;
 			RID normal_map;
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }

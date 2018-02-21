@@ -42,7 +42,7 @@ void BitMap::create(const Size2 &p_size) {
 	zeromem(bitmask.ptrw(), bitmask.size());
 }
 
-void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
+void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_treshold) {
 
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 	Ref<Image> img = p_image->duplicate();
@@ -58,7 +58,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 
 		int bbyte = i / 8;
 		int bbit = i % 8;
-		if (r[i * 2 + 1] / 255.0 > p_threshold) {
+		if (r[i * 2 + 1] / 255.0 > p_treshold) {
 			w[bbyte] |= (1 << bbit);
 		}
 	}
@@ -322,8 +322,8 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 		curx += stepx;
 		cury += stepy;
 		if (stepx == prevx && stepy == prevy) {
-			_points.write[_points.size() - 1].x = (float)(curx - rect.position.x);
-			_points.write[_points.size() - 1].y = (float)(cury + rect.position.y);
+			_points[_points.size() - 1].x = (float)(curx - rect.position.x);
+			_points[_points.size() - 1].y = (float)(cury + rect.position.y);
 		} else {
 			_points.push_back(Vector2((float)(curx - rect.position.x), (float)(cury + rect.position.y)));
 		}
@@ -373,11 +373,11 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		Vector<Vector2> left, right;
 		left.resize(index);
 		for (int i = 0; i < index; i++) {
-			left.write[i] = v[i];
+			left[i] = v[i];
 		}
 		right.resize(v.size() - index);
 		for (int i = 0; i < right.size(); i++) {
-			right.write[i] = v[index + i];
+			right[i] = v[index + i];
 		}
 		Vector<Vector2> r1 = rdp(left, optimization);
 		Vector<Vector2> r2 = rdp(right, optimization);
@@ -385,7 +385,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		int middle = r1.size();
 		r1.resize(r1.size() + r2.size());
 		for (int i = 0; i < r2.size(); i++) {
-			r1.write[middle + i] = r2[i];
+			r1[middle + i] = r2[i];
 		}
 		return r1;
 	} else {
@@ -412,7 +412,7 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 	Vector2 last = result[result.size() - 1];
 
 	if (last.y > result[0].y && last.distance_to(result[0]) < ep * 0.5f) {
-		result.write[0].y = last.y;
+		result[0].y = last.y;
 		result.resize(result.size() - 1);
 	}
 	return result;
@@ -513,7 +513,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
-	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "threshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
+	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "treshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
 
 	ClassDB::bind_method(D_METHOD("set_bit", "position", "bit"), &BitMap::set_bit);
 	ClassDB::bind_method(D_METHOD("get_bit", "position"), &BitMap::get_bit);

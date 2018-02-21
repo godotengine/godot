@@ -1618,23 +1618,27 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
-			Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
+			replace_node(n, newnode);
+		}
+	}
+}
 
-			List<PropertyInfo> pinfo;
-			n->get_property_list(&pinfo);
+void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
-			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-				if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-					continue;
-				if (E->get().name == "__meta__")
-					continue;
-				if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
-					newnode->set(E->get().name, n->get(E->get().name));
-				}
-			}
+	Node *n = p_node;
+	Node *newnode = p_by_node;
+	List<PropertyInfo> pinfo;
+	n->get_property_list(&pinfo);
 
-			editor->push_item(NULL);
-			memdelete(default_oldnode);
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+			continue;
+		if (E->get().name == "__meta__")
+			continue;
+		newnode->set(E->get().name, n->get(E->get().name));
+	}
+
+	editor->push_item(NULL);
 
 	//reconnect signals
 	List<MethodInfo> sl;
