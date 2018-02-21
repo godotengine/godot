@@ -230,12 +230,14 @@ String GDMonoMethod::get_signature_desc(bool p_namespaces) const {
 }
 
 void GDMonoMethod::get_parameter_names(Vector<StringName> &names) const {
-	const char *_names = memnew_arr(char, params_count);
-	mono_method_get_param_names(mono_method, &_names);
-	for (int i = 0; i < params_count; ++i) {
-		names.push_back(StringName(&_names[i]));
+	if (params_count > 0) {
+		const char **_names = memnew_arr(const char *, params_count);
+		mono_method_get_param_names(mono_method, _names);
+		for (int i = 0; i < params_count; ++i) {
+			names.push_back(StringName(_names[i]));
+		}
+		memdelete_arr(_names);
 	}
-	memdelete_arr(_names);
 }
 
 void GDMonoMethod::get_parameter_types(Vector<ManagedType> &types) const {
