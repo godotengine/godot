@@ -345,7 +345,7 @@ void FileDialog::_tree_selected() {
 	get_ok()->set_disabled(_is_open_should_be_disabled());
 }
 
-void FileDialog::_tree_db_selected() {
+void FileDialog::_tree_dc_selected() {
 
 	TreeItem *ti = tree->get_selected();
 	if (!ti)
