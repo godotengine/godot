@@ -453,8 +453,11 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (!f)
-		return ERR_CANT_OPEN;
+	if (!f) {
+		// FIXME: Above 'err' error code is ERR_FILE_CANT_OPEN if the file is missing
+		// This needs to be streamlined if we want decent error reporting
+		return ERR_FILE_NOT_FOUND;
+	}
 
 	VariantParser::StreamFile stream;
 	stream.f = f;
@@ -513,6 +516,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String p_text_path, c
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
+		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
 		return err_text;
 	}
 
