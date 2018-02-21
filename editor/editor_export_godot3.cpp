@@ -476,6 +476,8 @@ static const char *type_renames[][2] = {
 	{ "SamplePlayer2D", "AudioStreamPlayer2D" },
 	{ "SoundPlayer2D", "Node2D" },
 	{ "SampleLibrary", "Resource" },
+	{ "ColorFrame", "ColorRect" },
+	{ "ReferenceFrame", "ReferenceRect" },
 	{ "TextureFrame", "TextureRect" },
 	{ "Patch9Frame", "NinePatchRect" },
 	{ "FixedMaterial", "SpatialMaterial" },
