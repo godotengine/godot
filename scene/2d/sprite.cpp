@@ -297,7 +297,7 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	return c.a > 0.01;
 }
 
-Rect2 Sprite::_edit_get_rect() const {
+Rect2 Sprite::get_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0, 0, 1, 1);
@@ -373,6 +373,8 @@ void Sprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite::get_hframes);
+
+	ClassDB::bind_method(D_METHOD("get_rect"), &Sprite::get_rect);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
