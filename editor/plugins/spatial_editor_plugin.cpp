@@ -4674,6 +4674,8 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -4941,6 +4943,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	editor_selection->add_editor_plugin(this);
 
 	snap_enabled = false;
+	snap_key_enabled = false;
 	tool_mode = TOOL_MODE_SELECT;
 
 	hbc_menu = memnew(HBoxContainer);
