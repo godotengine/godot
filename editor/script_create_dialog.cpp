@@ -554,9 +554,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
 		internal->set_disabled(!supports_built_in);
-		if (is_built_in) {
-			_msg_path_valid(true, TTR("Built-in script (into scene file)"));
-		} else if (is_path_valid) {
+		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Create new script file"));
 		}
 	} else {
@@ -564,7 +562,7 @@ void ScriptCreateDialog::_update_dialog() {
 		get_ok()->set_text(TTR("Load"));
 		parent_name->set_editable(false);
 		parent_browse_button->set_disabled(true);
-		internal->set_disabled(true);
+		internal->set_disabled(!supports_built_in);
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Load existing script file"));
 		}
