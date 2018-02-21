@@ -1285,14 +1285,14 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	emit_signal("goto_script_line", stack_script, int(d["line"]) - 1);
 	stack_script.unref();
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
-	///
-
-	Array msg;
-	msg.push_back("get_stack_frame_vars");
-	msg.push_back(d["frame"]);
-	ppeer->put_var(msg);
+	if (connection.is_valid() && connection->is_connected_to_host()) {
+		Array msg;
+		msg.push_back("get_stack_frame_vars");
+		msg.push_back(d["frame"]);
+		ppeer->put_var(msg);
+	} else {
+		inspector->edit(NULL);
+	}
 }
 
 void ScriptEditorDebugger::_output_clear() {
