@@ -319,10 +319,10 @@ void FileDialog::deselect_items() {
 
 			case MODE_OPEN_FILE:
 			case MODE_OPEN_FILES:
-				get_ok()->set_text(TTR("Open"));
+				get_ok()->set_text(RTR("Open"));
 				break;
 			case MODE_OPEN_DIR:
-				get_ok()->set_text(TTR("Select Current Folder"));
+				get_ok()->set_text(RTR("Select Current Folder"));
 				break;
 		}
 	}
