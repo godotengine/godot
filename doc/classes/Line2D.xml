@@ -53,7 +53,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Overwites the position in point [code]i[/code] with the supplied [code]position[/code].
+				Overwrites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>
 		</method>
 	</methods>

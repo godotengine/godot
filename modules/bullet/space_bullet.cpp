@@ -628,7 +628,7 @@ void SpaceBullet::destroy_world() {
 
 void SpaceBullet::check_ghost_overlaps() {
 
-	/// Algorith support variables
+	/// Algorithm support variables
 	btConvexShape *other_body_shape;
 	btConvexShape *area_shape;
 	btGjkPairDetector::ClosestPointInput gjk_input;

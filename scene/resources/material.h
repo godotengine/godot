@@ -566,7 +566,7 @@ public:
 	void set_grow(float p_grow);
 	float get_grow() const;
 
-	void set_alpha_scissor_threshold(float p_treshold);
+	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
 
 	void set_on_top_of_alpha();

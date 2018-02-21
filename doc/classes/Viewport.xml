@@ -123,7 +123,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Get the enabled status of the size strech override set with [method set_size_override_stretch].
+				Get the enabled status of the size stretch override set with [method set_size_override_stretch].
 			</description>
 		</method>
 		<method name="set_attach_to_screen_rect">

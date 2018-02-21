@@ -4,7 +4,7 @@
 		Helper class to handle INI-style files.
 	</brief_description>
 	<description>
-		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are indentified by a section and a key:
+		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are identified by a section and a key:
 		[codeblock]
 		[section]
 		some_key=42

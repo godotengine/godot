@@ -908,7 +908,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 	return Ref<Image>(img);
 #else
 
-	ERR_EXPLAIN("Sorry, It's not posible to obtain images back in OpenGL ES");
+	ERR_EXPLAIN("Sorry, It's not possible to obtain images back in OpenGL ES");
 	return Ref<Image>();
 #endif
 }

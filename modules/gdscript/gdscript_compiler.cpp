@@ -181,7 +181,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			//wait, identifier could be a local variable or something else... careful here, must reference properly
 			//as stack may be more interesting to work with
 
-			//This could be made much simpler by just indexing "self", but done this way (with custom self-addressing modes) increases peformance a lot.
+			//This could be made much simpler by just indexing "self", but done this way (with custom self-addressing modes) increases performance a lot.
 
 			const GDScriptParser::IdentifierNode *in = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
 

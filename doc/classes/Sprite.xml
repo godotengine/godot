@@ -26,7 +26,7 @@
 			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
-			The number of collumns in the sprite sheet.
+			The number of columns in the sprite sheet.
 		</member>
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 			The normal map gives depth to the Sprite.

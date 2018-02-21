@@ -140,7 +140,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 		Vector<Vector2> poly = node->get_polygon();
 
 		//first check if a point is to be added (segment split)
-		real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
 		switch (mode) {
 
@@ -159,7 +159,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 						return true;
 					} else {
 
-						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_treshold) {
+						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
 							//wip closed
 							_wip_close();
 
@@ -213,7 +213,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 									continue; //not valid to reuse point
 
 								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_treshold) {
+								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
 									closest_idx = i;
@@ -242,7 +242,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_treshold) {
+								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
 									closest_idx = i;
@@ -288,7 +288,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 						real_t d = cp.distance_to(gpoint);
-						if (d < closest_dist && d < grab_treshold) {
+						if (d < closest_dist && d < grab_threshold) {
 							closest_dist = d;
 							closest_pos = cp;
 							closest_idx = i;

@@ -147,7 +147,7 @@ Variant::operator bool() const {
 	return booleanize();
 }
 
-// We consider all unitialized or empty types to be false based on the type's
+// We consider all uninitialized or empty types to be false based on the type's
 // zeroiness.
 bool Variant::booleanize() const {
 	return !is_zero();

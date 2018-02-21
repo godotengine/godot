@@ -189,7 +189,7 @@ public:
 };
 
 /**
-	Similar to quadmesh but with tesselation support
+	Similar to quadmesh but with tessellation support
 */
 class PlaneMesh : public PrimitiveMesh {
 

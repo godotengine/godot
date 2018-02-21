@@ -158,7 +158,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 	if (p_ratio < 1.0) {
 		// Drawing a partially-filled 9-patch is a little tricky -
 		// texture is divided by 3 sections toward fill direction,
-		// then middle section is streching while the other two aren't.
+		// then middle section is stretching while the other two aren't.
 
 		double width_total = 0.0;
 		double width_texture = 0.0;
