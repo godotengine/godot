@@ -42,7 +42,7 @@ void BitMap::create(const Size2 &p_size) {
 	zeromem(bitmask.ptrw(), bitmask.size());
 }
 
-void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_treshold) {
+void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
 
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 	Ref<Image> img = p_image->duplicate();
@@ -58,7 +58,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_treshold
 
 		int bbyte = i / 8;
 		int bbit = i % 8;
-		if (r[i * 2 + 1] / 255.0 > p_treshold) {
+		if (r[i * 2 + 1] / 255.0 > p_threshold) {
 			w[bbyte] |= (1 << bbit);
 		}
 	}
@@ -513,7 +513,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
-	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "treshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
+	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "threshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
 
 	ClassDB::bind_method(D_METHOD("set_bit", "position", "bit"), &BitMap::set_bit);
 	ClassDB::bind_method(D_METHOD("get_bit", "position"), &BitMap::get_bit);

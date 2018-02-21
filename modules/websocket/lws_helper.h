@@ -108,7 +108,7 @@ static bool _lws_poll(struct lws_context *context, _LWSRef *ref) {
 static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, PoolVector<String> p_names, _LWSRef **r_lws_ref) {
 	/* the input strings might go away after this call,
 	 * we need to copy them. Will clear them when
-	 * detroying the context */
+	 * destroying the context */
 	int i;
 	int len = p_names.size();
 	size_t data_size = sizeof(struct LWSPeer::PeerData);
