@@ -42,7 +42,7 @@ void BitMap::create(const Size2 &p_size) {
 	zeromem(bitmask.ptrw(), bitmask.size());
 }
 
-void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
+void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_treshold) {
 
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 	Ref<Image> img = p_image->duplicate();
@@ -58,8 +58,9 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
 
 		int bbyte = i / 8;
 		int bbit = i % 8;
-		if (r[i * 2])
+		if (r[i * 2 + 1] / 255.0 > p_treshold) {
 			w[bbyte] |= (1 << bbit);
+		}
 	}
 }
 
@@ -168,10 +169,351 @@ Dictionary BitMap::_get_data() const {
 	return d;
 }
 
+Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) const {
+
+	int stepx = 0;
+	int stepy = 0;
+	int prevx = 0;
+	int prevy = 0;
+	int startx = start.x;
+	int starty = start.y;
+	int curx = startx;
+	int cury = starty;
+	unsigned int count = 0;
+	Set<Point2i> case9s;
+	Set<Point2i> case6s;
+	int i;
+	Vector<Vector2> _points;
+	do {
+		int sv = 0;
+		{ //square value
+
+			/*
+	     checking the 2x2 pixel grid, assigning these values to each pixel, if not transparent
+	     +---+---+
+	     | 1 | 2 |
+	     +---+---+
+	     | 4 | 8 | <- current pixel (curx,cury)
+	     +---+---+
+	     */
+			//NOTE: due to the way we pick points from texture, rect needs to be smaller, otherwise it goes outside 1 pixel
+			Rect2i fixed_rect = Rect2i(rect.position, rect.size - Size2i(2, 2));
+			Point2i tl = Point2i(curx - 1, cury - 1);
+			sv += (fixed_rect.has_point(tl) && get_bit(tl)) ? 1 : 0;
+			Point2i tr = Point2i(curx, cury - 1);
+			sv += (fixed_rect.has_point(tr) && get_bit(tr)) ? 2 : 0;
+			Point2i bl = Point2i(curx - 1, cury);
+			sv += (fixed_rect.has_point(bl) && get_bit(bl)) ? 4 : 0;
+			Point2i br = Point2i(curx, cury);
+			sv += (fixed_rect.has_point(br) && get_bit(br)) ? 8 : 0;
+			ERR_FAIL_COND_V(sv == 0 || sv == 15, Vector<Vector2>());
+		}
+
+		switch (sv) {
+
+			case 1:
+			case 5:
+			case 13:
+				/* going UP with these cases:
+		 1          5           13
+		 +---+---+  +---+---+  +---+---+
+		 | 1 |   |  | 1 |   |  | 1 |   |
+		 +---+---+  +---+---+  +---+---+
+		 |   |   |  | 4 |   |  | 4 | 8 |
+		 +---+---+  +---+---+  +---+---+
+		 */
+				stepx = 0;
+				stepy = -1;
+				break;
+
+			case 8:
+			case 10:
+			case 11:
+				/* going DOWN with these cases:
+		 8          10          11
+		 +---+---+  +---+---+   +---+---+
+		 |   |   |  |   | 2 |   | 1 | 2 |
+		 +---+---+  +---+---+   +---+---+
+		 |   | 8 |  |   | 8 |   |   | 8 |
+		 +---+---+  +---+---+  	+---+---+
+		 */
+				stepx = 0;
+				stepy = 1;
+				break;
+
+			case 4:
+			case 12:
+			case 14:
+				/* going LEFT with these cases:
+		 4          12          14
+		 +---+---+  +---+---+   +---+---+
+		 |   |   |  |   |   |   |   | 2 |
+		 +---+---+  +---+---+   +---+---+
+		 | 4 |   |  | 4 | 8 |   | 4 | 8 |
+		 +---+---+  +---+---+  	+---+---+
+		 */
+				stepx = -1;
+				stepy = 0;
+				break;
+
+			case 2:
+			case 3:
+			case 7:
+				/* going RIGHT with these cases:
+		 2          3           7
+		 +---+---+  +---+---+   +---+---+
+		 |   | 2 |  | 1 | 2 |   | 1 | 2 |
+		 +---+---+  +---+---+   +---+---+
+		 |   |   |  |   |   |   | 4 |   |
+		 +---+---+  +---+---+  	+---+---+
+		 */
+				stepx = 1;
+				stepy = 0;
+				break;
+			case 9:
+				/*
+		 +---+---+
+		 | 1 |   |
+		 +---+---+
+		 |   | 8 |
+		 +---+---+
+		 this should normally go UP, but if we already been here, we go down
+		*/
+				if (case9s.has(Point2i(curx, cury))) {
+					//found, so we go down, and delete from case9s;
+					stepx = 0;
+					stepy = 1;
+					case9s.erase(Point2i(curx, cury));
+				} else {
+					//not found, we go up, and add to case9s;
+					stepx = 0;
+					stepy = -1;
+					case9s.insert(Point2i(curx, cury));
+				}
+				break;
+			case 6:
+				/*
+		 6
+		 +---+---+
+		 |   | 2 |
+		 +---+---+
+		 | 4 |   |
+		 +---+---+
+		 this normally go RIGHT, but if its coming from UP, it should go LEFT
+		 */
+				if (case6s.has(Point2i(curx, cury))) {
+					//found, so we go down, and delete from case6s;
+					stepx = -1;
+					stepy = 0;
+					case6s.erase(Point2i(curx, cury));
+				} else {
+					//not found, we go up, and add to case6s;
+					stepx = 1;
+					stepy = 0;
+					case6s.insert(Point2i(curx, cury));
+				}
+				break;
+			default:
+				ERR_PRINT("this shouldn't happen.");
+		}
+		//little optimization
+		// if previous direction is same as current direction,
+		// then we should modify the last vec to current
+		curx += stepx;
+		cury += stepy;
+		if (stepx == prevx && stepy == prevy) {
+			_points[_points.size() - 1].x = (float)(curx - rect.position.x);
+			_points[_points.size() - 1].y = (float)(cury + rect.position.y);
+		} else {
+			_points.push_back(Vector2((float)(curx - rect.position.x), (float)(cury + rect.position.y)));
+		}
+
+		count++;
+		prevx = stepx;
+		prevy = stepy;
+
+		ERR_FAIL_COND_V(count > width * height, _points);
+	} while (curx != startx || cury != starty);
+	return _points;
+}
+
+static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
+	float res;
+	float slope;
+	float intercept;
+
+	if (start.x == end.x) {
+		res = Math::absf(i.x - end.x);
+	} else if (start.y == end.y) {
+		res = Math::absf(i.y - end.y);
+	} else {
+		slope = (end.y - start.y) / (end.x - start.x);
+		intercept = start.y - (slope * start.x);
+		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+	}
+	return res;
+}
+
+static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
+	if (v.size() < 3)
+		return v;
+
+	int index = -1;
+	float dist = 0;
+	//not looping first and last point
+	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
+		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
+		if (cdist > dist) {
+			dist = cdist;
+			index = static_cast<int>(i);
+		}
+	}
+	if (dist > optimization) {
+
+		Vector<Vector2> left, right;
+		left.resize(index);
+		for (int i = 0; i < index; i++) {
+			left[i] = v[i];
+		}
+		right.resize(v.size() - index);
+		for (int i = 0; i < right.size(); i++) {
+			right[i] = v[index + i];
+		}
+		Vector<Vector2> r1 = rdp(left, optimization);
+		Vector<Vector2> r2 = rdp(right, optimization);
+
+		int middle = r1.size();
+		r1.resize(r1.size() + r2.size());
+		for (int i = 0; i < r2.size(); i++) {
+			r1[middle + i] = r2[i];
+		}
+		return r1;
+	} else {
+		Vector<Vector2> ret;
+		ret.push_back(v[0]);
+		ret.push_back(v[v.size() - 1]);
+		return ret;
+	}
+}
+
+static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
+	int size = points.size();
+	// if there are less than 3 points, then we have nothing
+	ERR_FAIL_COND_V(size < 3, Vector<Vector2>());
+	// if there are less than 9 points (but more than 3), then we don't need to reduce it
+	if (size < 9) {
+		return points;
+	}
+
+	float maxEp = MIN(rect.size.width, rect.size.height);
+	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
+	Vector<Vector2> result = rdp(points, ep);
+
+	Vector2 last = result[result.size() - 1];
+
+	if (last.y > result[0].y && last.distance_to(result[0]) < ep * 0.5f) {
+		result[0].y = last.y;
+		result.resize(result.size() - 1);
+	}
+	return result;
+}
+
+static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
+
+	for (int i = p_pos.x - 1; i <= p_pos.x + 1; i++) {
+		for (int j = p_pos.y - 1; j <= p_pos.y + 1; j++) {
+
+			if (i < rect.position.x || i >= rect.position.x + rect.size.x)
+				continue;
+			if (j < rect.position.y || j >= rect.position.y + rect.size.y)
+				continue;
+
+			if (p_map->get_bit(Vector2(i, j)))
+				continue;
+
+			else if (p_src->get_bit(Vector2(i, j))) {
+				p_map->set_bit(Vector2(i, j), true);
+				fill_bits(p_src, p_map, Point2i(i, j), rect);
+			}
+		}
+	}
+}
+Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
+
+	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+
+	print_line("Rect: " + r);
+	Point2i from;
+	Ref<BitMap> fill;
+	fill.instance();
+	fill->create(get_size());
+
+	Vector<Vector<Vector2> > polygons;
+	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
+		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
+			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
+
+				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
+				print_line("pre reduce: " + itos(polygon.size()));
+				polygon = reduce(polygon, r, p_epsilon);
+				print_line("post reduce: " + itos(polygon.size()));
+				polygons.push_back(polygon);
+				fill_bits(this, fill, Point2i(j, i), r);
+			}
+		}
+	}
+
+	return polygons;
+}
+
+void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
+
+	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+
+	Ref<BitMap> copy;
+	copy.instance();
+	copy->create(get_size());
+	copy->bitmask = bitmask;
+
+	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
+		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
+			if (copy->get_bit(Point2(j, i)))
+				continue;
+
+			bool found = false;
+
+			for (int y = i - p_pixels; y <= i + p_pixels; y++) {
+				for (int x = j - p_pixels; x <= j + p_pixels; x++) {
+
+					if (x < p_rect.position.x || x >= p_rect.position.x + p_rect.size.x)
+						continue;
+					if (y < p_rect.position.y || y >= p_rect.position.y + p_rect.size.y)
+						continue;
+
+					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
+					if (d > p_pixels)
+						continue;
+
+					if (copy->get_bit(Point2(x, y))) {
+						found = true;
+						break;
+					}
+				}
+				if (found)
+					break;
+			}
+
+			if (found) {
+				set_bit(Point2(j, i), true);
+			}
+		}
+	}
+}
+
 void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
-	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image"), &BitMap::create_from_image_alpha);
+	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "treshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
 
 	ClassDB::bind_method(D_METHOD("set_bit", "position", "bit"), &BitMap::set_bit);
 	ClassDB::bind_method(D_METHOD("get_bit", "position"), &BitMap::get_bit);

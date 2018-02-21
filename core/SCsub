@@ -68,6 +68,7 @@ thirdparty_sources = [
 	"md5.cpp",
 	"pcg.cpp",
 	"triangulator.cpp",
+	"clipper.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 env.add_source_files(env.core_sources, thirdparty_sources)
