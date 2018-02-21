@@ -960,6 +960,79 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	}
 }
 
+Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	std::cout << "get_drag_data_fw !" << std::endl;
+
+	Vector<Node *> selected;
+	TreeItem *next = input_editor->get_selected();
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *label = memnew(Label(next->get_text(0)));
+	hb->add_child(label);
+	vb->add_child(hb);
+	hb->set_modulate(Color(1, 1, 1, 1.0f));
+
+	set_drag_preview(vb);
+
+	NodePath p = next->get_metadata(0);
+	Dictionary drag_data;
+	drag_data["type"] = "nodes";
+	drag_data["nodes"] = p;
+
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
+	emit_signal("nodes_dragged");
+
+	return drag_data;
+
+	
+	
+		/*
+	while (next) {
+
+		NodePath np = next->get_metadata(0);
+
+		Node *n = get_node(np);
+		if (n) {
+			selected.push_back(n);
+		}
+		next = input_editor->get_next_selected(next);
+	}
+	
+	if (selected.empty())
+		return Variant();
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	Array objs;
+	int list_max = 10;
+	float opacity_step = 1.0f / list_max;
+	float opacity_item = 1.0f;
+	for (int i = 0; i < selected.size(); i++) {
+
+		if (i < list_max) {
+			HBoxContainer *hb = memnew(HBoxContainer);
+			Label *label = memnew(Label(selected[i]->get_name()));
+			hb->add_child(label);
+			vb->add_child(hb);
+			hb->set_modulate(Color(1, 1, 1, opacity_item));
+			opacity_item -= opacity_step;
+		}
+		NodePath p = selected[i]->get_path();
+		objs.push_back(p);
+	}
+
+	set_drag_preview(vb);
+	Dictionary drag_data;
+	drag_data["type"] = "nodes";
+	drag_data["nodes"] = objs;
+
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
+	emit_signal("nodes_dragged");
+
+	return drag_data;
+	*/
+}
+
 void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 
 	String path = globals_editor->get_property_editor()->get_selected_path();
@@ -1571,6 +1644,8 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
+
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ProjectSettingsEditor::get_drag_data_fw);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -1730,6 +1805,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
 	input_editor->connect("button_pressed", this, "_action_button_pressed");
+
+	input_editor->set_drag_forwarding(this);
+
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
 	popup_add->connect("id_pressed", this, "_add_item");
