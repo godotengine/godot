@@ -320,9 +320,11 @@ void FileDialog::deselect_items() {
 			case MODE_OPEN_FILE:
 			case MODE_OPEN_FILES:
 				get_ok()->set_text(RTR("Open"));
+				get_ok()->set_disabled(false);
 				break;
 			case MODE_OPEN_DIR:
 				get_ok()->set_text(RTR("Select Current Folder"));
+				get_ok()->set_disabled(false);
 				break;
 		}
 	}
