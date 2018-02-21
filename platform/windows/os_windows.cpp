@@ -39,10 +39,10 @@
 #include "os/memory_pool_dynamic_static.h"
 #include "os_windows.h"
 
+#include "scene/resources/texture.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include "scene/resources/texture.h"
 
 #include "globals.h"
 #include "io/marshalls.h"
@@ -364,6 +364,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 		case WM_MOUSEMOVE: {
 
+			// Avoid getting mouse-like echo from touch
+			LPARAM extra = GetMessageExtraInfo();
+			if (IsPenEvent(extra)) {
+				break;
+			}
+
 			if (outside) {
 				//mouse enter
 
@@ -383,19 +389,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				tme.dwHoverTime = HOVER_DEFAULT;
 				TrackMouseEvent(&tme);
 			}
-
-			/*
-			LPARAM extra = GetMessageExtraInfo();
-			if (IsPenEvent(extra)) {
-
-				int idx = extra & 0x7f;
-				_drag_event(idx, uMsg, wParam, lParam);
-				if (idx != 0) {
-					return 0;
-				};
-				// fallthrough for mouse event
-			};
-			*/
 
 			InputEvent event;
 			event.type = InputEvent::MOUSE_MOTION;
@@ -468,18 +461,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */ {
 
-				/*
-			LPARAM extra = GetMessageExtraInfo();
-			if (IsPenEvent(extra)) {
-
-				int idx = extra & 0x7f;
-				_touch_event(idx, uMsg, wParam, lParam);
-				if (idx != 0) {
-					return 0;
-				};
-				// fallthrough for mouse event
-			};
-			*/
+				// Avoid getting mouse-like echo from touch
+				LPARAM extra = GetMessageExtraInfo();
+				if (IsPenEvent(extra)) {
+					break;
+				}
 
 				InputEvent event;
 				event.type = InputEvent::MOUSE_BUTTON;
@@ -1977,7 +1963,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){
+void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<ImageTexture> texture = p_cursor;
 		Image image = texture->get_data();
@@ -2013,7 +1999,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		// Finally, create the icon
-		ICONINFO iconinfo = {0};
+		ICONINFO iconinfo = { 0 };
 		iconinfo.fIcon = FALSE;
 		iconinfo.xHotspot = p_hotspot.x;
 		iconinfo.yHotspot = p_hotspot.y;
@@ -2031,7 +2017,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		if (hXorMask != NULL) {
-		  DeleteObject(hXorMask);
+			DeleteObject(hXorMask);
 		}
 	}
 }
@@ -2073,7 +2059,7 @@ void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, 
 	SetBkColor(hXorMaskDC, RGB(0, 0, 0));
 	SetTextColor(hXorMaskDC, RGB(255, 255, 255));
 	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hAndMaskDC, 0, 0, SRCCOPY);
-	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0,0, SRCAND);
+	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCAND);
 
 	// Deselect bitmaps from the helper DC
 	SelectObject(hMainDC, hOldMainBitmap);
