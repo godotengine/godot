@@ -83,6 +83,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	OptionButton *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
+	SpinBox *device_special_value;
+	Label *device_special_value_label;
 	MenuButton *popup_copy_to_feature;
 
 	LineEdit *action_name;

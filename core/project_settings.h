@@ -102,6 +102,8 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
+	void _convert_to_last_version();
+
 	bool _load_resource_pack(const String &p_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
