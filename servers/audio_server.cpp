@@ -885,9 +885,13 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 	return buses[p_bus]->channels[p_channel].active;
 }
 
-void AudioServer::init_channels_and_buffers() {
-	channel_count = get_channel_count();
-	temp_buffer.resize(channel_count);
+void AudioServer::init() {
+
+	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
+	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
+	buffer_size = 1024; //hardcoded for now
+
+	temp_buffer.resize(get_channel_count());
 
 	for (int i = 0; i < temp_buffer.size(); i++) {
 		temp_buffer.write[i].resize(buffer_size);
