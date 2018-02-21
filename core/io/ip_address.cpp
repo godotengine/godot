@@ -211,7 +211,7 @@ IP_Address::IP_Address(const String &p_string) {
 	clear();
 
 	if (p_string == "*") {
-		// Wildcard (not a vaild IP)
+		// Wildcard (not a valid IP)
 		wildcard = true;
 
 	} else if (p_string.find(":") >= 0) {

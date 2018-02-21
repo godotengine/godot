@@ -4098,7 +4098,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 							if (cn->value.get_type() == Variant::NIL) {
 
-								_set_error("Can't accept a null constant expression for infering export type.");
+								_set_error("Can't accept a null constant expression for inferring export type.");
 								return;
 							}
 							member._export.type = cn->value.get_type();
@@ -4234,7 +4234,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 			} break;
 			case GDScriptTokenizer::TK_PR_ENUM: {
-				//mutiple constant declarations..
+				//multiple constant declarations..
 
 				int last_assign = -1; // Incremented by 1 right before the assingment.
 				String enum_name;

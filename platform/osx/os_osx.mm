@@ -1092,7 +1092,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	unsigned int attributeCount = 0;
 
-	// OS X needs non-zero color size, so set resonable values
+	// OS X needs non-zero color size, so set reasonable values
 	int colorBits = 32;
 
 	// Fail if a robustness strategy was requested
@@ -1138,7 +1138,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 */
 
 	// NOTE: All NSOpenGLPixelFormats on the relevant cards support sRGB
-	//       frambuffer, so there's no need (and no way) to request it
+	//       framebuffer, so there's no need (and no way) to request it
 
 	ADD_ATTR(0);
 

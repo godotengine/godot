@@ -751,7 +751,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		XFree(xsh);
 	}
 
-	// Using EWMH -- Extened Window Manager Hints
+	// Using EWMH -- Extended Window Manager Hints
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);

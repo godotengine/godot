@@ -55,7 +55,7 @@
 #define _COMMA_11 ,
 #define _COMMA_12 ,
 
-// 1-based comma separed list of ITEMs
+// 1-based comma separated list of ITEMs
 #define COMMA_SEP_LIST(ITEM, LENGTH) _COMMA_SEP_LIST_##LENGTH(ITEM)
 #define _COMMA_SEP_LIST_12(ITEM) \
 	_COMMA_SEP_LIST_11(ITEM)     \
@@ -95,7 +95,7 @@
 	ITEM(1)
 #define _COMMA_SEP_LIST_0(ITEM)
 
-// 1-based semicolon separed list of ITEMs
+// 1-based semicolon separated list of ITEMs
 #define SEMIC_SEP_LIST(ITEM, LENGTH) _SEMIC_SEP_LIST_##LENGTH(ITEM)
 #define _SEMIC_SEP_LIST_12(ITEM) \
 	_SEMIC_SEP_LIST_11(ITEM);    \
@@ -135,7 +135,7 @@
 	ITEM(1)
 #define _SEMIC_SEP_LIST_0(ITEM)
 
-// 1-based space separed list of ITEMs
+// 1-based space separated list of ITEMs
 #define SPACE_SEP_LIST(ITEM, LENGTH) _SPACE_SEP_LIST_##LENGTH(ITEM)
 #define _SPACE_SEP_LIST_12(ITEM) \
 	_SPACE_SEP_LIST_11(ITEM)     \

@@ -49,7 +49,7 @@ class ARVRPositionalTracker;
 	Also each positioning tracker is accessible from here.
 
 	I've added some additional info into this header file that should move
-	into the documention, I will do so when we're close to accepting this PR
+	into the documentation, I will do so when we're close to accepting this PR
 	or as a separate PR once this has been merged into the master branch.
 **/
 

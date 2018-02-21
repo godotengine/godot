@@ -153,7 +153,7 @@ void AudioDriverManager::initialize(int p_driver) {
 		ERR_PRINT("AudioDriverManager: all drivers failed, falling back to dummy driver");
 		dummy_driver.set_singleton();
 	} else {
-		ERR_PRINT("AudioDriverManager: dummy driver faild to init()");
+		ERR_PRINT("AudioDriverManager: dummy driver failed to init()");
 	}
 }
 
@@ -858,7 +858,7 @@ void AudioServer::init() {
 
 	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
-	buffer_size = 1024; //harcoded for now
+	buffer_size = 1024; //hardcoded for now
 
 	temp_buffer.resize(get_channel_count());
 

@@ -380,7 +380,7 @@
 	<members>
 		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap">
 			If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
-			Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
+			Note that this is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
 		</member>
 	</members>
 	<constants>

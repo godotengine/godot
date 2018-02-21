@@ -2908,7 +2908,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	if (p_state.has("editor_index")) {
 		int index = p_state["editor_index"];
-		if (current < 2) { //if currently in spatial/2d, only switch to spatial/2d. if curently in script, stay there
+		if (current < 2) { //if currently in spatial/2d, only switch to spatial/2d. if currently in script, stay there
 			if (index < 2 || !get_edited_scene()) {
 				_editor_select(index);
 			}

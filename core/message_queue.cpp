@@ -278,7 +278,7 @@ void MessageQueue::flush() {
 
 	while (read_pos < buffer_end) {
 
-		//lock on each interation, so a call can re-add itself to the message queue
+		//lock on each iteration, so a call can re-add itself to the message queue
 
 		Message *message = (Message *)&buffer[read_pos];
 

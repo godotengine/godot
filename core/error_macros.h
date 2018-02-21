@@ -33,7 +33,7 @@
 
 #include "typedefs.h"
 /**
- * Error macros. Unlike exceptions and asserts, these macros try to mantain consistency and stability
+ * Error macros. Unlike exceptions and asserts, these macros try to maintain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the
  * engine can stay working well.
  * In most cases, bugs and/or invalid data are not fatal and should never allow a perfectly running application
