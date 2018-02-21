@@ -99,7 +99,7 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
+List<Ref<InputEvent> >::Element *InputMap::_find_event(Action p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
 
 	for (List<Ref<InputEvent> >::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
@@ -109,9 +109,11 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 		//	continue;
 
 		int device = e->get_device();
-		if (device == ALL_DEVICES || device == p_event->get_device())
-			if (e->action_match(p_event))
+		if (device == ALL_DEVICES || device == p_event->get_device()) {
+			if (e->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
 				return E;
+			}
+		}
 	}
 
 	return NULL;
