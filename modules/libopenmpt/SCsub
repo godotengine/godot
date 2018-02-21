@@ -1,0 +1,158 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_libopenmpt = env_modules.Clone()
+
+# Thirdparty source files
+if env['builtin_libopenmpt']:
+    thirdparty_dir = "#thirdparty/libopenmpt/"
+    thirdparty_sources = [
+        "common/ComponentManager.cpp",
+        "common/FileReader.cpp",
+        "common/Logging.cpp",
+        "common/misc_util.cpp",
+        "common/mptCPU.cpp",
+        "common/mptFileIO.cpp",
+        "common/mptIO.cpp",
+        "common/mptLibrary.cpp",
+        "common/mptOS.cpp",
+        "common/mptPathString.cpp",
+        "common/mptRandom.cpp",
+        "common/mptString.cpp",
+        "common/mptStringFormat.cpp",
+        "common/mptStringParse.cpp",
+        "common/mptTime.cpp",
+        "common/mptUUID.cpp",
+        "common/mptWine.cpp",
+        "common/Profiler.cpp",
+        "common/serialization_utils.cpp",
+        "common/stdafx.cpp",
+        "common/typedefs.cpp",
+        "common/version.cpp",
+        "libopenmpt/libopenmpt_cxx.cpp",
+        "libopenmpt/libopenmpt_ext_impl.cpp",
+        "libopenmpt/libopenmpt_impl.cpp",
+        "sounddsp/AGC.cpp",
+        "sounddsp/DSP.cpp",
+        "sounddsp/EQ.cpp",
+        "sounddsp/Reverb.cpp",
+        "soundlib/AudioCriticalSection.cpp",
+        "soundlib/ContainerMMCMP.cpp",
+        "soundlib/ContainerPP20.cpp",
+        "soundlib/ContainerUMX.cpp",
+        "soundlib/ContainerXPK.cpp",
+        "soundlib/Dither.cpp",
+        "soundlib/Dlsbank.cpp",
+        "soundlib/Fastmix.cpp",
+        "soundlib/InstrumentExtensions.cpp",
+        "soundlib/ITCompression.cpp",
+        "soundlib/ITTools.cpp",
+        "soundlib/Load_669.cpp",
+        "soundlib/Load_amf.cpp",
+        "soundlib/Load_ams.cpp",
+        "soundlib/Load_dbm.cpp",
+        "soundlib/Load_digi.cpp",
+        "soundlib/Load_dmf.cpp",
+        "soundlib/Load_dsm.cpp",
+        "soundlib/Load_dtm.cpp",
+        "soundlib/Load_far.cpp",
+        "soundlib/Load_gdm.cpp",
+        "soundlib/Load_imf.cpp",
+        "soundlib/Load_it.cpp",
+        "soundlib/Load_itp.cpp",
+        "soundlib/load_j2b.cpp",
+        "soundlib/Load_mdl.cpp",
+        "soundlib/Load_med.cpp",
+        "soundlib/Load_mid.cpp",
+        "soundlib/Load_mo3.cpp",
+        "soundlib/Load_mod.cpp",
+        "soundlib/Load_mt2.cpp",
+        "soundlib/Load_mtm.cpp",
+        "soundlib/Load_okt.cpp",
+        "soundlib/Load_plm.cpp",
+        "soundlib/Load_psm.cpp",
+        "soundlib/Load_ptm.cpp",
+        "soundlib/Load_s3m.cpp",
+        "soundlib/Load_sfx.cpp",
+        "soundlib/Load_stm.cpp",
+        "soundlib/Load_stp.cpp",
+        "soundlib/Load_uax.cpp",
+        "soundlib/Load_ult.cpp",
+        "soundlib/Load_wav.cpp",
+        "soundlib/Load_xm.cpp",
+        "soundlib/Message.cpp",
+        "soundlib/MIDIEvents.cpp",
+        "soundlib/MIDIMacros.cpp",
+        "soundlib/MixerLoops.cpp",
+        "soundlib/MixerSettings.cpp",
+        "soundlib/MixFuncTable.cpp",
+        "soundlib/ModChannel.cpp",
+        "soundlib/modcommand.cpp",
+        "soundlib/ModInstrument.cpp",
+        "soundlib/ModSample.cpp",
+        "soundlib/ModSequence.cpp",
+        "soundlib/modsmp_ctrl.cpp",
+        "soundlib/mod_specifications.cpp",
+        "soundlib/MPEGFrame.cpp",
+        "soundlib/OggStream.cpp",
+        "soundlib/pattern.cpp",
+        "soundlib/patternContainer.cpp",
+        "soundlib/Paula.cpp",
+        "soundlib/RowVisitor.cpp",
+        "soundlib/S3MTools.cpp",
+        "soundlib/SampleFormatFLAC.cpp",
+        "soundlib/SampleFormatMediaFoundation.cpp",
+        "soundlib/SampleFormatMP3.cpp",
+        "soundlib/SampleFormatOpus.cpp",
+        "soundlib/SampleFormats.cpp",
+        "soundlib/SampleFormatVorbis.cpp",
+        "soundlib/SampleIO.cpp",
+        "soundlib/Sndfile.cpp",
+        "soundlib/Sndmix.cpp",
+        "soundlib/Snd_flt.cpp",
+        "soundlib/Snd_fx.cpp",
+        "soundlib/SoundFilePlayConfig.cpp",
+        "soundlib/Tables.cpp",
+        "soundlib/Tagging.cpp",
+        "soundlib/tuning.cpp",
+        "soundlib/tuningbase.cpp",
+        "soundlib/tuningCollection.cpp",
+        "soundlib/UMXTools.cpp",
+        "soundlib/UpgradeModule.cpp",
+        "soundlib/WAVTools.cpp",
+        "soundlib/WindowedFIR.cpp",
+        "soundlib/XMTools.cpp",
+        "soundlib/plugins/DigiBoosterEcho.cpp",
+        "soundlib/plugins/LFOPlugin.cpp",
+        "soundlib/plugins/PluginManager.cpp",
+        "soundlib/plugins/PlugInterface.cpp",
+        "soundlib/plugins/dmo/Chorus.cpp",
+        "soundlib/plugins/dmo/Compressor.cpp",
+        "soundlib/plugins/dmo/Distortion.cpp",
+        "soundlib/plugins/dmo/DMOPlugin.cpp",
+        "soundlib/plugins/dmo/Echo.cpp",
+        "soundlib/plugins/dmo/Flanger.cpp",
+        "soundlib/plugins/dmo/Gargle.cpp",
+        "soundlib/plugins/dmo/I3DL2Reverb.cpp",
+        "soundlib/plugins/dmo/ParamEq.cpp",
+        "soundlib/plugins/dmo/WavesReverb.cpp"
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_libopenmpt.add_source_files(env.modules_sources, thirdparty_sources)
+    env_libopenmpt.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/common"])
+    env_libopenmpt.Append(CPPDEFINES=['LIBOPENMPT_BUILD', 'LIBOPENMPT_BUILD_SMALL'])
+    
+    # Activate libopenmpt features depending on other activated built_in modules
+    if env['minizip']:
+       	env_libopenmpt.Append(CPPDEFINES=['MPT_WITH_MINIZ'])
+    if env['builtin_zlib']:
+        env_libopenmpt.Append(CPPDEFINES=['MPT_WITH_ZLIB'])
+    if env['builtin_libvorbis'] and env['builtin_libogg']:
+        env_libopenmpt.Append(CPPDEFINES=['MPT_WITH_VORBIS'])
+        env_libopenmpt.Append(CPPPATH=["#thirdparty/libvorbis", "#thirdparty/libogg"])
+
+# Godot source files
+env_libopenmpt.add_source_files(env.modules_sources, "*.cpp")

@@ -1,0 +1,21 @@
+
+#pragma once
+
+#if defined(MPT_PACKAGE)
+#define OPENMPT_VERSION_IS_PACKAGE 1
+#else
+#define OPENMPT_VERSION_IS_PACKAGE 0
+#endif
+
+#if defined(MPT_SVNURL)
+#define OPENMPT_VERSION_URL MPT_SVNURL
+#endif
+
+#if defined(MPT_SVNVERSION)
+#define OPENMPT_VERSION_SVNVERSION MPT_SVNVERSION
+#endif
+
+#if defined(MPT_SVNDATE)
+#define OPENMPT_VERSION_DATE MPT_SVNDATE
+#endif
+

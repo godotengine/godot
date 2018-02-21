@@ -141,6 +141,22 @@ Files extracted from upstream source:
 - COPYING
 
 
+## libopenmpt
+
+- Upstream: https://lib.openmpt.org/libopenmpt/
+- Version: 0.3.6
+- License: BSD
+
+Files extracted from upstream source:
+- Folder common
+- Folder libopenmpt
+- Folder soundbase
+- Folder sounddsp
+- Folder soundlib
+- File LICENSE
+- File svn_version.h
+
+
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
