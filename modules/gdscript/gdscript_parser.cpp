@@ -4519,16 +4519,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() == Variant::NIL) {
 
-							_set_error("Can't accept a null constant expression for inferring export type.");
-							return;
-						}
-						member._export.type = cn->value.get_type();
-						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
-						if (cn->value.get_type() == Variant::OBJECT) {
-							Object *obj = cn->value;
-							Resource *res = Object::cast_to<Resource>(obj);
-							if (res == NULL) {
-								_set_error("Exported constant not a type or resource.");
+								_set_error("Can't accept a null constant expression for inferring export type.");
 								return;
 							}
 							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;

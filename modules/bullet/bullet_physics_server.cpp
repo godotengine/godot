@@ -829,7 +829,7 @@ int BulletPhysicsServer::body_get_max_contacts_reported(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_set_contacts_reported_depth_threshold(RID p_body, float p_threshold) {
-	// Not supported by bullet and even Godot
+	WARN_PRINT("Not supported by bullet and even Godot");
 }
 
 float BulletPhysicsServer::body_get_contacts_reported_depth_threshold(RID p_body) const {
