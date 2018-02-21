@@ -1082,7 +1082,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
 
-		// Capabilites
+		// Capabilities
 		const char **basic = uwp_capabilities;
 		while (*basic) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*basic).camelcase_to_underscore(false)), false));

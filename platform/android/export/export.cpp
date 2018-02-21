@@ -257,7 +257,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 					if (dpos == -1)
 						continue;
 					d = d.substr(0, dpos).strip_edges();
-					//print_line("found devuce: "+d);
+					//print_line("found device: "+d);
 					ldevices.push_back(d);
 				}
 
@@ -996,7 +996,7 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-		// Reenable when a GLES 2.0 backend is readded
+		// Re-enable when a GLES 2.0 backend is read
 		/*int api = p_preset->get("graphics/api");
 		if (api == 0)
 			r_features->push_back("etc");

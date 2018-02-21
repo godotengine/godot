@@ -94,7 +94,7 @@ static Vector<Vector<Vector2> > _b2d_decompose(const Vector<Vector2> &p_polygon)
 				float32 dot = dx0 * dx1 + dy0 * dy1;
 				if (fabs(cross) < b2_angularSlop && dot > 0) {
 					//Angle too close, split the triangle across from this point.
-					//This is guaranteed to result in two triangles that satify
+					//This is guaranteed to result in two triangles that satisfy
 					//the tolerance (one of the angles is 90 degrees)
 					float32 dx2 = curr.x[lower] - curr.x[upper];
 					float32 dy2 = curr.y[lower] - curr.y[upper];

@@ -1016,11 +1016,11 @@ void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, co
 }
 
 void ScriptDebuggerRemote::profiling_start() {
-	//ignores this, uses it via connnection
+	//ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_end() {
-	//ignores this, uses it via connnection
+	//ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {

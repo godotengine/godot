@@ -1482,9 +1482,9 @@ bool SpatialMaterial::is_grow_enabled() const {
 	return grow_enabled;
 }
 
-void SpatialMaterial::set_alpha_scissor_threshold(float p_treshold) {
-	alpha_scissor_threshold = p_treshold;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_scissor_threshold, p_treshold);
+void SpatialMaterial::set_alpha_scissor_threshold(float p_threshold) {
+	alpha_scissor_threshold = p_threshold;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_scissor_threshold, p_threshold);
 }
 
 float SpatialMaterial::get_alpha_scissor_threshold() const {

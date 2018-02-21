@@ -1778,7 +1778,7 @@ void SceneTree::_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, cons
 		psc->id = last_send_cache_id++;
 	}
 
-	//create base packet, lots of harcode because it must be tight
+	//create base packet, lots of hardcode because it must be tight
 
 	int ofs = 0;
 

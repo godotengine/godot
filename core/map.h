@@ -197,7 +197,7 @@ private:
 		if (node->right != _data._nil) {
 
 			node = node->right;
-			while (node->left != _data._nil) { /* returns the minium of the right subtree of node */
+			while (node->left != _data._nil) { /* returns the minimum of the right subtree of node */
 				node = node->left;
 			}
 			return node;
@@ -219,7 +219,7 @@ private:
 		if (node->left != _data._nil) {
 
 			node = node->left;
-			while (node->right != _data._nil) { /* returns the minium of the left subtree of node */
+			while (node->right != _data._nil) { /* returns the minimum of the left subtree of node */
 				node = node->right;
 			}
 			return node;

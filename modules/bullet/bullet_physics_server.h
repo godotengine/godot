@@ -239,7 +239,7 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts);
 	virtual int body_get_max_contacts_reported(RID p_body) const;
 
-	virtual void body_set_contacts_reported_depth_threshold(RID p_body, float p_treshold);
+	virtual void body_set_contacts_reported_depth_threshold(RID p_body, float p_threshold);
 	virtual float body_get_contacts_reported_depth_threshold(RID p_body) const;
 
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit);

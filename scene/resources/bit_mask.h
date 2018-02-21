@@ -54,7 +54,7 @@ protected:
 
 public:
 	void create(const Size2 &p_size);
-	void create_from_image_alpha(const Ref<Image> &p_image, float p_treshold = 0.1);
+	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
 
 	void set_bit(const Point2 &p_pos, bool p_value);
 	bool get_bit(const Point2 &p_pos) const;

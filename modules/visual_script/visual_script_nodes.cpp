@@ -425,7 +425,7 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 }
 PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 	static const Variant::Type port_types[Variant::OP_MAX] = {
-		//comparation
+		//comparison
 		Variant::BOOL, //OP_EQUAL,
 		Variant::BOOL, //OP_NOT_EQUAL,
 		Variant::BOOL, //OP_LESS,
@@ -466,7 +466,7 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 }
 
 static const char *op_names[] = {
-	//comparation
+	//comparison
 	"Equal", //OP_EQUAL,
 	"NotEqual", //OP_NOT_EQUAL,
 	"Less", //OP_LESS,
@@ -506,7 +506,7 @@ String VisualScriptOperator::get_caption() const {
 String VisualScriptOperator::get_text() const {
 
 	static const wchar_t *op_names[] = {
-		//comparation
+		//comparison
 		L"A = B", //OP_EQUAL,
 		L"A \u2260 B", //OP_NOT_EQUAL,
 		L"A < B", //OP_LESS,

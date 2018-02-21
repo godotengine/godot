@@ -1432,7 +1432,7 @@ def use_windows_spawn_fix(self, platform=None):
     # that makes object files with same names to be overwritten so the last wins and
     # the library looses symbols defined by overwritten objects.
     # By enabling quick append instead of the default mode (replacing), libraries will
-    # got built correctly regardless the invokation strategy.
+    # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
     # changes, no multiple versions of the same object file will be present.
     self.Replace(ARFLAGS='q')
@@ -1607,7 +1607,7 @@ def detect_visual_c_compiler_version(tools_env):
     # There is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
-    # is to check the PATH variable and figure out which one will be called first. Code bellow does that and returns:
+    # is to check the PATH variable and figure out which one will be called first. Code below does that and returns:
     # the following string values:
 
     # ""              Compiler not detected
@@ -1627,7 +1627,7 @@ def detect_visual_c_compiler_version(tools_env):
     if 'VCINSTALLDIR' in tools_env:
         # print("Checking VCINSTALLDIR")
 
-        # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
+        # find() works with -1 so big ifs below are needed... the simplest solution, in fact
         # First test if amd64 and amd64_x86 compilers are present in the path
         vc_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64;")
         if(vc_amd64_compiler_detection_index > -1):

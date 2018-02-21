@@ -1274,7 +1274,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Syncronizes threads.
+				Synchronizes threads.
 			</description>
 		</method>
 		<method name="free_rid">

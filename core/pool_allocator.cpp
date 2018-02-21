@@ -90,7 +90,7 @@ bool PoolAllocator::find_hole(EntryArrayPos *p_pos, int p_for_size) {
 
 		int hole_size = entry.pos - prev_entry_end_pos;
 
-		/* detemine if what we want fits in that hole */
+		/* determine if what we want fits in that hole */
 		if (hole_size >= p_for_size) {
 			*p_pos = i;
 			return true;
@@ -100,7 +100,7 @@ bool PoolAllocator::find_hole(EntryArrayPos *p_pos, int p_for_size) {
 		prev_entry_end_pos = entry_end(entry);
 	}
 
-	/* No holes between entrys, check at the end..*/
+	/* No holes between entries, check at the end..*/
 
 	if ((pool_size - prev_entry_end_pos) >= p_for_size) {
 		*p_pos = entry_count;

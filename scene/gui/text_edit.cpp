@@ -628,7 +628,7 @@ void TextEdit::_notification(int p_what) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 				}
 				//compute actual region to start (may be inside say, a comment).
-				//slow in very large documments :( but ok for source!
+				//slow in very large documents :( but ok for source!
 
 				for (int i = 0; i < cursor.line_ofs; i++) {
 
@@ -4470,7 +4470,7 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 	ERR_FAIL_INDEX_V(p_from_line, text.size(), false);
 	ERR_FAIL_INDEX_V(p_from_column, text[p_from_line].length() + 1, false);
 
-	//search through the whole documment, but start by current line
+	//search through the whole document, but start by current line
 
 	int line = p_from_line;
 	int pos = -1;

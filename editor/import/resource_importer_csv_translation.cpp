@@ -50,7 +50,7 @@ void ResourceImporterCSVTranslation::get_recognized_extensions(List<String> *p_e
 }
 
 String ResourceImporterCSVTranslation::get_save_extension() const {
-	return ""; //does not save a single resoure
+	return ""; //does not save a single resource
 }
 
 String ResourceImporterCSVTranslation::get_resource_type() const {
