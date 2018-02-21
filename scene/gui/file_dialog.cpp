@@ -319,10 +319,10 @@ void FileDialog::deselect_items() {
 
 			case MODE_OPEN_FILE:
 			case MODE_OPEN_FILES:
-				get_ok()->set_text(TTR("Open"));
+				get_ok()->set_text(RTR("Open"));
 				break;
 			case MODE_OPEN_DIR:
-				get_ok()->set_text(TTR("Select Current Folder"));
+				get_ok()->set_text(RTR("Select Current Folder"));
 				break;
 		}
 	}
@@ -339,7 +339,7 @@ void FileDialog::_tree_selected() {
 
 		file->set_text(d["name"]);
 	} else if (mode == MODE_OPEN_DIR) {
-		get_ok()->set_text(TTR("Select this Folder"));
+		get_ok()->set_text(RTR("Select this Folder"));
 	}
 
 	get_ok()->set_disabled(_is_open_should_be_disabled());
@@ -843,7 +843,7 @@ FileDialog::FileDialog() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	dir_up = memnew(ToolButton);
-	dir_up->set_tooltip(TTR("Go to parent folder"));
+	dir_up->set_tooltip(RTR("Go to parent folder"));
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", this, "_go_up");
 
