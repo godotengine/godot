@@ -749,7 +749,6 @@ public:
 		struct CommandMesh : public Command {
 
 			RID mesh;
-			RID skeleton;
 			RID texture;
 			RID normal_map;
 			CommandMesh() { type = TYPE_MESH; }
@@ -758,7 +757,6 @@ public:
 		struct CommandMultiMesh : public Command {
 
 			RID multimesh;
-			RID skeleton;
 			RID texture;
 			RID normal_map;
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }
@@ -924,7 +922,7 @@ public:
 					case Item::Command::TYPE_MESH: {
 
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, mesh->skeleton);
+						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
@@ -1016,7 +1014,7 @@ public:
 	virtual void canvas_begin() = 0;
 	virtual void canvas_end() = 0;
 
-	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light) = 0;
+	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance : public RID_Data {

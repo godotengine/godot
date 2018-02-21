@@ -581,8 +581,8 @@ public:
 	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
 	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
-	BIND5(canvas_item_add_mesh, RID, const RID &, RID, RID, RID)
-	BIND5(canvas_item_add_multimesh, RID, RID, RID, RID, RID)
+	BIND4(canvas_item_add_mesh, RID, const RID &, RID, RID)
+	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_add_clip_ignore, RID, bool)
@@ -590,6 +590,7 @@ public:
 	BIND2(canvas_item_set_z_index, RID, int)
 	BIND2(canvas_item_set_z_as_relative_to_parent, RID, bool)
 	BIND3(canvas_item_set_copy_to_backbuffer, RID, bool, const Rect2 &)
+	BIND2(canvas_item_attach_skeleton, RID, RID)
 
 	BIND1(canvas_item_clear, RID)
 	BIND2(canvas_item_set_draw_index, RID, int)
