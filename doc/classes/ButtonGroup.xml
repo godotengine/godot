@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Group of [Button]. All direct and indirect children buttons become radios. Only one allows being pressed.
+		[member BaseButton.toggle_mode] should be [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
