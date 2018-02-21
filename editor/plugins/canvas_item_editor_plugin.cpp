@@ -597,7 +597,7 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 					bone = Object::cast_to<Node2D>(bone->get_parent());
 				}
 
-				//Save the bone state and lenght if we have an IK chain
+				//Save the bone state and length if we have an IK chain
 				if (ik_found) {
 					bone = Object::cast_to<Node2D>(canvas_item);
 					Transform2D bone_xform = bone->get_global_transform();
@@ -676,12 +676,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
-	// Start draging a guide
+	// Start dragging a guide
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
-				// Retreive the guide lists
+				// Retrieve the guide lists
 				Array vguides;
 				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 					vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
