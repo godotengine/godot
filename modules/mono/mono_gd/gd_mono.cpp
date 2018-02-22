@@ -275,6 +275,23 @@ void GDMono::initialize() {
 		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
 #endif
 
+			OS::get_singleton()->print("Mono: Proceeding to unload scripts domain because of invalid API assemblies\n");
+
+			Error err = _unload_scripts_domain();
+			if (err != OK) {
+				WARN_PRINT("Mono: Failed to unload scripts domain");
+			}
+#else
+			ERR_PRINT("The loaded API assembly is invalid");
+			CRASH_NOW();
+#endif
+		}
+	}
+#else
+	if (OS::get_singleton()->is_stdout_verbose())
+		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
+#endif
+
 	OS::get_singleton()->print("Mono: INITIALIZED\n");
 }
 
@@ -433,7 +450,7 @@ bool GDMono::_load_core_api_assembly() {
 		return false;
 #endif
 
-	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
+	bool success = _load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
 
 	if (success) {
 #ifndef MONO_GLUE_DISABLED
@@ -459,7 +476,7 @@ bool GDMono::_load_editor_api_assembly() {
 		return false;
 #endif
 
-	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+	bool success = _load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
 
 	if (success) {
 #ifndef MONO_GLUE_DISABLED
