@@ -9,13 +9,14 @@
 # Francesco Perrotti-Garcia <fpg1503@gmail.com>, 2017.
 # George Marques <george@gmarqu.es>, 2016.
 # Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017.
+# João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Lucas Silva <lucasb.hpp@gmail.com>, 2018.
 # Luiz G. Correia <luizgabriell2.0@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 # MalcomRF <malcomkbk@gmail.com>, 2017.
-# Marcus Correia <marknokalt@live.com>, 2017.
+# Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
 # Renato Rotenberg <renato.rotenberg@gmail.com>, 2017.
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017.
@@ -25,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"PO-Revision-Date: 2018-02-19 19:38+0000\n"
 "Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
 "com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.19\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -47,7 +48,7 @@ msgstr "Toda a Seleção"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Alterar tempo de quadro-chave da animação"
+msgstr "Alterar Tempo de Quadro-Chave da Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -59,7 +60,7 @@ msgstr "Alterar Transformação da Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Alterar valor de quadro-chave da animação"
+msgstr "Alterar Valor de Quadro-Chave da Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -433,7 +434,7 @@ msgstr "Coluna:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "O método no Nó destino precisa ser especificado!"
+msgstr "O método no nó destino precisa ser especificado!"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -441,7 +442,7 @@ msgid ""
 "Node."
 msgstr ""
 "Método destino não encontrado! Específique um método válido ou anexe um "
-"script ao Nó destino."
+"script ao nó destino."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -470,7 +471,7 @@ msgstr "Argumentos de Chamada Extras:"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr "Caminho para o Nó:"
+msgstr "Caminho para o nó:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
@@ -482,7 +483,7 @@ msgstr "Postergado"
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr "Uma vez"
+msgstr "Oneshot"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp
@@ -1063,7 +1064,7 @@ msgstr "Caminho:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Nome do Nó:"
+msgstr "Nome do nó:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
@@ -1653,11 +1654,11 @@ msgstr "Abrir Cena Base"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr "Abri Cena Ágil..."
+msgstr "Abri Cena Rápidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr "Abrir Rápidamente Script.."
+msgstr "Abrir Script Rápidamente..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -2417,7 +2418,7 @@ msgstr "Padrão (Mesma do Editor)"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Selecionar Nó(s) para Importar"
+msgstr "Selecione Nó(s) para Importar"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
@@ -2883,7 +2884,7 @@ msgstr "Reimportar"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "Múltiplos Nós definidos"
+msgstr "Múltiplos Nodes definidos"
 
 #: editor/node_dock.cpp
 msgid "Groups"
@@ -2891,7 +2892,7 @@ msgstr "Grupos"
 
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr "Selecione um Nó para editar Sinais e Grupos."
+msgstr "Selecione um nó para editar Sinais e Grupos."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3260,39 +3261,39 @@ msgstr "Árvore de Animação é inválida."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Nó de Animação"
+msgstr "Nó Animation"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr "Nó de tipo Uma-Vez"
+msgstr "Nó OneShot"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr "Misturar Nó"
+msgstr "Nó Mix"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "Nó Misturar2"
+msgstr "Nó Blend2"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "Nó Misturar3"
+msgstr "Nó Blend3"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "Nó Misturar4"
+msgstr "Nó Blend4"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "Nó Tempo de Escala"
+msgstr "Nó TimeScale"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "Nó Tempo de Procura"
+msgstr "Nó TimeSeek"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr "Nó de Transição"
+msgstr "Nó Transition"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
@@ -5018,11 +5019,11 @@ msgstr "Alterar Nome da Entrada"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr "Conectar Nós de Grafos"
+msgstr "Conectar Nodes de Grafos"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr "Desconectar Nós de Grafos"
+msgstr "Desconectar Nodes de Grafos"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
@@ -6540,7 +6541,7 @@ msgstr "Erro ao carregar arquivo: Não é um recurso!"
 
 #: editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr "Nó selecionado não é uma Viewport!"
+msgstr "O nó selecionado não é uma Viewport!"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
@@ -6657,7 +6658,7 @@ msgstr "Mover Nó no Pai"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Mover Nós no Pai"
+msgstr "Mover Nodes no Pai"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -6784,8 +6785,8 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Instanciar um arquivo de cena como um Nó. Criar uma cena herdada se não "
-"existe um nó raiz."
+"Instanciar um arquivo de cena como um nó. Cria uma cena herdada se não "
+"existir um nó raiz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Filter nodes"
@@ -6889,7 +6890,7 @@ msgstr "Renomear Nó"
 
 #: editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr "Árvore de Cena (Nós):"
+msgstr "Árvore de Cena (Nodes):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
@@ -7453,7 +7454,7 @@ msgid ""
 "your node please."
 msgstr ""
 "Um valor de retorno deve ser atribuído ao primeiro elemento da memória "
-"corrente do nó! Conserte seu node, por favor."
+"corrente do nó! Conserte seu nó, por favor."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
@@ -7537,11 +7538,11 @@ msgstr "Adicionar Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
-msgstr "Remover Nós VisualScript"
+msgstr "Remover Nodes VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Duplicate VisualScript Nodes"
-msgstr "Duplicar Nós VisualScript"
+msgstr "Duplicar Nodes VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
@@ -7577,7 +7578,7 @@ msgstr "Adicionar Nó de Pré-carregamento"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Adicionar Nó(s) a partir de árvore"
+msgstr "Adicionar Nó(s) a Partir da Árvore"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -7601,7 +7602,7 @@ msgstr "Remover Nó VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
-msgstr "Conectar Nós"
+msgstr "Conectar Nodes"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
@@ -7653,7 +7654,7 @@ msgstr "Área de transferência vazia!"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
-msgstr "Colar Nós VisualScript"
+msgstr "Colar Nodes VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -7689,7 +7690,7 @@ msgstr "Tipo de Base:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr "Nós Disponíveis:"
+msgstr "Nodes Disponíveis:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
@@ -7713,15 +7714,15 @@ msgstr "Localizar Tipo de Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr "Copiar Nós"
+msgstr "Copiar Nodes"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr "Recortar Nós"
+msgstr "Recortar Nodes"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
-msgstr "Colar Nós"
+msgstr "Colar Nodes"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -7741,11 +7742,11 @@ msgstr "Nome da propriedade de índice inválido."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "Objeto base não é um Node!"
+msgstr "Objeto base não é um nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr "O caminho não leva a um Node!"
+msgstr "O caminho não leva a um nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."

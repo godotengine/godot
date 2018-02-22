@@ -7,13 +7,14 @@
 # Ch <ccwpc@hanmail.net>, 2017.
 # paijai 송 (fivejobi) <xotjq237@gmail.com>, 2018.
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
+# Xavier Cho <mysticfallband@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-20 17:48+0000\n"
-"Last-Translator: 박한얼 <volzhs@gmail.com>\n"
+"PO-Revision-Date: 2018-02-04 04:40+0000\n"
+"Last-Translator: Xavier Cho <mysticfallband@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -2098,7 +2099,7 @@ msgstr "프로젝트 실행."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "재성"
+msgstr "실행"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
