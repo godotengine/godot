@@ -34,7 +34,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-07-05 12:38+0000\n"
+"PO-Revision-Date: 2018-02-12 08:36+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -350,7 +350,7 @@ msgstr "Skalierungsverhältnis:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "Funktionen in welcher Node aufrufen?"
+msgstr "Node dessen Funktionen aufgerufen werden sollen auswählen."
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
