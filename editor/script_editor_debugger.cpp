@@ -948,7 +948,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			inspector->edit(variables);
 
-			copy->set_icon(get_icon("Duplicate", "EditorIcons"));
+			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
 			next->set_icon(get_icon("DebugNext", "EditorIcons"));
