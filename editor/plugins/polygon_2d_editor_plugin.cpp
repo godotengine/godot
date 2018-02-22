@@ -80,167 +80,15 @@ void Polygon2DEditor::_notification(int p_what) {
 	}
 }
 
-void Polygon2DEditor::_sync_bones() {
-
-	print_line("syncinc");
-	if (!node->has_node(node->get_skeleton())) {
-		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
-		return;
-	}
-
-	Node *sn = node->get_node(node->get_skeleton());
-	Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(sn);
-
-	if (!skeleton) {
-		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
-		return;
-	}
-
-	Array prev_bones = node->call("_get_bones");
-	node->clear_bones();
-
-	print_line("bones in skeleton: " + itos(skeleton->get_bone_count()));
-
-	for (int i = 0; i < skeleton->get_bone_count(); i++) {
-		NodePath path = skeleton->get_path_to(skeleton->get_bone(i));
-		PoolVector<float> weights;
-		int wc = node->get_polygon().size();
-
-		for (int j = 0; j < prev_bones.size(); j += 2) {
-			NodePath pvp = prev_bones[j];
-			PoolVector<float> pv = prev_bones[j + 1];
-			if (pvp == path && pv.size() == wc) {
-				weights = pv;
-			}
-		}
-
-		if (weights.size() == 0) { //create them
-			weights.resize(node->get_polygon().size());
-			PoolVector<float>::Write w = weights.write();
-			for (int j = 0; j < wc; j++) {
-				w[j] = 0.0;
-			}
-		}
-
-		node->add_bone(path, weights);
-	}
-	Array new_bones = node->call("_get_bones");
-
-	undo_redo->create_action(TTR("Sync bones"));
-	undo_redo->add_do_method(node, "_set_bones", new_bones);
-	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
-	undo_redo->add_do_method(uv_edit_draw, "update");
-	undo_redo->add_undo_method(uv_edit_draw, "update");
-	undo_redo->add_do_method(this, "_update_bone_list");
-	undo_redo->add_undo_method(this, "_update_bone_list");
-	undo_redo->commit_action();
-}
-
-void Polygon2DEditor::_update_bone_list() {
-
-	NodePath selected;
-	while (bone_scroll_vb->get_child_count()) {
-		CheckBox *cb = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(0));
-		if (cb && cb->is_pressed()) {
-			selected = cb->get_meta("bone_path");
-		}
-		memdelete(bone_scroll_vb->get_child(0));
-	}
-
-	Ref<ButtonGroup> bg;
-	bg.instance();
-	for (int i = 0; i < node->get_bone_count(); i++) {
-		CheckBox *cb = memnew(CheckBox);
-		NodePath np = node->get_bone_path(i);
-		String name;
-		if (np.get_name_count()) {
-			name = np.get_name(np.get_name_count() - 1);
-		}
-		if (name == String()) {
-			name = "Bone " + itos(i);
-		}
-		cb->set_text(name);
-		cb->set_button_group(bg);
-		cb->set_meta("bone_path", np);
-		bone_scroll_vb->add_child(cb);
-
-		if (np == selected)
-			cb->set_pressed(true);
-
-		cb->connect("pressed", this, "_bone_paint_selected", varray(i));
-	}
-
-	uv_edit_draw->update();
-}
-
-void Polygon2DEditor::_bone_paint_selected(int p_index) {
-	uv_edit_draw->update();
-}
-
 void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 
-	if (p_mode == 0) { //uv
+	if (p_mode == 0) {
+		if (uv_button[UV_MODE_CREATE]->is_pressed()) {
+			_uv_mode(1);
+		}
 		uv_button[UV_MODE_CREATE]->hide();
-		for (int i = UV_MODE_MOVE; i <= UV_MODE_SCALE; i++) {
-			uv_button[i]->show();
-		}
-		uv_button[UV_MODE_ADD_SPLIT]->hide();
-		uv_button[UV_MODE_REMOVE_SPLIT]->hide();
-		uv_button[UV_MODE_PAINT_WEIGHT]->hide();
-		uv_button[UV_MODE_CLEAR_WEIGHT]->hide();
-		_uv_mode(UV_MODE_EDIT_POINT);
-
-		bone_scroll_main_vb->hide();
-		bone_paint_strength->hide();
-		bone_paint_radius->hide();
-		bone_paint_radius_label->hide();
-
-	} else if (p_mode == 1) { //poly
-		for (int i = 0; i <= UV_MODE_SCALE; i++) {
-			uv_button[i]->show();
-		}
-		uv_button[UV_MODE_ADD_SPLIT]->hide();
-		uv_button[UV_MODE_REMOVE_SPLIT]->hide();
-		uv_button[UV_MODE_PAINT_WEIGHT]->hide();
-		uv_button[UV_MODE_CLEAR_WEIGHT]->hide();
-		_uv_mode(UV_MODE_EDIT_POINT);
-
-		bone_scroll_main_vb->hide();
-		bone_paint_strength->hide();
-		bone_paint_radius->hide();
-		bone_paint_radius_label->hide();
-
-	} else if (p_mode == 2) { //splits
-		for (int i = 0; i <= UV_MODE_SCALE; i++) {
-			uv_button[i]->hide();
-		}
-		uv_button[UV_MODE_ADD_SPLIT]->show();
-		uv_button[UV_MODE_REMOVE_SPLIT]->show();
-		uv_button[UV_MODE_PAINT_WEIGHT]->hide();
-		uv_button[UV_MODE_CLEAR_WEIGHT]->hide();
-		_uv_mode(UV_MODE_ADD_SPLIT);
-
-		bone_scroll_main_vb->hide();
-		bone_paint_strength->hide();
-		bone_paint_radius->hide();
-		bone_paint_radius_label->hide();
-
-	} else if (p_mode == 3) { //bones´
-		for (int i = 0; i <= UV_MODE_REMOVE_SPLIT; i++) {
-			uv_button[i]->hide();
-		}
-		uv_button[UV_MODE_PAINT_WEIGHT]->show();
-		uv_button[UV_MODE_CLEAR_WEIGHT]->show();
-		_uv_mode(UV_MODE_PAINT_WEIGHT);
-
-		bone_scroll_main_vb->show();
-		bone_paint_strength->show();
-		bone_paint_radius->show();
-		bone_paint_radius_label->show();
-		_update_bone_list();
-		bone_paint_pos = Vector2(-100000, -100000); //send brush away when switching
+	} else {
+		uv_button[UV_MODE_CREATE]->show();
 	}
 
 	uv_edit_draw->update();
@@ -380,44 +228,39 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				uv_drag_from = Vector2(mb->get_position().x, mb->get_position().y);
 				uv_drag = true;
-				points_prev = node->get_uv();
+				uv_prev = node->get_uv();
 
-				if (uv_edit_mode[0]->is_pressed()) { //edit uv
-					points_prev = node->get_uv();
-				} else { //edit polygon
-					points_prev = node->get_polygon();
-				}
+				if (uv_edit_mode[0]->is_pressed()) //edit uv
+					uv_prev = node->get_uv();
+				else
+					uv_prev = node->get_polygon();
 
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_CREATE) {
 
 					if (!uv_create) {
-						points_prev.resize(0);
+						uv_prev.resize(0);
 						Vector2 tuv = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
-						points_prev.push_back(tuv);
+						uv_prev.push_back(tuv);
 						uv_create_to = tuv;
-						point_drag_index = 0;
+						uv_drag_index = 0;
 						uv_drag_from = tuv;
 						uv_drag = true;
 						uv_create = true;
 						uv_create_uv_prev = node->get_uv();
 						uv_create_poly_prev = node->get_polygon();
-						uv_create_bones_prev = node->call("_get_bones");
-						splits_prev = node->get_splits();
-						node->set_polygon(points_prev);
-						node->set_uv(points_prev);
+						node->set_polygon(uv_prev);
+						node->set_uv(uv_prev);
 
 					} else {
 						Vector2 tuv = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
 
-						if (points_prev.size() > 3 && tuv.distance_to(points_prev[0]) < 8) {
+						if (uv_prev.size() > 3 && tuv.distance_to(uv_prev[0]) < 8) {
 							undo_redo->create_action(TTR("Create Polygon & UV"));
 							undo_redo->add_do_method(node, "set_uv", node->get_uv());
-							undo_redo->add_undo_method(node, "set_uv", points_prev);
+							undo_redo->add_undo_method(node, "set_uv", uv_prev);
 							undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
-							undo_redo->add_undo_method(node, "set_polygon", points_prev);
-							undo_redo->add_do_method(node, "clear_bones");
-							undo_redo->add_undo_method(node, "_set_bones", node->call("_get_bones"));
+							undo_redo->add_undo_method(node, "set_polygon", uv_prev);
 							undo_redo->add_do_method(uv_edit_draw, "update");
 							undo_redo->add_undo_method(uv_edit_draw, "update");
 							undo_redo->commit_action();
@@ -425,12 +268,12 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							uv_create = false;
 							_uv_mode(UV_MODE_EDIT_POINT);
 						} else {
-							points_prev.push_back(tuv);
-							point_drag_index = points_prev.size() - 1;
+							uv_prev.push_back(tuv);
+							uv_drag_index = uv_prev.size() - 1;
 							uv_drag_from = tuv;
 						}
-						node->set_polygon(points_prev);
-						node->set_uv(points_prev);
+						node->set_polygon(uv_prev);
+						node->set_uv(uv_prev);
 					}
 				}
 
@@ -460,164 +303,16 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_drag = false;
 					}
 				}
-
-				if (uv_move_current == UV_MODE_ADD_SPLIT) {
-
-					int split_to_index = -1;
-					split_to_index = -1;
-					for (int i = 0; i < points_prev.size(); i++) {
-
-						Vector2 tuv = mtx.xform(points_prev[i]);
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
-							split_to_index = i;
-						}
-					}
-
-					if (split_to_index == -1) {
-						split_create = false;
-						return;
-					}
-
-					if (split_create) {
-
-						split_create = false;
-						if (split_to_index < point_drag_index) {
-							SWAP(split_to_index, point_drag_index);
-						}
-						bool valid = true;
-						String split_error;
-						if (split_to_index == point_drag_index) {
-							split_error = TTR("Split point with itself.");
-							valid = false;
-						}
-						if (split_to_index + 1 == point_drag_index) {
-							//not a split,goes along the edge
-							split_error = TTR("Split can't form an existing edge.");
-							valid = false;
-						}
-						if (split_to_index == points_prev.size() - 1 && point_drag_index == 0) {
-							//not a split,goes along the edge
-							split_error = TTR("Split can't form an existing edge.");
-							valid = false;
-						}
-
-						for (int i = 0; i < splits_prev.size(); i += 2) {
-
-							if (splits_prev[i] == point_drag_index && splits_prev[i + 1] == split_to_index) {
-								//already exists
-								split_error = TTR("Split already exists.");
-								valid = false;
-								break;
-							}
-
-							int a_state; //-1, outside split, 0 split point, +1, inside split
-							if (point_drag_index == splits_prev[i] || point_drag_index == splits_prev[i + 1]) {
-								a_state = 0;
-							} else if (point_drag_index < splits_prev[i] || point_drag_index > splits_prev[i + 1]) {
-								a_state = -1;
-							} else {
-								a_state = 1;
-							}
-
-							int b_state; //-1, outside split, 0 split point, +1, inside split
-							if (split_to_index == splits_prev[i] || split_to_index == splits_prev[i + 1]) {
-								b_state = 0;
-							} else if (split_to_index < splits_prev[i] || split_to_index > splits_prev[i + 1]) {
-								b_state = -1;
-							} else {
-								b_state = 1;
-							}
-
-							if (b_state * a_state < 0) {
-								//crossing
-								split_error = "Split crosses another split.";
-								valid = false;
-								break;
-							}
-						}
-
-						if (valid) {
-
-							splits_prev.push_back(point_drag_index);
-							splits_prev.push_back(split_to_index);
-
-							undo_redo->create_action(TTR("Add Split"));
-
-							undo_redo->add_do_method(node, "set_splits", splits_prev);
-							undo_redo->add_undo_method(node, "set_splits", node->get_splits());
-							undo_redo->add_do_method(uv_edit_draw, "update");
-							undo_redo->add_undo_method(uv_edit_draw, "update");
-							undo_redo->commit_action();
-						} else {
-							error->set_text(TTR("Invalid Split: ") + split_error);
-							error->popup_centered_minsize();
-						}
-
-					} else {
-						point_drag_index = split_to_index;
-						split_create = true;
-						splits_prev = node->get_splits();
-						uv_create_to = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
-					}
-				}
-
-				if (uv_move_current == UV_MODE_REMOVE_SPLIT) {
-
-					splits_prev = node->get_splits();
-					for (int i = 0; i < splits_prev.size(); i += 2) {
-						if (splits_prev[i] < 0 || splits_prev[i] >= points_prev.size())
-							continue;
-						if (splits_prev[i + 1] < 0 || splits_prev[i] >= points_prev.size())
-							continue;
-						Vector2 e[2] = { mtx.xform(points_prev[splits_prev[i]]), mtx.xform(points_prev[splits_prev[i + 1]]) };
-						Vector2 mp = Vector2(mb->get_position().x, mb->get_position().y);
-						Vector2 cp = Geometry::get_closest_point_to_segment_2d(mp, e);
-						if (cp.distance_to(mp) < 8) {
-							splits_prev.remove(i);
-							splits_prev.remove(i);
-
-							undo_redo->create_action(TTR("Remove Split"));
-
-							undo_redo->add_do_method(node, "set_splits", splits_prev);
-							undo_redo->add_undo_method(node, "set_splits", node->get_splits());
-							undo_redo->add_do_method(uv_edit_draw, "update");
-							undo_redo->add_undo_method(uv_edit_draw, "update");
-							undo_redo->commit_action();
-
-							break;
-						}
-					}
-				}
-
-				if (uv_move_current == UV_MODE_PAINT_WEIGHT || uv_move_current == UV_MODE_CLEAR_WEIGHT) {
-
-					int bone_selected = -1;
-					for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
-						CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
-						if (c && c->is_pressed()) {
-							bone_selected = i;
-							break;
-						}
-					}
-
-					if (bone_selected != -1 && node->get_bone_weights(bone_selected).size() == points_prev.size()) {
-
-						prev_weights = node->get_bone_weights(bone_selected);
-						bone_painting = true;
-						bone_painting_bone = bone_selected;
-					}
-				}
-
 			} else if (uv_drag && !uv_create) {
 
 				undo_redo->create_action(TTR("Transform UV Map"));
 
 				if (uv_edit_mode[0]->is_pressed()) { //edit uv
 					undo_redo->add_do_method(node, "set_uv", node->get_uv());
-					undo_redo->add_undo_method(node, "set_uv", points_prev);
-				} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					undo_redo->add_undo_method(node, "set_uv", uv_prev);
+				} else {
 					undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
-					undo_redo->add_undo_method(node, "set_polygon", points_prev);
+					undo_redo->add_undo_method(node, "set_polygon", uv_prev);
 				}
 				undo_redo->add_do_method(uv_edit_draw, "update");
 				undo_redo->add_undo_method(uv_edit_draw, "update");
@@ -643,16 +338,14 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				uv_create = false;
 				node->set_uv(uv_create_uv_prev);
 				node->set_polygon(uv_create_poly_prev);
-				node->call("_set_bones", uv_create_bones_prev);
-				node->set_splits(splits_prev);
 				uv_edit_draw->update();
 			} else if (uv_drag) {
 
 				uv_drag = false;
 				if (uv_edit_mode[0]->is_pressed()) { //edit uv
-					node->set_uv(points_prev);
-				} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
-					node->set_polygon(points_prev);
+					node->set_uv(uv_prev);
+				} else {
+					node->set_polygon(uv_prev);
 				}
 				uv_edit_draw->update();
 			} else if (split_create) {
@@ -695,12 +388,12 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case UV_MODE_EDIT_POINT: {
 
-					PoolVector<Vector2> uv_new = points_prev;
-					uv_new.set(point_drag_index, uv_new[point_drag_index] + drag);
+					PoolVector<Vector2> uv_new = uv_prev;
+					uv_new.set(uv_drag_index, uv_new[uv_drag_index] + drag);
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else {
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -712,7 +405,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else {
 						node->set_polygon(uv_new);
 					}
 
@@ -736,7 +429,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else {
 						node->set_polygon(uv_new);
 					}
 
@@ -765,7 +458,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else {
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -876,29 +569,10 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	PoolVector<Vector2> uvs;
-	if (uv_edit_mode[0]->is_pressed()) { //edit uv
+	if (uv_edit_mode[0]->is_pressed()) //edit uv
 		uvs = node->get_uv();
-	} else { //edit polygon
+	else
 		uvs = node->get_polygon();
-	}
-
-	PoolVector<float>::Read weight_r;
-
-	if (uv_edit_mode[3]->is_pressed()) {
-		int bone_selected = -1;
-		for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
-			CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
-			if (c && c->is_pressed()) {
-				bone_selected = i;
-				break;
-			}
-		}
-
-		if (bone_selected != -1 && node->get_bone_weights(bone_selected).size() == uvs.size()) {
-
-			weight_r = node->get_bone_weights(bone_selected).read();
-		}
-	}
 
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
 
@@ -913,14 +587,7 @@ void Polygon2DEditor::_uv_draw() {
 			next_point = uv_create_to;
 		}
 		uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), Color(0.9, 0.5, 0.5), 2);
-		if (weight_r.ptr()) {
-
-			Vector2 draw_pos = mtx.xform(uvs[i]);
-			float weight = weight_r[i];
-			uv_edit_draw->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0));
-		} else {
-			uv_edit_draw->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
-		}
+		uv_edit_draw->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
 		rect.expand_to(mtx.basis_xform(uvs[i]));
 	}
 
@@ -1018,10 +685,6 @@ void Polygon2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_snap_step_x"), &Polygon2DEditor::_set_snap_step_x);
 	ClassDB::bind_method(D_METHOD("_set_snap_step_y"), &Polygon2DEditor::_set_snap_step_y);
 	ClassDB::bind_method(D_METHOD("_uv_edit_mode_select"), &Polygon2DEditor::_uv_edit_mode_select);
-	ClassDB::bind_method(D_METHOD("_sync_bones"), &Polygon2DEditor::_sync_bones);
-	ClassDB::bind_method(D_METHOD("_update_bone_list"), &Polygon2DEditor::_update_bone_list);
-
-	ClassDB::bind_method(D_METHOD("_bone_paint_selected"), &Polygon2DEditor::_bone_paint_selected);
 }
 
 Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
@@ -1064,28 +727,16 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit_mode[1] = memnew(ToolButton);
 	uv_mode_hb->add_child(uv_edit_mode[1]);
 	uv_edit_mode[1]->set_toggle_mode(true);
-	uv_edit_mode[2] = memnew(ToolButton);
-	uv_mode_hb->add_child(uv_edit_mode[2]);
-	uv_edit_mode[2]->set_toggle_mode(true);
-	uv_edit_mode[3] = memnew(ToolButton);
-	uv_mode_hb->add_child(uv_edit_mode[3]);
-	uv_edit_mode[3]->set_toggle_mode(true);
 
 	uv_edit_mode[0]->set_text(TTR("UV"));
 	uv_edit_mode[0]->set_pressed(true);
 	uv_edit_mode[1]->set_text(TTR("Poly"));
-	uv_edit_mode[2]->set_text(TTR("Splits"));
-	uv_edit_mode[3]->set_text(TTR("Bones"));
 
 	uv_edit_mode[0]->set_button_group(uv_edit_group);
 	uv_edit_mode[1]->set_button_group(uv_edit_group);
-	uv_edit_mode[2]->set_button_group(uv_edit_group);
-	uv_edit_mode[3]->set_button_group(uv_edit_group);
 
 	uv_edit_mode[0]->connect("pressed", this, "_uv_edit_mode_select", varray(0));
 	uv_edit_mode[1]->connect("pressed", this, "_uv_edit_mode_select", varray(1));
-	uv_edit_mode[2]->connect("pressed", this, "_uv_edit_mode_select", varray(2));
-	uv_edit_mode[3]->connect("pressed", this, "_uv_edit_mode_select", varray(3));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
@@ -1104,40 +755,9 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_button[2]->set_tooltip(TTR("Move Polygon"));
 	uv_button[3]->set_tooltip(TTR("Rotate Polygon"));
 	uv_button[4]->set_tooltip(TTR("Scale Polygon"));
-	uv_button[5]->set_tooltip(TTR("Connect two points to make a split"));
-	uv_button[6]->set_tooltip(TTR("Select a split to erase it"));
-	uv_button[7]->set_tooltip(TTR("Paint weights with specified intensity"));
-	uv_button[8]->set_tooltip(TTR("UnPaint weights with specified intensity"));
 
 	uv_button[0]->hide();
-	uv_button[5]->hide();
-	uv_button[6]->hide();
-	uv_button[7]->hide();
-	uv_button[8]->hide();
 	uv_button[1]->set_pressed(true);
-
-	bone_paint_strength = memnew(HSlider);
-	uv_mode_hb->add_child(bone_paint_strength);
-	bone_paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
-	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bone_paint_strength->set_min(0);
-	bone_paint_strength->set_max(1);
-	bone_paint_strength->set_step(0.01);
-	bone_paint_strength->set_value(0.5);
-
-	bone_paint_radius_label = memnew(Label(" " + TTR("Radius:") + " "));
-	uv_mode_hb->add_child(bone_paint_radius_label);
-	bone_paint_radius = memnew(SpinBox);
-	uv_mode_hb->add_child(bone_paint_radius);
-
-	bone_paint_strength->hide();
-	bone_paint_radius->hide();
-	bone_paint_radius_label->hide();
-	bone_paint_radius->set_min(1);
-	bone_paint_radius->set_max(100);
-	bone_paint_radius->set_step(1);
-	bone_paint_radius->set_value(32);
-
 	HBoxContainer *uv_main_hb = memnew(HBoxContainer);
 	uv_main_vb->add_child(uv_main_hb);
 	uv_edit_draw = memnew(Control);
@@ -1261,7 +881,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_draw_zoom = 1.0;
 	point_drag_index = -1;
 	uv_drag = false;
-	uv_create = false;
+	uv_create = true;
 	updating_uv_scroll = false;
 	split_create = false;
 	bone_painting = false;
