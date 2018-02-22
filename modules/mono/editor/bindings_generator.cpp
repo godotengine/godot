@@ -103,7 +103,7 @@
 #define C_METHOD_MANAGED_TO_DICT C_NS_MONOMARSHAL "::mono_object_to_Dictionary"
 #define C_METHOD_MANAGED_FROM_DICT C_NS_MONOMARSHAL "::Dictionary_to_mono_object"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(2)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(1)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -1328,7 +1328,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		const InternalCall *im_icall = match->value();
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
-		im_call += "." + im_icall->name + "(" + icall_params + ")";
+		im_call += "." + im_icall->name + "(" + icall_params + ");\n";
 
 		if (p_imethod.arguments.size())
 			p_output.push_back(cs_in_statements);

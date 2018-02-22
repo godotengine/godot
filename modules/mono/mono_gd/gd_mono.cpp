@@ -436,7 +436,10 @@ bool GDMono::_load_core_api_assembly() {
 	if (core_api_assembly)
 		return true;
 
-	bool success = load_assembly(API_ASSEMBLY_NAME, &api_assembly);
+#ifdef TOOLS_ENABLED
+	if (metadata_is_api_assembly_invalidated(APIAssembly::API_CORE))
+		return false;
+#endif
 
 	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
 
@@ -459,7 +462,23 @@ bool GDMono::_load_editor_api_assembly() {
 	if (editor_api_assembly)
 		return true;
 
-	return load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+#ifdef TOOLS_ENABLED
+	if (metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR))
+		return false;
+#endif
+
+	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+
+	if (success) {
+#ifndef MONO_GLUE_DISABLED
+		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(editor_api_assembly, APIAssembly::API_EDITOR);
+		editor_api_assembly_out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
+										  GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
+										  GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+#endif
+	}
+
+	return success;
 }
 #endif
 
