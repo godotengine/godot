@@ -341,6 +341,8 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['-w'])
         env.Append(CCFLAGS=['-Werror=return-type'])
 
+    #env['platform_libsuffix'] = env['LIBSUFFIX']
+
     suffix = "." + selected_platform
 
     if (env["target"] == "release"):
