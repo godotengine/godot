@@ -64,7 +64,7 @@ public:
 	}
 #endif
 
-	SignalAwaiterHandle(uint32_t p_managed_handle);
+	SignalAwaiterHandle(MonoObject *p_managed);
 	~SignalAwaiterHandle();
 };
 
