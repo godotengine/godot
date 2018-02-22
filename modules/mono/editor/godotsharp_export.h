@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godotsharp_builds.h                                                  */
+/*  godotsharp_export.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,77 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOTSHARP_BUILDS_H
-#define GODOTSHARP_BUILDS_H
+#ifndef GODOTSHARP_EXPORT_H
+#define GODOTSHARP_EXPORT_H
 
-#include "mono_bottom_panel.h"
-#include "mono_build_info.h"
+#include <mono/metadata/image.h>
 
-typedef void (*GodotSharpBuild_ExitCallback)(int);
+#include "editor/editor_export.h"
 
-class GodotSharpBuilds {
+#include "../mono_gd/gd_mono_header.h"
 
-private:
-	struct BuildProcess {
-		Ref<MonoGCHandle> build_instance;
-		MonoBuildInfo build_info;
-		MonoBuildTab *build_tab;
-		GodotSharpBuild_ExitCallback exit_callback;
-		bool exited;
-		int exit_code;
+class GodotSharpExport : public EditorExportPlugin {
 
-		void on_exit(int p_exit_code);
-		void start(bool p_blocking = false);
+	MonoAssemblyName *aname_prealloc;
 
-		BuildProcess() {}
-		BuildProcess(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback = NULL);
-	};
+	bool _add_assembly(const String &p_src_path, const String &p_dst_path);
 
-	HashMap<MonoBuildInfo, BuildProcess, MonoBuildInfo::Hasher> builds;
+	Error _get_assembly_dependencies(GDMonoAssembly *p_assembly, Map<String, String> &r_dependencies);
 
-	static GodotSharpBuilds *singleton;
-
-	friend class GDMono;
-	static void _register_internal_calls();
+protected:
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+	virtual void _export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 
 public:
-	enum APIType {
-		API_CORE,
-		API_EDITOR
-	};
-
-	enum BuildTool {
-		MSBUILD_MONO,
-#ifdef WINDOWS_ENABLED
-		MSBUILD
-#else
-		XBUILD // Deprecated
-#endif
-	};
-
-	_FORCE_INLINE_ static GodotSharpBuilds *get_singleton() { return singleton; }
-
-	static void show_build_error_dialog(const String &p_message);
-
-	void build_exit_callback(const MonoBuildInfo &p_build_info, int p_exit_code);
-
-	void restart_build(MonoBuildTab *p_build_tab);
-	void stop_build(MonoBuildTab *p_build_tab);
-
-	bool build(const MonoBuildInfo &p_build_info);
-	bool build_async(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback = NULL);
-
-	static bool build_api_sln(const String &p_name, const String &p_api_sln_dir, const String &p_config);
-	static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name);
-
-	static bool make_api_sln(APIType p_api_type);
-
-	static bool build_project_blocking(const String &p_config);
-
-	static bool editor_build_callback();
-
-	GodotSharpBuilds();
-	~GodotSharpBuilds();
+	GodotSharpExport();
+	~GodotSharpExport();
 };
 
-#endif // GODOTSHARP_BUILDS_H
+#endif // GODOTSHARP_EXPORT_H

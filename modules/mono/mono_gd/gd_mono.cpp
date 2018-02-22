@@ -271,33 +271,44 @@ GDMonoAssembly **GDMono::get_loaded_assembly(const String &p_name) {
 	return assemblies[domain_id].getptr(p_name);
 }
 
-bool GDMono::_load_assembly(const String &p_name, GDMonoAssembly **r_assembly) {
+bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
+
+	CRASH_COND(!r_assembly);
+
+	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
+	bool result = load_assembly(p_name, aname, r_assembly, p_refonly);
+	mono_assembly_name_free(aname);
+	mono_free(aname);
+
+	return result;
+}
+
+bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
 
 	CRASH_COND(!r_assembly);
 
 	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print((String() + "Mono: Loading assembly " + p_name + "...\n").utf8());
+		OS::get_singleton()->print((String() + "Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...\n").utf8());
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
-	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
-	MonoAssembly *assembly = mono_assembly_load_full(aname, NULL, &status, false);
-	mono_assembly_name_free(aname);
+	MonoAssembly *assembly = mono_assembly_load_full(p_aname, NULL, &status, p_refonly);
 
 	if (!assembly)
 		return false;
+
+	ERR_FAIL_COND_V(status != MONO_IMAGE_OK, false);
 
 	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
 
 	GDMonoAssembly **stored_assembly = assemblies[domain_id].getptr(p_name);
 
-	ERR_FAIL_COND_V(status != MONO_IMAGE_OK, false);
 	ERR_FAIL_COND_V(stored_assembly == NULL, false);
-
 	ERR_FAIL_COND_V((*stored_assembly)->get_assembly() != assembly, false);
+
 	*r_assembly = *stored_assembly;
 
 	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print(String("Mono: Assembly " + p_name + " loaded from path: " + (*r_assembly)->get_path() + "\n").utf8());
+		OS::get_singleton()->print(String("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path() + "\n").utf8());
 
 	return true;
 }
@@ -307,7 +318,7 @@ bool GDMono::_load_corlib_assembly() {
 	if (corlib_assembly)
 		return true;
 
-	bool success = _load_assembly("mscorlib", &corlib_assembly);
+	bool success = load_assembly("mscorlib", &corlib_assembly);
 
 	if (success)
 		GDMonoUtils::update_corlib_cache();
@@ -320,7 +331,7 @@ bool GDMono::_load_core_api_assembly() {
 	if (api_assembly)
 		return true;
 
-	bool success = _load_assembly(API_ASSEMBLY_NAME, &api_assembly);
+	bool success = load_assembly(API_ASSEMBLY_NAME, &api_assembly);
 
 	if (success)
 		GDMonoUtils::update_godot_api_cache();
@@ -334,7 +345,7 @@ bool GDMono::_load_editor_api_assembly() {
 	if (editor_api_assembly)
 		return true;
 
-	return _load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+	return load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
 }
 #endif
 
@@ -346,7 +357,7 @@ bool GDMono::_load_editor_tools_assembly() {
 
 	_GDMONO_SCOPE_DOMAIN_(tools_domain)
 
-	return _load_assembly(EDITOR_TOOLS_ASSEMBLY_NAME, &editor_tools_assembly);
+	return load_assembly(EDITOR_TOOLS_ASSEMBLY_NAME, &editor_tools_assembly);
 }
 #endif
 
@@ -360,7 +371,7 @@ bool GDMono::_load_project_assembly() {
 		name = "UnnamedProject";
 	}
 
-	bool success = _load_assembly(name, &project_assembly);
+	bool success = load_assembly(name, &project_assembly);
 
 	if (success)
 		mono_assembly_set_main(project_assembly->get_assembly());
@@ -510,6 +521,37 @@ Error GDMono::reload_scripts_domain() {
 	return OK;
 }
 #endif
+
+Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
+
+	CRASH_COND(p_domain == NULL);
+
+	String domain_name = mono_domain_get_friendly_name(p_domain);
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		OS::get_singleton()->print(String("Mono: Unloading domain `" + domain_name + "`...\n").utf8());
+	}
+
+	if (mono_domain_get() != root_domain)
+		mono_domain_set(root_domain, true);
+
+	mono_gc_collect(mono_gc_max_generation());
+	mono_domain_finalize(p_domain, 2000);
+	mono_gc_collect(mono_gc_max_generation());
+
+	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
+
+	MonoObject *ex = NULL;
+	mono_domain_try_unload(p_domain, &ex);
+
+	if (ex) {
+		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`:");
+		mono_print_unhandled_exception(ex);
+		return FAILED;
+	}
+
+	return OK;
+}
 
 GDMonoClass *GDMono::get_class(MonoClass *p_raw_class) {
 
