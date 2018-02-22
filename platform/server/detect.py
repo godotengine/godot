@@ -139,3 +139,7 @@ def configure(env):
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
     env.Append(LIBS=['pthread'])
     env.Append(LIBS=['dl'])
+
+    # Link those statically for portability
+    if env['use_static_cpp']:
+        env.Append(LINKFLAGS=['-static-libgcc', '-static-libstdc++'])
