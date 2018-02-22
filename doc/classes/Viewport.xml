@@ -302,7 +302,7 @@
 			Amount of objects in frame.
 		</constant>
 		<constant name="RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
-			Amount of vertices in frame. 
+			Amount of vertices in frame.
 		</constant>
 		<constant name="RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
 			Amount of material changes in frame.

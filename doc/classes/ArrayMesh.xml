@@ -66,6 +66,16 @@
 				Return the amount of surfaces that the [code]ArrayMesh[/code] holds.
 			</description>
 		</method>
+		<method name="lightmap_unwrap">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="arg0" type="Transform">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="regen_normalmaps">
 			<return type="void">
 			</return>

@@ -20,7 +20,7 @@
 			</argument>
 			<argument index="2" name="b8" type="int">
 			</argument>
-			<argument index="3" name="a8" type="int">
+			<argument index="3" name="a8" type="int" default="255">
 			</argument>
 			<description>
 				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
@@ -38,7 +38,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="alpha" type="float">
+			<argument index="1" name="alpha" type="float" default="1.0">
 			</argument>
 			<description>
 				Returns a color according to the standardised [code]name[/code] with [code]alpha[/code] ranging from 0 to 1.
@@ -1131,9 +1131,9 @@
 		<method name="yield">
 			<return type="GDScriptFunctionState">
 			</return>
-			<argument index="0" name="object" type="Object">
+			<argument index="0" name="object" type="Object" default="null">
 			</argument>
-			<argument index="1" name="signal" type="String">
+			<argument index="1" name="signal" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stops the function execution and returns the current state. Call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state.

@@ -12,6 +12,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
