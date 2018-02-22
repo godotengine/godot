@@ -410,13 +410,11 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 	String s = "func " + p_name + "(";
 	if (p_args.size()) {
-		s += " ";
 		for (int i = 0; i < p_args.size(); i++) {
 			if (i > 0)
 				s += ", ";
 			s += p_args[i].get_slice(":", 0);
 		}
-		s += " ";
 	}
 	s += "):\n" + _get_indentation() + "pass # replace with function body\n";
 
