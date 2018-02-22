@@ -140,8 +140,6 @@ class GDMono {
 	void _initialize_and_check_api_hashes();
 #endif
 
-	bool _load_assembly(const String &p_name, GDMonoAssembly **r_assembly);
-
 	GDMonoLog *gdmono_log;
 
 #ifdef WINDOWS_ENABLED
@@ -195,6 +193,10 @@ public:
 #ifdef TOOLS_ENABLED
 	Error reload_scripts_domain();
 #endif
+
+	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
 

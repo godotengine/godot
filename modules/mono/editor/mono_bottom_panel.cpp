@@ -142,7 +142,7 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 
 void MonoBottomPanel::_build_project_pressed() {
 
-	GodotSharpBuilds::get_singleton()->build_project_blocking();
+	GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 
 	MonoReloadNode::get_singleton()->restart_reload_timer();
 	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);

@@ -41,6 +41,7 @@
 #include "../utils/path_utils.h"
 #include "bindings_generator.h"
 #include "csharp_project.h"
+#include "godotsharp_export.h"
 #include "net_solution.h"
 
 #ifdef WINDOWS_ENABLED
@@ -316,6 +317,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	EDITOR_DEF("mono/editor/external_editor", EDITOR_NONE);
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio Code"));
+
+	// Export plugin
+	Ref<GodotSharpExport> godotsharp_export;
+	godotsharp_export.instance();
+	EditorExport::get_singleton()->add_export_plugin(godotsharp_export);
 }
 
 GodotSharpEditor::~GodotSharpEditor() {
