@@ -2522,10 +2522,6 @@ msgid "Failed:"
 msgstr "Απέτυχε:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "Δεν ήταν δυνατή η εγγραφή στο αρχείο."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "Η λήψη ολοκληρώθηκε."
 
@@ -3716,15 +3712,15 @@ msgid "Show Grid"
 msgstr "Εμφάνιση πλέγματος"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Εμφάνιση βοηθών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Εμφάνιση χαράκων"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Εμφάνιση οδηγών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4555,6 +4551,22 @@ msgid "Resource clipboard is empty!"
 msgstr "Το πρόχειρο πόρων είναι άδειο!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Άνοιγμα στον επεξεργαστή"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr "Στιγμιότυπο:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr "Τύπος:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Φόρτωση πόρου"
@@ -4841,10 +4853,6 @@ msgid "Toggle Comment"
 msgstr "Εναλλαγή σχολιασμού"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Κλωνοποίηση κάτω"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "Δίπλωμα/Ξεδίπλωμα γραμμής"
 
@@ -4855,6 +4863,10 @@ msgstr "Αναδίπλωση όλων των γραμμών"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "Ξεδίπλωμα όλων των γραμμών"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Κλωνοποίηση κάτω"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5702,11 +5714,6 @@ msgstr "Καρτέλα 2"
 msgid "Tab 3"
 msgstr "Καρτέλα 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr "Τύπος:"
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr "Τύπος δεδομένων:"
@@ -5976,11 +5983,6 @@ msgid "Please choose an empty folder."
 msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο."
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-"Παρακαλούμε επιλέξτε έναν φάκελο που δεν περιέχει ένα αρχείο 'project.godot'."
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Εισαγμένο έργο"
 
@@ -6001,8 +6003,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Μη έγκυρη διαδρομή έργου (Αλλάξατε τίποτα;)."
 
 #: editor/project_manager.cpp
-msgid "Couldn't get project.godot in project path."
-msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
+#, fuzzy
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
+msgstr ""
+"Δεν ήταν δυνατή η επεξεργασία του project.godot στη διαδρομή του έργου."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6020,10 +6026,6 @@ msgstr "Η εξαγωγή των ακόλουθων αρχείων από το �
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "Μετονομασία έργου"
-
-#: editor/project_manager.cpp
-msgid "Couldn't get project.godot in the project path."
-msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6736,10 +6738,6 @@ msgstr "Yπο-Πόροι"
 msgid "Clear Inheritance"
 msgstr "Εκκαθάριση κληρονομικότητας"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Άνοιγμα στον επεξεργαστή"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Διαγραφή Κόμβων"
@@ -6855,10 +6853,6 @@ msgid ""
 msgstr ""
 "Ο κόμβος έχει και ομάδες\n"
 "Πατήστε για να δείξετε την πλατφόρμα σημάτων."
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr "Στιγμιότυπο:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Open script"
@@ -7293,6 +7287,32 @@ msgid "Object can't provide a length."
 msgstr "Το αντικείμενο δεν έχει μήκος."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Next Plane"
+msgstr "Επόμενη καρτέλα"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Προηγούμενη καρτέλα"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr "Επόμενο πάτωμα"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Previous Floor"
+msgstr "Προηγούμενο πάτωμα"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr "Δάπεδο:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr "GridMap Διαγραφή επιλογής"
 
@@ -7301,24 +7321,12 @@ msgid "GridMap Duplicate Selection"
 msgstr "GridMap Διπλασιασμός επιλογής"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Δάπεδο:"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Χάρτης δικτύου"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
 msgstr "Κούμπωμα όψης"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Previous Floor"
-msgstr "Προηγούμενο πάτωμα"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr "Επόμενο πάτωμα"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7423,6 +7431,10 @@ msgstr "Απέτυχε η δημιουργία έργου C#."
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Μονοφωνικό"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7998,6 +8010,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "Το ARVROrigin απαιτεί έναν κόμβο ARVRCamera ως παιδί"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "Τοποθέτηση πλεγμάτων: "
 
@@ -8201,6 +8221,20 @@ msgstr "Σφάλμα κατά την φόρτωση της γραμματοσε�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
+
+#~ msgid "Can't write file."
+#~ msgstr "Δεν ήταν δυνατή η εγγραφή στο αρχείο."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Παρακαλούμε επιλέξτε έναν φάκελο που δεν περιέχει ένα αρχείο 'project."
+#~ "godot'."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
 
 #~ msgid "Next"
 #~ msgstr "Επόμενο"
