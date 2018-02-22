@@ -450,7 +450,7 @@ bool GDMono::_load_core_api_assembly() {
 		return false;
 #endif
 
-	bool success = _load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
+	bool success = load_assembly(API_ASSEMBLY_NAME, &api_assembly);
 
 	if (success) {
 #ifndef MONO_GLUE_DISABLED
@@ -476,7 +476,7 @@ bool GDMono::_load_editor_api_assembly() {
 		return false;
 #endif
 
-	bool success = _load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
 
 	if (success) {
 #ifndef MONO_GLUE_DISABLED
@@ -774,12 +774,12 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
 
-	MonoException *exc = NULL;
-	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
+	MonoObject *ex = NULL;
+	mono_domain_try_unload(p_domain, &ex);
 
-	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`");
-		GDMonoUtils::debug_unhandled_exception(exc);
+	if (ex) {
+		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`:");
+		mono_print_unhandled_exception(ex);
 		return FAILED;
 	}
 
