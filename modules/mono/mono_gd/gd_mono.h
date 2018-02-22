@@ -31,6 +31,8 @@
 #ifndef GD_MONO_H
 #define GD_MONO_H
 
+#include "core/io/config_file.h"
+
 #include "../godotsharp_defs.h"
 #include "gd_mono_assembly.h"
 #include "gd_mono_log.h"
@@ -38,6 +40,43 @@
 #ifdef WINDOWS_ENABLED
 #include "../utils/mono_reg_utils.h"
 #endif
+
+namespace APIAssembly {
+enum Type {
+	API_CORE,
+	API_EDITOR
+};
+
+struct Version {
+	uint64_t godot_api_hash;
+	uint32_t bindings_version;
+	uint32_t cs_glue_version;
+
+	bool operator==(const Version &p_other) const {
+		return godot_api_hash == p_other.godot_api_hash &&
+			   bindings_version == p_other.bindings_version &&
+			   cs_glue_version == p_other.cs_glue_version;
+	}
+
+	Version() :
+			godot_api_hash(0),
+			bindings_version(0),
+			cs_glue_version(0) {
+	}
+
+	Version(uint64_t p_godot_api_hash,
+			uint32_t p_bindings_version,
+			uint32_t p_cs_glue_version) :
+			godot_api_hash(p_godot_api_hash),
+			bindings_version(p_bindings_version),
+			cs_glue_version(p_cs_glue_version) {
+	}
+
+	static Version get_from_loaded_assembly(GDMonoAssembly *p_api_assembly, Type p_api_type);
+};
+
+String to_string(Type p_type);
+} // namespace APIAssembly
 
 #define SCRIPTS_DOMAIN GDMono::get_singleton()->get_scripts_domain()
 #ifdef TOOLS_ENABLED
@@ -55,8 +94,11 @@ class GDMono {
 	MonoDomain *tools_domain;
 #endif
 
+	bool core_api_assembly_out_of_sync;
+	bool editor_api_assembly_out_of_sync;
+
 	GDMonoAssembly *corlib_assembly;
-	GDMonoAssembly *api_assembly;
+	GDMonoAssembly *core_api_assembly;
 	GDMonoAssembly *project_assembly;
 #ifdef TOOLS_ENABLED
 	GDMonoAssembly *editor_api_assembly;
@@ -75,7 +117,11 @@ class GDMono {
 #endif
 	bool _load_project_assembly();
 
-	bool _load_all_script_assemblies();
+	bool _load_api_assemblies();
+
+#ifdef TOOLS_ENABLED
+	String _get_api_assembly_metadata_path();
+#endif
 
 	void _register_internal_calls();
 
@@ -111,6 +157,11 @@ public:
 #endif
 #endif
 
+#ifdef TOOLS_ENABLED
+	void metadata_set_api_assembly_invalidated(APIAssembly::Type p_api_type, bool p_invalidated);
+	bool metadata_is_api_assembly_invalidated(APIAssembly::Type p_api_type);
+#endif
+
 	static GDMono *get_singleton() { return singleton; }
 
 	// Do not use these, unless you know what you're doing
@@ -126,7 +177,7 @@ public:
 #endif
 
 	_FORCE_INLINE_ GDMonoAssembly *get_corlib_assembly() const { return corlib_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_api_assembly() const { return api_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly; }
 	_FORCE_INLINE_ GDMonoAssembly *get_project_assembly() const { return project_assembly; }
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const { return editor_api_assembly; }

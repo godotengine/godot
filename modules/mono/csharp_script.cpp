@@ -456,7 +456,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 #ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
 
-	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_api_assembly() || !GDMonoUtils::mono_cache.corlib_cache_updated)
+	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoUtils::mono_cache.corlib_cache_updated)
 		return Vector<StackInfo>();
 
 	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());

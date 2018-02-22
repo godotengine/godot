@@ -85,10 +85,10 @@ bool GodotSharpEditor::_create_project_solution() {
 			return false;
 		}
 
-		if (!GodotSharpBuilds::make_api_sln(GodotSharpBuilds::API_CORE))
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
 			return false;
 
-		if (!GodotSharpBuilds::make_api_sln(GodotSharpBuilds::API_EDITOR))
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
 			return false;
 
 		pr.step(TTR("Done"));
