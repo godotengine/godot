@@ -1157,7 +1157,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	Ref<Texture> type_hover = get_icon("KeyHover", "EditorIcons");
 	Ref<Texture> type_selected = get_icon("KeySelected", "EditorIcons");
 
-	int right_separator_ofs = down_icon->get_width() * 3 + add_key_icon->get_width() + interp_icon[0]->get_width() + wrap_icon[0]->get_width() + cont_icon[0]->get_width() + hsep * 9;
+	int right_separator_ofs = right_data_size_cache;
 
 	int h = font->get_height() + sep;
 
@@ -1830,7 +1830,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 		get_icon("KeyXform", "EditorIcons"),
 		get_icon("KeyCall", "EditorIcons")
 	};
-	int right_separator_ofs = down_icon->get_width() * 3 + add_key_icon->get_width() + interp_icon[0]->get_width() + wrap_icon[0]->get_width() + cont_icon[0]->get_width() + hsep * 9;
+	int right_separator_ofs = right_data_size_cache;
 
 	int h = font->get_height() + sep;
 
@@ -3042,7 +3042,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 					get_icon("InterpWrapClamp", "EditorIcons"),
 					get_icon("InterpWrapLoop", "EditorIcons"),
 				};
-				right_data_size_cache = down_icon->get_width() * 3 + add_key_icon->get_width() + interp_icon[0]->get_width() + cont_icon[0]->get_width() + wrap_icon[0]->get_width() + hsep * 8;
+				right_data_size_cache = down_icon->get_width() * 3 + add_key_icon->get_width() + interp_icon[0]->get_width() + cont_icon[0]->get_width() + wrap_icon[0]->get_width() + hsep * 9;
 			}
 		} break;
 	}
