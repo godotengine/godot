@@ -81,7 +81,6 @@
 			<argument index="1" name="arg1" type="float">
 			</argument>
 			<description>
-				Will perform a UV unwrap on the [code]ArrayMesh[/code] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normalmaps">

@@ -40,7 +40,6 @@
 			<return type="void">
 			</return>
 			<description>
-				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -272,7 +271,6 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the window size including decorations like window borders.
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
