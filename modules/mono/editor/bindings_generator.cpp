@@ -70,8 +70,6 @@
 
 #define LOCAL_RET "ret"
 
-#define CS_CLASS_NATIVECALLS "NativeCalls"
-#define CS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"
 #define CS_FIELD_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
@@ -104,6 +102,8 @@
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 #define C_METHOD_MANAGED_TO_DICT C_NS_MONOMARSHAL "::mono_object_to_Dictionary"
 #define C_METHOD_MANAGED_FROM_DICT C_NS_MONOMARSHAL "::Dictionary_to_mono_object"
+
+#define BINDINGS_GENERATOR_VERSION UINT32_C(1)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -529,7 +529,15 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 								"using System.Collections.Generic;\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.push_back(INDENT1 "internal static class " CS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
+	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
+
+	cs_icalls_content.push_back(INDENT2 "internal static ulong godot_api_hash = ");
+	cs_icalls_content.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + ";\n");
+	cs_icalls_content.push_back(INDENT2 "internal static uint bindings_version = ");
+	cs_icalls_content.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
+	cs_icalls_content.push_back(INDENT2 "internal static uint cs_glue_version = ");
+	cs_icalls_content.push_back(String::num_uint64(CS_GLUE_VERSION) + ";\n");
+	cs_icalls_content.push_back("\n");
 
 #define ADD_INTERNAL_CALL(m_icall)                                                             \
 	if (!m_icall.editor_only) {                                                                \
@@ -551,7 +559,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 	cs_icalls_content.push_back(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
-	String internal_methods_file = path_join(core_dir, CS_CLASS_NATIVECALLS ".cs");
+	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK)
@@ -626,7 +634,15 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 								"using System.Collections.Generic;\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.push_back(INDENT1 "internal static class " CS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
+	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
+
+	cs_icalls_content.push_back(INDENT2 "internal static ulong godot_api_hash = ");
+	cs_icalls_content.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + ";\n");
+	cs_icalls_content.push_back(INDENT2 "internal static uint bindings_version = ");
+	cs_icalls_content.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
+	cs_icalls_content.push_back(INDENT2 "internal static uint cs_glue_version = ");
+	cs_icalls_content.push_back(String::num_uint64(CS_GLUE_VERSION) + ";\n");
+	cs_icalls_content.push_back("\n");
 
 #define ADD_INTERNAL_CALL(m_icall)                                                             \
 	if (m_icall.editor_only) {                                                                 \
@@ -648,7 +664,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 
 	cs_icalls_content.push_back(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
-	String internal_methods_file = path_join(core_dir, CS_CLASS_NATIVECALLS_EDITOR ".cs");
+	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK)
@@ -882,7 +898,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.push_back("\";\n");
 
 		output.push_back(INDENT2 "internal static IntPtr " BINDINGS_PTR_FIELD " = ");
-		output.push_back(itype.api_type == ClassDB::API_EDITOR ? CS_CLASS_NATIVECALLS_EDITOR : CS_CLASS_NATIVECALLS);
+		output.push_back(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
 		output.push_back("." ICALL_PREFIX);
 		output.push_back(itype.name);
 		output.push_back(SINGLETON_ICALL_SUFFIX "();\n");
@@ -912,7 +928,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// The engine will initialize the pointer field of the managed side before calling the constructor
 			// This is why we only allocate a new native object from the constructor if the pointer field is not set
 			output.push_back(")\n" OPEN_BLOCK_L2 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" INDENT4 BINDINGS_PTR_FIELD " = ");
-			output.push_back(itype.api_type == ClassDB::API_EDITOR ? CS_CLASS_NATIVECALLS_EDITOR : CS_CLASS_NATIVECALLS);
+			output.push_back(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
 			output.push_back("." + ctor_method);
 			output.push_back("(this);\n" CLOSE_BLOCK_L2);
 		} else {
@@ -956,7 +972,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 										  "if (disposed) return;\n" INDENT3
 										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
 										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
-										  " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
+										  " = false;\n" INDENT5 BINDINGS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
 										  "(this, " BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
 										  "this." BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" INDENT3
 										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
@@ -1229,7 +1245,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	{
 		if (p_itype.is_object_type && !p_imethod.is_virtual && !p_imethod.requires_object_call) {
 			p_output.push_back(MEMBER_BEGIN "private static IntPtr ");
-			p_output.push_back(method_bind_field + " = " CS_CLASS_NATIVECALLS "." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
+			p_output.push_back(method_bind_field + " = " BINDINGS_CLASS_NATIVECALLS "." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
 			p_output.push_back(p_imethod.name);
 			p_output.push_back("\");\n");
 		}
@@ -1310,7 +1326,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		const InternalCall *im_icall = match->value();
 
-		String im_call = im_icall->editor_only ? CS_CLASS_NATIVECALLS_EDITOR : CS_CLASS_NATIVECALLS;
+		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
 		im_call += "." + im_icall->name + "(" + icall_params + ");\n";
 
 		if (p_imethod.arguments.size())
@@ -1400,25 +1416,33 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	}
 
 	output.push_back("namespace GodotSharpBindings\n" OPEN_BLOCK);
+
 	output.push_back("uint64_t get_core_api_hash() { return ");
-	output.push_back(itos(GDMono::get_singleton()->get_api_core_hash()) + "; }\n");
+	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + "; }\n");
+
 	output.push_back("#ifdef TOOLS_ENABLED\n"
 					 "uint64_t get_editor_api_hash() { return ");
-	output.push_back(itos(GDMono::get_singleton()->get_api_editor_hash()) +
+	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) +
 					 "; }\n#endif // TOOLS_ENABLED\n");
+
+	output.push_back("uint32_t get_bindings_version() { return ");
+	output.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
+	output.push_back("uint32_t get_cs_glue_version() { return ");
+	output.push_back(String::num_uint64(CS_GLUE_VERSION) + "; }\n");
+
 	output.push_back("void register_generated_icalls() " OPEN_BLOCK);
 	output.push_back("\tgodot_register_header_icalls();");
 
-#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                     \
-	{                                                                                               \
-		output.push_back("\tmono_add_internal_call(");                                              \
-		output.push_back("\"" BINDINGS_NAMESPACE ".");                                              \
-		output.push_back(m_icall.editor_only ? CS_CLASS_NATIVECALLS_EDITOR : CS_CLASS_NATIVECALLS); \
-		output.push_back("::");                                                                     \
-		output.push_back(m_icall.name);                                                             \
-		output.push_back("\", (void*)");                                                            \
-		output.push_back(m_icall.name);                                                             \
-		output.push_back(");\n");                                                                   \
+#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                                 \
+	{                                                                                                           \
+		output.push_back("\tmono_add_internal_call(");                                                          \
+		output.push_back("\"" BINDINGS_NAMESPACE ".");                                                          \
+		output.push_back(m_icall.editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS); \
+		output.push_back("::");                                                                                 \
+		output.push_back(m_icall.name);                                                                         \
+		output.push_back("\", (void*)");                                                                        \
+		output.push_back(m_icall.name);                                                                         \
+		output.push_back(");\n");                                                                               \
 	}
 
 	bool tools_sequence = false;
@@ -1484,6 +1508,14 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	OS::get_singleton()->print("Mono glue generated successfully\n");
 
 	return OK;
+}
+
+uint32_t BindingsGenerator::get_version() {
+	return BINDINGS_GENERATOR_VERSION;
+}
+
+uint32_t BindingsGenerator::get_cs_glue_version() {
+	return CS_GLUE_VERSION;
 }
 
 Error BindingsGenerator::_save_file(const String &p_path, const List<String> &p_content) {
