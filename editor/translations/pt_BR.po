@@ -9,8 +9,7 @@
 # Breno Caldeira <breno.caldeira@gmail.com>, 2018.
 # Francesco Perrotti-Garcia <fpg1503@gmail.com>, 2017.
 # George Marques <george@gmarqu.es>, 2016.
-# Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017, 2018.
-# João Victor Lima <victordevtb@outlook.com>, 2018.
+# Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017.
 # João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 # jonathan railarem <railarem@gmail.com>, 2017.
@@ -27,8 +26,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-06-16 18:43+0000\n"
-"Last-Translator: Rodolfo R Gomes <rodolforg@gmail.com>\n"
+"PO-Revision-Date: 2018-02-19 19:38+0000\n"
+"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
+"com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 2.19\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1657,12 +1657,12 @@ msgid "Open Base Scene"
 msgstr "Abrir Cena Base"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene..."
-msgstr "Abrir Cena Rapidamente..."
+msgid "Quick Open Scene.."
+msgstr "Abri Cena Rápidamente..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script..."
-msgstr "Abrir Script Rapidamente..."
+msgid "Quick Open Script.."
+msgstr "Abrir Script Rápidamente..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"

@@ -6,14 +6,13 @@
 # Bastian Salmela <bastian.salmela@gmail.com>, 2017, 2018.
 # ekeimaja <ekeimaja@gmail.com>, 2017-2018.
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
-# Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
-# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-14 20:37+0000\n"
-"Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
+"PO-Revision-Date: 2018-01-31 04:36+0000\n"
+"Last-Translator: Sami Lehtilä <sami.lehtila@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -190,7 +189,7 @@ msgstr "Siivoa animaatio"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "Luo kohteelle %s UUSI raita ja lisää avain?"
+msgstr "Luo UUSI raita %lle ja lisää avain?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -298,11 +297,11 @@ msgstr "Max. lineaarinen virhe:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Max. kulmavirhe:"
+msgstr "Max. Kulmavirhe:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Max. optimoitava kulma:"
+msgstr "Max. Optimoitava kulma:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
@@ -497,7 +496,7 @@ msgstr "Yhdistävä signaali:"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Katkaise yhteys solmusta '%s' solmuun '%s'"
+msgstr "Katkaise yhteys '%s' '%s':n"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."

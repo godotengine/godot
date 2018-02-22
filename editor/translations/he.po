@@ -11,8 +11,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-18 16:38+0000\n"
-"Last-Translator: Daniel <lorddaniel09@gmail.com>\n"
+"PO-Revision-Date: 2018-02-22 12:37+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2431,6 +2431,10 @@ msgid "Failed:"
 msgstr "נכשל:"
 
 #: editor/export_template_manager.cpp
+msgid "Can't write file."
+msgstr "לא ניתן לכתוב קובץ."
+
+#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "ההורדה הושלמה."
 
@@ -2456,7 +2460,7 @@ msgstr "לא ניתן לפתור"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting..."
+msgid "Connecting.."
 msgstr "מתבצעת התחברות…"
 
 #: editor/export_template_manager.cpp
@@ -2469,7 +2473,7 @@ msgstr "מחובר"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting..."
+msgid "Requesting.."
 msgstr "מוגשת בקשה…"
 
 #: editor/export_template_manager.cpp
@@ -2602,11 +2606,11 @@ msgid "Collapse all"
 msgstr "לצמצם הכול"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename..."
+msgid "Rename.."
 msgstr "שינוי שם…"
 
 #: editor/filesystem_dock.cpp
-msgid "Move To..."
+msgid "Move To.."
 msgstr "העברה אל…"
 
 #: editor/filesystem_dock.cpp
@@ -2618,15 +2622,15 @@ msgid "Instance"
 msgstr "עותק"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies..."
+msgid "Edit Dependencies.."
 msgstr "עריכת תלויות…"
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners..."
+msgid "View Owners.."
 msgstr "צפייה בבעלים…"
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate..."
+msgid "Duplicate.."
 msgstr "שכפול…"
 
 #: editor/filesystem_dock.cpp
@@ -2720,7 +2724,7 @@ msgid "Import Scene"
 msgstr "ייבוא סצנה"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene..."
+msgid "Importing Scene.."
 msgstr "סצנה מיובאת…"
 
 #: editor/import/resource_importer_scene.cpp
@@ -2732,7 +2736,7 @@ msgid "Generating for Mesh: "
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script..."
+msgid "Running Custom Script.."
 msgstr "מופעל סקריפט מותאם אישית…"
 
 #: editor/import/resource_importer_scene.cpp
@@ -2748,7 +2752,7 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving..."
+msgid "Saving.."
 msgstr "שמירה…"
 
 #: editor/import_dock.cpp
@@ -2768,7 +2772,7 @@ msgid "Import As:"
 msgstr "ייבוא בתור:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
+msgid "Preset.."
 msgstr "ערכה מוגדרת…"
 
 #: editor/import_dock.cpp
@@ -4440,22 +4444,6 @@ msgid "Resource clipboard is empty!"
 msgstr "לוח גזירי המשאבים ריק!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "טעינת משאב"
@@ -4500,7 +4488,7 @@ msgid "Import Theme"
 msgstr "ייבוא ערכת עיצוב"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As..."
+msgid "Save Theme As.."
 msgstr "שמירת ערכת עיצוב בשם…"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4597,7 +4585,7 @@ msgstr "החלפת תצוגת חלונית סקריפטים"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find..."
+msgid "Find.."
 msgstr "איתור…"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4676,7 +4664,7 @@ msgstr "שמירה מחדש"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "ניפוי שגיאות"
+msgstr "מנפה שגיאות"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -4740,6 +4728,10 @@ msgid "Toggle Comment"
 msgstr "החלפת מצב הערה"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "לשכפל למטה"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "צמצום/הרחבה של שורה"
 
@@ -4750,10 +4742,6 @@ msgstr "צמצום כל השורות"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "הרחבת כל השורות"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "לשכפל למטה"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4805,15 +4793,15 @@ msgid "Find Previous"
 msgstr "איתור הקודם"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace..."
+msgid "Replace.."
 msgstr "החלפה…"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function..."
+msgid "Goto Function.."
 msgstr "מעבר לפונקציה…"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line..."
+msgid "Goto Line.."
 msgstr "מעבר לשורה…"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5267,7 +5255,11 @@ msgid "Transform"
 msgstr "התמרה"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog..."
+msgid "Configure Snap.."
+msgstr "הגדרת הצמדה…"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Transform Dialog.."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5405,7 +5397,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations"
-msgstr "אנימציות"
+msgstr "הנפשות"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -7242,10 +7234,6 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr "בחירת מרחק:"
 
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
-
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "הפתרון נוצר…"
@@ -7275,8 +7263,8 @@ msgid "Mono"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr ""
+msgid "Create C# solution"
+msgstr "יצירת פתרון C#‎"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7293,10 +7281,6 @@ msgstr ""
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "אזהרות"
-
-#: modules/mono/mono_gd/gd_mono_utils.cpp
-msgid "End of inner exception stack trace"
-msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

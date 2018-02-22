@@ -2,6 +2,7 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
+#
 # 360119124 <360119124@qq.com>, 2018.
 # 柠檬杀手 <lemonkiller@gmail.com>, 2018.
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
@@ -30,8 +31,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-06-09 03:55+0000\n"
-"Last-Translator: zwj36028 <23732399@qq.com>\n"
+"PO-Revision-Date: 2018-02-03 05:35+0000\n"
+"Last-Translator: 360119124 <360119124@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -2488,8 +2489,8 @@ msgid "Error requesting url: "
 msgstr "请求链接错误: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror..."
-msgstr "正在连接镜像网站。。"
+msgid "Connecting to Mirror.."
+msgstr "正在连接镜像……"
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2518,8 +2519,8 @@ msgstr "已连接"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting..."
-msgstr "正在请求。。"
+msgid "Requesting.."
+msgstr "正在请求……"
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -7229,16 +7230,16 @@ msgid "Floor:"
 msgstr "层："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "GridMap Delete Selection"
-msgstr "删除选择的GridMap"
+msgid "Grid Map"
+msgstr "网格映射"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "复制选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Grid Map"
-msgstr "网格映射"
+msgid "Previous Floor"
+msgstr "上一个层"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -7891,14 +7892,6 @@ msgstr "锚 id 必须不是 0 或这个锚点将不绑定到实际的锚"
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "（剩余时间：%d:%02d 秒）"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

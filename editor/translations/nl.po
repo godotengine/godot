@@ -11,8 +11,6 @@
 # Daeran Wereld <daeran@gmail.com>, 2017.
 # Dzejkop <jakubtrad@gmail.com>, 2017.
 # Ferdinand de Coninck <ferdinand.deconinck@gmail.com>, 2018.
-# frank <frankvprive@gmail.com>, 2018.
-# Johannes Smit <smitjohannes96@gmail.com>, 2018.
 # Jorn Theunissen <jorn-theunissen@hotmail.com>, 2018.
 # Maikel <maikel_martens_1@hotmail.com>, 2017.
 # millenniumproof <millenniumproof@gmail.com>, 2018.
@@ -28,15 +26,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-21 18:36+0000\n"
-"Last-Translator: Johannes Smit <smitjohannes96@gmail.com>\n"
+"PO-Revision-Date: 2018-02-17 19:35+0000\n"
+"Last-Translator: Pieter-Jan Briers <pieterjan.briers@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.19\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2310,8 +2308,8 @@ msgid "Creating Mesh Previews"
 msgstr "Creëren van Mesh Previews"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail..."
-msgstr "Voorbeeld..."
+msgid "Thumbnail.."
+msgstr "Voorbeeld.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -4236,8 +4234,9 @@ msgid "Constructing compact heightfield..."
 msgstr "Compact hoogteveld aan het bouwen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
 msgid "Eroding walkable area..."
-msgstr "Wandelbaar gebied aan het eroderen..."
+msgstr "Wandelbaar gebied eroderen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -4285,8 +4284,8 @@ msgid "Error loading image:"
 msgstr "Error bij het laden van afbeelding:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Geen pixels met transparantie > 128 in afbeelding..."
+msgid "No pixels with transparency > 128 in image.."
+msgstr "Geen pixels met transparantie > 128 in afbeelding.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"

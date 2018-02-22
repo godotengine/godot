@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-17 07:39+0000\n"
-"Last-Translator: Árpád Horváth <horvatha4@googlemail.com>\n"
+"PO-Revision-Date: 2018-02-05 23:37+0000\n"
+"Last-Translator: Varga Dániel <danikah.danikah@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -25,7 +25,7 @@ msgstr "Tiltva"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Minden kiválasztás"
+msgstr "Minden Kiválasztás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -207,7 +207,7 @@ msgstr "Animáció létrehozás és beillesztés"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Animáció nyomvonal és kulcs beillesztés"
+msgstr "Animáció Nyomvonal És Kulcs Beillesztése"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
@@ -215,7 +215,7 @@ msgstr "Animáció kulcs beillesztés"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Animáció hossz változtatás"
+msgstr "Animáció Hossz Változtatása"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -2292,8 +2292,8 @@ msgid "Creating Mesh Previews"
 msgstr "Háló Előnézetek Létrehozása"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail..."
-msgstr "Indexkép..."
+msgid "Thumbnail.."
+msgstr "Indexkép.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2386,11 +2386,11 @@ msgstr "Írja a logikát a _run() metódusba."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr "Már létezik a szerkesztett Scene."
+msgstr "Már létezik szerkesztett jelenet."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Nem sikerült a szkript példányosítása:"
+msgstr "Nem sikerült a script példányosítása:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -2398,7 +2398,7 @@ msgstr "Nem felejtette el a 'tool' kulcsszót?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr "Nem sikerült a szkript futtatása:"
+msgstr "Nem sikerült a script futtatása:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
@@ -2410,11 +2410,11 @@ msgstr "Alapértelmezett (Ugyanaz, Mint a Szerkesztőnek)"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Válassza ki az importálandó Node-okat"
+msgstr "Válassza Ki Az Importálandó Node-okat"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "Scene elérési Út:"
+msgstr "Jelenet Elérési Útja:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
@@ -2445,8 +2445,8 @@ msgid "(Current)"
 msgstr "(Jelenlegi)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait..."
-msgstr "Tükrök letöltése, kérjük várjon..."
+msgid "Retrieving mirrors, please wait.."
+msgstr "Tükrök letöltése, kérjük várjon.."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2459,6 +2459,14 @@ msgstr "Nem nyitható meg az export sablon zip."
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
 msgstr "Érvénytelen version.txt formátum a sablonokban."
+
+#: editor/export_template_manager.cpp
+msgid ""
+"Invalid version.txt format inside templates. Revision is not a valid "
+"identifier."
+msgstr ""
+"Érvénytelen version.txt formátum a sablonokban. A revízió nem érvényes "
+"azonosító."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2515,6 +2523,10 @@ msgid "Failed:"
 msgstr "Sikertelen:"
 
 #: editor/export_template_manager.cpp
+msgid "Can't write file."
+msgstr "Nem lehet fájlt írni."
+
+#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "A Letöltés Befejeződött."
 
@@ -2523,8 +2535,8 @@ msgid "Error requesting url: "
 msgstr "Hiba történt az url lekérdezésekor: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror..."
-msgstr "Csatlakozás Tükörhöz..."
+msgid "Connecting to Mirror.."
+msgstr "Csatlakozás Tükörhöz.."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2540,8 +2552,8 @@ msgstr "Nem Megoldható"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting..."
-msgstr "Csatlakozás..."
+msgid "Connecting.."
+msgstr "Csatlakozás.."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2553,8 +2565,8 @@ msgstr "Csatlakozva"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting..."
-msgstr "Lekérdezés..."
+msgid "Requesting.."
+msgstr "Lekérdezés.."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2689,32 +2701,32 @@ msgid "Collapse all"
 msgstr "Összes összecsukása"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename..."
-msgstr "Átnevezés..."
+msgid "Rename.."
+msgstr "Átnevezés.."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To..."
-msgstr "Áthelyezés..."
+msgid "Move To.."
+msgstr "Áthelyezés.."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
-msgstr "Scene(k) megnyitás"
+msgstr "Jelenet(ek) Megnyitása"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Példány"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies..."
-msgstr "Függőségek Szerkesztése..."
+msgid "Edit Dependencies.."
+msgstr "Függőségek Szerkesztése.."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners..."
-msgstr "Tulajdonosok Megtekintése..."
+msgid "View Owners.."
+msgstr "Tulajdonosok Megtekintése.."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Megkettőzés..."
+msgid "Duplicate.."
+msgstr "Megkettőzés.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2734,7 +2746,8 @@ msgstr "Mappa Kedvencnek jelölése / Kedvenc jelölés visszavonása"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Kiválasztott Scene(k) példányosítása a kiválasztott Node gyermekeként."
+msgstr ""
+"Kiválasztott jelenet(ek) példányosítása a kiválasztott Node gyermekeként."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -2742,7 +2755,7 @@ msgid ""
 "Please Wait..."
 msgstr ""
 "Fájlok Vizsgálata,\n"
-"Kérem Várjon..."
+"Kérem Várjon.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2804,11 +2817,11 @@ msgstr "Importálás Több Jelentként és Anyagokként"
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import Scene"
-msgstr "Scene importálás"
+msgstr "Jelenet Importálása"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene..."
-msgstr "Jelenet importálása..."
+msgid "Importing Scene.."
+msgstr "Jelenet Importálása.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2819,25 +2832,25 @@ msgid "Generating for Mesh: "
 msgstr "Létrehozás a Következő Hálóhoz: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script..."
-msgstr "Tetszőleges Szkript Futtatása..."
+msgid "Running Custom Script.."
+msgstr "Tetszőleges Script Futtatása.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "Nem sikerült az import utáni szkript betöltése:"
+msgstr "Nem sikerült az import utáni script betöltése:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
-"Érvénytelen vagy sérült az importálás utáni szkript (ellenőrizze a konzolt):"
+"Érvénytelen vagy sérült az importálás utáni script (ellenőrizze a konzolt):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr "Hiba történt az importálás utána szkript futtatásakor:"
+msgstr "Hiba történt az importálás utána script futtatásakor:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving..."
-msgstr "Mentés..."
+msgid "Saving.."
+msgstr "Mentés.."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2856,8 +2869,8 @@ msgid "Import As:"
 msgstr "Importálás Mint:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
-msgstr "Beépített Beállítások..."
+msgid "Preset.."
+msgstr "Beépített Beállítások.."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3240,7 +3253,7 @@ msgstr "Az animációs fa érvénytelen."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Animáció Node"
+msgstr "Animációs Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
@@ -3264,7 +3277,7 @@ msgstr "Keverés4 Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "Időskála Node"
+msgstr "IdőSkála Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
@@ -3275,20 +3288,20 @@ msgid "Transition Node"
 msgstr "Átmenet Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations..."
-msgstr "Animációk Importálása..."
+msgid "Import Animations.."
+msgstr "Animációk Importálása.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "Node szűrők szerkesztés"
+msgstr "Node Szűrők Módosítása"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters..."
-msgstr "Szűrők..."
+msgid "Filters.."
+msgstr "Szűrők.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimációFa"
+msgstr "AnimationTree"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
@@ -3353,8 +3366,8 @@ msgid "Fetching:"
 msgstr "Lekérés:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving..."
-msgstr "Megoldás..."
+msgid "Resolving.."
+msgstr "Megoldás.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3420,8 +3433,8 @@ msgid "Site:"
 msgstr "Oldal:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support..."
-msgstr "Támogatás..."
+msgid "Support.."
+msgstr "Támogatás.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3429,7 +3442,7 @@ msgstr "Hivatalos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr "Tesztelés"
+msgstr "Tesztelés Alatt"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -3642,15 +3655,15 @@ msgstr "Illesztés szülőhöz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr "Illesztés Node horgonyhoz"
+msgstr "Illesztés node horgonyhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr "Illesztés Node oldalakhoz"
+msgstr "Illesztés node oldalakhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr "Illesztés más Node-okhoz"
+msgstr "Illesztés más node-okhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to guides"
@@ -3705,24 +3718,16 @@ msgid "Show Grid"
 msgstr "Rács Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Helpers"
+msgid "Show helpers"
 msgstr "Segítők Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Rulers"
+msgid "Show rulers"
 msgstr "Vonalzók Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Guides"
+msgid "Show guides"
 msgstr "Vezetővonalak Megjelenítése"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr "Origó Megjelenítése"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr "Nézet Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3786,17 +3791,17 @@ msgstr "Rendben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Nem lehet több Node-ot példányosítani gyökér nélkül."
+msgstr "Nem lehet több node-ot példányosítani gyökér nélkül."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr "Node létrehozás"
+msgstr "Node Létrehozása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr "Hiba történt a Scene példányosításkor %s-ből"
+msgstr "Hiba történt a jelenet példányosításkor %s-ből"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -3934,8 +3939,8 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
-"Nincs OccluderPolygon2D erőforrás ezen a Node-on.\n"
-"Létrehoz egyet és hozzárendeli a Node-hoz?"
+"Nincs OccluderPolygon2D erőforrás ezen a node-on.\n"
+"Létrehoz egyet és hozzárendeli a node-hoz?"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -3975,7 +3980,7 @@ msgstr "Statikus Konvex Test Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr "Ez nem hajtható végre a gyökér Scene-en!"
+msgstr "Ez nem hajtható végre a jelenet gyökerén!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Shape"
@@ -4015,10 +4020,6 @@ msgstr ""
 "A Mesh-nek nincsenek felszínei, ami alapján körvonalakat lehetni készíteni!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "A Háló-primitív típusa nem háromszög (PRIMITIVE_TRIANGLES)!"
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
 msgstr "Körvonalkészítés sikertelen!"
 
@@ -4047,8 +4048,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Konvex Ütközési Testvér Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh..."
-msgstr "Körvonalháló Létrehozása..."
+msgid "Create Outline Mesh.."
+msgstr "Körvonalháló Létrehozása.."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
