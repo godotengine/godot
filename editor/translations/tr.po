@@ -2515,10 +2515,6 @@ msgid "Failed:"
 msgstr "Başarısız:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "Dosyaya yazılamıyor."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "İndirme Tamamlandı."
 
@@ -3704,15 +3700,15 @@ msgid "Show Grid"
 msgstr "Izgarayı Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Yardımcıları Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Cetvelleri göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Kılavuzları göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4539,6 +4535,22 @@ msgid "Resource clipboard is empty!"
 msgstr "Kaynak panosu boş!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Düzenleyicide Aç"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr "Örnek:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr "Tür:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Kaynak Yükle"
@@ -4825,10 +4837,6 @@ msgid "Toggle Comment"
 msgstr "Yorumu Aç / Kapat"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Aşağıya Eşle"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "Satırı Katla/Aç"
 
@@ -4839,6 +4847,10 @@ msgstr "Tüm Satırları Daralt"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "Tüm Satırları Genişlet"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Aşağıya Eşle"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5684,11 +5696,6 @@ msgstr "Sekme 2"
 msgid "Tab 3"
 msgstr "Sekme 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr "Tür:"
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr "Veri Türü:"
@@ -5956,10 +5963,6 @@ msgid "Please choose an empty folder."
 msgstr "Lütfen boş bir klasör seçin."
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr "Lütfen 'proje.godot' dosyası içermeyen bir klasör seçin."
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "İçe Aktarılan Proje"
 
@@ -5980,8 +5983,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
-msgid "Couldn't get project.godot in project path."
-msgstr "Proje yolunda proje.godot alınamadı."
+#, fuzzy
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
+msgstr "proje yolundaki proje.godot düzenlenemedi."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -5998,10 +6004,6 @@ msgstr "Aşağıdaki dosyaların, çıkından ayıklanma işlemi başarısız ol
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "Projeyi Yeniden Adlandır"
-
-#: editor/project_manager.cpp
-msgid "Couldn't get project.godot in the project path."
-msgstr "Proje yolunda proje.godot alınamadı."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6706,10 +6708,6 @@ msgstr "Alt Kaynaklar"
 msgid "Clear Inheritance"
 msgstr "Kalıtı Temizle"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Düzenleyicide Aç"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Düğümleri Sil"
@@ -6825,10 +6823,6 @@ msgid ""
 msgstr ""
 "Düğüm grup(lar)ın içinde.\n"
 "Gruplar dokunu göstermek için tıkla."
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr "Örnek:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Open script"
@@ -7258,6 +7252,32 @@ msgid "Object can't provide a length."
 msgstr "Nesne bir uzunluk sağlayamaz."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Next Plane"
+msgstr "Sonraki sekme"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Önceki sekme"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr "Sonraki Zemin"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Previous Floor"
+msgstr "Önceki Zemin"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr "Zemin:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr "IzgaraHaritası Seçimi Sil"
 
@@ -7266,24 +7286,12 @@ msgid "GridMap Duplicate Selection"
 msgstr "IzgaraHaritası Seçimi Çoğalt"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Zemin:"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Izgara Haritası"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
 msgstr "Yapışma Görünümü"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Previous Floor"
-msgstr "Önceki Zemin"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr "Sonraki Zemin"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7388,6 +7396,10 @@ msgstr "C# projesi oluşturma başarısız."
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Tekli"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7955,6 +7967,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin bir ARVRCamera çocuk düğümü gerektirir"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "Örüntüler Haritalanıyor: "
 
@@ -8154,6 +8174,18 @@ msgstr "Yazıtipi yükleme hatası."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Geçersiz yazıtipi boyutu."
+
+#~ msgid "Can't write file."
+#~ msgstr "Dosyaya yazılamıyor."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "Lütfen 'proje.godot' dosyası içermeyen bir klasör seçin."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Proje yolunda proje.godot alınamadı."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Proje yolunda proje.godot alınamadı."
 
 #~ msgid "Next"
 #~ msgstr "Sonraki"

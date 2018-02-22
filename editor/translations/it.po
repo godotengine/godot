@@ -2549,10 +2549,6 @@ msgid "Failed:"
 msgstr "Fallito:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "Impossibile scrivere il file."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "Download Completato."
 
@@ -3756,16 +3752,16 @@ msgstr "Mostra Griglia"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Mostra Ossa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Mostra Ossa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Mostra guide"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4624,6 +4620,22 @@ msgid "Resource clipboard is empty!"
 msgstr "Clipboard risorse vuota!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Apri nell Editor"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr "Istanza:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr "Tipo:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Carica Risorsa"
@@ -4923,10 +4935,6 @@ msgid "Toggle Comment"
 msgstr "Cambia a Commento"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Clona Sotto"
-
-#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Svolgere Linea"
@@ -4939,6 +4947,10 @@ msgstr "Piegare Tutte le Linee"
 #, fuzzy
 msgid "Unfold All Lines"
 msgstr "Svolgere Tutte le Linee"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Clona Sotto"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5799,11 +5811,6 @@ msgstr "Tab 2"
 msgid "Tab 3"
 msgstr "Tab 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr "Tipo:"
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr "Tipo Dato:"
@@ -6082,11 +6089,6 @@ msgid "Please choose an empty folder."
 msgstr "Si prega di esportare al di fuori della cartella del progetto!"
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-"Per favore seleziona una cartella che non contiene un file 'project.godot'."
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Progetto Importato"
 
@@ -6109,7 +6111,9 @@ msgstr "Percorso di progetto invalido (cambiato qualcosa?)."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't get project.godot in project path."
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
 msgstr "Impossibile creare project.godot nel percorso di progetto."
 
 #: editor/project_manager.cpp
@@ -6129,11 +6133,6 @@ msgstr "Impossibile estrarre i file seguenti dal pacchetto:"
 #, fuzzy
 msgid "Rename Project"
 msgstr "Progetto Senza Nome"
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Couldn't get project.godot in the project path."
-msgstr "Impossibile creare project.godot nel percorso di progetto."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6866,10 +6865,6 @@ msgstr "Sub-Risorse:"
 msgid "Clear Inheritance"
 msgstr "Liberare ereditarietà"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Apri nell Editor"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Elimina Nodo(i)"
@@ -6989,10 +6984,6 @@ msgid ""
 msgstr ""
 "Il nodo e in un gruppo.\n"
 "Fai click per mostrare il dock gruppi."
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr "Istanza:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Open script"
@@ -7436,6 +7427,33 @@ msgstr "L'oggetto non può fornire una lunghezza."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
+msgid "Next Plane"
+msgstr "Scheda successiva"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Scheda precedente"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr "Prossimo Piano"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Floor"
+msgstr "Scheda precedente"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr "Piano:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
 msgstr "Elimina selezionati"
 
@@ -7443,10 +7461,6 @@ msgstr "Elimina selezionati"
 #, fuzzy
 msgid "GridMap Duplicate Selection"
 msgstr "Duplica Selezione"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Piano:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7457,15 +7471,6 @@ msgstr "Snap Griglia"
 #, fuzzy
 msgid "Snap View"
 msgstr "Vista dall'Alto"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Previous Floor"
-msgstr "Scheda precedente"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr "Prossimo Piano"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7591,6 +7596,10 @@ msgstr "Caricamento della risorsa fallito."
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Mono"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 #, fuzzy
@@ -8194,6 +8203,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin necessita di un nodo figlio ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 #, fuzzy
 msgid "Plotting Meshes: "
 msgstr "Bliting Immagini"
@@ -8398,6 +8415,22 @@ msgstr "Errore caricamento font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
+
+#~ msgid "Can't write file."
+#~ msgstr "Impossibile scrivere il file."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Per favore seleziona una cartella che non contiene un file 'project."
+#~ "godot'."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Impossibile creare project.godot nel percorso di progetto."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Impossibile creare project.godot nel percorso di progetto."
 
 #~ msgid "Next"
 #~ msgstr "Successivo"

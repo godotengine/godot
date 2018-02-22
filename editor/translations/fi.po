@@ -2570,11 +2570,6 @@ msgstr "Epäonnistui:"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Can't write file."
-msgstr "Ei voitu kirjoittaa tiedostoa:\n"
-
-#: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Complete."
 msgstr "Lataa"
 
@@ -3812,15 +3807,15 @@ msgstr "Näytä ruudukko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Näytä luut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Näytä viivaimet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Näytä apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4670,6 +4665,22 @@ msgid "Resource clipboard is empty!"
 msgstr "Resurssien leikepöytä on tyhjä!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Avaa editorissa"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr "Tyyppi:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Lataa resurssi"
@@ -4967,10 +4978,6 @@ msgid "Toggle Comment"
 msgstr "Näytä/Piilota kommentit"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Kloonaa alas"
-
-#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Avaa rivi"
@@ -4982,6 +4989,10 @@ msgstr "Laskosta kaikki rivit"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "Avaa kaikki rivit"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Kloonaa alas"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5860,11 +5871,6 @@ msgstr "Välilehti 2"
 msgid "Tab 3"
 msgstr "Välilehti 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr "Tyyppi:"
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr "Tietotyyppi:"
@@ -6136,10 +6142,6 @@ msgid "Please choose an empty folder."
 msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr "Ole hyvä ja valitse hakemisto jossa ei ole 'project.godot' tiedostoa."
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Tuotu projekti"
 
@@ -6162,7 +6164,9 @@ msgstr "Virheellinen projektin polku (muuttuiko mikään?)."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't get project.godot in project path."
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
 msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
 
 #: editor/project_manager.cpp
@@ -6182,11 +6186,6 @@ msgstr "Seuraavien tiedostojen purku paketista epäonnistui:"
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "Nimetä projekti"
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Couldn't get project.godot in the project path."
-msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6903,10 +6902,6 @@ msgstr "Resurssit"
 msgid "Clear Inheritance"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Avaa editorissa"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Poista Node(t)"
@@ -7016,10 +7011,6 @@ msgstr ""
 msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
-msgstr ""
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -7464,6 +7455,33 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
+msgid "Next Plane"
+msgstr "Seuraava välilehti"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Edellinen välilehti"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Floor"
+msgstr "Edellinen välilehti"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
 msgstr "Poista valitut"
 
@@ -7471,10 +7489,6 @@ msgstr "Poista valitut"
 #, fuzzy
 msgid "GridMap Duplicate Selection"
 msgstr "Monista valinta"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7485,15 +7499,6 @@ msgstr "Ruudukko"
 #, fuzzy
 msgid "Snap View"
 msgstr "Huippunäkymä"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Previous Floor"
-msgstr "Edellinen välilehti"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7610,6 +7615,10 @@ msgstr "Resurssin lataaminen epäonnistui."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
+msgstr ""
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -8150,6 +8159,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr ""
 
@@ -8325,6 +8342,22 @@ msgstr "Virhe fontin latauksessa."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
+
+#, fuzzy
+#~ msgid "Can't write file."
+#~ msgstr "Ei voitu kirjoittaa tiedostoa:\n"
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Ole hyvä ja valitse hakemisto jossa ei ole 'project.godot' tiedostoa."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
 
 #~ msgid "Next"
 #~ msgstr "Seuraava"

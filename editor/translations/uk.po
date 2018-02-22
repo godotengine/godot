@@ -2518,10 +2518,6 @@ msgid "Failed:"
 msgstr "Не вдалося:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "Не вдалося записати файл."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "Завантаження закінчено."
 
@@ -3708,15 +3704,15 @@ msgid "Show Grid"
 msgstr "Показати сітку"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Показати помічники"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Показати лінійки"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Показати напрямні"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4545,6 +4541,22 @@ msgid "Resource clipboard is empty!"
 msgstr "В буфері обміну немає ресурсу!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Відкрити в редакторі"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr "Екземпляр:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr "Тип:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Завантажити ресурс"
@@ -4831,10 +4843,6 @@ msgid "Toggle Comment"
 msgstr "Перемкнути коментар"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Клонувати вниз"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "Згорнути/розгорнути рядок"
 
@@ -4845,6 +4853,10 @@ msgstr "Згорнути всі рядки"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "Розгорнути всі рядки"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Клонувати вниз"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5690,11 +5702,6 @@ msgstr "Вкладка 2"
 msgid "Tab 3"
 msgstr "Вкладка 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr "Тип:"
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr "Тип даних:"
@@ -5964,10 +5971,6 @@ msgid "Please choose an empty folder."
 msgstr "Будь ласка, виберіть порожню теку."
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr "Будь ласка, виберіть теку, у якій не міститься файла «project.godot»."
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Імпортований проект"
 
@@ -5988,8 +5991,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Некоректний шлях до проекту (щось змінилося?)."
 
 #: editor/project_manager.cpp
-msgid "Couldn't get project.godot in project path."
-msgstr "Не вдалося отримати project.godot з каталогу проекту."
+#, fuzzy
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
+msgstr "Не вдалося редагувати project.godot у каталозі проекту."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6006,10 +6012,6 @@ msgstr "Не вдалося видобути такі файли з пакунк
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "Перейменувати проект"
-
-#: editor/project_manager.cpp
-msgid "Couldn't get project.godot in the project path."
-msgstr "Не вдалося отримати project.godot у каталозі проекту."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6716,10 +6718,6 @@ msgstr "Підресурси"
 msgid "Clear Inheritance"
 msgstr "Усунути успадкування"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Відкрити в редакторі"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Вилучити вузли"
@@ -6835,10 +6833,6 @@ msgid ""
 msgstr ""
 "Вузол належить групам.\n"
 "Клацніть, щоб переглянути панель груп."
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr "Екземпляр:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Open script"
@@ -7270,6 +7264,32 @@ msgid "Object can't provide a length."
 msgstr "Об'єкт не може надавати довжину."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Next Plane"
+msgstr "Наступна вкладка"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Попередня вкладка"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr "Наступний поверх"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Previous Floor"
+msgstr "Попередній поверх"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr "Поверх:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr "Вилучення позначеного GridMap"
 
@@ -7278,24 +7298,12 @@ msgid "GridMap Duplicate Selection"
 msgstr "Дублювання позначеного GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Поверх:"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Карта сітки"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
 msgstr "Миттєвий перегляд"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Previous Floor"
-msgstr "Попередній поверх"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr "Наступний поверх"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7400,6 +7408,10 @@ msgstr "Не вдалося створити проект C#."
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Моно"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7968,6 +7980,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin повинен мати дочірній вузол ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "Побудова сітки: "
 
@@ -8169,6 +8189,19 @@ msgstr "Помилка завантаження шрифту."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Некоректний розмір шрифту."
+
+#~ msgid "Can't write file."
+#~ msgstr "Не вдалося записати файл."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Будь ласка, виберіть теку, у якій не міститься файла «project.godot»."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Не вдалося отримати project.godot з каталогу проекту."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Не вдалося отримати project.godot у каталозі проекту."
 
 #~ msgid "Next"
 #~ msgstr "Далі"

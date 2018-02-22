@@ -2459,10 +2459,6 @@ msgid "Failed:"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "ناتوان در نوشتن پرونده."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "دانلود کامل."
 
@@ -3644,15 +3640,15 @@ msgid "Show Grid"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4484,6 +4480,22 @@ msgid "Resource clipboard is empty!"
 msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "گشودن در ویرایشگر"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr ""
@@ -4774,10 +4786,6 @@ msgid "Toggle Comment"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "برو به خط"
@@ -4788,6 +4796,10 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5644,11 +5656,6 @@ msgstr ""
 msgid "Tab 3"
 msgstr ""
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr ""
-
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
 msgstr ""
@@ -5917,10 +5924,6 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
-
-#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "پروژه واردشده"
 
@@ -5942,7 +5945,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't get project.godot in project path."
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5960,10 +5965,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "تغییر نام پروژه"
-
-#: editor/project_manager.cpp
-msgid "Couldn't get project.godot in the project path."
-msgstr ""
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6665,10 +6666,6 @@ msgstr "زیرمنبع‌ها:"
 msgid "Clear Inheritance"
 msgstr "پاک کردن ارث‌بری"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "گشودن در ویرایشگر"
-
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "حذف گره(ها)"
@@ -6776,10 +6773,6 @@ msgstr ""
 msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
-msgstr ""
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -7231,6 +7224,33 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
+msgid "Next Plane"
+msgstr "زبانه بعدی"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "زبانه قبلی"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Floor"
+msgstr "زبانه قبلی"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
 msgstr "انتخاب شده را حذف کن"
 
@@ -7240,24 +7260,11 @@ msgid "GridMap Duplicate Selection"
 msgstr "انتخاب شده را به دو تا تکثیر کن"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Previous Floor"
-msgstr "زبانه قبلی"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -7367,6 +7374,10 @@ msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
+msgstr ""
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -7942,6 +7953,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr ""
 
@@ -8127,6 +8146,9 @@ msgstr "خطای بارگذاری قلم."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "اندازهٔ قلم نامعتبر."
+
+#~ msgid "Can't write file."
+#~ msgstr "ناتوان در نوشتن پرونده."
 
 #~ msgid "Next"
 #~ msgstr "بعدی"
