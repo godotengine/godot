@@ -77,20 +77,19 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private static Context ctx;
 
 	private static GodotIO io;
-	private static boolean firsttime=true;
-	private static boolean use_gl2=false;
-	private static boolean use_32=false;
+	private static boolean firsttime = true;
+	private static boolean use_gl2 = false;
+	private static boolean use_32 = false;
 
 	private Godot activity;
 
-
 	private InputManagerCompat mInputManager;
-	public GodotView(Context context,GodotIO p_io,boolean p_use_gl2, boolean p_use_32_bits, Godot p_activity) {
+	public GodotView(Context context, GodotIO p_io, boolean p_use_gl2, boolean p_use_32_bits, Godot p_activity) {
 		super(context);
-		ctx=context;
-		io=p_io;
-		use_gl2=p_use_gl2;
-		use_32=p_use_32_bits;
+		ctx = context;
+		io = p_io;
+		use_gl2 = p_use_gl2;
+		use_32 = p_use_32_bits;
 
 		activity = p_activity;
 
@@ -101,14 +100,15 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		mInputManager = InputManagerCompat.Factory.getInputManager(this.getContext());
 		mInputManager.registerInputDeviceListener(this, null);
 		init(false, 16, 0);
-    }
+	}
 
-    public GodotView(Context context, boolean translucent, int depth, int stencil) {
+	public GodotView(Context context, boolean translucent, int depth, int stencil) {
 		super(context);
 		init(translucent, depth, stencil);
-    }
+	}
 
-	@Override public boolean onTouchEvent (MotionEvent event) {
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
 
 		return activity.gotTouchEvent(event);
 	};
@@ -196,16 +196,17 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	ArrayList<joystick> joy_devices = new ArrayList<joystick>();
 
 	private int find_joy_device(int device_id) {
-		for (int i=0; i<joy_devices.size(); i++) {
+		for (int i = 0; i < joy_devices.size(); i++) {
 			if (joy_devices.get(i).device_id == device_id) {
-					return i;
+				return i;
 			}
 		}
 		onInputDeviceAdded(device_id);
 		return joy_devices.size() - 1;
 	}
 
-	@Override public void onInputDeviceAdded(int deviceId) {
+	@Override
+	public void onInputDeviceAdded(int deviceId) {
 		joystick joy = new joystick();
 		joy.device_id = deviceId;
 		int id = joy_devices.size();
@@ -218,25 +219,26 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		for (InputDevice.MotionRange range : ranges) {
 			if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
 				joy.hats.add(range);
-			}
-			else {
+			} else {
 				joy.axes.add(range);
 			}
 		}
 		joy_devices.add(joy);
 		GodotLib.joyconnectionchanged(id, true, joy.name);
-  }
+	}
 
-	@Override public void onInputDeviceRemoved(int deviceId) {
+	@Override
+	public void onInputDeviceRemoved(int deviceId) {
 		int id = find_joy_device(deviceId);
 		joy_devices.remove(id);
 		GodotLib.joyconnectionchanged(id, false, "");
 	}
 
-	@Override public void onInputDeviceChanged(int deviceId) {
-
+	@Override
+	public void onInputDeviceChanged(int deviceId) {
 	}
-	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;
@@ -261,7 +263,8 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		return super.onKeyUp(keyCode, event);
 	};
 
-	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			activity.onBackPressed();
@@ -295,7 +298,8 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		return super.onKeyDown(keyCode, event);
 	}
 
-	@Override public boolean onGenericMotionEvent(MotionEvent event) {
+	@Override
+	public boolean onGenericMotionEvent(MotionEvent event) {
 
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 
@@ -304,14 +308,14 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 			for (int i = 0; i < joy.axes.size(); i++) {
 				InputDevice.MotionRange range = joy.axes.get(i);
-				float value = (event.getAxisValue(range.getAxis()) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
+				float value = (event.getAxisValue(range.getAxis()) - range.getMin()) / range.getRange() * 2.0f - 1.0f;
 				//Log.e(TAG, String.format("axis event: %d, value %f", i, value));
 				GodotLib.joyaxis(device_id, i, value);
 			}
 
-			for (int i = 0; i < joy.hats.size(); i+=2) {
+			for (int i = 0; i < joy.hats.size(); i += 2) {
 				int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
-				int hatY = Math.round(event.getAxisValue(joy.hats.get(i+1).getAxis()));
+				int hatY = Math.round(event.getAxisValue(joy.hats.get(i + 1).getAxis()));
 				//Log.e(TAG, String.format("HAT EVENT %d, %d", hatX, hatY));
 				GodotLib.joyhat(device_id, hatX, hatY);
 			}
@@ -321,8 +325,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		return super.onGenericMotionEvent(event);
 	};
 
-
-    private void init(boolean translucent, int depth, int stencil) {
+	private void init(boolean translucent, int depth, int stencil) {
 
 		this.setFocusableInTouchMode(true);
 		/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
@@ -346,14 +349,14 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		 */
 
 		if (use_32) {
-			setEGLConfigChooser( translucent ?
-						new FallbackConfigChooser(8, 8, 8, 8, 24, stencil, new ConfigChooser(8, 8, 8, 8, 16, stencil)) :
-						new FallbackConfigChooser(8, 8, 8, 8, 24, stencil, new ConfigChooser(5, 6, 5, 0, 16, stencil)) );
+			setEGLConfigChooser(translucent ?
+										new FallbackConfigChooser(8, 8, 8, 8, 24, stencil, new ConfigChooser(8, 8, 8, 8, 16, stencil)) :
+										new FallbackConfigChooser(8, 8, 8, 8, 24, stencil, new ConfigChooser(5, 6, 5, 0, 16, stencil)));
 
 		} else {
-			setEGLConfigChooser( translucent ?
-						new ConfigChooser(8, 8, 8, 8, 16, stencil) :
-						new ConfigChooser(5, 6, 5, 0, 16, stencil) );
+			setEGLConfigChooser(translucent ?
+										new ConfigChooser(8, 8, 8, 8, 16, stencil) :
+										new ConfigChooser(5, 6, 5, 0, 16, stencil));
 		}
 
 		/* Set the renderer responsible for frame rendering */
@@ -361,32 +364,32 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	}
 
 	private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
-	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		if (use_gl2)
-			Log.w(TAG, "creating OpenGL ES 2.0 context :");
-		else
-			Log.w(TAG, "creating OpenGL ES 1.1 context :");
+		private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+		public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+			if (use_gl2)
+				Log.w(TAG, "creating OpenGL ES 2.0 context :");
+			else
+				Log.w(TAG, "creating OpenGL ES 1.1 context :");
 
-		checkEglError("Before eglCreateContext", egl);
-		int[] attrib_list2 = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-		EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl2?attrib_list2:null);
-		checkEglError("After eglCreateContext", egl);
-		return context;
+			checkEglError("Before eglCreateContext", egl);
+			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
+			EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl2 ? attrib_list2 : null);
+			checkEglError("After eglCreateContext", egl);
+			return context;
+		}
+
+		public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+			egl.eglDestroyContext(display, context);
+		}
 	}
 
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-	    egl.eglDestroyContext(display, context);
+	private static void checkEglError(String prompt, EGL10 egl) {
+		int error;
+		while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
+			Log.e(TAG, String.format("%s: EGL error: 0x%x", prompt, error));
+		}
 	}
-    }
-
-    private static void checkEglError(String prompt, EGL10 egl) {
-	int error;
-	while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
-	    Log.e(TAG, String.format("%s: EGL error: 0x%x", prompt, error));
-	}
-    }
-    	/* Fallback if 32bit View is not supported*/
+	/* Fallback if 32bit View is not supported*/
 	private static class FallbackConfigChooser extends ConfigChooser {
 		private ConfigChooser fallback;
 
@@ -395,17 +398,17 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			this.fallback = fallback;
 		}
 
-      		@Override
+		@Override
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
 			EGLConfig ec = super.chooseConfig(egl, display, configs);
 			if (ec == null) {
-	  			Log.w(TAG, "Trying ConfigChooser fallback");
-	  			ec = fallback.chooseConfig(egl, display, configs);
-				use_32=false;
+				Log.w(TAG, "Trying ConfigChooser fallback");
+				ec = fallback.chooseConfig(egl, display, configs);
+				use_32 = false;
 			}
 			return ec;
-      		}
-    	}
+		}
+	}
 
 	private static class ConfigChooser implements GLSurfaceView.EGLConfigChooser {
 
@@ -424,45 +427,45 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		 */
 		private static int EGL_OPENGL_ES2_BIT = 4;
 		private static int[] s_configAttribs2 =
-		{
-			EGL10.EGL_RED_SIZE, 4,
-			EGL10.EGL_GREEN_SIZE, 4,
-			EGL10.EGL_BLUE_SIZE, 4,
-		  //  EGL10.EGL_DEPTH_SIZE,     16,
-		   // EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-			EGL10.EGL_NONE
-		};
+				{
+					EGL10.EGL_RED_SIZE, 4,
+					EGL10.EGL_GREEN_SIZE, 4,
+					EGL10.EGL_BLUE_SIZE, 4,
+					//  EGL10.EGL_DEPTH_SIZE,     16,
+					// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+					EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+					EGL10.EGL_NONE
+				};
 		private static int[] s_configAttribs =
-		{
-			EGL10.EGL_RED_SIZE, 4,
-			EGL10.EGL_GREEN_SIZE, 4,
-			EGL10.EGL_BLUE_SIZE, 4,
-		   // EGL10.EGL_DEPTH_SIZE,     16,
-		  //  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-			EGL10.EGL_NONE
-		};
+				{
+					EGL10.EGL_RED_SIZE, 4,
+					EGL10.EGL_GREEN_SIZE, 4,
+					EGL10.EGL_BLUE_SIZE, 4,
+					// EGL10.EGL_DEPTH_SIZE,     16,
+					//  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+					EGL10.EGL_NONE
+				};
 
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
 
 			/* Get the number of minimally matching EGL configurations
 			 */
 			int[] num_config = new int[1];
-			egl.eglChooseConfig(display, use_gl2?s_configAttribs2:s_configAttribs, null, 0, num_config);
+			egl.eglChooseConfig(display, use_gl2 ? s_configAttribs2 : s_configAttribs, null, 0, num_config);
 
 			int numConfigs = num_config[0];
 
 			if (numConfigs <= 0) {
-			throw new IllegalArgumentException("No configs match configSpec");
+				throw new IllegalArgumentException("No configs match configSpec");
 			}
 
 			/* Allocate then read the array of minimally matching EGL configs
 			 */
 			EGLConfig[] configs = new EGLConfig[numConfigs];
-			egl.eglChooseConfig(display, use_gl2?s_configAttribs2:s_configAttribs, configs, numConfigs, num_config);
+			egl.eglChooseConfig(display, use_gl2 ? s_configAttribs2 : s_configAttribs, configs, numConfigs, num_config);
 
 			if (DEBUG) {
-			 printConfigs(egl, display, configs);
+				printConfigs(egl, display, configs);
 			}
 			/* Now return the "best" one
 			 */
@@ -470,54 +473,54 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		}
 
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
-			EGLConfig[] configs) {
-			for(EGLConfig config : configs) {
-			int d = findConfigAttrib(egl, display, config,
-				EGL10.EGL_DEPTH_SIZE, 0);
-			int s = findConfigAttrib(egl, display, config,
-				EGL10.EGL_STENCIL_SIZE, 0);
+				EGLConfig[] configs) {
+			for (EGLConfig config : configs) {
+				int d = findConfigAttrib(egl, display, config,
+						EGL10.EGL_DEPTH_SIZE, 0);
+				int s = findConfigAttrib(egl, display, config,
+						EGL10.EGL_STENCIL_SIZE, 0);
 
-			// We need at least mDepthSize and mStencilSize bits
-			if (d < mDepthSize || s < mStencilSize)
-				continue;
+				// We need at least mDepthSize and mStencilSize bits
+				if (d < mDepthSize || s < mStencilSize)
+					continue;
 
-			// We want an *exact* match for red/green/blue/alpha
-			int r = findConfigAttrib(egl, display, config,
-				EGL10.EGL_RED_SIZE, 0);
-			int g = findConfigAttrib(egl, display, config,
-					EGL10.EGL_GREEN_SIZE, 0);
-			int b = findConfigAttrib(egl, display, config,
-					EGL10.EGL_BLUE_SIZE, 0);
-			int a = findConfigAttrib(egl, display, config,
-				EGL10.EGL_ALPHA_SIZE, 0);
+				// We want an *exact* match for red/green/blue/alpha
+				int r = findConfigAttrib(egl, display, config,
+						EGL10.EGL_RED_SIZE, 0);
+				int g = findConfigAttrib(egl, display, config,
+						EGL10.EGL_GREEN_SIZE, 0);
+				int b = findConfigAttrib(egl, display, config,
+						EGL10.EGL_BLUE_SIZE, 0);
+				int a = findConfigAttrib(egl, display, config,
+						EGL10.EGL_ALPHA_SIZE, 0);
 
-			if (r == mRedSize && g == mGreenSize && b == mBlueSize && a == mAlphaSize)
-				return config;
+				if (r == mRedSize && g == mGreenSize && b == mBlueSize && a == mAlphaSize)
+					return config;
 			}
 			return null;
 		}
 
 		private int findConfigAttrib(EGL10 egl, EGLDisplay display,
-			EGLConfig config, int attribute, int defaultValue) {
+				EGLConfig config, int attribute, int defaultValue) {
 
 			if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
-			return mValue[0];
+				return mValue[0];
 			}
 			return defaultValue;
 		}
 
 		private void printConfigs(EGL10 egl, EGLDisplay display,
-			EGLConfig[] configs) {
+				EGLConfig[] configs) {
 			int numConfigs = configs.length;
 			Log.w(TAG, String.format("%d configurations", numConfigs));
 			for (int i = 0; i < numConfigs; i++) {
-			Log.w(TAG, String.format("Configuration %d:\n", i));
-			printConfig(egl, display, configs[i]);
+				Log.w(TAG, String.format("Configuration %d:\n", i));
+				printConfig(egl, display, configs[i]);
 			}
 		}
 
 		private void printConfig(EGL10 egl, EGLDisplay display,
-			EGLConfig config) {
+				EGLConfig config) {
 			int[] attributes = {
 				EGL10.EGL_BUFFER_SIZE,
 				EGL10.EGL_ALPHA_SIZE,
@@ -590,14 +593,15 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			};
 			int[] value = new int[1];
 			for (int i = 0; i < attributes.length; i++) {
-			int attribute = attributes[i];
-			String name = names[i];
-			if ( egl.eglGetConfigAttrib(display, config, attribute, value)) {
-				Log.w(TAG, String.format("  %s: %d\n", name, value[0]));
-			} else {
-				// Log.w(TAG, String.format("  %s: failed\n", name));
-				while (egl.eglGetError() != EGL10.EGL_SUCCESS);
-			}
+				int attribute = attributes[i];
+				String name = names[i];
+				if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
+					Log.w(TAG, String.format("  %s: %d\n", name, value[0]));
+				} else {
+					// Log.w(TAG, String.format("  %s: failed\n", name));
+					while (egl.eglGetError() != EGL10.EGL_SUCCESS)
+						;
+				}
 			}
 		}
 
@@ -613,19 +617,18 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 	private static class Renderer implements GLSurfaceView.Renderer {
 
-
 		public void onDrawFrame(GL10 gl) {
 			GodotLib.step();
-			for(int i=0;i<Godot.singleton_count;i++) {
+			for (int i = 0; i < Godot.singleton_count; i++) {
 				Godot.singletons[i].onGLDrawFrame(gl);
 			}
 		}
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
 
-			GodotLib.resize(width, height,!firsttime);
-			firsttime=false;
-			for(int i=0;i<Godot.singleton_count;i++) {
+			GodotLib.resize(width, height, !firsttime);
+			firsttime = false;
+			for (int i = 0; i < Godot.singleton_count; i++) {
 				Godot.singletons[i].onGLSurfaceChanged(gl, width, height);
 			}
 		}

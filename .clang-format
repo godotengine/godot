@@ -113,4 +113,8 @@ Language:        ObjC
 ObjCBlockIndentWidth: 4
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true
+---
+### Java specific config ###
+Language:        Java
+# BreakAfterJavaFieldAnnotations: false
 ...
