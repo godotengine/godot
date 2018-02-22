@@ -8548,8 +8548,19 @@ msgid "Invalid font size."
 msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
 
 #, fuzzy
-#~ msgid "Previous"
-#~ msgstr "পূর্বের ট্যাব"
+#~ msgid "Can't write file."
+#~ msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "এমন একটি ফোল্ডার বাছাই করুন যেখানে 'project.godot' নামে কোন ফাইল নেই।"
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
 #~ msgid "Next"
 #~ msgstr "পরবর্তী"

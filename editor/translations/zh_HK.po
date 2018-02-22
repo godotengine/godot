@@ -3798,14 +3798,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -6107,11 +6099,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid Project Name."
-msgstr "無效名稱"
-
-#: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "無法新增資料夾"
 
@@ -8295,8 +8282,8 @@ msgid "Invalid font size."
 msgstr "無效字型"
 
 #, fuzzy
-#~ msgid "Previous"
-#~ msgstr "上一個tab"
+#~ msgid "Can't write file."
+#~ msgstr "無法新增資料夾"
 
 #~ msgid "Next"
 #~ msgstr "下一個"

@@ -2523,10 +2523,6 @@ msgid "Failed:"
 msgstr "Sikertelen:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "Nem lehet fájlt írni."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "A Letöltés Befejeződött."
 
@@ -3718,15 +3714,15 @@ msgid "Show Grid"
 msgstr "Rács Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Segítők Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Vonalzók Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Vezetővonalak Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4571,6 +4567,22 @@ msgid "Type:"
 msgstr "Típus:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
@@ -4854,7 +4866,7 @@ msgstr "Behúzás Jobbra"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "Átváltás Megjegyzésre"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -4871,6 +4883,10 @@ msgstr "Összes Sor Kibontása"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Klónozás Lefelé"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5978,10 +5994,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-msgid "Invalid Project Name."
-msgstr "Érvénytelen projektnév."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7239,12 +7251,14 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "Következő Síklap"
+msgstr "Következő fül"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "Előző Sík"
+msgstr "Előző fül"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
@@ -8098,9 +8112,8 @@ msgstr "Hiba a betűtípus betöltésekor."
 msgid "Invalid font size."
 msgstr "Érvénytelen betűtípus méret."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Előző fül"
+#~ msgid "Can't write file."
+#~ msgstr "Nem lehet fájlt írni."
 
 #~ msgid "Next"
 #~ msgstr "Következő"

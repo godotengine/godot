@@ -6018,11 +6018,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid Project Name."
-msgstr "Неважеће име."
-
-#: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Неуспех при прављењу директоријума."
 
@@ -8149,9 +8144,8 @@ msgstr ""
 msgid "Invalid font size."
 msgstr "Неважећа величина фонта."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Претходни таб"
+#~ msgid "Can't write file."
+#~ msgstr "Неуспех при записивању датотеке."
 
 #~ msgid "Next"
 #~ msgstr "Следеће"

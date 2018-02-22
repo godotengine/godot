@@ -6003,11 +6003,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"Proje yolundaki proje.godot düzenlenemedi.Eksik veya bozulmuş olabilir."
+msgstr "proje yolundaki proje.godot düzenlenemedi."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7271,16 +7271,18 @@ msgid "Object can't provide a length."
 msgstr "Nesne bir uzunluk sağlayamaz."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
 msgstr "Sonraki sekme"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
 msgstr "Önceki sekme"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Sekme:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7420,7 +7422,7 @@ msgstr "Tekli"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "C# desteği hakkında"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7993,11 +7995,11 @@ msgstr "ARVROrigin bir ARVRCamera çocuk düğümü gerektirir"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Kalan Zaman:%d:%02d sn)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8212,9 +8214,17 @@ msgstr "Yazıtipi yükleme hatası."
 msgid "Invalid font size."
 msgstr "Geçersiz yazıtipi boyutu."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Önceki sekme"
+#~ msgid "Can't write file."
+#~ msgstr "Dosyaya yazılamıyor."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "Lütfen 'proje.godot' dosyası içermeyen bir klasör seçin."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Proje yolunda proje.godot alınamadı."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Proje yolunda proje.godot alınamadı."
 
 #~ msgid "Next"
 #~ msgstr "Sonraki"

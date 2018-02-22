@@ -3644,8 +3644,9 @@ msgid "Show Grid"
 msgstr "Zobrazit mřížku"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Helpers"
-msgstr "Zobrazit pomocníky"
+msgstr "Zobrazit pomocné"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
@@ -4499,18 +4500,18 @@ msgstr "Schránka zdroje je prázdná!"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr "Otevřít v editoru"
+msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr "Instance:"
+msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
-msgstr "Typ:"
+msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -4798,6 +4799,7 @@ msgid "Toggle Comment"
 msgstr "Přepnout komentář"
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Složit/Rozložit řádek"
 
@@ -5665,7 +5667,7 @@ msgstr "Tab 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr "Tab 3"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -5933,11 +5935,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "Jméno projektu:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7228,12 +7225,14 @@ msgid "Floor:"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "GridMap Smazat výběr"
+msgstr "Smazat vybraný"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Duplicate Selection"
-msgstr "GridMap Duplikovat výběr"
+msgstr "Duplikovat výběr"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -7357,6 +7356,11 @@ msgid "About C# support"
 msgstr "O podpoře C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
+
+#: modules/mono/editor/godotsharp_editor.cpp
+#, fuzzy
 msgid "Create C# solution"
 msgstr "Vytvořit C# řešení"
 
@@ -7917,11 +7921,11 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Zbývající čas: %d:%02d s)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8124,9 +8128,8 @@ msgstr "Chyba nahrávání fontu."
 msgid "Invalid font size."
 msgstr "Neplatná velikost fontu."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Předchozí záložka"
+#~ msgid "Can't write file."
+#~ msgstr "Nelze zapsat soubor."
 
 #~ msgid "Next"
 #~ msgstr "Další"

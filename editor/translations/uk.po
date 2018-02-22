@@ -6006,12 +6006,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Некоректний шлях до проекту (щось змінилося?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"Не вдалося завантажити project.godot у каталозі проекту (помилка %d). "
-"Можливо, файл вилучено або пошкоджено."
+msgstr "Не вдалося редагувати project.godot у каталозі проекту."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7280,16 +7279,18 @@ msgid "Object can't provide a length."
 msgstr "Об'єкт не може надавати довжину."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "Наступна площина"
+msgstr "Наступна вкладка"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "Попередня площина"
+msgstr "Попередня вкладка"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Площина:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7429,7 +7430,7 @@ msgstr "Моно"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "Про підтримку C#"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8003,11 +8004,11 @@ msgstr "ARVROrigin повинен мати дочірній вузол ARVRCamer
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Лишилося часу: %d:%02d с)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8225,9 +8226,18 @@ msgstr "Помилка завантаження шрифту."
 msgid "Invalid font size."
 msgstr "Некоректний розмір шрифту."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Попередня вкладка"
+#~ msgid "Can't write file."
+#~ msgstr "Не вдалося записати файл."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Будь ласка, виберіть теку, у якій не міститься файла «project.godot»."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Не вдалося отримати project.godot з каталогу проекту."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Не вдалося отримати project.godot у каталозі проекту."
 
 #~ msgid "Next"
 #~ msgstr "Далі"

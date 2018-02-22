@@ -3662,15 +3662,7 @@ msgstr "显示标尺"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "显示引导"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr "显示原点"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr "显示视图窗口"
+msgstr "显示标尺 "
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5949,11 +5941,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径非法（被外部修改？）。"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"无法在项目路径中加载 project.godot 文件（错误 %d）。该文件可能缺失或已损坏。"
+msgstr "无法在项目目录下编辑project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7206,16 +7198,18 @@ msgid "Object can't provide a length."
 msgstr "对象无法提供长度。"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "下一个平面"
+msgstr "下一项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "上一个平面"
+msgstr "上一个目录"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "平面："
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7230,16 +7224,16 @@ msgid "Floor:"
 msgstr "层："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Grid Map"
-msgstr "网格映射"
+msgid "GridMap Delete Selection"
+msgstr "删除选择的GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "复制选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Previous Floor"
-msgstr "上一个层"
+msgid "Grid Map"
+msgstr "网格映射"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -7355,7 +7349,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "关于C#支持"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7894,6 +7888,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "正在绘制网格： "
 
@@ -8090,9 +8092,17 @@ msgstr "加载字体出错。"
 msgid "Invalid font size."
 msgstr "字体大小非法。"
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "上一个目录"
+#~ msgid "Can't write file."
+#~ msgstr "无法写入文件。"
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "请选择一个不包含'project.godot'文件的文件夹。"
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "无法在项目目录下找到project.godot文件。"
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "无法在项目目录下找到project.godot文件。"
 
 #~ msgid "Next"
 #~ msgstr "下一项"

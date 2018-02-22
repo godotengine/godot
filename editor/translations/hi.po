@@ -3644,14 +3644,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -5895,11 +5887,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "गलत फॉण्ट का आकार |"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
