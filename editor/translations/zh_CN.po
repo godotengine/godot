@@ -3,6 +3,8 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# 360119124 <360119124@qq.com>, 2018.
+# 柠檬杀手 <lemonkiller@gmail.com>, 2018.
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
 # 孤月蓝风 <trlanfeng@foxmail.com>, 2016.
 # 吴亮弟 <wu@liangdi.me>, 2017.
@@ -23,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-01-20 12:54+0000\n"
-"Last-Translator: Geequlim <geequlim@gmail.com>\n"
+"PO-Revision-Date: 2018-02-03 05:35+0000\n"
+"Last-Translator: 360119124 <360119124@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -48,11 +50,11 @@ msgstr "修改动画关键帧的时间"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "动画变化过渡"
+msgstr "修改动画过渡方式"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "修改变换"
+msgstr "修改动画变换"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
@@ -100,7 +102,7 @@ msgstr "轨道修改为值模式"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr "轨道修改为包装模式"
+msgstr "轨道修改为包围模式"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -108,7 +110,7 @@ msgstr "编辑节点曲线"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr "编辑选项曲线"
+msgstr "编辑所选曲线"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -133,7 +135,7 @@ msgstr "连续"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr "分离"
+msgstr "离散"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
@@ -198,7 +200,7 @@ msgstr "优化动画"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "清理动画"
+msgstr "清空动画"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -222,7 +224,7 @@ msgstr "创建|插入动画"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "创建|插入 轨道和关键帧"
+msgstr "插入轨道和关键帧"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
@@ -246,11 +248,11 @@ msgstr "插入动画"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "缩放键"
+msgstr "缩放关键帧"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "添加回调轨道"
+msgstr "添加调用轨道"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -298,11 +300,11 @@ msgstr "轨道工具"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr "允许通过单击启用各个键的编辑。"
+msgstr "允许通过单击编辑各个关键帧。"
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "优化动画"
+msgstr "动画优化器"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
@@ -310,11 +312,11 @@ msgstr "最大线性错误:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "最大角错误:"
+msgstr "最大角度错误:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "调整最大的角度:"
+msgstr "调整最大的可优化角度:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
@@ -338,7 +340,7 @@ msgstr "缩放比率："
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "在那个节点中调用函数？"
+msgstr "在哪个节点中调用函数？"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -358,7 +360,7 @@ msgstr "清除所有动画吗（无法撤销！）"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr "清理"
+msgstr "清空"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -430,13 +432,13 @@ msgstr "列:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "必须设置方法的对象节点！"
+msgstr "必须指定目标节点的方法！"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
-msgstr "找不到目标方法！ 指定一个有效的方法或把脚本附加到目标节点。"
+msgstr "找不到目标方法！ 请指定一个有效的方法或把脚本附加到目标节点。"
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -1075,7 +1077,7 @@ msgstr "[空]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[位保存]"
+msgstr "[未保存]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1336,8 +1338,8 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"暂时没有此类型的说明。请帮通过[color=$color][url=$url] 补充文档或提交请求 [/"
-"url][/color]的方式帮助我们完善文档!"
+"当前没有此类型的教程。请通过[color=$color][url=$url] 补充文档或提交请求 [/"
+"url][/color]的方式帮助我们完善文档。"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1368,7 +1370,7 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"当前没有此方法的说明。请帮助我们通过 [color=$color] [url=$url] 贡献一个 [/"
+"当前没有此方法的描述。请帮助我们通过 [color=$color] [url=$url] 贡献一个 [/"
 "url][/color]!"
 
 #: editor/editor_help.cpp
@@ -2338,7 +2340,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr "在_run()方中填写您的逻辑代码。"
+msgstr "在_run()方法中填写您的逻辑代码。"
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
@@ -2488,11 +2490,11 @@ msgstr "请求链接错误: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror.."
-msgstr "正在连接镜像..."
+msgstr "正在连接镜像……"
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
-msgstr "链接已断开"
+msgstr "已断开"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
@@ -2518,7 +2520,7 @@ msgstr "已连接"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting.."
-msgstr "正在请求.."
+msgstr "正在请求……"
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -3040,7 +3042,7 @@ msgstr "穿过"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "未来"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
@@ -3723,7 +3725,7 @@ msgstr "好的"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "无法实例化没有根的多个节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3933,7 +3935,7 @@ msgstr "包含的Mesh不是ArrayMesh类型。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr ""
+msgstr "UV展开失败，可能该网格并非流形？"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
@@ -3993,7 +3995,7 @@ msgstr "查看UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr ""
+msgstr "为光照映射/环境光遮蔽展开UV2"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -5761,7 +5763,7 @@ msgstr "错误"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Autotiles"
-msgstr ""
+msgstr "智能瓦片"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6486,15 +6488,15 @@ msgstr "选择属性"
 
 #: editor/property_selector.cpp
 msgid "Select Virtual Method"
-msgstr "选择虚拟方法 "
+msgstr "选择虚方法"
 
 #: editor/property_selector.cpp
 msgid "Select Method"
-msgstr "选择方式"
+msgstr "选择方法"
 
 #: editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
-msgstr "无法执行PVPTC工具:"
+msgstr "无法执行PVRTC工具:"
 
 #: editor/pvrtc_compress.cpp
 msgid "Can't load back converted image using PVRTC tool:"
@@ -6708,9 +6710,8 @@ msgid "Clear a script for the selected node."
 msgstr "清除选中节点的脚本。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "移除"
+msgstr "远程"
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -7204,18 +7205,16 @@ msgid "Floor:"
 msgstr "层："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Map"
-msgstr "网格吸附"
+msgstr "网格映射"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
 msgstr "吸附视图"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
-msgstr "上一个目录"
+msgstr "上一个层"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7670,7 +7669,7 @@ msgstr "脚本中未找到VariableSet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr "自定义脚本节点不包含_step()方法，不能生成图。"
+msgstr "自定义节点不包含_step()方法，不能生成图像。"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
@@ -7858,23 +7857,20 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
-msgstr "正在绘制网格"
+msgstr "正在绘制网格： "
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Lights:"
-msgstr "正在绘制网格"
+msgstr "正在绘制灯光："
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
 msgstr "正在完成划分"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Lighting Meshes: "
-msgstr "正在绘制网格"
+msgstr "正在对网格进行照明 "
 
 #: scene/3d/collision_object.cpp
 msgid ""

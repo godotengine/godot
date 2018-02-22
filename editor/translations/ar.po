@@ -19,8 +19,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 11:45+0000\n"
-"Last-Translator: anonymous <>\n"
+"PO-Revision-Date: 2018-01-30 16:34+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -7326,7 +7326,7 @@ msgstr "تم"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Failed to create C# project."
-msgstr "فشل إنشاء مشروع C#."
+msgstr "فشل إنشاء مشروع C#‎."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
@@ -7334,7 +7334,7 @@ msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
-msgstr "إنشاء حل C#"
+msgstr "إنشاء حل C#‎"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"

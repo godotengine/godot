@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
+"PO-Revision-Date: 2018-02-12 08:36+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -53,11 +53,11 @@ msgstr "Schlüsselbildzeit ändern"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Übergang beim Animationswechsel"
+msgstr "Übergang bearbeiten"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Transformation ändern"
+msgstr "Transformation bearbeiten"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
@@ -207,11 +207,11 @@ msgstr "Animation bereinigen"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "NEUE Spur für %s  erstellenund Schlüsselbild hinzufügen?"
+msgstr "NEUE Spur für %s erstellen und Schlüsselbild hinzufügen?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "%d NEUE Spuren erstelleb und Schlüsselbilder hinzufügen?"
+msgstr "%d NEUE Spuren erstellen und Schlüsselbilder hinzufügen?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -267,11 +267,11 @@ msgstr "Länge (s):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr "Animationslänge (in Sekunden)."
+msgstr "Animationsdauer (in Sekunden)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr "Schritte (s):"
+msgstr "Schrittweite (s):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
@@ -279,7 +279,7 @@ msgstr "Cursor Schrittraster (in Sekunden)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr "Animationswiederholung aktivieren/deaktivieren."
+msgstr "Animationsschleife aktivieren/deaktivieren."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -344,7 +344,7 @@ msgstr "Skalierungsverhältnis:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "In welcher Node sollen die Funktionen aufgerufen werden?"
+msgstr "Node dessen Funktionen aufgerufen werden sollen auswählen."
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -360,7 +360,7 @@ msgstr "Alle Animationen bereinigen"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Alle Animationen bereinigen (Kann nicht rückgängig gemacht werden!)"
+msgstr "Animationen bereinigen (Kann nicht rückgängig gemacht werden!)"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
@@ -507,7 +507,7 @@ msgstr "Verbinden"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Verbinde '%s' zu '%s'"
+msgstr "Verbinde ‚%s‘ mit ‚%s‘"
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
@@ -577,23 +577,23 @@ msgstr "Suche Ersatz für:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr "Abhängigkeiten Für:"
+msgstr "Abhängigkeiten für:"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
-"Die Szene '%s' wird momentan bearbeitet.\n"
-"Änderungen werden nicht angezeigt bis die Szene neu geladen wird."
+"Die Szene ‚%s‘ wird momentan bearbeitet.\n"
+"Änderungen werden erst wirksam, wenn die Szene neu geladen wird."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
-"Die Ressource '%s' wird momentan benutzt.\n"
-"Änderungen werden erst nach Neuladen der Ressource aktiv."
+"Die Ressource ‚%s‘ wird momentan benutzt.\n"
+"Änderungen werden erst durch Neuladen wirksam."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -624,7 +624,7 @@ msgstr "Abhängigkeiteneditor"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr "Ersatz-Ressource suchen:"
+msgstr "Ersatzressource suchen:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
@@ -649,8 +649,8 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"Die zu entfernenden Dateien werden von anderen Ressourcen gebraucht, damit "
-"sie richtig funktionieren können.\n"
+"Andere Ressourcen benötigen die zu entfernenden Dateien, um richtig zu "
+"funktionieren.\n"
 "Trotzdem entfernen? (Kann nicht rückgängig gemacht werden)"
 
 #: editor/dependency_editor.cpp
@@ -721,7 +721,7 @@ msgstr "Wörterbuchwert ändern"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Danke von der Godot-Community!"
+msgstr "Die Godot-Gemeinschaft bedankt sich!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
@@ -741,7 +741,7 @@ msgstr "Hauptentwickler"
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Projektverwalter "
+msgstr "Projektverwaltung "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -753,27 +753,27 @@ msgstr "Autoren"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr "Platinum Sponsoren"
+msgstr "Platin-Sponsoren"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr "Gold Sponsoren"
+msgstr "Gold-Sponsoren"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "Mini Sponsoren"
+msgstr "Mini-Sponsoren"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr "Gold Unterstützer"
+msgstr "Gold-Unterstützer"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr "Silver Unterstützer"
+msgstr "Silber-Unterstützer"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr "Bronze Unterstützer"
+msgstr "Bronze-Unterstützer"
 
 #: editor/editor_about.cpp
 msgid "Donors"
@@ -794,10 +794,10 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Die Godot-Engine baut auf einer Vielzahl freier und quelloffener projekt-"
-"externer Bibliotheken auf, die alle kompatibel mit den Auflagen der MIT-"
-"Lizenz sind. Es folgt eine vollständige Liste aller verwendeten externen "
-"Bibliotheken mit den jeweiligen zugehörigen Urheberrechtserklärungen und "
+"Die Godot-Engine baut auf vielen freien und quelloffenen Bibliotheken von "
+"Drittanbietern auf, welche alle mit der MIT-Lizenz konform sind. Es folgt "
+"eine vollständige Liste aller verwendeten Bibliotheken von Drittanbietern "
+"mit den jeweiligen zugehörigen Urheberrechtserklärungen und "
 "Lizenzbedingungen."
 
 #: editor/editor_about.cpp
@@ -836,7 +836,7 @@ msgstr "Installieren"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr "Paketinstaller"
+msgstr "Erweiterungenverwaltung"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -844,7 +844,7 @@ msgstr "Lautsprecher"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "Audiobuseffekt hinzufügen"
+msgstr "Effekt hinzufügen"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
@@ -868,7 +868,7 @@ msgstr "Audiobus Bypasseffekte umschalten"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Audiobus Senden auswählen"
+msgstr "Audiobus senden auswählen"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -983,7 +983,7 @@ msgstr "Lade ein existierendes Bus-Layout."
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
-msgstr "Speichern als"
+msgstr "Speichern unter"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
@@ -995,7 +995,7 @@ msgstr "Standard laden"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Standart Bus Layout laden."
+msgstr "Standard Bus-Layout laden."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1364,8 +1364,9 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Es gibt zurzeit keine Tutorials zu dieser Klasse. [color=$color][url="
-"$url]Ergänzungen durch eigene Beiträge[/url][/color] sind sehr erwünscht!"
+"Es gibt zurzeit keine Tutorials zu dieser Klasse. Mitwirkungen durch [color="
+"$color][url=$url]eigene Beiträge[/url][/color] oder [color=$color][url="
+"$url2]Meldung von Problemen[/url][/color] sind sehr erwünscht."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -2909,7 +2910,7 @@ msgstr "Gruppen"
 
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr "Wähle ein Node um Signale und Gruppen zu bearbeiten."
+msgstr "Node auswählen um Signale und Gruppen zu bearbeiten."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6917,7 +6918,7 @@ msgstr "Node-Konfigurationswarnung!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr "Wähle ein Node"
+msgstr "Node auswählen"
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"

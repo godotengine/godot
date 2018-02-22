@@ -7,12 +7,13 @@
 # Bastian Salmela <bastian.salmela@gmail.com>, 2017.
 # ekeimaja <ekeimaja@gmail.com>, 2017-2018.
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
+# Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 12:10+0000\n"
-"Last-Translator: ekeimaja <ekeimaja@gmail.com>\n"
+"PO-Revision-Date: 2018-01-31 04:36+0000\n"
+"Last-Translator: Sami Lehtilä <sami.lehtila@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -159,9 +160,8 @@ msgid "Linear"
 msgstr "Lineaarinen"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Constant"
-msgstr "Jatkuva"
+msgstr "Muuttumaton"
 
 #: editor/animation_editor.cpp
 msgid "In"
@@ -192,9 +192,8 @@ msgid "Clean-Up Animation"
 msgstr "Siivoa animaatio"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "Luo uusi raita %s ja lisää avain?"
+msgstr "Luo UUSI raita %lle ja lisää avain?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -225,14 +224,12 @@ msgid "Change Anim Len"
 msgstr "Vaihda animaation pituutta"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Change Anim Loop"
-msgstr "Vaihda animaation toistoa"
+msgstr "Vaihda animaation kierto"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Create Typed Value Key"
-msgstr "Animaatio: Luo tyyppipohjainen arvo avain"
+msgstr "Animaatio: Luo tyypitetty arvoavain"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
@@ -243,9 +240,8 @@ msgid "Anim Scale Keys"
 msgstr "Animaatio: Skaalaa avaimia"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Add Call Track"
-msgstr "Animaatio: Lisää kutsu raita"
+msgstr "Animaatio: Lisää kutsuraita"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -264,9 +260,8 @@ msgid "Step (s):"
 msgstr "Askellus:"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Cursor step snap (in seconds)."
-msgstr "Kohdistimen tarttuminen (sekunneissa)."
+msgstr "Kohdistimen askelrajoitin (sekunneissa)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
@@ -302,15 +297,15 @@ msgstr "Animaation optimoija"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Max. lineaarinen virhe:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Max. Kulmavirhe:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Max. Optimoitava kulma:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
@@ -504,9 +499,8 @@ msgid "Connecting Signal:"
 msgstr "Yhdistävä signaali:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Yhdistä '%s' '%s':n"
+msgstr "Katkaise yhteys '%s' '%s':n"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -522,9 +516,8 @@ msgid "Signals"
 msgstr "Signaalit"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Muuta tyyppiä"
+msgstr "Muuta %s:n tyyppi"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -532,9 +525,8 @@ msgid "Change"
 msgstr "Muuta"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Luo uusi"
+msgstr "Luo uusi %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -648,7 +640,7 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #, fuzzy
 msgid "Cannot remove:"
-msgstr "Ei voida poistaa:\n"
+msgstr "Ei voida poistaa:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"

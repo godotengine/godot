@@ -11,7 +11,7 @@
 # derderder77 <derderder77380@gmail.com>, 2016.
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018.
-# Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2017.
+# Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2018.
 # Kanabenki <lucien.menassol@gmail.com>, 2017.
 # keltwookie <keltwookie@protonmail.com>, 2017.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
@@ -35,8 +35,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
-"Last-Translator: Gilles Roudiere <gilles.roudiere@gmail.com>\n"
+"PO-Revision-Date: 2018-02-06 00:36+0000\n"
+"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1363,14 +1363,14 @@ msgid "Online Tutorials:"
 msgstr "Tutoriels en ligne :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Pas de description disponible pour cette méthode. [color=$color][url="
-"$url]Contribuez[/url][/color] pour nous aider!"
+"Pas de tutoriels disponibles pour cette classe, vous pouvez [color=$color]"
+"[url=$url]en contribuer un[/url][/color] ou [color=$color][url=$url2]en "
+"demander un[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1424,7 +1424,6 @@ msgid "Clear"
 msgstr "Effacer"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
 msgstr "Effacer la sortie"
 
@@ -2585,7 +2584,7 @@ msgstr "Résolution"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr "Impossible à résoudre."
+msgstr "Impossible à résoudre"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2762,9 +2761,8 @@ msgid "View Owners.."
 msgstr "Voir les propriétaires…"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate.."
-msgstr "Dupliquer"
+msgstr "Dupliquer…"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -3129,7 +3127,6 @@ msgid "Directions"
 msgstr "Directions"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
 msgstr "Passé"
 
@@ -3826,7 +3823,6 @@ msgid "Ok"
 msgstr "OK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "Impossible d'instancier plusieurs nœuds sans nœud racine."
 
@@ -4088,12 +4084,10 @@ msgid "Create Outline Mesh.."
 msgstr "Créer un maillage de contour…"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV1"
 msgstr "Afficher l'UV1"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "View UV2"
 msgstr "Afficher l'UV2"
 
@@ -4235,9 +4229,8 @@ msgid "Calculating grid size..."
 msgstr "Calcul de la taille de la grille..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Creating heightfield..."
-msgstr "Création de la heightmap..."
+msgstr "Création de la heightmap…"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
@@ -4264,9 +4257,8 @@ msgid "Creating polymesh..."
 msgstr "Création d'un maillage de contour…"
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Converting to native navigation mesh..."
-msgstr "Conversion en maillage de navigation natif..."
+msgstr "Conversion en maillage de navigation natif…"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
@@ -4612,9 +4604,8 @@ msgid "Paste"
 msgstr "Coller"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "ResourcePreloader"
-msgstr "Chemin de la ressource"
+msgstr "ResourcePreloader"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -5581,27 +5572,24 @@ msgid "Insert Empty (After)"
 msgstr "Insérer vide (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move (Before)"
-msgstr "Déplacer le(s) nœud(s)"
+msgstr "Déplacer avant"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
 msgstr "Déplacer (Après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "SpriteFrames"
-msgstr "Images du sprite"
+msgstr "SpriteFrames"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "Aperçu de la StyleBox :"
 
 #: editor/plugins/style_box_editor_plugin.cpp
-#, fuzzy
 msgid "StyleBox"
-msgstr "Style Box"
+msgstr "StyleBox"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -5825,9 +5813,8 @@ msgid "Mirror Y"
 msgstr "Miroir Y"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paint Tile"
-msgstr "Peindre sur la TileMap"
+msgstr "Peindre la case"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -5866,9 +5853,8 @@ msgid "Merge from scene?"
 msgstr "Fusionner depuis la scène ?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Set"
-msgstr "TileSet…"
+msgstr "Ensemble de cases"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -5883,7 +5869,6 @@ msgid "Error"
 msgstr "Erreur"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Autotiles"
 msgstr "Coupe automatique"
 

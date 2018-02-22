@@ -5,24 +5,26 @@
 #
 # aelspire <aelspire@gmail.com>, 2017.
 # Aram Nap <xyphex.aram@gmail.com>, 2017.
-# Arjan219 <arjannugteren1@gmail.com>, 2017.
+# Arjan219 <arjannugteren1@gmail.com>, 2017-2018.
 # Christophe Swolfs <swolfschristophe@gmail.com>, 2017.
 # Cornee Traas <corneetraas@hotmail.com>, 2017.
 # Daeran Wereld <daeran@gmail.com>, 2017.
 # Dzejkop <jakubtrad@gmail.com>, 2017.
 # Ferdinand de Coninck <ferdinand.deconinck@gmail.com>, 2018.
+# Jorn Theunissen <jorn-theunissen@hotmail.com>, 2018.
 # Maikel <maikel_martens_1@hotmail.com>, 2017.
 # Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017-2018.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
 # Uxilo <jmolendijk93@gmail.com>, 2017-2018.
+# Willem <studiebolmail@gmail.com>, 2018.
 # Wout Standaert <wout@blobkat.com>, 2017.
 # Zatherz <zatherz@linux.pl>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-22 08:07+0000\n"
+"PO-Revision-Date: 2018-02-17 19:35+0000\n"
 "Last-Translator: Pieter-Jan Briers <pieterjan.briers@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -30,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.19\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1693,7 +1695,6 @@ msgid "Export Mesh Library"
 msgstr "Exporteer Mesh Library"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a root node."
 msgstr "Deze bewerking is niet mogelijk zonder een hoofdknoop."
 
@@ -2065,7 +2066,6 @@ msgstr ""
 "efficiënter met het netwerk bestandssysteem."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
 msgstr "Editor"
 
@@ -2302,9 +2302,8 @@ msgid "Creating Mesh Previews"
 msgstr "Creëren van Mesh Previews"
 
 #: editor/editor_plugin.cpp
-#, fuzzy
 msgid "Thumbnail.."
-msgstr "Thumbnail.."
+msgstr "Voorbeeld.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2543,7 +2542,7 @@ msgstr "Download Voltooid."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting url: "
-msgstr "Fout met het opvragen van url: "
+msgstr "Fout bij het opvragen van een URL: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror.."
@@ -3225,7 +3224,7 @@ msgstr "Hoeveelheid:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend:"
-msgstr "Mengen"
+msgstr "Mengen:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 0:"
@@ -3249,7 +3248,7 @@ msgstr "Voeg invoer toe"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr "Verwijder Automatische Voortgang."
+msgstr "Verwijder Automatische Voortgang"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Set Auto-Advance"
@@ -3455,7 +3454,6 @@ msgid "Official"
 msgstr "Officieel"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
 msgstr "Testen"
 
@@ -4035,11 +4033,11 @@ msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
 msgid "No mesh to debug."
-msgstr ""
+msgstr "Geen mesh om te debuggen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Model has no UV in this layer"
 msgstr "Model heeft geen UV in deze laag"
 
@@ -4048,7 +4046,6 @@ msgid "MeshInstance lacks a Mesh!"
 msgstr "MeshInstance ontbreekt een Mesh!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Mesh heeft geen oppervlakte om omlijning van te maken!"
 
@@ -4169,7 +4166,7 @@ msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr ""
+msgstr "Vul MultiMesh"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -4246,8 +4243,9 @@ msgid "Constructing compact heightfield..."
 msgstr "Compact hoogteveld aan het bouwen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
 msgid "Eroding walkable area..."
-msgstr ""
+msgstr "Wandelbaar gebied eroderen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -4292,11 +4290,11 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr ""
+msgstr "Error bij het laden van afbeelding:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
-msgstr ""
+msgstr "Geen pixels met transparantie > 128 in afbeelding.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4737,7 +4735,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Starten"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6102,7 +6100,7 @@ msgstr "Importeren"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Creëer Nieuw Project"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6199,7 +6197,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Nieuw Project"
 
 #: editor/project_manager.cpp
 #, fuzzy

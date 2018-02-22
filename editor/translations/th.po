@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-20 09:49+0000\n"
+"PO-Revision-Date: 2018-02-22 12:40+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -102,11 +102,11 @@ msgstr "ลบคีย์แอนิเมชัน"
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "ทำซ้ำในแทร็กเดิม"
+msgstr "ทำซ้ำที่เลือก"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "ทำซ้ำในแทร็กที่เลือก"
+msgstr "ทำซ้ำเปลี่ยนแทร็ก"
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
@@ -5680,15 +5680,15 @@ msgstr "ค้นหา tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
-msgstr "สลับเปลี่ยน"
+msgstr "สลับแกน"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Mirror X"
-msgstr "สะท้อนบนล่าง"
+msgstr "สะท้อนซ้ายขวา"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Mirror Y"
-msgstr "สะท้อนซ้ายขวา"
+msgstr "สะท้อนบนล่าง"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
