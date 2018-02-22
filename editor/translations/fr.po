@@ -12,11 +12,8 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
-# John Bernier <john.bp@unknit.net>, 2018.
-# Kanabenki <lucien.menassol@gmail.com>, 2017, 2018.
-# keltwookie <keltwookie@protonmail.com>, 2017-2018.
-# LL <lu.lecocq@free.fr>, 2018.
+# Kanabenki <lucien.menassol@gmail.com>, 2017.
+# keltwookie <keltwookie@protonmail.com>, 2017.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
 # Marc <marc.gilleron@gmail.com>, 2016-2017.
 # Marc-Andre Belisle <belisle.ma@gmail.com>, 2018.
@@ -44,8 +41,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-12 16:38+0000\n"
-"Last-Translator: Philippe Gervaise <blah@malvese.org>\n"
+"PO-Revision-Date: 2018-02-06 00:36+0000\n"
+"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1377,8 +1374,8 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Il n'y a pas de tutoriels disponibles pour cette classe, vous pouvez [color="
-"$color][url=$url]en créer un[/url][/color] ou [color=$color][url=$url2]en "
+"Pas de tutoriels disponibles pour cette classe, vous pouvez [color=$color]"
+"[url=$url]en contribuer un[/url][/color] ou [color=$color][url=$url2]en "
 "demander un[/url][/color]."
 
 #: editor/editor_help.cpp
@@ -2763,7 +2760,7 @@ msgid "View Owners..."
 msgstr "Voir les propriétaires…"
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate..."
+msgid "Duplicate.."
 msgstr "Dupliquer…"
 
 #: editor/filesystem_dock.cpp
@@ -4245,7 +4242,7 @@ msgstr "Calcul de la taille de la grille..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
-msgstr "Création du champ de hauteur…"
+msgstr "Création de la heightmap…"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
@@ -5600,7 +5597,7 @@ msgstr "Insérer vide (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (Before)"
-msgstr "Déplacer (Avant)"
+msgstr "Déplacer avant"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
@@ -5884,7 +5881,7 @@ msgstr "Fusionner depuis la scène ?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tile Set"
-msgstr "Jeu de tuiles"
+msgstr "Ensemble de cases"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
