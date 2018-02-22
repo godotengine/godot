@@ -86,22 +86,19 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 			path = search_dir.plus_file(name);
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name.get_basename(), path, refonly);
-				if (res != NULL)
-					break;
+				break;
 			}
 		} else {
 			path = search_dir.plus_file(name + ".dll");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				if (res != NULL)
-					break;
+				break;
 			}
 
 			path = search_dir.plus_file(name + ".exe");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				if (res != NULL)
-					break;
+				break;
 			}
 		}
 	}
@@ -143,10 +140,11 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 
 	if (has_extension ? name == "mscorlib.dll" : name == "mscorlib") {
 		GDMonoAssembly **stored_assembly = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
-		if (stored_assembly) return (*stored_assembly)->get_assembly();
+		if (stored_assembly)
+			return (*stored_assembly)->get_assembly();
 
 		String path;
-		MonoAssembly *res = NULL;
+		GDMonoAssembly *res = NULL;
 
 		for (int i = 0; i < search_dirs.size(); i++) {
 			const String &search_dir = search_dirs[i];
@@ -154,19 +152,25 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 			if (has_extension) {
 				path = search_dir.plus_file(name);
 				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name.get_basename(), path);
+					res = _load_assembly_from(name.get_basename(), path, refonly);
 					break;
 				}
 			} else {
 				path = search_dir.plus_file(name + ".dll");
 				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name, path);
+					res = _load_assembly_from(name, path, refonly);
+					break;
+				}
+
+				path = search_dir.plus_file(name + ".exe");
+				if (FileAccess::exists(path)) {
+					res = _load_assembly_from(name, path, refonly);
 					break;
 				}
 			}
 		}
 
-		if (res) return res;
+		return res ? res->get_assembly() : NULL;
 	}
 
 	return NULL;

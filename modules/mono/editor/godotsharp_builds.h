@@ -92,6 +92,8 @@ public:
 
 	static bool build_project_blocking(const String &p_config);
 
+	static bool build_project_blocking(const String &p_config);
+
 	static bool editor_build_callback();
 
 	GodotSharpBuilds();
