@@ -34,7 +34,7 @@ class Skeleton2D : public Node2D {
 
 	struct Bone {
 		bool operator<(const Bone &p_bone) const {
-			p_bone.bone->is_greater_than(bone);
+			return p_bone.bone->is_greater_than(bone);
 		}
 		Bone2D *bone;
 		Transform2D rest_inverse;
