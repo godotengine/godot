@@ -961,75 +961,122 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 }
 
 Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	std::cout << "get_drag_data_fw !" << std::endl;
 
 	Vector<Node *> selected;
 	TreeItem *next = input_editor->get_selected();
 
+	Array objs;
+	int list_max = 10;
+	float opacity_step = 1.0f / list_max;
+	float opacity_item = 1.0f;
+
 	VBoxContainer *vb = memnew(VBoxContainer);
+
 	HBoxContainer *hb = memnew(HBoxContainer);
 	Label *label = memnew(Label(next->get_text(0)));
 	hb->add_child(label);
 	vb->add_child(hb);
 	hb->set_modulate(Color(1, 1, 1, 1.0f));
 
-	set_drag_preview(vb);
-
 	NodePath p = next->get_metadata(0);
-	Dictionary drag_data;
-	drag_data["type"] = "nodes";
-	drag_data["nodes"] = p;
+	objs.push_back(p);
 
-	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
-	emit_signal("nodes_dragged");
+	next = next->get_children();
 
-	return drag_data;
-
-	
-	
-		/*
 	while (next) {
+		HBoxContainer *hb = memnew(HBoxContainer);
+		Label *label = memnew(Label(String("    ") + next->get_text(0)));
+		hb->add_child(label);
+		vb->add_child(hb);
+		hb->set_modulate(Color(1, 1, 1, opacity_item));
+		opacity_item -= opacity_step;
 
-		NodePath np = next->get_metadata(0);
-
-		Node *n = get_node(np);
-		if (n) {
-			selected.push_back(n);
-		}
-		next = input_editor->get_next_selected(next);
-	}
-	
-	if (selected.empty())
-		return Variant();
-
-	VBoxContainer *vb = memnew(VBoxContainer);
-	Array objs;
-	int list_max = 10;
-	float opacity_step = 1.0f / list_max;
-	float opacity_item = 1.0f;
-	for (int i = 0; i < selected.size(); i++) {
-
-		if (i < list_max) {
-			HBoxContainer *hb = memnew(HBoxContainer);
-			Label *label = memnew(Label(selected[i]->get_name()));
-			hb->add_child(label);
-			vb->add_child(hb);
-			hb->set_modulate(Color(1, 1, 1, opacity_item));
-			opacity_item -= opacity_step;
-		}
-		NodePath p = selected[i]->get_path();
+		p = next->get_metadata(0);
 		objs.push_back(p);
+
+		next = next->get_next();
 	}
 
 	set_drag_preview(vb);
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
+	drag_data["types"] = "nodes";
 	drag_data["nodes"] = objs;
 
-	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
-	emit_signal("nodes_dragged");
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 
 	return drag_data;
+}
+
+bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+
+	if (!selected || !item)
+		return false;
+
+	if (selected->get_parent() == input_editor->get_root()) {
+		return item->get_parent() == input_editor->get_root();
+	}
+	else {
+		if (item->get_parent() != input_editor->get_root()) {
+			return selected->get_parent() == item->get_parent();
+		}
+	}
+	return false;
+}
+
+void ProjectSettingsEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!selected || !item)
+		return;
+
+	int section = input_editor->get_drop_section_at_position(p_point);
+
+	NodePath np = selected->get_metadata(0);
+	Node *n = get_node(np);
+	if (!n)
+		return;
+
+	/*
+	Array va;
+	String name = "input/" + item->get_text(0);
+	undo_redo->create_action(TTR("Add Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
+	undo_redo->add_do_method(this, "_update_actions");
+	undo_redo->add_undo_method(this, "_update_actions");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+
+
+	name = "input/" + selected->get_text(0);
+	Variant old_val = ProjectSettings::get_singleton()->get(name);
+	int order = ProjectSettings::get_singleton()->get_order(name);
+
+	undo_redo->create_action(TTR("Erase Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", name);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
+	undo_redo->add_do_method(this, "_update_actions");
+	undo_redo->add_undo_method(this, "_update_actions");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+	// _action_button_pressed(selected, 0, 2);
+	// remove_child(n);
+	//input_editor->remove_child(selected);
+	/*
+	Dictionary d = p_data;
+
+	Array nodes = d["nodes"];
+	emit_signal("nodes_rearranged", nodes, np, section);
 	*/
 }
 
@@ -1646,6 +1693,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ProjectSettingsEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ProjectSettingsEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ProjectSettingsEditor::drop_data_fw);
+
+	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
