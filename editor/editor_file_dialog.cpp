@@ -551,7 +551,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 
 	if (single_item_selected) {
-		item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
+		item_menu->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
 	}
 	if (allow_delete) {
 		item_menu->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Delete"), ITEM_MENU_DELETE, KEY_DELETE);
