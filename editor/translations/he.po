@@ -2431,10 +2431,6 @@ msgid "Failed:"
 msgstr "נכשל:"
 
 #: editor/export_template_manager.cpp
-msgid "Can't write file."
-msgstr "לא ניתן לכתוב קובץ."
-
-#: editor/export_template_manager.cpp
 msgid "Download Complete."
 msgstr "ההורדה הושלמה."
 
@@ -3613,14 +3609,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -4444,6 +4432,22 @@ msgid "Resource clipboard is empty!"
 msgstr "לוח גזירי המשאבים ריק!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "טעינת משאב"
@@ -4728,10 +4732,6 @@ msgid "Toggle Comment"
 msgstr "החלפת מצב הערה"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "לשכפל למטה"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "צמצום/הרחבה של שורה"
 
@@ -4742,6 +4742,10 @@ msgstr "צמצום כל השורות"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "הרחבת כל השורות"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "לשכפל למטה"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5856,11 +5860,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "שם שגוי."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7119,12 +7118,14 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "המישור הבא"
+msgstr "הלשונית הבאה"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "המישור הקודם"
+msgstr "הלשונית הקודמת"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
@@ -7260,6 +7261,10 @@ msgstr "יצירת מיזם C#‎ נכשלה."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
+msgstr ""
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -7787,7 +7792,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(זמן שנותר: %d:%02d שנ׳)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -7961,9 +7966,8 @@ msgstr "שגיאה בטעינת הגופן."
 msgid "Invalid font size."
 msgstr "גודל הגופן שגוי."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "הלשונית הקודמת"
+#~ msgid "Can't write file."
+#~ msgstr "לא ניתן לכתוב קובץ."
 
 #~ msgid "Next"
 #~ msgstr "הבא"
