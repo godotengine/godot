@@ -353,6 +353,7 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['-Wall', '-Wno-unused'])
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
+        env.Append(CCFLAGS=['-Werror=return-type'])
 
     #env['platform_libsuffix'] = env['LIBSUFFIX']
 
