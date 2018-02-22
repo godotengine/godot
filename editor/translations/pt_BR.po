@@ -6024,12 +6024,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"Não foi possível carregar project.godot no caminho do projeto (erro %d). Ele "
-"pode estar ausente ou corrompido."
+msgstr "Não foi possível editar project.godot no caminho do projeto."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7296,16 +7295,18 @@ msgid "Object can't provide a length."
 msgstr "Objeto não pôde fornecer um comprimento."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "Próximo Plano"
+msgstr "Próxima guia"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "Plano Anterior"
+msgstr "Guia anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Plano:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7445,7 +7446,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "Sobre o suporte  ao C#"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8022,11 +8023,11 @@ msgstr "ARVROrigin necessita um nó ARVRCamera como filho"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Tempo Restante: %d:%02d s)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8240,9 +8241,18 @@ msgstr "Erro ao carregar fonte."
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Guia anterior"
+#~ msgid "Can't write file."
+#~ msgstr "Não foi possível escrever o arquivo."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Por favor, escolha uma pasta que não contenha um arquivo 'project.godot'."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Não foi possível encontrar project.godot no caminho do projeto."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Não foi possível encontrar project.godot no caminho do projeto."
 
 #~ msgid "Next"
 #~ msgstr "Próximo"

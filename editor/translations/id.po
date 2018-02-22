@@ -2521,7 +2521,7 @@ msgstr "Mengarahkan Loop"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr "Gagal:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -3751,14 +3751,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -4602,9 +4594,8 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Open in Editor"
-msgstr "Buka dalam Penyunting"
+msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -6064,11 +6055,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "Nama Projek:"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -8349,8 +8335,8 @@ msgid "Invalid font size."
 msgstr "Ukuran font tidak sah."
 
 #, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Tab sebelumnya"
+#~ msgid "Can't write file."
+#~ msgstr "Tidak dapat membuat folder."
 
 #~ msgid "Next"
 #~ msgstr "Berikutnya"

@@ -2510,7 +2510,7 @@ msgstr "Buclă de Redirecționare."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr "A Eșuat:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -3700,23 +3700,15 @@ msgstr "Arată Grila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr "Arată Asistenții"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr "Arată Riglele"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "Arată Ghizii"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr "Arată Originea"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr "Arată Fereastra de Lucru"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5967,10 +5959,6 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid Project Name."
-msgstr "Nume de Proiect Nevalid."
-
-#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -6700,7 +6688,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Curăță Derivarea"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -7253,7 +7241,7 @@ msgid "Previous Floor"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
+msgid "Plane:"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -7266,6 +7254,10 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Snap View"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp

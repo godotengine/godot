@@ -4615,6 +4615,22 @@ msgid "Type:"
 msgstr "Type:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Last Ressurs"
@@ -4899,7 +4915,7 @@ msgstr "Innrykk Høyre"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "Veksle kommentar"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -4917,6 +4933,10 @@ msgstr "Brett ut alle linjer"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Klon nedover"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5769,7 +5789,7 @@ msgstr "Fane 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr "Fane 3"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -6038,11 +6058,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid Project Name."
-msgstr "Prosjektnavn:"
-
-#: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kunne ikke opprette mappe."
 
@@ -6080,7 +6095,7 @@ msgstr "De følgende filene feilet ekstrahering fra pakke:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
-msgstr "Endre Navn på Prosjekt"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -8200,9 +8215,8 @@ msgstr "Feil ved innlasting av font."
 msgid "Invalid font size."
 msgstr "Ugyldig fontstørrelse."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Forrige fane"
+#~ msgid "Can't write file."
+#~ msgstr "Kan ikke skrive fil."
 
 #~ msgid "Next"
 #~ msgstr "Neste"

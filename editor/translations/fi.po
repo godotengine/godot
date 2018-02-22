@@ -2502,6 +2502,7 @@ msgid "Failed:"
 msgstr "Epäonnistui:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Download Complete."
 msgstr "Lataus valmis."
 
@@ -3688,8 +3689,9 @@ msgid "Show Grid"
 msgstr "Näytä ruudukko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Helpers"
-msgstr "Näytä avustimet"
+msgstr "Näytä luut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
@@ -4545,7 +4547,7 @@ msgstr "Avaa editorissa"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr "Ilmentymä:"
+msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
@@ -4840,6 +4842,7 @@ msgid "Toggle Comment"
 msgstr "Näytä/Piilota kommentit"
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Laskosta tai avaa rivi"
 
@@ -5967,7 +5970,7 @@ msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr "Ole hyvä ja valitse tyhjä kansio."
+msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5994,12 +5997,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Virheellinen projektin polku (muuttuiko mikään?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"Tiedoston project.godot lataus projektin polusta epäonnistui (virhe %d). Se "
-"saattaa puuttua tai olla vioittunut."
+msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6717,7 +6719,7 @@ msgstr "Aliresurssit"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Poista perintä"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -6836,6 +6838,7 @@ msgstr ""
 "Napsauta näyttääksesi ryhmätelakan."
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "Open script"
 msgstr "Avaa skripti"
 
@@ -7267,44 +7270,51 @@ msgid "Object can't provide a length."
 msgstr "Objektille ei voida määrittää pituutta."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "Seuraava taso"
+msgstr "Seuraava välilehti"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "Edellinen taso"
+msgstr "Edellinen välilehti"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Taso:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
-msgstr "Seuraava kerros"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Floor"
-msgstr "Edellinen kerros"
+msgstr "Edellinen välilehti"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
 msgstr "Kerros:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "Poista valinta"
+msgstr "Poista valitut"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Duplicate Selection"
-msgstr "Kahdenna valinta"
+msgstr "Monista valinta"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Grid Map"
 msgstr "Ruudukko"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Snap View"
-msgstr "Tartu näkymään"
+msgstr "Huippunäkymä"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7419,6 +7429,11 @@ msgid "About C# support"
 msgstr "Lisätietoja C# tuesta"
 
 #: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
+
+#: modules/mono/editor/godotsharp_editor.cpp
+#, fuzzy
 msgid "Create C# solution"
 msgstr "Luo C# ratkaisu"
 
@@ -7999,6 +8014,14 @@ msgid "(Time Left: %d:%02d s)"
 msgstr "(Aikaa jäljellä: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "Piirretään meshejä: "
 
@@ -8213,8 +8236,20 @@ msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
 
 #, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Edellinen välilehti"
+#~ msgid "Can't write file."
+#~ msgstr "Ei voitu kirjoittaa tiedostoa:\n"
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Ole hyvä ja valitse hakemisto jossa ei ole 'project.godot' tiedostoa."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
 
 #~ msgid "Next"
 #~ msgstr "Seuraava"

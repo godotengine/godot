@@ -8449,9 +8449,21 @@ msgstr "Errore caricamento font."
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
 
+#~ msgid "Can't write file."
+#~ msgstr "Impossibile scrivere il file."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Per favore seleziona una cartella che non contiene un file 'project."
+#~ "godot'."
+
 #, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Scheda precedente"
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Impossibile creare project.godot nel percorso di progetto."
+
+#, fuzzy
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Impossibile creare project.godot nel percorso di progetto."
 
 #~ msgid "Next"
 #~ msgstr "Successivo"

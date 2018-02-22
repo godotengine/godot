@@ -7507,7 +7507,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "O wsparciu języka C#"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8081,7 +8081,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Pozostały czas: %d:%02d s)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8292,9 +8292,17 @@ msgstr "Błąd ładowania fonta."
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Poprzednia zakładka"
+#~ msgid "Can't write file."
+#~ msgstr "Nie można zapisać pliku."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "Proszę wybrać folder nie zawierający pliku 'project.godot'."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "Nie można było utworzyć engine.cfg w ścieżce projektu."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "Nie znaleziono project.godot w ścieżce projektu."
 
 #~ msgid "Next"
 #~ msgstr "Następny"

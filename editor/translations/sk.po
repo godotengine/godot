@@ -3630,14 +3630,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -5905,10 +5897,6 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid Project Name."
-msgstr ""
-
-#: editor/project_manager.cpp
 #, fuzzy
 msgid "Couldn't create folder."
 msgstr "Vytvoriť adresár"
@@ -8052,6 +8040,10 @@ msgstr ""
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Nesprávna veľkosť písma."
+
+#, fuzzy
+#~ msgid "Can't write file."
+#~ msgstr "Popis:"
 
 #, fuzzy
 #~ msgid "Can't write file."

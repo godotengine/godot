@@ -3602,14 +3602,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -5854,11 +5846,6 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "Kích thước font không hợp lệ."
-
-#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -7136,8 +7123,8 @@ msgid "Previous Floor"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Tầng:"
+msgid "Next Floor"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"

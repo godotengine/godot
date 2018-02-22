@@ -2496,7 +2496,7 @@ msgstr "Preusmeritev Zanke."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr "Spodletelo:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -3690,14 +3690,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -4819,6 +4811,7 @@ msgid "Toggle Comment"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Pregibna/Nepregibna Črta"
 
@@ -5945,11 +5938,6 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
-msgid "Invalid Project Name."
-msgstr "Ime Projekta:"
-
-#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -5985,7 +5973,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
-msgstr "Preimenuj Projekt"
+msgstr "Preimenuj Funkcijo"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -7231,8 +7219,9 @@ msgid "Floor:"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "GridMap Izbriši Izbor"
+msgstr "Izbriši Izbrano"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"

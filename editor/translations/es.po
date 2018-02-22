@@ -3736,15 +3736,15 @@ msgid "Show Grid"
 msgstr "Mostrar Cuadrícula"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show helpers"
+msgid "Show Helpers"
 msgstr "Mostrar ayudas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show rulers"
+msgid "Show Rulers"
 msgstr "Mostrar reglas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show guides"
+msgid "Show Guides"
 msgstr "Mostrar guías"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4578,7 +4578,7 @@ msgstr "¡El portapapeles de recursos está vacío!"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr "Abrir en el Editor"
+msgstr "Abrir en el editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -4878,10 +4878,6 @@ msgid "Toggle Comment"
 msgstr "Des/activar comentario"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr "Clonar hacia abajo"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "Plegar/Desplegar línea"
 
@@ -4892,6 +4888,10 @@ msgstr "Plegar todas las líneas"
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
 msgstr "Desplegar todas las líneas"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr "Clonar hacia abajo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -6015,11 +6015,7 @@ msgstr "Por favor elija una carpeta vacía."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
-msgstr "Proyecto Importado"
-
-#: editor/project_manager.cpp
-msgid "Invalid Project Name."
-msgstr "Nombre de Proyecto Inválido."
+msgstr "Proyecto importado"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6038,8 +6034,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "La ruta del proyecto no es correcta (¿has cambiado algo?)."
 
 #: editor/project_manager.cpp
-msgid "Couldn't get project.godot in project path."
-msgstr "No se encontró project.godot en la ruta del proyecto."
+#, fuzzy
+msgid ""
+"Couldn't load project.godot in project path (error %d). It may be missing or "
+"corrupted."
+msgstr "No se pudo editar project.godot en la ruta del proyecto."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6056,10 +6055,6 @@ msgstr "Los siguientes archivos no se pudieron extraer del paquete:"
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "Renombrar proyecto"
-
-#: editor/project_manager.cpp
-msgid "Couldn't get project.godot in the project path."
-msgstr "No se encontró project.godot en la ruta del proyecto."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6770,7 +6765,7 @@ msgstr "Sub-recursos"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Limpiar Heredado"
+msgstr "Limpiar heredado"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -6887,10 +6882,6 @@ msgid ""
 msgstr ""
 "El nodo está en el/los grupo(s).\n"
 "Haz clic para mostrar el panel de grupos."
-
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr "Instancia:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Open script"
@@ -7328,6 +7319,32 @@ msgid "Object can't provide a length."
 msgstr "El objeto no puede proporcionar una longitud."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Next Plane"
+msgstr "Pestaña siguiente"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Plane"
+msgstr "Pestaña anterior"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Plane:"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Floor"
+msgstr "Suelo Posterior"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Previous Floor"
+msgstr "Suelo Anterior"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Floor:"
+msgstr "Suelo:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr "GridMap Quitar seleccionados"
 
@@ -7336,24 +7353,12 @@ msgid "GridMap Duplicate Selection"
 msgstr "GridMap Duplicar selección"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Floor:"
-msgstr "Suelo:"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Rejilla"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
 msgstr "Fijar Vista"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Previous Floor"
-msgstr "Suelo Anterior"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr "Suelo Posterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -7458,6 +7463,10 @@ msgstr "Fallo al crear proyecto C#."
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
 msgstr "Mono"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "About C# support"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8034,6 +8043,14 @@ msgid "ARVROrigin requires an ARVRCamera child node"
 msgstr "ARVROrigin necesita un nodo ARVRCamera hijo"
 
 #: scene/3d/baked_lightmap.cpp
+msgid "%d%%"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
+msgid "(Time Left: %d:%02d s)"
+msgstr ""
+
+#: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
 msgstr "Trazando mallas: "
 
@@ -8243,9 +8260,18 @@ msgstr "Error al cargar la tipografía."
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía incorrecto."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Pestaña anterior"
+#~ msgid "Can't write file."
+#~ msgstr "No se puede escribir el archivo."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr ""
+#~ "Por favor, elige un directorio que no contenga un archivo 'project.godot'."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "No se encontró project.godot en la ruta del proyecto."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "No se encontró project.godot en la ruta del proyecto."
 
 #~ msgid "Next"
 #~ msgstr "Siguiente"

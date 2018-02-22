@@ -5977,12 +5977,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"프로젝트 경로로 부터 project.godot 파일을 로드 할 수 없습니다 (에러 %d). 존재"
-"하지 않거나 손상되었을 수 있습니다."
+msgstr "프로젝트 경로에 project.godot 파일을 편집할 수 없습니다."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7244,16 +7243,18 @@ msgid "Object can't provide a length."
 msgstr "오브젝트는 길이를 제공할 수 없습니다."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "다음 평면"
+msgstr "다음 탭"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "이전 평면"
+msgstr "이전 탭"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "평면:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7393,7 +7394,7 @@ msgstr "모노"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "C# 지원에 대하여"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7958,11 +7959,11 @@ msgstr "ARVROrigin은 ARVRCamera 자식 노드를 요구 함"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(남은 시간: %d:%02d s)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8172,9 +8173,17 @@ msgstr "폰트 로딩 에러."
 msgid "Invalid font size."
 msgstr "유효하지 않은 폰트 크기."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "이전 탭"
+#~ msgid "Can't write file."
+#~ msgstr "파일에 쓸 수 없습니다."
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "'project.godot' 파일이 없는 폴더를 선택 하십시오."
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "프로젝트 경로에 project.godot 파일을 찾을 수 없습니다."
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "프로젝트 경로에 project.godot 파일을 찾을 수 없습니다."
 
 #~ msgid "Next"
 #~ msgstr "다음"

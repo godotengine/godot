@@ -4601,6 +4601,22 @@ msgid "Type:"
 msgstr "Type:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_editor.cpp
+msgid "Instance:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+msgid "Type:"
+msgstr ""
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Laad Bron"
@@ -4884,9 +4900,10 @@ msgstr "Rechts Inspringen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "Commentaar Aan/Uit"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Vouw/Ontvouw Regel"
 
@@ -4901,6 +4918,10 @@ msgstr "Ontvouw Alle Regels"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Kloon Omlaag"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5752,7 +5773,7 @@ msgstr "Tabblad 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr "Tabblad 3"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -6011,7 +6032,7 @@ msgstr "Kies alstublieft een 'project.godot' bestand."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr "Kies alstublieft een lege map."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -8270,9 +8291,8 @@ msgstr "Fout bij het laden van lettertype."
 msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Vorig tabblad"
+#~ msgid "Can't write file."
+#~ msgstr "Kan niet naar bestand schrijven."
 
 #~ msgid "Next"
 #~ msgstr "Volgende"

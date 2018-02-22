@@ -5935,11 +5935,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "ตำแหน่งโปรเจกต์ผิดพลาด (ได้แก้ไขอะไรไปหรือไม่?)"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr ""
-"โหลดไฟล์ project.godot ในโฟลเดอร์โปรเจกต์ไม่ได้ (ข้อผิดพลาด %d) ไฟล์อาจสูญหายหรือเสียหาย"
+msgstr "แก้ไขไฟล์ project.godot ไม่ได้"
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7192,16 +7192,18 @@ msgid "Object can't provide a length."
 msgstr "ไม่สามารถบอกความยาวของวัตถุได้"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "ระนาบถัดไป"
+msgstr "แท็บถัดไป"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "ระนาบก่อนหน้า"
+msgstr "แท็บก่อนหน้า"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "ระนาบ:"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7341,7 +7343,7 @@ msgstr "โมโน"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr "เกี่ยวกับการสนับสนุน C#"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7879,11 +7881,11 @@ msgstr "ARVROrigin ต้องมี ARVRCamera เป็นโหนดลู�
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(เหลืออีก: %d:%02d วิ)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8077,9 +8079,17 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "แท็บก่อนหน้า"
+#~ msgid "Can't write file."
+#~ msgstr "เขียนไฟล์ไม่ได้"
+
+#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
+#~ msgstr "กรุณาเลือกโฟลเดอร์ที่ไม่มีไฟล์ 'project.godot'"
+
+#~ msgid "Couldn't get project.godot in project path."
+#~ msgstr "ไม่พบไฟล์ project.godot"
+
+#~ msgid "Couldn't get project.godot in the project path."
+#~ msgstr "ไม่พบไฟล์ project.godot"
 
 #~ msgid "Next"
 #~ msgstr "ต่อไป"

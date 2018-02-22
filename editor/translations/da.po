@@ -3732,14 +3732,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -6001,11 +5993,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid Project Name."
-msgstr "Ugyldigt navn."
-
-#: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kunne ikke oprette mappe."
 
@@ -8192,9 +8179,8 @@ msgstr "Error loading skrifttype."
 msgid "Invalid font size."
 msgstr "Ugyldig skriftstørrelse."
 
-#, fuzzy
-#~ msgid "Previous"
-#~ msgstr "Forrige fane"
+#~ msgid "Can't write file."
+#~ msgstr "Kan ikke skrive til fil."
 
 #~ msgid "Next"
 #~ msgstr "Næste"
