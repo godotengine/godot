@@ -55,22 +55,21 @@ abstract public class ValidateTask {
 
 	private Activity context;
 	private GodotPaymentV3 godotPaymentsV3;
-	public ValidateTask(Activity context, GodotPaymentV3 godotPaymentsV3){
+	public ValidateTask(Activity context, GodotPaymentV3 godotPaymentsV3) {
 		this.context = context;
 		this.godotPaymentsV3 = godotPaymentsV3;
 	}
-	
-	public void validatePurchase(final String sku){
-		new AsyncTask<String, String, String>(){
 
-			
+	public void validatePurchase(final String sku) {
+		new AsyncTask<String, String, String>() {
+
 			private ProgressDialog dialog;
 
 			@Override
-			protected void onPreExecute(){
+			protected void onPreExecute() {
 				dialog = ProgressDialog.show(context, null, "Please wait...");
 			}
-			
+
 			@Override
 			protected String doInBackground(String... params) {
 				PaymentsCache pc = new PaymentsCache(context);
@@ -80,47 +79,44 @@ abstract public class ValidateTask {
 				param.put("ticket", pc.getConsumableValue("ticket", sku));
 				param.put("purchaseToken", pc.getConsumableValue("token", sku));
 				param.put("sku", sku);
-//				Log.d("XXX", "Haciendo request a " + url);
-//				Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
-//				Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
-//				Log.d("XXX", "sku: " + sku);
+				//				Log.d("XXX", "Haciendo request a " + url);
+				//				Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
+				//				Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
+				//				Log.d("XXX", "sku: " + sku);
 				param.put("package", context.getApplicationContext().getPackageName());
 				HttpRequester requester = new HttpRequester();
 				String jsonResponse = requester.post(param);
-//				Log.d("XXX", "Validation response:\n"+jsonResponse);
+				//				Log.d("XXX", "Validation response:\n"+jsonResponse);
 				return jsonResponse;
 			}
-			
+
 			@Override
-			protected void onPostExecute(String response){
-				if(dialog != null){
+			protected void onPostExecute(String response) {
+				if (dialog != null) {
 					dialog.dismiss();
 				}
 				JSONObject j;
 				try {
 					j = new JSONObject(response);
-					if(j.getString("status").equals("OK")){
+					if (j.getString("status").equals("OK")) {
 						success();
 						return;
-					}else if(j.getString("status") != null){
+					} else if (j.getString("status") != null) {
 						error(j.getString("message"));
-					}else{
+					} else {
 						error("Connection error");
 					}
 				} catch (JSONException e) {
 					error(e.getMessage());
-				}catch (Exception e){
+				} catch (Exception e) {
 					error(e.getMessage());
 				}
-
-				
 			}
-			
-		}.execute();
+
+		}
+				.execute();
 	}
 	abstract protected void success();
 	abstract protected void error(String message);
 	abstract protected void canceled();
-
-	
 }

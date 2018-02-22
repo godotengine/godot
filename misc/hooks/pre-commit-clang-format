@@ -31,7 +31,7 @@ PARSE_EXTS=true
 
 # File types to parse. Only effective when PARSE_EXTS is true.
 # FILE_EXTS=".c .h .cpp .hpp"
-FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .m .mm .inc"
+FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .m .mm .inc *.java"
 
 # Use pygmentize instead of cat to parse diff with highlighting.
 # Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)

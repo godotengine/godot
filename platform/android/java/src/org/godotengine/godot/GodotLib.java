@@ -33,11 +33,10 @@ package org.godotengine.godot;
 
 public class GodotLib {
 
-
 	public static GodotIO io;
 
 	static {
-	 System.loadLibrary("godot_android");
+		System.loadLibrary("godot_android");
 	}
 
 	/**
@@ -45,12 +44,12 @@ public class GodotLib {
 	* @param height the current view height
 	*/
 
-	public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline,Object p_asset_manager);
-	public static native void resize(int width, int height,boolean reload);
+	public static native void initialize(Godot p_instance, boolean need_reload_hook, String[] p_cmdline, Object p_asset_manager);
+	public static native void resize(int width, int height, boolean reload);
 	public static native void newcontext(boolean p_32_bits);
 	public static native void quit();
 	public static native void step();
-	public static native void touch(int what,int pointer,int howmany, int[] arr);
+	public static native void touch(int what, int pointer, int howmany, int[] arr);
 	public static native void accelerometer(float x, float y, float z);
 	public static native void gravity(float x, float y, float z);
 	public static native void magnetometer(float x, float y, float z);
@@ -63,10 +62,9 @@ public class GodotLib {
 	public static native void focusin();
 	public static native void focusout();
 	public static native void audio();
-	public static native void singleton(String p_name,Object p_object);
-	public static native void method(String p_sname,String p_name,String p_ret,String[] p_params);
+	public static native void singleton(String p_name, Object p_object);
+	public static native void method(String p_sname, String p_name, String p_ret, String[] p_params);
 	public static native String getGlobal(String p_key);
 	public static native void callobject(int p_ID, String p_method, Object[] p_params);
 	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
-
 }
