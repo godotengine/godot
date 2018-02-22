@@ -45,15 +45,15 @@ import android.util.Log;
  *         <receiver android:name=".GodotDownloaderAlarmReceiver"/>
  */
 public class GodotDownloaderAlarmReceiver extends BroadcastReceiver {
+	private static final String TAG = "GodotDownloaderAlarmReceiver";
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d("GODOT", "Alarma recivida");
 		try {
 			DownloaderClientMarshaller.startDownloadServiceIfRequired(context, intent, GodotDownloaderService.class);
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
-			Log.d("GODOT", "Exception: " + e.getClass().getName() + ":" + e.getMessage());
+			Log.d(TAG, "Exception: " + e.getClass().getName() + ":" + e.getMessage());
 		}
 	}
 }

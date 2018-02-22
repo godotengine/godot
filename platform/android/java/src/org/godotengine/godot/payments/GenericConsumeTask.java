@@ -37,7 +37,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 abstract public class GenericConsumeTask extends AsyncTask<String, String, String> {
-
+	private static String TAG = "GenericConsumeTask";
 	private Context context;
 	private IInAppBillingService mService;
 
@@ -58,14 +58,12 @@ abstract public class GenericConsumeTask extends AsyncTask<String, String, Strin
 	@Override
 	protected String doInBackground(String... params) {
 		try {
-			//			Log.d("godot", "Requesting to consume an item with token ." + token);
 			int response = mService.consumePurchase(3, context.getPackageName(), token);
-			//			Log.d("godot", "consumePurchase response: " + response);
 			if (response == 0 || response == 8) {
 				return null;
 			}
 		} catch (Exception e) {
-			Log.d("godot", "Error " + e.getClass().getName() + ":" + e.getMessage());
+			Log.d(TAG, "Error " + e.getClass().getName() + ":" + e.getMessage());
 		}
 		return null;
 	}

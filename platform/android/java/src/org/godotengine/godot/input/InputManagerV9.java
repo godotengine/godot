@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Queue;
 
 public class InputManagerV9 implements InputManagerCompat {
-	private static final String LOG_TAG = "InputManagerV9";
+	private static final String TAG = "InputManagerV9";
 	private static final int MESSAGE_TEST_FOR_DISCONNECT = 101;
 	private static final long CHECK_ELAPSED_TIME = 3000L;
 
@@ -175,7 +175,7 @@ public class InputManagerV9 implements InputManagerCompat {
 					mListener.onInputDeviceRemoved(mId);
 					break;
 				default:
-					Log.e(LOG_TAG, "Unknown Message Type");
+					Log.e(TAG, "Unknown Message Type");
 					break;
 			}
 			// dump this runnable back in the queue

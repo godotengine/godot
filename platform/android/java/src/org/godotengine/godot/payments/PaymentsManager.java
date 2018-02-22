@@ -52,6 +52,7 @@ import java.util.Arrays;
 
 public class PaymentsManager {
 
+	private static String TAG = "PaymentsManager";
 	public static final int BILLING_RESPONSE_RESULT_OK = 0;
 	public static final int REQUEST_CODE_FOR_PURCHASE = 0x1001;
 	private static boolean auto_consume = true;
@@ -146,13 +147,13 @@ public class PaymentsManager {
 
 			@Override
 			protected void error(String message) {
-				Log.d("godot", "consumeUnconsumedPurchases :" + message);
+				Log.d(TAG, "consumeUnconsumedPurchases :" + message);
 				godotPaymentV3.callbackFailConsume();
 			}
 
 			@Override
 			protected void notRequired() {
-				Log.d("godot", "callbackSuccessNoUnconsumedPurchases :");
+				Log.d(TAG, "callbackSuccessNoUnconsumedPurchases :");
 				godotPaymentV3.callbackSuccessNoUnconsumedPurchases();
 			}
 		}
@@ -198,10 +199,10 @@ public class PaymentsManager {
 					}
 				}
 				continueToken = bundle.getString("INAPP_CONTINUATION_TOKEN");
-				Log.d("godot", "continue token = " + continueToken);
+				Log.d(TAG, "continue token = " + continueToken);
 			} while (!TextUtils.isEmpty(continueToken));
 		} catch (Exception e) {
-			Log.d("godot", "Error requesting purchased products:" + e.getClass().getName() + ":" + e.getMessage());
+			Log.d(TAG, "Error requesting purchased products:" + e.getClass().getName() + ":" + e.getMessage());
 		}
 	}
 
@@ -408,7 +409,7 @@ public class PaymentsManager {
 						ArrayList<String> responseList = skuDetails.getStringArrayList("DETAILS_LIST");
 
 						for (String thisResponse : responseList) {
-							Log.d("godot", "response = " + thisResponse);
+							Log.d(TAG, "response = " + thisResponse);
 							godotPaymentV3.addSkuDetail(thisResponse);
 						}
 					} catch (RemoteException e) {

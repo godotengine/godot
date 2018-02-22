@@ -49,6 +49,8 @@ import android.util.Log;
 
 abstract public class PurchaseTask {
 
+	private static String TAG = "PurchaseTask";
+
 	private Activity context;
 
 	private IInAppBillingService mService;
@@ -60,21 +62,16 @@ abstract public class PurchaseTask {
 	private boolean isLooping = false;
 
 	public void purchase(final String sku, final String transactionId) {
-		Log.d("XXX", "Starting purchase for: " + sku);
+		Log.d(TAG, "Starting purchase for: " + sku);
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
-		//		if(isBlocked){
-		//			Log.d("XXX", "Is awaiting payment confirmation");
-		//			error("Awaiting payment confirmation");
-		//			return;
-		//		}
+
 		final String hash = transactionId;
 
 		Bundle buyIntentBundle;
 		try {
 			buyIntentBundle = mService.getBuyIntent(3, context.getApplicationContext().getPackageName(), sku, "inapp", hash);
 		} catch (RemoteException e) {
-			//			Log.d("XXX", "Error: " + e.getMessage());
 			error(e.getMessage());
 			return;
 		}
@@ -87,7 +84,7 @@ abstract public class PurchaseTask {
 		} else if (rc instanceof Long) {
 			responseCode = (int)((Long)rc).longValue();
 		}
-		//		Log.d("XXX", "Buy intent response code: " + responseCode);
+
 		if (responseCode == 1 || responseCode == 3 || responseCode == 4) {
 			canceled();
 			return;
@@ -100,13 +97,6 @@ abstract public class PurchaseTask {
 		PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 		pc.setConsumableValue("validation_hash", sku, hash);
 		try {
-			if (context == null) {
-				//				Log.d("XXX", "No context!");
-			}
-			if (pendingIntent == null) {
-				//				Log.d("XXX", "No pending intent");
-			}
-			//			Log.d("XXX", "Starting activity for purchase!");
 			context.startIntentSenderForResult(
 					pendingIntent.getIntentSender(),
 					PaymentsManager.REQUEST_CODE_FOR_PURCHASE,

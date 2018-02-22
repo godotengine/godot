@@ -85,7 +85,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
-		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
 
 		for (int i = 0; i < count; i++) {
 			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
@@ -95,7 +94,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void onTextChanged(final CharSequence pCharSequence, final int start, final int before, final int count) {
-		//Log.d(TAG, "onTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",before: " + before);
 
 		for (int i = start; i < start + count; i++) {
 			int ch = pCharSequence.charAt(i);
@@ -111,11 +109,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			for (int i = this.mOriginText.length(); i > 0; i--) {
 				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
 				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
-				/*
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "deleteBackward");
-				}
-				*/
 			}
 			String text = pTextView.getText().toString();
 
@@ -133,11 +126,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 				GodotLib.key(0, ch, true);
 				GodotLib.key(0, ch, false);
 			}
-			/*
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "insertText(" + insertText + ")");
-			}
-			*/
 		}
 
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
@@ -145,12 +133,4 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		}
 		return false;
 	}
-
-	// ===========================================================
-	// Methods
-	// ===========================================================
-
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
 }
