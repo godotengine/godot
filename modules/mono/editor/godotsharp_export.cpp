@@ -55,6 +55,9 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 	// TODO right now there is no way to stop the export process with an error
 
+	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
+	ERR_FAIL_NULL(GDMono::get_singleton()->get_tools_domain());
+
 	String build_config = p_debug ? "Debug" : "Release";
 
 	ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
