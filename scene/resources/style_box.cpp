@@ -101,7 +101,7 @@ StyleBox::StyleBox() {
 	}
 }
 
-void StyleBoxTexture::set_texture(RES p_texture) {
+void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 
 	if (texture == p_texture)
 		return;
@@ -112,12 +112,12 @@ void StyleBoxTexture::set_texture(RES p_texture) {
 	_change_notify("texture");
 }
 
-RES StyleBoxTexture::get_texture() const {
+Ref<Texture> StyleBoxTexture::get_texture() const {
 
 	return texture;
 }
 
-void StyleBoxTexture::set_normal_map(RES p_normal_map) {
+void StyleBoxTexture::set_normal_map(Ref<Texture> p_normal_map) {
 
 	if (normal_map == p_normal_map)
 		return;
@@ -125,7 +125,7 @@ void StyleBoxTexture::set_normal_map(RES p_normal_map) {
 	emit_changed();
 }
 
-RES StyleBoxTexture::get_normal_map() const {
+Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 	return normal_map;
 }

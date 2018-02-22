@@ -112,11 +112,11 @@ public:
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_texture(RES p_texture);
-	RES get_texture() const;
+	void set_texture(Ref<Texture> p_texture);
+	Ref<Texture> get_texture() const;
 
-	void set_normal_map(RES p_normal_map);
-	RES get_normal_map() const;
+	void set_normal_map(Ref<Texture> p_normal_map);
+	Ref<Texture> get_normal_map() const;
 
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;
