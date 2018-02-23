@@ -160,7 +160,6 @@ def configure(env):
         'libANGLE',
         'libEGL',
         'libGLESv2',
-        'bcrypt',
     ]
     env.Append(LINKFLAGS=[p + ".lib" for p in LIBS])
 
