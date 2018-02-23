@@ -974,7 +974,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		if (c.category == "")
 			category = "Core";
 		header += " category=\"" + category + "\"";
-		header += String(" version=\"") + itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + VERSION_STATUS + "\"";
+		header += String(" version=\"") + VERSION_NUMBER + "\"";
 		header += ">";
 		_write_string(f, 0, header);
 		_write_string(f, 1, "<brief_description>");

@@ -175,7 +175,7 @@ static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
 		hash = "." + hash.left(7);
-	return String(VERSION_MKSTRING) + hash;
+	return String(VERSION_FULL_BUILD) + hash;
 }
 
 //#define DEBUG_INIT

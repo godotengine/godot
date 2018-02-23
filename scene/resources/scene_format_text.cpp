@@ -1506,7 +1506,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			title += "load_steps=" + itos(load_steps) + " ";
 		}
 		title += "format=" + itos(FORMAT_VERSION) + "";
-		//title+="engine_version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\"";
 
 		f->store_string(title);
 		f->store_line("]\n"); //one empty line

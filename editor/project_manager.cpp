@@ -1570,7 +1570,7 @@ ProjectManager::ProjectManager() {
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
 		hash = "." + hash.left(7);
-	l->set_text("v" VERSION_MKSTRING "" + hash);
+	l->set_text("v" VERSION_FULL_BUILD "" + hash);
 	l->set_align(Label::ALIGN_CENTER);
 	top_hb->add_child(l);
 
