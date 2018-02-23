@@ -30,11 +30,10 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/io/json.h"
+#include "core/version.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/json.h"
-
-#include "version_generated.gen.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost) {
 
@@ -877,7 +876,8 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 	args += String() + "sort=" + sort_key[sort->get_selected()];
 
-	args += "&godot_version=" + itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR);
+	// We use the "branch" version, i.e. major.minor, as patch releases should be compatible
+	args += "&godot_version=" + String(VERSION_BRANCH);
 
 	String support_list;
 	for (int i = 0; i < SUPPORT_MAX; i++) {

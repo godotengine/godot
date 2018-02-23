@@ -244,7 +244,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	file->store_line("; ");
 	file->store_line("; ******************* ");
 	file->store_line("; ");
-	file->store_line("; Template Generated Using: " + String(VERSION_MKSTRING));
+	file->store_line("; Template Generated Using: " + String(VERSION_FULL_BUILD));
 	file->store_line(";    ");
 	file->store_line("; ");
 	file->store_line("");
