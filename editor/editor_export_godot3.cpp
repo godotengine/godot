@@ -107,7 +107,7 @@ static const char *globals_renames[][2] = {
 	//{ "audio/mixer_latency", "" },
 
 	/* [physics] */
-	{ "physics/fixed_fps", "physics/common/physics_fps" }
+	{ "physics/fixed_fps", "physics/common/physics_fps" },
 	{ "physics/remove_collision_helpers_at_runtime", "physics/" },
 	{ "physics/sleep_threshold_linear", "physics/3d/sleep_threshold_linear" },
 	{ "physics/sleep_threshold_angular", "physics/3d/sleep_threshold_angular" },
