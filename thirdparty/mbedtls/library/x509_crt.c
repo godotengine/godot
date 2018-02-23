@@ -70,7 +70,11 @@
 #pragma warning( push )
 #pragma warning( disable : 4005 )
 #endif
+#if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 5)
+#include "mbedtls/mingwhack.h"
+#else
 #include <intsafe.h>
+#endif
 #if _MSC_VER <= 1600
 #pragma warning( pop )
 #endif
