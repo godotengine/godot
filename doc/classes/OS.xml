@@ -426,20 +426,6 @@
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
 			</description>
 		</method>
-		<method name="get_video_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_video_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="driver" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_virtual_keyboard_height">
 			<return type="int">
 			</return>
