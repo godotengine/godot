@@ -32,7 +32,6 @@
 #define GODOTSHARP_EDITOR_H
 
 #include "godotsharp_builds.h"
-
 #include "monodevelop_instance.h"
 
 class GodotSharpEditor : public Node {

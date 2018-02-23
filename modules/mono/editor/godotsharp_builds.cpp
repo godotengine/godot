@@ -200,7 +200,7 @@ bool GodotSharpBuilds::copy_api_assembly(const String &p_src_dir, const String &
 		memdelete(da);
 
 		if (err != OK) {
-			show_build_error_dialog("Failed to copy " API_ASSEMBLY_NAME ".dll");
+			show_build_error_dialog("Failed to copy " + assembly_file);
 			return false;
 		}
 	}
@@ -283,7 +283,7 @@ bool GodotSharpBuilds::make_api_sln(GodotSharpBuilds::APIType p_api_type) {
 	return true;
 }
 
-bool GodotSharpBuilds::build_project_blocking() {
+bool GodotSharpBuilds::build_project_blocking(const String &p_config) {
 
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
@@ -298,7 +298,7 @@ bool GodotSharpBuilds::build_project_blocking() {
 
 	pr.step("Building project solution");
 
-	MonoBuildInfo build_info(GodotSharpDirs::get_project_sln_path(), "Tools");
+	MonoBuildInfo build_info(GodotSharpDirs::get_project_sln_path(), p_config);
 	if (!GodotSharpBuilds::get_singleton()->build(build_info)) {
 		GodotSharpBuilds::show_build_error_dialog("Failed to build project solution");
 		return false;
@@ -307,6 +307,11 @@ bool GodotSharpBuilds::build_project_blocking() {
 	pr.step("Done");
 
 	return true;
+}
+
+bool GodotSharpBuilds::editor_build_callback() {
+
+	return build_project_blocking("Tools");
 }
 
 GodotSharpBuilds *GodotSharpBuilds::singleton = NULL;
@@ -362,7 +367,7 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	singleton = this;
 
-	EditorNode::get_singleton()->add_build_callback(&GodotSharpBuilds::build_project_blocking);
+	EditorNode::get_singleton()->add_build_callback(&GodotSharpBuilds::editor_build_callback);
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
@@ -462,6 +467,7 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
+		GDMonoUtils::print_unhandled_exception(ex);
 		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
@@ -482,6 +488,7 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
+		GDMonoUtils::print_unhandled_exception(ex);
 		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
