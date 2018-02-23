@@ -37,6 +37,11 @@
 
 static const char *globals_renames[][2] = {
 	/* [application] */
+	{ "application/name", "application/config/name" },
+	{ "application/auto_accept_quit", "application/config/auto_accept_quit" },
+	{ "application/boot_splash", "application/boot_splash/image" },
+	{ "application/boot_splash_fullsize", "application/boot_splash/fullsize" },
+	{ "application/icon", "application/config/icon" },
 	{ "application/main_scene", "application/run/main_scene" },
 	{ "application/main_loop_type", "application/run/main_loop_type" },
 	{ "application/disable_stdout", "application/run/disable_stdout" },
