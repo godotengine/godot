@@ -2150,11 +2150,14 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				if (select_mode == SELECT_MULTI) {
 
+					int col = selected_col < 0 ? 0 : selected_col;
+					while (next && !next->cells[col].selectable)
+						next = next->get_next_visible();
 					if (!next)
 						EXIT_BREAK;
 
-					selected_item = next;
-					emit_signal("cell_selected");
+					select_single_item(next, get_root(), col);
+
 					update();
 				} else {
 
@@ -2243,10 +2246,13 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				if (select_mode == SELECT_MULTI) {
 
+					int col = selected_col < 0 ? 0 : selected_col;
+					while (prev && !prev->cells[col].selectable)
+						prev = prev->get_prev_visible();
 					if (!prev)
-						break;
-					selected_item = prev;
-					emit_signal("cell_selected");
+						break; // do nothing..
+					select_single_item(prev, get_root(), col);
+
 					update();
 				} else {
 
