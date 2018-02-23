@@ -168,6 +168,7 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
 		MENU_OPTION_SELECTION_DUPLICATE,
 		MENU_OPTION_SELECTION_CLEAR,
+		MENU_OPTION_SELECTION_FILL,
 		MENU_OPTION_REMOVE_AREA,
 		MENU_OPTION_GRIDMAP_SETTINGS
 
@@ -200,6 +201,7 @@ class GridMapEditor : public VBoxContainer {
 	void _floor_changed(float p_value);
 
 	void _delete_selection();
+	void _fill_selection();
 
 	EditorNode *editor;
 	bool do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click);
