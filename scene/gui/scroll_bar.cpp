@@ -201,6 +201,8 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 	if (p_event->is_pressed()) {
 
+	if (p_event->is_pressed()) {
+
 		if (p_event->is_action("ui_left")) {
 
 			if (orientation != HORIZONTAL)
@@ -226,13 +228,20 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_home")) {
+		} else if (k.is_valid()) {
 
-			set_value(get_min());
+			switch (k->get_scancode()) {
+				case KEY_HOME: {
 
-		} else if (p_event->is_action("ui_end")) {
+					set_value(get_min());
 
-			set_value(get_max());
+				} break;
+				case KEY_END: {
+
+					set_value(get_max());
+
+				} break;
+			}
 		}
 	}
 }
