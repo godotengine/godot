@@ -201,52 +201,47 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid()) {
+	if (p_event->is_pressed()) {
 
-		if (!k->is_pressed())
-			return;
+		if (p_event->is_action("ui_left")) {
 
-		switch (k->get_scancode()) {
+			if (orientation != HORIZONTAL)
+				return;
+			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-			case KEY_LEFT: {
+		} else if (p_event->is_action("ui_right")) {
 
-				if (orientation != HORIZONTAL)
-					return;
-				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			if (orientation != HORIZONTAL)
+				return;
+			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-			} break;
-			case KEY_RIGHT: {
+		} else if (p_event->is_action("ui_up")) {
 
-				if (orientation != HORIZONTAL)
-					return;
-				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			if (orientation != VERTICAL)
+				return;
 
-			} break;
-			case KEY_UP: {
+			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-				if (orientation != VERTICAL)
-					return;
+		} else if (p_event->is_action("ui_down")) {
 
-				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			if (orientation != VERTICAL)
+				return;
+			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-			} break;
-			case KEY_DOWN: {
+		} else if (k.is_valid()) {
 
-				if (orientation != VERTICAL)
-					return;
-				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			switch (k->get_scancode()) {
+				case KEY_HOME: {
 
-			} break;
-			case KEY_HOME: {
+					set_value(get_min());
 
-				set_value(get_min());
+				} break;
+				case KEY_END: {
 
-			} break;
-			case KEY_END: {
+					set_value(get_max());
 
-				set_value(get_max());
-
-			} break;
+				} break;
+			}
 		}
 	}
 }
