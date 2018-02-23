@@ -199,8 +199,6 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
-	Ref<InputEventKey> k = p_event;
-
 	if (p_event->is_pressed()) {
 
 		if (p_event->is_action("ui_left")) {
@@ -228,20 +226,13 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (k.is_valid()) {
+		} else if (p_event->is_action("ui_home")) {
 
-			switch (k->get_scancode()) {
-				case KEY_HOME: {
+			set_value(get_min());
 
-					set_value(get_min());
+		} else if (p_event->is_action("ui_end")) {
 
-				} break;
-				case KEY_END: {
-
-					set_value(get_max());
-
-				} break;
-			}
+			set_value(get_max());
 		}
 	}
 }

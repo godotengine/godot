@@ -282,6 +282,16 @@ void InputMap::load_default() {
 	key->set_scancode(KEY_PAGEDOWN);
 	action_add_event("ui_page_down", key);
 
+	add_action("ui_home");
+	key.instance();
+	key->set_scancode(KEY_HOME);
+	action_add_event("ui_home", key);
+
+	add_action("ui_end");
+	key.instance();
+	key->set_scancode(KEY_END);
+	action_add_event("ui_end", key);
+
 	//set("display/window/handheld/orientation", "landscape");
 }
 
