@@ -289,7 +289,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			set_mouse_position(pos);
 		}
 
-		if (main_loop && emulate_touch && !p_is_emulated && mb->get_button_index() == 1) {
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
@@ -307,7 +307,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			set_mouse_position(pos);
 		}
 
-		if (main_loop && emulate_touch && !p_is_emulated && mm->get_button_mask() & 1) {
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instance();
 
@@ -604,15 +604,6 @@ void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
 }
 
-Input::CursorShape InputDefault::get_default_cursor_shape() {
-	return default_shape;
-}
-
-void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
-	default_shape = p_shape;
-	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
-}
-
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
@@ -638,7 +629,7 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 InputDefault::InputDefault() {
 
 	mouse_button_mask = 0;
-	emulate_touch = false;
+	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;
 	mouse_from_touch_index = -1;
 	main_loop = NULL;

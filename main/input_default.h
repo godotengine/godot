@@ -60,7 +60,7 @@ class InputDefault : public Input {
 
 	Map<StringName, Action> action_state;
 
-	bool emulate_touch;
+	bool emulate_touch_from_mouse;
 	bool emulate_mouse_from_touch;
 
 	int mouse_from_touch_index;
@@ -230,8 +230,8 @@ public:
 
 	void iteration(float p_step);
 
-	void set_emulate_touch(bool p_emulate);
-	virtual bool is_emulating_touchscreen() const;
+	void set_emulate_touch_from_mouse(bool p_emulate);
+	virtual bool is_emulating_touch_from_mouse() const;
 	void ensure_touch_mouse_raised();
 
 	void set_emulate_mouse_from_touch(bool p_emulate);

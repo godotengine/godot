@@ -118,7 +118,7 @@ public:
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	virtual bool is_emulating_touchscreen() const = 0;
+	virtual bool is_emulating_touch_from_mouse() const = 0;
 	virtual bool is_emulating_mouse_from_touch() const = 0;
 
 	virtual CursorShape get_default_cursor_shape() = 0;
