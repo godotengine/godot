@@ -156,21 +156,6 @@ void TileMapEditor::_menu_option(int p_option) {
 			undo_redo->commit_action();
 
 		} break;
-		case OPTION_MOVE: {
-
-			if (selection_active) {
-				_update_copydata();
-				tool = TOOL_MOVING;
-				canvas_item_editor->update();
-			}
-		} break;
-	}
-}
-
-void TileMapEditor::_palette_selected(int index) {
-
-	if (manual_autotile) {
-		_update_palette();
 	}
 }
 
