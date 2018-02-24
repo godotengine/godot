@@ -56,6 +56,8 @@ import org.godotengine.godot.input.*;
 
 public class GodotIO {
 
+	private static String TAG = "GodotIO";
+
 	AssetManager am;
 	Godot activity;
 	GodotEditText edit;
@@ -103,7 +105,7 @@ public class GodotIO {
 
 		} catch (Exception e) {
 
-			//System.out.printf("Exception on file_open: %s\n",path);
+			// Cannot open file
 			return -1;
 		}
 
@@ -111,7 +113,7 @@ public class GodotIO {
 			ad.len = ad.is.available();
 		} catch (Exception e) {
 
-			System.out.printf("Exception availabling on file_open: %s\n", path);
+			Log.w(TAG, "Exception availabling on file_open: " + path);
 			return -1;
 		}
 
@@ -125,7 +127,8 @@ public class GodotIO {
 	public int file_get_size(int id) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_get_size: Invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_get_size: Invalid file id: " + id);
 			return -1;
 		}
 
@@ -134,10 +137,12 @@ public class GodotIO {
 	public void file_seek(int id, int bytes) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_get_size: Invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_get_size: Invalid file id: " + id);
 			return;
 		}
-		//seek sucks
+
+		// More efficient than "seek" built-in function
 		AssetData ad = streams.get(id);
 		if (bytes > ad.len)
 			bytes = ad.len;
@@ -166,7 +171,7 @@ public class GodotIO {
 			ad.eof = false;
 		} catch (IOException e) {
 
-			System.out.printf("Exception on file_seek: %s\n", e);
+			Log.w(TAG, "Exception on file_seek: " + e);
 			return;
 		}
 	}
@@ -174,7 +179,8 @@ public class GodotIO {
 	public int file_tell(int id) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_read: Can't tell eof for invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_read: Can't tell eof for invalid file id: " + id);
 			return 0;
 		}
 
@@ -184,7 +190,8 @@ public class GodotIO {
 	public boolean file_eof(int id) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_read: Can't check eof for invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_read: Can't check eof for invalid file id: " + id);
 			return false;
 		}
 
@@ -195,7 +202,8 @@ public class GodotIO {
 	public byte[] file_read(int id, int bytes) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_read: Can't read invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_read: Can't read invalid file id: " + id);
 			return new byte[0];
 		}
 
@@ -218,7 +226,7 @@ public class GodotIO {
 			r = ad.is.read(buf1);
 		} catch (IOException e) {
 
-			System.out.printf("Exception on file_read: %s\n", e);
+			Log.w(TAG, "Exception on file_read: " + e);
 			return new byte[bytes];
 		}
 
@@ -243,7 +251,8 @@ public class GodotIO {
 	public void file_close(int id) {
 
 		if (!streams.containsKey(id)) {
-			System.out.printf("file_close: Can't close invalid file id: %d\n", id);
+
+			Log.w(TAG, "file_close: Can't close invalid file id: " + id);
 			return;
 		}
 
@@ -280,7 +289,7 @@ public class GodotIO {
 			}
 		} catch (IOException e) {
 
-			System.out.printf("Exception on dir_open: %s\n", e);
+			Log.w(TAG, "Exception on dir_open: " + e);
 			return -1;
 		}
 
@@ -293,7 +302,7 @@ public class GodotIO {
 
 	public boolean dir_is_dir(int id) {
 		if (!dirs.containsKey(id)) {
-			System.out.printf("dir_next: invalid dir id: %d\n", id);
+			Log.w(TAG, "dir_next: invalid dir id: " + id);
 			return false;
 		}
 		AssetDir ad = dirs.get(id);
@@ -320,7 +329,8 @@ public class GodotIO {
 	public String dir_next(int id) {
 
 		if (!dirs.containsKey(id)) {
-			System.out.printf("dir_next: invalid dir id: %d\n", id);
+
+			Log.w(TAG, "dir_next: invalid dir id: " + id);
 			return "";
 		}
 
@@ -339,7 +349,8 @@ public class GodotIO {
 	public void dir_close(int id) {
 
 		if (!dirs.containsKey(id)) {
-			System.out.printf("dir_close: invalid dir id: %d\n", id);
+
+			Log.w(TAG, "dir_next: invalid dir id: " + id);
 			return;
 		}
 
@@ -368,9 +379,7 @@ public class GodotIO {
 		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 		int frameSize = 4;
 
-		System.out.printf("audioInit: initializing audio:\n");
-
-		//Log.v("Godot", "Godot audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + ((float)sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
+		Log.d(TAG, "audioInit: initializing audio: ");
 
 		// Let the user pick a larger buffer if they really want -- but ye
 		// gods they probably shouldn't, the minimums are horrifyingly high
@@ -396,7 +405,7 @@ public class GodotIO {
 			}
 		});
 
-		// I'd take REALTIME if I could get it!
+		// Max priority
 		mAudioThread.setPriority(Thread.MAX_PRIORITY);
 		mAudioThread.start();
 	}
@@ -410,10 +419,10 @@ public class GodotIO {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
-					// Nom nom
+					// Action interrupted, nothing to do
 				}
 			} else {
-				Log.w("Godot", "Godot audio: error return from write(short)");
+				Log.w(TAG, "Godot audio: error return from write(short)");
 				return;
 			}
 		}
@@ -424,11 +433,10 @@ public class GodotIO {
 			try {
 				mAudioThread.join();
 			} catch (Exception e) {
-				Log.v("Godot", "Problem stopping audio thread: " + e);
+				Log.v(TAG, "Problem stopping audio thread: " + e);
 			}
 			mAudioThread = null;
 
-			//Log.v("Godot", "Finished waiting for audio thread");
 		}
 
 		if (mAudioTrack != null) {
@@ -452,11 +460,11 @@ public class GodotIO {
 	public int openURI(String p_uri) {
 
 		try {
-			Log.v("MyApp", "TRYING TO OPEN URI: " + p_uri);
+			Log.v(TAG, "Trying to open uri: " + p_uri);
 			String path = p_uri;
 			String type = "";
 			if (path.startsWith("/")) {
-				//absolute path to filesystem, prepend file://
+				// Absolute path to filesystem, prepend file://
 				path = "file://" + path;
 				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
 
@@ -508,8 +516,6 @@ public class GodotIO {
 		if (edit != null)
 			edit.showKeyboard(p_existing_text);
 
-		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	};
 
 	public void hideKeyboard() {
@@ -567,7 +573,7 @@ public class GodotIO {
 			mediaPlayer.prepare();
 			mediaPlayer.start();
 		} catch (IOException e) {
-			System.out.println("IOError while playing video");
+			Log.w(TAG, "IOError while playing video");
 		}
 	}
 
@@ -605,7 +611,6 @@ public class GodotIO {
 		String what = "";
 		switch (idx) {
 			case SYSTEM_DIR_DESKTOP: {
-				//what=Environment.DIRECTORY_DOCUMENTS;
 				what = Environment.DIRECTORY_DOWNLOADS;
 			} break;
 			case SYSTEM_DIR_DCIM: {
@@ -614,7 +619,6 @@ public class GodotIO {
 			} break;
 			case SYSTEM_DIR_DOCUMENTS: {
 				what = Environment.DIRECTORY_DOWNLOADS;
-				//what=Environment.DIRECTORY_DOCUMENTS;
 			} break;
 			case SYSTEM_DIR_DOWNLOADS: {
 				what = Environment.DIRECTORY_DOWNLOADS;

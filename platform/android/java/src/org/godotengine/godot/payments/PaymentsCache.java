@@ -58,14 +58,12 @@ public class PaymentsCache {
 		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(sku, value);
-		//	    Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
 		editor.commit();
 	}
 
 	public String getConsumableValue(String set, String sku) {
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				"consumables_" + set, Context.MODE_PRIVATE);
-		//	    Log.d("XXX", "Getting asset: consumables_" + set + ":" + sku);
 		return sharedPref.getString(sku, null);
 	}
 }

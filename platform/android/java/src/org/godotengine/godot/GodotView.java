@@ -278,7 +278,6 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		};
 
 		int source = event.getSource();
-		//Log.e(TAG, String.format("Key down! source %d, device %d, joystick %d, %d, %d", event.getDeviceId(), source, (source & InputDevice.SOURCE_JOYSTICK), (source & InputDevice.SOURCE_DPAD), (source & InputDevice.SOURCE_GAMEPAD)));
 
 		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
 
@@ -286,8 +285,6 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 				return true;
 			int button = get_godot_button(keyCode);
 			int device = find_joy_device(event.getDeviceId());
-
-			//Log.e(TAG, String.format("joy button down! button %x, %d, device %d", keyCode, button, device));
 
 			GodotLib.joybutton(device, button, true);
 			return true;
@@ -309,14 +306,12 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			for (int i = 0; i < joy.axes.size(); i++) {
 				InputDevice.MotionRange range = joy.axes.get(i);
 				float value = (event.getAxisValue(range.getAxis()) - range.getMin()) / range.getRange() * 2.0f - 1.0f;
-				//Log.e(TAG, String.format("axis event: %d, value %f", i, value));
 				GodotLib.joyaxis(device_id, i, value);
 			}
 
 			for (int i = 0; i < joy.hats.size(); i += 2) {
 				int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
 				int hatY = Math.round(event.getAxisValue(joy.hats.get(i + 1).getAxis()));
-				//Log.e(TAG, String.format("HAT EVENT %d, %d", hatX, hatY));
 				GodotLib.joyhat(device_id, hatX, hatY);
 			}
 			return true;
@@ -598,7 +593,6 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 				if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
 					Log.w(TAG, String.format("  %s: %d\n", name, value[0]));
 				} else {
-					// Log.w(TAG, String.format("  %s: failed\n", name));
 					while (egl.eglGetError() != EGL10.EGL_SUCCESS)
 						;
 				}

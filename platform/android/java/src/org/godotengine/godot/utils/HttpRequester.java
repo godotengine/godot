@@ -73,17 +73,19 @@ import android.util.Log;
  */
 public class HttpRequester {
 
+	private static String TAG = "HttpRequester";
+
 	private Context context;
-	private static final int TTL = 600000; // 10 minutos
+	private static final int TTL = 600000; // 10 minutes
 	private long cttl = 0;
 
 	public HttpRequester() {
-		//		Log.d("XXX", "Creando http request sin contexto");
+		// Creating a HTTP request without context, nothing to do
 	}
 
 	public HttpRequester(Context context) {
+		// Creating a HTTP request with context
 		this.context = context;
-		//		Log.d("XXX", "Creando http request con contexto");
 	}
 
 	public String post(RequestParams params) {
@@ -99,7 +101,7 @@ public class HttpRequester {
 	public String get(RequestParams params) {
 		String response = getResponseFromCache(params.getUrl());
 		if (response == null) {
-			//			Log.d("XXX", "Cache miss!");
+			// Cache miss, trying to get data
 			HttpGet httpget = new HttpGet(params.getUrl());
 			long timeInit = new Date().getTime();
 			response = request(httpget);
@@ -111,14 +113,13 @@ public class HttpRequester {
 				saveResponseIntoCache(params.getUrl(), response);
 			}
 		}
-		Log.d("XXX", "Req: " + params.getUrl());
-		Log.d("XXX", "Resp: " + response);
+		Log.d(TAG, "Req: " + params.getUrl());
+		Log.d(TAG, "Resp: " + response);
 		return response;
 	}
 
 	private String request(HttpUriRequest request) {
-		//		Log.d("XXX", "Haciendo request a: " + request.getURI() );
-		Log.d("PPP", "Haciendo request a: " + request.getURI());
+		Log.d(TAG, "Sending request to uri: " + request.getURI());
 		long init = new Date().getTime();
 		HttpClient httpclient = getNewHttpClient();
 		HttpParams httpParameters = httpclient.getParams();
@@ -127,21 +128,19 @@ public class HttpRequester {
 		HttpConnectionParams.setTcpNoDelay(httpParameters, true);
 		try {
 			HttpResponse response = httpclient.execute(request);
-			Log.d("PPP", "Fin de request (" + (new Date().getTime() - init) + ") a: " + request.getURI());
-			//	        Log.d("XXX1", "Status:" + response.getStatusLine().toString());
+			Log.d(TAG, "Fin de request (" + (new Date().getTime() - init) + ") a: " + request.getURI());
 			if (response.getStatusLine().getStatusCode() == 200) {
 				String strResponse = EntityUtils.toString(response.getEntity());
-				//	        	Log.d("XXX2", strResponse);
 				return strResponse;
 			} else {
-				Log.d("XXX3", "Response status code:" + response.getStatusLine().getStatusCode() + "\n" + EntityUtils.toString(response.getEntity()));
+				Log.d(TAG, "Response status code:" + response.getStatusLine().getStatusCode() + "\n" + EntityUtils.toString(response.getEntity()));
 				return null;
 			}
 
 		} catch (ClientProtocolException e) {
-			Log.d("XXX3", e.getMessage());
+			Log.d(TAG, e.getMessage());
 		} catch (IOException e) {
-			Log.d("XXX4", e.getMessage());
+			Log.d(TAG, e.getMessage());
 		}
 		return null;
 	}
@@ -192,7 +191,6 @@ public class HttpRequester {
 
 	public void saveResponseIntoCache(String request, String response) {
 		if (context == null) {
-			//			Log.d("XXX", "No context, cache failed!");
 			return;
 		}
 		SharedPreferences sharedPref = context.getSharedPreferences("http_get_cache", Context.MODE_PRIVATE);
@@ -204,13 +202,13 @@ public class HttpRequester {
 
 	public String getResponseFromCache(String request) {
 		if (context == null) {
-			Log.d("XXX", "No context, cache miss");
+			Log.d(TAG, "No context, cache miss");
 			return null;
 		}
 		SharedPreferences sharedPref = context.getSharedPreferences("http_get_cache", Context.MODE_PRIVATE);
 		long ttl = getResponseTtl(request);
 		if (ttl == 0l || (new Date().getTime() - ttl) > 0l) {
-			Log.d("XXX", "Cache invalid ttl:" + ttl + " vs now:" + new Date().getTime());
+			Log.d(TAG, "Cache invalid ttl:" + ttl + " vs now:" + new Date().getTime());
 			return null;
 		}
 		return sharedPref.getString("request_" + Crypt.md5(request), null);

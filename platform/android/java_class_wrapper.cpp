@@ -553,7 +553,6 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 
 	jstring name2 = (jstring)env->CallObjectMethod(obj, Class_getName);
 	String str_type = env->GetStringUTFChars(name2, NULL);
-	print_line("name: " + str_type);
 	env->DeleteLocalRef(name2);
 	uint32_t t = 0;
 
@@ -1116,7 +1115,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		}
 
 		if (!valid) {
-			print_line("Method Can't be bound (unsupported arguments): " + p_class + "::" + str_method);
+			print_line("Method can't be bound (unsupported arguments): " + p_class + "::" + str_method);
 			env->DeleteLocalRef(obj);
 			env->DeleteLocalRef(param_types);
 			continue;
@@ -1129,7 +1128,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		String strsig;
 		uint32_t sig = 0;
 		if (!_get_type_sig(env, return_type, sig, strsig)) {
-			print_line("Method Can't be bound (unsupported return type): " + p_class + "::" + str_method);
+			print_line("Method can't be bound (unsupported return type): " + p_class + "::" + str_method);
 			env->DeleteLocalRef(obj);
 			env->DeleteLocalRef(param_types);
 			env->DeleteLocalRef(return_type);
@@ -1138,8 +1137,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		signature += strsig;
 		mi.return_type = sig;
-
-		print_line("METHOD: " + str_method + " SIG: " + signature + " static: " + itos(mi._static));
 
 		bool discard = false;
 
@@ -1172,11 +1169,9 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 			if (new_likeliness > existing_likeliness) {
 				java_class->methods[str_method].erase(E);
-				print_line("replace old");
 				break;
 			} else {
 				discard = true;
-				print_line("old is better");
 			}
 		}
 
@@ -1194,9 +1189,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		env->DeleteLocalRef(obj);
 		env->DeleteLocalRef(param_types);
 		env->DeleteLocalRef(return_type);
-
-		//args[i] = _jobject_to_variant(env, obj);
-		//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 	};
 
 	env->DeleteLocalRef(methods);
@@ -1213,7 +1205,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		jstring name = (jstring)env->CallObjectMethod(obj, Field_getName);
 		String str_field = env->GetStringUTFChars(name, NULL);
 		env->DeleteLocalRef(name);
-		print_line("FIELD: " + str_field);
+
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
 		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
 

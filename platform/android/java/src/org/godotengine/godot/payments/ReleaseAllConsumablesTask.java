@@ -46,6 +46,7 @@ import android.util.Log;
 
 abstract public class ReleaseAllConsumablesTask {
 
+	private static final String TAG = "ReleaseAllConsumablesTask";
 	private Context context;
 	private IInAppBillingService mService;
 
@@ -56,13 +57,12 @@ abstract public class ReleaseAllConsumablesTask {
 
 	public void consumeItAll() {
 		try {
-			//			Log.d("godot", "consumeItall for " + context.getPackageName());
 			Bundle bundle = mService.getPurchases(3, context.getPackageName(), "inapp", null);
 
+			// TODO:
+			// Check if this loop is useful and remove it if not
 			for (String key : bundle.keySet()) {
 				Object value = bundle.get(key);
-				//			    Log.d("godot", String.format("%s %s (%s)", key,
-				//			        value.toString(), value.getClass().getName()));
 			}
 
 			if (bundle.getInt("RESPONSE_CODE") == 0) {
@@ -71,12 +71,10 @@ abstract public class ReleaseAllConsumablesTask {
 				final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
 
 				if (myPurchases == null || myPurchases.size() == 0) {
-					//					Log.d("godot", "No purchases!");
 					notRequired();
 					return;
 				}
 
-				//				Log.d("godot", "# products to be consumed:" + myPurchases.size());
 				for (int i = 0; i < myPurchases.size(); i++) {
 
 					try {
@@ -85,7 +83,6 @@ abstract public class ReleaseAllConsumablesTask {
 						String sku = inappPurchaseData.getString("productId");
 						String token = inappPurchaseData.getString("purchaseToken");
 						String signature = mySignatures.get(i);
-						//						Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
 						new GenericConsumeTask(context, mService, sku, receipt, signature, token) {
 
 							@Override
@@ -100,7 +97,7 @@ abstract public class ReleaseAllConsumablesTask {
 				}
 			}
 		} catch (Exception e) {
-			Log.d("godot", "Error releasing products:" + e.getClass().getName() + ":" + e.getMessage());
+			Log.d(TAG, "Error releasing products:" + e.getClass().getName() + ":" + e.getMessage());
 		}
 	}
 

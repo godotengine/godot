@@ -30,7 +30,6 @@
 package org.godotengine.godot;
 
 import android.app.Activity;
-import android.util.Log;
 
 import org.godotengine.godot.payments.PaymentsManager;
 import org.json.JSONException;
@@ -92,7 +91,6 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	}
 
 	public void callbackSuccessProductMassConsumed(String ticket, String signature, String sku) {
-		Log.d(this.getClass().getName(), "callbackSuccessProductMassConsumed > " + ticket + "," + signature + "," + sku);
 		GodotLib.calldeferred(purchaseCallbackId, "consume_success", new Object[] { ticket, signature, sku });
 	}
 

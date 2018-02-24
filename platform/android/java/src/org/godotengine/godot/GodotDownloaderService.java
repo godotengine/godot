@@ -40,6 +40,8 @@ import com.google.android.vending.expansion.downloader.impl.DownloaderService;
  * DownloaderService from the Downloader library.
  */
 public class GodotDownloaderService extends DownloaderService {
+	private static final String TAG = "GodotDownloaderService";
+
 	// stuff for LVL -- MODIFY FOR YOUR APPLICATION!
 	private static final String BASE64_PUBLIC_KEY = "REPLACE THIS WITH YOUR PUBLIC KEY";
 	// used by the preference obfuscater
@@ -55,10 +57,8 @@ public class GodotDownloaderService extends DownloaderService {
 	@Override
 	public String getPublicKey() {
 		SharedPreferences prefs = getApplicationContext().getSharedPreferences("app_data_keys", Context.MODE_PRIVATE);
-		Log.d("GODOT", "getting public key:" + prefs.getString("store_public_key", null));
+		Log.d(TAG, "getting public key:" + prefs.getString("store_public_key", null));
 		return prefs.getString("store_public_key", null);
-
-		//	return BASE64_PUBLIC_KEY;
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class GodotDownloaderService extends DownloaderService {
      */
 	@Override
 	public String getAlarmReceiverClassName() {
-		Log.d("GODOT", "getAlarmReceiverClassName()");
+		Log.d(TAG, "getAlarmReceiverClassName()");
 		return GodotDownloaderAlarmReceiver.class.getName();
 	}
 }

@@ -238,9 +238,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	jclass c = env->GetObjectClass(obj);
 	bool array;
 	String name = _get_class_name(env, c, &array);
-	//print_line("name is " + name + ", array "+Variant(array));
 
-	print_line("ARGNAME: " + name);
 	if (name == "java.lang.String") {
 
 		return String::utf8(env->GetStringUTFChars((jstring)obj, NULL));
@@ -249,8 +247,9 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	if (name == "[Ljava.lang.String;") {
 
 		jobjectArray arr = (jobjectArray)obj;
+
 		int stringCount = env->GetArrayLength(arr);
-		//print_line("String array! " + String::num(stringCount));
+
 		DVector<String> sarr;
 
 		for (int i = 0; i < stringCount; i++) {
@@ -379,7 +378,6 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		Array vals = _jobject_to_variant(env, arr);
 		env->DeleteLocalRef(arr);
 
-		//print_line("adding " + String::num(keys.size()) + " to Dictionary!");
 		for (int i = 0; i < keys.size(); i++) {
 
 			ret[keys[i]] = vals[i];
@@ -410,7 +408,6 @@ class JNISingleton : public Object {
 public:
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-		//print_line("attempt to call "+String(p_method));
 		ERR_FAIL_COND_V(!instance, Variant());
 
 		r_error.error = Variant::CallError::CALL_OK;
@@ -418,7 +415,6 @@ public:
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 		if (!E) {
 
-			print_line("no exists");
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
@@ -426,7 +422,6 @@ public:
 		int ac = E->get().argtypes.size();
 		if (ac < p_argcount) {
 
-			print_line("fewargs");
 			r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
@@ -434,7 +429,6 @@ public:
 
 		if (ac > p_argcount) {
 
-			print_line("manyargs");
 			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
@@ -463,7 +457,6 @@ public:
 
 		ERR_FAIL_COND_V(res != 0, Variant());
 
-		//print_line("argcount "+String::num(p_argcount));
 		List<jobject> to_erase;
 		for (int i = 0; i < p_argcount; i++) {
 
@@ -473,26 +466,21 @@ public:
 				to_erase.push_back(vr.obj);
 		}
 
-		//print_line("calling method!!");
-
 		Variant ret;
 
 		switch (E->get().ret_type) {
 
 			case Variant::NIL: {
 
-				//print_line("call void");
 				env->CallVoidMethodA(instance, E->get().method, v);
 			} break;
 			case Variant::BOOL: {
 
 				ret = env->CallBooleanMethodA(instance, E->get().method, v) == JNI_TRUE;
-				//print_line("call bool");
 			} break;
 			case Variant::INT: {
 
 				ret = env->CallIntMethodA(instance, E->get().method, v);
-				//print_line("call int");
 			} break;
 			case Variant::REAL: {
 
@@ -543,7 +531,6 @@ public:
 
 			case Variant::DICTIONARY: {
 
-				//print_line("call dictionary");
 				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = _jobject_to_variant(env, obj);
 				env->DeleteLocalRef(obj);
@@ -551,7 +538,6 @@ public:
 			} break;
 			default: {
 
-				print_line("failure..");
 				env->PopLocalFrame(NULL);
 				ERR_FAIL_V(Variant());
 			} break;
@@ -563,7 +549,6 @@ public:
 		}
 
 		env->PopLocalFrame(NULL);
-		//print_line("success");
 
 		return ret;
 	}
@@ -759,8 +744,6 @@ static void _alert(const String &p_message, const String &p_title) {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jboolean p_need_reload_hook, jobjectArray p_cmdline, jobject p_asset_manager) {
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "**INIT EVENT! - %p\n", env);
-
 	initialized = true;
 
 	JavaVM *jvm;
@@ -769,8 +752,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	_godot_instance = env->NewGlobalRef(activity);
 	//	_godot_instance=activity;
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "***************** HELLO FROM JNI!!!!!!!!");
-
 	{
 		//setup IO Object
 
@@ -778,17 +759,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		if (cls) {
 
 			cls = (jclass)env->NewGlobalRef(cls);
-			__android_log_print(ANDROID_LOG_INFO, "godot", "*******CLASS FOUND!!!");
 		}
 
-		__android_log_print(ANDROID_LOG_INFO, "godot", "STEP2, %p", cls);
 		jfieldID fid = env->GetStaticFieldID(cls, "io", "Lorg/godotengine/godot/GodotIO;");
-		__android_log_print(ANDROID_LOG_INFO, "godot", "STEP3 %i", fid);
 		jobject ob = env->GetStaticObjectField(cls, fid);
-		__android_log_print(ANDROID_LOG_INFO, "godot", "STEP4, %p", ob);
 		jobject gob = env->NewGlobalRef(ob);
 
-		__android_log_print(ANDROID_LOG_INFO, "godot", "STEP4.5, %p", gob);
 		godot_io = gob;
 
 		_on_video_init = env->GetMethodID(cls, "onVideoInit", "(Z)V");
@@ -841,10 +817,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
 				const char *rawString = env->GetStringUTFChars(string, 0);
 				if (!rawString) {
-					__android_log_print(ANDROID_LOG_INFO, "godot", "cmdline arg %i is null\n", i);
+					// Nothing to do
 				} else {
-					//			__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
-
 					if (strcmp(rawString, "-main_pack") == 0)
 						use_apk_expansion = true;
 				}
@@ -854,41 +828,27 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		}
 	}
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "CMDLINE LEN %i - APK EXPANSION %I\n", cmdlen, int(use_apk_expansion));
-
 	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
 	getcwd(wd, 500);
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "test construction %i\n", tst.a);
-	__android_log_print(ANDROID_LOG_INFO, "godot", "running from dir %s\n", wd);
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "**SETUP");
-
 #if 0
 	char *args[]={"-test","render",NULL};
-	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
 	Error err  = Main::setup("apk",2,args,false);
 #else
 	Error err = Main::setup("apk", cmdlen, (char **)cmdline, false);
 #endif
 
 	if (err != OK) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*****UNABLE TO SETUP");
-
 		return; //should exit instead and print the error
 	}
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
 
 	//video driver is determined here, because once initialized, it cant be changed
 	String vd = Globals::get_singleton()->get("display/driver");
 
 	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "**START");
 
 	input_mutex = Mutex::create();
 	suspend_mutex = Mutex::create();
@@ -896,21 +856,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height, jboolean reload) {
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ resize %lld, %i, %i\n", Thread::get_caller_ID(), width, height);
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
-
-	/*input_mutex->lock();
-	resized=true;
-	if (reload)
-		resized_reload=true;
-	new_size=Size2(width,height);
-	input_mutex->unlock();*/
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ newcontext %lld\n", Thread::get_caller_ID());
 
 	if (os_android) {
 		os_android->set_context_is_16_bits(!p_32_bits);
@@ -926,7 +876,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_quit(JNIEnv *env, job
 
 	input_mutex->lock();
 	quit_request = true;
-	print_line("BACK PRESSED");
 	input_mutex->unlock();
 }
 
@@ -934,8 +883,6 @@ static void _initialize_java_modules() {
 
 	String modules = Globals::get_singleton()->get("android/modules");
 	Vector<String> mods = modules.split(",", false);
-	print_line("ANDROID MODULES : " + modules);
-	__android_log_print(ANDROID_LOG_INFO, "godot", "mod count: %i", mods.size());
 
 	if (mods.size()) {
 
@@ -958,7 +905,7 @@ static void _initialize_java_modules() {
 			String m = mods[i];
 			//jclass singletonClass = env->FindClass(m.utf8().get_data());
 
-			print_line("LOADING MODULE: " + m);
+			print_line("Loading module: " + m);
 			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
 			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
 
@@ -969,7 +916,6 @@ static void _initialize_java_modules() {
 			}
 			//singletonClass=(jclass)env->NewGlobalRef(singletonClass);
 
-			__android_log_print(ANDROID_LOG_INFO, "godot", "****^*^*?^*^*class data %x", singletonClass);
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
 
 			if (!initialize) {
@@ -978,7 +924,6 @@ static void _initialize_java_modules() {
 				ERR_CONTINUE(!initialize);
 			}
 			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, _godot_instance);
-			__android_log_print(ANDROID_LOG_INFO, "godot", "****^*^*?^*^*class instance %x", obj);
 			jobject gob = env->NewGlobalRef(obj);
 		}
 	}
@@ -987,8 +932,6 @@ static void _initialize_java_modules() {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jobject obj) {
 
 	ThreadAndroid::setup_thread();
-
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_ID());
 
 	suspend_mutex->lock();
 	input_mutex->lock();
@@ -1066,15 +1009,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
 		jmethodID _finish = env->GetMethodID(cls, "forceQuit", "()V");
 		env->CallVoidMethod(_godot_instance, _finish);
-		__android_log_print(ANDROID_LOG_INFO, "godot", "**FINISH REQUEST!!! - %p-%i\n", env, Thread::get_caller_ID());
 	}
 
 	suspend_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jobject obj, jint ev, jint pointer, jint count, jintArray positions) {
-
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**TOUCH EVENT! - %p-%i\n",env,Thread::get_caller_ID());
 
 	Vector<OS_Android::TouchPos> points;
 	for (int i = 0; i < count; i++) {
@@ -1347,7 +1287,6 @@ static unsigned int android_get_keysym(unsigned int p_code) {
 	for (int i = 0; _ak_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 
 		if (_ak_to_keycode[i].keycode == p_code) {
-			//print_line("outcode: " + _ak_to_keycode[i].keysym);
 
 			return _ak_to_keycode[i].keysym;
 		}
@@ -1617,11 +1556,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, j
 	cs += ")";
 	cs += get_jni_sig(retval);
 	jclass cls = env->GetObjectClass(s->get_instance());
-	print_line("METHOD: " + mname + " sig: " + cs);
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 
-		print_line("FAILED GETTING METHOID " + mname);
+		print_line("Failed getting method: " + mname);
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));
@@ -1672,24 +1610,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	int count = env->GetArrayLength(params);
 	Variant args[VARIANT_ARG_MAX];
 
-	//print_line("Java->GD call: "+obj->get_type()+"::"+str_method+" argc "+itos(count));
-
 	for (int i = 0; i < MIN(count, VARIANT_ARG_MAX); i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
 		if (obj)
 			args[i] = _jobject_to_variant(env, obj);
 		env->DeleteLocalRef(obj);
-
-		//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 	};
 
 	obj->call_deferred(str_method, args[0], args[1], args[2], args[3], args[4]);
-	// something
+
 	env->PopLocalFrame(NULL);
 }
 
-//Main::cleanup();
-
-//return os.get_exit_code();
 #endif
