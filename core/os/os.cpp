@@ -411,7 +411,7 @@ Error OS::set_cwd(const String &p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
 int OS::get_free_static_memory() const {
