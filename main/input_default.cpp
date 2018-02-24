@@ -289,7 +289,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			set_mouse_position(pos);
 		}
 
-		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
+		if (main_loop && emulate_touch && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
@@ -307,7 +307,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			set_mouse_position(pos);
 		}
 
-		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
+		if (main_loop && emulate_touch && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instance();
 
@@ -602,6 +602,36 @@ Input::CursorShape InputDefault::get_default_cursor_shape() {
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 	default_shape = p_shape;
 	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
+}
+
+// Calling this whenever the game window is focused helps unstucking the "touch mouse"
+// if the OS or its abstraction class hasn't properly reported that touch pointers raised
+void InputDefault::ensure_touch_mouse_raised() {
+
+	if (mouse_from_touch_index != -1) {
+		mouse_from_touch_index = -1;
+
+		Ref<InputEventMouseButton> button_event;
+		button_event.instance();
+
+		button_event->set_position(mouse_pos);
+		button_event->set_global_position(mouse_pos);
+		button_event->set_pressed(false);
+		button_event->set_button_index(BUTTON_LEFT);
+		button_event->set_button_mask(mouse_button_mask & ~(1 << BUTTON_LEFT - 1));
+
+		_parse_input_event_impl(button_event, true);
+	}
+}
+
+void InputDefault::set_emulate_mouse_from_touch(bool p_emulate) {
+
+	emulate_mouse_from_touch = p_emulate;
+}
+
+bool InputDefault::is_emulating_mouse_from_touch() const {
+
+	return emulate_mouse_from_touch;
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -915,7 +945,7 @@ static const char *s_ControllerMappings[] = {
 InputDefault::InputDefault() {
 
 	mouse_button_mask = 0;
-	emulate_touch_from_mouse = false;
+	emulate_touch = false;
 	emulate_mouse_from_touch = false;
 	mouse_from_touch_index = -1;
 	main_loop = NULL;

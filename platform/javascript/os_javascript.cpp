@@ -173,50 +173,14 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 	if (p_enabled == is_window_fullscreen()) {
 		return;
 	}
-
-	// Just request changes here, if successful, canvas is resized in
-	// _browser_resize_callback or _fullscreen_change_callback.
-	EMSCRIPTEN_RESULT result;
-	if (p_enabled) {
-		if (window_maximized) {
-			// Soft fullsreen during real fulllscreen can cause issues.
-			set_window_maximized(false);
-			window_maximized = true;
-		}
-		EmscriptenFullscreenStrategy strategy;
-		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-		strategy.canvasResizedCallback = NULL;
-		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
-	} else {
-		result = emscripten_exit_fullscreen();
-		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
-		}
-	}
+	return true;
 }
 
 bool OS_JavaScript::is_window_fullscreen() const {
 
-	return video_mode.fullscreen;
-}
-
-void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
-	Size2 screen = get_screen_size();
-	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
-}
-
-// Keys
-
-template <typename T>
-static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
-
-	godot_event->set_shift(emscripten_event_ptr->shiftKey);
-	godot_event->set_alt(emscripten_event_ptr->altKey);
-	godot_event->set_control(emscripten_event_ptr->ctrlKey);
-	godot_event->set_metakey(emscripten_event_ptr->metaKey);
+		_input->parse_input_event(ev);
+	}
+	return true;
 }
 
 static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {

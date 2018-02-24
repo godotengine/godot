@@ -338,7 +338,7 @@ Point2 OSIPhone::get_mouse_position() const {
 
 int OSIPhone::get_mouse_button_state() const {
 
-	return 0;
+	return false;
 };
 
 void OSIPhone::set_window_title(const String &p_title){};
