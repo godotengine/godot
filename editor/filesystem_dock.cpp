@@ -1037,6 +1037,12 @@ void FileSystemDock::_file_option(int p_option) {
 			String dir = ProjectSettings::get_singleton()->globalize_path(this->path);
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
+		case FILE_DONT_IMPORT: {
+			String dir = ProjectSettings::get_singleton()->globalize_path(this->path);
+			FileAccess *f = FileAccess::open(dir + "/.gdignore", FileAccess::WRITE);
+			ERR_FAIL_COND(!f);
+			f->close();
+		} break;
 		case FILE_OPEN: {
 			for (int i = 0; i < files->get_item_count(); i++) {
 				if (files->is_selected(i)) {
@@ -1273,6 +1279,13 @@ void FileSystemDock::_folder_option(int p_option) {
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
+		case FOLDER_DONT_IMPORT: {
+			String fpath = selected->get_metadata(tree->get_selected_column());
+			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
+			FileAccess *f = FileAccess::open(dir + "/.gdignore", FileAccess::WRITE);
+			ERR_FAIL_COND(!f);
+			f->close();
+		} break;
 	}
 }
 
@@ -1314,6 +1327,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 		folder_options->add_separator();
 		folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
 		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+		folder_options->add_item(TTR("Don't Import This Directory"), FOLDER_DONT_IMPORT);
 	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
@@ -1621,6 +1635,9 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
+	if (all_folders && num_items == 1) {
+		file_options->add_item(TTR("Don't Import This Directory"), FILE_DONT_IMPORT);
+	}
 
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
