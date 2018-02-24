@@ -1451,6 +1451,10 @@ void OS_X11::process_xevents() {
 				input_event.ID = ++event_id;
 				input_event.device = 0;
 
+				InputEvent mouse_event;
+				mouse_event.ID = ++event_id;
+				mouse_event.device = 0;
+
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 				int index = event_data->detail;
 				Point2i pos = Point2i(event_data->event_x, event_data->event_y);
@@ -1465,22 +1469,53 @@ void OS_X11::process_xevents() {
 
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
+						bool translate = false;
+						if (is_begin) {
+							++num_touches;
+							if (num_touches == 1) {
+								touch_mouse_index = index;
+								translate = true;
+							}
+						} else {
+							--num_touches;
+							if (num_touches == 0) {
+								translate = true;
+							} else if (num_touches < 0) { // Defensive
+								num_touches = 0;
+							}
+							touch_mouse_index = -1;
+						}
+
 						input_event.type = InputEvent::SCREEN_TOUCH;
 						input_event.screen_touch.index = index;
 						input_event.screen_touch.x = pos.x;
 						input_event.screen_touch.y = pos.y;
 						input_event.screen_touch.pressed = is_begin;
 
+						if (translate) {
+							mouse_event.type = InputEvent::MOUSE_BUTTON;
+							mouse_event.mouse_button.x = pos.x;
+							mouse_event.mouse_button.y = pos.y;
+							mouse_event.mouse_button.global_x = pos.x;
+							mouse_event.mouse_button.global_y = pos.y;
+							input->set_mouse_pos(pos);
+							mouse_event.mouse_button.button_index = 1;
+							mouse_event.mouse_button.pressed = is_begin;
+							last_mouse_pos = pos;
+						}
+
 						if (is_begin) {
 							if (touch.state.has(index)) // Defensive
 								break;
 							touch.state[index] = pos;
 							input->parse_input_event(input_event);
+							input->parse_input_event(mouse_event);
 						} else {
 							if (!touch.state.has(index)) // Defensive
 								break;
 							touch.state.erase(index);
 							input->parse_input_event(input_event);
+							input->parse_input_event(mouse_event);
 						}
 					} break;
 
@@ -1499,6 +1534,19 @@ void OS_X11::process_xevents() {
 							input_event.screen_drag.relative_x = pos.x - curr_pos_elem->value().x;
 							input_event.screen_drag.relative_y = pos.y - curr_pos_elem->value().y;
 							input->parse_input_event(input_event);
+
+							if (index == touch_mouse_index) {
+								mouse_event.type = InputEvent::MOUSE_MOTION;
+								mouse_event.mouse_motion.x = pos.x;
+								mouse_event.mouse_motion.y = pos.y;
+								mouse_event.mouse_motion.global_x = pos.x;
+								mouse_event.mouse_motion.global_y = pos.y;
+								input->set_mouse_pos(pos);
+								mouse_event.mouse_motion.relative_x = pos.x - last_mouse_pos.x;
+								mouse_event.mouse_motion.relative_y = pos.y - last_mouse_pos.y;
+								last_mouse_pos = pos;
+								input->parse_input_event(mouse_event);
+							}
 
 							curr_pos_elem->value() = pos;
 						}
@@ -1543,10 +1591,13 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-// Grab touch devices to avoid OS gesture interference
-/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
+				// Ensure touch mouse is unstuck
+				touch_mouse_index = -1;
+				num_touches = 0;
 #endif
 				break;
 
@@ -2328,6 +2379,10 @@ OS_X11::OS_X11() {
 	minimized = false;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
+#ifdef TOUCH_ENABLED
+	num_touches = 0;
+	touch_mouse_index = -1;
+#endif
 }
 
 void OS_X11::disable_crash_handler() {

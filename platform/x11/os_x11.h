@@ -132,6 +132,9 @@ class OS_X11 : public OS_Unix {
 		XIEventMask event_mask;
 		Map<int, Point2i> state;
 	} touch;
+	// For touch-to-mouse
+	int num_touches;
+	int touch_mouse_index;
 #endif
 
 	PhysicsServer *physics_server;
