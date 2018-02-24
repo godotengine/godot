@@ -1528,9 +1528,9 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		if (p_imethod.is_vararg) {
 			if (i < p_imethod.arguments.size() - 1) {
 				c_in_statements += sformat(arg_type->c_in.size() ? arg_type->c_in : TypeInterface::DEFAULT_VARARG_C_IN, "Variant", c_param_name);
-				c_in_statements += "\t" C_LOCAL_PTRCALL_ARGS ".set(0, ";
-				c_in_statements += sformat("&%s_in", c_param_name);
-				c_in_statements += ");\n";
+				c_in_statements += "\t" C_LOCAL_PTRCALL_ARGS ".set(";
+				c_in_statements += itos(i);
+				c_in_statements += sformat(", &%s_in);\n", c_param_name);
 			}
 		} else {
 			if (i > 0)
