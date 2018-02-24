@@ -30,6 +30,7 @@
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
+#include "dvector.h"
 #include "self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
@@ -37,11 +38,11 @@
 #include "shader_gles2.h"
 
 #include "shaders/copy.glsl.gen.h"
+#include "shaders/cubemap_filter.glsl.gen.h"
 /*
 #include "shaders/blend_shape.glsl.gen.h"
 #include "shaders/canvas.glsl.gen.h"
 #include "shaders/copy.glsl.gen.h"
-#include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 */
 
@@ -76,6 +77,10 @@ public:
 
 		Set<String> extensions;
 
+		bool float_texture_supported;
+		bool s3tc_supported;
+		bool etc1_supported;
+
 		bool keep_original_textures;
 
 		bool no_depth_prepass;
@@ -89,8 +94,13 @@ public:
 		GLuint normal_tex;
 		GLuint aniso_tex;
 
+		GLuint radical_inverse_vdc_cache_tex;
+
 		GLuint quadie;
-		GLuint quadie_array;
+
+		size_t skeleton_transform_buffer_size;
+		GLuint skeleton_transform_buffer;
+		PoolVector<float> skeleton_transform_cpu_buffer;
 
 	} resources;
 
@@ -99,6 +109,7 @@ public:
 		ShaderCompilerGLES2 compiler;
 
 		CopyShaderGLES2 copy;
+		CubemapFilterShaderGLES2 cubemap_filter;
 
 		ShaderCompilerGLES2::IdentifierActions actions_canvas;
 		ShaderCompilerGLES2::IdentifierActions actions_scene;
@@ -139,9 +150,71 @@ public:
 
 	} info;
 
+	void bind_quad_array() const;
+
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////DATA///////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
+
+	struct Instanciable : public RID_Data {
+		SelfList<RasterizerScene::InstanceBase>::List instance_list;
+
+		_FORCE_INLINE_ void instance_change_notify() {
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+
+			while (instances) {
+				instances->self()->base_changed();
+				instances = instances->next();
+			}
+		}
+
+		_FORCE_INLINE_ void instance_material_change_notify() {
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+
+			while (instances) {
+				instances->self()->base_material_changed();
+				instances = instances->next();
+			}
+		}
+
+		_FORCE_INLINE_ void instance_remove_deps() {
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+
+			while (instances) {
+				instances->self()->base_removed();
+				instances = instances->next();
+			}
+		}
+
+		Instanciable() {}
+
+		virtual ~Instanciable() {}
+	};
+
+	struct GeometryOwner : public Instanciable {
+	};
+
+	struct Geometry : public Instanciable {
+
+		enum Type {
+			GEOMETRY_INVALID,
+			GEOMETRY_SURFACE,
+			GEOMETRY_IMMEDIATE,
+			GEOMETRY_MULTISURFACE
+		};
+
+		Type type;
+		RID material;
+		uint64_t last_pass;
+		uint32_t index;
+
+		virtual void material_changed_notify() {}
+
+		Geometry() {
+			last_pass = 0;
+			index = 0;
+		}
+	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////API////////////////////////////////////////////////////
@@ -171,6 +244,10 @@ public:
 		int total_data_size;
 		bool ignore_mipmaps;
 
+		bool compressed;
+
+		bool srgb;
+
 		int mipmaps;
 
 		bool active;
@@ -183,6 +260,15 @@ public:
 		Ref<Image> images[6];
 
 		bool redraw_if_visible;
+
+		VisualServer::TextureDetectCallback detect_3d;
+		void *detect_3d_ud;
+
+		VisualServer::TextureDetectCallback detect_srgb;
+		void *detect_srgb_ud;
+
+		VisualServer::TextureDetectCallback detect_normal;
+		void *detect_normal_ud;
 
 		Texture() {
 			flags = 0;
@@ -197,6 +283,8 @@ public:
 			data_size = 0;
 			total_data_size = 0;
 			ignore_mipmaps = false;
+
+			compressed = false;
 
 			active = false;
 
@@ -236,7 +324,7 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type);
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed);
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
@@ -271,6 +359,15 @@ public:
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable);
 
 	/* SKY API */
+
+	struct Sky : public RID_Data {
+
+		RID panorama;
+		GLuint radiance;
+		int radiance_size;
+	};
+
+	mutable RID_Owner<Sky> sky_owner;
 
 	virtual RID sky_create();
 	virtual void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
@@ -332,7 +429,6 @@ public:
 
 		} canvas_item;
 
-		/*
 		struct Spatial {
 
 			enum BlendMode {
@@ -369,6 +465,7 @@ public:
 			bool uses_discard;
 			bool uses_sss;
 			bool uses_screen_texture;
+			bool uses_depth_texture;
 			bool uses_time;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
@@ -379,7 +476,6 @@ public:
 		struct Particles {
 
 		} particles;
-		*/
 
 		bool uses_vertex_time;
 		bool uses_fragment_time;
@@ -419,7 +515,7 @@ public:
 		Map<StringName, Variant> params;
 		SelfList<Material> list;
 		SelfList<Material> dirty_list;
-		Vector<RID> textures;
+		Vector<Pair<StringName, RID> > textures;
 		float line_width;
 		int render_priority;
 
@@ -449,6 +545,11 @@ public:
 	mutable SelfList<Material>::List _material_dirty_list;
 	void _material_make_dirty(Material *p_material) const;
 
+	void _material_add_geometry(RID p_material, Geometry *p_geometry);
+	void _material_remove_geometry(RID p_material, Geometry *p_geometry);
+
+	void _update_material(Material *p_material);
+
 	mutable RID_Owner<Material> material_owner;
 
 	virtual RID material_create();
@@ -473,6 +574,109 @@ public:
 	void update_dirty_materials();
 
 	/* MESH API */
+
+	struct Mesh;
+
+	struct Surface : public Geometry {
+
+		struct Attrib {
+			bool enabled;
+			bool integer;
+			GLuint index;
+			GLint size;
+			GLenum type;
+			GLboolean normalized;
+			GLsizei stride;
+			uint32_t offset;
+		};
+
+		Attrib attribs[VS::ARRAY_MAX];
+
+		Mesh *mesh;
+		uint32_t format;
+
+		GLuint vertex_id;
+		GLuint index_id;
+
+		struct BlendShape {
+			GLuint vertex_id;
+			GLuint array_id;
+		};
+
+		Vector<BlendShape> blend_shapes;
+
+		AABB aabb;
+
+		int array_len;
+		int index_array_len;
+		int max_bone;
+
+		int array_byte_size;
+		int index_array_byte_size;
+
+		VS::PrimitiveType primitive;
+
+		Vector<AABB> skeleton_bone_aabb;
+		Vector<bool> skeleton_bone_used;
+
+		bool active;
+
+		PoolVector<uint8_t> data;
+		PoolVector<uint8_t> index_data;
+
+		int total_data_size;
+
+		Surface() {
+			array_byte_size = 0;
+			index_array_byte_size = 0;
+
+			array_len = 0;
+			index_array_len = 0;
+
+			mesh = NULL;
+
+			primitive = VS::PRIMITIVE_POINTS;
+
+			active = false;
+
+			total_data_size = 0;
+		}
+	};
+
+	struct MultiMesh;
+
+	struct Mesh : public GeometryOwner {
+
+		bool active;
+
+		Vector<Surface *> surfaces;
+
+		int blend_shape_count;
+		VS::BlendShapeMode blend_shape_mode;
+
+		AABB custom_aabb;
+
+		mutable uint64_t last_pass;
+
+		SelfList<MultiMesh>::List multimeshes;
+
+		_FORCE_INLINE_ void update_multimeshes() {
+			SelfList<MultiMesh> *mm = multimeshes.first();
+
+			while (mm) {
+				mm->self()->instance_material_change_notify();
+				mm = mm->next();
+			}
+		}
+
+		Mesh() {
+			blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
+			blend_shape_count = 0;
+		}
+	};
+
+	mutable RID_Owner<Mesh> mesh_owner;
+
 	virtual RID mesh_create();
 
 	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
@@ -512,6 +716,55 @@ public:
 
 	/* MULTIMESH API */
 
+	struct MultiMesh : public GeometryOwner {
+
+		RID mesh;
+		int size;
+
+		VS::MultimeshTransformFormat transform_format;
+		VS::MultimeshColorFormat color_format;
+		VS::MultimeshCustomDataFormat custom_data_format;
+
+		Vector<float> data;
+
+		AABB aabb;
+
+		SelfList<MultiMesh> update_list;
+		SelfList<MultiMesh> mesh_list;
+
+		int visible_instances;
+
+		int xform_floats;
+		int color_floats;
+		int custom_data_floats;
+
+		bool dirty_aabb;
+		bool dirty_data;
+
+		MultiMesh() :
+				update_list(this),
+				mesh_list(this) {
+			dirty_aabb = true;
+			dirty_data = true;
+
+			xform_floats = 0;
+			color_floats = 0;
+			custom_data_floats = 0;
+
+			visible_instances = -1;
+
+			size = 0;
+
+			transform_format = VS::MULTIMESH_TRANSFORM_2D;
+			color_format = VS::MULTIMESH_COLOR_NONE;
+			custom_data_format = VS::MULTIMESH_CUSTOM_DATA_NONE;
+		}
+	};
+
+	mutable RID_Owner<MultiMesh> multimesh_owner;
+
+	SelfList<MultiMesh>::List multimesh_update_list;
+
 	virtual RID multimesh_create();
 
 	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE);
@@ -521,7 +774,7 @@ public:
 	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
 
@@ -557,6 +810,33 @@ public:
 
 	/* SKELETON API */
 
+	struct Skeleton : RID_Data {
+
+		bool use_2d;
+
+		int size;
+
+		// TODO use float textures for storage
+
+		Vector<float> bone_data;
+
+		GLuint tex_id;
+
+		SelfList<Skeleton> update_list;
+		Set<RasterizerScene::InstanceBase *> instances;
+
+		Skeleton() :
+				update_list(this) {
+			tex_id = 0;
+			size = 0;
+			use_2d = false;
+		}
+	};
+
+	mutable RID_Owner<Skeleton> skeleton_owner;
+
+	SelfList<Skeleton>::List skeleton_update_list;
+
 	void update_dirty_skeletons();
 
 	virtual RID skeleton_create();
@@ -568,7 +848,37 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 
+	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
+
 	/* Light API */
+
+	struct Light : Instanciable {
+		VS::LightType type;
+		float param[VS::LIGHT_PARAM_MAX];
+
+		Color color;
+		Color shadow_color;
+
+		RID projector;
+
+		bool shadow;
+		bool negative;
+		bool reverse_cull;
+
+		uint32_t cull_mask;
+
+		VS::LightOmniShadowMode omni_shadow_mode;
+		VS::LightOmniShadowDetail omni_shadow_detail;
+
+		VS::LightDirectionalShadowMode directional_shadow_mode;
+		VS::LightDirectionalShadowDepthRangeMode directional_range_mode;
+
+		bool directional_blend_splits;
+
+		uint64_t version;
+	};
+
+	mutable RID_Owner<Light> light_owner;
 
 	virtual RID light_create(VS::LightType p_type);
 
@@ -830,6 +1140,8 @@ public:
 
 	void initialize();
 	void finalize();
+
+	void _copy_screen();
 
 	virtual bool has_os_feature(const String &p_feature) const;
 
