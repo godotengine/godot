@@ -27,7 +27,7 @@ uniform vec4 src_rect;
 
 #endif
 
-uniform bool blit_pass;
+uniform highp float time;
 
 VERTEX_SHADER_GLOBALS
 
@@ -103,7 +103,7 @@ uniform mediump sampler2D normal_texture; // texunit:1
 varying mediump vec2 uv_interp;
 varying mediump vec4 color_interp;
 
-uniform bool blit_pass;
+uniform highp float time;
 
 uniform vec4 final_modulate;
 
@@ -127,6 +127,10 @@ void main() {
 	vec4 color = color_interp;
 
 	color *= texture2D(color_texture, uv_interp);
+
+#ifdef SCREEN_UV_USED
+	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
+#endif
 {
 
 FRAGMENT_SHADER_CODE

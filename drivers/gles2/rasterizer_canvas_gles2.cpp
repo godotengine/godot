@@ -54,9 +54,25 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
 
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::FINAL_MODULATE, state.uniforms.final_modulate);
+
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::TIME, storage->frame.time[0]);
+
+	if (storage->frame.current_rt) {
+		Vector2 screen_pixel_size;
+		screen_pixel_size.x = 1.0 / storage->frame.current_rt->width;
+		screen_pixel_size.y = 1.0 / storage->frame.current_rt->height;
+
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_PIXEL_SIZE, screen_pixel_size);
+	}
 }
 
 void RasterizerCanvasGLES2::canvas_begin() {
+
+	state.canvas_shader.bind();
+	if (storage->frame.current_rt) {
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glColorMask(1, 1, 1, 1);
+	}
 
 	if (storage->frame.clear_request) {
 		glClearColor(storage->frame.clear_request_color.r,
@@ -67,10 +83,12 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		storage->frame.clear_request = false;
 	}
 
+	/*
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glColorMask(1, 1, 1, 1);
 	}
+	*/
 
 	reset_canvas();
 
@@ -312,7 +330,7 @@ void RasterizerCanvasGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip) {
+void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip, RasterizerStorageGLES2::Material *p_material) {
 
 	int command_count = p_item->commands.size();
 	Item::Command **commands = p_item->commands.ptrw();
@@ -329,9 +347,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
-				state.canvas_shader.bind();
-
-				_set_uniforms();
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				_bind_canvas_texture(RID(), RID());
 
@@ -359,7 +378,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					_draw_gui_primitive(4, verts, NULL, NULL);
 				}
-
 			} break;
 
 			case Item::Command::TYPE_RECT: {
@@ -373,8 +391,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(r->texture, r->normal_map);
 
@@ -454,8 +474,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				glDisableVertexAttribArray(VS::ARRAY_COLOR);
 				glVertexAttrib4fv(VS::ARRAY_COLOR, np->color.components);
@@ -472,7 +494,15 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				// state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 				state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
+				Rect2 source = np->source;
+				if (source.size.x == 0 && source.size.y == 0) {
+					source.size.x = tex->width;
+					source.size.y = tex->height;
+				}
+
 				// prepare vertex buffer
+
+				// this buffer contains [ POS POS UV UV ] *
 
 				float buffer[16 * 2 + 16 * 2];
 
@@ -483,106 +513,106 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					buffer[(0 * 4 * 4) + 0] = np->rect.position.x;
 					buffer[(0 * 4 * 4) + 1] = np->rect.position.y;
 
-					buffer[(0 * 4 * 4) + 2] = np->source.position.x * texpixel_size.x;
-					buffer[(0 * 4 * 4) + 3] = np->source.position.y * texpixel_size.y;
+					buffer[(0 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 3] = source.position.y * texpixel_size.y;
 
 					buffer[(0 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
 					buffer[(0 * 4 * 4) + 5] = np->rect.position.y;
 
-					buffer[(0 * 4 * 4) + 6] = (np->source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
-					buffer[(0 * 4 * 4) + 7] = np->source.position.y * texpixel_size.y;
+					buffer[(0 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 7] = source.position.y * texpixel_size.y;
 
 					buffer[(0 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
 					buffer[(0 * 4 * 4) + 9] = np->rect.position.y;
 
-					buffer[(0 * 4 * 4) + 10] = (np->source.position.x + np->source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
-					buffer[(0 * 4 * 4) + 11] = np->source.position.y * texpixel_size.y;
+					buffer[(0 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 11] = source.position.y * texpixel_size.y;
 
 					buffer[(0 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
 					buffer[(0 * 4 * 4) + 13] = np->rect.position.y;
 
-					buffer[(0 * 4 * 4) + 14] = (np->source.position.x + np->source.size.x) * texpixel_size.x;
-					buffer[(0 * 4 * 4) + 15] = np->source.position.y * texpixel_size.y;
+					buffer[(0 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 15] = source.position.y * texpixel_size.y;
 
 					// second row
 
 					buffer[(1 * 4 * 4) + 0] = np->rect.position.x;
 					buffer[(1 * 4 * 4) + 1] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-					buffer[(1 * 4 * 4) + 2] = np->source.position.x * texpixel_size.x;
-					buffer[(1 * 4 * 4) + 3] = (np->source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
+					buffer[(1 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 3] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
 					buffer[(1 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
 					buffer[(1 * 4 * 4) + 5] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-					buffer[(1 * 4 * 4) + 6] = (np->source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
-					buffer[(1 * 4 * 4) + 7] = (np->source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
+					buffer[(1 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 7] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
 					buffer[(1 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
 					buffer[(1 * 4 * 4) + 9] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-					buffer[(1 * 4 * 4) + 10] = (np->source.position.x + np->source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
-					buffer[(1 * 4 * 4) + 11] = (np->source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
+					buffer[(1 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 11] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
 					buffer[(1 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
 					buffer[(1 * 4 * 4) + 13] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-					buffer[(1 * 4 * 4) + 14] = (np->source.position.x + np->source.size.x) * texpixel_size.x;
-					buffer[(1 * 4 * 4) + 15] = (np->source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
+					buffer[(1 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 15] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
 					// thrid row
 
 					buffer[(2 * 4 * 4) + 0] = np->rect.position.x;
 					buffer[(2 * 4 * 4) + 1] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
 
-					buffer[(2 * 4 * 4) + 2] = np->source.position.x * texpixel_size.x;
-					buffer[(2 * 4 * 4) + 3] = (np->source.position.y + np->source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+					buffer[(2 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 3] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
 
 					buffer[(2 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
 					buffer[(2 * 4 * 4) + 5] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
 
-					buffer[(2 * 4 * 4) + 6] = (np->source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
-					buffer[(2 * 4 * 4) + 7] = (np->source.position.y + np->source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+					buffer[(2 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 7] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
 
 					buffer[(2 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
 					buffer[(2 * 4 * 4) + 9] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
 
-					buffer[(2 * 4 * 4) + 10] = (np->source.position.x + np->source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
-					buffer[(2 * 4 * 4) + 11] = (np->source.position.y + np->source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+					buffer[(2 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 11] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
 
 					buffer[(2 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
 					buffer[(2 * 4 * 4) + 13] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
 
-					buffer[(2 * 4 * 4) + 14] = (np->source.position.x + np->source.size.x) * texpixel_size.x;
-					buffer[(2 * 4 * 4) + 15] = (np->source.position.y + np->source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+					buffer[(2 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 15] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
 
 					// fourth row
 
 					buffer[(3 * 4 * 4) + 0] = np->rect.position.x;
 					buffer[(3 * 4 * 4) + 1] = np->rect.position.y + np->rect.size.y;
 
-					buffer[(3 * 4 * 4) + 2] = np->source.position.x * texpixel_size.x;
-					buffer[(3 * 4 * 4) + 3] = (np->source.position.y + np->source.size.y) * texpixel_size.y;
+					buffer[(3 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 3] = (source.position.y + source.size.y) * texpixel_size.y;
 
 					buffer[(3 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
 					buffer[(3 * 4 * 4) + 5] = np->rect.position.y + np->rect.size.y;
 
-					buffer[(3 * 4 * 4) + 6] = (np->source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
-					buffer[(3 * 4 * 4) + 7] = (np->source.position.y + np->source.size.y) * texpixel_size.y;
+					buffer[(3 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 7] = (source.position.y + source.size.y) * texpixel_size.y;
 
 					buffer[(3 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
 					buffer[(3 * 4 * 4) + 9] = np->rect.position.y + np->rect.size.y;
 
-					buffer[(3 * 4 * 4) + 10] = (np->source.position.x + np->source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
-					buffer[(3 * 4 * 4) + 11] = (np->source.position.y + np->source.size.y) * texpixel_size.y;
+					buffer[(3 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 11] = (source.position.y + source.size.y) * texpixel_size.y;
 
 					buffer[(3 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
 					buffer[(3 * 4 * 4) + 13] = np->rect.position.y + np->rect.size.y;
 
-					buffer[(3 * 4 * 4) + 14] = (np->source.position.x + np->source.size.x) * texpixel_size.x;
-					buffer[(3 * 4 * 4) + 15] = (np->source.position.y + np->source.size.y) * texpixel_size.y;
+					buffer[(3 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 15] = (source.position.y + source.size.y) * texpixel_size.y;
 
-					// print_line(String::num((np->source.position.y + np->source.size.y) * texpixel_size.y));
+					// print_line(String::num((source.position.y + source.size.y) * texpixel_size.y));
 				}
 
 				glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
@@ -610,8 +640,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				static const int num_points = 32;
 
@@ -639,8 +671,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
 
@@ -658,8 +692,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				_bind_canvas_texture(RID(), RID());
 
@@ -689,8 +725,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
-				if (state.canvas_shader.bind())
+				if (state.canvas_shader.bind()) {
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material, 2);
+				}
 
 				ERR_CONTINUE(primitive->points.size() < 1);
 
@@ -759,42 +797,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 
 	// This isn't really working yet, so disabling for now.
-
-	/*
-	glDisable(GL_BLEND);
-
-	state.canvas_texscreen_used = true;
-
-	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
-	Color copy_section(p_rect.position.x / wh.x, p_rect.position.y / wh.y, p_rect.size.x / wh.x, p_rect.size.y / wh.y);
-
-	if (p_rect != Rect2()) {
-		// only use section
-
-		storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, true);
-	}
-
-
-	storage->shaders.copy.bind();
-	storage->shaders.copy.set_uniform(CopyShaderGLES2::COPY_SECTION, copy_section);
-
-	_bind_quad_buffer();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->copy_screen_effect.fbo);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glDisableVertexAttribArray(VS::ARRAY_VERTEX);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-
-	state.canvas_shader.bind();
-	_bind_canvas_texture(state.current_tex, state.current_normal);
-
-	glEnable(GL_BLEND);
-	*/
 }
 
 void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
@@ -850,10 +852,10 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 		Item *material_owner = ci->material_owner ? ci->material_owner : ci;
 
 		RID material = material_owner->material;
+		RasterizerStorageGLES2::Material *material_ptr = storage->material_owner.getornull(material);
 
 		if (material != canvas_last_material || rebind_shader) {
 
-			RasterizerStorageGLES2::Material *material_ptr = storage->material_owner.getornull(material);
 			RasterizerStorageGLES2::Shader *shader_ptr = NULL;
 
 			if (material_ptr) {
@@ -880,7 +882,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 				}
 
 				int tc = material_ptr->textures.size();
-				RID *textures = material_ptr->textures.ptrw();
+				Pair<StringName, RID> *textures = material_ptr->textures.ptrw();
 
 				ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = shader_ptr->texture_hints.ptrw();
 
@@ -888,7 +890,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 					glActiveTexture(GL_TEXTURE2 + i);
 
-					RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(textures[i]);
+					RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(textures[i].second);
 
 					if (!t) {
 
@@ -919,10 +921,12 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 					glBindTexture(t->target, t->tex_id);
 				}
+
 			} else {
 				state.canvas_shader.set_custom_shader(0);
 				state.canvas_shader.bind();
 			}
+			state.canvas_shader.use_material((void *)material_ptr, 2);
 
 			shader_cache = shader_ptr;
 
@@ -977,7 +981,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		_set_uniforms();
 
-		_canvas_item_render_commands(p_item_list, NULL, reclip);
+		_canvas_item_render_commands(p_item_list, NULL, reclip, material_ptr);
 
 		rebind_shader = true; // hacked in for now.
 

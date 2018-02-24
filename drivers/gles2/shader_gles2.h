@@ -44,6 +44,11 @@
 #include "map.h"
 #include "variant.h"
 
+#include "core/pair.h"
+#include "servers/visual/shader_language.h"
+
+class RasterizerStorageGLES2;
+
 class ShaderGLES2 {
 protected:
 	struct Enum {
@@ -105,9 +110,10 @@ private:
 		GLuint id;
 		GLuint vert_id;
 		GLuint frag_id;
+		Vector<StringName> uniform_names;
 		GLint *uniform_location;
 		Vector<GLint> texture_uniform_locations;
-		Vector<GLint> custom_uniform_locations;
+		Map<StringName, GLint> custom_uniform_locations;
 		uint32_t code_version;
 		bool ok;
 		Version() {
@@ -168,6 +174,168 @@ private:
 	static ShaderGLES2 *active;
 
 	int max_image_units;
+
+	Map<uint32_t, Variant> uniform_defaults;
+	Map<uint32_t, CameraMatrix> uniform_cameras;
+
+	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > > uniform_values;
+
+protected:
+	_FORCE_INLINE_ int _get_uniform(int p_which) const;
+	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
+
+	void setup(const char **p_conditional_defines,
+			int p_conditional_count,
+			const char **p_uniform_names,
+			int p_uniform_count,
+			const AttributePair *p_attribute_pairs,
+			int p_attribute_count,
+			const TexUnitPair *p_texunit_pairs,
+			int p_texunit_pair_count,
+			const char *p_vertex_code,
+			const char *p_fragment_code,
+			int p_vertex_code_start,
+			int p_fragment_code_start);
+
+	ShaderGLES2();
+
+public:
+	enum {
+		CUSTOM_SHADER_DISABLED = 0
+	};
+
+	GLint get_uniform_location(const String &p_name) const;
+	GLint get_uniform_location(int p_index) const;
+
+	static _FORCE_INLINE_ ShaderGLES2 *get_active() { return active; }
+	bool bind();
+	void unbind();
+	void bind_uniforms();
+
+	inline GLuint get_program() const { return version ? version->id : 0; }
+
+	void clear_caches();
+
+	_FORCE_INLINE_ void _set_uniform_value(GLint p_uniform, const Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > &value) {
+		if (p_uniform < 0)
+			return;
+
+		const Vector<ShaderLanguage::ConstantNode::Value> &values = value.second;
+
+		switch (value.first) {
+			case ShaderLanguage::TYPE_BOOL: {
+				glUniform1i(p_uniform, values[0].boolean);
+			} break;
+
+			case ShaderLanguage::TYPE_BVEC2: {
+				glUniform2i(p_uniform, values[0].boolean, values[1].boolean);
+			} break;
+
+			case ShaderLanguage::TYPE_BVEC3: {
+				glUniform3i(p_uniform, values[0].boolean, values[1].boolean, values[2].boolean);
+			} break;
+
+			case ShaderLanguage::TYPE_BVEC4: {
+				glUniform4i(p_uniform, values[0].boolean, values[1].boolean, values[2].boolean, values[3].boolean);
+			} break;
+
+			case ShaderLanguage::TYPE_INT: {
+				glUniform1i(p_uniform, values[0].sint);
+			} break;
+
+			case ShaderLanguage::TYPE_IVEC2: {
+				glUniform2i(p_uniform, values[0].sint, values[1].sint);
+			} break;
+
+			case ShaderLanguage::TYPE_IVEC3: {
+				glUniform3i(p_uniform, values[0].sint, values[1].sint, values[2].sint);
+			} break;
+
+			case ShaderLanguage::TYPE_IVEC4: {
+				glUniform4i(p_uniform, values[0].sint, values[1].sint, values[2].sint, values[3].sint);
+			} break;
+
+			case ShaderLanguage::TYPE_UINT: {
+				glUniform1i(p_uniform, values[0].uint);
+			} break;
+
+			case ShaderLanguage::TYPE_UVEC2: {
+				glUniform2i(p_uniform, values[0].uint, values[1].uint);
+			} break;
+
+			case ShaderLanguage::TYPE_UVEC3: {
+				glUniform3i(p_uniform, values[0].uint, values[1].uint, values[2].uint);
+			} break;
+
+			case ShaderLanguage::TYPE_UVEC4: {
+				glUniform4i(p_uniform, values[0].uint, values[1].uint, values[2].uint, values[3].uint);
+			} break;
+
+			case ShaderLanguage::TYPE_FLOAT: {
+				glUniform1f(p_uniform, values[0].real);
+			} break;
+
+			case ShaderLanguage::TYPE_VEC2: {
+				glUniform2f(p_uniform, values[0].real, values[1].real);
+			} break;
+
+			case ShaderLanguage::TYPE_VEC3: {
+				glUniform3f(p_uniform, values[0].real, values[1].real, values[2].real);
+			} break;
+
+			case ShaderLanguage::TYPE_VEC4: {
+				glUniform4f(p_uniform, values[0].real, values[1].real, values[2].real, values[3].real);
+			} break;
+
+			case ShaderLanguage::TYPE_MAT2: {
+				GLfloat mat[4];
+
+				for (int i = 0; i < 4; i++) {
+					mat[i] = values[i].real;
+				}
+
+				glUniformMatrix2fv(p_uniform, 1, GL_FALSE, mat);
+			} break;
+
+			case ShaderLanguage::TYPE_MAT3: {
+				GLfloat mat[9];
+
+				for (int i = 0; i < 0; i++) {
+					mat[i] = values[i].real;
+				}
+
+				glUniformMatrix3fv(p_uniform, 1, GL_FALSE, mat);
+
+			} break;
+
+			case ShaderLanguage::TYPE_MAT4: {
+				GLfloat mat[16];
+
+				for (int i = 0; i < 0; i++) {
+					mat[i] = values[i].real;
+				}
+
+				glUniformMatrix4fv(p_uniform, 1, GL_FALSE, mat);
+
+			} break;
+
+			case ShaderLanguage::TYPE_SAMPLER2D: {
+
+			} break;
+
+			case ShaderLanguage::TYPE_ISAMPLER2D: {
+
+			} break;
+
+			case ShaderLanguage::TYPE_USAMPLER2D: {
+
+			} break;
+
+			case ShaderLanguage::TYPE_SAMPLERCUBE: {
+
+			} break;
+		}
+	}
 
 	_FORCE_INLINE_ void _set_uniform_variant(GLint p_uniform, const Variant &p_value) {
 
@@ -262,48 +430,12 @@ private:
 
 				glUniformMatrix4fv(p_uniform, 1, false, matrix);
 			} break;
+			case Variant::OBJECT: {
+
+			} break;
 			default: { ERR_FAIL(); } // do nothing
 		}
 	}
-
-	Map<uint32_t, Variant> uniform_defaults;
-	Map<uint32_t, CameraMatrix> uniform_cameras;
-
-protected:
-	_FORCE_INLINE_ int _get_uniform(int p_which) const;
-	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
-
-	void setup(const char **p_conditional_defines,
-			int p_conditional_count,
-			const char **p_uniform_names,
-			int p_uniform_count,
-			const AttributePair *p_attribute_pairs,
-			int p_attribute_count,
-			const TexUnitPair *p_texunit_pairs,
-			int p_texunit_pair_count,
-			const char *p_vertex_code,
-			const char *p_fragment_code,
-			int p_vertex_code_start,
-			int p_fragment_code_start);
-
-	ShaderGLES2();
-
-public:
-	enum {
-		CUSTOM_SHADER_DISABLED = 0
-	};
-
-	GLint get_uniform_location(const String &p_name) const;
-	GLint get_uniform_location(int p_index) const;
-
-	static _FORCE_INLINE_ ShaderGLES2 *get_active() { return active; }
-	bool bind();
-	void unbind();
-	void bind_uniforms();
-
-	inline GLuint get_program() const { return version ? version->id : 0; }
-
-	void clear_caches();
 
 	uint32_t create_custom_shader();
 	void set_custom_shader_code(uint32_t p_code_id,
@@ -330,6 +462,10 @@ public:
 		}
 		uniforms_dirty = true;
 	}
+
+	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
+	// like forward declared nested classes.
+	void use_material(void *p_material, int p_num_predef_textures);
 
 	uint32_t get_version() const { return new_conditional_version.version; }
 
