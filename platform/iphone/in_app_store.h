@@ -46,6 +46,7 @@ class InAppStore : public Object {
 
 public:
 	Error request_product_info(Variant p_params);
+	Error restore_purchases();
 	Error purchase(Variant p_params);
 
 	int get_pending_event_count();

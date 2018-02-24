@@ -63,6 +63,7 @@ InAppStore *InAppStore::instance = NULL;
 
 void InAppStore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_product_info"), &InAppStore::request_product_info);
+	ClassDB::bind_method(D_METHOD("restore_purchases"), &InAppStore::restore_purchases);
 	ClassDB::bind_method(D_METHOD("purchase"), &InAppStore::purchase);
 
 	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &InAppStore::get_pending_event_count);
@@ -153,6 +154,14 @@ Error InAppStore::request_product_info(Variant p_params) {
 	return OK;
 };
 
+Error InAppStore::restore_purchases() {
+
+	printf("restoring purchases!\n");
+	[[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+
+	return OK;
+};
+
 @interface TransObserver : NSObject <SKPaymentTransactionObserver> {
 };
 @end
@@ -236,6 +245,11 @@ Error InAppStore::request_product_info(Variant p_params) {
 				printf("status transaction restored!\n");
 				String pid = String::utf8([transaction.originalTransaction.payment.productIdentifier UTF8String]);
 				InAppStore::get_singleton()->_record_purchase(pid);
+				Dictionary ret;
+				ret["type"] = "restore";
+				ret["result"] = "ok";
+				ret["product_id"] = pid;
+				InAppStore::get_singleton()->_post_event(ret);
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 			} break;
 			default: {
