@@ -43,13 +43,13 @@ public:
 
 	virtual Error init() { return OK; }
 	virtual void start(){};
-	virtual int get_mix_rate() const {};
-	virtual SpeakerMode get_speaker_mode() const {};
+	virtual int get_mix_rate() const { return DEFAULT_MIX_RATE; };
+	virtual SpeakerMode get_speaker_mode() const { return SPEAKER_MODE_STEREO; };
 	virtual void lock(){};
 	virtual void unlock(){};
 	virtual void finish(){};
 
-	virtual float get_latency(){};
+	virtual float get_latency() { return 0; };
 
 	AudioDriverDummy(){};
 	~AudioDriverDummy(){};
