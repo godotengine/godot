@@ -420,37 +420,56 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 	if (!ScriptDebugger::get_singleton())
 		return;
 
-	GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
-	MonoObject *stack_trace = mono_object_new(mono_domain_get(), st_klass->get_mono_ptr());
-
-	MonoBoolean need_file_info = true;
-	void *ctor_args[2] = { p_exc, &need_file_info };
-
-	MonoObject *unexpected_exc = NULL;
-	CACHED_METHOD(System_Diagnostics_StackTrace, ctor_Exception_bool)->invoke_raw(stack_trace, ctor_args, &unexpected_exc);
-
-	if (unexpected_exc != NULL) {
-		mono_print_unhandled_exception(unexpected_exc);
-
-		if (p_recursion_caution) {
-			// Called from CSharpLanguage::get_current_stack_info,
-			// so printing an error here could result in endless recursion
-			OS::get_singleton()->printerr("Mono: Method GDMonoUtils::print_unhandled_exception failed");
-			return;
-		} else {
-			ERR_FAIL();
-		}
-	}
+	ScriptLanguage::StackInfo separator;
+	separator.file = "";
+	separator.func = "--- " + TTR("End of inner exception stack trace") + " ---";
+	separator.line = 0;
 
 	Vector<ScriptLanguage::StackInfo> si;
-	if (stack_trace != NULL && !p_recursion_caution)
-		si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
+	String exc_msg = "";
+
+	while (p_exc != NULL) {
+		GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
+		MonoObject *stack_trace = mono_object_new(mono_domain_get(), st_klass->get_mono_ptr());
+
+		MonoBoolean need_file_info = true;
+		void *ctor_args[2] = { p_exc, &need_file_info };
+
+		MonoObject *unexpected_exc = NULL;
+		CACHED_METHOD(System_Diagnostics_StackTrace, ctor_Exception_bool)->invoke_raw(stack_trace, ctor_args, &unexpected_exc);
+
+		if (unexpected_exc != NULL) {
+			mono_print_unhandled_exception(unexpected_exc);
+
+			if (p_recursion_caution) {
+				// Called from CSharpLanguage::get_current_stack_info,
+				// so printing an error here could result in endless recursion
+				OS::get_singleton()->printerr("Mono: Method GDMonoUtils::print_unhandled_exception failed");
+				return;
+			} else {
+				ERR_FAIL();
+			}
+		}
+
+		Vector<ScriptLanguage::StackInfo> _si;
+		if (stack_trace != NULL && !p_recursion_caution) {
+			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
+			for (int i = _si.size() - 1; i >= 0; i--)
+				si.insert(0, _si[i]);
+		}
+
+		exc_msg += (exc_msg.length() > 0 ? " ---> " : "") + GDMonoUtils::get_exception_name_and_message(p_exc);
+
+		GDMonoProperty *p_prop = GDMono::get_singleton()->get_class(mono_object_get_class(p_exc))->get_property("InnerException");
+		p_exc = p_prop != NULL ? p_prop->get_value(p_exc) : NULL;
+		if (p_exc != NULL)
+			si.insert(0, separator);
+	}
 
 	String file = si.size() ? si[0].file : __FILE__;
 	String func = si.size() ? si[0].func : FUNCTION_STR;
 	int line = si.size() ? si[0].line : __LINE__;
 	String error_msg = "Unhandled exception";
-	String exc_msg = GDMonoUtils::get_exception_name_and_message(p_exc);
 
 	ScriptDebugger::get_singleton()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
 #endif
