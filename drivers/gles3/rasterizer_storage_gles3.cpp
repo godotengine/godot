@@ -1912,7 +1912,7 @@ void RasterizerStorageGLES3::material_set_param(RID p_material, const StringName
 Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringName &p_param) const {
 
 	const Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, RID());
+	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->params.has(p_param))
 		return material->params[p_param];

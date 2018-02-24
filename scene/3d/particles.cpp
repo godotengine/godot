@@ -1233,28 +1233,19 @@ void ParticlesMaterial::set_emission_box_extents(Vector3 p_extents) {
 void ParticlesMaterial::set_emission_point_texture(const Ref<Texture> &p_points) {
 
 	emission_point_texture = p_points;
-	RID texture;
-	if (p_points.is_valid())
-		texture = p_points->get_rid();
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, texture);
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, p_points);
 }
 
 void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture> &p_normals) {
 
 	emission_normal_texture = p_normals;
-	RID texture;
-	if (p_normals.is_valid())
-		texture = p_normals->get_rid();
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, texture);
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, p_normals);
 }
 
 void ParticlesMaterial::set_emission_color_texture(const Ref<Texture> &p_colors) {
 
 	emission_color_texture = p_colors;
-	RID texture;
-	if (p_colors.is_valid())
-		texture = p_colors->get_rid();
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, texture);
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, p_colors);
 	_queue_shader_change();
 }
 
@@ -1316,10 +1307,7 @@ void ParticlesMaterial::set_trail_size_modifier(const Ref<CurveTexture> &p_trail
 		curve->ensure_default_setup();
 	}
 
-	RID texture;
-	if (p_trail_size_modifier.is_valid())
-		texture = p_trail_size_modifier->get_rid();
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_size_modifier, texture);
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_size_modifier, curve);
 	_queue_shader_change();
 }
 
@@ -1331,10 +1319,7 @@ Ref<CurveTexture> ParticlesMaterial::get_trail_size_modifier() const {
 void ParticlesMaterial::set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier) {
 
 	trail_color_modifier = p_trail_color_modifier;
-	RID texture;
-	if (p_trail_color_modifier.is_valid())
-		texture = p_trail_color_modifier->get_rid();
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_color_modifier, texture);
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_color_modifier, p_trail_color_modifier);
 	_queue_shader_change();
 }
 
