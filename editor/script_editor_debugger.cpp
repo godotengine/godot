@@ -1646,12 +1646,20 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 		md.push_back(st[i + 1]);
 		md.push_back(st[i + 2]);
 
-		String str = func + " in " + script.get_file() + ":line " + itos(line);
+		String str = func;
+		String tooltip_str = TTR("Function:") + " " + func;
+		if (script.length() > 0) {
+			str += " in " + script.get_file();
+			tooltip_str = TTR("File:") + " " + script + "\n" + tooltip_str;
+			if (line > 0) {
+				str += ":line " + itos(line);
+				tooltip_str += "\n" + TTR("Line:") + " " + itos(line);
+			}
+		}
 
 		error_stack->add_item(str);
 		error_stack->set_item_metadata(error_stack->get_item_count() - 1, md);
-		error_stack->set_item_tooltip(error_stack->get_item_count() - 1,
-				TTR("File:") + " " + script + "\n" + TTR("Function:") + " " + func + "\n" + TTR("Line:") + " " + itos(line));
+		error_stack->set_item_tooltip(error_stack->get_item_count() - 1, tooltip_str);
 	}
 }
 
