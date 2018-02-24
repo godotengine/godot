@@ -500,21 +500,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: {
 
-			Ref<InputEventMouseButton> mb;
-			mb.instance();
-
-			switch (uMsg) {
-				case WM_LBUTTONDOWN: {
-					mb->set_pressed(true);
-					mb->set_button_index(1);
-				} break;
-				case WM_LBUTTONUP: {
-					mb->set_pressed(false);
-					mb->set_button_index(1);
-				} break;
-				case WM_MBUTTONDOWN: {
-					mb->set_pressed(true);
-					mb->set_button_index(3);
+				if (input->is_emulating_mouse_from_touch()) {
+					// Universal translation enabled; ignore OS translation
+					LPARAM extra = GetMessageExtraInfo();
+					if (IsPenEvent(extra)) {
+						break;
+					}
+				}
 
 				} break;
 				case WM_MBUTTONUP: {
