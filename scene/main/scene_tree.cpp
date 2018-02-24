@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "io/marshalls.h"
 #include "io/resource_loader.h"
+#include "main/input_default.h"
 #include "message_queue.h"
 #include "node.h"
 #include "os/keyboard.h"
@@ -619,6 +620,13 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_MOUSE_EXIT:
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
+
+			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
+				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+				if (id) {
+					id->ensure_touch_mouse_raised();
+				}
+			}
 
 			get_root()->propagate_notification(p_notification);
 		} break;

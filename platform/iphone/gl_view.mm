@@ -497,7 +497,7 @@ static void clear_touches() {
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			CGPoint touchPoint = [touch locationInView:self];
-			OSIPhone::get_singleton()->mouse_button(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1, tid == 0);
+			OSIPhone::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
 		};
 	};
 }
@@ -514,10 +514,9 @@ static void clear_touches() {
 				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
-			int first = get_first_id(touch);
 			CGPoint touchPoint = [touch locationInView:self];
 			CGPoint prev_point = [touch previousLocationInView:self];
-			OSIPhone::get_singleton()->mouse_move(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, first == tid);
+			OSIPhone::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor);
 		};
 	};
 }
@@ -533,9 +532,9 @@ static void clear_touches() {
 				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
-			int rem = remove_touch(touch);
+			remove_touch(touch);
 			CGPoint touchPoint = [touch locationInView:self];
-			OSIPhone::get_singleton()->mouse_button(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false, rem == 0);
+			OSIPhone::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
 		};
 	};
 }

@@ -285,23 +285,6 @@ static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *
 
 		_input->parse_input_event(ev);
 	}
-
-	if (touch_event->touches[lowest_id_index].isChanged) {
-
-		Ref<InputEventMouseButton> ev_mouse;
-		ev_mouse.instance();
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
-		dom2godot_mod(touch_event, ev_mouse);
-
-		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
-		ev_mouse->set_position(Point2(first_touch.canvasX, first_touch.canvasY));
-		ev_mouse->set_global_position(ev_mouse->get_position());
-
-		ev_mouse->set_button_index(BUTTON_LEFT);
-		ev_mouse->set_pressed(event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
-
-		_input->parse_input_event(ev_mouse);
-	}
 	return true;
 }
 
@@ -326,24 +309,6 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 		prev = ev->get_position();
 
 		_input->parse_input_event(ev);
-	}
-
-	if (touch_event->touches[lowest_id_index].isChanged) {
-
-		Ref<InputEventMouseMotion> ev_mouse;
-		ev_mouse.instance();
-		dom2godot_mod(touch_event, ev_mouse);
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
-
-		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
-		ev_mouse->set_position(Point2(first_touch.canvasX, first_touch.canvasY));
-		ev_mouse->set_global_position(ev_mouse->get_position());
-
-		ev_mouse->set_relative(ev_mouse->get_position() - _input->get_mouse_position());
-		_input->set_mouse_position(ev_mouse->get_position());
-		ev_mouse->set_speed(_input->get_last_mouse_speed());
-
-		_input->parse_input_event(ev_mouse);
 	}
 	return true;
 }
