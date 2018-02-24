@@ -494,6 +494,7 @@ public:
 	real_t get_factor() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventMagnifyGesture();
 };
@@ -511,6 +512,7 @@ public:
 	Vector2 get_delta() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventPanGesture();
 };
