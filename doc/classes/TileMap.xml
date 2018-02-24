@@ -19,6 +19,13 @@
 				Clear all cells.
 			</description>
 		</method>
+		<method name="fix_invalid_tiles">
+			<return type="void">
+			</return>
+			<description>
+				Clear cells that does not exist in the tileset.
+			</description>
+		</method>
 		<method name="get_cell" qualifiers="const">
 			<return type="int">
 			</return>

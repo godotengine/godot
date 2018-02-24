@@ -71,6 +71,7 @@ class TileMapEditor : public VBoxContainer {
 		OPTION_DUPLICATE,
 		OPTION_ERASE_SELECTION,
 		OPTION_PAINTING,
+		OPTION_FIX_INVALID,
 	};
 
 	TileMap *node;

@@ -308,6 +308,7 @@ public:
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
 
+	void fix_invalid_tiles();
 	void clear();
 
 	TileMap();

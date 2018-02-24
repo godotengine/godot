@@ -830,6 +830,16 @@ void TileMap::update_dirty_bitmask() {
 	}
 }
 
+void TileMap::fix_invalid_tiles() {
+
+	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
+
+		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
+			set_cell(E->key().x, E->key().y, INVALID_CELL);
+		}
+	}
+}
+
 int TileMap::get_cell(int p_x, int p_y) const {
 
 	PosKey pk(p_x, p_y);
@@ -1515,6 +1525,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
 
+	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMap::get_used_cells);
