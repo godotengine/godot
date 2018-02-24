@@ -70,7 +70,7 @@ void ExportTemplateManager::_update_template_list() {
 
 	memdelete(d);
 
-	String current_version = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + VERSION_STATUS + VERSION_MODULE_CONFIG;
+	String current_version = VERSION_FULL_CONFIG;
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);

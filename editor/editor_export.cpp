@@ -335,7 +335,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
-	String current_version = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + VERSION_STATUS + VERSION_MODULE_CONFIG;
+	String current_version = VERSION_FULL_CONFIG;
 	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(current_version).plus_file(template_file_name);
 
 	if (FileAccess::exists(template_path)) {

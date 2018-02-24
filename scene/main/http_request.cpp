@@ -121,7 +121,7 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 	}
 
 	if (!has_user_agent) {
-		headers.push_back("User-Agent: GodotEngine/" + String(VERSION_MKSTRING) + " (" + OS::get_singleton()->get_name() + ")");
+		headers.push_back("User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")");
 	}
 
 	if (!has_accept) {
