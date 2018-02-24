@@ -188,7 +188,9 @@ void Spatial::_notification(int p_what) {
 					if (data.gizmo.is_valid()) {
 						data.gizmo->create();
 						if (data.gizmo->can_draw()) {
-							data.gizmo->redraw();
+							if (is_visible_in_tree()) {
+								data.gizmo->redraw();
+							}
 						}
 						data.gizmo->transform();
 					}
@@ -409,7 +411,9 @@ void Spatial::set_gizmo(const Ref<SpatialGizmo> &p_gizmo) {
 
 		data.gizmo->create();
 		if (data.gizmo->can_draw()) {
-			data.gizmo->redraw();
+			if (is_visible_in_tree()) {
+				data.gizmo->redraw();
+			}
 		}
 		data.gizmo->transform();
 	}
