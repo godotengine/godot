@@ -962,6 +962,11 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	return ev;
 }
 
+String InputEventMagnifyGesture::as_text() const {
+
+	return "InputEventMagnifyGesture : factor=" + rtos(get_factor()) + ", position=(" + String(get_position()) + ")";
+}
+
 void InputEventMagnifyGesture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventMagnifyGesture::set_factor);
@@ -997,6 +1002,11 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 	ev->set_delta(get_delta());
 
 	return ev;
+}
+
+String InputEventPanGesture::as_text() const {
+
+	return "InputEventPanGesture : delta=(" + String(get_delta()) + "), position=(" + String(get_position()) + ")";
 }
 
 void InputEventPanGesture::_bind_methods() {
