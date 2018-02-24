@@ -118,6 +118,7 @@ public:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	virtual bool is_emulating_touchscreen() const = 0;
+	virtual bool is_emulating_mouse_from_touch() const = 0;
 
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) = 0;
 	virtual void set_mouse_in_window(bool p_in_window) = 0;

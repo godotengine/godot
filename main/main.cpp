@@ -1143,13 +1143,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
-	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
-			//only if no touchscreen ui hint, set emulation
-			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
-			if (id)
+	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+	if (id) {
+		if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false)) && !editor) {
+			if (!OS::get_singleton()->has_touchscreen_ui_hint()) {
+				//only if no touchscreen ui hint, set emulation
 				id->set_emulate_touch(true);
+			}
 		}
+
+		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("display/window/handheld/emulate_mouse_from_touch", true)));
 	}
 
 	MAIN_PRINT("Main: Load Remaps");
