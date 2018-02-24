@@ -253,6 +253,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
 	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
 	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+	float panel_brightness = EDITOR_DEF("interface/theme/panel_brightness", 1);
+	float font_brightness = EDITOR_DEF("interface/theme/font_brightness", 1);
 
 	int preset = EDITOR_DEF("interface/theme/preset", 0);
 	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
@@ -334,8 +336,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color contrast_color_1 = base_color.linear_interpolate(mono_color, MAX(contrast, default_contrast));
 	const Color contrast_color_2 = base_color.linear_interpolate(mono_color, MAX(contrast * 1.5, default_contrast * 1.5));
 
-	const Color font_color = mono_color.linear_interpolate(base_color, 0.25);
-	const Color font_color_hl = mono_color.linear_interpolate(base_color, 0.15);
+	const Color font_color = mono_color.linear_interpolate(base_color, 0.25 * font_brightness);
+	const Color font_color_hl = mono_color.linear_interpolate(base_color, 0.15 * font_brightness);
 	const Color font_color_disabled = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
 	const Color font_color_selection = Color::html("#7d7d7d");
 	const Color color_disabled = mono_color.inverted().linear_interpolate(base_color, 0.7);
@@ -344,6 +346,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color separator_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.1);
 
 	const Color highlight_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.2);
+
+	// Panel Colors
+	const Color panel_dark_color_1 = dark_color_1 * panel_brightness;
+	const Color panel_dark_color_2 = dark_color_2 * panel_brightness;
+	const Color panel_dark_color_3 = dark_color_3 * panel_brightness;
+	const Color panel_contrast_color_1 = contrast_color_1 * panel_brightness;
 
 	theme->set_color("accent_color", "Editor", accent_color);
 	theme->set_color("highlight_color", "Editor", highlight_color);
@@ -425,8 +433,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_widget->set_default_margin(MARGIN_TOP, (extra_spacing + default_margin_size) * EDSCALE);
 	style_widget->set_default_margin(MARGIN_RIGHT, (extra_spacing + 6) * EDSCALE);
 	style_widget->set_default_margin(MARGIN_BOTTOM, (extra_spacing + default_margin_size) * EDSCALE);
-	style_widget->set_bg_color(dark_color_1);
-	style_widget->set_border_color_all(dark_color_2);
+	style_widget->set_bg_color(panel_dark_color_1);
+	style_widget->set_border_color_all(panel_dark_color_2);
 
 	Ref<StyleBoxFlat> style_widget_disabled = style_widget->duplicate();
 	style_widget_disabled->set_border_color_all(color_disabled);
@@ -636,8 +644,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
-	style_tree_bg->set_bg_color(dark_color_1);
-	style_tree_bg->set_border_color_all(dark_color_3);
+	style_tree_bg->set_bg_color(panel_dark_color_1);
+	style_tree_bg->set_border_color_all(panel_dark_color_3);
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
 
 	const Color guide_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.05);
@@ -669,7 +677,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("scroll_speed", "Tree", 12);
 
 	Ref<StyleBoxFlat> style_tree_btn = style_default->duplicate();
-	style_tree_btn->set_bg_color(contrast_color_1);
+	style_tree_btn->set_bg_color(panel_contrast_color_1);
 	style_tree_btn->set_border_width_all(0);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
 
@@ -705,9 +713,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
-	style_itemlist_bg->set_bg_color(dark_color_1);
+	style_itemlist_bg->set_bg_color(panel_dark_color_1);
 	style_itemlist_bg->set_border_width_all(border_width);
-	style_itemlist_bg->set_border_color_all(dark_color_3);
+	style_itemlist_bg->set_border_color_all(panel_dark_color_3);
 
 	Ref<StyleBoxFlat> style_itemlist_cursor = style_default->duplicate();
 	style_itemlist_cursor->set_draw_center(false);
@@ -799,6 +807,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "LineEdit", font_color_selection);
 
 	// TextEdit
+	Ref<StyleBoxFlat> style_textedit_widget = style_widget->duplicate();
+	style_textedit_widget->set_bg_color(panel_dark_color_1);
 	theme->set_stylebox("normal", "TextEdit", style_widget);
 	theme->set_stylebox("focus", "TextEdit", style_widget_hover);
 	theme->set_stylebox("read_only", "TextEdit", style_widget_disabled);
@@ -845,7 +855,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// complex window, for now only Editor settings and Project settings
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
-	style_complex_window->set_bg_color(dark_color_2);
+	style_complex_window->set_bg_color(panel_dark_color_2);
 	style_complex_window->set_border_color_all(highlight_tabs ? tab_color : dark_color_2);
 	theme->set_stylebox("panel", "EditorSettingsDialog", style_complex_window);
 	theme->set_stylebox("panel", "ProjectSettingsEditor", style_complex_window);
@@ -897,7 +907,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("headline_color", "EditorHelp", mono_color);
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
+	theme->set_stylebox("panel", "Panel", make_flat_stylebox(panel_dark_color_1, 6, 4, 6, 4));
 
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);

@@ -315,6 +315,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/theme/contrast", 0.25);
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "0.01, 1, 0.01");
+	_initial_set("interface/theme/panel_brightness", 1);
+	hints["interface/theme/panel_brightness"] = PropertyInfo(Variant::REAL, "interface/theme/panel_brightness", PROPERTY_HINT_RANGE, "0.5, 1.5, 0.01");
+	_initial_set("interface/theme/font_brightness", 1);
+	hints["interface/theme/font_brightness"] = PropertyInfo(Variant::REAL, "interface/theme/font_brightness", PROPERTY_HINT_RANGE, "0.5, 1.5, 0.01");
 	_initial_set("interface/theme/highlight_tabs", false);
 	_initial_set("interface/theme/border_size", 1);
 	_initial_set("interface/theme/use_graph_node_headers", false);
