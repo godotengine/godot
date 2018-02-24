@@ -190,7 +190,7 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	queue_event(ev);
 };
 
-void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick, bool p_use_as_mouse) {
+void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
 
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
@@ -202,28 +202,10 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 		queue_event(ev);
 	};
 
-	mouse_list.pressed[p_idx] = p_pressed;
-
-	if (p_use_as_mouse) {
-
-		Ref<InputEventMouseButton> ev;
-		ev.instance();
-
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_global_position(Vector2(p_x, p_y));
-
-		//mouse_list.pressed[p_idx] = p_pressed;
-
-		input->set_mouse_position(ev->get_position());
-		ev->set_button_index(BUTTON_LEFT);
-		ev->set_doubleclick(p_doubleclick);
-		ev->set_pressed(p_pressed);
-
-		queue_event(ev);
-	};
+	touch_list.pressed[p_idx] = p_pressed;
 };
 
-void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, bool p_use_as_mouse) {
+void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 
@@ -232,21 +214,6 @@ void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 		ev->set_index(p_idx);
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
-		queue_event(ev);
-	};
-
-	if (p_use_as_mouse) {
-		Ref<InputEventMouseMotion> ev;
-		ev.instance();
-
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_global_position(Vector2(p_x, p_y));
-		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
-
-		input->set_mouse_position(ev->get_position());
-		ev->set_speed(input->get_last_mouse_speed());
-		ev->set_button_mask(BUTTON_LEFT); // pressed
-
 		queue_event(ev);
 	};
 };
@@ -262,10 +229,10 @@ void OSIPhone::touches_cancelled() {
 
 	for (int i = 0; i < MAX_MOUSE_COUNT; i++) {
 
-		if (mouse_list.pressed[i]) {
+		if (touch_list.pressed[i]) {
 
 			// send a mouse_up outside the screen
-			mouse_button(i, -1, -1, false, false, false);
+			touch_press(i, -1, -1, false, false);
 		};
 	};
 };
@@ -376,7 +343,7 @@ Point2 OSIPhone::get_mouse_position() const {
 
 int OSIPhone::get_mouse_button_state() const {
 
-	return mouse_list.pressed[0];
+	return 0;
 };
 
 void OSIPhone::set_window_title(const String &p_title){};
