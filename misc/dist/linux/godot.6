@@ -1,4 +1,4 @@
-.TH GODOT "6" "January 2018" "godot 3.0" "Games"
+.TH GODOT "6" "February 2018" "godot 3.1" "Games"
 .SH NAME
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
@@ -30,6 +30,9 @@ Start the editor instead of running the scene.
 .TP
 \fB\-p\fR, \fB\-\-project\-manager\fR
 Start the project manager, even if a project is auto\-detected.
+.TP
+\fB\-q\fR, \fB\-\-quit\fR
+Quit after the first iteration.
 .TP
 \fB\-l\fR, \fB\-\-language\fR <locale>
 Use a specific locale (<locale> being a two\-letter code).
@@ -67,6 +70,9 @@ Request a maximized window.
 .TP
 \fB\-w\fR, \fB\-\-windowed\fR
 Request windowed mode.
+.TP
+\fB\-t\fR, \fB\-\-always\-on\-top\fR
+Request an always\-on\-top window.
 .TP
 \fB\-\-resolution\fR <W>x<H>
 Request window resolution.
@@ -129,6 +135,9 @@ Dump the engine API reference to the given <path> in XML format, merging if exis
 .TP
 \fB\-\-no\-docbase\fR
 Disallow dumping the base types (used with \fB\-\-doctool\fR).
+.TP
+\fB\-\-build\-solutions\fR
+Build the scripting solutions (e.g. for C# projects).
 .TP
 \fB\-\-gdnative\-generate\-json\-api\fR
 Generate JSON dump of the Godot API for GDNative bindings.
