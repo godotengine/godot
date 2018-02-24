@@ -269,7 +269,10 @@ public:
 		PoolVector<uint8_t> p;
 		return p;
 	}
-	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {}
+	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+		PoolVector<uint8_t> p;
+		return p;
+	}
 
 	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const { return 0; }
 	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const { return VS::PRIMITIVE_POINTS; }
@@ -301,9 +304,9 @@ public:
 
 	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const {}
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {}
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const {}
+	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
+	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
+	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
@@ -370,7 +373,7 @@ public:
 	VS::LightType light_get_type(RID p_light) const { return VS::LIGHT_OMNI; }
 	AABB light_get_aabb(RID p_light) const { return AABB(); }
 	float light_get_param(RID p_light, VS::LightParam p_param) { return 0.0; }
-	Color light_get_color(RID p_light) {}
+	Color light_get_color(RID p_light) { return Color(); }
 	uint64_t light_get_version(RID p_light) const { return 0; }
 
 	/* PROBE API */
@@ -391,7 +394,7 @@ public:
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const { return AABB(); }
-	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const {}
+	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const { return VisualServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const { return 0; }
 	Vector3 reflection_probe_get_extents(RID p_probe) const { return Vector3(); }
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const { return Vector3(); }
@@ -581,7 +584,7 @@ public:
 	RID canvas_light_occluder_create() { return RID(); }
 	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
 
-	VS::InstanceType get_base_type(RID p_rid) const {}
+	VS::InstanceType get_base_type(RID p_rid) const { return VS::INSTANCE_NONE; }
 	bool free(RID p_rid) {
 
 		if (texture_owner.owns(p_rid)) {
@@ -590,9 +593,10 @@ public:
 			texture_owner.free(p_rid);
 			memdelete(texture);
 		}
+		return true;
 	}
 
-	bool has_os_feature(const String &p_feature) const {}
+	bool has_os_feature(const String &p_feature) const { return false; }
 
 	void update_dirty_resources() {}
 
@@ -600,9 +604,9 @@ public:
 
 	void render_info_begin_capture() {}
 	void render_info_end_capture() {}
-	int get_captured_render_info(VS::RenderInfo p_info) {}
+	int get_captured_render_info(VS::RenderInfo p_info) { return 0; }
 
-	int get_render_info(VS::RenderInfo p_info) {}
+	int get_render_info(VS::RenderInfo p_info) { return 0; }
 
 	static RasterizerStorage *base_singleton;
 
@@ -619,7 +623,7 @@ public:
 	void canvas_begin(){};
 	void canvas_end(){};
 
-	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light,const Transform2D& p_transform){};
+	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_transform){};
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
 
 	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {}
