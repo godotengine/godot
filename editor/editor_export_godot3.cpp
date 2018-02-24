@@ -37,6 +37,11 @@
 
 static const char *globals_renames[][2] = {
 	/* [application] */
+	{ "application/name", "application/config/name" },
+	{ "application/auto_accept_quit", "application/config/auto_accept_quit" },
+	{ "application/boot_splash", "application/boot_splash/image" },
+	{ "application/boot_splash_fullsize", "application/boot_splash/fullsize" },
+	{ "application/icon", "application/config/icon" },
 	{ "application/main_scene", "application/run/main_scene" },
 	{ "application/main_loop_type", "application/run/main_loop_type" },
 	{ "application/disable_stdout", "application/run/disable_stdout" },
@@ -44,46 +49,46 @@ static const char *globals_renames[][2] = {
 	{ "application/frame_delay_msec", "application/run/frame_delay_msec" },
 
 	/* [debug] */
-	{ "debug/profiler_max_functions", "debug/profiler/max_functions" },
-	{ "debug/max_remote_stdout_chars_per_second", "network/debug/max_remote_stdout_chars_per_second" },
-	{ "debug/force_fps", "debug/fps/force_fps" },
-	{ "debug/verbose_stdout", "debug/stdout/verbose_stdout" },
+	{ "debug/profiler_max_functions", "debug/settings/profiler/max_functions" },
+	{ "debug/max_remote_stdout_chars_per_second", "network/limits/debugger_stdout/max_chars_per_second" },
+	{ "debug/force_fps", "debug/settings/fps/force_fps" },
+	{ "debug/verbose_stdout", "debug/settings/stdout/verbose_stdout" },
 	//{ "debug/max_texture_size", "debug/" },
 	//{ "debug/max_texture_size_alert", "debug/" },
 	//{ "debug/image_load_times", "debug/" },
-	{ "debug/script_max_call_stack", "debug/script/max_call_stack" },
-	{ "debug/collision_shape_color", "debug/collision/shape_color" },
-	{ "debug/collision_contact_color", "debug/collision/contact_color" },
-	{ "debug/navigation_geometry_color", "debug/navigation/geometry_color" },
-	{ "debug/navigation_disabled_geometry_color", "debug/navigation/disabled_geometry_color" },
-	{ "debug/collision_max_contacts_displayed", "debug/collision/max_contacts_displayed" },
+	{ "debug/script_max_call_stack", "debug/settings/gdscript/max_call_stack" },
+	{ "debug/collision_shape_color", "debug/shapes/collision/shape_color" },
+	{ "debug/collision_contact_color", "debug/shapes/collision/contact_color" },
+	{ "debug/navigation_geometry_color", "debug/shapes/navigation/geometry_color" },
+	{ "debug/navigation_disabled_geometry_color", "debug/shapes/navigation/disabled_geometry_color" },
+	{ "debug/collision_max_contacts_displayed", "debug/shapes/collision/max_contacts_displayed" },
 	//{ "debug/indicators_enabled", "debug/" },
-	{ "debug/print_fps", "debug/stdout/print_fps" },
+	{ "debug/print_fps", "debug/settings/stdout/print_fps" },
 	//{ "debug/print_metrics", "debug/" },
 
 	/* [display] */
 	{ "display/driver", "display/driver/name" },
-	{ "display/width", "display/window/width" },
-	{ "display/height", "display/window/height" },
-	{ "display/allow_hidpi", "display/window/allow_hidpi" },
-	{ "display/fullscreen", "display/window/fullscreen" },
-	{ "display/resizable", "display/window/resizable" },
-	{ "display/borderless_window", "display/window/borderless" },
-	{ "display/use_vsync", "display/window/use_vsync" },
-	{ "display/test_width", "display/window/test_width" },
-	{ "display/test_height", "display/window/test_height" },
-	{ "display/use_2d_pixel_snap", "rendering/2d/use_pixel_snap" },
-	{ "display/keep_screen_on", "display/energy_saving/keep_screen_on" },
-	{ "display/orientation", "display/handheld/orientation" },
-	{ "display/emulate_touchscreen", "display/handheld/emulate_touchscreen" },
+	{ "display/width", "display/window/size/width" },
+	{ "display/height", "display/window/size/height" },
+	{ "display/allow_hidpi", "display/window/dpi/allow_hidpi" },
+	{ "display/fullscreen", "display/window/size/fullscreen" },
+	{ "display/resizable", "display/window/size/resizable" },
+	{ "display/borderless_window", "display/window/size/borderless" },
+	{ "display/use_vsync", "display/window/vsync/use_vsync" },
+	{ "display/test_width", "display/window/size/test_width" },
+	{ "display/test_height", "display/window/size/test_height" },
+	{ "display/use_2d_pixel_snap", "rendering/quality/2d/use_pixel_snap" },
+	{ "display/keep_screen_on", "display/window/energy_saving/keep_screen_on" },
+	{ "display/orientation", "display/window/handheld/orientation" },
+	{ "display/emulate_touchscreen", "display/window/handheld/emulate_touchscreen" },
 	{ "display/use_hidpi_theme", "gui/theme/use_hidpi" },
 	{ "display/custom_theme", "gui/theme/custom" },
 	{ "display/custom_theme_font", "gui/theme/custom_font" },
 	{ "display/swap_ok_cancel", "gui/common/swap_ok_cancel" },
 	{ "display/tooltip_delay", "gui/timers/tooltip_delay_sec" },
 	{ "display/text_edit_idle_detect_sec", "gui/timers/text_edit_idle_detect_sec" },
-	{ "display/stretch_mode", "display/stretch/mode" },
-	{ "display/stretch_aspect", "display/stretch/aspect" },
+	{ "display/stretch_mode", "display/window/stretch/mode" },
+	{ "display/stretch_aspect", "display/window/stretch/aspect" },
 
 	/* [render] */
 	{ "render/thread_model", "rendering/threads/thread_model" },
@@ -91,7 +96,7 @@ static const char *globals_renames[][2] = {
 	//{ "render/thread_textures_prealloc", "" },
 	//{ "render/shadows_enabled", "" },
 	//{ "render/aabb_random_points", "" },
-	{ "render/default_clear_color", "rendering/viewport/default_clear_color" },
+	{ "render/default_clear_color", "rendering/environment/default_clear_color" },
 	//{ "render/room_cull_enabled", "" },
 	//{ "render/light_discard_enabled", "" },
 
@@ -107,7 +112,7 @@ static const char *globals_renames[][2] = {
 	//{ "audio/mixer_latency", "" },
 
 	/* [physics] */
-	{ "physics/fixed_fps", "physics/common/fixed_fps" },
+	{ "physics/fixed_fps", "physics/common/physics_fps" },
 	{ "physics/remove_collision_helpers_at_runtime", "physics/" },
 	{ "physics/sleep_threshold_linear", "physics/3d/sleep_threshold_linear" },
 	{ "physics/sleep_threshold_angular", "physics/3d/sleep_threshold_angular" },
@@ -122,7 +127,7 @@ static const char *globals_renames[][2] = {
 	//{ "core/message_queue_size_kb", "" },
 	//{ "core/rid_pool_prealloc", "" },
 	//{ "core/thread_rid_pool_prealloc", "" },
-	{ "core/packet_stream_peer_max_buffer_po2", "network/packets/packet_stream_peer_max_buffer_po2" },
+	{ "core/packet_stream_peer_max_buffer_po2", "network/limits/packet_peer_stream/max_buffer_po2" },
 
 	/* [rasterizer.Android] */
 	//{ "rasterizer.Android/use_fragment_lighting", "" },
@@ -141,7 +146,7 @@ static const char *globals_renames[][2] = {
 
 	/* [rasterizer] */
 	// most don't have an equivalent or are not meaningful to port
-	{ "rasterizer/anisotropic_filter_level", "rendering/quality/anisotropic_filter_level" },
+	{ "rasterizer/anisotropic_filter_level", "rendering/quality/filter/anisotropic_filter_level" },
 
 	/* [physics_2d] */
 	{ "physics_2d/thread_model", "physics/2d/thread_model" },
@@ -153,7 +158,7 @@ static const char *globals_renames[][2] = {
 	{ "physics_2d/cell_size", "physics/2d/cell_size" },
 	{ "physics_2d/large_object_surface_treshold_in_cells", "physics/2d/large_object_surface_threshold_in_cells" },
 	{ "physics_2d/default_gravity", "physics/2d/default_gravity" },
-	{ "physics_2d/default_gravity_vector", "physics/2d/default_gravity" },
+	{ "physics_2d/default_gravity_vector", "physics/2d/default_gravity_vector" },
 	{ "physics_2d/default_linear_damp", "physics/2d/default_linear_damp" },
 	{ "physics_2d/default_angular_damp", "physics/2d/default_angular_damp" },
 
