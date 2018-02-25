@@ -40,6 +40,8 @@ class Polygon2D : public Node2D {
 	PoolVector<Vector2> polygon;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
+	PoolVector<int> splits;
+
 	Color color;
 	Ref<Texture> texture;
 	Size2 tex_scale;
@@ -74,6 +76,9 @@ public:
 
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
+
+	void set_splits(const PoolVector<int> &p_uv);
+	PoolVector<int> get_splits() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;

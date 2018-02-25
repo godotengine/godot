@@ -55,17 +55,19 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_MOVE,
 		UV_MODE_ROTATE,
 		UV_MODE_SCALE,
+		UV_MODE_ADD_SPLIT,
+		UV_MODE_REMOVE_SPLIT,
 		UV_MODE_MAX
 	};
 
-	ToolButton *uv_edit_mode[2];
+	ToolButton *uv_edit_mode[3];
 	Ref<ButtonGroup> uv_edit_group;
 
 	Polygon2D *node;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
-	ToolButton *uv_button[5];
+	ToolButton *uv_button[UV_MODE_MAX];
 	ToolButton *b_snap_enable;
 	ToolButton *b_snap_grid;
 	Control *uv_edit_draw;
@@ -81,10 +83,13 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	PoolVector<Vector2> uv_prev;
 	PoolVector<Vector2> uv_create_uv_prev;
 	PoolVector<Vector2> uv_create_poly_prev;
+	PoolVector<int> splits_prev;
+
 	Vector2 uv_create_to;
 	int uv_drag_index;
 	bool uv_drag;
 	bool uv_create;
+	bool split_create;
 	UVMode uv_move_current;
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
