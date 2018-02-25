@@ -256,7 +256,7 @@ void TileSetEditor::_bind_methods() {
 }
 
 void TileSetEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		tools[TOOL_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
 		tools[BITMASK_COPY]->set_icon(get_icon("Duplicate", "EditorIcons"));
 		tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));

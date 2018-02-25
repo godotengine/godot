@@ -550,6 +550,10 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_tree()->disconnect("node_configuration_warning_changed", this, "_warning_changed");
 		EditorSettings::get_singleton()->disconnect("settings_changed", this, "_editor_settings_changed");
 	}
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+
+		_update_tree();
+	}
 }
 
 TreeItem *SceneTreeEditor::_find(TreeItem *p_node, const NodePath &p_path) {

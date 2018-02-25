@@ -110,6 +110,14 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+
+			search_button->set_icon(get_icon("Search", "EditorIcons"));
+			clear_button->set_icon(get_icon("Close", "EditorIcons"));
+			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), get_icon("Keyboard", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_BUTTON), get_icon("JoyButton", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), get_icon("JoyAxis", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), get_icon("Mouse", "EditorIcons"));
 			_update_actions();
 		} break;
 	}

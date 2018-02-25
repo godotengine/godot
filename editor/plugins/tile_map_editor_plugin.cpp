@@ -48,6 +48,20 @@ void TileMapEditor::_notification(int p_what) {
 
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+
+			bool new_show_tile_info = EditorSettings::get_singleton()->get("editors/tile_map/show_tile_info_on_hover");
+			if (new_show_tile_info != show_tile_info) {
+				show_tile_info = new_show_tile_info;
+				tile_info->set_visible(show_tile_info);
+			}
+
+			if (is_visible_in_tree()) {
+				_update_palette();
+			}
+
+		} // fallthrough
+
 		case NOTIFICATION_ENTER_TREE: {
 
 			transp->set_icon(get_icon("Transpose", "EditorIcons"));
@@ -67,19 +81,6 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_DUPLICATE), get_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
 
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-			bool new_show_tile_info = EditorSettings::get_singleton()->get("editors/tile_map/show_tile_info_on_hover");
-			if (new_show_tile_info != show_tile_info) {
-				show_tile_info = new_show_tile_info;
-				tile_info->set_visible(show_tile_info);
-			}
-
-			if (is_visible_in_tree()) {
-				_update_palette();
-			}
 		} break;
 	}
 }

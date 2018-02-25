@@ -600,6 +600,7 @@ void TextureRegionEditor::apply_rect(const Rect2 &rect) {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_READY: {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));

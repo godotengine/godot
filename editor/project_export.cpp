@@ -56,6 +56,12 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
 		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
+			Control *panel = custom_feature_display->get_parent_control();
+			if (panel)
+				panel->add_style_override("panel", get_stylebox("bg", "Tree"));
+		} break;
 	}
 }
 
