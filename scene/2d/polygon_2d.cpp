@@ -275,8 +275,7 @@ void Polygon2D::_notification(int p_what) {
 			//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
 
 			if (invert || splits.size() == 0) {
-				Vector<int> indices = Geometry::triangulate_polygon(points);
-				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+				VS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
 			} else {
 				//use splits
 				Vector<int> loop;
@@ -335,19 +334,19 @@ void Polygon2D::_notification(int p_what) {
 					Vector<Vector2> vertices;
 					vertices.resize(loop.size());
 					for (int j = 0; j < vertices.size(); j++) {
-						vertices.write[j] = points[loop[j]];
+						vertices[j] = points[loop[j]];
 					}
 					Vector<int> sub_indices = Geometry::triangulate_polygon(vertices);
 					int from = indices.size();
 					indices.resize(from + sub_indices.size());
 					for (int j = 0; j < sub_indices.size(); j++) {
-						indices.write[from + j] = loop[sub_indices[j]];
+						indices[from + j] = loop[sub_indices[j]];
 					}
 				}
 
 				//print_line("loops: " + itos(loops.size()) + " indices: " + itos(indices.size()));
 
-				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
 			}
 
 		} break;

@@ -42,13 +42,6 @@ class Polygon2D : public Node2D {
 	PoolVector<Color> vertex_colors;
 	PoolVector<int> splits;
 
-	struct Bone {
-		NodePath path;
-		PoolVector<float> weights;
-	};
-
-	Vector<Bone> bone_weights;
-
 	Color color;
 	Ref<Texture> texture;
 	Size2 tex_scale;
