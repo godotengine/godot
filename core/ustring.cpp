@@ -1135,6 +1135,36 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	return s;
 }
 
+String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
+
+	uint64_t n = p_num;
+
+	int chars = 0;
+	do {
+		n /= base;
+		chars++;
+	} while (n);
+
+	String s;
+	s.resize(chars + 1);
+	CharType *c = s.ptrw();
+	c[chars] = 0;
+	n = p_num;
+	do {
+		int mod = ABS(n % base);
+		if (mod >= 10) {
+			char a = (capitalize_hex ? 'A' : 'a');
+			c[--chars] = a + (mod - 10);
+		} else {
+			c[--chars] = '0' + mod;
+		}
+
+		n /= base;
+	} while (n);
+
+	return s;
+}
+
 String String::num_real(double p_num) {
 
 	String s;

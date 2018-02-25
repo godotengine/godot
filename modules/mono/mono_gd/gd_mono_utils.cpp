@@ -143,7 +143,7 @@ void MonoCache::cleanup() {
 	godot_api_cache_updated = false;
 }
 
-#define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
+#define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
 
 void update_corlib_cache() {
 
@@ -245,7 +245,7 @@ void update_godot_api_cache() {
 	mono_runtime_object_init(task_scheduler);
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
 
-	mono_cache.corlib_cache_updated = true;
+	mono_cache.godot_api_cache_updated = true;
 }
 
 void clear_cache() {
@@ -305,7 +305,7 @@ GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 	if (class_name[0] == '_')
 		class_name = class_name.substr(1, class_name.length());
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);
+	GDMonoClass *klass = GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);
 
 #ifdef TOOLS_ENABLED
 	if (!klass) {
@@ -321,7 +321,7 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 
 	do {
 		const GDMonoAssembly *assembly = klass->get_assembly();
-		if (assembly == GDMono::get_singleton()->get_api_assembly())
+		if (assembly == GDMono::get_singleton()->get_core_api_assembly())
 			return klass;
 #ifdef TOOLS_ENABLED
 		if (assembly == GDMono::get_singleton()->get_editor_api_assembly())
