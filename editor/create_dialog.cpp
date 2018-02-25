@@ -488,17 +488,6 @@ Object *CreateDialog::instance_selected() {
 			custom = md;
 
 		if (custom != String()) {
-
-			if (ScriptServer::is_global_class(custom)) {
-				RES script = ResourceLoader::load(ScriptServer::get_global_class_path(custom));
-				ERR_FAIL_COND_V(!script.is_valid(), NULL);
-
-				Object *obj = ClassDB::instance(ScriptServer::get_global_class_base(custom));
-				ERR_FAIL_COND_V(!obj, NULL);
-
-				obj->set_script(script.get_ref_ptr());
-				return obj;
-			}
 			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
 		} else {
 			return ClassDB::instance(selected->get_text(0));

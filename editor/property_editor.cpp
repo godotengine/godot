@@ -883,12 +883,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			} else if (hint_text != "") {
 				int idx = 0;
 
-				Vector<EditorData::CustomType> custom_resources;
-
-				if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-					custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-				}
-
+				const Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 
 					String base = hint_text.get_slice(",", i);
