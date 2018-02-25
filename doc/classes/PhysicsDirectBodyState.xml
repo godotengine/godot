@@ -9,12 +9,28 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_force">
 			<return type="void">
 			</return>
 			<argument index="0" name="force" type="Vector3">
 			</argument>
 			<argument index="1" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="torque" type="Vector3">
 			</argument>
 			<description>
 			</description>

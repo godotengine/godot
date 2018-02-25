@@ -175,7 +175,9 @@
 			</argument>
 			<argument index="1" name="mesh" type="RID">
 			</argument>
-			<argument index="2" name="skeleton" type="RID">
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<argument index="3" name="normal_map" type="RID">
 			</argument>
 			<description>
 				Adds a [Mesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
@@ -188,7 +190,9 @@
 			</argument>
 			<argument index="1" name="mesh" type="RID">
 			</argument>
-			<argument index="2" name="skeleton" type="RID">
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<argument index="3" name="normal_map" type="RID">
 			</argument>
 			<description>
 				Adds a [MultiMesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
