@@ -50,6 +50,7 @@ public:
 	Line2D::LineTextureMode texture_mode;
 	float sharp_limit;
 	int round_precision;
+	float tile_aspect; // w/h
 	// TODO offset_joints option (offers alternative implementation of round joints)
 
 	// TODO Move in a struct and reference it
