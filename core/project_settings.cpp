@@ -816,12 +816,11 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	Variant ret;
-	if (ProjectSettings::get_singleton()->has_setting(p_var)) {
-		ret = ProjectSettings::get_singleton()->get(p_var);
-	} else {
+	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
-		ret = p_default;
 	}
+	ret = ProjectSettings::get_singleton()->get(p_var);
+
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
 	return ret;
