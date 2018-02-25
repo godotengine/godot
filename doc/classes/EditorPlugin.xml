@@ -12,6 +12,17 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="add_autoload_singleton">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="path" type="String">
+			</argument>
+			<description>
+				Add a script at [code]path[/code] to the Autoload list as [code]name[/code].
+			</description>
+		</method>
 		<method name="add_control_to_bottom_panel">
 			<return type="ToolButton">
 			</return>
@@ -263,6 +274,15 @@
 			</return>
 			<description>
 				Queue save the project's editor layout.
+			</description>
+		</method>
+		<method name="remove_autoload_singleton">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Remove an Autoload [code]name[/code] from the list.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">

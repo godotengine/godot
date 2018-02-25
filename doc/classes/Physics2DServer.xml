@@ -713,9 +713,11 @@
 			</argument>
 			<argument index="2" name="motion" type="Vector2">
 			</argument>
-			<argument index="3" name="margin" type="float" default="0.08">
+			<argument index="3" name="infinite_inertia" type="bool">
 			</argument>
-			<argument index="4" name="result" type="Physics2DTestMotionResult" default="null">
+			<argument index="4" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="5" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
 			<description>
 				Returns whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.

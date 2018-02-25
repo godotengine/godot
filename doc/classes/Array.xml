@@ -265,6 +265,11 @@
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
+		<method name="shuffle">
+			<description>
+				Shuffle the array such that the items will have a random order.
+			</description>
+		</method>
 		<method name="size">
 			<return type="int">
 			</return>
@@ -294,11 +299,6 @@
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort")
 				[/codeblock]
-			</description>
-		</method>
-		<method name="shuffle">
-			<description>
-				Shuffle the array such that the items will have a random order.
 			</description>
 		</method>
 	</methods>
