@@ -192,7 +192,80 @@ void Polygon2D::_notification(int p_what) {
 			//			Vector<int> indices = Geometry::triangulate_polygon(points);
 			//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
 
-			VS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
+			if (invert || splits.size() == 0) {
+				VS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
+			} else {
+				//use splits
+				Vector<int> loop;
+				int sc = splits.size();
+				PoolVector<int>::Read r = splits.read();
+				int last = points.size();
+
+				Vector<Vector<int> > loops;
+
+				for (int i = 0; i < last; i++) {
+
+					int split;
+					int min_end = -1;
+
+					do {
+
+						loop.push_back(i);
+
+						split = -1;
+						int end = -1;
+
+						for (int j = 0; j < sc; j += 2) {
+							if (r[j + 1] >= last)
+								continue; //no longer valid
+							if (min_end != -1 && r[j + 1] >= min_end)
+								continue;
+							if (r[j] == i) {
+								if (split == -1 || r[j + 1] > end) {
+									split = r[j];
+									end = r[j + 1];
+								}
+							}
+						}
+
+						if (split != -1) {
+							for (int j = end; j < last; j++) {
+								loop.push_back(j);
+							}
+							loops.push_back(loop);
+							last = end + 1;
+							loop.clear();
+							min_end = end; //avoid this split from repeating
+						}
+
+					} while (split != -1);
+				}
+
+				if (loop.size()) {
+					loops.push_back(loop);
+				}
+
+				Vector<int> indices;
+
+				for (int i = 0; i < loops.size(); i++) {
+					Vector<int> loop = loops[i];
+					Vector<Vector2> vertices;
+					vertices.resize(loop.size());
+					for (int j = 0; j < vertices.size(); j++) {
+						vertices[j] = points[loop[j]];
+					}
+					Vector<int> sub_indices = Geometry::triangulate_polygon(vertices);
+					int from = indices.size();
+					indices.resize(from + sub_indices.size());
+					for (int j = 0; j < sub_indices.size(); j++) {
+						indices[from + j] = loop[sub_indices[j]];
+					}
+				}
+
+				//print_line("loops: " + itos(loops.size()) + " indices: " + itos(indices.size()));
+
+				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
+			}
 
 		} break;
 	}
@@ -218,6 +291,18 @@ void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
 PoolVector<Vector2> Polygon2D::get_uv() const {
 
 	return uv;
+}
+
+void Polygon2D::set_splits(const PoolVector<int> &p_splits) {
+
+	ERR_FAIL_COND(p_splits.size() & 1); //splits should be multiple of 2
+	splits = p_splits;
+	update();
+}
+
+PoolVector<int> Polygon2D::get_splits() const {
+
+	return splits;
 }
 
 void Polygon2D::set_color(const Color &p_color) {
@@ -352,6 +437,9 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Polygon2D::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Polygon2D::get_color);
 
+	ClassDB::bind_method(D_METHOD("set_splits", "splits"), &Polygon2D::set_splits);
+	ClassDB::bind_method(D_METHOD("get_splits"), &Polygon2D::get_splits);
+
 	ClassDB::bind_method(D_METHOD("set_vertex_colors", "vertex_colors"), &Polygon2D::set_vertex_colors);
 	ClassDB::bind_method(D_METHOD("get_vertex_colors"), &Polygon2D::get_vertex_colors);
 
@@ -384,6 +472,7 @@ void Polygon2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "splits"), "set_splits", "get_splits");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");

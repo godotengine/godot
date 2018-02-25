@@ -64,6 +64,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_button[UV_MODE_MOVE]->set_icon(get_icon("ToolMove", "EditorIcons"));
 			uv_button[UV_MODE_ROTATE]->set_icon(get_icon("ToolRotate", "EditorIcons"));
 			uv_button[UV_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
+			uv_button[UV_MODE_ADD_SPLIT]->set_icon(get_icon("AddSplit", "EditorIcons"));
+			uv_button[UV_MODE_REMOVE_SPLIT]->set_icon(get_icon("DeleteSplit", "EditorIcons"));
 
 			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
 			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
@@ -79,12 +81,28 @@ void Polygon2DEditor::_notification(int p_what) {
 void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 
 	if (p_mode == 0) {
-		if (uv_button[UV_MODE_CREATE]->is_pressed()) {
-			_uv_mode(1);
-		}
 		uv_button[UV_MODE_CREATE]->hide();
+		for (int i = UV_MODE_MOVE; i <= UV_MODE_SCALE; i++) {
+			uv_button[i]->show();
+		}
+		uv_button[UV_MODE_ADD_SPLIT]->hide();
+		uv_button[UV_MODE_REMOVE_SPLIT]->hide();
+		_uv_mode(UV_MODE_EDIT_POINT);
+
+	} else if (p_mode == 1) {
+		for (int i = 0; i <= UV_MODE_SCALE; i++) {
+			uv_button[i]->show();
+		}
+		uv_button[UV_MODE_ADD_SPLIT]->hide();
+		uv_button[UV_MODE_REMOVE_SPLIT]->hide();
+		_uv_mode(UV_MODE_EDIT_POINT);
 	} else {
-		uv_button[UV_MODE_CREATE]->show();
+		for (int i = 0; i <= UV_MODE_SCALE; i++) {
+			uv_button[i]->hide();
+		}
+		uv_button[UV_MODE_ADD_SPLIT]->show();
+		uv_button[UV_MODE_REMOVE_SPLIT]->show();
+		_uv_mode(UV_MODE_ADD_SPLIT);
 	}
 
 	uv_edit_draw->update();
@@ -195,6 +213,10 @@ void Polygon2DEditor::_set_snap_step_y(float p_val) {
 
 void Polygon2DEditor::_uv_mode(int p_mode) {
 
+	split_create = false;
+	uv_drag = false;
+	uv_create = false;
+
 	uv_mode = UVMode(p_mode);
 	for (int i = 0; i < UV_MODE_MAX; i++) {
 		uv_button[i]->set_pressed(p_mode == i);
@@ -219,10 +241,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				uv_drag = true;
 				uv_prev = node->get_uv();
 
-				if (uv_edit_mode[0]->is_pressed()) //edit uv
+				if (uv_edit_mode[0]->is_pressed()) { //edit uv
 					uv_prev = node->get_uv();
-				else
+				} else { //edit polygon
 					uv_prev = node->get_polygon();
+				}
 
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_CREATE) {
@@ -238,6 +261,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_create = true;
 						uv_create_uv_prev = node->get_uv();
 						uv_create_poly_prev = node->get_polygon();
+						splits_prev = node->get_splits();
 						node->set_polygon(uv_prev);
 						node->set_uv(uv_prev);
 
@@ -292,6 +316,109 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_drag = false;
 					}
 				}
+
+				if (uv_move_current == UV_MODE_ADD_SPLIT) {
+
+					int drag_index = -1;
+					drag_index = -1;
+					for (int i = 0; i < uv_prev.size(); i++) {
+
+						Vector2 tuv = mtx.xform(uv_prev[i]);
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+							drag_index = i;
+						}
+					}
+
+					if (drag_index == -1) {
+						split_create = false;
+						return;
+					}
+
+					if (split_create) {
+
+						split_create = false;
+						if (drag_index < uv_drag_index) {
+							SWAP(drag_index, uv_drag_index);
+						}
+						bool valid = true;
+						if (drag_index == uv_drag_index) {
+							valid = false;
+						}
+						if (drag_index + 1 == uv_drag_index) {
+							//not a split,goes along the edge
+							valid = false;
+						}
+						if (drag_index == uv_prev.size() - 1 && uv_drag_index == 0) {
+							//not a split,goes along the edge
+							valid = false;
+						}
+						for (int i = 0; i < splits_prev.size(); i += 2) {
+							if (splits_prev[i] == uv_drag_index && splits_prev[i + 1] == drag_index) {
+								//already exists
+								valid = false;
+							}
+							if (splits_prev[i] > uv_drag_index && splits_prev[i + 1] > drag_index) {
+								//crossing
+								valid = false;
+							}
+
+							if (splits_prev[i] < uv_drag_index && splits_prev[i + 1] < drag_index) {
+								//crossing opposite direction
+								valid = false;
+							}
+						}
+
+						if (valid) {
+
+							splits_prev.push_back(uv_drag_index);
+							splits_prev.push_back(drag_index);
+
+							undo_redo->create_action(TTR("Add Split"));
+
+							undo_redo->add_do_method(node, "set_splits", splits_prev);
+							undo_redo->add_undo_method(node, "set_splits", node->get_splits());
+							undo_redo->add_do_method(uv_edit_draw, "update");
+							undo_redo->add_undo_method(uv_edit_draw, "update");
+							undo_redo->commit_action();
+						} else {
+							error->set_text(TTR("Invalid Split"));
+							error->popup_centered_minsize();
+						}
+
+					} else {
+						uv_drag_index = drag_index;
+						split_create = true;
+						uv_create_to = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
+					}
+				}
+
+				if (uv_move_current == UV_MODE_REMOVE_SPLIT) {
+
+					for (int i = 0; i < splits_prev.size(); i += 2) {
+						if (splits_prev[i] < 0 || splits_prev[i] >= uv_prev.size())
+							continue;
+						if (splits_prev[i + 1] < 0 || splits_prev[i] >= uv_prev.size())
+							continue;
+						Vector2 e[2] = { mtx.xform(uv_prev[splits_prev[i]]), mtx.xform(uv_prev[splits_prev[i + 1]]) };
+						Vector2 mp = Vector2(mb->get_position().x, mb->get_position().y);
+						Vector2 cp = Geometry::get_closest_point_to_segment_2d(mp, e);
+						if (cp.distance_to(mp) < 8) {
+							splits_prev.remove(i);
+							splits_prev.remove(i);
+
+							undo_redo->create_action(TTR("Remove Split"));
+
+							undo_redo->add_do_method(node, "set_splits", splits_prev);
+							undo_redo->add_undo_method(node, "set_splits", node->get_splits());
+							undo_redo->add_do_method(uv_edit_draw, "update");
+							undo_redo->add_undo_method(uv_edit_draw, "update");
+							undo_redo->commit_action();
+
+							break;
+						}
+					}
+				}
+
 			} else if (uv_drag && !uv_create) {
 
 				undo_redo->create_action(TTR("Transform UV Map"));
@@ -299,7 +426,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				if (uv_edit_mode[0]->is_pressed()) { //edit uv
 					undo_redo->add_do_method(node, "set_uv", node->get_uv());
 					undo_redo->add_undo_method(node, "set_uv", uv_prev);
-				} else {
+				} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 					undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
 					undo_redo->add_undo_method(node, "set_polygon", uv_prev);
 				}
@@ -318,15 +445,19 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				uv_create = false;
 				node->set_uv(uv_create_uv_prev);
 				node->set_polygon(uv_create_poly_prev);
+				node->set_splits(splits_prev);
 				uv_edit_draw->update();
 			} else if (uv_drag) {
 
 				uv_drag = false;
 				if (uv_edit_mode[0]->is_pressed()) { //edit uv
 					node->set_uv(uv_prev);
-				} else {
+				} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 					node->set_polygon(uv_prev);
 				}
+				uv_edit_draw->update();
+			} else if (split_create) {
+				split_create = false;
 				uv_edit_draw->update();
 			}
 
@@ -368,7 +499,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else {
+					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -380,7 +511,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else {
+					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 						node->set_polygon(uv_new);
 					}
 
@@ -404,7 +535,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else {
+					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 						node->set_polygon(uv_new);
 					}
 
@@ -433,11 +564,14 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (uv_edit_mode[0]->is_pressed()) { //edit uv
 						node->set_uv(uv_new);
-					} else {
+					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
 			}
+			uv_edit_draw->update();
+		} else if (split_create) {
+			uv_create_to = mtx.affine_inverse().xform(Vector2(mm->get_position().x, mm->get_position().y));
 			uv_edit_draw->update();
 		}
 	}
@@ -509,10 +643,11 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	PoolVector<Vector2> uvs;
-	if (uv_edit_mode[0]->is_pressed()) //edit uv
+	if (uv_edit_mode[0]->is_pressed()) { //edit uv
 		uvs = node->get_uv();
-	else
+	} else { //edit polygon
 		uvs = node->get_polygon();
+	}
 
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
 
@@ -529,6 +664,22 @@ void Polygon2DEditor::_uv_draw() {
 		uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), Color(0.9, 0.5, 0.5), 2);
 		uv_edit_draw->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
 		rect.expand_to(mtx.basis_xform(uvs[i]));
+	}
+
+	if (split_create) {
+		Vector2 from = uvs[uv_drag_index];
+		Vector2 to = uv_create_to;
+		uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), Color(0.9, 0.5, 0.5), 2);
+	}
+
+	PoolVector<int> splits = node->get_splits();
+
+	for (int i = 0; i < splits.size(); i += 2) {
+		int idx_from = splits[i];
+		int idx_to = splits[i + 1];
+		if (idx_from < 0 || idx_to >= uvs.size())
+			continue;
+		uv_edit_draw->draw_line(mtx.xform(uvs[idx_from]), mtx.xform(uvs[idx_to]), Color(0.9, 0.5, 0.5), 2);
 	}
 
 	rect = rect.grow(200);
@@ -601,16 +752,22 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit_mode[1] = memnew(ToolButton);
 	uv_mode_hb->add_child(uv_edit_mode[1]);
 	uv_edit_mode[1]->set_toggle_mode(true);
+	uv_edit_mode[2] = memnew(ToolButton);
+	uv_mode_hb->add_child(uv_edit_mode[2]);
+	uv_edit_mode[2]->set_toggle_mode(true);
 
 	uv_edit_mode[0]->set_text(TTR("UV"));
 	uv_edit_mode[0]->set_pressed(true);
 	uv_edit_mode[1]->set_text(TTR("Poly"));
+	uv_edit_mode[2]->set_text(TTR("Splits"));
 
 	uv_edit_mode[0]->set_button_group(uv_edit_group);
 	uv_edit_mode[1]->set_button_group(uv_edit_group);
+	uv_edit_mode[2]->set_button_group(uv_edit_group);
 
 	uv_edit_mode[0]->connect("pressed", this, "_uv_edit_mode_select", varray(0));
 	uv_edit_mode[1]->connect("pressed", this, "_uv_edit_mode_select", varray(1));
+	uv_edit_mode[2]->connect("pressed", this, "_uv_edit_mode_select", varray(2));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
@@ -629,8 +786,12 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_button[2]->set_tooltip(TTR("Move Polygon"));
 	uv_button[3]->set_tooltip(TTR("Rotate Polygon"));
 	uv_button[4]->set_tooltip(TTR("Scale Polygon"));
+	uv_button[5]->set_tooltip(TTR("Connect two points to make a split"));
+	uv_button[6]->set_tooltip(TTR("Select a split to erase it"));
 
 	uv_button[0]->hide();
+	uv_button[5]->hide();
+	uv_button[6]->hide();
 	uv_button[1]->set_pressed(true);
 	HBoxContainer *uv_main_hb = memnew(HBoxContainer);
 	uv_main_vb->add_child(uv_main_hb);
@@ -737,8 +898,9 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_draw_zoom = 1.0;
 	uv_drag_index = -1;
 	uv_drag = false;
-	uv_create = true;
+	uv_create = false;
 	updating_uv_scroll = false;
+	split_create = false;
 
 	error = memnew(AcceptDialog);
 	add_child(error);
