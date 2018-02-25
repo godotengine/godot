@@ -536,7 +536,7 @@ public:
 	static bool is_sampler_type(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
-	static void get_builtin_funcs(List<String> *r_keywords);
+	static void get_builtin_funcs(List<String> *r_keywords, bool p_extended);
 
 	struct BuiltInInfo {
 		DataType type;
@@ -637,6 +637,7 @@ private:
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 
 	static const BuiltinFuncDef builtin_func_defs[];
+	static const BuiltinFuncDef builtin_func_ex_defs[];
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);

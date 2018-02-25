@@ -308,10 +308,14 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 	switch (p_node->type) {
 
 		case SL::Node::TYPE_SHADER: {
+			used_funcs_ex = false;
 
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
-
 			for (int i = 0; i < pnode->render_modes.size(); i++) {
+
+				if (pnode->render_modes[i] == "ext_funcs") {
+					used_funcs_ex = true;
+				}
 
 				if (p_default_actions.render_mode_defines.has(pnode->render_modes[i]) && !used_rmode_defines.has(pnode->render_modes[i])) {
 
@@ -626,6 +630,8 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 						if (internal_functions.has(vnode->name)) {
 							code += vnode->name;
+						} else if (used_funcs_ex && internal_functions_ex.has(vnode->name)) {
+							code += vnode->name;
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -763,6 +769,8 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 
 ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
+	used_funcs_ex = false;
+
 	/** CANVAS ITEM SHADER **/
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
@@ -808,6 +816,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"] = "#define SHADOW_COLOR_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["ext_funcs"] = "#define GODOT_ENABLE_EXTRA_BUILTIN\n";
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
@@ -899,6 +908,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 
+	actions[VS::SHADER_SPATIAL].render_mode_defines["ext_funcs"] = "#define GODOT_ENABLE_EXTRA_BUILTIN\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
@@ -933,9 +943,10 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
 	actions[VS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
-	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
-	actions[VS::SHADER_SPATIAL].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["ext_funcs"] = "#define GODOT_ENABLE_EXTRA_BUILTIN\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
+	actions[VS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";
@@ -944,9 +955,17 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	List<String> func_list;
 
-	ShaderLanguage::get_builtin_funcs(&func_list);
+	ShaderLanguage::get_builtin_funcs(&func_list, false);
 
 	for (List<String>::Element *E = func_list.front(); E; E = E->next()) {
 		internal_functions.insert(E->get());
+	}
+
+	List<String> ex_func_list;
+
+	ShaderLanguage::get_builtin_funcs(&ex_func_list, true);
+
+	for (List<String>::Element *E = ex_func_list.front(); E; E = E->next()) {
+		internal_functions_ex.insert(E->get());
 	}
 }

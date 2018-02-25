@@ -90,8 +90,10 @@ private:
 	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
+	Set<StringName> internal_functions_ex;
 
 	DefaultIdentifierActions actions[VS::SHADER_MAX];
+	bool used_funcs_ex;
 
 public:
 	Error compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
