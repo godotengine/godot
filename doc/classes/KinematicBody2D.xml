@@ -62,6 +62,8 @@
 			</return>
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
+			<argument index="1" name="infinite_inertia" type="bool" default="true">
+			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision.
 			</description>
@@ -73,11 +75,13 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
-			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
+			<argument index="2" name="infinite_inertia" type="bool" default="true">
 			</argument>
-			<argument index="3" name="max_bounces" type="int" default="4">
+			<argument index="3" name="slope_stop_min_velocity" type="float" default="5">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			<argument index="4" name="max_bounces" type="int" default="4">
+			</argument>
+			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
 				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [code]KinematicBody2D[/code] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
@@ -95,6 +99,8 @@
 			<argument index="0" name="from" type="Transform2D">
 			</argument>
 			<argument index="1" name="rel_vec" type="Vector2">
+			</argument>
+			<argument index="2" name="infinite_inertia" type="bool">
 			</argument>
 			<description>
 				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.

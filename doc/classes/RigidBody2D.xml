@@ -66,9 +66,11 @@
 			</return>
 			<argument index="0" name="motion" type="Vector2">
 			</argument>
-			<argument index="1" name="margin" type="float" default="0.08">
+			<argument index="1" name="infinite_inertia" type="bool" default="true">
 			</argument>
-			<argument index="2" name="result" type="Physics2DTestMotionResult" default="null">
+			<argument index="2" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="3" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [Physics2DTestMotionResult], which contains additional information about the collision (should there be one).

@@ -117,6 +117,24 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="from_hsv">
+			<return type="Color">
+			</return>
+			<argument index="0" name="h" type="float">
+			</argument>
+			<argument index="1" name="s" type="float">
+			</argument>
+			<argument index="2" name="v" type="float">
+			</argument>
+			<argument index="3" name="a" type="float" default="1">
+			</argument>
+			<description>
+				Constructs a color from an HSV profile. [code]h[/code] is a value between 0 and 360. [code]s[/code] and [code]v[/code] are values between 0 and 1.
+				[codeblock]
+				var c = Color.from_hsv(210, 0.5, 0.79, 0.8) # equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="gray">
 			<return type="float">
 			</return>

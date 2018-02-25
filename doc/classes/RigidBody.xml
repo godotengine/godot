@@ -38,7 +38,7 @@
 		<method name="apply_torque_impulse">
 			<return type="void">
 			</return>
-			<argument index="1" name="impulse" type="Vector3">
+			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
 				Apply a torque impulse (which will be affected by the body mass and shape). This will rotate the body around the passed in vector.
