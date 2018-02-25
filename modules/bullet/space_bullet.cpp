@@ -790,7 +790,7 @@ void SpaceBullet::update_gravity() {
 /// I'm leaving this here just for future tests.
 /// Debug motion and normal vector drawing
 #define debug_test_motion 0
-#define PERFORM_INITIAL_UNSTACK 0
+
 #define RECOVERING_MOVEMENT_SCALE 0.4
 #define RECOVERING_MOVEMENT_CYCLES 4
 
@@ -842,7 +842,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	G_TO_B(p_from, body_safe_position);
 	UNSCALE_BT_BASIS(body_safe_position);
 
-#if PERFORM_INITIAL_UNSTACK
 	btVector3 recover_initial_position(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
@@ -854,7 +853,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		// Add recover movement in order to make it safe
 		body_safe_position.getOrigin() += recover_initial_position;
 	}
-#endif
 
 	btVector3 motion;
 	G_TO_B(p_motion, motion);
@@ -893,7 +891,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
 			btResult.m_collisionFilterMask = p_body->get_collision_mask();
 
-			dynamicsWorld->convexSweepTest(convex_shape_test, shape_world_from, shape_world_to, btResult, 0.002);
+			dynamicsWorld->convexSweepTest(convex_shape_test, shape_world_from, shape_world_to, btResult, dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 			if (btResult.hasHit()) {
 				/// Since for each sweep test I fix the motion of new shapes in base the recover result,
@@ -918,11 +916,8 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			l_has_penetration = recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, delta_recover_movement, &r_recover_result);
 
 			if (r_result) {
-#if PERFORM_INITIAL_UNSTACK
 				B_TO_G(motion + delta_recover_movement + recover_initial_position, r_result->motion);
-#else
-				B_TO_G(motion + delta_recover_movement, r_result->motion);
-#endif
+
 				if (l_has_penetration) {
 					has_penetration = true;
 					if (l_penetration_distance <= r_recover_result.penetration_distance) {
@@ -1112,7 +1107,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 	btCollisionObjectWrapper obA(NULL, p_shapeA, p_objectA, tA, -1, p_shapeId_A);
 	btCollisionObjectWrapper obB(NULL, p_shapeB, p_objectB, p_transformB, -1, p_shapeId_B);
 
-	btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CLOSEST_POINT_ALGORITHMS);
+	btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CONTACT_POINT_ALGORITHMS);
 	if (algorithm) {
 		GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
 		//discrete collision detection query
@@ -1122,7 +1117,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 		dispatcher->freeCollisionAlgorithm(algorithm);
 
 		if (contactPointResult.hasHit()) {
-			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1 * p_recover_movement_scale);
+			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * p_recover_movement_scale);
 
 			if (r_recover_result) {
 				if (contactPointResult.m_penetration_distance < r_recover_result->penetration_distance) {

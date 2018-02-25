@@ -257,18 +257,15 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 
 void GodotDeepPenetrationContactResultCallback::addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorldOnB, btScalar depth) {
 
-	if (depth < 0) {
-		// Has penetration
-		if (m_most_penetrated_distance > depth) {
+	// Has penetration
+	if (m_penetration_distance < ABS(depth)) {
 
-			bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
+		bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
 
-			m_most_penetrated_distance = depth;
-			m_pointCollisionObject = (isSwapped ? m_body0Wrap : m_body1Wrap)->getCollisionObject();
-			m_other_compound_shape_index = isSwapped ? m_index1 : m_index0;
-			m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
-			m_pointWorld = isSwapped ? (pointInWorldOnB + normalOnBInWorld * depth) : pointInWorldOnB;
-			m_penetration_distance = depth;
-		}
+		m_penetration_distance = depth;
+		m_pointCollisionObject = (isSwapped ? m_body0Wrap : m_body1Wrap)->getCollisionObject();
+		m_other_compound_shape_index = isSwapped ? m_index1 : m_index0;
+		m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
+		m_pointWorld = isSwapped ? (pointInWorldOnB + normalOnBInWorld * depth) : pointInWorldOnB;
 	}
 }
