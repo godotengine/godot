@@ -121,6 +121,26 @@ void EditorAudioBus::_notification(int p_what) {
 
 		set_process(is_visible_in_tree());
 	}
+
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+
+		for (int i = 0; i < cc; i++) {
+			channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
+			channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+			channel[i].vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
+			channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+			channel[i].prev_active = true;
+		}
+		scale->set_texture(get_icon("BusVuDb", "EditorIcons"));
+
+		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
+
+		solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
+		mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
+		bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
+
+		bus_options->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+	}
 }
 
 void EditorAudioBus::update_send() {

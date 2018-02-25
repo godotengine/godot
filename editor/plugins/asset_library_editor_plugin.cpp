@@ -533,11 +533,9 @@ void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 
-			TextureRect *tf = memnew(TextureRect);
-			tf->set_texture(get_icon("Error", "EditorIcons"));
+			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 
-			error_hb->add_child(tf);
 			error_label->raise();
 		} break;
 
@@ -585,6 +583,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
+			error_tr->set_texture(get_icon("Error", "EditorIcons"));
+			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 		} break;
 	}
 }
@@ -1452,6 +1452,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_label = memnew(Label);
 	error_label->add_color_override("color", get_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
+	error_tr = memnew(TextureRect);
+	error_hb->add_child(error_tr);
 
 	description = NULL;
 

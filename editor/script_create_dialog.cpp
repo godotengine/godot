@@ -41,10 +41,12 @@
 void ScriptCreateDialog::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
-		}
+			status_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
+		} break;
 	}
 }
 
@@ -609,10 +611,10 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(path_error_label);
 	vb->add_child(hb);
 
-	PanelContainer *pc = memnew(PanelContainer);
-	pc->set_h_size_flags(Control::SIZE_FILL);
-	pc->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
-	pc->add_child(vb);
+	status_panel = memnew(PanelContainer);
+	status_panel->set_h_size_flags(Control::SIZE_FILL);
+	status_panel->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
+	status_panel->add_child(vb);
 
 	/* Margins */
 
@@ -631,7 +633,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(empty_h->duplicate());
 	vb->add_child(gc);
 	vb->add_child(empty_h->duplicate());
-	vb->add_child(pc);
+	vb->add_child(status_panel);
 	vb->add_child(empty_h->duplicate());
 	hb = memnew(HBoxContainer);
 	hb->add_child(empty_v->duplicate());
