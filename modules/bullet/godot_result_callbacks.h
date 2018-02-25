@@ -185,6 +185,7 @@ struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
 	btVector3 m_pointWorld;
 	btScalar m_penetration_distance;
 	int m_other_compound_shape_index;
+	const btCollisionObject *m_pointCollisionObject;
 
 	GodotDeepPenetrationContactResultCallback(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) :
 			btManifoldResult(body0Wrap, body1Wrap),
@@ -192,6 +193,7 @@ struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
 			m_other_compound_shape_index(0) {}
 
 	void reset() {
+		m_pointCollisionObject = NULL;
 		m_penetration_distance = 0;
 	}
 

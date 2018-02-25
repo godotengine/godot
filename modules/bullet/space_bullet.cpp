@@ -887,7 +887,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	G_TO_B(p_from, body_safe_position);
 	UNSCALE_BT_BASIS(body_safe_position);
 
-#if PERFORM_INITIAL_UNSTACK
 	btVector3 recover_initial_position(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
@@ -958,9 +957,14 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
 			l_has_penetration = recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, delta_recover_movement, &r_recover_result);
 
-		// Parse results
-		if (r_result) {
-			B_TO_G(motion + initial_recover_motion, r_result->motion);
+			if (r_result) {
+				B_TO_G(motion + delta_recover_movement + recover_initial_position, r_result->motion);
+
+				if (l_has_penetration) {
+					has_penetration = true;
+					if (l_penetration_distance <= r_recover_result.penetration_distance) {
+						continue;
+					}
 
 					l_penetration_distance = r_recover_result.penetration_distance;
 
@@ -1152,7 +1156,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 		dispatcher->freeCollisionAlgorithm(algorithm);
 
 		if (contactPointResult.hasHit()) {
-			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1 * p_recover_movement_scale);
+			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * p_recover_movement_scale);
 
 			if (r_recover_result) {
 				if (contactPointResult.m_penetration_distance < r_recover_result->penetration_distance) {
