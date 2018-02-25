@@ -292,10 +292,8 @@ void LineBuilder::build() {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
+			uvx0 = current_distance0 / (width * tile_aspect);
 			uvx1 = current_distance1 / (width * tile_aspect);
-		} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-			uvx0 = current_distance0 / total_distance;
-			uvx1 = current_distance1 / total_distance;
 		}
 
 		strip_add_quad(pos_up1, pos_down1, color1, uvx1);
@@ -381,8 +379,6 @@ void LineBuilder::build() {
 	}
 	if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 		uvx1 = current_distance1 / (width * tile_aspect);
-	} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-		uvx1 = current_distance1 / total_distance;
 	}
 
 	strip_add_quad(pos_up1, pos_down1, color1, uvx1);
