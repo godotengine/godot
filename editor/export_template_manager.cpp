@@ -220,7 +220,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			// Version number should be of the form major.minor[.patch].status[.module_config]
 			// so it can in theory have 3 or more slices.
 			if (data_str.get_slice_count(".") < 3) {
-				EditorNode::get_singleton()->show_warning(TTR("Invalid version.txt format inside templates."));
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside templates: %s."), data_str));
 				unzClose(pkg);
 				return;
 			}
