@@ -252,11 +252,14 @@ void Line2D::_draw() {
 	lb.sharp_limit = _sharp_limit;
 	lb.width = _width;
 
-	lb.build();
-
 	RID texture_rid;
-	if (_texture.is_valid())
+	if (_texture.is_valid()) {
 		texture_rid = (**_texture).get_rid();
+
+		lb.tile_aspect = _texture->get_size().aspect();
+	}
+
+	lb.build();
 
 	VS::get_singleton()->canvas_item_add_triangle_array(
 			get_canvas_item(),
