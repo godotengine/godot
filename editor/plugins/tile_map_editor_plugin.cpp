@@ -83,10 +83,6 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
 
 		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-		} break;
 	}
 }
 

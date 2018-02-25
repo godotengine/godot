@@ -600,17 +600,6 @@ void TextureRegionEditor::apply_rect(const Rect2 &rect) {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_PROCESS: {
-			if (node_sprite) {
-				if (node_sprite->is_region()) {
-
-					set_process(false);
-					EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
-				}
-			} else {
-				set_process(false);
-			}
-		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_READY: {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
