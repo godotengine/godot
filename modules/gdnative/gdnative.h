@@ -68,6 +68,8 @@ public:
 
 	_FORCE_INLINE_ Ref<ConfigFile> get_config_file() { return config_file; }
 
+	void set_config_file(Ref<ConfigFile> p_config_file);
+
 	// things that change per-platform
 	// so there are no setters for this
 	_FORCE_INLINE_ String get_current_library_path() const {
