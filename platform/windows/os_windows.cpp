@@ -700,7 +700,16 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
 			}
-			//return 0;								// Jump Back
+			if (wParam == SIZE_MAXIMIZED) {
+				maximized = true;
+				minimized = false;
+			} else if (wParam == SIZE_MINIMIZED) {
+				maximized = false;
+				minimized = true;
+			} else if (wParam == SIZE_RESTORED) {
+				maximized = false;
+				minimized = false;
+			}
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
