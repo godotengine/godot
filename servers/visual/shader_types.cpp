@@ -140,6 +140,8 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].can_discard = true;
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("ext_funcs");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mix");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_add");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_sub");
@@ -225,6 +227,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].can_discard = true;
 
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("ext_funcs");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("skip_vertex_transform");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mix");
@@ -254,6 +257,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].can_discard = false;
 
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("ext_funcs");
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("billboard");
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_force");
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_velocity");

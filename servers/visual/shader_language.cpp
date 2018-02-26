@@ -1861,7 +1861,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ NULL, TYPE_VOID, { TYPE_VOID } }
+};
 
+const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_ex_defs[] = {
+	{ "saturate", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "saturate", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "saturate", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "saturate", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
+	{ "rgb2hsv", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "hsv2rgb", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+
+	{ NULL, TYPE_VOID, { TYPE_VOID } }
 };
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type) {
@@ -1885,9 +1896,63 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 	bool failed_builtin = false;
 
+	bool ext_builtin = shader->render_modes.find("ext_funcs") != -1;
+
 	if (argcount <= 4) {
 		// test builtins
 		int idx = 0;
+
+		if (ext_builtin) {
+			while (builtin_func_ex_defs[idx].name) {
+
+				if (name == builtin_func_ex_defs[idx].name) {
+
+					failed_builtin = true;
+					bool fail = false;
+					for (int i = 0; i < argcount; i++) {
+
+						if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_ex_defs[idx].args[i])) {
+							//all good
+						} else if (args[i] != builtin_func_ex_defs[idx].args[i]) {
+							fail = true;
+							break;
+						}
+					}
+
+					if (!fail && argcount < 4 && builtin_func_ex_defs[idx].args[argcount] != TYPE_VOID)
+						fail = true; //make sure the number of arguments matches
+
+					if (!fail) {
+
+						if (r_ret_type)
+							*r_ret_type = builtin_func_ex_defs[idx].rettype;
+
+						return true;
+					}
+				}
+
+				idx++;
+			}
+
+			if (failed_builtin) {
+				String err = "Invalid arguments for built-in function: " + String(name) + "(";
+				for (int i = 0; i < argcount; i++) {
+					if (i > 0)
+						err += ",";
+
+					if (p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && p_func->arguments[i + 1]->get_datatype() == TYPE_INT && static_cast<ConstantNode *>(p_func->arguments[i + 1])->values[0].sint < 0) {
+						err += "-";
+					}
+					err += get_datatype_name(args[i]);
+				}
+				err += ")";
+				_set_error(err);
+				return false;
+			}
+		}
+
+		idx = 0;
+		failed_builtin = false;
 
 		while (builtin_func_defs[idx].name) {
 
@@ -2159,17 +2224,26 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	}
 }
 
-void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
+void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords, bool p_extended) {
 
 	Set<String> kws;
 
 	int idx = 0;
 
-	while (builtin_func_defs[idx].name) {
+	if (p_extended) {
+		while (builtin_func_ex_defs[idx].name) {
 
-		kws.insert(builtin_func_defs[idx].name);
+			kws.insert(builtin_func_ex_defs[idx].name);
 
-		idx++;
+			idx++;
+		}
+	} else {
+		while (builtin_func_defs[idx].name) {
+
+			kws.insert(builtin_func_defs[idx].name);
+
+			idx++;
+		}
 	}
 
 	for (Set<String>::Element *E = kws.front(); E; E = E->next()) {
@@ -4178,6 +4252,17 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				idx++;
 			}
 
+			idx = 0;
+
+			bool ext_builtin = shader->render_modes.find("ext_funcs") != -1;
+			if (ext_builtin) {
+				while (builtin_func_ex_defs[idx].name) {
+
+					matches.insert(String(builtin_func_ex_defs[idx].name) + "(");
+					idx++;
+				}
+			}
+
 			for (Set<String>::Element *E = matches.front(); E; E = E->next()) {
 				r_options->push_back(E->get());
 			}
@@ -4273,6 +4358,55 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					calltip += ")";
 				}
 				idx++;
+			}
+
+			idx = 0;
+
+			bool ext_builtin = shader->render_modes.find("ext_funcs") != -1;
+
+			if (ext_builtin) {
+				while (builtin_func_ex_defs[idx].name) {
+
+					if (completion_function == builtin_func_ex_defs[idx].name) {
+
+						if (calltip.length())
+							calltip += "\n";
+
+						calltip += get_datatype_name(builtin_func_ex_defs[idx].rettype);
+						calltip += " ";
+						calltip += builtin_func_ex_defs[idx].name;
+						calltip += "(";
+
+						bool found_arg = false;
+						for (int i = 0; i < 4; i++) {
+
+							if (builtin_func_ex_defs[idx].args[i] == TYPE_VOID)
+								break;
+
+							if (i > 0)
+								calltip += ", ";
+							else
+								calltip += " ";
+
+							if (i == completion_argument) {
+								calltip += CharType(0xFFFF);
+							}
+
+							calltip += get_datatype_name(builtin_func_ex_defs[idx].args[i]);
+
+							if (i == completion_argument) {
+								calltip += CharType(0xFFFF);
+							}
+
+							found_arg = true;
+						}
+
+						if (found_arg)
+							calltip += " ";
+						calltip += ")";
+					}
+					idx++;
+				}
 			}
 
 			r_call_hint = calltip;
