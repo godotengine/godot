@@ -1189,7 +1189,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
 			}
 
-			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, false);
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
@@ -1223,7 +1223,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<TileSet>(memnew(TileSet));
 			}
 
-			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
+			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), ml, false);
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
