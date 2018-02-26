@@ -1027,6 +1027,7 @@ void EditorFileDialog::invalidate() {
 
 	if (is_visible_in_tree()) {
 		update_file_list();
+		_update_favorites();
 		invalidated = false;
 	} else {
 		invalidated = true;
