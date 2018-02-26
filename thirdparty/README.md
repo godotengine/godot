@@ -15,7 +15,6 @@ Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
 
-
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
@@ -76,7 +75,6 @@ Files extracted from upstream source:
 Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
-
 
 ## fonts
 
@@ -177,7 +175,6 @@ TODO.
 Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
-
 
 ## libtheora
 
