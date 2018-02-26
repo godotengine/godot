@@ -11,6 +11,9 @@ The files were adapted to Godot by removing the dependency on b2Math (replacing
 it by b2Glue.h) and commenting out some verbose printf calls.
 Upstream code has not changed in 10 years, no need to keep track of changes.
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
 
 ## bullet
 
@@ -69,6 +72,9 @@ Files extracted from upstream source:
 - all .cpp and .h files in EtcLib/
 - README.md, LICENSE, AUTHORS
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
 
 ## fonts
 
@@ -165,6 +171,9 @@ Files extracted from upstream source:
 
 TODO.
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
 
 ## libtheora
 
