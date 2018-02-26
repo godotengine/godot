@@ -778,7 +778,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #endif
 
-	if (globals->setup(game_path, main_pack, upwards) != OK) {
+	if (globals->setup(game_path, main_pack, upwards) == OK) {
+		found_project = true;
+	} else {
 
 #ifdef TOOLS_ENABLED
 		editor = false;
@@ -786,15 +788,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
 
 		goto error;
-#endif
-	} else if (String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
-#ifdef TOOLS_ENABLED
-		if (!editor) {
-#endif
-			OS::get_singleton()->print("Error: Can't run project: no main scene defined.\n");
-			goto error;
-#ifdef TOOLS_ENABLED
-		}
 #endif
 	}
 
@@ -819,13 +812,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (!project_manager) {
 		// Determine if the project manager should be requested
-		project_manager =
-				main_args.size() == 0 &&
-				!ProjectSettings::get_singleton()->has_setting("application/run/main_loop_type") &&
-				(!ProjectSettings::get_singleton()->has_setting("application/run/main_scene") ||
-						String(ProjectSettings::get_singleton()->get("application/run/main_scene")) == "");
+		project_manager = main_args.size() == 0 && !found_project;
 	}
 #endif
+
+	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
+#ifdef TOOLS_ENABLED
+		if (!editor && !project_manager) {
+#endif
+			OS::get_singleton()->print("Error: Can't run project: no main scene defined.\n");
+			goto error;
+#ifdef TOOLS_ENABLED
+		}
+#endif
+	}
 
 	if (editor || project_manager) {
 		use_custom_res = false;
