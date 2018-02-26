@@ -4,6 +4,56 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [3.0.1] - 2018-02-25
+
+### Added
+
+- The 'server' platform is back as it was in Godot 2.1.
+  - It is now again possible to run a headless Godot on Linux.
+- New CLI options
+  - --build-solutions: build C# solutions without starting the editor. 
+  - --quit: quit the engine after the first main loop iteration.
+- It is now possible to scale an .obj mesh when importing.
+- Type icons can now be enabled in the editor again.
+- New GLSL built-in functions in the shader language
+  - radians
+  - degrees
+  - asinh
+  - acosh
+  - atanh
+  - exp2
+  - log2
+  - roundEven
+- New GDScript features
+  - `OS.center_window()`.
+  - `StreamPeerTCP.set_no_delay()`.
+  - `EditorPlugin.remove_control_from_container()`.
+- A button has been added to the debugger to copy the error messages.
+- The Ctrl toggles snapping in the 3D viewport.
+- Support has been added for a new .escn, for use with the new Blender exporter.
+- CA certificates have been updated to the latest Mozilla bundle.
+
+### Fixed
+
+- Copy/pasting from the editor on X11 will now work more reliably.
+- The lightmap baker will now use all available cores on Windows.
+- Fixed missing text in some FileDialog buttons.
+- Fixes to HTTP requests on the HTML5 platform.
+- Many, many fixes and improvements to C# support (including a [Signal] attribute).
+- Static linking of `libgcc_s` as well as `libstdc++` for better Linux binary portability.
+- Fix broken APK expansion on Android.
+- Several crashes in the editor have been fixed.
+- Many documentation fixes.
+- Several hiDPI fixes.
+
+## Changed
+
+- Bullet physics now correctly calculates effective gravity on KinematicBodies.
+- Setting the color `v` member now correctly sets the `s` member.
+- RichTextLabels now correctly determine the baseline for all fonts.
+- SpinBoxes now correctly calculate their initial size.
+- OGG streams now correctly signal the end of playback.
+
 ## [3.0] - 2018-01-29
 
 ### Added
