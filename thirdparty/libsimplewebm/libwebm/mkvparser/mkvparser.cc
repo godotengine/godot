@@ -1284,7 +1284,9 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
     pos += cluster_size;
 
     m_pos = pos;
-
+    // -- GODOT start --
+    delete pCluster;
+    // -- GODOT end --
     if (segment_stop > 0 && m_pos > segment_stop)
       return E_FILE_FORMAT_INVALID;
 
