@@ -80,6 +80,7 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 ShaderTypes *shader_types = NULL;
 
 PhysicsServer *_createGodotPhysicsCallback() {
+	WARN_PRINT("Godot 3D physics engine is deprecated, will likely be removed in 3.1 or 3.2");
 	return memnew(PhysicsServerSW);
 }
 
@@ -163,8 +164,8 @@ void register_server_types() {
 	GLOBAL_DEF(PhysicsServerManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServerManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServerManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
-	PhysicsServerManager::register_server("GodotPhysics", &_createGodotPhysicsCallback);
-	PhysicsServerManager::set_default_server("GodotPhysics");
+	PhysicsServerManager::register_server("GodotPhysics - deprecated", &_createGodotPhysicsCallback);
+	PhysicsServerManager::set_default_server("GodotPhysics - deprecated");
 }
 
 void unregister_server_types() {
