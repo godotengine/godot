@@ -422,7 +422,7 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 
 	ScriptLanguage::StackInfo separator;
 	separator.file = "";
-	separator.func = "--- " + TTR("End of inner exception stack trace") + " ---";
+	separator.func = "--- " + RTR("End of inner exception stack trace") + " ---";
 	separator.line = 0;
 
 	Vector<ScriptLanguage::StackInfo> si;
