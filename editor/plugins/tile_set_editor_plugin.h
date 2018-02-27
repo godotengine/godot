@@ -155,6 +155,7 @@ public:
 	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml, bool p_merge = true);
 
 	TileSetEditor(EditorNode *p_editor);
+	~TileSetEditor();
 
 private:
 	void _on_tile_list_selected(int p_index);
