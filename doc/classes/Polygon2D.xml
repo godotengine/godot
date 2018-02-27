@@ -31,6 +31,8 @@
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 			The polygon's list of vertices. The final point will be connected to the first.
 		</member>
+		<member name="splits" type="PoolIntArray" setter="set_splits" getter="get_splits">
+		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
 		</member>
