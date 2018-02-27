@@ -45,7 +45,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="apply_torqe_impulse">
+		<method name="apply_torque_impulse">
 			<return type="void">
 			</return>
 			<argument index="0" name="j" type="Vector3">
