@@ -65,6 +65,13 @@ public:
 
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) = 0;
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
+
+	void _apply_torqe_impulse_deprecated(const Vector3 &p_j) {
+		WARN_PRINT("This method is deprecated and will be removed in 3.1. Use `apply_torque_impulse` instead.");
+
+		apply_torque_impulse(p_j);
+	}
+
 	virtual void apply_torque_impulse(const Vector3 &p_j) = 0;
 
 	virtual void set_sleep_state(bool p_enable) = 0;

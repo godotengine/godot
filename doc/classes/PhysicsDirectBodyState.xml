@@ -29,6 +29,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="apply_torqe_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+			This method is deprecated. Please use [method apply_torque_impulse] instead.
+			</description>
+		</method>
 		<method name="apply_torque_impulse">
 			<return type="void">
 			</return>
