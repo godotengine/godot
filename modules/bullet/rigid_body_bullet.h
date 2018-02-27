@@ -198,6 +198,7 @@ private:
 	real_t linearDamp;
 	real_t angularDamp;
 	bool can_sleep;
+	bool omit_forces_integration;
 
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize
@@ -253,6 +254,9 @@ public:
 
 	void set_activation_state(bool p_active);
 	bool is_active() const;
+
+	void set_omit_forces_integration(bool p_omit);
+	_FORCE_INLINE_ bool get_omit_forces_integration() const { return omit_forces_integration; }
 
 	void set_param(PhysicsServer::BodyParameter p_param, real_t);
 	real_t get_param(PhysicsServer::BodyParameter p_param) const;
