@@ -401,7 +401,7 @@ void TileSetEditor::initialize_bottom_editor() {
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	tool_containers[TOOLBAR_SHAPE]->add_child(tools[SHAPE_DELETE]);
-	tool_containers[TOOLBAR_SHAPE]->add_change_receptor(memnew(VSeparator));
+	tool_containers[TOOLBAR_SHAPE]->add_child(memnew(VSeparator));
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
@@ -559,6 +559,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	err_dialog->set_title(TTR("Error"));
 
 	initialize_bottom_editor();
+}
+
+TileSetEditor::~TileSetEditor() {
+	if (helper)
+		memdelete(helper);
 }
 
 void TileSetEditor::_on_tile_list_selected(int p_index) {
