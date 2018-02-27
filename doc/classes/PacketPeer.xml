@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeer" inherits="Reference" category="Core" version="3.1-dev">
+<class name="PacketPeer" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
 		Abstraction and base class for packet-based protocols.
 	</brief_description>
