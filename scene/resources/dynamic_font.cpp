@@ -461,7 +461,22 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		char_map[p_char] = ch;
 		return;
 	}
-	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+
+	int ft_hinting;
+
+	switch (font->hinting) {
+		case DynamicFontData::HINTING_NONE:
+			ft_hinting = FT_LOAD_NO_HINTING;
+			break;
+		case DynamicFontData::HINTING_LIGHT:
+			ft_hinting = FT_LOAD_TARGET_LIGHT;
+			break;
+		default:
+			ft_hinting = FT_LOAD_TARGET_NORMAL;
+			break;
+	}
+
+	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0) | ft_hinting);
 	if (!error) {
 		error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
 	}
