@@ -190,9 +190,9 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array);
 // Transform
 
 #define MARSHALLED_OUT_Transform(m_in, m_out) real_t m_out[12] = { \
-	m_in.basis[0].x, m_in.basis[1].x, m_in.basis[2].x,             \
-	m_in.basis[0].y, m_in.basis[1].y, m_in.basis[2].y,             \
-	m_in.basis[0].z, m_in.basis[1].z, m_in.basis[2].z,             \
+	m_in.basis[0].x, m_in.basis[0].y, m_in.basis[0].z,             \
+	m_in.basis[1].x, m_in.basis[1].y, m_in.basis[1].z,             \
+	m_in.basis[2].x, m_in.basis[2].y, m_in.basis[2].z,             \
 	m_in.origin.x, m_in.origin.y, m_in.origin.z                    \
 };
 #define MARSHALLED_IN_Transform(m_in, m_out) Transform m_out(                                   \
