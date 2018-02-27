@@ -119,14 +119,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Custom font */
 
+	String custom_font = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/main_font_hinting");
-
-	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<DynamicFontData> CustomFont;
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		CustomFont.instance();
 		CustomFont->set_hinting(font_hinting);
-		CustomFont->set_font_path(custom_font_path);
+		CustomFont->set_font_path(custom_font);
 		CustomFont->set_force_autohinter(true); //just looks better..i think?
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
@@ -147,15 +146,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Custom source code font */
 
-	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
+	String custom_font_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
 	DynamicFontData::Hinting font_source_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/code_font_hinting");
 	Ref<DynamicFontData> CustomFontSource;
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		CustomFontSource.instance();
 		CustomFontSource->set_hinting(font_source_hinting);
-		CustomFontSource->set_font_path(custom_font_path_source);
-	} else {
-		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
+		CustomFontSource->set_font_path(custom_font_source);
 	}
 
 	memdelete(dir);
