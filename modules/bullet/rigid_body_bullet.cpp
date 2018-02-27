@@ -255,6 +255,7 @@ RigidBodyBullet::RigidBodyBullet() :
 		linearDamp(0),
 		angularDamp(0),
 		can_sleep(true),
+		omit_forces_integration(false),
 		force_integration_callback(NULL),
 		isTransformChanged(false),
 		previousActiveState(true),
@@ -333,6 +334,9 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 void RigidBodyBullet::dispatch_callbacks() {
 	/// The check isTransformChanged is necessary in order to call integrated forces only when the first transform is sent
 	if ((btBody->isActive() || previousActiveState != btBody->isActive()) && force_integration_callback && isTransformChanged) {
+
+		if (omit_forces_integration)
+			btBody->clearForces();
 
 		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
@@ -435,6 +439,10 @@ void RigidBodyBullet::set_activation_state(bool p_active) {
 
 bool RigidBodyBullet::is_active() const {
 	return btBody->isActive();
+}
+
+void RigidBodyBullet::set_omit_forces_integration(bool p_omit) {
+	omit_forces_integration = p_omit;
 }
 
 void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
