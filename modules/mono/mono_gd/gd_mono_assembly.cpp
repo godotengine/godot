@@ -116,6 +116,9 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 		search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
 		search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 		search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+#ifdef GD_MONO_EDITOR_ASSEMBLIES_DIR
+		search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir().plus_file(_MKSTR(GD_MONO_EDITOR_ASSEMBLIES_DIR)).simplify_path());
+#endif
 
 		const char *rootdir = mono_assembly_getrootdir();
 		if (rootdir) {
