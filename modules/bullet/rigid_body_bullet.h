@@ -202,9 +202,6 @@ private:
 	bool can_sleep;
 	bool omit_forces_integration;
 
-	PhysicsServer::CombineMode restitution_combine_mode;
-	PhysicsServer::CombineMode friction_combine_mode;
-
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize
 	int maxCollisionsDetection;
