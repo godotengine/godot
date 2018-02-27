@@ -468,9 +468,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			if (!validating) {
 
 				//this can be too slow for just validating code
-				if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
+				if (for_completion && ScriptCodeCompletionCache::get_singleton()) {
 					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
-				} else if (!for_completion || FileAccess::exists(path)) {
+				} else { // essential; see issue 15902
 					res = ResourceLoader::load(path);
 				}
 			} else {
@@ -4835,6 +4835,8 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 
 				for (int i = 0; i < p_class->extends_class.size(); i++) {
 
+	clear();
+
 	//assume class
 	ClassNode *main_class = alloc_node<ClassNode>();
 	main_class->initializer = alloc_node<BlockNode>();
@@ -4871,7 +4873,17 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 				p = NULL;
 			}
 
-	clear();
+	for_completion = false;
+	validating = false;
+	completion_type = COMPLETION_NONE;
+	completion_node = NULL;
+	completion_class = NULL;
+	completion_function = NULL;
+	completion_block = NULL;
+	completion_found = false;
+	current_block = NULL;
+	current_class = NULL;
+	current_function = NULL;
 
 				bool found = false;
 
@@ -4901,7 +4913,16 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 					}
 				}
 
-	clear();
+	completion_type = COMPLETION_NONE;
+	completion_node = NULL;
+	completion_class = NULL;
+	completion_function = NULL;
+	completion_block = NULL;
+	completion_found = false;
+	current_block = NULL;
+	current_class = NULL;
+
+	current_function = NULL;
 
 				p = p->owner;
 			}
