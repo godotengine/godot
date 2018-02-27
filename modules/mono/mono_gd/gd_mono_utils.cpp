@@ -506,7 +506,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 	ScriptLanguage::StackInfo separator;
 	separator.file = "";
-	separator.func = "--- " + TTR("End of inner exception stack trace") + " ---";
+	separator.func = "--- " + RTR("End of inner exception stack trace") + " ---";
 	separator.line = 0;
 
 	Vector<ScriptLanguage::StackInfo> si;
