@@ -194,6 +194,28 @@ void AudioDriverRtAudio::finish() {
 	}
 }
 
+bool AudioDriverRtAudio::capture_device_start(StringName p_name) {
+
+	return false;
+}
+
+bool AudioDriverRtAudio::capture_device_stop(StringName p_name) {
+
+	return false;
+}
+
+PoolStringArray AudioDriverRtAudio::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	return names;
+}
+
+StringName AudioDriverRtAudio::capture_device_get_default_name() {
+
+	return "";
+}
+
 AudioDriverRtAudio::AudioDriverRtAudio() {
 
 	active = false;

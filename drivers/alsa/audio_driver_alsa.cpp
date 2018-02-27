@@ -339,6 +339,28 @@ void AudioDriverALSA::finish() {
 	finish_device();
 }
 
+bool AudioDriverALSA::capture_device_start(StringName p_name) {
+
+	return false;
+}
+
+bool AudioDriverALSA::capture_device_stop(StringName p_name) {
+
+	return false;
+}
+
+PoolStringArray AudioDriverALSA::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	return names;
+}
+
+StringName AudioDriverALSA::capture_device_get_default_name() {
+
+	return "";
+}
+
 AudioDriverALSA::AudioDriverALSA() {
 
 	mutex = NULL;

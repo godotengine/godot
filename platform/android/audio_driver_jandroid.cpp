@@ -195,6 +195,28 @@ void AudioDriverAndroid::finish() {
 	active = false;
 }
 
+bool AudioDriverAndroid::capture_device_start(StringName p_name) {
+
+	return false;
+}
+
+bool AudioDriverAndroid::capture_device_stop(StringName p_name) {
+
+	return false;
+}
+
+PoolStringArray AudioDriverAndroid::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	return names;
+}
+
+StringName AudioDriverAndroid::capture_device_get_default_name() {
+
+	return "";
+}
+
 void AudioDriverAndroid::set_pause(bool p_pause) {
 
 	JNIEnv *env = ThreadAndroid::get_env();

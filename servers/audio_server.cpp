@@ -33,6 +33,7 @@
 #include "os/file_access.h"
 #include "os/os.h"
 #include "project_settings.h"
+#include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 #ifdef TOOLS_ENABLED
@@ -72,6 +73,42 @@ void AudioDriver::update_mix_time(int p_frames) {
 		_last_mix_time = OS::get_singleton()->get_ticks_usec();
 }
 
+void AudioDriver::update_microphone_default(StringName p_device_name) {
+	if (default_microphone_device_output != NULL) {
+		MicrophoneDeviceOutput *output = default_microphone_device_output->owner;
+		output->remove_reciever(default_microphone_device_output);
+
+		while (output != NULL) {
+			MicrophoneDeviceOutput *owner = output->owner;
+			if (output->recievers.size() == 0) {
+				if (owner == NULL) {
+					if (output->active == true) {
+						capture_device_stop(output->name);
+						output->active == false;
+					}
+				} else {
+					owner->remove_reciever(output);
+					memdelete(output);
+				}
+				output = owner;
+			}
+		}
+
+		if (microphone_device_output_map.has(p_device_name)) {
+
+			Map<StringName, MicrophoneDeviceOutput *>::Element *e = microphone_device_output_map.find(p_device_name);
+			MicrophoneDeviceOutput *new_output = e->get();
+			new_output->add_reciever(default_microphone_device_output);
+			if (new_output->active == false) {
+				capture_device_start(p_device_name);
+				new_output->active = true;
+			}
+		}
+
+		output = default_microphone_device_output->owner;
+	}
+}
+
 double AudioDriver::get_mix_time() const {
 
 	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
@@ -101,6 +138,74 @@ int AudioDriver::get_total_channels_by_speaker_mode(AudioDriver::SpeakerMode p_m
 	ERR_FAIL_V(2);
 }
 
+AudioDriver::MicrophoneReciever *AudioDriver::create_microphone_reciever(const StringName &p_device_name) {
+
+	MicrophoneReciever *microphone_reciever = NULL;
+	MicrophoneDeviceOutput *reciever_output = NULL;
+	MicrophoneDeviceOutput *device_output = NULL;
+
+	StringName device_name = capture_device_get_default_name();
+
+	if (microphone_device_output_map.has(device_name)) {
+
+		Map<StringName, MicrophoneDeviceOutput *>::Element *e = microphone_device_output_map.find(device_name);
+		device_output = e->get();
+	}
+
+	if (device_output) {
+		if (p_device_name == "") {
+			if (default_microphone_device_output != NULL) {
+				reciever_output = default_microphone_device_output;
+			} else {
+				// Default reciever does not exist, create it and connect it
+				default_microphone_device_output = memnew(MicrophoneDeviceOutputIndirect);
+				reciever_output = default_microphone_device_output;
+				device_output->add_reciever(reciever_output);
+			}
+		} else {
+			if (microphone_device_output_map.has(p_device_name)) {
+				reciever_output = device_output;
+			}
+		}
+
+		if (reciever_output) {
+			microphone_reciever = memnew(MicrophoneReciever);
+			reciever_output->add_reciever(microphone_reciever);
+			if (device_output->active == false) {
+				capture_device_start(device_name);
+				device_output->active = true;
+			}
+		}
+	}
+
+	return microphone_reciever;
+}
+
+void AudioDriver::destroy_microphone_reciever(AudioDriver::MicrophoneReciever *p_microphone_reciever) {
+
+	if (p_microphone_reciever != NULL) {
+		MicrophoneDeviceOutput *output = p_microphone_reciever->owner;
+		output->remove_reciever(p_microphone_reciever);
+
+		while (output != NULL) {
+			MicrophoneDeviceOutput *owner = output->owner;
+			if (output->recievers.size() == 0) {
+				if (owner == NULL) {
+					if (output->active == true) {
+						capture_device_stop(output->name);
+						output->active == false;
+					}
+				} else {
+					owner->remove_reciever(output);
+					memdelete(output);
+				}
+				output = owner;
+			}
+		}
+		memdelete(p_microphone_reciever);
+	}
+}
+
 Array AudioDriver::get_device_list() {
 	Array list;
 
@@ -117,6 +222,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_mix_amount = 0;
+
+	default_microphone_device_output = NULL;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
@@ -1199,6 +1306,34 @@ String AudioServer::get_device() {
 void AudioServer::set_device(String device) {
 
 	AudioDriver::get_singleton()->set_device(device);
+}
+
+PoolStringArray AudioServer::audio_in_get_device_names() {
+
+	lock();
+	PoolStringArray device_names = AudioDriver::get_singleton()->capture_device_get_names();
+	unlock();
+
+	return device_names;
+}
+
+AudioDriver::MicrophoneReciever *AudioServer::create_microphone_reciever(const StringName &p_device_name) {
+	AudioDriver::MicrophoneReciever *microphone_reciever = NULL;
+
+	lock();
+	microphone_reciever = AudioDriver::get_singleton()->create_microphone_reciever(p_device_name);
+	unlock();
+
+	return microphone_reciever;
+}
+
+void AudioServer::destroy_microphone_reciever(AudioDriver::MicrophoneReciever *p_microphone_reciever) {
+	lock();
+	AudioDriver::get_singleton()->destroy_microphone_reciever(p_microphone_reciever);
+	unlock();
+}
+
+void AudioServer::_change_default_device(StringName p_recording_device_default_name) {
 }
 
 void AudioServer::_bind_methods() {

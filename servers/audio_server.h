@@ -38,6 +38,8 @@
 #include "variant.h"
 
 class AudioDriverDummy;
+class AudioStream;
+class AudioStreamSample;
 
 class AudioDriver {
 
@@ -53,6 +55,7 @@ class AudioDriver {
 protected:
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+	void update_microphone_default(StringName p_device_name);
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
@@ -64,6 +67,121 @@ protected:
 
 public:
 	double get_mix_time() const; //useful for video -> audio sync
+
+	class MicrophoneDeviceOutput;
+
+	class MicrophoneReciever {
+	public:
+		MicrophoneDeviceOutput *owner;
+
+		MicrophoneReciever() {
+			owner = NULL;
+		}
+
+		~MicrophoneReciever() {
+		}
+	};
+
+	class MicrophoneDeviceOutput : public MicrophoneReciever {
+	public:
+		StringName name;
+		bool active;
+		Vector<MicrophoneReciever *> recievers;
+
+		virtual unsigned int get_mix_rate() = 0;
+		virtual Vector<AudioFrame> &get_buffer() = 0;
+		virtual int get_read_index() = 0;
+		virtual void set_read_index(int p_temp_index) = 0;
+
+		void add_reciever(MicrophoneReciever *p_reciever) {
+			if (p_reciever == NULL) {
+				ERR_PRINT("Attempted to add NULL reciever")
+				return;
+			}
+			if (recievers.find(p_reciever) == -1) {
+				recievers.push_back(p_reciever);
+				p_reciever->owner = this;
+			} else {
+				ERR_PRINT("Duplicate reciever added")
+			}
+		}
+
+		void remove_reciever(MicrophoneReciever *p_reciever) {
+			if (p_reciever == NULL) {
+				ERR_PRINT("Attempted to remove NULL reciever")
+				return;
+			}
+
+			int index = recievers.find(p_reciever);
+
+			if (index != -1) {
+				recievers.remove(index);
+				p_reciever->owner = NULL;
+			} else {
+				ERR_PRINT("Attempted to remove invalid reciever")
+			}
+		}
+	};
+
+	class MicrophoneDeviceOutputDirect : public MicrophoneDeviceOutput {
+	public:
+		enum MicrophoneFormat {
+			FORMAT_FLOAT,
+			FORMAT_PCM
+		};
+
+		MicrophoneFormat microphone_format;
+		unsigned short bits_per_sample;
+		unsigned int channels;
+		unsigned int mix_rate;
+		unsigned short frame_size;
+		int read_index = -2048;
+
+		unsigned int current_capture_index;
+		Vector<AudioFrame> buffer;
+
+		unsigned int get_mix_rate() {
+			return mix_rate;
+		};
+
+		Vector<AudioFrame> &get_buffer() {
+			return buffer;
+		};
+
+		int get_read_index() {
+			return read_index;
+		}
+
+		void set_read_index(int p_read_index) {
+			read_index = p_read_index;
+		}
+	};
+
+	class MicrophoneDeviceOutputIndirect : public MicrophoneDeviceOutput {
+	public:
+		unsigned int get_mix_rate() {
+			return owner->get_mix_rate();
+		};
+
+		Vector<AudioFrame> &get_buffer() {
+			return owner->get_buffer();
+		};
+
+		int get_read_index() {
+			return owner->get_read_index();
+		}
+
+		void set_read_index(int p_read_index) {
+			owner->set_read_index(p_read_index);
+		}
+	};
+
+	MicrophoneDeviceOutputIndirect *default_microphone_device_output;
+
+	Vector<MicrophoneDeviceOutput *> microphone_device_outputs;
+	Map<StringName, MicrophoneDeviceOutput *> microphone_device_output_map;
+
+	Vector<MicrophoneReciever *> direct_recievers;
 
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
@@ -91,10 +209,18 @@ public:
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
+	virtual bool capture_device_start(StringName p_name) = 0;
+	virtual bool capture_device_stop(StringName p_name) = 0;
+	virtual PoolStringArray capture_device_get_names() = 0;
+	virtual StringName capture_device_get_default_name() = 0;
+
 	virtual float get_latency() { return 0; }
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
+
+	AudioDriver::MicrophoneReciever *create_microphone_reciever(const StringName &p_device_name);
+	void destroy_microphone_reciever(AudioDriver::MicrophoneReciever *p_microphone_reciever);
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }
@@ -222,6 +348,18 @@ private:
 
 	void _mix_step();
 
+#if 0
+	struct AudioInBlock {
+
+		Ref<AudioStreamSample> audio_stream;
+		int current_position;
+		bool loops;
+	};
+
+	Map<StringName, AudioInBlock *> audio_in_block_map;
+	Vector<AudioInBlock *> audio_in_blocks;
+#endif
+
 	struct CallbackItem {
 
 		AudioCallback callback;
@@ -236,6 +374,7 @@ private:
 
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
+	void _change_default_device(StringName p_recording_device_default_name);
 
 protected:
 	static void _bind_methods();
@@ -335,8 +474,12 @@ public:
 	String get_device();
 	void set_device(String device);
 
-	float get_output_latency() { return output_latency; }
+	AudioDriver::MicrophoneReciever *create_microphone_reciever(const StringName &p_device_name);
+	void destroy_microphone_reciever(AudioDriver::MicrophoneReciever *p_microphone_reciever);
 
+	PoolStringArray audio_in_get_device_names();
+
+	float get_output_latency() { return output_latency; }
 	AudioServer();
 	virtual ~AudioServer();
 };

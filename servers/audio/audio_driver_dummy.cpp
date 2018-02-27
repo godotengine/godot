@@ -125,6 +125,28 @@ void AudioDriverDummy::finish() {
 	thread = NULL;
 };
 
+bool AudioDriverDummy::capture_device_start(StringName p_name) {
+
+	return false;
+}
+
+bool AudioDriverDummy::capture_device_stop(StringName p_name) {
+
+	return false;
+}
+
+PoolStringArray AudioDriverDummy::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	return names;
+}
+
+StringName AudioDriverDummy::capture_device_get_default_name() {
+
+	return "";
+}
+
 AudioDriverDummy::AudioDriverDummy() {
 
 	mutex = NULL;

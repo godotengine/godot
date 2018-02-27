@@ -434,6 +434,28 @@ void AudioDriverCoreAudio::finish() {
 	}
 };
 
+bool AudioDriverCoreAudio::capture_device_start(StringName p_name) {
+
+	return false;
+}
+
+bool AudioDriverCoreAudio::capture_device_stop(StringName p_name) {
+
+	return false;
+}
+
+PoolStringArray AudioDriverCoreAudio::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	return names;
+}
+
+StringName AudioDriverCoreAudio::capture_device_get_default_name() {
+
+	return "";
+}
+
 AudioDriverCoreAudio::AudioDriverCoreAudio() {
 	active = false;
 	mutex = NULL;

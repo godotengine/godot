@@ -44,18 +44,29 @@
 class AudioDriverWASAPI : public AudioDriver {
 
 	HANDLE event;
+	// Audio out
 	IAudioClient *audio_client;
 	IAudioRenderClient *render_client;
+	// Microphone
+	class MicrophoneDeviceOutputDirectWASAPI : public MicrophoneDeviceOutputDirect {
+	public:
+		IAudioClient *audio_client;
+		IAudioCaptureClient *capture_client;
+	};
+	//
 	Mutex *mutex;
 	Thread *thread;
 
 	String device_name;
 	String new_device;
+	String capture_device_default_name;
 
 	WORD format_tag;
 	WORD bits_per_sample;
 
 	Vector<int32_t> samples_in;
+
+	Map<StringName, StringName> capture_device_id_map;
 
 	unsigned int buffer_size;
 	unsigned int channels;
@@ -70,8 +81,13 @@ class AudioDriverWASAPI : public AudioDriver {
 	_FORCE_INLINE_ void write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample);
 	static void thread_func(void *p_udata);
 
-	Error init_device(bool reinit = false);
-	Error finish_device();
+	StringName get_default_capture_device_name(IMMDeviceEnumerator *p_enumerator);
+
+	Error init_render_device(bool reinit = false);
+	Error init_capture_devices(bool reinit = false);
+
+	Error finish_render_device();
+	Error finish_capture_devices();
 
 public:
 	virtual const char *get_name() const {
@@ -88,6 +104,11 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	virtual bool capture_device_start(StringName p_name);
+	virtual bool capture_device_stop(StringName p_name);
+	virtual PoolStringArray capture_device_get_names();
+	virtual StringName capture_device_get_default_name();
 
 	AudioDriverWASAPI();
 };

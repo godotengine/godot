@@ -32,6 +32,8 @@
 
 #include "audio_driver_wasapi.h"
 
+#include <Functiondiscoverykeys_devpkey.h>
+
 #include "os/os.h"
 #include "project_settings.h"
 
@@ -52,8 +54,20 @@ const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 const IID IID_IAudioClient = __uuidof(IAudioClient);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
+const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-static bool default_device_changed = false;
+#define SAFE_RELEASE(memory) \
+	if ((memory) != NULL) {  \
+		(memory)->Release(); \
+		(memory) = NULL;     \
+	}
+
+#define REFTIMES_PER_SEC 10000000
+#define REFTIMES_PER_MILLISEC 10000
+
+static StringName capture_device_id;
+static bool default_render_device_changed = false;
+static bool default_capture_device_changed = false;
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef;
@@ -109,8 +123,13 @@ public:
 	}
 
 	HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId) {
-		if (flow == eRender && role == eConsole) {
-			default_device_changed = true;
+		if (role == eConsole) {
+			if (flow == eRender) {
+				default_render_device_changed = true;
+			} else if (flow == eCapture) {
+				default_capture_device_changed = true;
+				capture_device_id = String(pwstrDeviceId);
+			}
 		}
 
 		return S_OK;
@@ -123,7 +142,7 @@ public:
 
 static CMMNotificationClient notif_client;
 
-Error AudioDriverWASAPI::init_device(bool reinit) {
+Error AudioDriverWASAPI::init_render_device(bool reinit) {
 
 	WAVEFORMATEX *pwfex;
 	IMMDeviceEnumerator *enumerator = NULL;
@@ -200,11 +219,15 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 	}
 
 	hr = enumerator->RegisterEndpointNotificationCallback(&notif_client);
+	SAFE_RELEASE(enumerator)
+
 	if (hr != S_OK) {
 		ERR_PRINT("WASAPI: RegisterEndpointNotificationCallback error");
 	}
 
 	hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&audio_client);
+	SAFE_RELEASE(device)
+
 	if (reinit) {
 		if (hr != S_OK) {
 			return ERR_CANT_OPEN;
@@ -288,10 +311,181 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 		print_line("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 	}
 
+	// Free memory
+	CoTaskMemFree(pwfex);
+
 	return OK;
 }
 
-Error AudioDriverWASAPI::finish_device() {
+StringName AudioDriverWASAPI::get_default_capture_device_name(IMMDeviceEnumerator *p_enumerator) {
+	// Setup default device
+	IMMDevice *default_device = NULL;
+	LPWSTR pwszID = NULL;
+	IPropertyStore *props = NULL;
+
+	HRESULT hr = p_enumerator->GetDefaultAudioEndpoint(
+			eCapture, eConsole, &default_device);
+	ERR_FAIL_COND_V(hr != S_OK, "");
+
+	// Get the device ID
+	hr = default_device->GetId(&pwszID);
+	ERR_FAIL_COND_V(hr != S_OK, "");
+
+	// Get the device properties
+	hr = default_device->OpenPropertyStore(
+			STGM_READ, &props);
+	ERR_FAIL_COND_V(hr != S_OK, "");
+
+	PROPVARIANT var_name;
+	PropVariantInit(&var_name);
+
+	// Get the name of the device
+	hr = props->GetValue(PKEY_Device_FriendlyName, &var_name);
+	ERR_FAIL_COND_V(hr != S_OK, "");
+
+	// Return the name of device
+	return String(var_name.pwszVal);
+}
+
+Error AudioDriverWASAPI::init_capture_devices(bool reinit) {
+
+	WAVEFORMATEX *pwfex;
+	IMMDeviceEnumerator *enumerator = NULL;
+	IMMDeviceCollection *device_collection = NULL;
+	IPropertyStore *props = NULL;
+
+	capture_device_id_map.clear();
+
+	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
+	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+	capture_device_default_name = get_default_capture_device_name(enumerator);
+
+	// Enumerate a collection of valid devices
+	hr = enumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &device_collection);
+	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+	SAFE_RELEASE(enumerator);
+
+	UINT count;
+	hr = device_collection->GetCount(&count);
+	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+	// Loop through the device count
+	for (unsigned int i = 0; i < count; i++) {
+		IMMDevice *device = NULL;
+		LPWSTR pwszID = NULL;
+
+		// Get the device
+		hr = device_collection->Item(i, &device);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// Get the device ID
+		hr = device->GetId(&pwszID);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// Get the device properties
+		hr = device->OpenPropertyStore(STGM_READ, &props);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		PROPVARIANT var_name;
+		PropVariantInit(&var_name);
+
+		// Get the name of the device
+		hr = props->GetValue(PKEY_Device_FriendlyName, &var_name);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// Save the name of device
+		StringName name = String(var_name.pwszVal);
+
+		// DEBUG: print the device name and ID
+		printf("Endpoint %d: \"%S\" (%S)\n", i, var_name.pwszVal, pwszID);
+
+		capture_device_id_map[StringName(pwszID)] = name;
+
+		// Cleanup the ID and properties
+		CoTaskMemFree(pwszID);
+		pwszID = NULL;
+		PropVariantClear(&var_name);
+		SAFE_RELEASE(props)
+
+		// Create a new audio in block descriptor
+		MicrophoneDeviceOutputDirectWASAPI *microphone_device_output_wasapi = memnew(MicrophoneDeviceOutputDirectWASAPI);
+		microphone_device_output_wasapi->name = name;
+		microphone_device_output_wasapi->active = false;
+
+		// Push it into the list and assign it to the hash map for quick access
+		microphone_device_outputs.push_back(microphone_device_output_wasapi);
+		microphone_device_output_map[name] = microphone_device_output_wasapi;
+
+		// Activate the device
+		hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&microphone_device_output_wasapi->audio_client);
+		SAFE_RELEASE(device)
+
+		// Get the sample rate (hz)
+		hr = microphone_device_output_wasapi->audio_client->GetMixFormat(&pwfex);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		microphone_device_output_wasapi->channels = pwfex->nChannels;
+		microphone_device_output_wasapi->mix_rate = pwfex->nSamplesPerSec;
+		microphone_device_output_wasapi->bits_per_sample = pwfex->wBitsPerSample;
+		microphone_device_output_wasapi->frame_size = (microphone_device_output_wasapi->bits_per_sample / 8) * microphone_device_output_wasapi->channels;
+
+		microphone_device_output_wasapi->current_capture_index = 0;
+
+		if (pwfex->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+			WAVEFORMATEXTENSIBLE *wfex = (WAVEFORMATEXTENSIBLE *)pwfex;
+
+			if (wfex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
+				microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_PCM;
+			} else if (wfex->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+				microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_FLOAT;
+			} else {
+				ERR_PRINT("WASAPI: Format not supported");
+				ERR_FAIL_V(ERR_CANT_OPEN);
+			}
+		} else {
+			if (pwfex->wFormatTag != WAVE_FORMAT_PCM && pwfex->wFormatTag != WAVE_FORMAT_IEEE_FLOAT) {
+				ERR_PRINT("WASAPI: Format not supported");
+				ERR_FAIL_V(ERR_CANT_OPEN);
+			} else {
+				if (pwfex->wFormatTag == WAVE_FORMAT_PCM) {
+					microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_PCM;
+				} else {
+					microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_FLOAT;
+				}
+			}
+		}
+
+		hr = microphone_device_output_wasapi->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, REFTIMES_PER_SEC, 0, pwfex, NULL);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// Get the max frames
+		UINT32 max_frames;
+		hr = microphone_device_output_wasapi->audio_client->GetBufferSize(&max_frames);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// Set the buffer size
+		microphone_device_output_wasapi->buffer.resize(max_frames * 10); // 10 second test buffer (will crash after it's been filled due to lack of looping)
+		memset(microphone_device_output_wasapi->buffer.ptrw(), 0x00, microphone_device_output_wasapi->buffer.size() * microphone_device_output_wasapi->frame_size);
+
+		// Get the capture client
+		hr = microphone_device_output_wasapi->audio_client->GetService(IID_IAudioCaptureClient, (void **)&microphone_device_output_wasapi->capture_client);
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+
+		// TODO: set audio write stream to correct format
+		REFERENCE_TIME hns_actual_duration = (double)REFTIMES_PER_SEC * max_frames / pwfex->nSamplesPerSec;
+
+		// Free memory
+		CoTaskMemFree(pwfex);
+		SAFE_RELEASE(device)
+	}
+	SAFE_RELEASE(device_collection)
+
+	return OK;
+}
+
+Error AudioDriverWASAPI::finish_render_device() {
 
 	if (audio_client) {
 		if (active) {
@@ -303,14 +497,21 @@ Error AudioDriverWASAPI::finish_device() {
 		audio_client = NULL;
 	}
 
-	if (render_client) {
-		render_client->Release();
-		render_client = NULL;
-	}
+	SAFE_RELEASE(render_client)
+	SAFE_RELEASE(audio_client)
 
-	if (audio_client) {
-		audio_client->Release();
-		audio_client = NULL;
+	return OK;
+}
+
+Error AudioDriverWASAPI::finish_capture_devices() {
+
+	microphone_device_output_map.clear();
+	while (microphone_device_outputs.size() > 0) {
+		MicrophoneDeviceOutputDirectWASAPI *microphone_device_output = static_cast<MicrophoneDeviceOutputDirectWASAPI *>(microphone_device_outputs.get(0));
+		SAFE_RELEASE(microphone_device_output->capture_client)
+		SAFE_RELEASE(microphone_device_output->audio_client)
+		microphone_device_outputs.erase(microphone_device_output);
+		memdelete(microphone_device_output);
 	}
 
 	return OK;
@@ -320,9 +521,14 @@ Error AudioDriverWASAPI::init() {
 
 	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 
-	Error err = init_device();
+	Error err = init_render_device();
 	if (err != OK) {
-		ERR_PRINT("WASAPI: init_device error");
+		ERR_PRINT("WASAPI: init_render_device error");
+	}
+
+	err = init_capture_devices();
+	if (err != OK) {
+		ERR_PRINT("WASAPI: init_capture_device error");
 	}
 
 	active = false;
@@ -439,6 +645,78 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 	AudioDriverWASAPI *ad = (AudioDriverWASAPI *)p_udata;
 
 	while (!ad->exit_thread) {
+		// Capture
+
+		if (default_capture_device_changed) {
+			if (ad->capture_device_id_map.has(capture_device_id)) {
+				Map<StringName, StringName>::Element *e = ad->capture_device_id_map.find(capture_device_id);
+				ad->lock();
+				ad->start_counting_ticks();
+
+				ad->capture_device_default_name = e->get();
+				ad->update_microphone_default(ad->capture_device_default_name);
+
+				default_capture_device_changed = false;
+
+				ad->stop_counting_ticks();
+				ad->unlock();
+			}
+		}
+
+		for (int i = 0; i < ad->microphone_device_outputs.size(); i++) {
+			MicrophoneDeviceOutputDirectWASAPI *microphone_device_output_wasapi = static_cast<MicrophoneDeviceOutputDirectWASAPI *>(ad->microphone_device_outputs[i]);
+
+			if (microphone_device_output_wasapi->active == false) {
+				continue;
+			}
+
+			UINT32 packet_length = 0;
+			BYTE *data;
+			UINT32 num_frames_available;
+			DWORD flags;
+
+			HRESULT hr = microphone_device_output_wasapi->capture_client->GetNextPacketSize(&packet_length);
+			ERR_BREAK(hr != S_OK);
+
+			while (packet_length != 0) {
+				hr = microphone_device_output_wasapi->capture_client->GetBuffer(&data, &num_frames_available, &flags, NULL, NULL);
+				ERR_BREAK(hr != S_OK);
+
+				unsigned int frames_to_copy = num_frames_available;
+
+				if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
+					memset((char *)(microphone_device_output_wasapi->buffer.ptrw()) + (microphone_device_output_wasapi->current_capture_index * microphone_device_output_wasapi->frame_size), 0, frames_to_copy * microphone_device_output_wasapi->frame_size);
+				} else {
+					// fixme: Only works for floating point atm
+					if (microphone_device_output_wasapi->channels == 2) {
+						for (int j = 0; j < frames_to_copy; j++) {
+							float left = *(((float *)data) + (j * 2));
+							float right = *(((float *)data) + (j * 2) + 1);
+							microphone_device_output_wasapi->buffer[microphone_device_output_wasapi->current_capture_index + j] = AudioFrame(left, right);
+						}
+					} else if (microphone_device_output_wasapi->channels == 1) {
+						for (int j = 0; j < frames_to_copy; j++) {
+							float value = *(((float *)data) + j);
+							microphone_device_output_wasapi->buffer[microphone_device_output_wasapi->current_capture_index + j] = AudioFrame(value, value);
+						}
+					} else {
+						ERR_PRINT("WASAPI: unsupported channel count in microphone!");
+					}
+				}
+
+				hr = microphone_device_output_wasapi->capture_client->ReleaseBuffer(num_frames_available);
+				ERR_BREAK(hr != S_OK);
+
+				hr = microphone_device_output_wasapi->capture_client->GetNextPacketSize(&packet_length);
+				ERR_BREAK(hr != S_OK);
+
+				microphone_device_output_wasapi->current_capture_index += frames_to_copy;
+
+				// Test: ensuring the read index is always behind the capture index keeps the input and output reliably in sync, but it
+				// also results in clipping, stutter and other audio artefacts
+				microphone_device_output_wasapi->set_read_index(microphone_device_output_wasapi->current_capture_index - 8192);
+			}
+		}
 
 		ad->lock();
 		ad->start_counting_ticks();
@@ -514,9 +792,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 				// Device is not valid anymore
 				WARN_PRINT("WASAPI: Current device invalidated, closing device");
 
-				Error err = ad->finish_device();
+				Error err = ad->finish_render_device();
 				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_device error");
+					ERR_PRINT("WASAPI: finish_render_device error");
 				}
 			}
 
@@ -528,26 +806,26 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->start_counting_ticks();
 
 		// If we're using the Default device and it changed finish it so we'll re-init the device
-		if (ad->device_name == "Default" && default_device_changed) {
-			Error err = ad->finish_device();
+		if (ad->device_name == "Default" && default_render_device_changed) {
+			Error err = ad->finish_render_device();
 			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_device error");
+				ERR_PRINT("WASAPI: finish_render_device error");
 			}
 
-			default_device_changed = false;
+			default_render_device_changed = false;
 		}
 
 		// User selected a new device, finish the current one so we'll init the new device
 		if (ad->device_name != ad->new_device) {
 			ad->device_name = ad->new_device;
-			Error err = ad->finish_device();
+			Error err = ad->finish_render_device();
 			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_device error");
+				ERR_PRINT("WASAPI: finish_render_device error");
 			}
 		}
 
 		if (!ad->audio_client) {
-			Error err = ad->init_device(true);
+			Error err = ad->init_render_device(true);
 			if (err == OK) {
 				ad->start();
 			}
@@ -594,12 +872,65 @@ void AudioDriverWASAPI::finish() {
 		thread = NULL;
 	}
 
-	finish_device();
+	finish_capture_devices();
+	finish_render_device();
 
 	if (mutex) {
 		memdelete(mutex);
 		mutex = NULL;
 	}
+}
+
+bool AudioDriverWASAPI::capture_device_start(StringName p_name) {
+
+	if (microphone_device_output_map.has(p_name)) {
+		MicrophoneDeviceOutputDirectWASAPI *microphone_device_output_wasapi = static_cast<MicrophoneDeviceOutputDirectWASAPI *>(microphone_device_output_map[p_name]);
+		if (microphone_device_output_wasapi->active == false) {
+			microphone_device_output_wasapi->audio_client->Start();
+			microphone_device_output_wasapi->active = true;
+			microphone_device_output_wasapi->set_read_index(-2048);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool AudioDriverWASAPI::capture_device_stop(StringName p_name) {
+
+	if (microphone_device_output_map.has(p_name)) {
+		MicrophoneDeviceOutputDirectWASAPI *microphone_device_output_wasapi = static_cast<MicrophoneDeviceOutputDirectWASAPI *>(microphone_device_output_map[p_name]);
+		if (microphone_device_output_wasapi->active == true) {
+			microphone_device_output_wasapi->audio_client->Stop();
+			microphone_device_output_wasapi->active = false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+PoolStringArray AudioDriverWASAPI::capture_device_get_names() {
+
+	PoolStringArray names;
+
+	for (int i = 0; i < microphone_device_outputs.size(); i++) {
+		MicrophoneDeviceOutputDirectWASAPI *microphone_device_output_wasapi = static_cast<MicrophoneDeviceOutputDirectWASAPI *>(microphone_device_outputs.get(i));
+		names.push_back(microphone_device_output_wasapi->name);
+	}
+
+	return names;
+}
+
+StringName AudioDriverWASAPI::capture_device_get_default_name() {
+
+	lock();
+	StringName capture_device_default_name_local = capture_device_default_name;
+	unlock();
+
+	return capture_device_default_name_local;
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
@@ -626,6 +957,7 @@ AudioDriverWASAPI::AudioDriverWASAPI() {
 
 	device_name = "Default";
 	new_device = "Default";
+	capture_device_default_name = "";
 }
 
 #endif

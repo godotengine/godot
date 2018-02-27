@@ -99,6 +99,129 @@ void AudioStream::_bind_methods() {
 
 ////////////////////////////////
 
+Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
+	Ref<AudioStreamPlaybackMicrophone> playback;
+	playback.instance();
+
+	playbacks.insert(playback.ptr());
+
+	playback->microphone = Ref<AudioStreamMicrophone>((AudioStreamMicrophone *)this);
+	playback->active = false;
+
+	return playback;
+}
+
+String AudioStreamMicrophone::get_stream_name() const {
+
+	//if (audio_stream.is_valid()) {
+	//return "Random: " + audio_stream->get_name();
+	//}
+	return "Microphone";
+}
+
+void AudioStreamMicrophone::set_microphone_name(const String &p_name) {
+	if (microphone_name != p_name) {
+		microphone_name = p_name;
+
+		for (Set<AudioStreamPlaybackMicrophone *>::Element *E = playbacks.front(); E; E = E->next()) {
+			if (E->get()->active) {
+				// Is this the right thing to do?
+				E->get()->stop();
+				E->get()->start();
+			}
+		}
+	}
+}
+
+StringName AudioStreamMicrophone::get_microphone_name() const {
+	return microphone_name;
+}
+
+float AudioStreamMicrophone::get_length() const {
+	return 0;
+}
+
+void AudioStreamMicrophone::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_microphone_name", "name"), &AudioStreamMicrophone::set_microphone_name);
+	ClassDB::bind_method(D_METHOD("get_microphone_name"), &AudioStreamMicrophone::get_microphone_name);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "microphone_name"), "set_microphone_name", "get_microphone_name");
+}
+
+AudioStreamMicrophone::AudioStreamMicrophone() {
+}
+
+void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+
+	AudioDriver::MicrophoneDeviceOutput *microphone_device_output = reciever->owner;
+	const Vector<AudioFrame> &source_buffer = microphone_device_output->get_buffer();
+
+	if (microphone_device_output->get_read_index() >= 0) {
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] = source_buffer[internal_mic_offset + microphone_device_output->get_read_index() + i];
+		}
+	}
+
+	internal_mic_offset += p_frames;
+}
+
+void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	AudioStreamPlaybackResampled::mix(p_buffer, p_rate_scale, p_frames);
+	internal_mic_offset = 0; // Reset
+}
+
+float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
+	return reciever->owner->get_mix_rate();
+}
+
+void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
+	active = true;
+
+	// note: can this be called twice?
+	reciever = AudioServer::get_singleton()->create_microphone_reciever(microphone->get_microphone_name());
+	if (reciever == NULL) {
+		active = false;
+	}
+
+	_begin_resample();
+}
+
+void AudioStreamPlaybackMicrophone::stop() {
+	active = false;
+	if (reciever != NULL) {
+		AudioServer::get_singleton()->destroy_microphone_reciever(reciever);
+		reciever = NULL;
+	}
+}
+
+bool AudioStreamPlaybackMicrophone::is_playing() const {
+	return active;
+}
+
+int AudioStreamPlaybackMicrophone::get_loop_count() const {
+	return 0;
+}
+
+float AudioStreamPlaybackMicrophone::get_playback_position() const {
+	return 0;
+}
+
+void AudioStreamPlaybackMicrophone::seek(float p_time) {
+	return; // Can't seek a microphone input
+}
+
+AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
+	microphone->playbacks.erase(this);
+	stop();
+}
+
+AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
+	internal_mic_offset = 0;
+	reciever = NULL;
+}
+
+////////////////////////////////
+
 void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
 
 	audio_stream = p_audio_stream;
