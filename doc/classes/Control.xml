@@ -117,6 +117,16 @@
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
+				Godot calls this method to test if [code]data[/code] from a control's [method get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
+				This method should only be used to test the data. Process the data in [method drop_data].
+				[codeblock]
+				extends Control
+				
+				func can_drop_data(position, data):
+				    # check position if it is relevant to you
+				    # otherwise just check data
+				    return typeof(data) == TYPE_DICTIONARY and data.has('expected')
+				[/codeblock]
 			</description>
 		</method>
 		<method name="drop_data" qualifiers="virtual">
@@ -127,6 +137,16 @@
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
+				Godot calls this method to pass you the [code]data[/code] from a control's [method get_drag_data] result. Godot first calls [method can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
+				[codeblock]
+				extends ColorRect
+				
+				func can_drop_data(position, data):
+				    return typeof(data) == TYPE_DICTIONARY and data.has('color')
+				
+				func drop_data(position, data):
+				    color = data['color']
+				[/codeblock]
 			</description>
 		</method>
 		<method name="force_drag">
@@ -137,6 +157,8 @@
 			<argument index="1" name="preview" type="Control">
 			</argument>
 			<description>
+				Forces drag and bypasses [method get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
+				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to recieve drop data.
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
@@ -186,6 +208,16 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Return null if there is no data to drag. Controls that want to recieve drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
+				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
+				[codeblock]
+				extends Control
+				
+				func get_drag_data(position):
+					var mydata = make_data()
+					set_drag_preview(make_preview(mydata))
+					return mydata
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -485,6 +517,28 @@
 			<argument index="0" name="target" type="Control">
 			</argument>
 			<description>
+				Forwards the handling of this control's drag and drop to [code]target[/code] control.
+				Forwarding can be implemented in the target control similar to the methods [method get_drag_data], [method can_drop_data], and [method drop_data] but with two differences:
+				1. The function name must be suffixed with [b]_fw[/b]
+				2. The function must take an extra argument that is the control doing the forwarding
+				[codeblock]
+				# ThisControl.gd
+				extends Control
+				func _ready():
+				    set_drag_forwarding(target_control)
+				
+				# TargetControl.gd
+				extends Control
+				func can_drop_data_fw(position, data, from_control):
+				    return true
+				
+				func drop_data_fw(position, data, from_control):
+				    my_handle_data(data)
+				
+				func get_drag_data_fw(position, from_control):
+				    set_drag_preview(my_preview)
+				    return my_data()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_drag_preview">
@@ -493,6 +547,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
+				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data].
 			</description>
 		</method>
 		<method name="set_end">
