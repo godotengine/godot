@@ -235,7 +235,7 @@ File extracted from upstream source:
   - From `server/` exclude `access-log.c`, `cgi.c`, `daemonize.c`, `lws-spa.c`, 
 `peer-limits.c`, `rewrite.c`
 - Also copy `win32helpers/` from `win32port/`
-- `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX (missing `malloc.h`).
+- `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX and FreeBSD (missing `malloc.h`).
   The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom 
