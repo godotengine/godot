@@ -148,8 +148,6 @@ private:
 		NAME_CASING_SNAKE_CASE
 	};
 
-	Ref<MultiplayerAPI> multiplayer;
-
 	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);
 
