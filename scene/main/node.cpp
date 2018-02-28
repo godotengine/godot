@@ -1708,16 +1708,29 @@ bool Node::has_persistent_groups() const {
 
 	return false;
 }
-void Node::_print_tree(const Node *p_node) {
+void Node::_print_tree_pretty(const String prefix, const bool last) {
 
-	print_line(String(p_node->get_path_to(this)));
-	for (int i = 0; i < data.children.size(); i++)
-		data.children[i]->_print_tree(p_node);
+	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
+	print_line(prefix + new_prefix + String(get_name()));
+	for (int i = 0; i < data.children.size(); i++) {
+		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
+		data.children[i]->_print_tree_pretty(prefix + new_prefix, i == data.children.size() - 1);
+	}
+}
+
+void Node::print_tree_pretty() {
+	_print_tree_pretty("", true);
 }
 
 void Node::print_tree() {
 
 	_print_tree(this);
+}
+
+void Node::_print_tree(const Node *p_node) {
+	print_line(String(p_node->get_path_to(this)));
+	for (int i = 0; i < data.children.size(); i++)
+		data.children[i]->_print_tree(p_node);
 }
 
 void Node::_propagate_reverse_notification(int p_notification) {
@@ -2668,6 +2681,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
 	ClassDB::bind_method(D_METHOD("get_index"), &Node::get_index);
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
+	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
 	ClassDB::bind_method(D_METHOD("get_filename"), &Node::get_filename);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
