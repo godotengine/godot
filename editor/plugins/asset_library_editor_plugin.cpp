@@ -515,8 +515,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	download = memnew(HTTPRequest);
 	add_child(download);
 	download->connect("request_completed", this, "_http_download_completed");
-	// Threaded HTTPRequest causes crashes (GH-19336)
-	download->set_use_threads(false);
+	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
 	download_error = memnew(AcceptDialog);
 	add_child(download_error);
@@ -835,8 +834,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
-	// Threaded HTTPRequest causes crashes (GH-19336)
-	iq.request->set_use_threads(false);
+	iq.request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;
