@@ -151,6 +151,7 @@ private:
 		NAME_CASING_SNAKE_CASE
 	};
 
+	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);
 
 	Node *_get_node(const NodePath &p_path) const;
@@ -287,6 +288,7 @@ public:
 	int get_index() const;
 
 	void print_tree();
+	void print_tree_pretty();
 
 	void set_filename(const String &p_filename);
 	String get_filename() const;
