@@ -719,12 +719,13 @@ void FileSystemDock::_push_to_history() {
 	button_hist_next->set_disabled(history_pos == history.size() - 1);
 }
 
-void FileSystemDock::_get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files) const {
+void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const {
 	if (efsd == NULL)
 		return;
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		_get_all_files_in_dir(efsd->get_subdir(i), files);
+		folders.push_back(efsd->get_subdir(i)->get_path());
+		_get_all_items_in_dir(efsd->get_subdir(i), files, folders);
 	}
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		files.push_back(efsd->get_file_path(i));
@@ -746,7 +747,8 @@ void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const Map<Str
 	}
 }
 
-void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) const {
+void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_new_path,
+		Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames) const {
 	//Ensure folder paths end with "/"
 	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
@@ -763,11 +765,13 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	}
 
 	//Build a list of files which will have new paths as a result of this operation
-	Vector<String> changed_paths;
+	Vector<String> file_changed_paths;
+	Vector<String> folder_changed_paths;
 	if (p_item.is_file) {
-		changed_paths.push_back(old_path);
+		file_changed_paths.push_back(old_path);
 	} else {
-		_get_all_files_in_dir(EditorFileSystem::get_singleton()->get_filesystem_path(old_path), changed_paths);
+		folder_changed_paths.push_back(old_path);
+		_get_all_items_in_dir(EditorFileSystem::get_singleton()->get_filesystem_path(old_path), file_changed_paths, folder_changed_paths);
 	}
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -783,12 +787,12 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 
 		// update scene if it is open
-		for (int i = 0; i < changed_paths.size(); ++i) {
-			String new_item_path = p_item.is_file ? new_path : changed_paths[i].replace_first(old_path, new_path);
-			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(changed_paths[i])) {
+		for (int i = 0; i < file_changed_paths.size(); ++i) {
+			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
+			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(file_changed_paths[i])) {
 				EditorData *ed = &editor->get_editor_data();
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
-					if (ed->get_scene_path(j) == changed_paths[i]) {
+					if (ed->get_scene_path(j) == file_changed_paths[i]) {
 						ed->get_edited_scene_root(j)->set_filename(new_item_path);
 						break;
 					}
@@ -797,9 +801,12 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 
 		//Only treat as a changed dependency if it was successfully moved
-		for (int i = 0; i < changed_paths.size(); ++i) {
-			p_renames[changed_paths[i]] = changed_paths[i].replace_first(old_path, new_path);
-			print_line("  Remap: " + changed_paths[i] + " -> " + p_renames[changed_paths[i]]);
+		for (int i = 0; i < file_changed_paths.size(); ++i) {
+			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
+			print_line("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
+		}
+		for (int i = 0; i < folder_changed_paths.size(); ++i) {
+			p_folder_renames[folder_changed_paths[i]] = folder_changed_paths[i].replace_first(old_path, new_path);
 		}
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + "\n");
@@ -912,6 +919,25 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 	}
 }
 
+void FileSystemDock::_update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const {
+
+	Vector<String> favorite_dirs = EditorSettings::get_singleton()->get_favorite_dirs();
+	Vector<String> new_favorite_dirs;
+
+	for (int i = 0; i < favorite_dirs.size(); i++) {
+		String old_path = favorite_dirs[i] + "/";
+
+		if (p_renames.has(old_path)) {
+			String new_path = p_renames[old_path];
+			new_favorite_dirs.push_back(new_path.substr(0, new_path.length() - 1));
+		} else {
+			new_favorite_dirs.push_back(favorite_dirs[i]);
+		}
+	}
+
+	EditorSettings::get_singleton()->set_favorite_dirs(new_favorite_dirs);
+}
+
 void FileSystemDock::_make_dir_confirm() {
 	String dir_name = make_dir_dialog_text->get_text().strip_edges();
 
@@ -970,10 +996,12 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 	memdelete(da);
 
-	Map<String, String> renames;
-	_try_move_item(to_rename, new_path, renames);
-	_update_dependencies_after_move(renames);
-	_update_resource_paths_after_move(renames);
+	Map<String, String> file_renames;
+	Map<String, String> folder_renames;
+	_try_move_item(to_rename, new_path, file_renames, folder_renames);
+	_update_dependencies_after_move(file_renames);
+	_update_resource_paths_after_move(file_renames);
+	_update_favorite_dirs_list_after_move(folder_renames);
 
 	//Rescan everything
 	print_line("call rescan!");
@@ -1017,15 +1045,17 @@ void FileSystemDock::_duplicate_operation_confirm() {
 
 void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
 
-	Map<String, String> renames;
+	Map<String, String> file_renames;
+	Map<String, String> folder_renames;
 	for (int i = 0; i < to_move.size(); i++) {
 		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
 		String new_path = p_to_path.plus_file(old_path.get_file());
-		_try_move_item(to_move[i], new_path, renames);
+		_try_move_item(to_move[i], new_path, file_renames, folder_renames);
 	}
 
-	_update_dependencies_after_move(renames);
-	_update_resource_paths_after_move(renames);
+	_update_dependencies_after_move(file_renames);
+	_update_resource_paths_after_move(file_renames);
+	_update_favorite_dirs_list_after_move(folder_renames);
 
 	print_line("call rescan!");
 	_rescan();
