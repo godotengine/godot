@@ -76,6 +76,7 @@ class GridMapEditor : public VBoxContainer {
 	Panel *panel;
 	MenuButton *options;
 	SpinBox *floor;
+	double accumulated_floor_delta;
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
