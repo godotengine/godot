@@ -453,7 +453,30 @@
 			<return type="void">
 			</return>
 			<description>
-				Prints the scene hierarchy of this node and all it's children to stdout. Used mainly for debugging purposes.
+				Prints the tree to stdout. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. Example output:
+				[codeblock]
+				TheGame
+				TheGame/Menu
+				TheGame/Menu/Label
+				TheGame/Menu/Camera2D
+				TheGame/SplashScreen
+				TheGame/SplashScreen/Camera2D
+				[/codeblock]
+			</description>
+		</method>
+		<method name="print_tree_pretty">
+			<return type="void">
+			</return>
+			<description>
+				Similar to [method print_tree], this prints the tree to stdout. This version displays a more graphical representation similar to what is displayed in the scene inspector. It is useful for inspecting larger trees. Example output:
+				[codeblock]
+				 ┖╴TheGame
+				    ┠╴Menu
+				    ┃  ┠╴Label
+				    ┃  ┖╴Camera2D
+				    ┖-SplashScreen
+				       ┖╴Camera2D
+				[/codeblock]
 			</description>
 		</method>
 		<method name="propagate_call">
