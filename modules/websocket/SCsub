@@ -69,11 +69,11 @@ else:
     env_lws.Append(CPPPATH=[thirdparty_dir])
 
     wrapper_includes = ["#thirdparty/lws/mbedtls_wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
-    env_lws.Append(CPPPATH=wrapper_includes)
+    env_lws.Prepend(CPPPATH=wrapper_includes)
 
     if env['builtin_mbedtls']:
         mbedtls_includes = "#thirdparty/mbedtls/include"
-        env_lws.Append(CPPPATH=[mbedtls_includes])
+        env_lws.Prepend(CPPPATH=[mbedtls_includes])
 
     if env_lws["platform"] == "windows" or env_lws["platform"] == "uwp":
         env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])

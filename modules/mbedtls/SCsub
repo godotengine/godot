@@ -85,7 +85,7 @@ if env['builtin_mbedtls']:
     thirdparty_dir = "#thirdparty/mbedtls/library/"
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
     env_mbed_tls.add_source_files(env.modules_sources, thirdparty_sources)
-    env_mbed_tls.Append(CPPPATH=["#thirdparty/mbedtls/include/"])
+    env_mbed_tls.Prepend(CPPPATH=["#thirdparty/mbedtls/include/"])
 
 # Module sources
 env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")
