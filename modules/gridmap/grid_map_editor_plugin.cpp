@@ -641,12 +641,21 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 
-		if (pan_gesture->get_command() || pan_gesture->get_shift()) {
-			const real_t delta = pan_gesture->get_delta().y;
-			floor->set_value(floor->get_value() + SGN(delta));
+		if (pan_gesture->get_alt() && (pan_gesture->get_command() || pan_gesture->get_shift())) {
+			const real_t delta = pan_gesture->get_delta().y * 0.5;
+			accumulated_floor_delta += delta;
+			int step = 0;
+			if (ABS(accumulated_floor_delta) > 1.0) {
+				step = SGN(accumulated_floor_delta);
+				accumulated_floor_delta -= step;
+			}
+			if (step) {
+				floor->set_value(floor->get_value() + step);
+			}
 			return true;
 		}
 	}
+	accumulated_floor_delta = 0.0;
 
 	return false;
 }
@@ -1247,6 +1256,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	selection.active = false;
 	updating = false;
+	accumulated_floor_delta = 0.0;
 }
 
 GridMapEditor::~GridMapEditor() {
