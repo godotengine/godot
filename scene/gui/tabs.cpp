@@ -1005,6 +1005,4 @@ Tabs::Tabs() {
 	scrolling_enabled = true;
 	buttons_visible = false;
 	hover = -1;
-	drag_to_rearrange_enabled = false;
-	tabs_rearrange_group = -1;
 }
