@@ -3911,6 +3911,8 @@ Tree::Tree() {
 	cache.click_id = -1;
 	cache.click_item = NULL;
 	cache.click_column = 0;
+	cache.hover_cell = -1;
+	cache.hover_index = -1;
 	last_keypress = 0;
 	focus_in_id = 0;
 
