@@ -153,6 +153,7 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer_api;
 
+	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);
 
 	Node *_get_node(const NodePath &p_path) const;
