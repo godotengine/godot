@@ -707,6 +707,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
 		channel[i].vu_r->set_step(0.1);
+
+		channel[i].peak_l = 0.0f;
+		channel[i].peak_r = 0.0f;
 	}
 
 	scale = memnew(TextureRect);

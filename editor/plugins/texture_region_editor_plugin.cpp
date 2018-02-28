@@ -783,6 +783,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	snap_step = Vector2(10, 10);
 	snap_separation = Vector2(0, 0);
+	snap_mode = SNAP_NONE;
 	edited_margin = -1;
 	drag_index = -1;
 	drag = false;
