@@ -39,6 +39,38 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
+void post_process_preview(Ref<Image> p_image) {
+
+	if (p_image->get_format() != Image::FORMAT_RGBA8)
+		p_image->convert(Image::FORMAT_RGBA8);
+
+	p_image->lock();
+
+	const int w = p_image->get_width();
+	const int h = p_image->get_height();
+
+	const int r = MIN(w, h) / 32;
+	const int r2 = r * r;
+	Color transparent = Color(0, 0, 0, 0);
+
+	for (int i = 0; i < r; i++) {
+		for (int j = 0; j < r; j++) {
+			int dx = i - r;
+			int dy = j - r;
+			if (dx * dx + dy * dy > r2) {
+				p_image->set_pixel(i, j, transparent);
+				p_image->set_pixel(w - 1 - i, j, transparent);
+				p_image->set_pixel(w - 1 - i, h - 1 - j, transparent);
+				p_image->set_pixel(i, h - 1 - j, transparent);
+			} else {
+				break;
+			}
+		}
+	}
+
+	p_image->unlock();
+}
+
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
 
 	return ClassDB::is_parent_class(p_type, "Texture");
