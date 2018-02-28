@@ -175,7 +175,8 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 				Vector2 p = polygon[i];
 				Vector2 n = polygon[(i + 1) % polygon.size()];
-				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 3);
+				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
+				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
 			}
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
