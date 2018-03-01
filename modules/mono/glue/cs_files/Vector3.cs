@@ -12,6 +12,12 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -65,7 +71,7 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = Length();
+            real_t length = this.Length();
 
             if (length == 0f)
             {
@@ -219,11 +225,6 @@ namespace Godot
             return 2.0f * n * Dot(n) - this;
         }
 
-        public Vector3 Round()
-        {
-            return new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
-        }
-
         public Vector3 Rotated(Vector3 axis, real_t phi)
         {
             return new Basis(axis, phi).Xform(this);
@@ -237,15 +238,9 @@ namespace Godot
         }
         public void Set(Vector3 v)
         {
-            x = v.x;
-            y = v.y;
-            z = v.z;
-        }
-
-        public Vector3 Slerp(Vector3 b, real_t t)
-        {
-            real_t theta = AngleTo(b);
-            return Rotated(Cross(b), theta * t);
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
         }
 
         public Vector3 Slide(Vector3 n)
@@ -303,9 +298,9 @@ namespace Godot
         }
         public Vector3(Vector3 v)
         {
-            x = v.x;
-            y = v.y;
-            z = v.z;
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
         }
 
         public static Vector3 operator +(Vector3 left, Vector3 right)

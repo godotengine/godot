@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Math.Max(r, Math.Max(g, b));
-                float min = Math.Min(r, Math.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Math.Max(r, Math.Max(g, b));
-                float min = Math.Min(r, Math.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -96,7 +96,7 @@ namespace Godot
         {
             get
             {
-                return Math.Max(r, Math.Max(g, b));
+                return (float) Mathf.Max(r, (float) Mathf.Max(g, b));
             }
             set
             {
@@ -392,7 +392,7 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            var v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
+            int v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
 
             var ret = string.Empty;
 

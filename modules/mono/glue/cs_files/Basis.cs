@@ -6,6 +6,12 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -191,7 +197,7 @@ namespace Godot
             Vector3 euler;
             euler.z = 0.0f;
 
-            real_t mxy = m[1, 2];
+            real_t mxy = m.y[2];
 
 
             if (mxy < 1.0f)
@@ -251,7 +257,8 @@ namespace Godot
         {
             var inv = this;
 
-            real_t[] co = {
+            real_t[] co = new real_t[3]
+            {
                 inv[1, 1] * inv[2, 2] - inv[1, 2] * inv[2, 1],
                 inv[1, 2] * inv[2, 0] - inv[1, 0] * inv[2, 2],
                 inv[1, 0] * inv[2, 1] - inv[1, 1] * inv[2, 0]
@@ -378,52 +385,49 @@ namespace Godot
             );
         }
 
-		public Quat Quat() {
-			real_t trace = _x[0] + _y[1] + _z[2];
+        public Quat Quat() {
+            real_t trace = x[0] + y[1] + z[2];
 
-			if (trace > 0.0f) {
-				real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_z[1] - _y[2]) * inv_s,
-					(_x[2] - _z[0]) * inv_s,
-					(_y[0] - _x[1]) * inv_s,
-					s * 0.25f
-				);
-			}
-
-		    if (_x[0] > _y[1] && _x[0] > _z[2]) {
-		        real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
-		        real_t inv_s = 1f / s;
-		        return new Quat(
-		            s * 0.25f,
-		            (_x[1] + _y[0]) * inv_s,
-		            (_x[2] + _z[0]) * inv_s,
-		            (_z[1] - _y[2]) * inv_s
-		        );
-		    }
-
-		    if (_y[1] > _z[2]) {
-		        real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
-		        real_t inv_s = 1f / s;
-		        return new Quat(
-		            (_x[1] + _y[0]) * inv_s,
-		            s * 0.25f,
-		            (_y[2] + _z[1]) * inv_s,
-		            (_x[2] - _z[0]) * inv_s
-		        );
-		    } else {
-		        real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
-		        real_t inv_s = 1f / s;
-		        return new Quat(
-		            (_x[2] + _z[0]) * inv_s,
-		            (_y[2] + _z[1]) * inv_s,
-		            s * 0.25f,
-		            (_y[0] - _x[1]) * inv_s
-		        );
-		    }
-		}
-
+            if (trace > 0.0f) {
+                real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (z[1] - y[2]) * inv_s,
+                    (x[2] - z[0]) * inv_s,
+                    (y[0] - x[1]) * inv_s,
+                    s * 0.25f
+                );
+            } else if (x[0] > y[1] && x[0] > z[2]) {
+                real_t s = Mathf.Sqrt(x[0] - y[1] - z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    s * 0.25f,
+                    (x[1] + y[0]) * inv_s,
+                    (x[2] + z[0]) * inv_s,
+                    (z[1] - y[2]) * inv_s
+                );
+            } else if (y[1] > z[2]) {
+                real_t s = Mathf.Sqrt(-x[0] + y[1] - z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (x[1] + y[0]) * inv_s,
+                    s * 0.25f,
+                    (y[2] + z[1]) * inv_s,
+                    (x[2] - z[0]) * inv_s
+                );
+            } else {
+                real_t s = Mathf.Sqrt(-x[0] - y[1] + z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (x[2] + z[0]) * inv_s,
+                    (y[2] + z[1]) * inv_s,
+                    s * 0.25f,
+                    (y[0] - x[1]) * inv_s
+                );
+            }
+        }
+        
+        // Constructors 
         public Basis(Quat quat)
         {
             real_t s = 2.0f / quat.LengthSquared();
@@ -441,28 +445,6 @@ namespace Godot
             real_t yz = quat.y * zs;
             real_t zz = quat.z * zs;
 
-            _x = new Vector3(1.0f - (yy + zz), xy - wz, xz + wy);
-            _y = new Vector3(xy + wz, 1.0f - (xx + zz), yz - wx);
-            _z = new Vector3(xz - wy, yz + wx, 1.0f - (xx + yy));
-        }
-
-        public Basis(Vector3 euler)
-        {
-            real_t c;
-            real_t s;
-
-            c = Mathf.Cos(euler.x);
-            s = Mathf.Sin(euler.x);
-            var xmat = new Basis(1, 0, 0, 0, c, -s, 0, s, c);
-
-            c = Mathf.Cos(euler.y);
-            s = Mathf.Sin(euler.y);
-            var ymat = new Basis(c, 0, s, 0, 1, 0, -s, 0, c);
-
-            c = Mathf.Cos(euler.z);
-            s = Mathf.Sin(euler.z);
-            var zmat = new Basis(c, -s, 0, s, c, 0, 0, 0, 1);
-
             this = ymat * xmat * zmat;
         }
 
@@ -470,8 +452,8 @@ namespace Godot
         {
             var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
 
-            real_t cosine = Mathf.Cos( phi);
-            real_t sine = Mathf.Sin( phi);
+            real_t cosine = Mathf.Cos( (real_t)phi);
+            real_t sine = Mathf.Sin( (real_t)phi);
 
             _x = new Vector3
             (
