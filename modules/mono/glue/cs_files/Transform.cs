@@ -1,6 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -33,7 +39,7 @@ namespace Godot
             return new Transform(basis.Orthonormalized(), origin);
         }
 
-        public Transform Rotated(Vector3 axis, float phi)
+        public Transform Rotated(Vector3 axis, real_t phi)
         {
             return new Transform(new Basis(axis, phi), new Vector3()) * this;
         }
@@ -97,7 +103,8 @@ namespace Godot
                 (basis[0, 2] * vInv.x) + (basis[1, 2] * vInv.y) + (basis[2, 2] * vInv.z)
             );
         }
-
+        
+        // Constructors 
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
             this.basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);

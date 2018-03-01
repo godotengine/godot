@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -96,7 +96,7 @@ namespace Godot
         {
             get
             {
-                return Mathf.Max(r, Mathf.Max(g, b));
+                return (float) Mathf.Max(r, (float) Mathf.Max(g, b));
             }
             set
             {
@@ -316,7 +316,8 @@ namespace Godot
 
             return txt;
         }
-
+        
+        // Constructors 
         public Color(float r, float g, float b, float a = 1.0f)
         {
             this.r = r;
@@ -375,7 +376,7 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            int v = (int)Mathf.Clamp(val * 255.0f, 0, 255);
+            int v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
 
             string ret = string.Empty;
 
