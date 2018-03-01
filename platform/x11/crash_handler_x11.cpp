@@ -32,8 +32,9 @@
 #define CRASH_HANDLER_ENABLED 1
 #endif
 
+#include "crash_handler_x11.h"
 #include "main/main.h"
-#include "os_x11.h"
+#include "os/os.h"
 #include "project_settings.h"
 
 #ifdef CRASH_HANDLER_ENABLED
