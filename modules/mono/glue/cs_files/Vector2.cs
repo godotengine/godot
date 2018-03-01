@@ -12,6 +12,12 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -62,7 +68,7 @@ namespace Godot
             }
         }
 
-        public real_t Cross(Vector2 b)
+        private real_t Cross(Vector2 b)
         {
             return x * b.y - y * b.x;
         }
@@ -97,15 +103,10 @@ namespace Godot
             return -Reflect(n);
         }
 
-        public Vector2 Ceil()
-        {
-            return new Vector2(Mathf.Ceil(x), Mathf.Ceil(y));
-        }
-
         public Vector2 Clamped(real_t length)
         {
-            var v = this;
-            real_t l = Length();
+            Vector2 v = this;
+            real_t l = this.Length();
 
             if (l > 0 && length < l)
             {
@@ -195,11 +196,6 @@ namespace Godot
             return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
         }
 
-        public Vector2 Round()
-        {
-            return new Vector2(Mathf.Round(x), Mathf.Round(y));
-        }
-
         public void Set(real_t x, real_t y)
         {
             this.x = x;
@@ -207,14 +203,8 @@ namespace Godot
         }
         public void Set(Vector2 v)
         {
-            x = v.x;
-            y = v.y;
-        }
-        
-        public Vector2 Slerp(Vector2 b, real_t t)
-        {
-            real_t theta = AngleTo(b);
-            return Rotated(theta * t);
+            this.x = v.x;
+            this.y = v.y;
         }
 
         public Vector2 Slide(Vector2 n)
@@ -258,8 +248,8 @@ namespace Godot
         }
         public Vector2(Vector2 v)
         {
-            x = v.x;
-            y = v.y;
+            this.x = v.x;
+            this.y = v.y;
         }
 
         public static Vector2 operator +(Vector2 left, Vector2 right)
