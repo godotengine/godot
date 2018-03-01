@@ -35,7 +35,6 @@ thirdparty_sources = [
     "handshake.c",
     "header.c",
     "libwebsockets.c",
-    "minilex.c",
     "output.c",
     "pollfd.c",
     "service.c",
