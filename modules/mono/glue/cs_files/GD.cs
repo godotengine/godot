@@ -1,5 +1,7 @@
 using System;
 
+// TODO: Add comments describing what this class does. It is not obvious. 
+
 namespace Godot
 {
     public static partial class GD

@@ -1,6 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -27,7 +33,7 @@ namespace Godot
             get { return o; }
         }
 
-        public float Rotation
+        public real_t Rotation
         {
             get { return Mathf.Atan2(y.x, o.y); }
         }
@@ -73,7 +79,7 @@ namespace Godot
         }
 
 
-        public float this[int index, int axis]
+        public real_t this[int index, int axis]
         {
             get
             {
@@ -107,7 +113,7 @@ namespace Godot
         {
             Transform2D inv = this;
 
-            float det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
+            real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
 
             if (det == 0)
             {
@@ -119,9 +125,9 @@ namespace Godot
                 );
             }
 
-            float idet = 1.0f / det;
+            real_t idet = 1.0f / det;
 
-            float temp = this[0, 0];
+            real_t temp = this[0, 0];
             this[0, 0] = this[1, 1];
             this[1, 1] = temp;
 
@@ -143,10 +149,10 @@ namespace Godot
             return new Vector2(x.Dot(v), y.Dot(v));
         }
 
-        public Transform2D InterpolateWith(Transform2D m, float c)
+        public Transform2D InterpolateWith(Transform2D m, real_t c)
         {
-            float r1 = Rotation;
-            float r2 = m.Rotation;
+            real_t r1 = Rotation;
+            real_t r2 = m.Rotation;
 
             Vector2 s1 = Scale;
             Vector2 s2 = m.Scale;
@@ -155,7 +161,7 @@ namespace Godot
             Vector2 v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
             Vector2 v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
 
-            float dot = v1.Dot(v2);
+            real_t dot = v1.Dot(v2);
 
             // Clamp dot to [-1, 1]
             dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
@@ -169,7 +175,7 @@ namespace Godot
             }
             else
             {
-                float angle = c * Mathf.Acos(dot);
+                real_t angle = c * Mathf.Acos(dot);
                 Vector2 v3 = (v2 - v1 * dot).Normalized();
                 v = v1 * Mathf.Cos(angle) + v3 * Mathf.Sin(angle);
             }
@@ -192,7 +198,7 @@ namespace Godot
             Transform2D inv = this;
 
             // Swap
-            float temp = inv.x.y;
+            real_t temp = inv.x.y;
             inv.x.y = inv.y.x;
             inv.y.x = temp;
 
@@ -218,7 +224,7 @@ namespace Godot
             return on;
         }
 
-        public Transform2D Rotated(float phi)
+        public Transform2D Rotated(real_t phi)
         {
             return this * new Transform2D(phi, new Vector2());
         }
@@ -232,12 +238,12 @@ namespace Godot
             return copy;
         }
 
-        private float Tdotx(Vector2 with)
+        private real_t Tdotx(Vector2 with)
         {
             return this[0, 0] * with[0] + this[1, 0] * with[1];
         }
 
-        private float Tdoty(Vector2 with)
+        private real_t Tdoty(Vector2 with)
         {
             return this[0, 1] * with[0] + this[1, 1] * with[1];
         }
@@ -259,24 +265,26 @@ namespace Godot
             Vector2 vInv = v - o;
             return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
-
+        
+        // Constructors 
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
         {
             this.x = xAxis;
             this.y = yAxis;
             this.o = origin;
         }
-        public Transform2D(float xx, float xy, float yx, float yy, float ox, float oy)
+        
+        public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             this.x = new Vector2(xx, xy);
             this.y = new Vector2(yx, yy);
             this.o = new Vector2(ox, oy);
         }
 
-        public Transform2D(float rot, Vector2 pos)
+        public Transform2D(real_t rot, Vector2 pos)
         {
-            float cr = Mathf.Cos(rot);
-            float sr = Mathf.Sin(rot);
+            real_t cr = Mathf.Cos( (real_t)rot);
+            real_t sr = Mathf.Sin( (real_t)rot);
             x.x = cr;
             y.y = cr;
             x.y = -sr;
@@ -288,7 +296,7 @@ namespace Godot
         {
             left.o = left.Xform(right.o);
 
-            float x0, x1, y0, y1;
+            real_t x0, x1, y0, y1;
 
             x0 = left.Tdotx(right.x);
             x1 = left.Tdoty(right.x);

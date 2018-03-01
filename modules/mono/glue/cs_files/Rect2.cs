@@ -1,6 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -26,7 +32,7 @@ namespace Godot
             get { return position + size; }
         }
 
-        public float Area
+        public real_t Area
         {
             get { return GetArea(); }
         }
@@ -80,12 +86,12 @@ namespace Godot
             return expanded;
         }
 
-        public float GetArea()
+        public real_t GetArea()
         {
             return size.x * size.y;
         }
 
-        public Rect2 Grow(float by)
+        public Rect2 Grow(real_t by)
         {
             Rect2 g = this;
 
@@ -97,7 +103,7 @@ namespace Godot
             return g;
         }
 
-        public Rect2 GrowIndividual(float left, float top, float right, float bottom)
+        public Rect2 GrowIndividual(real_t left, real_t top, real_t right, real_t bottom)
         {
             Rect2 g = this;
 
@@ -109,7 +115,7 @@ namespace Godot
             return g;
         }
 
-        public Rect2 GrowMargin(Margin margin, float by)
+        public Rect2 GrowMargin(Margin margin, real_t by)
         {
             Rect2 g = this;
 
@@ -169,14 +175,24 @@ namespace Godot
 
             return newRect;
         }
-
+        
+        // Constructors 
         public Rect2(Vector2 position, Vector2 size)
         {
             this.position = position;
             this.size = size;
         }
-
-        public Rect2(float x, float y, float width, float height)
+        public Rect2(Vector2 position, real_t width, real_t height)
+        {
+            this.position = position;
+            this.size = new Vector2(width, height);
+        }
+        public Rect2(real_t x, real_t y, Vector2 size)
+        {
+            this.position = new Vector2(x, y);
+            this.size = size;
+        }
+        public Rect2(real_t x, real_t y, real_t width, real_t height)
         {
             this.position = new Vector2(x, y);
             this.size = new Vector2(width, height);
