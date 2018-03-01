@@ -59,7 +59,7 @@ def configure(env):
 
     # Mac OS X no longer runs on 32-bit since 10.7 which is unsupported since 2014
     # As such, we only support 64-bit
-    env["bits"] = 64
+    env["bits"] = "64"
 
     ## Compiler configuration
 
