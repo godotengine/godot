@@ -530,15 +530,8 @@ void EditorExportGodot3::_find_files(EditorFileSystemDirectory *p_dir, List<Stri
 
 void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportData::PropertyData> *p_props) {
 
-	// To fix 2D rotations in the properties of Animation tracks (see below),
-	// we need to locate stuff like this:
-	// tracks/0/path = NodePath("Sprite:transform/rot")
-	// And then modify the 'values' key of 'tracks/0/keys'.
-	// This is going to be hacky.
-	// We'll assume that we get properties in the correct order, so that the path will come before the keys
-	// Otherwise we'd have to keep a stack of the track keys we found to later compare them to track paths
-	// that match rotation_deg...
-	bool fix_animation_rotation = (p_type == "Animation");
+	// We need specific hacks to fix compatibility breakage in the tracks of Animations
+	bool fix_animation_tracks = (p_type == "Animation");
 	String found_track_number = "";
 
 	for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
@@ -552,13 +545,34 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 			E->get().value = E->get().value.operator real_t() * -1.0;
 		}
 
-		if (fix_animation_rotation) {
+		// To fix 2D rotations in the properties of Animation tracks (see below),
+		// we need to locate stuff like this:
+		// tracks/0/path = NodePath("Sprite:transform/rot")
+		// And then modify the 'values' key of 'tracks/0/keys'.
+		// This is going to be hacky.
+		// We'll assume that we get properties in the correct order, so that the path will come before the keys
+		// Otherwise we'd have to keep a stack of the track keys we found to later compare them to track paths
+		// that match rotation_deg...
+		if (fix_animation_tracks) {
 			String prop_name = E->get().name;
 			if (prop_name.begins_with("tracks/") && prop_name.ends_with("/path")) {
 				String path_value = E->get().value;
+
+				// Check if it's a rotation and save the track number to fix its assigned values
 				if (path_value.find("transform/rot") != 1) {
 					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
 					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+				}
+
+				// In animation tracks, NodePaths can refer to properties that need to be renamed
+				int sep = path_value.find(":");
+				if (sep != -1) {
+					String track_nodepath = path_value.substr(0, sep);
+					String track_prop = path_value.substr(sep + 1, path_value.length());
+					if (prop_rename_map.has(track_prop)) {
+						track_prop = prop_rename_map[track_prop];
+					}
+					E->get().value = NodePath(track_nodepath + ":" + track_prop);
 				}
 			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
 				// Bingo! We found keys matching the track number we had spotted
@@ -1081,16 +1095,6 @@ Error EditorExportGodot3::_get_property_as_text(const Variant &p_variant, String
 		case Variant::NODE_PATH: {
 
 			String str = p_variant;
-			// In animation tracks, NodePaths can refer to properties that need to be renamed
-			int sep = str.find(":");
-			if (sep != -1) {
-				String path = str.substr(0, sep);
-				String prop = str.substr(sep + 1, str.length());
-				if (prop_rename_map.has(prop)) {
-					prop = prop_rename_map[prop];
-				}
-				str = path + ":" + prop;
-			}
 
 			str = "NodePath(\"" + str.c_escape() + "\")";
 			p_string += (str);
