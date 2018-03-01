@@ -51,7 +51,8 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 		real_t Bx, real_t By,
 		real_t Cx, real_t Cy,
-		real_t Px, real_t Py)
+		real_t Px, real_t Py,
+		bool include_edges)
 
 {
 	real_t ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
@@ -74,10 +75,14 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	cCROSSap = cx * apy - cy * apx;
 	bCROSScp = bx * cpy - by * cpx;
 
-	return ((aCROSSbp > 0.0) && (bCROSScp > 0.0) && (cCROSSap > 0.0));
+	if (include_edges) {
+		return ((aCROSSbp > 0.0) && (bCROSScp > 0.0) && (cCROSSap > 0.0));
+	} else {
+		return ((aCROSSbp >= 0.0) && (bCROSScp >= 0.0) && (cCROSSap >= 0.0));
+	}
 };
 
-bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V) {
+bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed) {
 	int p;
 	real_t Ax, Ay, Bx, By, Cx, Cy, Px, Py;
 	const Vector2 *contour = &p_contour[0];
@@ -91,13 +96,20 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 	Cx = contour[V[w]].x;
 	Cy = contour[V[w]].y;
 
-	if (CMP_EPSILON > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax)))) return false;
+	// It can happen that the triangulation ends up with three aligned vertices to deal with.
+	// In this scenario, making the check below strict may reject the possibility of
+	// forming a last triangle with these aligned vertices, preventing the triangulatiom
+	// from completing.
+	// To avoid that we allow zero-area triangles if all else failed.
+	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;
+
+	if (threshold > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax)))) return false;
 
 	for (p = 0; p < n; p++) {
 		if ((p == u) || (p == v) || (p == w)) continue;
 		Px = contour[V[p]].x;
 		Py = contour[V[p]].y;
-		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py)) return false;
+		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py, relaxed)) return false;
 	}
 
 	return true;
@@ -121,6 +133,8 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 		for (int v = 0; v < n; v++)
 			V[v] = (n - 1) - v;
 
+	bool relaxed = false;
+
 	int nv = n;
 
 	/*  remove nv-2 Vertices, creating 1 triangle every time */
@@ -129,8 +143,20 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 	for (int v = nv - 1; nv > 2;) {
 		/* if we loop, it is probably a non-simple polygon */
 		if (0 >= (count--)) {
-			//** Triangulate: ERROR - probable bad polygon!
-			return false;
+			if (relaxed) {
+				//** Triangulate: ERROR - probable bad polygon!
+				return false;
+			} else {
+				// There may be aligned vertices that the strict
+				// checks prevent from triangulating. In this situation
+				// we are better off adding flat triangles than
+				// failing, so we relax the checks and try one last
+				// round.
+				// Only relaxing the constraints as a last resort avoids
+				// degenerate triangles when they aren't necessary.
+				count = 2 * nv;
+				relaxed = true;
+			}
 		}
 
 		/* three consecutive vertices in current polygon, <u,v,w> */
@@ -141,7 +167,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 		int w = v + 1;
 		if (nv <= w) w = 0; /* next     */
 
-		if (snip(contour, u, v, w, nv, V)) {
+		if (snip(contour, u, v, w, nv, V, relaxed)) {
 			int a, b, c, s, t;
 
 			/* true names of the vertices */
