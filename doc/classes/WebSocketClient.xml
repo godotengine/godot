@@ -27,6 +27,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="connection_closed">

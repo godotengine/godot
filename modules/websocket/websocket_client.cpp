@@ -116,6 +116,7 @@ void WebSocketClient::_on_error() {
 void WebSocketClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api"), &WebSocketClient::connect_to_url, DEFVAL(PoolVector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &WebSocketClient::disconnect_from_host);
+	ClassDB::bind_method(D_METHOD("is_server"), &WebSocketClient::is_server);
 
 	ADD_SIGNAL(MethodInfo("data_received"));
 	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));
