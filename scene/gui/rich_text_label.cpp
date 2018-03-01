@@ -177,7 +177,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			l.descent_caches.push_back(line_descent);                                                                                                           \
 			l.space_caches.push_back(spaces);                                                                                                                   \
 		}                                                                                                                                                       \
-		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                    \
+		y += line_height - line_descent + get_constant(SceneStringNames::get_singleton()->line_separation);                                                     \
 		line_height = 0;                                                                                                                                        \
 		line_ascent = 0;                                                                                                                                        \
 		line_descent = 0;                                                                                                                                       \
@@ -2132,6 +2132,7 @@ RichTextLabel::RichTextLabel() {
 	default_align = ALIGN_LEFT;
 	underline_meta = true;
 	override_selected_font_color = false;
+	meta_hovering = NULL;
 
 	scroll_visible = false;
 	scroll_follow = false;
