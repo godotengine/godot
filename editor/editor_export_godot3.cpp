@@ -368,8 +368,11 @@ static const char *prop_renames[][2] = {
 	{ "geometry/depth_scale", "use_depth_scale" },
 	{ "geometry/visible_in_all_rooms", "visible_in_all_rooms" },
 	{ "geometry/use_baked_light", "use_in_baked_light" },
-	{ "playback/process_mode", "playback_process_mode" },
+	// Properly renamed for AnimationPlayer, but not AnimationTreePlayer, so handle manually
+	//{ "playback/active", "playback_active" },
 	{ "playback/default_blend_time", "playback_default_blend_time" },
+	{ "playback/process_mode", "playback_process_mode" },
+	{ "playback/speed", "playback_speed" },
 	{ "root/root", "root_node" },
 	{ "stream/stream", "stream" },
 	{ "stream/play", "playing" },
@@ -527,13 +530,51 @@ void EditorExportGodot3::_find_files(EditorFileSystemDirectory *p_dir, List<Stri
 
 void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportData::PropertyData> *p_props) {
 
+	// To fix 2D rotations in the properties of Animation tracks (see below),
+	// we need to locate stuff like this:
+	// tracks/0/path = NodePath("Sprite:transform/rot")
+	// And then modify the 'values' key of 'tracks/0/keys'.
+	// This is going to be hacky.
+	// We'll assume that we get properties in the correct order, so that the path will come before the keys
+	// Otherwise we'd have to keep a stack of the track keys we found to later compare them to track paths
+	// that match rotation_deg...
+	bool fix_animation_rotation = (p_type == "Animation");
+	String found_track_number = "";
+
 	for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
+
+		/* Fixes for 2D rotations */
 
 		// 2D rotations are now clockwise to match the downward Y base
 		// Do this before the renaming, as afterwards we can't distinguish
 		// between 2D and 3D rotations_degrees
 		if (E->get().name == "transform/rot") {
 			E->get().value = E->get().value.operator real_t() * -1.0;
+		}
+
+		if (fix_animation_rotation) {
+			String prop_name = E->get().name;
+			if (prop_name.begins_with("tracks/") && prop_name.ends_with("/path")) {
+				String path_value = E->get().value;
+				if (path_value.find("transform/rot") != 1) {
+					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
+					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+				}
+			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
+				// Bingo! We found keys matching the track number we had spotted
+				print_line("Found Animation track with 2D rotations, fixing their sign.");
+				Dictionary track_keys = E->get().value;
+				if (track_keys.has("values")) {
+					Array values = track_keys["values"];
+					for (int i = 0; i < values.size(); i++) {
+						values[i] = values[i].operator real_t() * -1.0;
+					}
+					track_keys["values"] = values;
+					E->get().value = track_keys;
+				} else {
+					print_line("Tried to change rotation in Animation tracks, but no value set found.");
+				}
+			}
 		}
 
 		/* Do the actual renaming */
@@ -555,6 +596,13 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				case 3: // Center
 					E->get().value = 2;
 			}
+		}
+
+		// AnimationPlayer's "playback/active" was renamed to "playback_active", but not AnimationTrrePlayer's
+		// We rename manually only for AnimationPlayer
+		if (E->get().name == "playback/active" && p_type == "AnimationPlayer") {
+			print_line("yep");
+			E->get().name = "playback_active";
 		}
 	}
 }
