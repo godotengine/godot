@@ -2577,8 +2577,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = false;
-	members_overview_enabled = true;
-	help_overview_enabled = true;
+	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/open_scripts/show_members_overview");
+	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
 	editor = p_editor;
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
@@ -2820,9 +2820,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	//debugger_gui->hide();
 
 	edit_pass = 0;
-	trim_trailing_whitespace_on_save = false;
-	convert_indent_on_save = false;
-	use_space_indentation = false;
+	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type");
 
 	ScriptServer::edit_request_func = _open_script_request;
 
