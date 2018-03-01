@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  rasterizer_gles2.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +27,46 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifndef RASTERIZERGLES2_H
+#define RASTERIZERGLES2_H
 
-#include <alloca.h>
+#include "rasterizer_canvas_gles2.h"
+#include "rasterizer_scene_gles2.h"
+#include "rasterizer_storage_gles2.h"
+#include "servers/visual/rasterizer.h"
 
-#define GLES3_INCLUDE_H "glad/glad.h"
-#define GLES2_INCLUDE_H "glad/glad.h"
-#define PTHREAD_RENAME_SELF
+class RasterizerGLES2 : public Rasterizer {
+
+	static Rasterizer *_create_current();
+
+	RasterizerStorageGLES2 *storage;
+	RasterizerCanvasGLES2 *canvas;
+	RasterizerSceneGLES2 *scene;
+
+	uint64_t prev_ticks;
+	double time_total;
+
+public:
+	virtual RasterizerStorage *get_storage();
+	virtual RasterizerCanvas *get_canvas();
+	virtual RasterizerScene *get_scene();
+
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
+
+	virtual void initialize();
+	virtual void begin_frame();
+	virtual void set_current_render_target(RID p_render_target);
+	virtual void restore_render_target();
+	virtual void clear_render_target(const Color &p_color);
+	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0);
+	virtual void end_frame(bool p_swap_buffers);
+	virtual void finalize();
+
+	static void make_current();
+
+	static void register_config();
+	RasterizerGLES2();
+	~RasterizerGLES2();
+};
+
+#endif // RASTERIZERGLES2_H
