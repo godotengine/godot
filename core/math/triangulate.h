@@ -51,10 +51,11 @@ public:
 	static bool is_inside_triangle(real_t Ax, real_t Ay,
 			real_t Bx, real_t By,
 			real_t Cx, real_t Cy,
-			real_t Px, real_t Py);
+			real_t Px, real_t Py,
+			bool include_edges);
 
 private:
-	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V);
+	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed);
 };
 
 #endif
