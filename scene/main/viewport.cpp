@@ -192,6 +192,7 @@ Viewport::GUI::GUI() {
 }
 
 /////////////////////////////////////
+
 void Viewport::_update_stretch_transform() {
 
 	if (size_override_stretch && size_override) {
@@ -318,6 +319,11 @@ void Viewport::_notification(int p_what) {
 					first->make_current();
 			}
 #endif
+
+			// Enable processing for tooltips, collision debugging, physics object picking, etc.
+			set_process_internal(true);
+			set_physics_process_internal(true);
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -345,14 +351,17 @@ void Viewport::_notification(int p_what) {
 			VS::get_singleton()->viewport_set_active(viewport, false);
 
 		} break;
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (gui.tooltip_timer >= 0) {
-				gui.tooltip_timer -= get_physics_process_delta_time();
+				gui.tooltip_timer -= get_process_delta_time();
 				if (gui.tooltip_timer < 0) {
 					_gui_show_tooltip();
 				}
 			}
+
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 
@@ -2404,9 +2413,14 @@ Rect2 Viewport::get_attach_to_screen_rect() const {
 void Viewport::set_physics_object_picking(bool p_enable) {
 
 	physics_object_picking = p_enable;
-	set_physics_process(physics_object_picking);
-	if (!physics_object_picking)
+	if (!physics_object_picking) {
 		physics_picking_events.clear();
+	}
+}
+
+bool Viewport::get_physics_object_picking() {
+
+	return physics_object_picking;
 }
 
 Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
@@ -2418,11 +2432,6 @@ Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
 Vector2 Viewport::get_camera_rect_size() const {
 
 	return size;
-}
-
-bool Viewport::get_physics_object_picking() {
-
-	return physics_object_picking;
 }
 
 bool Viewport::gui_has_modal_stack() const {
