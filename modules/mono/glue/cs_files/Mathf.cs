@@ -5,26 +5,29 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     public static partial class Mathf
     {
-        // Define constants with Decimal precision and cast down to double or float.
+        // Define constants with Decimal precision and cast down to double or float. 
+        public const real_t PI = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
 
-        public const real_t Tau = (real_t) 6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
-        public const real_t Pi = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
-        public const real_t Inf = real_t.PositiveInfinity;
-        public const real_t NaN = real_t.NaN;
+        #if REAL_T_IS_DOUBLE
+        public const real_t Epsilon = 1e-14; // Epsilon size should depend on the precision used.
+        #else
+        public const real_t Epsilon = 1e-06f;
+        #endif
 
         private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
         private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
 
         public static real_t Abs(real_t s)
-        {
-            return Math.Abs(s);
-        }
-
-        public static int Abs(int s)
         {
             return Math.Abs(s);
         }
@@ -59,12 +62,12 @@ namespace Godot
             return (real_t)Math.Ceiling(s);
         }
 
-        public static int Clamp(int value, int min, int max)
+        public static real_t Clamp(real_t val, real_t min, real_t max)
         {
-            return value < min ? min : value > max ? max : value;
+            return (real_t)Math.Ceiling(s);
         }
 
-        public static real_t Clamp(real_t value, real_t min, real_t max)
+        public static int Clamp(int value, int min, int max)
         {
             return value < min ? min : value > max ? max : value;
         }
@@ -75,6 +78,11 @@ namespace Godot
         }
 
         public static real_t Cosh(real_t s)
+        {
+            return (real_t)Math.Cosh(s);
+        }
+
+        public static int Decimals(real_t step)
         {
             return Decimals((decimal)step);
         }
@@ -148,19 +156,9 @@ namespace Godot
            return (weight - from) / (to - from);
         }
 
-        public static bool IsInf(real_t s)
-        {
-           return real_t.IsInfinity(s);
-        }
-
-        public static bool IsNaN(real_t s)
-        {
-           return real_t.IsNaN(s);
-        }
-
         public static real_t Lerp(real_t from, real_t to, real_t weight)
         {
-            return from + (to - from) * weight;
+           return real_t.IsInfinity(s);
         }
 
         public static real_t Log(real_t s)
@@ -220,14 +218,14 @@ namespace Godot
             return (real_t)Math.Round(s);
         }
 
-        public static int Sign(int s)
+        public static int RoundToInt(real_t s)
         {
-            return s < 0 ? -1 : 1;
+            return (int)Math.Round(s);
         }
 
         public static real_t Sign(real_t s)
         {
-            return s < 0f ? -1f : 1f;
+            return s < 0 ? -1 : 1;
         }
 
         public static real_t Sin(real_t s)
@@ -263,18 +261,6 @@ namespace Godot
         public static real_t Tanh(real_t s)
         {
             return (real_t)Math.Tanh(s);
-        }
-
-        public static int Wrap(int value, int min, int max)
-        {
-            int rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
-        }
-
-        public static real_t Wrap(real_t value, real_t min, real_t max)
-        {
-            real_t rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
         }
     }
 }
