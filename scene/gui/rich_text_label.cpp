@@ -320,9 +320,10 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					CHECK_HEIGHT(fh);
 					ENSURE_WIDTH(w);
 
-					line_ascent = MAX(line_ascent, ascent);
-					line_descent = MAX(line_descent, descent);
-					fh = line_ascent + line_descent;
+					if (p_mode == PROCESS_CACHE) {
+						line_ascent = ascent;
+						line_descent = descent;
+					}
 
 					if (end && c[end - 1] == ' ') {
 						if (p_mode == PROCESS_CACHE) {
