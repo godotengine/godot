@@ -156,38 +156,50 @@ Error AudioDriverPulseAudio::init() {
 	exit_thread = false;
 
 	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
-	channels = detect_channels();
 
-	switch (channels) {
+	// Detect the amount of channels PulseAudio is using
+	// Note: If using an even amount of channels (2, 4, etc) channels and pa_channels will be equal,
+	// if not then pa_channels will have the real amount of channels PulseAudio is using and channels
+	// will have the amount of channels Godot is using (in this case it's pa_channels + 1)
+	pa_channels = detect_channels();
+	switch (pa_channels) {
+		case 1: // Mono
+		case 3: // Surround 2.1
+		case 5: // Surround 5.0
+		case 7: // Surround 7.0
+			channels = pa_channels + 1;
+			break;
+
 		case 2: // Stereo
-		case 4: // Surround 3.1
+		case 4: // Surround 4.0
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
+			channels = pa_channels;
 			break;
 
 		default:
-			ERR_PRINTS("PulseAudio: Unsupported number of channels: " + itos(channels));
+			ERR_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_channels));
 			ERR_FAIL_V(ERR_CANT_OPEN);
 			break;
 	}
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
-	spec.channels = channels;
+	spec.channels = pa_channels;
 	spec.rate = mix_rate;
 
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	buffer_size = buffer_frames * channels;
+	pa_buffer_size = buffer_frames * pa_channels;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("PulseAudio: detected " + itos(channels) + " channels");
+		print_line("PulseAudio: detected " + itos(pa_channels) + " channels");
 		print_line("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 	}
 
 	pa_buffer_attr attr;
 	// set to appropriate buffer length (in bytes) from global settings
-	attr.tlength = buffer_size * sizeof(int16_t);
+	attr.tlength = pa_buffer_size * sizeof(int16_t);
 	// set them to be automatically chosen
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
@@ -209,8 +221,8 @@ Error AudioDriverPulseAudio::init() {
 		ERR_FAIL_COND_V(pulse == NULL, ERR_CANT_OPEN);
 	}
 
-	samples_in.resize(buffer_size);
-	samples_out.resize(buffer_size);
+	samples_in.resize(buffer_frames * channels);
+	samples_out.resize(pa_buffer_size);
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
@@ -235,7 +247,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 	while (!ad->exit_thread) {
 		if (!ad->active) {
-			for (unsigned int i = 0; i < ad->buffer_size; i++) {
+			for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 				ad->samples_out[i] = 0;
 			}
 
@@ -246,15 +258,30 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			ad->unlock();
 
-			for (unsigned int i = 0; i < ad->buffer_size; i++) {
-				ad->samples_out[i] = ad->samples_in[i] >> 16;
+			if (ad->channels == ad->pa_channels) {
+				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
+					ad->samples_out[i] = ad->samples_in[i] >> 16;
+				}
+			} else {
+				// Uneven amount of channels
+				unsigned int in_idx = 0;
+				unsigned int out_idx = 0;
+
+				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
+					for (unsigned int j = 0; j < ad->pa_channels - 1; j++) {
+						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
+					}
+					uint32_t l = ad->samples_in[in_idx++];
+					uint32_t r = ad->samples_in[in_idx++];
+					ad->samples_out[out_idx++] = (l >> 1 + r >> 1) >> 16;
+				}
 			}
 		}
 
 		// pa_simple_write always consumes the entire buffer
 
 		int error_code;
-		int byte_size = ad->buffer_size * sizeof(int16_t);
+		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
 		if (pa_simple_write(ad->pulse, ad->samples_out.ptr(), byte_size, &error_code) < 0) {
 			// can't recover here
 			fprintf(stderr, "PulseAudio failed and can't recover: %s\n", pa_strerror(error_code));
@@ -328,17 +355,16 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	samples_out.clear();
 
 	mix_rate = 0;
-	buffer_size = 0;
+	buffer_frames = 0;
+	pa_buffer_size = 0;
 	channels = 0;
+	pa_channels = 0;
 
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 
 	latency = 0;
-	buffer_frames = 0;
-	buffer_size = 0;
-	channels = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {
