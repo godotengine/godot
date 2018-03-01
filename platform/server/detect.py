@@ -138,7 +138,12 @@ def configure(env):
     env.Append(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
     env.Append(LIBS=['pthread'])
-    env.Append(LIBS=['dl'])
+
+    if (platform.system() == "Linux"):
+        env.Append(LIBS=['dl'])
+
+    if (platform.system().find("BSD") >= 0):
+        env.Append(LIBS=['execinfo'])
 
     # Link those statically for portability
     if env['use_static_cpp']:
