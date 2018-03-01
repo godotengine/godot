@@ -1357,6 +1357,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	/*** END OSX INITIALIZATION ***/
 
+	AudioDriverManager::add_driver(&audio_driver);
+
 	// only opengl support here...
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {
 		RasterizerGLES2::register_config();
