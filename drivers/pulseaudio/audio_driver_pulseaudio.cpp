@@ -128,39 +128,45 @@ Error AudioDriverPulseAudio::init_device() {
 		}
 	}
 
+	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
+
 	// Detect the amount of channels PulseAudio is using
-	// Note: If using an even amount of channels (2, 4, etc) channels and pa_map.channels will be equal,
-	// if not then pa_map.channels will have the real amount of channels PulseAudio is using and channels
-	// will have the amount of channels Godot is using (in this case it's pa_map.channels + 1)
-	detect_channels();
-	switch (pa_map.channels) {
+	// Note: If using an even amount of channels (2, 4, etc) channels and pa_channels will be equal,
+	// if not then pa_channels will have the real amount of channels PulseAudio is using and channels
+	// will have the amount of channels Godot is using (in this case it's pa_channels + 1)
+	pa_channels = detect_channels();
+	switch (pa_channels) {
 		case 1: // Mono
 		case 3: // Surround 2.1
 		case 5: // Surround 5.0
 		case 7: // Surround 7.0
-			channels = pa_map.channels + 1;
+			channels = pa_channels + 1;
 			break;
 
 		case 2: // Stereo
 		case 4: // Surround 4.0
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
-			channels = pa_map.channels;
+			channels = pa_channels;
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
-			pa_channel_map_init_stereo(&pa_map);
-			channels = 2;
+			ERR_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_channels));
+			ERR_FAIL_V(ERR_CANT_OPEN);
 			break;
 	}
 
+	pa_sample_spec spec;
+	spec.format = PA_SAMPLE_S16LE;
+	spec.channels = pa_channels;
+	spec.rate = mix_rate;
+
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	pa_buffer_size = buffer_frames * pa_map.channels;
+	pa_buffer_size = buffer_frames * pa_channels;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("PulseAudio: detected " + itos(pa_map.channels) + " channels");
+		print_line("PulseAudio: detected " + itos(pa_channels) + " channels");
 		print_line("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 	}
 
@@ -177,11 +183,7 @@ Error AudioDriverPulseAudio::init_device() {
 
 	pa_buffer_attr attr;
 	// set to appropriate buffer length (in bytes) from global settings
-	// Note: PulseAudio defaults to 4 fragments, which means that the actual
-	// latency is tlength / fragments. It seems that the PulseAudio has no way
-	// to get the fragments number so we're hardcoding this to the default of 4
-	const int fragments = 4;
-	attr.tlength = pa_buffer_size * sizeof(int16_t) * fragments;
+	attr.tlength = pa_buffer_size * sizeof(int16_t);
 	// set them to be automatically chosen
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
@@ -234,20 +236,8 @@ Error AudioDriverPulseAudio::init() {
 		pa_mainloop_iterate(pa_ml, 1, NULL);
 	}
 
-	if (pa_ready < 0) {
-		if (pa_ctx) {
-			pa_context_disconnect(pa_ctx);
-			pa_context_unref(pa_ctx);
-			pa_ctx = NULL;
-		}
-
-		if (pa_ml) {
-			pa_mainloop_free(pa_ml);
-			pa_ml = NULL;
-		}
-
-		return ERR_CANT_OPEN;
-	}
+	samples_in.resize(buffer_frames * channels);
+	samples_out.resize(pa_buffer_size);
 
 	Error err = init_device();
 	if (err == OK) {
@@ -301,7 +291,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			ad->unlock();
 
-			if (ad->channels == ad->pa_map.channels) {
+			if (ad->channels == ad->pa_channels) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 					ad->samples_out[i] = ad->samples_in[i] >> 16;
 				}
@@ -311,7 +301,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				unsigned int out_idx = 0;
 
 				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
-					for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
+					for (unsigned int j = 0; j < ad->pa_channels - 1; j++) {
 						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
 					}
 					uint32_t l = ad->samples_in[in_idx++];
@@ -323,61 +313,12 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		int error_code;
 		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
-
-		ad->lock();
-
-		int ret;
-		do {
-			ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
-		} while (ret > 0);
-
-		if (pa_stream_get_state(ad->pa_str) == PA_STREAM_READY) {
-			const void *ptr = ad->samples_out.ptr();
-			while (byte_size > 0) {
-				size_t bytes = pa_stream_writable_size(ad->pa_str);
-				if (bytes > 0) {
-					if (bytes > byte_size) {
-						bytes = byte_size;
-					}
-
-					ret = pa_stream_write(ad->pa_str, ptr, bytes, NULL, 0LL, PA_SEEK_RELATIVE);
-					if (ret >= 0) {
-						byte_size -= bytes;
-						ptr = (const char *)ptr + bytes;
-					}
-				} else {
-					ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
-					if (ret == 0) {
-						// If pa_mainloop_iterate returns 0 sleep for 1 msec to wait
-						// for the stream to be able to process more bytes
-						ad->unlock();
-
-						OS::get_singleton()->delay_usec(1000);
-
-						ad->lock();
-					}
-				}
-			}
-		}
-
-		// User selected a new device, finish the current one so we'll init the new device
-		if (ad->device_name != ad->new_device) {
-			ad->device_name = ad->new_device;
-			ad->finish_device();
-
-			Error err = ad->init_device();
-			if (err != OK) {
-				ERR_PRINT("PulseAudio: init_device error");
-				ad->device_name = "Default";
-				ad->new_device = "Default";
-
-				err = ad->init_device();
-				if (err != OK) {
-					ad->active = false;
-					ad->exit_thread = true;
-					break;
-				}
-			}
+		if (pa_simple_write(ad->pulse, ad->samples_out.ptr(), byte_size, &error_code) < 0) {
+			// can't recover here
+			fprintf(stderr, "PulseAudio failed and can't recover: %s\n", pa_strerror(error_code));
+			ad->active = false;
+			ad->exit_thread = true;
+			break;
 		}
 
 		ad->unlock();
@@ -529,8 +470,7 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	buffer_frames = 0;
 	pa_buffer_size = 0;
 	channels = 0;
-	pa_ready = 0;
-	pa_status = 0;
+	pa_channels = 0;
 
 	active = false;
 	thread_exited = false;
