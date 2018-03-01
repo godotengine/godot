@@ -6,6 +6,12 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -184,11 +190,11 @@ namespace Godot
         public Rect2(Vector2 position, real_t width, real_t height)
         {
             this.position = position;
-            size = new Vector2(width, height);
+            this.size = new Vector2(width, height);
         }
         public Rect2(real_t x, real_t y, Vector2 size)
         {
-            position = new Vector2(x, y);
+            this.position = new Vector2(x, y);
             this.size = size;
         }
         public Rect2(real_t x, real_t y, real_t width, real_t height)

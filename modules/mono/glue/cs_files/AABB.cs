@@ -11,6 +11,12 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     public struct AABB : IEquatable<AABB>
@@ -111,7 +117,7 @@ namespace Godot
 
         public Vector3 GetLongestAxis()
         {
-            var axis = new Vector3(1f, 0f, 0f);
+            Vector3 axis = new Vector3(1f, 0f, 0f);
             real_t max_size = size.x;
 
             if (size.y > max_size)
@@ -130,7 +136,7 @@ namespace Godot
 
         public Vector3.Axis GetLongestAxisIndex()
         {
-            var axis = Vector3.Axis.X;
+            Vector3.Axis axis = Vector3.Axis.X;
             real_t max_size = size.x;
 
             if (size.y > max_size)
@@ -162,7 +168,7 @@ namespace Godot
 
         public Vector3 GetShortestAxis()
         {
-            var axis = new Vector3(1f, 0f, 0f);
+            Vector3 axis = new Vector3(1f, 0f, 0f);
             real_t max_size = size.x;
 
             if (size.y < max_size)
@@ -181,7 +187,7 @@ namespace Godot
 
         public Vector3.Axis GetShortestAxisIndex()
         {
-            var axis = Vector3.Axis.X;
+            Vector3.Axis axis = Vector3.Axis.X;
             real_t max_size = size.x;
 
             if (size.y < max_size)
