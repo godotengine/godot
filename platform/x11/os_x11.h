@@ -53,6 +53,11 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
+enum VideoDriver {
+	VIDEO_DRIVER_GLES3,
+	VIDEO_DRIVER_GLES2
+};
+
 // Hints for X11 fullscreen
 typedef struct {
 	unsigned long flags;
