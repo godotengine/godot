@@ -73,6 +73,27 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 	_shapes_changed();
 }
 
+void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
+	ERR_FAIL_INDEX(p_idx, shapes.size());
+
+	CollisionObject2DSW::Shape &shape = shapes[p_idx];
+	if (shape.disabled == p_disabled)
+		return;
+
+	shape.disabled = p_disabled;
+
+	if (!space)
+		return;
+
+	if (p_disabled && shape.bpid != 0) {
+		space->get_broadphase()->remove(shape.bpid);
+		shape.bpid = 0;
+		_update_shapes();
+	} else if (!p_disabled && shape.bpid == 0) {
+		_update_shapes(); // automatically adds shape with bpid == 0
+	}
+}
+
 void CollisionObject2DSW::remove_shape(Shape2DSW *p_shape) {
 
 	//remove a shape, all the times it appears
@@ -139,6 +160,10 @@ void CollisionObject2DSW::_update_shapes() {
 	for (int i = 0; i < shapes.size(); i++) {
 
 		Shape &s = shapes[i];
+
+		if (s.disabled)
+			continue;
+
 		if (s.bpid == 0) {
 			s.bpid = space->get_broadphase()->create(this, i);
 			space->get_broadphase()->set_static(s.bpid, _static);
@@ -163,6 +188,9 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 	for (int i = 0; i < shapes.size(); i++) {
 
 		Shape &s = shapes[i];
+		if (s.disabled)
+			continue;
+
 		if (s.bpid == 0) {
 			s.bpid = space->get_broadphase()->create(this, i);
 			space->get_broadphase()->set_static(s.bpid, _static);
