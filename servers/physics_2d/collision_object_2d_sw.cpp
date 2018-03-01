@@ -76,7 +76,7 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 	ERR_FAIL_INDEX(p_idx, shapes.size());
 
-	CollisionObject2DSW::Shape &shape = shapes.write[p_idx];
+	CollisionObject2DSW::Shape &shape = shapes[p_idx];
 	if (shape.disabled == p_disabled)
 		return;
 
@@ -159,7 +159,7 @@ void CollisionObject2DSW::_update_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes.write[i];
+		Shape &s = shapes[i];
 
 		if (s.disabled)
 			continue;
@@ -187,7 +187,7 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes.write[i];
+		Shape &s = shapes[i];
 		if (s.disabled)
 			continue;
 
