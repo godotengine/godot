@@ -319,6 +319,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 					ENSURE_WIDTH(w);
 
+					if (p_mode == PROCESS_CACHE) {
+						line_ascent = ascent;
+						line_descent = descent;
+					}
+
 					if (end && c[end - 1] == ' ') {
 						if (p_mode == PROCESS_CACHE) {
 							spaces_size += font->get_char_size(' ').width;
