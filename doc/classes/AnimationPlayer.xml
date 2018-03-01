@@ -103,6 +103,14 @@
 				Get the blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
+		<method name="get_playing_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the actual playing speed of current animation or 0 if not playing. This speed is the [code]playback_speed[/code] property multiplied by [code]custom_speed[/code] argument specified when calling the [code]play[/code] method.
+			</description>
+		</method>
+
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
