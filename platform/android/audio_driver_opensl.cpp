@@ -271,4 +271,5 @@ AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
 	mutex = Mutex::create(); //NULL;
 	pause = false;
+	active = false;
 }
