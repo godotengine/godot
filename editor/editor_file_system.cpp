@@ -321,10 +321,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	List<String> to_check;
 
-	String source_file;
-	String source_md5;
+	String source_file = "";
+	String source_md5 = "";
 	Vector<String> dest_files;
-	String dest_md5;
+	String dest_md5 = "";
 
 	while (true) {
 
@@ -334,7 +334,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			break;
 		} else if (err != OK) {
 			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
@@ -351,12 +350,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 					to_check.push_back(fa[i]);
 				}
 			} else if (!p_only_imported_files) {
-				if (assign == "source_md5") {
-					source_md5 = value;
-				} else if (assign == "source_file") {
+				if (assign == "source_file") {
 					source_file = value;
-				} else if (assign == "dest_md5") {
-					dest_md5 = value;
 				} else if (assign == "dest_files") {
 					dest_files = value;
 				}
@@ -368,6 +363,42 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	memdelete(f);
+
+	// Read the md5's from a separate file (so the import parameters aren't dependant on the file version
+	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
+	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
+	if (!md5s) { // No md5's stored for this resource
+		return true;
+	}
+
+	VariantParser::StreamFile md5_stream;
+	md5_stream.f = md5s;
+
+	while (true) {
+		assign = Variant();
+		next_tag.fields.clear();
+		next_tag.name = String();
+
+		err = VariantParser::parse_tag_assign_eof(&md5_stream, lines, error_text, next_tag, assign, value, NULL, true);
+
+		if (err == ERR_FILE_EOF) {
+			break;
+		} else if (err != OK) {
+			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import.md5:" + itos(lines) + " error: " + error_text);
+			memdelete(md5s);
+			return false; // parse error
+		}
+		if (assign != String()) {
+			if (!p_only_imported_files) {
+				if (assign == "source_md5") {
+					source_md5 = value;
+				} else if (assign == "dest_md5") {
+					dest_md5 = value;
+				}
+			}
+		}
+	}
+	memdelete(md5s);
 
 	//imported files are gone, reimport
 	for (List<String>::Element *E = to_check.front(); E; E = E->next()) {
@@ -1456,15 +1487,13 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	}
 
 	f->store_line("source_file=" + Variant(p_file).get_construct_string());
-	f->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"\n");
 
 	if (dest_paths.size()) {
 		Array dp;
 		for (int i = 0; i < dest_paths.size(); i++) {
 			dp.push_back(dest_paths[i]);
 		}
-		f->store_line("dest_files=" + Variant(dp).get_construct_string());
-		f->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+		f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
 	}
 
 	f->store_line("[params]");
@@ -1482,6 +1511,16 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	f->close();
 	memdelete(f);
+
+	// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
+	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
+	ERR_FAIL_COND(!md5s);
+	md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
+	if (dest_paths.size()) {
+		md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+	}
+	md5s->close();
+	memdelete(md5s);
 
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
