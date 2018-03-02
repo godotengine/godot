@@ -161,7 +161,7 @@ void RasterizerGLES2::initialize() {
 	}
 
 #ifdef __APPLE__
-// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 3, this may be an issue with our opengl canvas..
+// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 2, this may be an issue with our opengl canvas..
 #else
 	if (true || OS::get_singleton()->is_stdout_verbose()) {
 		glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -174,12 +174,16 @@ void RasterizerGLES2::initialize() {
 
 		// For debugging
 #ifdef GLES_OVER_GL
+#ifdef __APPLE__
+// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 2, this may be an issue with our opengl canvas..
+#else
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+#endif
 #endif
 	/* glDebugMessageInsertARB(
 			GL_DEBUG_SOURCE_API_ARB,

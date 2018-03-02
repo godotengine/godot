@@ -1149,32 +1149,22 @@ void OS_OSX::set_ime_position(const Point2 &p_pos) {
 	im_position = p_pos;
 }
 
-	if (serial_number.empty()) {
-		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
-		CFStringRef serialNumberAsCFString = NULL;
-		if (platformExpert) {
-			serialNumberAsCFString = (CFStringRef)IORegistryEntryCreateCFProperty(platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
-			IOObjectRelease(platformExpert);
-		}
+int OS_OSX::get_video_driver_count() const {
 
-		NSString *serialNumberAsNSString = nil;
-		if (serialNumberAsCFString) {
-			serialNumberAsNSString = [NSString stringWithString:(NSString *)serialNumberAsCFString];
-			CFRelease(serialNumberAsCFString);
-		}
-
-		serial_number = [serialNumberAsNSString UTF8String];
-	}
-
-	return serial_number;
+	return 2;
 }
 
 void OS_OSX::set_ime_active(const bool p_active) {
 	im_active = p_active;
 }
 
-void OS_OSX::set_ime_position(const Point2 &p_pos) {
-	im_position = p_pos;
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+		default:
+			return "GLES3";
+	}
 }
 
 void OS_OSX::initialize_core() {
@@ -1299,8 +1289,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 	}
-
-	video_driver_index = p_video_driver;
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
