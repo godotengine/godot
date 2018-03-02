@@ -57,11 +57,11 @@ custom_tools = ['default']
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
-    custom_tools = ['mingw']
-elif platform_arg == 'javascript':
-    # Use generic POSIX build toolchain for Emscripten.
-    custom_tools = ['cc', 'c++', 'ar', 'link', 'textfile', 'zip']
+if (os.name == "posix"):
+    pass
+elif (os.name == "nt"):
+    if platform_arg == "android" or platform_arg == "javascript" or ARGUMENTS.get("use_mingw", False):
+        custom_tools = ['mingw']
 
 env_base = Environment(tools=custom_tools)
 if 'TERM' in os.environ:
@@ -421,24 +421,22 @@ if selected_platform in platform_list:
 
     if (env.use_ptrcall):
         env.Append(CPPDEFINES=['PTRCALL_ENABLED'])
+
+    # to test 64 bits compiltion
+    # env.Append(CPPFLAGS=['-m64'])
+
     if env['tools']:
         env.Append(CPPDEFINES=['TOOLS_ENABLED'])
     if env['disable_3d']:
-        if env['tools']:
-            print("Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
-            sys.exit(255)
-        else:
-            env.Append(CPPDEFINES=['_3D_DISABLED'])
+        env.Append(CPPDEFINES=['_3D_DISABLED'])
     if env['gdscript']:
         env.Append(CPPDEFINES=['GDSCRIPT_ENABLED'])
     if env['disable_advanced_gui']:
-        if env['tools']:
-            print("Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
-            sys.exit(255)
-        else:
-            env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
+        env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
+
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
+
     if env['xml']:
         env.Append(CPPDEFINES=['XML_ENABLED'])
 
