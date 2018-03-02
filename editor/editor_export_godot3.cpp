@@ -1328,6 +1328,20 @@ Error EditorExportGodot3::_get_property_as_text(const Variant &p_variant, String
 	return OK;
 }
 
+static String _valprop(const String &p_name) {
+
+	// Escape and quote strings with extended ASCII or further Unicode characters
+	// as well as '"', '=' or ' ' (32)
+	const CharType *cstr = p_name.c_str();
+	for (int i = 0; cstr[i]; i++) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+			return "\"" + p_name.c_escape_multiline() + "\"";
+		}
+	}
+	// Keep as is
+	return p_name;
+}
+
 void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
@@ -1356,7 +1370,7 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 			String prop;
 			_get_property_as_text(E->get().value, prop);
-			f->store_line(E->get().name + " = " + prop);
+			f->store_line(_valprop(E->get().name) + " = " + prop);
 		}
 	}
 
@@ -1401,7 +1415,7 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 			String prop;
 			_get_property_as_text(E->get().value, prop);
-			f->store_line(E->get().name + " = " + prop);
+			f->store_line(_valprop(E->get().name) + " = " + prop);
 		}
 	}
 
@@ -1418,6 +1432,7 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 		f->store_line("[editable path=\"" + String(resource.editables[i]).c_escape() + "\"]");
 	}
 }
+
 enum {
 
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
