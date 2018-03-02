@@ -405,6 +405,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
 
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
+
 					if (dst_rect.size.width < 0) {
 						dst_rect.position.x += dst_rect.size.width;
 						dst_rect.size.width *= -1;
@@ -633,7 +635,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandPolygon *polygon = static_cast<Item::CommandPolygon *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
 				if (state.canvas_shader.bind())
 					_set_uniforms();
