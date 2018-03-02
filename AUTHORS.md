@@ -73,7 +73,6 @@ name is available.
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Justo Delgado (mrcdk)
-    Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
     Leon Krause (eska014)
     Marc Gilleron (Zylann)
