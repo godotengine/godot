@@ -30,7 +30,6 @@
 
 #include "line_edit.h"
 #include "label.h"
-#include "message_queue.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -502,6 +501,18 @@ LineEdit::Align LineEdit::get_align() const {
 	return align;
 }
 
+void LineEdit::set_valign(VAlign p_align) {
+
+	ERR_FAIL_INDEX(p_align, 4);
+	valign = p_align;
+	update();
+}
+
+LineEdit::VAlign LineEdit::get_valign() const {
+
+	return valign;
+}
+
 Variant LineEdit::get_drag_data(const Point2 &p_point) {
 
 	if (selection.drag_attempt && selection.enabled) {
@@ -599,6 +610,34 @@ void LineEdit::_notification(int p_what) {
 				get_stylebox("focus")->draw(ci, Rect2(Point2(), size));
 			}
 
+			int font_h = font->get_height();
+
+
+			int vbegin = 0, vsep = 0;
+
+
+			switch (valign) {
+
+				case VALIGN_TOP: {
+					//nothing
+				} break;
+				case VALIGN_CENTER: {
+					vbegin = (size.y - font_h) / 2;
+					vsep = 0;
+
+				} break;
+				case VALIGN_BOTTOM: {
+					vbegin = size.y - font_h;
+					vsep = 0;
+
+				} break;
+				case VALIGN_FILL: {
+					vbegin = 0;
+					vsep = size.y - font_h;
+
+				} break;
+			}
+
 			int x_ofs = 0;
 
 			switch (align) {
@@ -626,6 +665,8 @@ void LineEdit::_notification(int p_what) {
 
 			int y_area = height - style->get_minimum_size().height;
 			int y_ofs = style->get_offset().y;
+			//y_ofs += font_h + font->get_ascent();
+			y_ofs += vbegin + vsep;
 
 			int font_ascent = font->get_ascent();
 
@@ -801,12 +842,7 @@ void LineEdit::paste_text() {
 		if (selection.enabled) selection_delete();
 		append_at_cursor(paste_buffer);
 
-		if (!text_changed_dirty) {
-			if (is_inside_tree()) {
-				MessageQueue::get_singleton()->push_call(this, "_text_changed");
-			}
-			text_changed_dirty = true;
-		}
+		_text_changed();
 	}
 }
 
@@ -980,12 +1016,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 		window_pos = cursor_pos;
 	}
 
-	if (!text_changed_dirty) {
-		if (is_inside_tree()) {
-			MessageQueue::get_singleton()->push_call(this, "_text_changed");
-		}
-		text_changed_dirty = true;
-	}
+	_text_changed();
 }
 
 void LineEdit::set_text(String p_text) {
@@ -1352,7 +1383,6 @@ void LineEdit::_text_changed() {
 void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
 	_change_notify("text");
-	text_changed_dirty = false;
 }
 
 void LineEdit::_clear_redo() {
@@ -1385,7 +1415,6 @@ void LineEdit::_create_undo_state() {
 
 void LineEdit::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &LineEdit::_text_changed);
 	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &LineEdit::_toggle_draw_caret);
 
 #ifdef TOOLS_ENABLED
@@ -1394,6 +1423,8 @@ void LineEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &LineEdit::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &LineEdit::get_align);
+	ClassDB::bind_method(D_METHOD("set_valign", "valign"), &LineEdit::set_valign);
+	ClassDB::bind_method(D_METHOD("get_valign"), &LineEdit::get_valign);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &LineEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("clear"), &LineEdit::clear);
@@ -1434,6 +1465,11 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 	BIND_ENUM_CONSTANT(ALIGN_FILL);
 
+	BIND_ENUM_CONSTANT(VALIGN_TOP);
+	BIND_ENUM_CONSTANT(VALIGN_CENTER);
+	BIND_ENUM_CONSTANT(VALIGN_BOTTOM);
+	BIND_ENUM_CONSTANT(VALIGN_FILL);
+
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_PASTE);
@@ -1445,6 +1481,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
@@ -1465,13 +1502,13 @@ LineEdit::LineEdit() {
 	undo_stack_pos = NULL;
 	_create_undo_state();
 	align = ALIGN_LEFT;
+	valign = VALIGN_TOP;
 	cached_width = 0;
 	cursor_pos = 0;
 	window_pos = 0;
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
-	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 
 	deselect();
