@@ -829,8 +829,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	//if (video_driver == "") // useless for now, so removing
-	//	video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
+	GLOBAL_DEF("rendering/quality/driver/driver_name", "GLES3");
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES3,GLES2"));
+	if (video_driver == "") {
+		video_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
+	}
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	GLOBAL_DEF("display/window/size/height", 600);

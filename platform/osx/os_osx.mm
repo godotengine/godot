@@ -1181,8 +1181,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	/*** END OSX INITIALIZATION ***/
 
-	bool use_gl2 = p_video_driver != 1;
-
 	AudioDriverManager::add_driver(&audio_driver);
 
 	// only opengl support here...
