@@ -94,7 +94,7 @@ void GridContainer::_notification(int p_what) {
 				int max_index = col_expanded.front()->get();
 				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
 					if (col_minw[E->get()] > col_minw[max_index]) {
-						max_index = col_minw[E->get()];
+						max_index = E->get();
 					}
 					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E->get()]) {
 						can_fit = false;
@@ -115,7 +115,7 @@ void GridContainer::_notification(int p_what) {
 				int max_index = row_expanded.front()->get();
 				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
 					if (row_minh[E->get()] > row_minh[max_index]) {
-						max_index = row_minh[E->get()];
+						max_index = E->get();
 					}
 					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E->get()]) {
 						can_fit = false;
