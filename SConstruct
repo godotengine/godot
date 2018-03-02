@@ -65,7 +65,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 if (os.name == "posix"):
     pass
 elif (os.name == "nt"):
-    if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android" or platform_arg == "javascript"):
+    if platform_arg == "android" or platform_arg == "javascript" or ARGUMENTS.get("use_mingw", False):
         custom_tools = ['mingw']
 
 env_base = Environment(tools=custom_tools)
@@ -92,6 +92,7 @@ env_base.use_ptrcall = False
 env_base.split_drivers = False
 env_base.split_modules = False
 env_base.module_version_string = ""
+env_base.msvc = False
 
 # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
 # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
@@ -240,14 +241,13 @@ sys.modules.pop('detect')
 """
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
-    env_base.Append(CPPFLAGS=['-DSCI_NAMESPACE'])
+    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC', 'SCI_NAMESPACE'])
 
 if (env_base['no_editor_splash']):
-    env_base.Append(CPPFLAGS=['-DNO_EDITOR_SPLASH'])
+    env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
 
 if not env_base['deprecated']:
-    env_base.Append(CPPFLAGS=['-DDISABLE_DEPRECATED'])
+    env_base.Append(CPPDEFINES=['DISABLE_DEPRECATED'])
 
 env_base.platforms = {}
 
@@ -329,9 +329,7 @@ if selected_platform in platform_list:
     if (env["warnings"] == 'yes'):
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
-    env.msvc = 0
-    if (os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
-        env.msvc = 1
+    if env.msvc:
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
@@ -363,7 +361,7 @@ if selected_platform in platform_list:
             print("Tools can only be built with targets 'debug' and 'release_debug'.")
             sys.exit(255)
         suffix += ".opt"
-        env.Append(CCFLAGS=['-DNDEBUG'])
+        env.Append(CPPDEFINES=['NDEBUG'])
 
     elif (env["target"] == "release_debug"):
         if env["tools"]:
@@ -420,25 +418,25 @@ if selected_platform in platform_list:
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
     if (env.use_ptrcall):
-        env.Append(CPPFLAGS=['-DPTRCALL_ENABLED'])
+        env.Append(CPPDEFINES=['PTRCALL_ENABLED'])
 
     # to test 64 bits compiltion
     # env.Append(CPPFLAGS=['-m64'])
 
     if env['tools']:
-        env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])
+        env.Append(CPPDEFINES=['TOOLS_ENABLED'])
     if env['disable_3d']:
-        env.Append(CPPFLAGS=['-D_3D_DISABLED'])
+        env.Append(CPPDEFINES=['_3D_DISABLED'])
     if env['gdscript']:
-        env.Append(CPPFLAGS=['-DGDSCRIPT_ENABLED'])
+        env.Append(CPPDEFINES=['GDSCRIPT_ENABLED'])
     if env['disable_advanced_gui']:
-        env.Append(CPPFLAGS=['-DADVANCED_GUI_DISABLED'])
+        env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
 
     if env['minizip']:
-        env.Append(CPPFLAGS=['-DMINIZIP_ENABLED'])
+        env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
 
     if env['xml']:
-        env.Append(CPPFLAGS=['-DXML_ENABLED'])
+        env.Append(CPPDEFINES=['XML_ENABLED'])
 
     if not env['verbose']:
         methods.no_verbose(sys, env)
@@ -479,10 +477,7 @@ if selected_platform in platform_list:
     if ("check_c_headers" in env):
         for header in env["check_c_headers"]:
             if (conf.CheckCHeader(header[0])):
-                if (env.msvc):
-                    env.Append(CCFLAGS=['/D' + header[1]])
-                else:
-                    env.Append(CCFLAGS=['-D' + header[1]])
+                env.AppendUnique(CPPDEFINES=[header[1]])
 
 else:
 
