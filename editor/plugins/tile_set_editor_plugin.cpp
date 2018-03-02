@@ -243,6 +243,7 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_name_dialog_confirm", &TileSetEditor::_name_dialog_confirm);
 	ClassDB::bind_method("_on_tile_list_selected", &TileSetEditor::_on_tile_list_selected);
 	ClassDB::bind_method("_on_edit_mode_changed", &TileSetEditor::_on_edit_mode_changed);
+	ClassDB::bind_method("_on_workspace_overlay_draw", &TileSetEditor::_on_workspace_overlay_draw);
 	ClassDB::bind_method("_on_workspace_draw", &TileSetEditor::_on_workspace_draw);
 	ClassDB::bind_method("_on_workspace_input", &TileSetEditor::_on_workspace_input);
 	ClassDB::bind_method("_on_tool_clicked", &TileSetEditor::_on_tool_clicked);
@@ -564,6 +565,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	add_child(err_dialog);
 	err_dialog->set_title(TTR("Error"));
 
+	draw_handles = false;
+
 	initialize_bottom_editor();
 }
 
@@ -748,7 +751,20 @@ void TileSetEditor::_on_workspace_draw() {
 	workspace_overlay->update();
 }
 
-#define MIN_DISTANCE_SQUARED 10
+void TileSetEditor::_on_workspace_overlay_draw() {
+
+	int t_id = get_current_tile();
+	if (t_id < 0 || !draw_handles)
+		return;
+
+	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+
+	for (int i = 0; i < current_shape.size(); i++) {
+		workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
+	}
+}
+
+#define MIN_DISTANCE_SQUARED 6
 void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 	if (get_current_tile() >= 0 && !tileset.is_null()) {
@@ -1180,6 +1196,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 		scale *= 2;
 		workspace->set_scale(Vector2(scale, scale));
 		workspace_container->set_custom_minimum_size(preview->get_region_rect().size * scale);
+		workspace_overlay->set_custom_minimum_size(preview->get_region_rect().size * scale);
 	} else if (p_tool == TOOL_SELECT) {
 		if (creating_shape) {
 			//Cancel Creation
@@ -1376,9 +1393,7 @@ void TileSetEditor::draw_polygon_shapes() {
 					}
 					workspace->draw_line(shape->get_polygon()[shape->get_polygon().size() - 1], shape->get_polygon()[0], c_border, 1, true);
 					if (shape == edited_occlusion_shape) {
-						for (int j = 0; j < current_shape.size(); j++) {
-							workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
-						}
+						draw_handles = true;
 					}
 				}
 			} else {
@@ -1421,9 +1436,7 @@ void TileSetEditor::draw_polygon_shapes() {
 							}
 							workspace->draw_line(shape->get_polygon()[shape->get_polygon().size() - 1] + anchor, shape->get_polygon()[0] + anchor, c_border, 1, true);
 							if (shape == edited_occlusion_shape) {
-								for (int j = 0; j < current_shape.size(); j++) {
-									workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
-								}
+								draw_handles = true;
 							}
 						}
 					}
@@ -1454,9 +1467,7 @@ void TileSetEditor::draw_polygon_shapes() {
 							workspace->draw_line(vertices[shape->get_polygon(0)[j]], vertices[shape->get_polygon(0)[j + 1]], c_border, 1, true);
 						}
 						if (shape == edited_navigation_shape) {
-							for (int j = 0; j < current_shape.size(); j++) {
-								workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
-							}
+							draw_handles = true;
 						}
 					}
 				}
@@ -1503,9 +1514,7 @@ void TileSetEditor::draw_polygon_shapes() {
 									workspace->draw_line(vertices[shape->get_polygon(0)[j]] + anchor, vertices[shape->get_polygon(0)[j + 1]] + anchor, c_border, 1, true);
 								}
 								if (shape == edited_navigation_shape) {
-									for (int j = 0; j < current_shape.size(); j++) {
-										workspace->draw_circle(current_shape[j], 8 / workspace->get_scale().x, Color(1, 0, 0));
-									}
+									draw_handles = true;
 								}
 							}
 						}
