@@ -217,6 +217,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool show_guides;
 	bool show_helpers;
 	float zoom;
+	CanvasItem *detail_mode;
 
 	Point2 grid_offset;
 	Point2 grid_step;
@@ -495,6 +496,7 @@ public:
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
+	bool is_in_detail_mode() const;
 
 	CanvasItemEditor(EditorNode *p_editor);
 };

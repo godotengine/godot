@@ -1613,6 +1613,15 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	Ref<InputEventKey> k = p_event;
 
+	if (drag_type == DRAG_NONE && tool == TOOL_SELECT && b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && b->is_doubleclick()) {
+		List<CanvasItem *> selection = _get_edited_canvas_items();
+		if (selection.size() == 1) {
+			detail_mode = selection[0];
+			viewport->update();
+			return true;
+		}
+	}
+
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() &&
 				((b->get_button_index() == BUTTON_LEFT && b->get_alt() && tool == TOOL_SELECT) ||
@@ -1855,6 +1864,13 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	// Grab focus
 	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
 		viewport->call_deferred("grab_focus");
+	}
+
+	if (detail_mode) {
+		List<CanvasItem *> selection = _get_edited_canvas_items();
+		if (selection.size() != 1 || selection[0] != detail_mode || drag_type != DRAG_NONE || tool != TOOL_SELECT) {
+			detail_mode = NULL;
+		}
 	}
 }
 
@@ -2562,7 +2578,9 @@ void CanvasItemEditor::_draw_viewport() {
 	_update_scrollbars();
 
 	_draw_grid();
-	_draw_selection();
+	if (!detail_mode) {
+		_draw_selection();
+	}
 	_draw_axis();
 	if (editor->get_edited_scene())
 		_draw_locks_and_groups(editor->get_edited_scene(), transform);
@@ -3736,6 +3754,10 @@ void CanvasItemEditor::focus_selection() {
 	_focus_selection(VIEW_CENTER_TO_SELECTION);
 }
 
+bool CanvasItemEditor::is_in_detail_mode() const {
+	return detail_mode;
+}
+
 CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	tool = TOOL_SELECT;
@@ -4029,6 +4051,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_rulers = true;
 	show_guides = true;
 	zoom = 1;
+	detail_mode = NULL;
 	grid_offset = Point2();
 	grid_step = Point2(10, 10);
 	grid_step_multiplier = 0;
