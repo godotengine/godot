@@ -97,6 +97,8 @@ class CanvasItemEditor : public VBoxContainer {
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		SHOW_GUIDES,
+		SHOW_ORIGIN,
+		SHOW_VIEWPORT,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -220,6 +222,8 @@ class CanvasItemEditor : public VBoxContainer {
 	bool show_grid;
 	bool show_rulers;
 	bool show_guides;
+	bool show_origin;
+	bool show_viewport;
 	bool show_helpers;
 	float zoom;
 
