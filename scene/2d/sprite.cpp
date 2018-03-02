@@ -287,7 +287,27 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	Vector2 q = ((p_point - dst_rect.position) / dst_rect.size) * src_rect.size + src_rect.position;
 
-	Ref<Image> image = texture->get_data();
+	Ref<Image> image;
+	Ref<AtlasTexture> atlasTexture = texture;
+	if (atlasTexture.is_null()) {
+		image = texture->get_data();
+	} else {
+		ERR_FAIL_COND_V(atlasTexture->get_atlas().is_null(), false);
+
+		image = atlasTexture->get_atlas()->get_data();
+
+		Rect2 region = atlasTexture->get_region();
+		Rect2 margin = atlasTexture->get_margin();
+
+		q -= margin.position;
+
+		if ((q.x > region.size.width) || (q.y > region.size.height)) {
+			return false;
+		}
+
+		q += region.position;
+	}
+
 	ERR_FAIL_COND_V(image.is_null(), false);
 
 	image->lock();
