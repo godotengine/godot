@@ -133,7 +133,7 @@
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
-			The horizontal (X) offset of the Camear viewport.
+			The horizontal (X) offset of the Camera viewport.
 		</member>
 		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect">
 			The axis to lock during [member fov]/[member size] adjustments.
@@ -148,7 +148,7 @@
 			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
-			The horizontal (Y) offset of the Camear viewport.
+			The horizontal (Y) offset of the Camera viewport.
 		</member>
 	</members>
 	<constants>
