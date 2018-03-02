@@ -50,6 +50,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+enum VideoDriver {
+	VIDEO_DRIVER_GLES3,
+	VIDEO_DRIVER_GLES2
+};
+
 class OS_OSX : public OS_Unix {
 public:
 	struct KeyEvent {
