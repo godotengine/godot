@@ -497,7 +497,6 @@ screen = sys.stdout
 node_count = 0
 node_count_max = 0
 node_count_interval = 1
-node_pruning = 8 # Number of nodes to process before prunning the cache
 if ('env' in locals()):
     node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
 # Progress reporting is not available in non-TTY environments since it
@@ -512,17 +511,15 @@ import time, math
 class cache_progress:
     # The default is 1 GB cache and 12 hours half life
     def __init__(self, path = None, limit = 1073741824, half_life = 43200):
-        global node_pruning
         self.path = path
         self.limit = limit
         self.exponent_scale = math.log(2) / half_life
         if env['verbose'] and path != None:
             screen.write('Current cache limit is ' + self.convert_size(limit) + ' (used: ' + self.convert_size(self.get_size(path)) + ')\n')
-        self.pruning = node_pruning
         self.delete(self.file_list())
 
     def __call__(self, node, *args, **kw):
-        global node_count, node_count_max, node_count_interval, node_count_fname, node_pruning, show_progress
+        global node_count, node_count_max, node_count_interval, node_count_fname, show_progress
         if show_progress:
             # Print the progress percentage
             node_count += node_count_interval
@@ -535,11 +532,6 @@ class cache_progress:
             else:
                 screen.write('\r[Initial build] ')
                 screen.flush()
-        # Prune if the number of nodes processed is 'node_pruning' or bigger
-        self.pruning -= node_count_interval
-        if self.pruning <= 0:
-            self.pruning = node_pruning
-            self.delete(self.file_list())
 
     def delete(self, files):
         if len(files) == 0:
@@ -547,7 +539,7 @@ class cache_progress:
         if env['verbose']:
             # Utter something
             screen.write('\rPurging %d %s from cache...\n' % (len(files), len(files) > 1 and 'files' or 'file'))
-        map(os.remove, files)
+        [os.remove(f) for f in files]
 
     def file_list(self):
         if self.path == None:
