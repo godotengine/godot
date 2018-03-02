@@ -57,8 +57,9 @@ void TextureRegionEditor::_region_draw() {
 		base_tex = obj_styleBox->get_texture();
 	else if (atlas_tex.is_valid())
 		base_tex = atlas_tex->get_atlas();
-	else if (tile_set.is_valid() && selected_tile != -1)
+	else if (tile_set.is_valid() && selected_tile != -1 && tile_set->has_tile(selected_tile))
 		base_tex = tile_set->tile_get_texture(selected_tile);
+
 	if (base_tex.is_null())
 		return;
 
@@ -712,7 +713,7 @@ void TextureRegionEditor::_edit_region() {
 		texture = obj_styleBox->get_texture();
 	else if (atlas_tex.is_valid())
 		texture = atlas_tex->get_atlas();
-	else if (tile_set.is_valid() && selected_tile != -1)
+	else if (tile_set.is_valid() && selected_tile != -1 && tile_set->has_tile(selected_tile))
 		texture = tile_set->tile_get_texture(selected_tile);
 
 	if (texture.is_null()) {
