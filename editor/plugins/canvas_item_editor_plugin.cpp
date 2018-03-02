@@ -2387,15 +2387,11 @@ void CanvasItemEditor::_draw_axis() {
 
 	if (show_origin) {
 
-	_draw_straight_line(Point2(), Point2(1, 0), x_axis_color);
-	_draw_straight_line(Point2(), Point2(0, 1), y_axis_color);
-
-		Point2 origin = transform.get_origin();
 		Color x_axis_color(1.0, 0.4, 0.4, 0.6);
 		Color y_axis_color(0.4, 1.0, 0.4, 0.6);
 
-		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(0, origin.y), Point2(viewport->get_size().x, origin.y), x_axis_color);
-		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(origin.x, 0), Point2(origin.x, viewport->get_size().y), y_axis_color);
+		_draw_straight_line(Point2(), Point2(1, 0), x_axis_color);
+		_draw_straight_line(Point2(), Point2(0, 1), y_axis_color);
 	}
 
 	if (show_viewport) {
@@ -3598,6 +3594,8 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_grid"] = snap_grid;
 	state["snap_guides"] = snap_guides;
 	state["show_grid"] = show_grid;
+	state["show_origin"] = show_origin;
+	state["show_viewport"] = show_viewport;
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
@@ -3689,6 +3687,18 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_grid = state["show_grid"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
 		view_menu->get_popup()->set_item_checked(idx, show_grid);
+	}
+
+	if (state.has("show_origin")) {
+		show_origin = state["show_origin"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
+		view_menu->get_popup()->set_item_checked(idx, show_origin);
+	}
+
+	if (state.has("show_viewport")) {
+		show_viewport = state["show_viewport"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
+		view_menu->get_popup()->set_item_checked(idx, show_viewport);
 	}
 
 	if (state.has("show_rulers")) {
@@ -3964,6 +3974,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show Helpers"), KEY_H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers"), KEY_R), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), KEY_Y), SHOW_GUIDES);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
