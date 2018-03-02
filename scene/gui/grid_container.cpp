@@ -36,10 +36,10 @@ void GridContainer::_notification(int p_what) {
 
 		case NOTIFICATION_SORT_CHILDREN: {
 
-			Map<int, int> col_minw;
-			Map<int, int> row_minh;
-			Set<int> col_expanded;
-			Set<int> row_expanded;
+			Map<int, int> col_minw; // max of min_width  of all controls in each col (indexed by col)
+			Map<int, int> row_minh; // max of min_height of all controls in each row (indexed by row)
+			Set<int> col_expanded; // columns which have the SIZE_EXPAND flag set
+			Set<int> row_expanded; // rows which have the SIZE_EXPAND flag set
 
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
@@ -94,7 +94,7 @@ void GridContainer::_notification(int p_what) {
 				int max_index = 0;
 				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
 					if (col_minw[E->get()] > col_minw[max_index]) {
-						max_index = col_minw[E->get()];
+						max_index = E->get();
 					}
 					if (can_fit && (remaining_space.width / col_expanded.size()) < col_minw[E->get()]) {
 						can_fit = false;
@@ -115,7 +115,7 @@ void GridContainer::_notification(int p_what) {
 				int max_index = 0;
 				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
 					if (row_minh[E->get()] > row_minh[max_index]) {
-						max_index = row_minh[E->get()];
+						max_index = E->get();
 					}
 					if (can_fit && (remaining_space.height / row_expanded.size()) < row_minh[E->get()]) {
 						can_fit = false;
