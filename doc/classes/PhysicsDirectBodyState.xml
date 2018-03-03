@@ -35,7 +35,7 @@
 			<argument index="0" name="j" type="Vector3">
 			</argument>
 			<description>
-			This method is deprecated. Please use [method apply_torque_impulse] instead.
+				This method is deprecated. Please use [method apply_torque_impulse] instead.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
