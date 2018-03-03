@@ -448,9 +448,12 @@ if selected_platform in platform_list:
         env.Append( BUILDERS = { 'GLES2_GLSL' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.gen.h', src_suffix = '.glsl') } )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
+    print("Checking for Scons cache path")
     if scons_cache_path != None:
         CacheDir(scons_cache_path)
         print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+    else:
+        print("SCONS_CACHE environment variable is not set. Scons cache disabled.")
 
     Export('env')
 
