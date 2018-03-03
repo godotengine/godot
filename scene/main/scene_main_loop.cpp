@@ -571,6 +571,12 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 		} break;
+		case NOTIFICATION_WM_MOUSE_ENTER: {
+			get_root()->propagate_notification(p_notification);
+		} break;
+		case NOTIFICATION_WM_MOUSE_EXIT: {
+			get_root()->propagate_notification(p_notification);
+		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
 			notify_group(GROUP_CALL_REALTIME | GROUP_CALL_MULIILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
