@@ -103,7 +103,7 @@
 #define C_METHOD_MANAGED_TO_DICT C_NS_MONOMARSHAL "::mono_object_to_Dictionary"
 #define C_METHOD_MANAGED_FROM_DICT C_NS_MONOMARSHAL "::Dictionary_to_mono_object"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(1)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(2)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -730,7 +730,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 
 	output.push_back(INDENT1 "public ");
-	output.push_back(itype.is_singleton ? "static class " : "class ");
+	bool is_abstract = !ClassDB::can_instance(itype.name) && ClassDB::is_class_enabled(itype.name); // can_instance returns true if there's a constructor and the class is not 'disabled'
+	output.push_back(itype.is_singleton ? "static class " : (is_abstract ? "abstract class " : "class "));
 	output.push_back(itype.proxy_name);
 
 	if (itype.is_singleton) {
