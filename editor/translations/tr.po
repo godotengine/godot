@@ -7440,14 +7440,9 @@ msgstr "Projeyi İnşa et"
 msgid "Warnings"
 msgstr "Uyarılar"
 
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "View log"
-msgstr "Dosyaları Görüntüle"
-
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr "İç özel durum yığını izlemesinin sonu"
+msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -8218,6 +8213,13 @@ msgstr "Yazıtipi yükleme hatası."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Geçersiz yazıtipi boyutu."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Şablonların içinde geçersiz version.txt formatı. Revizyon geçerli bir "
+#~ "tanımlayıcı değil."
 
 #~ msgid "Can't write file."
 #~ msgstr "Dosyaya yazılamıyor."
