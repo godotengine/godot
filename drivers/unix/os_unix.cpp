@@ -236,9 +236,10 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 void OS_Unix::delay_usec(uint32_t p_usec) const {
 
 	struct timespec rem = { p_usec / 1000000, (p_usec % 1000000) * 1000 };
-	while (nanosleep(&rem, &rem) == EINTR) {
+	while (nanosleep(&rem, NULL) == EINTR) {
 	}
 }
+
 uint64_t OS_Unix::get_ticks_usec() const {
 
 	struct timeval tv_now;
