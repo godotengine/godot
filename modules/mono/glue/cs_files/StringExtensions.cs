@@ -287,7 +287,7 @@ namespace Godot
             if (sep == -1)
                 return @base;
 
-            return @base + rs.substr(0, sep);
+            return @base + rs.Substr(0, sep);
         }
 
         // <summary>
@@ -478,7 +478,7 @@ namespace Godot
         // </summary>
         public static bool IsValidIpAddress(this string instance)
         {
-            string[] ip = instance.split(".");
+            string[] ip = instance.Split(".");
 
             if (ip.Length != 4)
                 return false;
@@ -489,7 +489,7 @@ namespace Godot
                 if (!n.IsValidInteger())
                     return false;
 
-                int val = n.to_int();
+                int val = n.ToInt();
                 if (val < 0 || val > 255)
                     return false;
             }
@@ -571,7 +571,7 @@ namespace Godot
         // <summary>
         // Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
         // </summary>
-        public static bool matchn(this string instance, string expr)
+        public static bool Matchn(this string instance, string expr)
         {
             return instance.ExprMatch(expr, false);
         }
@@ -830,7 +830,7 @@ namespace Godot
         // <summary>
         // Split the string by a divisor string, return an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
         // </summary>
-        public static string[] split(this string instance, string divisor, bool allow_empty = true)
+        public static string[] Split(this string instance, string divisor, bool allow_empty = true)
         {
             return instance.Split(new string[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -838,7 +838,7 @@ namespace Godot
         // <summary>
         // Split the string in floats by using a divisor string, return an array of the substrings. Example "1,2.5,3" will return [1,2.5,3] if split by ",".
         // </summary>
-        public static float[] split_floats(this string instance, string divisor, bool allow_empty = true)
+        public static float[] SplitFloats(this string instance, string divisor, bool allow_empty = true)
         {
             List<float> ret = new List<float>();
             int from = 0;
@@ -872,7 +872,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
         // </summary>
-        public static string strip_edges(this string instance, bool left = true, bool right = true)
+        public static string StripEdges(this string instance, bool left = true, bool right = true)
         {
             if (left)
             {
@@ -890,7 +890,7 @@ namespace Godot
         // <summary>
         // Return part of the string from the position [code]from[/code], with length [code]len[/code].
         // </summary>
-        public static string substr(this string instance, int from, int len)
+        public static string Substr(this string instance, int from, int len)
         {
             return instance.Substring(from, len);
         }
@@ -898,7 +898,7 @@ namespace Godot
         // <summary>
         // Convert the String (which is a character array) to PoolByteArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
         // </summary>
-        public static byte[] to_ascii(this string instance)
+        public static byte[] ToAscii(this string instance)
         {
             return Encoding.ASCII.GetBytes(instance);
         }
@@ -906,7 +906,7 @@ namespace Godot
         // <summary>
         // Convert a string, containing a decimal number, into a [code]float[/code].
         // </summary>
-        public static float to_float(this string instance)
+        public static float ToFloat(this string instance)
         {
             return float.Parse(instance);
         }
@@ -914,7 +914,7 @@ namespace Godot
         // <summary>
         // Convert a string, containing an integer number, into an [code]int[/code].
         // </summary>
-        public static int to_int(this string instance)
+        public static int ToInt(this string instance)
         {
             return int.Parse(instance);
         }
@@ -922,7 +922,7 @@ namespace Godot
         // <summary>
         // Return the string converted to lowercase.
         // </summary>
-        public static string to_lower(this string instance)
+        public static string ToLower(this string instance)
         {
             return instance.ToLower();
         }
@@ -930,7 +930,7 @@ namespace Godot
         // <summary>
         // Return the string converted to uppercase.
         // </summary>
-        public static string to_upper(this string instance)
+        public static string ToUpper(this string instance)
         {
             return instance.ToUpper();
         }
@@ -938,7 +938,7 @@ namespace Godot
         // <summary>
         // Convert the String (which is an array of characters) to PoolByteArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
         // </summary>
-        public static byte[] to_utf8(this string instance)
+        public static byte[] ToUtf8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
         }
@@ -946,7 +946,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with special characters escaped using the XML standard.
         // </summary>
-        public static string xml_escape(this string instance)
+        public static string XmlEscape(this string instance)
         {
             return SecurityElement.Escape(instance);
         }
@@ -954,7 +954,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with escaped characters replaced by their meanings according to the XML standard.
         // </summary>
-        public static string xml_unescape(this string instance)
+        public static string XmlUnescape(this string instance)
         {
             return SecurityElement.FromString(instance).Text;
         }
