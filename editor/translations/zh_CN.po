@@ -2419,12 +2419,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "模板文件中的version.txt不合法。"
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr "模板中的 version.txt文件格式不合法，无效的版本标识符。"
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "模板中没有找到version.txt文件。"
 
@@ -7352,6 +7346,10 @@ msgstr "构建项目"
 msgid "Warnings"
 msgstr "警告"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8060,6 +8058,11 @@ msgstr "加载字体出错。"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "字体大小非法。"
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr "模板中的 version.txt文件格式不合法，无效的版本标识符。"
 
 #~ msgid "Can't write file."
 #~ msgstr "无法写入文件。"

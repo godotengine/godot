@@ -2404,12 +2404,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "รูปแบบของ version.txt ในแม่แบบไม่ถูกต้อง"
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr "รูปแบบของ version.txt ในแม่แบบไม่ถูกต้อง หมายเลขรุ่น revision ต้องใช้ระบุได้"
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "ไม่พบ version.txt ในแม่แบบ"
 
@@ -7332,6 +7326,10 @@ msgstr "Build โปรเจกต์"
 msgid "Warnings"
 msgstr "คำเตือน"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8035,6 +8033,11 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr "รูปแบบของ version.txt ในแม่แบบไม่ถูกต้อง หมายเลขรุ่น revision ต้องใช้ระบุได้"
 
 #~ msgid "Can't write file."
 #~ msgstr "เขียนไฟล์ไม่ได้"

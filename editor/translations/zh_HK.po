@@ -2520,12 +2520,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "無效的 version.txt 格式 inside templates."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-
-#: editor/export_template_manager.cpp
 #, fuzzy
 msgid "No version.txt found inside templates."
 msgstr "找不到version.txt inside templates."
@@ -7565,6 +7559,10 @@ msgstr "專案"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
+msgstr ""
+
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp

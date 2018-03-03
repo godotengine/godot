@@ -2519,13 +2519,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "টেমপ্লেট এর version.txt ফরম্যাট গ্রহণযোগ্য নয়।"
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"টেমপ্লেট এর version.txt ফরম্যাট অগ্রহণযোগ্য। Revision কোন কাংখিত আইডেন্টিফায়ার নয়।"
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "টেমপ্লেটে version.txt খুঁজে পাওয়া যায়নি।"
 
@@ -7748,6 +7741,10 @@ msgstr "নতুন প্রকল্প"
 msgid "Warnings"
 msgstr "সতর্কতা"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8507,6 +8504,13 @@ msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়ে�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "টেমপ্লেট এর version.txt ফরম্যাট অগ্রহণযোগ্য। Revision কোন কাংখিত আইডেন্টিফায়ার "
+#~ "নয়।"
 
 #, fuzzy
 #~ msgid "Can't write file."

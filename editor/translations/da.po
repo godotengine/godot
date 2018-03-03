@@ -2485,14 +2485,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Ugyldigt version.txt format inde i skabeloner."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Ugyldigt version.txt format inde i skabeloner. Revision er ikke en gyldig "
-"identifikator."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Ingen version.txt fundet inde i skabeloner."
 
@@ -7440,6 +7432,10 @@ msgstr "Projekt"
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8172,6 +8168,13 @@ msgstr "Error loading skrifttype."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ugyldig skriftstørrelse."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Ugyldigt version.txt format inde i skabeloner. Revision er ikke en gyldig "
+#~ "identifikator."
 
 #~ msgid "Can't write file."
 #~ msgstr "Kan ikke skrive til fil."

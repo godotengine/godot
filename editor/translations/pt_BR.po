@@ -2469,14 +2469,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Formato do version.txt dentro dos modelos é inválido."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Formato do version.txt dentro dos modelos é inválido. A revisão não é um "
-"identificador válido."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Não foi encontrado um version.txt dentro dos modelos."
 
@@ -7442,6 +7434,10 @@ msgstr "Compilar Projeto"
 msgid "Warnings"
 msgstr "Avisos"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8202,6 +8198,13 @@ msgstr "Erro ao carregar fonte."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Formato do version.txt dentro dos modelos é inválido. A revisão não é um "
+#~ "identificador válido."
 
 #~ msgid "Can't write file."
 #~ msgstr "Não foi possível escrever o arquivo."

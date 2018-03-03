@@ -2428,13 +2428,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Neplatný formát version.txt uvnitř šablon."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Neplatný formát version.txt uvnitř šablon. Revize není platný identifikátor."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Nenalezena version.txt uvnitř šablon."
 
@@ -7391,6 +7384,10 @@ msgstr "Sestavit projekt"
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
 msgid ""
@@ -8132,6 +8129,13 @@ msgstr "Chyba nahrávání fontu."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Neplatná velikost fontu."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Neplatný formát version.txt uvnitř šablon. Revize není platný "
+#~ "identifikátor."
 
 #~ msgid "Can't write file."
 #~ msgstr "Nelze zapsat soubor."
