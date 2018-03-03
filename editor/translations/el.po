@@ -2460,14 +2460,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Άκυρη μορφή version.txt μέσα στα πρότυπα."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Άκυρη μορφή version.txt μέσα στα πρότυπα. Το Revision δεν είναι έγκυρο "
-"αναγνωριστικό."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Δεν βρέθηκε version.txt μέσα στα πρότυπα."
 
@@ -7450,6 +7442,10 @@ msgstr "Δόμηση έργου"
 msgid "Warnings"
 msgstr "Προειδοποιήσεις"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8219,6 +8215,13 @@ msgstr "Σφάλμα κατά την φόρτωση της γραμματοσε�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Άκυρη μορφή version.txt μέσα στα πρότυπα. Το Revision δεν είναι έγκυρο "
+#~ "αναγνωριστικό."
 
 #~ msgid "Can't write file."
 #~ msgstr "Δεν ήταν δυνατή η εγγραφή στο αρχείο."
