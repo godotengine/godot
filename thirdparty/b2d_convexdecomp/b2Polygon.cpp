@@ -1342,7 +1342,12 @@ b2Polygon TraceEdge(b2Polygon* p){
 				if (nodes[j].nConnected == 0) continue;
 				b2Vec2 diff = nodes[i].position - nodes[j].position;
 				if (diff.LengthSquared() <= COLLAPSE_DIST_SQR){
-					if (nActive <= 3) return b2Polygon();
+					if (nActive <= 3) {
+						// -- GODOT start --
+						delete[] nodes;
+						// -- GODOT end --
+						return b2Polygon();
+					}	
 					//printf("Found dupe, %d left\n",nActive);
 					--nActive;
 					foundDupe = true;
