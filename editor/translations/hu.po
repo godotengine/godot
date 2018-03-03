@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-05 23:37+0000\n"
+"PO-Revision-Date: 2018-02-24 12:37+0000\n"
 "Last-Translator: Varga Dániel <danikah.danikah@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -142,7 +142,7 @@ msgstr "Átméretezés a kurzortól"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr "Ugrás a következő lépésre"
+msgstr "Ugrás A Következő Lépésre"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
@@ -1648,8 +1648,8 @@ msgid "Quick Open Scene..."
 msgstr "Jelenet gyors megnyitása..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script..."
-msgstr "Szkript gyors megnyitás..."
+msgid "Quick Open Script.."
+msgstr "Szkript Gyors Megnyitása.."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -2390,7 +2390,7 @@ msgstr "Már létezik szerkesztett jelenet."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Nem sikerült a script példányosítása:"
+msgstr "Nem sikerült a szkript példányosítása:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -2398,7 +2398,7 @@ msgstr "Nem felejtette el a 'tool' kulcsszót?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr "Nem sikerült a script futtatása:"
+msgstr "Nem sikerült a szkript futtatása:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
@@ -2829,20 +2829,20 @@ msgstr "Létrehozás a Következő Hálóhoz: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
-msgstr "Tetszőleges Script Futtatása.."
+msgstr "Tetszőleges Szkript Futtatása.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "Nem sikerült az import utáni script betöltése:"
+msgstr "Nem sikerült az import utáni szkript betöltése:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
-"Érvénytelen vagy sérült az importálás utáni script (ellenőrizze a konzolt):"
+"Érvénytelen vagy sérült az importálás utáni szkript (ellenőrizze a konzolt):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr "Hiba történt az importálás utána script futtatásakor:"
+msgstr "Hiba történt az importálás utána szkript futtatásakor:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving.."
@@ -4250,8 +4250,8 @@ msgid "Error loading image:"
 msgstr "Hiba a kép betöltésekor:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben..."
+msgid "No pixels with transparency > 128 in image.."
+msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4321,7 +4321,7 @@ msgstr "Kibocsátási Pontok Létrehozása A Mesh Alapján"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr "Kibocsátási pontok létrehozása a Node alapján"
+msgstr "Kibocsátási Pontok Létrehozása A Node Alapján"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4567,22 +4567,6 @@ msgid "Type:"
 msgstr "Típus:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
@@ -4596,7 +4580,7 @@ msgstr "Beillesztés"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ResourcePreloader"
-msgstr "ForrásElőtöltö"
+msgstr "ResourcePreloader"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -4627,8 +4611,8 @@ msgid "Import Theme"
 msgstr "Téma Importálása"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As..."
-msgstr "Téma Mentése Másként..."
+msgid "Save Theme As.."
+msgstr "Téma Mentése Másként.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4724,8 +4708,8 @@ msgstr "Szkript Panel Megjelenítése"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find..."
-msgstr "Keresés..."
+msgid "Find.."
+msgstr "Keresés.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4809,8 +4793,8 @@ msgstr "Hibakereső"
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
-"A beépített szkriptek csak akkor szerkeszthetőek, amikor az a Scene amihez "
-"tartoznak éppen be van töltve"
+"A beépített szkriptek csak akkor szerkeszthetőek, amikor az a jelenet, "
+"amihez tartoznak, éppen be van töltve"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -4866,7 +4850,7 @@ msgstr "Behúzás Jobbra"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr ""
+msgstr "Átváltás Megjegyzésre"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -4883,10 +4867,6 @@ msgstr "Összes Sor Kibontása"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Klónozás Lefelé"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4938,16 +4918,16 @@ msgid "Find Previous"
 msgstr "Előző Keresése"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace..."
-msgstr "Csere..."
+msgid "Replace.."
+msgstr "Csere.."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function..."
-msgstr "Ugrás Funkcióra..."
+msgid "Goto Function.."
+msgstr "Ugrás Funkcióra.."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line..."
-msgstr "Ugrás Sorra..."
+msgid "Goto Line.."
+msgstr "Ugrás Sorra.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -4955,7 +4935,7 @@ msgstr "Kontextusérzékeny Súgó"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr "Árnyaló"
+msgstr "Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
@@ -7251,14 +7231,12 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Következő fül"
+msgstr "Következő Sík"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Előző fül"
+msgstr "Előző Sík"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
