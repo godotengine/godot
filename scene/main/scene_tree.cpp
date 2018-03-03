@@ -620,6 +620,12 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 		} break;
+		case NOTIFICATION_WM_MOUSE_ENTER: {
+			get_root()->propagate_notification(p_notification);
+		} break;
+		case NOTIFICATION_WM_MOUSE_EXIT: {
+			get_root()->propagate_notification(p_notification);
+		} break;	
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
