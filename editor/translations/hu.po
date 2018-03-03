@@ -2461,14 +2461,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Érvénytelen version.txt formátum a sablonokban."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Érvénytelen version.txt formátum a sablonokban. A revízió nem érvényes "
-"azonosító."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Nem található version.txt a sablonokban."
 
@@ -8089,6 +8081,13 @@ msgstr "Hiba a betűtípus betöltésekor."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Érvénytelen betűtípus méret."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Érvénytelen version.txt formátum a sablonokban. A revízió nem érvényes "
+#~ "azonosító."
 
 #~ msgid "Can't write file."
 #~ msgstr "Nem lehet fájlt írni."

@@ -8179,6 +8179,13 @@ msgstr "Error loading skrifttype."
 msgid "Invalid font size."
 msgstr "Ugyldig skriftstørrelse."
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Ugyldigt version.txt format inde i skabeloner. Revision er ikke en gyldig "
+#~ "identifikator."
+
 #~ msgid "Can't write file."
 #~ msgstr "Kan ikke skrive til fil."
 

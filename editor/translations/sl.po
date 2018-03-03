@@ -2442,7 +2442,7 @@ msgstr "Ne morem odpreti zip izvozne predloge."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr "Neveljaven format version.txt znotraj predloge."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."

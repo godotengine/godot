@@ -9094,6 +9094,13 @@ msgstr "フォント読み込みエラー。"
 msgid "Invalid font size."
 msgstr "無効なフォント サイズです。"
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "テンプレート内のversion.txt フォーマットが不正です. Revisionは有効な識別子"
+#~ "ではありません."
+
 #~ msgid "Can't write file."
 #~ msgstr "ファイルに書き込みできませんでした."
 
