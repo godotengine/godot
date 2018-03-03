@@ -1222,22 +1222,11 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		switch (format) {
 
 			case FORMAT_L8:
-			case FORMAT_R8: _generate_po2_mipmap<1, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 			case FORMAT_LA8:
-			case FORMAT_RG8: _generate_po2_mipmap<2, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-			case FORMAT_RGB8:
-				if (p_renormalize)
-					_generate_po2_mipmap<3, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
-				else
-					_generate_po2_mipmap<3, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
-
-				break;
-			case FORMAT_RGBA8:
-				if (p_renormalize)
-					_generate_po2_mipmap<4, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
-				else
-					_generate_po2_mipmap<4, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
-				break;
+			case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 			default: {}
 		}
 
