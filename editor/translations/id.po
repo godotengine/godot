@@ -12,21 +12,20 @@
 # Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>, 2018.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017.
 # Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018.
-# Tito <ijavadroid@gmail.com>, 2018.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-22 08:30+0000\n"
-"Last-Translator: Fajar Ru <kzofajar@gmail.com>\n"
+"PO-Revision-Date: 2018-03-02 01:38+0000\n"
+"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -702,7 +701,7 @@ msgstr "Ubah Kunci Kamus"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr "Ubah Nilai Kamus"
+msgstr "Ubah Nilai Dictionary"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -1090,7 +1089,7 @@ msgstr "[belum disimpan]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
-msgstr "Slahkan pilih direktori kerja terlebih dahulu"
+msgstr "Pilih direktori kerja terlebih dahulu"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1146,7 +1145,7 @@ msgid "Show In File Manager"
 msgstr "Tampilkan di Manajer Berkas"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder..."
+msgid "New Folder.."
 msgstr "Buat Direktori..."
 
 #: editor/editor_file_dialog.cpp
@@ -1407,10 +1406,6 @@ msgstr "Bersihkan"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "Bersihkan Luaran"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Ekspor proyek gagal dengan kode kesalahan% d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2221,7 +2216,7 @@ msgstr "Impor"
 
 #: editor/editor_node.cpp
 msgid "Node"
-msgstr "Node"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -2453,8 +2448,8 @@ msgid "(Current)"
 msgstr "(Kondisi Saat Ini)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait..."
-msgstr "Mendapatkan informasi cermin, silakan tunggu..."
+msgid "Retrieving mirrors, please wait.."
+msgstr "Mendapatkan informasi cermin, silakan tunggu.."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2467,6 +2462,14 @@ msgstr "Tidak dapat membuka ekspor template-template zip."
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
 msgstr "Format version.txt tidak valid dalam berkas templat."
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid version.txt format inside templates. Revision is not a valid "
+"identifier."
+msgstr ""
+"Format version.txt tidak valid dalam berkas templat. Revisi tidak valid."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2521,7 +2524,7 @@ msgstr "Mengarahkan Loop"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Gagal:"
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -2532,8 +2535,8 @@ msgid "Error requesting url: "
 msgstr "Kesalahan saat meminta url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror..."
-msgstr "Menyambungkan..."
+msgid "Connecting to Mirror.."
+msgstr "Menyambungkan.."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2549,8 +2552,8 @@ msgstr "Tidak Bisa Menyelesaikan"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting..."
-msgstr "Menyambungkan..."
+msgid "Connecting.."
+msgstr "Menyambungkan.."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2562,8 +2565,8 @@ msgstr "Terhubung"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting..."
-msgstr "Melakukan permintaan..."
+msgid "Requesting.."
+msgstr "Melakukan permintaan.."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2699,12 +2702,12 @@ msgid "Collapse all"
 msgstr "Ciutkan semua"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename..."
-msgstr "Ubah Nama..."
+msgid "Rename.."
+msgstr "Ubah Nama.."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To..."
-msgstr "Pindahkan ke..."
+msgid "Move To.."
+msgstr "Pindahkan ke.."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2715,16 +2718,16 @@ msgid "Instance"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies..."
-msgstr "Sunting Dependensi..."
+msgid "Edit Dependencies.."
+msgstr "Sunting Dependensi.."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners..."
-msgstr "Tampilkan Pemilik Berkas..."
+msgid "View Owners.."
+msgstr "Tampilkan Pemilik Berkas.."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Gandakan..."
+msgid "Duplicate.."
+msgstr "Gandakan.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2817,8 +2820,8 @@ msgid "Import Scene"
 msgstr "Impor Scene"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene..."
-msgstr "Mengimpor scene..."
+msgid "Importing Scene.."
+msgstr "Mengimpor scene.."
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -2831,8 +2834,8 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
-msgid "Running Custom Script..."
-msgstr "Menjalankan Skrip Buatan..."
+msgid "Running Custom Script.."
+msgstr "Menjalankan Skrip Buatan.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2847,8 +2850,8 @@ msgid "Error running post-import script:"
 msgstr "Kesalahan saat menjalankan skrip post-import:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving..."
-msgstr "Menyimpan..."
+msgid "Saving.."
+msgstr "Menyimpan.."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4594,8 +4597,9 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "Open in Editor"
-msgstr ""
+msgstr "Buka dalam Penyunting"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -5697,8 +5701,8 @@ msgid "Remove All"
 msgstr "Hapus"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme..."
-msgstr "Sunting tema..."
+msgid "Edit theme.."
+msgstr "Sunting tema.."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."

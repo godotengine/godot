@@ -29,8 +29,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-19 20:49+0000\n"
-"Last-Translator: anonymous <>\n"
+"PO-Revision-Date: 2018-03-03 09:49+0000\n"
+"Last-Translator: David Arranz <davarrcal@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -3118,7 +3118,7 @@ msgstr "Anterior"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr "Futuro"
+msgstr "Posterior"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
@@ -3653,7 +3653,7 @@ msgstr "Ajustar rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configurar fijado..."
+msgstr "Configurar Cuadrícula..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5060,11 +5060,11 @@ msgstr "Desconectar Nodos Gráficos"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr "Eliminar el Nodo Gráfico del Shader"
+msgstr "Borrar Nodo Gráfico de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr "Mover el Nodo Gráfico del Shader"
+msgstr "Mover Nodo Gráfico de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
@@ -5072,7 +5072,7 @@ msgstr "Duplicar Nodo(s) Gráfico"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr "Eliminar Nodo(s) Gráfico(s) del Shader"
+msgstr "Borrar Nodo(s) Gráfico(s) de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
@@ -5084,7 +5084,7 @@ msgstr "Error: Conexiones de Entrada Faltantes"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr "Añadir nodo de gráfico de Shader"
+msgstr "Añadir nodo gráfico de Shader"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -5144,7 +5144,7 @@ msgstr "Cambios del material"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Shader Changes"
-msgstr "Cambios de shader"
+msgstr "Cambios del shader"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Surface Changes"
@@ -5815,7 +5815,7 @@ msgstr "Voltear verticalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "Pintar Tile"
+msgstr "Dibujar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -5878,8 +5878,8 @@ msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
-"Seleccione sub-tile para utilizar como icono, este se utilizará también en "
-"enlaces de autotile no válidos."
+"Seleccione sub-tile para utilizar como icono, éste se utilizará también en "
+"enlazados automáticos no válidos."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -5932,7 +5932,7 @@ msgstr "Recursos"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
-msgstr "Exportar todos los recursos en el proyecto"
+msgstr "Exportar todos los recursos del proyecto"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
@@ -6034,11 +6034,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "La ruta del proyecto no es correcta (¿has cambiado algo?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "No se pudo editar project.godot en la ruta del proyecto."
+msgstr ""
+"No se pudo cargar project.godot desde la ruta de proyecto (error %d). La "
+"ruta no existe o está corrupta."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7319,18 +7320,16 @@ msgid "Object can't provide a length."
 msgstr "El objeto no puede proporcionar una longitud."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Pestaña siguiente"
+msgstr "Plano siguiente"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Pestaña anterior"
+msgstr "Plano anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Plano:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7466,7 +7465,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "Sobre el soporte de C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8044,11 +8043,11 @@ msgstr "ARVROrigin necesita un nodo ARVRCamera hijo"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Tiempo restante: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

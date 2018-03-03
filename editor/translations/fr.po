@@ -41,8 +41,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-06 00:36+0000\n"
-"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
+"PO-Revision-Date: 2018-02-24 02:36+0000\n"
+"Last-Translator: Cindy Dallaire <c.dallaire93@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -7346,7 +7346,7 @@ msgstr "Onglet precedent"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Onglet :"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7463,7 +7463,7 @@ msgstr "Génération de la solution en cours..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr "Création du projet C#..."
+msgstr "Création du projet C# ..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Failed to create solution."
@@ -7487,7 +7487,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "À propos du support C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 #, fuzzy
