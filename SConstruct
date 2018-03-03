@@ -452,8 +452,8 @@ if selected_platform in platform_list:
     if scons_cache_path != None:
         CacheDir(scons_cache_path)
         print("Scons cache enabled... (path: '" + scons_cache_path + "')")
-	else
-		print("SCONS_CACHE environment variable is not set. Scons cache disabled.")
+    else
+	print("SCONS_CACHE environment variable is not set. Scons cache disabled.")
 
     Export('env')
 
