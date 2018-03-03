@@ -1077,61 +1077,29 @@ Error Image::generate_mipmaps() {
 
 	PoolVector<uint8_t>::Write wp = data.write();
 
-	if (next_power_of_2(width) == uint32_t(width) && next_power_of_2(height) == uint32_t(height)) {
-		//use fast code for powers of 2
-		int prev_ofs = 0;
-		int prev_h = height;
-		int prev_w = width;
+	int prev_ofs = 0;
+	int prev_h = height;
+	int prev_w = width;
 
-		for (int i = 1; i < mmcount; i++) {
+	for (int i = 1; i < mmcount; i++) {
 
-			int ofs, w, h;
-			_get_mipmap_offset_and_size(i, ofs, w, h);
+		int ofs, w, h;
+		_get_mipmap_offset_and_size(i, ofs, w, h);
 
-			switch (format) {
+		switch (format) {
 
-				case FORMAT_L8:
-				case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_LA8:
-				case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				default: {}
-			}
-
-			prev_ofs = ofs;
-			prev_w = w;
-			prev_h = h;
+			case FORMAT_L8:
+			case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_LA8:
+			case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			default: {}
 		}
 
-	} else {
-		//use slow code..
-
-		//use bilinear filtered code for non powers of 2
-		int prev_ofs = 0;
-		int prev_h = height;
-		int prev_w = width;
-
-		for (int i = 1; i < mmcount; i++) {
-
-			int ofs, w, h;
-			_get_mipmap_offset_and_size(i, ofs, w, h);
-
-			switch (format) {
-
-				case FORMAT_L8:
-				case FORMAT_R8: _scale_bilinear<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_LA8:
-				case FORMAT_RG8: _scale_bilinear<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_RGB8: _scale_bilinear<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_RGBA8: _scale_bilinear<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				default: {}
-			}
-
-			prev_ofs = ofs;
-			prev_w = w;
-			prev_h = h;
-		}
+		prev_ofs = ofs;
+		prev_w = w;
+		prev_h = h;
 	}
 
 	mipmaps = true;
