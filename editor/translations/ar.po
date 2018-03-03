@@ -2445,12 +2445,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "صيغة غير صالحة لـ version.txt داخل القالب."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr "صيغة غير صالحة لـ version.txt داخل القالب. المراجعة ليست معرفاً صالحاً."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "لا ملف version.txt تم إيجاده داخل القالب."
 
@@ -7359,6 +7353,10 @@ msgstr "بناء المشروع"
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8030,6 +8028,12 @@ msgstr ""
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr ""
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "صيغة غير صالحة لـ version.txt داخل القالب. المراجعة ليست معرفاً صالحاً."
 
 #~ msgid "Can't write file."
 #~ msgstr "لا يمكن كتابة الملف."

@@ -2453,14 +2453,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Şablonların içinde geçersiz version.txt formatı."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Şablonların içinde geçersiz version.txt formatı. Revizyon geçerli bir "
-"tanımlayıcı değil."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Şablonların içinde version.txt bulunamadı."
 
@@ -7417,6 +7409,10 @@ msgstr "Projeyi İnşa et"
 msgid "Warnings"
 msgstr "Uyarılar"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8174,6 +8170,13 @@ msgstr "Yazıtipi yükleme hatası."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Geçersiz yazıtipi boyutu."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Şablonların içinde geçersiz version.txt formatı. Revizyon geçerli bir "
+#~ "tanımlayıcı değil."
 
 #~ msgid "Can't write file."
 #~ msgstr "Dosyaya yazılamıyor."
