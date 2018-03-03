@@ -1641,10 +1641,10 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "floatBitsToInt", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID } },
 	{ "floatBitsToInt", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID } },
 
-	{ "floatBitsToUInt", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "floatBitsToUInt", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "floatBitsToUInt", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "floatBitsToUInt", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "floatBitsToUint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "floatBitsToUint", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "floatBitsToUint", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "floatBitsToUint", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "intBitsToFloat", TYPE_FLOAT, { TYPE_INT, TYPE_VOID } },
 	{ "intBitsToFloat", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID } },
