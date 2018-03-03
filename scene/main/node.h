@@ -148,7 +148,8 @@ private:
 		NAME_CASING_SNAKE_CASE
 	};
 
-	void _print_tree_pretty(const String prefix, const bool last);
+	Ref<MultiplayerAPI> multiplayer_api;
+
 	void _print_tree(const Node *p_node);
 
 	Node *_get_node(const NodePath &p_path) const;
@@ -419,11 +420,14 @@ public:
 	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
-	Ref<MultiplayerAPI> get_multiplayer() const;
-	Ref<MultiplayerAPI> get_custom_multiplayer() const;
-	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
-	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
+	Ref<MultiplayerAPI> get_multiplayer_api() const;
+	Ref<MultiplayerAPI> get_custom_multiplayer_api() const;
+	void set_custom_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
+	const Map<StringName, RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
+	const Map<StringName, RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
+
+	bool can_call_rpc(const StringName &p_method, int p_from) const;
+	bool can_call_rset(const StringName &p_property, int p_from) const;
 
 	Node();
 	~Node();
