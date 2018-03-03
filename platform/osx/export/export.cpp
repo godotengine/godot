@@ -614,21 +614,27 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = true;
+	bool valid = false;
 	String err;
 
-	if (!exists_export_template("osx.zip", &err)) {
-		valid = false;
+	if (exists_export_template("osx.zip", &err)) {
+		valid = true;
 	}
 
-	if (p_preset->get("custom_package/debug") != "" && !FileAccess::exists(p_preset->get("custom_package/debug"))) {
-		valid = false;
-		err += "Custom debug package not found.\n";
+	if (p_preset->get("custom_package/debug") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
+			valid = true;
+		} else {
+			err += "Custom debug package not found.\n";
+		}
 	}
 
-	if (p_preset->get("custom_package/release") != "" && !FileAccess::exists(p_preset->get("custom_package/release"))) {
-		valid = false;
-		err += "Custom release package not found.\n";
+	if (p_preset->get("custom_package/release") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
+			valid = true;
+		} else {
+			err += "Custom release package not found.\n";
+		}
 	}
 
 	if (!err.empty())
