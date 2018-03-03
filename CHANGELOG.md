@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [3.0.2] - 2018-03-03
+
+### Added
+
+- Mono: We now display stack traces for inner exceptions.
+- Mono: Bundle mscorlib.dll with Godot to improve portability.
+
+### Fixed
+
+- Running a scene from a project with a main scene now works again (regression in 3.0.1). 
+- Correct line spacing in RichTextLabel (regression in 3.0.1).
+- TextureProgress now correctly displays when progress > 62 (regression in 3.0.1).
+- The editor no longer complains about using an enum from an autoloaded resource (regression in 3.0.1).
+- Pressing Escape no longer closes unexpected subwindows (regression in 3.0.1).
+- Fix spelling of `apply_torque_impulse()` and deprecate the misspelled method.
+- Gizmos are now properly hidden on scene load if the object they control is hidden.
+- Remove spurious errors when using a PanoramaSky without textures.
+- Show tooltips in the editor when physics object picking is disabled.
+- Fix a serialization bug that could cause tscn files to grow very large.
+- Do not show the project manager unless no project was found at all.
+- The animation editor time offset indicator no longer 'walks' when resizing the editor.
+- Allow creation of an in-tscn file GDScript function even if the filename suggested already exists.
+- Mono: Godot no longer crashes when opening a project created with an older release.
+- Mono: Fix builds of tools=no builds.
+- Mono: Fix transformation regression since 3.0.1
+- Android: We now require GLESv3 support in the manifest.
+- Android: Fix intermittent audio driver crash.
+
 ## [3.0.1] - 2018-02-25
 
 ### Added
