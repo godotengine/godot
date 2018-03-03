@@ -176,7 +176,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 				if (wrote == -EAGAIN) {
 					//can't write yet (though this is blocking..)
-					usleep(1000);
+					OS::get_singleton()->delay_usec(1000);
 					continue;
 				}
 				wrote = snd_pcm_recover(ad->pcm_handle, wrote, 0);

@@ -31,6 +31,7 @@
 #ifdef JOYDEV_ENABLED
 
 #include "joypad_linux.h"
+#include "os/os.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -196,7 +197,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				joy_mutex->unlock();
 			}
 		}
-		usleep(50000);
+		OS::get_singletion()->delay_usec(50000);
 	}
 	udev_monitor_unref(mon);
 }
@@ -214,7 +215,7 @@ void JoypadLinux::monitor_joypads() {
 			}
 		}
 		joy_mutex->unlock();
-		usleep(1000000); // 1s
+		OS::get_singleton()->delay_usec(1000000); // 1s
 	}
 }
 
