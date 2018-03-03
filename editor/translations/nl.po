@@ -8291,6 +8291,13 @@ msgstr "Fout bij het laden van lettertype."
 msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Ongeldig version.txt formaat in sjablonen. Revisie is geen geldig "
+#~ "identificatienummer."
+
 #~ msgid "Can't write file."
 #~ msgstr "Kan niet naar bestand schrijven."
 

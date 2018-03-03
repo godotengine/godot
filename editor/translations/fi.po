@@ -2445,7 +2445,7 @@ msgstr "Vientimallien zip-tiedostoa ei voitu avata."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr "Vientimalli sisältää virheellisen version.txt tiedoston."
+msgstr "Paketti sisältää viallisen version.txt tiedoston."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -7453,6 +7453,10 @@ msgstr "Varoitukset"
 msgid "End of inner exception stack trace"
 msgstr "Sisemmän poikkeuksen kutsupinon loppu"
 
+#: modules/mono/mono_gd/gd_mono_utils.cpp
+msgid "End of inner exception stack trace"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -8234,6 +8238,13 @@ msgstr "Virhe fontin latauksessa."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Paketti sisältää viallisen version.txt tiedoston. 'Revision' ei ole "
+#~ "hyväksytty tunniste."
 
 #, fuzzy
 #~ msgid "Can't write file."

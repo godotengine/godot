@@ -8449,6 +8449,13 @@ msgstr "Errore caricamento font."
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Formato di version.txt invalido nelle templates. Revision non é un "
+#~ "identificatore valido."
+
 #~ msgid "Can't write file."
 #~ msgstr "Impossibile scrivere il file."
 

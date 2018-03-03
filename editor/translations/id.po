@@ -2464,14 +2464,6 @@ msgid "Invalid version.txt format inside templates."
 msgstr "Format version.txt tidak valid dalam berkas templat."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
-msgid ""
-"Invalid version.txt format inside templates. Revision is not a valid "
-"identifier."
-msgstr ""
-"Format version.txt tidak valid dalam berkas templat. Revisi tidak valid."
-
-#: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
 msgstr "Berkas version.txt tidak ditemukan dalam templat."
 
@@ -8337,6 +8329,13 @@ msgstr "Error memuat font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ukuran font tidak sah."
+
+#, fuzzy
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Format version.txt tidak valid dalam berkas templat. Revisi tidak valid."
 
 #, fuzzy
 #~ msgid "Can't write file."

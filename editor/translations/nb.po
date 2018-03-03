@@ -8215,6 +8215,13 @@ msgstr "Feil ved innlasting av font."
 msgid "Invalid font size."
 msgstr "Ugyldig fontstørrelse."
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Ugyldig version.txt format i mal. Revisjon er ikke en gyldig "
+#~ "identifikator."
+
 #~ msgid "Can't write file."
 #~ msgstr "Kan ikke skrive fil."
 

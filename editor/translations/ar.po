@@ -8073,6 +8073,12 @@ msgstr ""
 msgid "Invalid font size."
 msgstr ""
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "صيغة غير صالحة لـ version.txt داخل القالب. المراجعة ليست معرفاً صالحاً."
+
 #~ msgid "Can't write file."
 #~ msgstr "لا يمكن كتابة الملف."
 

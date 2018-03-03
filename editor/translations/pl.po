@@ -8292,6 +8292,13 @@ msgstr "Błąd ładowania fonta."
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
 
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "nieprawidłowy format pliku version.txt wewnątrz szablonów. Zmiana nie "
+#~ "jest prawidłowym identyfikatorem."
+
 #~ msgid "Can't write file."
 #~ msgstr "Nie można zapisać pliku."
 
