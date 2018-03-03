@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-02-19 19:38+0000\n"
+"PO-Revision-Date: 2018-02-22 20:49+0000\n"
 "Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
 "com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.19\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -6007,11 +6007,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "Não foi possível editar project.godot no caminho do projeto."
+msgstr ""
+"Não foi possível carregar project.godot no caminho do projeto (erro %d). Ele "
+"pode estar ausente ou corrompido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7278,18 +7279,16 @@ msgid "Object can't provide a length."
 msgstr "Objeto não pôde fornecer um comprimento."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Próxima guia"
+msgstr "Próximo Plano"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Guia anterior"
+msgstr "Plano Anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Plano:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7425,7 +7424,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "Sobre o suporte  ao C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7998,11 +7997,11 @@ msgstr "ARVROrigin necessita um nó ARVRCamera como filho"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Tempo Restante: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

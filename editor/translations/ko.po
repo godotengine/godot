@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-04 04:40+0000\n"
-"Last-Translator: Xavier Cho <mysticfallband@gmail.com>\n"
+"PO-Revision-Date: 2018-02-24 08:39+0000\n"
+"Last-Translator: TheRedPlanet <junmo.moon8@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -37,8 +37,9 @@ msgid "Anim Change Keyframe Time"
 msgstr "애니메이션 키프레임 시간 변경"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Transition"
-msgstr "애니메이션 변화 변경"
+msgstr "애니메이션 교체 트랜지션"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -163,8 +164,9 @@ msgid "Constant"
 msgstr "비선형"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "In"
-msgstr "안"
+msgstr "In"
 
 #: editor/animation_editor.cpp
 msgid "Out"
@@ -5960,11 +5962,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "프로젝트 경로에 project.godot 파일을 편집할 수 없습니다."
+msgstr ""
+"프로젝트 경로로 부터 project.godot 파일을 로드 할 수 없습니다 (에러 %d). 존재"
+"하지 않거나 손상되었을 수 있습니다."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7226,18 +7229,16 @@ msgid "Object can't provide a length."
 msgstr "오브젝트는 길이를 제공할 수 없습니다."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "다음 탭"
+msgstr "다음 평면"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "이전 탭"
+msgstr "이전 평면"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "평면:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7373,7 +7374,7 @@ msgstr "모노"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "C# 지원에 대하여"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7933,11 +7934,11 @@ msgstr "ARVROrigin은 ARVRCamera 자식 노드를 요구 함"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(남은 시간: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

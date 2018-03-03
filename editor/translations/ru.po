@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-01-24 12:27+0000\n"
+"PO-Revision-Date: 2018-02-23 20:40+0000\n"
 "Last-Translator: ijet <my-ijet@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5990,11 +5990,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Неверный путь к проекту (Что-то изменили?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "Не удалось изменить project.godot в папке проекта."
+msgstr ""
+"Не удалось загрузить project.godot в пути проекта (ошибка %d). Возможно, он "
+"отсутствует или поврежден."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7262,18 +7263,16 @@ msgid "Object can't provide a length."
 msgstr "Объект не может предоставить длину."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Следующая вкладка"
+msgstr "Следующая поскость"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Предыдущая вкладка"
+msgstr "Предыдущая плоскость"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Плоскость:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7409,7 +7408,7 @@ msgstr "Моно"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "О C# поддержке"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7830,6 +7829,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define its shape."
 msgstr ""
+"Этот узел не имеет дочерних форм, поэтому он не может взаимодействовать с "
+"пространством.\n"
+"Рассмотрите возможность добавления CollisionShape2D или CollisionPolygon2D "
+"дочерних узлов, для определения его формы."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7981,8 +7984,9 @@ msgid "%d%%"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
+#, fuzzy
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Осталось: %d:%02d сек)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8006,6 +8010,10 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "its shape."
 msgstr ""
+"Этот узел не имеет дочерних форм, поэтому он не может взаимодействовать с "
+"пространством.\n"
+"Рассмотрите возможность добавления CollisionShape или CollisionPolygon "
+"дочерних узлов, чтобы определить его форму."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""

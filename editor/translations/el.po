@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 19:46+0000\n"
+"PO-Revision-Date: 2018-02-27 22:19+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -6003,12 +6003,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Μη έγκυρη διαδρομή έργου (Αλλάξατε τίποτα;)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"Δεν ήταν δυνατή η επεξεργασία του project.godot στη διαδρομή του έργου."
+"Αδύνατη η φόρτωση του project.godot (σφάλμα %d). Μπορεί να λείπει ή να είναι "
+"κατεστραμένο."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7287,18 +7287,16 @@ msgid "Object can't provide a length."
 msgstr "Το αντικείμενο δεν έχει μήκος."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Επόμενη καρτέλα"
+msgstr "Επόμενο επίπεδο"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Προηγούμενη καρτέλα"
+msgstr "Προηγούμενο επίπεδο"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Επίπεδο:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7434,7 +7432,7 @@ msgstr "Μονοφωνικό"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "Σχετικά με την υποστήριξη C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8011,11 +8009,11 @@ msgstr "Το ARVROrigin απαιτεί έναν κόμβο ARVRCamera ως πα�
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Ολοκλήρωση σε: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

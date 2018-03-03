@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-22 12:40+0000\n"
+"PO-Revision-Date: 2018-02-25 04:41+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -5910,11 +5910,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "ตำแหน่งโปรเจกต์ผิดพลาด (ได้แก้ไขอะไรไปหรือไม่?)"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "แก้ไขไฟล์ project.godot ไม่ได้"
+msgstr ""
+"โหลดไฟล์ project.godot ในโฟลเดอร์โปรเจกต์ไม่ได้ (ข้อผิดพลาด %d) ไฟล์อาจสูญหายหรือเสียหาย"
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6345,11 +6345,11 @@ msgstr "รีซอร์ส:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "แทนที่ตามท้องถิ่น:"
+msgstr "แทนที่ตามภูมิภาค:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "ท้องถิ่น"
+msgstr "ภูมิภาค"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
@@ -7169,18 +7169,16 @@ msgid "Object can't provide a length."
 msgstr "ไม่สามารถบอกความยาวของวัตถุได้"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "แท็บถัดไป"
+msgstr "ระนาบถัดไป"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "แท็บก่อนหน้า"
+msgstr "ระนาบก่อนหน้า"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "ระนาบ:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7316,7 +7314,7 @@ msgstr "โมโน"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "เกี่ยวกับการสนับสนุน C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7850,11 +7848,11 @@ msgstr "ARVROrigin ต้องมี ARVRCamera เป็นโหนดลู�
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(เหลืออีก: %d:%02d วิ)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

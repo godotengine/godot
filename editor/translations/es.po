@@ -29,8 +29,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-19 20:49+0000\n"
-"Last-Translator: anonymous <>\n"
+"PO-Revision-Date: 2018-03-03 09:49+0000\n"
+"Last-Translator: David Arranz <davarrcal@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2096,7 +2096,7 @@ msgstr "Modo Pantalla Completa"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr "Cargando Plantillas de Exportación"
+msgstr "Cargar Plantillas de Exportación"
 
 #: editor/editor_node.cpp
 msgid "Help"
@@ -3118,7 +3118,7 @@ msgstr "Anterior"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr "Futuro"
+msgstr "Posterior"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
@@ -3653,7 +3653,7 @@ msgstr "Ajustar rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configurar fijado..."
+msgstr "Configurar Cuadrícula..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -4920,7 +4920,7 @@ msgstr "Des/activar «breakpoint»"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
-msgstr "Desactivar todos los «breakpoints»"
+msgstr "Borrar todos los «breakpoints»"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Next Breakpoint"
@@ -5052,27 +5052,27 @@ msgstr "Cambiar Nombre de Entrada"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr "Conectar Nodos de Gráfico"
+msgstr "Conectar Nodos Gráficos"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr "Desconectar Nodo de Gráfico"
+msgstr "Desconectar Nodos Gráficos"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr "Quitar Nodo de Gráfico de Shaders"
+msgstr "Borrar Nodo Gráfico de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr "Mover Nodo de Gráfico de Shaders"
+msgstr "Mover Nodo Gráfico de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr "Duplicar Nodo(s) de Gráfico"
+msgstr "Duplicar Nodo(s) Gráfico"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr "Quitar Nodo(s) de Gráfico de Shaders"
+msgstr "Borrar Nodo(s) Gráfico(s) de Shader"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
@@ -5084,7 +5084,7 @@ msgstr "Error: Conexiones de Entrada Faltantes"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr "Añadir nodo de gráfico de Shader"
+msgstr "Añadir nodo gráfico de Shader"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -5128,7 +5128,7 @@ msgstr "Girando %s grados."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
-msgstr "Poner claves está desactivado (no se insertaron claves)."
+msgstr "Insertar claves está desactivado (no se insertaron claves)."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Animation Key Inserted."
@@ -5144,7 +5144,7 @@ msgstr "Cambios del material"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Shader Changes"
-msgstr "Cambios de shader"
+msgstr "Cambios del shader"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Surface Changes"
@@ -5767,7 +5767,7 @@ msgstr "Borrar selección"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
-msgstr "Pintar TileMap"
+msgstr "Dibujar TileMap"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Line Draw"
@@ -5779,7 +5779,7 @@ msgstr "Dibujar Rectángulo"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
-msgstr "Cubo"
+msgstr "Cubo de relleno"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -5807,7 +5807,7 @@ msgstr "Voltear verticalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "Pintar Tile"
+msgstr "Dibujar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -5843,7 +5843,7 @@ msgstr "¿Crear desde escena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
-msgstr "¿Mergear desde escena?"
+msgstr "¿Mezclar desde escena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tile Set"
@@ -5870,8 +5870,8 @@ msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
-"Seleccione sub-tile para utilizar como icono, este se utilizará también en "
-"enlaces de autotile no válidos."
+"Seleccione sub-tile para utilizar como icono, éste se utilizará también en "
+"enlazados automáticos no válidos."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -5924,7 +5924,7 @@ msgstr "Recursos"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
-msgstr "Exportar todos los recursos en el proyecto"
+msgstr "Exportar todos los recursos del proyecto"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
@@ -6026,11 +6026,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "La ruta del proyecto no es correcta (¿has cambiado algo?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "No se pudo editar project.godot en la ruta del proyecto."
+msgstr ""
+"No se pudo cargar project.godot desde la ruta de proyecto (error %d). La "
+"ruta no existe o está corrupta."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7307,18 +7308,16 @@ msgid "Object can't provide a length."
 msgstr "El objeto no puede proporcionar una longitud."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Pestaña siguiente"
+msgstr "Plano siguiente"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Pestaña anterior"
+msgstr "Plano anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Plano:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7454,7 +7453,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "Sobre el soporte de C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -8032,11 +8031,11 @@ msgstr "ARVROrigin necesita un nodo ARVRCamera hijo"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Tiempo restante: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
