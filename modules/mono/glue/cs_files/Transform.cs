@@ -24,7 +24,7 @@ namespace Godot
         public Transform LookingAt(Vector3 target, Vector3 up)
         {
             Transform t = this;
-            t.set_look_at(origin, target, up);
+            t.SetLookAt(origin, target, up);
             return t;
         }
 
@@ -43,7 +43,7 @@ namespace Godot
             return new Transform(basis.Scaled(scale), origin * scale);
         }
 
-        public void set_look_at(Vector3 eye, Vector3 target, Vector3 up)
+        public void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
         {
             // Make rotation matrix
             // Z vector
