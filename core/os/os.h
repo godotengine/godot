@@ -46,8 +46,7 @@
 
 enum VideoDriver {
 	VIDEO_DRIVER_GLES3,
-	VIDEO_DRIVER_GLES2,
-	VIDEO_DRIVER_MAX,
+	VIDEO_DRIVER_GLES2
 };
 
 class OS {
@@ -185,11 +184,9 @@ public:
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
-	virtual int get_current_video_driver() const = 0;
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
-
-	virtual PoolStringArray get_connected_midi_inputs();
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }

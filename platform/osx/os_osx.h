@@ -51,11 +51,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-enum VideoDriver {
-	VIDEO_DRIVER_GLES3,
-	VIDEO_DRIVER_GLES2
-};
-
 class OS_OSX : public OS_Unix {
 public:
 	struct KeyEvent {
@@ -143,9 +138,6 @@ public:
 	float _display_scale(id screen) const;
 
 	void _update_window();
-
-	int video_driver_index;
-	virtual int get_current_video_driver() const;
 
 protected:
 	virtual void initialize_core();

@@ -1149,24 +1149,6 @@ void OS_OSX::set_ime_position(const Point2 &p_pos) {
 	im_position = p_pos;
 }
 
-int OS_OSX::get_video_driver_count() const {
-
-	return 2;
-}
-
-void OS_OSX::set_ime_active(const bool p_active) {
-	im_active = p_active;
-}
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
-		default:
-			return "GLES3";
-	}
-}
-
 void OS_OSX::initialize_core() {
 
 	crash_handler.initialize();
@@ -1344,8 +1326,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		zoomed = true;
 
 	/*** END OSX INITIALIZATION ***/
-
-	AudioDriverManager::add_driver(&audio_driver);
 
 	// only opengl support here...
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {

@@ -319,7 +319,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
 
-	OS_JavaScript *os = get_singleton();
+	AudioDriverManager::initialize(p_audio_driver);
 
 	int input_mask = os->input->get_mouse_button_mask();
 	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
@@ -965,6 +965,9 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
+
+	AudioDriverManager::add_driver(&audio_driver_javascript);
+}
 
 	FileAccessUnix::close_notification_func = file_access_close_callback;
 }

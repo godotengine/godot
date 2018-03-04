@@ -639,6 +639,34 @@ void OS::center_window() {
 	set_window_position(Vector2(x, y));
 }
 
+int OS::get_video_driver_count() const {
+
+	return 2;
+}
+
+const char *OS::get_video_driver_name(int p_driver) const {
+
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+		default:
+			return "GLES3";
+	}
+}
+
+int OS::get_audio_driver_count() const {
+
+	return AudioDriverManager::get_driver_count();
+}
+
+const char *OS::get_audio_driver_name(int p_driver) const {
+
+	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
+	ERR_FAIL_COND_V(!driver, "");
+	return AudioDriverManager::get_driver(p_driver)->get_name();
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 
