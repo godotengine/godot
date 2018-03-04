@@ -81,8 +81,12 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 		r_filter_clip = region_filter_clip;
 		base_rect = region_rect;
 	} else {
-		r_filter_clip = false;
-		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
+		s = Size2(texture->get_size());
+		s = s / Size2(hframes, vframes);
+
+		r_src_rect.size = s;
+		r_src_rect.position.x = float(frame % hframes) * s.x;
+		r_src_rect.position.y = float(frame / hframes) * s.y;
 	}
 
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
