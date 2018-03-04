@@ -44,6 +44,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+enum VideoDriver {
+	VIDEO_DRIVER_GLES3,
+	VIDEO_DRIVER_GLES2
+};
+
 class OS {
 
 	static OS *singleton;
@@ -115,12 +120,6 @@ protected:
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deintialize the OS
-	virtual int get_video_driver_count() const = 0;
-	virtual const char *get_video_driver_name(int p_driver) const = 0;
-
-	virtual int get_audio_driver_count() const = 0;
-	virtual const char *get_audio_driver_name(int p_driver) const = 0;
-
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;
@@ -174,6 +173,12 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0) = 0;
 	virtual VideoMode get_video_mode(int p_screen = 0) const = 0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const = 0;
+
+	virtual int get_video_driver_count() const;
+	virtual const char *get_video_driver_name(int p_driver) const;
+
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
