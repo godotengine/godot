@@ -229,11 +229,11 @@ public:
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return min + (value - min) - (rng * Math::floor((value - min) / rng));
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return min + (value - min) - (rng * Math::floor((value - min) / rng));
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
