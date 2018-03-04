@@ -461,16 +461,19 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else if (!for_completion || FileAccess::exists(path)) {
 					res = ResourceLoader::load(path);
 				}
-				if (!res.is_valid()) {
-					_set_error("Can't preload resource at path: " + path);
-					return NULL;
-				}
 			} else {
 
 				if (!FileAccess::exists(path)) {
 					_set_error("Can't preload resource at path: " + path);
 					return NULL;
+				} else if (ScriptCodeCompletionCache::get_singleton()) {
+					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
 				}
+			}
+
+			if (!res.is_valid()) {
+				_set_error("Can't preload resource at path: " + path);
+				return NULL;
 			}
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
