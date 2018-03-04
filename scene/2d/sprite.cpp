@@ -73,8 +73,8 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 		s = s / Size2(hframes, vframes);
 
 		r_src_rect.size = s;
-		r_src_rect.position.x += float(frame % hframes) * s.x;
-		r_src_rect.position.y += float(frame / hframes) * s.y;
+		r_src_rect.position.x = float(frame % hframes) * s.x;
+		r_src_rect.position.y = float(frame / hframes) * s.y;
 	}
 
 	Point2 ofs = offset;
