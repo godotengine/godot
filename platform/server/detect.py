@@ -124,6 +124,11 @@ def configure(env):
     if not env['builtin_libogg']:
         env.ParseConfig('pkg-config ogg --cflags --libs')
 
+    # On Linux wchar_t should be 32-bits
+    # 16-bit library shouldn't be required due to compiler optimisations
+    if not env['builtin_pcre2']:
+        env.ParseConfig('pkg-config libpcre2-32 --cflags --libs')
+
     ## Flags
 
     # Linkflags below this line should typically stay the last ones
