@@ -476,6 +476,8 @@ void CreateDialog::_item_selected() {
 		return;
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+
+	get_ok()->set_disabled(false);
 }
 
 void CreateDialog::_favorite_toggled() {
