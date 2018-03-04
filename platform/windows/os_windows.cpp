@@ -151,26 +151,6 @@ void RedirectIOToConsole() {
 	// point to console as well
 }
 
-int OS_Windows::get_video_driver_count() const {
-
-	return 1;
-}
-const char *OS_Windows::get_video_driver_name(int p_driver) const {
-
-	return "GLES3";
-}
-
-int OS_Windows::get_audio_driver_count() const {
-
-	return AudioDriverManager::get_driver_count();
-}
-const char *OS_Windows::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
 void OS_Windows::initialize_core() {
 
 	crash_handler.initialize();

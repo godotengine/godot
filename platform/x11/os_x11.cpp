@@ -77,34 +77,6 @@
 
 #include <X11/XKBlib.h>
 
-int OS_X11::get_video_driver_count() const {
-
-	return 2;
-}
-
-const char *OS_X11::get_video_driver_name(int p_driver) const {
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
-		default:
-			return "GLES3";
-	}
-}
-
-int OS_X11::get_audio_driver_count() const {
-
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OS_X11::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
 void OS_X11::initialize_core() {
 
 	crash_handler.initialize();

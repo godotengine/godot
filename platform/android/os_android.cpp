@@ -130,8 +130,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud, use_gl2);
 
-	AudioDriverManager::add_driver(&audio_driver_android);
-
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
@@ -775,6 +773,8 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(AndroidLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
+
+	AudioDriverManager::add_driver(&audio_driver_android);
 }
 
 OS_Android::~OS_Android() {

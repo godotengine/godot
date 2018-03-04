@@ -50,11 +50,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-enum VideoDriver {
-	VIDEO_DRIVER_GLES3,
-	VIDEO_DRIVER_GLES2
-};
-
 class OS_OSX : public OS_Unix {
 public:
 	struct KeyEvent {
@@ -139,9 +134,6 @@ public:
 	void _update_window();
 
 protected:
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
-
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
