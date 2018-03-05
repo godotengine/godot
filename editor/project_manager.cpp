@@ -689,7 +689,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (scroll_children->get_child_count() == 0)
+			if (scroll_children->get_child_count() == 0 && StreamPeerSSL::is_available())
 				open_templates->popup_centered_minsize();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
