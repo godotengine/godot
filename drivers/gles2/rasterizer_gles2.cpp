@@ -148,8 +148,8 @@ void RasterizerGLES2::initialize() {
 	}
 
 // GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
-#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
-	if (GLVersion.major < 3) {
+#ifdef OPENGL_ENABLED // OpenGL 2.1 Profile required
+	if (GLVersion.major < 2) {
 #else // OpenGL ES 3.0
 	if (GLVersion.major < 2) {
 #endif
@@ -160,36 +160,65 @@ void RasterizerGLES2::initialize() {
 				"Fatal error: Insufficient OpenGL / GLES driver support");
 	}
 
-#ifdef __APPLE__
-// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 2, this may be an issue with our opengl canvas..
-#else
-	if (true || OS::get_singleton()->is_stdout_verbose()) {
-		glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-		glDebugMessageCallbackARB(_gl_debug_print, NULL);
-		glEnable(_EXT_DEBUG_OUTPUT);
+#ifdef GLES_OVER_GL
+	//Test GL_ARB_framebuffer_object extension
+	if (!GLAD_GL_ARB_framebuffer_object) {
+		//Try older GL_EXT_framebuffer_object extension
+		if (GLAD_GL_EXT_framebuffer_object) {
+			glIsRenderbuffer = glIsRenderbufferEXT;
+			glBindRenderbuffer = glBindRenderbufferEXT;
+			glDeleteRenderbuffers = glDeleteRenderbuffersEXT;
+			glGenRenderbuffers = glGenRenderbuffersEXT;
+			glRenderbufferStorage = glRenderbufferStorageEXT;
+			glGetRenderbufferParameteriv = glGetRenderbufferParameterivEXT;
+			glIsFramebuffer = glIsFramebufferEXT;
+			glBindFramebuffer = glBindFramebufferEXT;
+			glDeleteFramebuffers = glDeleteFramebuffersEXT;
+			glGenFramebuffers = glGenFramebuffersEXT;
+			glCheckFramebufferStatus = glCheckFramebufferStatusEXT;
+			glFramebufferTexture1D = glFramebufferTexture1DEXT;
+			glFramebufferTexture2D = glFramebufferTexture2DEXT;
+			glFramebufferTexture3D = glFramebufferTexture3DEXT;
+			glFramebufferRenderbuffer = glFramebufferRenderbufferEXT;
+			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
+			glGenerateMipmap = glGenerateMipmapEXT;
+		} else {
+			ERR_PRINT("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
+					  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
+			OS::get_singleton()->alert("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
+									   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
+					"Fatal error: Insufficient OpenGL / GLES driver support");
+		}
 	}
 #endif
+	if (true || OS::get_singleton()->is_stdout_verbose()) {
+		if (GLAD_GL_ARB_debug_output) {
+			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			glDebugMessageCallbackARB(_gl_debug_print, NULL);
+			glEnable(_EXT_DEBUG_OUTPUT);
+		} else {
+			print_line("OpenGL debugging not supported!");
+		}
+	}
 
 #endif // GLAD_ENABLED
 
 		// For debugging
 #ifdef GLES_OVER_GL
-#ifdef __APPLE__
-// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 2, this may be an issue with our opengl canvas..
-#else
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-#endif
-#endif
-	/* glDebugMessageInsertARB(
+	if (GLAD_GL_ARB_debug_output) {
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		/* glDebugMessageInsertARB(
 			GL_DEBUG_SOURCE_API_ARB,
 			GL_DEBUG_TYPE_OTHER_ARB, 1,
 			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
-	*/
+		*/
+	}
+#endif
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
