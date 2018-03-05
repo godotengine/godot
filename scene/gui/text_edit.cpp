@@ -5145,6 +5145,17 @@ void TextEdit::_confirm_completion() {
 
 	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
 	cursor_set_column(cursor.column - completion_base.length(), false);
+	if (completion_current.find("/") >= 0) {
+		String orig_line = get_line(cursor.line);
+		int dollar_idx = orig_line.rfind("$", cursor.column);
+		if (dollar_idx >= 0) {
+			if (completion_current.begins_with(orig_line.substr(dollar_idx+1, cursor.column - dollar_idx))) {
+				_remove_text(cursor.line, dollar_idx+1, cursor.line, cursor.column);
+				cursor_set_column(dollar_idx+1, false);
+			}
+		}
+	}
+
 	insert_text_at_cursor(completion_current);
 
 	if (completion_current.ends_with("(") && auto_brace_completion_enabled) {
