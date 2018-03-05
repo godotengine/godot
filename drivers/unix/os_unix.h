@@ -48,12 +48,6 @@ protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest
 
-	//virtual int get_video_driver_count() const;
-	//virtual const char * get_video_driver_name(int p_driver) const;
-
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
-
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
 	//virtual Error initialize(int p_video_driver,int p_audio_driver);

@@ -73,15 +73,6 @@ void OS_Unix::debug_break() {
 	assert(false);
 };
 
-int OS_Unix::get_audio_driver_count() const {
-
-	return 1;
-}
-const char *OS_Unix::get_audio_driver_name(int p_driver) const {
-
-	return "dummy";
-}
-
 int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 	return 0;

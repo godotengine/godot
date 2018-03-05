@@ -53,11 +53,6 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
-enum VideoDriver {
-	VIDEO_DRIVER_GLES3,
-	VIDEO_DRIVER_GLES2
-};
-
 // Hints for X11 fullscreen
 typedef struct {
 	unsigned long flags;
@@ -193,12 +188,6 @@ class OS_X11 : public OS_Unix {
 	Bool xrandr_ext_ok;
 
 protected:
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
-
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
-
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();

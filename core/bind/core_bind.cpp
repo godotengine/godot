@@ -205,6 +205,22 @@ String _OS::get_clipboard() const {
 	return OS::get_singleton()->get_clipboard();
 }
 
+int _OS::get_video_driver_count() const {
+	return OS::get_singleton()->get_video_driver_count();
+}
+
+String _OS::get_video_driver_name(int p_driver) const {
+	return OS::get_singleton()->get_video_driver_name(p_driver);
+}
+
+int _OS::get_audio_driver_count() const {
+	return OS::get_singleton()->get_audio_driver_count();
+}
+
+String _OS::get_audio_driver_name(int p_driver) const {
+	return OS::get_singleton()->get_audio_driver_name(p_driver);
+}
+
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
 
 	OS::VideoMode vm;
@@ -1014,6 +1030,11 @@ void _OS::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("get_video_driver_count"), &_OS::get_video_driver_count);
+	ClassDB::bind_method(D_METHOD("get_video_driver_name"), &_OS::get_video_driver_name);
+	ClassDB::bind_method(D_METHOD("get_audio_driver_count"), &_OS::get_audio_driver_count);
+	ClassDB::bind_method(D_METHOD("get_audio_driver_name"), &_OS::get_audio_driver_name);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &_OS::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_current_screen"), &_OS::get_current_screen);

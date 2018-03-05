@@ -123,7 +123,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
 
-	AudioDriverManager::add_driver(&audio_driver);
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
@@ -632,6 +631,8 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 	loggers.push_back(memnew(StdLogger));
 #endif
 	_set_logger(memnew(CompositeLogger(loggers)));
+
+	AudioDriverManager::add_driver(&audio_driver);
 };
 
 OSIPhone::~OSIPhone() {

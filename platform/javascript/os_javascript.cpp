@@ -447,7 +447,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	print_line("Init Audio");
 
-	AudioDriverManager::add_driver(&audio_driver_javascript);
 	AudioDriverManager::initialize(p_audio_driver);
 
 	RasterizerGLES3::register_config();
@@ -1012,6 +1011,8 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_us
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
+
+	AudioDriverManager::add_driver(&audio_driver_javascript);
 }
 
 OS_JavaScript::~OS_JavaScript() {
