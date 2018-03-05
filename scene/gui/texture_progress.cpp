@@ -114,25 +114,27 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 		val += 1;
 	if (val > 1)
 		val -= 1;
+	const float PI = 3.1415;
 
+	float angle = val * 2 * PI;
 	Point2 p = get_relative_center();
 
-	if (val < 0.125)
-		return Point2(p.x + (1 - p.x) * val * 8, 0);
-	if (val < 0.25)
-		return Point2(1, p.y * (val - 0.125) * 8);
-	if (val < 0.375)
-		return Point2(1, p.y + (1 - p.y) * (val - 0.25) * 8);
-	if (val < 0.5)
-		return Point2(1 - (1 - p.x) * (val - 0.375) * 8, 1);
-	if (val < 0.625)
-		return Point2(p.x * (1 - (val - 0.5) * 8), 1);
-	if (val < 0.75)
-		return Point2(0, 1 - ((1 - p.y) * (val - 0.625) * 8));
-	if (val < 0.875)
-		return Point2(0, p.y - p.y * (val - 0.75) * 8);
-	else
-		return Point2(p.x * (val - 0.875) * 8, 0);
+	float x = cosf(angle - PI / 2);
+	float y = sinf(angle - PI / 2);
+
+	// Project to longer square side
+	float ax = fabsf(x);
+	float ay = fabsf(y);
+	if (ax > ay) {
+		x = x / ax;
+		y = y / ax;
+	}
+	else {
+		x = x / ay;
+		y = y / ay;
+	}
+
+	return Point2(0.5f + x * 0.5f, 0.5f + y * 0.5f);
 }
 
 Point2 TextureProgress::get_relative_center() {
@@ -165,20 +167,20 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 		double first_section_size = 0.0;
 		double last_section_size = 0.0;
 		switch (mode) {
-			case FILL_LEFT_TO_RIGHT:
-			case FILL_RIGHT_TO_LEFT: {
-				width_total = dst_rect.size.x;
-				width_texture = texture_size.x;
-				first_section_size = topleft.x;
-				last_section_size = bottomright.x;
-			} break;
-			case FILL_TOP_TO_BOTTOM:
-			case FILL_BOTTOM_TO_TOP: {
-				width_total = dst_rect.size.y;
-				width_texture = texture_size.y;
-				first_section_size = topleft.y;
-				last_section_size = bottomright.y;
-			} break;
+		case FILL_LEFT_TO_RIGHT:
+		case FILL_RIGHT_TO_LEFT: {
+			width_total = dst_rect.size.x;
+			width_texture = texture_size.x;
+			first_section_size = topleft.x;
+			last_section_size = bottomright.x;
+		} break;
+		case FILL_TOP_TO_BOTTOM:
+		case FILL_BOTTOM_TO_TOP: {
+			width_total = dst_rect.size.y;
+			width_texture = texture_size.y;
+			first_section_size = topleft.y;
+			last_section_size = bottomright.y;
+		} break;
 		}
 
 		double width_filled = width_total * p_ratio;
@@ -189,30 +191,30 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 		width_texture = MIN(width_texture, first_section_size + middle_section_size + last_section_size);
 
 		switch (mode) {
-			case FILL_LEFT_TO_RIGHT: {
-				src_rect.size.x = width_texture;
-				dst_rect.size.x = width_filled;
-				bottomright.x = last_section_size;
-			} break;
-			case FILL_RIGHT_TO_LEFT: {
-				src_rect.position.x += src_rect.size.x - width_texture;
-				src_rect.size.x = width_texture;
-				dst_rect.position.x += width_total - width_filled;
-				dst_rect.size.x = width_filled;
-				topleft.x = last_section_size;
-			} break;
-			case FILL_TOP_TO_BOTTOM: {
-				src_rect.size.y = width_texture;
-				dst_rect.size.y = width_filled;
-				bottomright.y = last_section_size;
-			} break;
-			case FILL_BOTTOM_TO_TOP: {
-				src_rect.position.y += src_rect.size.y - width_texture;
-				src_rect.size.y = width_texture;
-				dst_rect.position.y += width_total - width_filled;
-				dst_rect.size.y = width_filled;
-				topleft.y = last_section_size;
-			} break;
+		case FILL_LEFT_TO_RIGHT: {
+			src_rect.size.x = width_texture;
+			dst_rect.size.x = width_filled;
+			bottomright.x = last_section_size;
+		} break;
+		case FILL_RIGHT_TO_LEFT: {
+			src_rect.position.x += src_rect.size.x - width_texture;
+			src_rect.size.x = width_texture;
+			dst_rect.position.x += width_total - width_filled;
+			dst_rect.size.x = width_filled;
+			topleft.x = last_section_size;
+		} break;
+		case FILL_TOP_TO_BOTTOM: {
+			src_rect.size.y = width_texture;
+			dst_rect.size.y = width_filled;
+			bottomright.y = last_section_size;
+		} break;
+		case FILL_BOTTOM_TO_TOP: {
+			src_rect.position.y += src_rect.size.y - width_texture;
+			src_rect.size.y = width_texture;
+			dst_rect.position.y += width_total - width_filled;
+			dst_rect.size.y = width_filled;
+			topleft.y = last_section_size;
+		} break;
 		}
 	}
 
@@ -224,90 +226,92 @@ void TextureProgress::_notification(int p_what) {
 	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
 
-		case NOTIFICATION_DRAW: {
+	case NOTIFICATION_DRAW: {
 
-			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP)) {
-				if (under.is_valid()) {
-					draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0);
-				}
-				if (progress.is_valid()) {
-					draw_nine_patch_stretched(progress, mode, get_as_ratio());
-				}
-				if (over.is_valid()) {
-					draw_nine_patch_stretched(over, FILL_LEFT_TO_RIGHT, 1.0);
-				}
-			} else {
-				if (under.is_valid())
-					draw_texture(under, Point2());
-				if (progress.is_valid()) {
-					Size2 s = progress->get_size();
-					switch (mode) {
-						case FILL_LEFT_TO_RIGHT: {
-							Rect2 region = Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region);
-						} break;
-						case FILL_RIGHT_TO_LEFT: {
-							Rect2 region = Rect2(Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region);
-						} break;
-						case FILL_TOP_TO_BOTTOM: {
-							Rect2 region = Rect2(Point2(), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region);
-						} break;
-						case FILL_BOTTOM_TO_TOP: {
-							Rect2 region = Rect2(Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region);
-						} break;
-						case FILL_CLOCKWISE:
-						case FILL_COUNTER_CLOCKWISE: {
-							float val = get_as_ratio() * rad_max_degrees / 360;
-							if (val == 1) {
-								Rect2 region = Rect2(Point2(), s);
-								draw_texture_rect_region(progress, region, region);
-							} else if (val != 0) {
-								Array pts;
-								float direction = mode == FILL_CLOCKWISE ? 1 : -1;
-								float start = rad_init_angle / 360;
-								float end = start + direction * val;
-								pts.append(start);
-								pts.append(end);
-								float from = MIN(start, end);
-								float to = MAX(start, end);
-								for (int i = 0; i < 12; i++)
-									if (corners[i] > from && corners[i] < to)
-										pts.append(corners[i]);
-								pts.sort();
-								Vector<Point2> uvs;
-								Vector<Point2> points;
-								uvs.push_back(get_relative_center());
-								points.push_back(Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
-								for (int i = 0; i < pts.size(); i++) {
-									Point2 uv = unit_val_to_uv(pts[i]);
-									if (uvs.find(uv) >= 0)
-										continue;
-									uvs.push_back(uv);
-									points.push_back(Point2(uv.x * s.x, uv.y * s.y));
-								}
-								draw_polygon(points, Vector<Color>(), uvs, progress);
-							}
-							if (Engine::get_singleton()->is_editor_hint()) {
-								Point2 p = progress->get_size();
-								p.x *= get_relative_center().x;
-								p.y *= get_relative_center().y;
-								p = p.floor();
-								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
-								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
-							}
-						} break;
-						default:
-							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)));
-					}
-				}
-				if (over.is_valid())
-					draw_texture(over, Point2());
+		if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP)) {
+			if (under.is_valid()) {
+				draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0);
 			}
+			if (progress.is_valid()) {
+				draw_nine_patch_stretched(progress, mode, get_as_ratio());
+			}
+			if (over.is_valid()) {
+				draw_nine_patch_stretched(over, FILL_LEFT_TO_RIGHT, 1.0);
+			}
+		}
+		else {
+			if (under.is_valid())
+				draw_texture(under, Point2());
+			if (progress.is_valid()) {
+				Size2 s = progress->get_size();
+				switch (mode) {
+				case FILL_LEFT_TO_RIGHT: {
+					Rect2 region = Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y));
+					draw_texture_rect_region(progress, region, region);
+				} break;
+				case FILL_RIGHT_TO_LEFT: {
+					Rect2 region = Rect2(Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
+					draw_texture_rect_region(progress, region, region);
+				} break;
+				case FILL_TOP_TO_BOTTOM: {
+					Rect2 region = Rect2(Point2(), Size2(s.x, s.y * get_as_ratio()));
+					draw_texture_rect_region(progress, region, region);
+				} break;
+				case FILL_BOTTOM_TO_TOP: {
+					Rect2 region = Rect2(Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
+					draw_texture_rect_region(progress, region, region);
+				} break;
+				case FILL_CLOCKWISE:
+				case FILL_COUNTER_CLOCKWISE: {
+					float val = get_as_ratio() * rad_max_degrees / 360;
+					if (val == 1) {
+						Rect2 region = Rect2(Point2(), s);
+						draw_texture_rect_region(progress, region, region);
+					}
+					else if (val != 0) {
+						Array pts;
+						float direction = mode == FILL_CLOCKWISE ? 1 : -1;
+						float start = rad_init_angle / 360;
+						float end = start + direction * val;
+						pts.append(start);
+						pts.append(end);
+						float from = MIN(start, end);
+						float to = MAX(start, end);
+						for (int i = 0; i < 12; i++)
+							if (corners[i] > from && corners[i] < to)
+								pts.append(corners[i]);
+						pts.sort();
+						Vector<Point2> uvs;
+						Vector<Point2> points;
+						uvs.push_back(get_relative_center());
+						points.push_back(Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
+						for (int i = 0; i < pts.size(); i++) {
+							Point2 uv = unit_val_to_uv(pts[i]);
+							if (uvs.find(uv) >= 0)
+								continue;
+							uvs.push_back(uv);
+							points.push_back(Point2(uv.x * s.x, uv.y * s.y));
+						}
+						draw_polygon(points, Vector<Color>(), uvs, progress);
+					}
+					if (Engine::get_singleton()->is_editor_hint()) {
+						Point2 p = progress->get_size();
+						p.x *= get_relative_center().x;
+						p.y *= get_relative_center().y;
+						p = p.floor();
+						draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
+						draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
+					}
+				} break;
+				default:
+					draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)));
+				}
+			}
+			if (over.is_valid())
+				draw_texture(over, Point2());
+		}
 
-		} break;
+	} break;
 	}
 }
 
