@@ -49,7 +49,6 @@ if env['builtin_freetype']:
         "src/pshinter/pshinter.c",
         "src/psnames/psnames.c",
         "src/raster/raster.c",
-        "src/sfnt/sfnt.c",
         "src/smooth/smooth.c",
         "src/truetype/truetype.c",
         "src/type1/type1.c",
@@ -58,9 +57,18 @@ if env['builtin_freetype']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    # Include header for UWP to fix build issues
-    if "platform" in env and env["platform"] == "uwp":
-        env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
+    sfnt = thirdparty_dir + 'src/sfnt/sfnt.c'
+
+    if 'platform' in env:
+        if env['platform'] == 'uwp':
+            # Include header for UWP to fix build issues
+            env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
+        elif env['platform'] == 'javascript':
+            # Forcibly undefine this macro so SIMD is not used in this file,
+            # since currently unsuported in WASM
+            sfnt = env.Object(sfnt, CPPFLAGS=['-U__OPTIMIZE__'])
+
+    thirdparty_sources += [sfnt]
 
     env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 
