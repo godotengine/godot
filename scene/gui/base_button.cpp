@@ -211,6 +211,11 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 				if (!toggle_mode) { //mouse press attempt
 
 					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
+					}
+
 					emit_signal("pressed");
 				} else {
 
