@@ -2,7 +2,7 @@
 
 Import('env')
 from compat import byte_to_str
-
+from collections import OrderedDict
 
 def make_splash(target, source, env):
 
@@ -63,9 +63,78 @@ def make_app_icon(target, source, env):
     g.write("};\n")
     g.write("#endif")
 
+def make_default_controller_mappings(target, source, env):
+    dst = target[0].srcnode().abspath
+    g = open(dst, "w")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#include \"default_controller_mappings.h\"\n")
+    g.write("#include \"typedefs.h\"\n")
+
+    # ensure mappings have a consistent order
+    platform_mappings = OrderedDict()
+    for src in source:
+        src_path = src.srcnode().abspath
+        f = open(src_path, "rb")
+
+        # read mapping file and skip header
+        mapping_file_lines = f.readlines()[2:]
+
+        current_platform = None
+        for line in mapping_file_lines:
+            if not line:
+                continue
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line[0] == "#":
+                current_platform = line[1:].strip()
+                if current_platform not in platform_mappings:
+                    platform_mappings[current_platform] = {}
+            elif current_platform:
+                line_parts = line.split(",")
+                guid = line_parts[0]
+                if guid in platform_mappings[current_platform]:
+                    g.write("// WARNING - DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(src_path, current_platform, platform_mappings[current_platform][guid]))
+                valid_mapping = True
+                for input_map in line_parts[2:]:
+                    if "+" in input_map or "-" in input_map or "~" in input_map:
+                        g.write("// WARNING - DISCARDED UNSUPPORTED MAPPING TYPE FROM DATABASE {}: {} {}\n".format(src_path, current_platform, line))
+                        valid_mapping = False
+                        break
+                if valid_mapping:
+                    platform_mappings[current_platform][guid] = line
+            
+    platform_variables = {
+        "Linux": "#if X11_ENABLED",
+        "Windows": "#ifdef WINDOWS_ENABLED",
+        "Mac OS X": "#ifdef OSX_ENABLED",
+        "Android": "#if defined(__ANDROID__)",
+        "iOS": "#ifdef IPHONE_ENABLED",
+        "Javascript": "#ifdef JAVASCRIPT_ENABLED",
+        "UWP": "#ifdef UWP_ENABLED",
+    }
+
+    g.write("const char* DefaultControllerMappings::mappings[] = {\n")
+    for platform, mappings in platform_mappings.items():
+        variable = platform_variables[platform]
+        g.write("{}\n".format(variable))
+        for mapping in mappings.values():
+            g.write("\t\"{}\",\n".format(mapping))
+        g.write("#endif\n")
+
+    g.write("};\n")
 
 env.main_sources = []
 env.add_source_files(env.main_sources, "*.cpp")
+
+# order matters here.  higher index controller database files write on top of lower index database files
+controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb_204.txt", "#main/godotcontrollerdb.txt"]
+
+env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
+env.Command("#main/default_controller_mappings.gen.cpp", controller_databases, make_default_controller_mappings)
+
+env.main_sources.append("#main/default_controller_mappings.gen.cpp")
 
 Export('env')
 
