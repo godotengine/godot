@@ -1093,7 +1093,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	gl_context->initialize();
 
 	RasterizerGLES3::register_config();
-
 	RasterizerGLES3::make_current();
 
 	gl_context->set_use_vsync(video_mode.use_vsync);
