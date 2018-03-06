@@ -100,6 +100,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	ogg_stream.instance();
 
 	ogg_stream->set_data(data);
+	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);
 	ogg_stream->set_loop(loop);
 	ogg_stream->set_loop_offset(loop_offset);
 
