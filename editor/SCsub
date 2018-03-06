@@ -466,6 +466,7 @@ if env['tools']:
 
 
     env.add_source_files(env.editor_sources, "*.cpp")
+    env.add_source_files(env.editor_sources, ["#thirdparty/misc/clipper.cpp"])
 
     SConscript('collada/SCsub')
     SConscript('doc/SCsub')
