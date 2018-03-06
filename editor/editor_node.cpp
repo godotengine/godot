@@ -182,7 +182,7 @@ void EditorNode::_update_title() {
 	OS::get_singleton()->set_window_title(title);
 }
 
-void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorNode::_input(const Ref<InputEvent> &p_event) {
 
 	if (Node::get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
@@ -190,34 +190,49 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo() && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
+		bool shortcut_triggered = false;
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
 			next_tab %= editor_data.get_edited_scene_count();
 			_scene_tab_changed(next_tab);
+			shortcut_triggered = true;
 		}
 		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() - 1;
 			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
 			_scene_tab_changed(next_tab);
+			shortcut_triggered = true;
 		}
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			filesystem_dock->focus_on_filter();
+			shortcut_triggered = true;
 		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
 			_editor_select(EDITOR_2D);
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
 			_editor_select(EDITOR_3D);
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
 			_editor_select(EDITOR_SCRIPT);
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal("request_help_search", "");
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event)) {
 			_editor_select(EDITOR_ASSETLIB);
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			_editor_select_next();
+			shortcut_triggered = true;
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
+			shortcut_triggered = true;
+		}
+
+		if (shortcut_triggered) {
+			get_tree()->set_input_as_handled();
 		}
 
 		if (k->get_scancode() == KEY_ESCAPE) {
@@ -4629,7 +4644,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
-	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
+	ClassDB::bind_method("_input", &EditorNode::_input);
 
 	ClassDB::bind_method("_get_scene_metadata", &EditorNode::_get_scene_metadata);
 	ClassDB::bind_method("set_edited_scene", &EditorNode::set_edited_scene);
@@ -5784,7 +5799,7 @@ EditorNode::EditorNode() {
 	editor_data.restore_editor_global_states();
 	convert_old = false;
 	opening_prev = false;
-	set_process_unhandled_input(true);
+	set_process_input(true);
 	_playing_edited = false;
 
 	load_errors = memnew(RichTextLabel);
