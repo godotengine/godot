@@ -1184,17 +1184,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		gl_context = memnew(ContextGL_Win(hWnd, false));
 		gl_context->initialize();
 
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-	} else {
-		gl_context = memnew(ContextGL_Win(hWnd, true));
-		gl_context->initialize();
-
-		RasterizerGLES3::register_config();
-		RasterizerGLES3::make_current();
-	}
-
-	video_driver_index = p_video_driver; // FIXME TODO - FIX IF DRIVER DETECTION HAPPENS AND GLES2 MUST BE USED
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
 	gl_context->set_use_vsync(video_mode.use_vsync);
 #endif
