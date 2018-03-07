@@ -126,6 +126,26 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	}
 }
 
+Ref<InputActionListener> InputDefault::get_action_listener(const StringName &p_action) {
+	Map<StringName, Ref<InputActionListener> >::Element *e = action_listeners.find(p_action);
+
+	if (e) {
+		return e->get();
+	}
+
+	Ref<InputActionListener> listener;
+	listener.instance();
+	listener->set_action_name(p_action);
+
+	action_listeners.insert(p_action, listener);
+
+	return listener;
+}
+
+void InputDefault::remove_action_listener(const StringName &p_action) {
+	action_listeners.erase(p_action);
+}
+
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 
 	_THREAD_SAFE_METHOD_
@@ -338,6 +358,15 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_pressed();
 				action_state[E->key()] = action;
+
+				if (action_listeners.has(E->key())) {
+
+					if (p_event->is_pressed()) {
+						action_listeners[E->key()]->emit_signal("pressed");
+					} else {
+						action_listeners[E->key()]->emit_signal("released");
+					}
+				}
 			}
 		}
 	}
@@ -475,6 +504,10 @@ void InputDefault::action_press(const StringName &p_action) {
 	action.pressed = true;
 
 	action_state[p_action] = action;
+
+	if (action_listeners.has(p_action)) {
+		action_listeners[p_action]->emit_signal("pressed");
+	}
 }
 
 void InputDefault::action_release(const StringName &p_action) {
@@ -486,6 +519,10 @@ void InputDefault::action_release(const StringName &p_action) {
 	action.pressed = false;
 
 	action_state[p_action] = action;
+
+	if (action_listeners.has(p_action)) {
+		action_listeners[p_action]->emit_signal("released");
+	}
 }
 
 void InputDefault::set_emulate_touch(bool p_emulate) {

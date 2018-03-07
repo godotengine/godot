@@ -34,6 +34,22 @@
 #include "object.h"
 #include "os/main_loop.h"
 #include "os/thread_safe.h"
+class Input;
+
+class InputActionListener : public Reference {
+	GDCLASS(InputActionListener, Reference)
+
+	friend class Input;
+
+	StringName action_name;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_action_name(const StringName &p_action_name);
+	StringName get_action_name() const;
+};
 
 class Input : public Object {
 
@@ -85,6 +101,9 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_released(const StringName &p_action) const = 0;
+
+	virtual Ref<InputActionListener> get_action_listener(const StringName &p_action) = 0;
+	virtual void remove_action_listener(const StringName &p_action) = 0;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;

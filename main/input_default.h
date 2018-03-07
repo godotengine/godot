@@ -59,6 +59,8 @@ class InputDefault : public Input {
 
 	Map<StringName, Action> action_state;
 
+	Map<StringName, Ref<InputActionListener> > action_listeners;
+
 	bool emulate_touch;
 
 	struct VibrationInfo {
@@ -182,6 +184,9 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
+
+	virtual Ref<InputActionListener> get_action_listener(const StringName &p_action);
+	virtual void remove_action_listener(const StringName &p_action);
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);

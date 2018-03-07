@@ -32,6 +32,22 @@
 #include "input_map.h"
 #include "os/os.h"
 #include "project_settings.h"
+
+void InputActionListener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_action_name"), &InputActionListener::get_action_name);
+
+	ADD_SIGNAL(MethodInfo("pressed"));
+	ADD_SIGNAL(MethodInfo("released"));
+}
+
+void InputActionListener::set_action_name(const StringName &p_action_name) {
+	action_name = p_action_name;
+}
+
+StringName InputActionListener::get_action_name() const {
+	return action_name;
+}
+
 Input *Input::singleton = NULL;
 
 Input *Input::get_singleton() {
@@ -57,6 +73,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &Input::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action"), &Input::is_action_just_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action"), &Input::is_action_just_released);
+	ClassDB::bind_method(D_METHOD("get_action_listener", "action"), &Input::get_action_listener);
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
 	ClassDB::bind_method(D_METHOD("joy_connection_changed", "device", "connected", "name", "guid"), &Input::joy_connection_changed);
