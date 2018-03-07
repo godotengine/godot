@@ -30,9 +30,13 @@
 
 #include "os_javascript.h"
 
-#include "gles2/rasterizer_gles2.h"
-#include "gles3/rasterizer_gles3.h"
-#include "io/file_access_buffered_fa.h"
+#include "core/engine.h"
+#include "core/io/file_access_buffered_fa.h"
+#include "dom_keys.h"
+#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "unix/dir_access_unix.h"
@@ -49,7 +53,36 @@
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
 
-// Window (canvas)
+template <typename T>
+static void dom2godot_mod(T emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
+
+	godot_event->set_shift(emscripten_event_ptr->shiftKey);
+	godot_event->set_alt(emscripten_event_ptr->altKey);
+	godot_event->set_control(emscripten_event_ptr->ctrlKey);
+	godot_event->set_metakey(emscripten_event_ptr->metaKey);
+}
+
+int OS_JavaScript::get_video_driver_count() const {
+
+	return VIDEO_DRIVER_MAX;
+}
+
+const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
+
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+	}
+	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
+	ERR_FAIL_V(NULL);
+}
+
+int OS_JavaScript::get_audio_driver_count() const {
+
+	return 1;
+}
 
 static void focus_canvas() {
 
@@ -281,20 +314,25 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 	OS_JavaScript *os = get_singleton();
 
-	Ref<InputEventMouseButton> ev;
-	ev.instance();
-	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
-	ev->set_global_position(ev->get_position());
-	dom2godot_mod(p_event, ev);
-	switch (p_event->button) {
-		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
-		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
-		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
-		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
-		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
-		default: return false;
+	EmscriptenWebGLContextAttributes attributes;
+	emscripten_webgl_init_context_attributes(&attributes);
+	attributes.alpha = false;
+	attributes.antialias = false;
+	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
+	switch (p_video_driver) {
+		case VIDEO_DRIVER_GLES3:
+			attributes.majorVersion = 2;
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
+			break;
+		case VIDEO_DRIVER_GLES2:
+			attributes.majorVersion = 1;
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+			break;
 	}
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
@@ -321,17 +359,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
-	// For motion outside the canvas, only read mouse movement if dragging
-	// started inside the canvas; imitating desktop app behaviour.
-	if (!cursor_inside_canvas && !input_mask)
-		return false;
-
-	Ref<InputEventMouseMotion> ev;
-	ev.instance();
-	dom2godot_mod(p_event, ev);
-	ev->set_button_mask(input_mask);
+	print_line("Init VS");
 
 	ev->set_position(pos);
 	ev->set_global_position(ev->get_position());
