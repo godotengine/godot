@@ -130,8 +130,8 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			// Finally, fit the nodes
-			int col_expand = remaining_space.width / col_expanded.size();
-			int row_expand = remaining_space.height / row_expanded.size();
+			int col_expand = col_expanded.size() > 0 ? remaining_space.width / col_expanded.size() : 0;
+			int row_expand = row_expanded.size() > 0 ? remaining_space.height / row_expanded.size() : 0;
 
 			int col_ofs = 0;
 			int row_ofs = 0;
