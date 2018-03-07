@@ -1434,9 +1434,13 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
 	}
 
-	editor_data->get_undo_redo().commit_action();
+	editor_data->get_undo_redo().add_do_method(editor, "push_item", p_script.operator->());
+	editor_data->get_undo_redo().add_undo_method(editor, "push_item", (Script *)NULL);
 
-	editor->push_item(p_script.operator->());
+	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+
+	editor_data->get_undo_redo().commit_action();
 }
 
 void SceneTreeDock::_delete_confirm() {
@@ -2039,12 +2043,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
-	}
-
-	if (selection.size() > 1) {
-		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
-		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
