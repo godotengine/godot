@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "dom_keys.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -57,12 +58,19 @@ static void dom2godot_mod(T emscripten_event_ptr, Ref<InputEventWithModifiers> g
 
 int OS_JavaScript::get_video_driver_count() const {
 
-	return 1;
+	return VIDEO_DRIVER_MAX;
 }
 
 const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 
-	return "GLES3";
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+	}
+	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
+	ERR_FAIL_V(NULL);
 }
 
 int OS_JavaScript::get_audio_driver_count() const {
@@ -422,7 +430,19 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = false;
 	attributes.antialias = false;
-	attributes.majorVersion = 2;
+	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
+	switch (p_video_driver) {
+		case VIDEO_DRIVER_GLES3:
+			attributes.majorVersion = 2;
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
+			break;
+		case VIDEO_DRIVER_GLES2:
+			attributes.majorVersion = 1;
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+			break;
+	}
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
 	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
@@ -448,9 +468,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	print_line("Init Audio");
 
 	AudioDriverManager::initialize(p_audio_driver);
-
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
 
 	print_line("Init VS");
 
