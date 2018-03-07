@@ -2502,7 +2502,10 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 
 		Node *child = get_child(0);
 		remove_child(child);
-		p_node->add_child(child);
+		if (!child->is_owned_by_parent()) {
+			// add the custom children to the p_node
+			p_node->add_child(child);
+		}
 	}
 
 	p_node->set_owner(owner);
