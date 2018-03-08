@@ -80,6 +80,10 @@ Rect2 AnimatedSprite::_edit_get_rect() const {
 	return Rect2(ofs, s);
 }
 
+bool AnimatedSprite::_edit_use_rect() const {
+	return true;
+}
+
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);

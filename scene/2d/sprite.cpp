@@ -58,8 +58,12 @@ bool Sprite::_edit_use_pivot() const {
 	return true;
 }
 
-Rect2 Sprite::get_anchorable_rect() const {
+Rect2 Sprite::_edit_get_rect() const {
 	return get_rect();
+}
+
+bool Sprite::_edit_use_rect() const {
+	return true;
 }
 
 void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {

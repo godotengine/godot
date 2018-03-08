@@ -65,6 +65,10 @@ Rect2 Light2D::_edit_get_rect() const {
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
+bool Light2D::_edit_use_rect() const {
+	return true;
+}
+
 void Light2D::_update_light_visibility() {
 
 	if (!is_inside_tree())
