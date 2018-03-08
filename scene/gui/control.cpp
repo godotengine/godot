@@ -94,6 +94,14 @@ Point2 Control::_edit_get_position() const {
 	return get_position();
 };
 
+void Control::_edit_set_scale(const Size2 &p_scale) {
+	set_scale(p_scale);
+}
+
+Size2 Control::_edit_get_scale() const {
+	return data.scale;
+}
+
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
 	set_size(p_edit_rect.size.snapped(Vector2(1, 1)));

@@ -73,6 +73,10 @@ Rect2 Polygon2D::_edit_get_rect() const {
 	return item_rect;
 }
 
+bool Polygon2D::_edit_use_rect() const {
+	return true;
+}
+
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	return Geometry::is_point_in_polygon(p_point - get_offset(), Variant(polygon));

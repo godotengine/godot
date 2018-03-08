@@ -245,6 +245,7 @@ public:
 	int get_cellv(const Vector2 &p_pos) const;
 
 	Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);

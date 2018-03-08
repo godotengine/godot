@@ -157,6 +157,7 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
