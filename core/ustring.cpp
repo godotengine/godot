@@ -35,6 +35,7 @@
 #include "ucaps.h"
 #include "variant.h"
 
+#include "thirdparty/misc/aes256.h"
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
 
@@ -3099,6 +3100,77 @@ String String::humanize_size(size_t p_size) {
 
 	return String::num(p_size / divisor, digits) + prefix[prefix_idx];
 }
+
+String String::encrypt_text(const String &p_key) const {
+
+	// Duplicate string
+	String new_string = String(this->ptr());
+
+	// Validate key
+	String cs = p_key.md5_text();
+
+	if (cs.length() != 32) {
+		ERR_PRINT("Cannot encrypt, invalid key");
+
+		return new_string;
+	}
+
+	Vector<uint8_t> key;
+	key.resize(32);
+	for (int i = 0; i < 32; i++) {
+
+		key[i] = cs[i];
+	}
+
+	size_t len = length();
+	aes256_context ctx;
+	aes256_init(&ctx, key.ptr());
+
+	for (size_t i = 0; i < len; i += 16) {
+
+		aes256_encrypt_ecb(&ctx, &((unsigned char *)new_string.ptr())[i]);
+	}
+
+	aes256_done(&ctx);
+
+	return new_string;
+}
+
+String String::decrypt_text(const String &p_key) const {
+
+	// Duplicate string
+	String new_string = String(this->ptr());
+
+	// Validate key
+	String cs = p_key.md5_text();
+
+	if (cs.length() != 32) {
+		ERR_PRINT("Cannot decrypt, invalid key");
+
+		return new_string;
+	}
+
+	Vector<uint8_t> key;
+	key.resize(32);
+	for (int i = 0; i < 32; i++) {
+
+		key[i] = cs[i];
+	}
+
+	size_t len = length();
+	aes256_context ctx;
+	aes256_init(&ctx, key.ptr());
+
+	for (size_t i = 0; i < len; i += 16) {
+
+		aes256_decrypt_ecb(&ctx, &((unsigned char *)new_string.ptr())[i]);
+	}
+
+	aes256_done(&ctx);
+
+	return new_string;
+}
+
 bool String::is_abs_path() const {
 
 	if (length() > 1)

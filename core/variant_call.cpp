@@ -261,6 +261,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, hash);
 	VCALL_LOCALMEM0R(String, md5_text);
 	VCALL_LOCALMEM0R(String, sha256_text);
+	VCALL_LOCALMEM1R(String, encrypt_text);
+	VCALL_LOCALMEM1R(String, decrypt_text);
 	VCALL_LOCALMEM0R(String, md5_buffer);
 	VCALL_LOCALMEM0R(String, sha256_buffer);
 	VCALL_LOCALMEM0R(String, empty);
@@ -1345,6 +1347,8 @@ void register_variant_methods() {
 	ADDFUNC0(STRING, INT, String, hash, varray());
 	ADDFUNC0(STRING, STRING, String, md5_text, varray());
 	ADDFUNC0(STRING, STRING, String, sha256_text, varray());
+	ADDFUNC1(STRING, STRING, String, encrypt_text, STRING, "key", varray());
+	ADDFUNC1(STRING, STRING, String, decrypt_text, STRING, "key", varray());
 	ADDFUNC0(STRING, RAW_ARRAY, String, md5_buffer, varray());
 	ADDFUNC0(STRING, RAW_ARRAY, String, sha256_buffer, varray());
 	ADDFUNC0(STRING, BOOL, String, empty, varray());
