@@ -543,7 +543,6 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		//stop playing if no longer active
 		if (!active) {
 			set_physics_process_internal(false);
-			//do not update, this makes it easier to animate (will shut off otherwise)
 			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
