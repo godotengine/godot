@@ -433,22 +433,22 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		if (canvas_item && !canvas_item->is_set_as_toplevel())
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
-		else {
-			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, Transform2D(), cl ? cl->get_transform() : p_canvas_xform); //use base transform
+	if (p_node->get_owner() != editor->get_edited_scene() || !p_node->has_meta("_edit_lock_")) {
+		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
+			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+			} else {
+				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+			}
+			if (limit != 0 && r_items.size() >= limit)
+				return;
 		}
-		if (limit != 0 && r_items.size() >= limit)
-			return;
 	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && !canvas_item->has_meta("_edit_lock_")) {
-
+	if (canvas_item && canvas_item->is_visible_in_tree() && (canvas_item->get_owner() != editor->get_edited_scene() || !canvas_item->has_meta("_edit_lock_"))) {
 		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
 		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
-
 		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
@@ -2508,32 +2508,45 @@ void CanvasItemEditor::_draw_bones() {
 	}
 }
 
-void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_xform) {
+void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	ERR_FAIL_COND(!p_node);
 
-	RID viewport_ci = viewport->get_canvas_item();
+	Node *scene = editor->get_edited_scene();
+	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
+		return;
+	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	if (canvas_item && !canvas_item->is_visible())
+		return;
 
-	Transform2D transform_ci = p_xform;
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci)
-		transform_ci = transform_ci * ci->get_transform();
+	Transform2D parent_xform = p_parent_xform;
+	Transform2D canvas_xform = p_canvas_xform;
 
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		_draw_locks_and_groups(p_node->get_child(i), transform_ci);
+	if (canvas_item && !canvas_item->is_set_as_toplevel()) {
+		parent_xform = parent_xform * canvas_item->get_transform();
+	} else {
+		CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+		parent_xform = Transform2D();
+		canvas_xform = cl ? cl->get_transform() : p_canvas_xform;
 	}
 
-	if (ci) {
+	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
+		_draw_locks_and_groups(p_node->get_child(i), parent_xform, canvas_xform);
+	}
+
+	RID viewport_canvas_item = viewport->get_canvas_item();
+	if (canvas_item) {
+		float offset = 0;
+
 		Ref<Texture> lock = get_icon("LockViewport", "EditorIcons");
 		if (p_node->has_meta("_edit_lock_")) {
-			lock->draw(viewport_ci, transform_ci.xform(Point2(0, 0)));
+			lock->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
+			offset += lock->get_size().x;
 		}
 
 		Ref<Texture> group = get_icon("GroupViewport", "EditorIcons");
-		if (ci->has_meta("_edit_group_")) {
-			Vector2 ofs = transform_ci.xform(Point2(0, 0));
-			if (ci->has_meta("_edit_lock_"))
-				ofs = Point2(ofs.x + lock->get_size().x, ofs.y);
-			group->draw(viewport_ci, ofs);
+		if (canvas_item->has_meta("_edit_group_")) {
+			group->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
+			//offset += group->get_size().x;
 		}
 	}
 }
@@ -2600,7 +2613,7 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_selection();
 	_draw_axis();
 	if (editor->get_edited_scene())
-		_draw_locks_and_groups(editor->get_edited_scene(), transform);
+		_draw_locks_and_groups(editor->get_edited_scene());
 
 	RID ci = viewport->get_canvas_item();
 	VisualServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
