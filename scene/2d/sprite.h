@@ -74,7 +74,9 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-	virtual Rect2 _edit_get_rect() const { return get_rect(); }
+
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;

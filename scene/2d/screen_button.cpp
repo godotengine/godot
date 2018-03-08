@@ -335,6 +335,10 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 	return Rect2(Size2(), texture->get_size());
 }
 
+bool TouchScreenButton::_edit_use_rect() const {
+	return true;
+}
+
 void TouchScreenButton::set_visibility_mode(VisibilityMode p_mode) {
 	visibility = p_mode;
 	update();

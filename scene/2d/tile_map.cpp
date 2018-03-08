@@ -1119,6 +1119,10 @@ Rect2 TileMap::_edit_get_rect() const {
 	return rect_cache;
 }
 
+bool TileMap::_edit_use_rect() const {
+	return true;
+}
+
 void TileMap::set_collision_layer(uint32_t p_layer) {
 
 	collision_layer = p_layer;
