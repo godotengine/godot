@@ -127,6 +127,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
 			active = false;
 			set_process_internal(false);
+			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
 	}
@@ -211,8 +212,13 @@ void AudioStreamPlayer::stop() {
 
 bool AudioStreamPlayer::is_playing() const {
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint())
+		return fake_active;
+#endif
+
 	if (stream_playback.is_valid()) {
-		return active; //&& stream_playback->is_playing();
+		return active; // && stream_playback->is_playing();
 	}
 
 	return false;
@@ -265,11 +271,16 @@ AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
 
 void AudioStreamPlayer::_set_playing(bool p_enable) {
 
+#ifdef TOOLS_ENABLED
+	fake_active = p_enable;
+#endif
+
 	if (p_enable)
 		play();
 	else
 		stop();
 }
+
 bool AudioStreamPlayer::_is_active() const {
 
 	return active;
