@@ -191,6 +191,10 @@ public:
 	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;
 	String sha256_text() const;
+
+	String encrypt_text(const String &p_key) const;
+	String decrypt_text(const String &p_key) const;
+
 	Vector<uint8_t> md5_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
