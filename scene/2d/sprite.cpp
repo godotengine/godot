@@ -281,11 +281,17 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	Rect2 src_rect, dst_rect;
 	bool filter_clip;
 	_get_rects(src_rect, dst_rect, filter_clip);
+	dst_rect.size = dst_rect.size.abs();
 
 	if (!dst_rect.has_point(p_point))
 		return false;
 
-	Vector2 q = ((p_point - dst_rect.position) / dst_rect.size) * src_rect.size + src_rect.position;
+	Vector2 q = (p_point - dst_rect.position) / dst_rect.size;
+	if (hflip)
+		q.x = 1.0f - q.x;
+	if (vflip)
+		q.y = 1.0f - q.y;
+	q = q * src_rect.size + src_rect.position;
 
 	Ref<Image> image;
 	Ref<AtlasTexture> atlasTexture = texture;
