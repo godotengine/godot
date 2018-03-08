@@ -2141,9 +2141,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						if (completion_index > 0) {
 							completion_index--;
-							completion_current = completion_options[completion_index];
-							update();
+						} else {
+							completion_index = completion_options.size() - 1;
 						}
+						completion_current = completion_options[completion_index];
+						update();
+
 						accept_event();
 						return;
 					}
@@ -2152,9 +2155,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						if (completion_index < completion_options.size() - 1) {
 							completion_index++;
-							completion_current = completion_options[completion_index];
-							update();
+						} else {
+							completion_index = 0;
 						}
+						completion_current = completion_options[completion_index];
+						update();
+
 						accept_event();
 						return;
 					}
