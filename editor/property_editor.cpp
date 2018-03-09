@@ -3939,7 +3939,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 		if (_might_be_in_instance() && _get_instanced_node_original_property(prop, vorig)) {
 
-			_edit_set(prop, vorig);
+			_edit_set(prop, vorig.duplicate(true)); // Set, making sure to duplicate arrays properly
 			return;
 		}
 

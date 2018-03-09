@@ -3415,6 +3415,19 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
+Variant Variant::duplicate(bool deep) const {
+	switch (type) {
+		// case OBJECT:
+		// 	return operator Object *()->duplicate();
+		case DICTIONARY:
+			return operator Dictionary().duplicate(deep);
+		case ARRAY:
+			return operator Array().duplicate(deep);
+		default:
+			return *this;
+	}
+}
+
 void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {

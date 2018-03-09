@@ -338,6 +338,7 @@ public:
 	}
 
 	void zero();
+	Variant duplicate(bool deep = false) const;
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
