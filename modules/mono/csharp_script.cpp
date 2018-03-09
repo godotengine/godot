@@ -282,6 +282,15 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("@\" \""); // verbatim string literal
 }
 
+static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
+
+	String base_class = p_base_class_name;
+	if (p_class_name == base_class) {
+		base_class = "Godot." + base_class;
+	}
+	return base_class;
+}
+
 Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 
 	String script_template = "using " BINDINGS_NAMESPACE ";\n"
@@ -308,7 +317,8 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "//    }\n"
 							 "}\n";
 
-	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name)
+	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	script_template = script_template.replace("%BASE_CLASS_NAME%", base_class_name)
 							  .replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
@@ -327,10 +337,22 @@ bool CSharpLanguage::is_using_templates() {
 void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
 
 	String src = p_script->get_source_code();
-	src = src.replace("%BASE%", p_base_class_name)
+	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
+	src = src.replace("%BASE%", base_class_name)
 				  .replace("%CLASS%", p_class_name)
 				  .replace("%TS%", _get_indentation());
 	p_script->set_source_code(src);
+}
+
+String CSharpLanguage::validate_path(const String &p_path) const {
+
+	String class_name = p_path.get_file().get_basename();
+	List<String> keywords;
+	get_reserved_words(&keywords);
+	if (keywords.find(class_name)) {
+		return TTR("Class name can't be a reserved keyword");
+	}
+	return "";
 }
 
 Script *CSharpLanguage::create_script() const {
