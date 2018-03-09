@@ -77,8 +77,7 @@ void ColorPicker::_notification(int p_what) {
 
 void ColorPicker::set_focus_on_line_edit() {
 
-	c_text->grab_focus();
-	c_text->select();
+	c_text->call_deferred("grab_focus");
 }
 
 void ColorPicker::_update_controls() {
@@ -159,14 +158,16 @@ void ColorPicker::_update_color() {
 	updating = true;
 
 	for (int i = 0; i < 4; i++) {
-		scroll[i]->set_max(255);
 		scroll[i]->set_step(0.01);
 		if (raw_mode_enabled) {
+			scroll[i]->set_max(100);
 			if (i == 3)
 				scroll[i]->set_max(1);
 			scroll[i]->set_value(color.components[i]);
 		} else {
-			scroll[i]->set_value(color.components[i] * 255);
+			const int byte_value = color.components[i] * 255;
+			scroll[i]->set_max(next_power_of_2(MAX(255, byte_value)) - 1);
+			scroll[i]->set_value(byte_value);
 		}
 	}
 
@@ -242,6 +243,7 @@ bool ColorPicker::is_raw_mode() const {
 }
 
 void ColorPicker::_update_text_value() {
+	bool visible = true;
 	if (text_is_constructor) {
 		String t = "Color(" + String::num(color.r) + "," + String::num(color.g) + "," + String::num(color.b);
 		if (edit_alpha && color.a < 1)
@@ -250,8 +252,13 @@ void ColorPicker::_update_text_value() {
 			t += ")";
 		c_text->set_text(t);
 	} else {
-		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
+		if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
+			visible = false;
+		} else {
+			c_text->set_text(color.to_html(edit_alpha && color.a < 1));
+		}
 	}
+	c_text->set_visible(visible);
 }
 
 void ColorPicker::_sample_draw() {
@@ -462,6 +469,31 @@ void ColorPicker::_screen_pick_pressed() {
 	screen->show_modal();
 }
 
+void ColorPicker::_focus_enter() {
+	if (c_text->has_focus()) {
+		c_text->select_all();
+		return;
+	}
+	for (int i = 0; i < 4; i++) {
+		if (values[i]->get_line_edit()->has_focus()) {
+			values[i]->get_line_edit()->select_all();
+			break;
+		}
+	}
+}
+
+void ColorPicker::_focus_exit() {
+	for (int i = 0; i < 4; i++) {
+		values[i]->get_line_edit()->select(0, 0);
+	}
+	c_text->select(0, 0);
+}
+
+void ColorPicker::_html_focus_exit() {
+	_html_entered(c_text->get_text());
+	_focus_exit();
+}
+
 void ColorPicker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
@@ -483,6 +515,9 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_w_input"), &ColorPicker::_w_input);
 	ClassDB::bind_method(D_METHOD("_preset_input"), &ColorPicker::_preset_input);
 	ClassDB::bind_method(D_METHOD("_screen_input"), &ColorPicker::_screen_input);
+	ClassDB::bind_method(D_METHOD("_focus_enter"), &ColorPicker::_focus_enter);
+	ClassDB::bind_method(D_METHOD("_focus_exit"), &ColorPicker::_focus_exit);
+	ClassDB::bind_method(D_METHOD("_html_focus_exit"), &ColorPicker::_html_focus_exit);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
@@ -559,11 +594,14 @@ ColorPicker::ColorPicker() :
 
 		scroll[i] = memnew(HSlider);
 		scroll[i]->set_v_size_flags(SIZE_SHRINK_CENTER);
+		scroll[i]->set_focus_mode(FOCUS_NONE);
 		hbc->add_child(scroll[i]);
 
 		values[i] = memnew(SpinBox);
 		scroll[i]->share(values[i]);
 		hbc->add_child(values[i]);
+		values[i]->get_line_edit()->connect("focus_entered", this, "_focus_enter");
+		values[i]->get_line_edit()->connect("focus_exited", this, "_focus_exit");
 
 		scroll[i]->set_min(0);
 		scroll[i]->set_page(0);
@@ -589,6 +627,9 @@ ColorPicker::ColorPicker() :
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
 	c_text->connect("text_entered", this, "_html_entered");
+	c_text->connect("focus_entered", this, "_focus_enter");
+	c_text->connect("focus_exited", this, "_html_focus_exit");
+
 	text_type->set_text("#");
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 
