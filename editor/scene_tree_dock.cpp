@@ -1402,6 +1402,8 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
+			Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
+
 			List<PropertyInfo> pinfo;
 			n->get_property_list(&pinfo);
 
@@ -1410,10 +1412,13 @@ void SceneTreeDock::_create() {
 					continue;
 				if (E->get().name == "__meta__")
 					continue;
-				newnode->set(E->get().name, n->get(E->get().name));
+	                	if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
+                        		newnode->set(E->get().name, n->get(E->get().name));
+		                }
 			}
 
 			editor->push_item(NULL);
+			memdelete(default_oldnode);
 
 			//reconnect signals
 			List<MethodInfo> sl;
