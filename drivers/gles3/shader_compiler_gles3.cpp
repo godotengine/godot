@@ -795,7 +795,6 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_COLOR"] = "light_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_UV"] = "light_uv";
-	//actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_SHADOW_COLOR"]="light_shadow_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT"] = "light";
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_COLOR"] = "shadow_color";
 
@@ -805,9 +804,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"] = "#define SHADOW_COLOR_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
