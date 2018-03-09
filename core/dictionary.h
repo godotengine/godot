@@ -76,7 +76,7 @@ public:
 	Array keys() const;
 	Array values() const;
 
-	Dictionary duplicate() const;
+	Dictionary duplicate(bool p_deep = false) const;
 
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
