@@ -110,6 +110,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
+		//print_line("saving instead to "+path);
 	}
 
 	f = _wfopen(path.c_str(), mode_string);
