@@ -285,7 +285,19 @@ MATERIAL_UNIFORMS
 
 FRAGMENT_SHADER_GLOBALS
 
-void light_compute(inout vec4 light,vec2 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
+void light_compute(
+	inout vec4 light,
+	inout vec2 light_vec,
+	inout float light_height,
+	inout vec4 light_color,
+	vec2 light_uv,
+	inout vec4 shadow_color,
+	vec3 normal,
+	vec2 uv,
+#if defined(SCREEN_UV_USED)
+	vec2 screen_uv,
+#endif
+	vec4 color) {
 
 #if defined(USE_LIGHT_SHADER_CODE)
 
@@ -462,39 +474,41 @@ FRAGMENT_SHADER_CODE
 	float att=1.0;
 
 	vec2 light_uv = light_uv_interp.xy;
-	vec4 light = texture(light_texture,light_uv) * light_color;
-#if defined(SHADOW_COLOR_USED)
-	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
-#endif
+	vec4 light = texture(light_texture,light_uv);
 
 	if (any(lessThan(light_uv_interp.xy,vec2(0.0,0.0))) || any(greaterThanEqual(light_uv_interp.xy,vec2(1.0,1.0)))) {
 		color.a*=light_outside_alpha; //invisible
 
 	} else {
+		float real_light_height = light_height;
+		vec4 real_light_color = light_color;
+		vec4 real_light_shadow_color = light_shadow_color;
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
-		light_compute(light,light_vec,light_height,light_color,light_uv,shadow,normal,uv,screen_uv,color);
+		light_compute(
+			light,
+			light_vec,
+			real_light_height,
+			real_light_color,
+			light_uv,
+			real_light_shadow_color,
+			normal,
+			uv,
+#if defined(SCREEN_UV_USED)
+			screen_uv,
+#endif
+			color);
+#endif
 
-#else
+		light *= real_light_color;
 
 		if (normal_used) {
-
-			vec3 light_normal = normalize(vec3(light_vec,-light_height));
+			vec3 light_normal = normalize(vec3(light_vec,-real_light_height));
 			light*=max(dot(-light_normal,normal),0.0);
 		}
 
 		color*=light;
-/*
-#ifdef USE_NORMAL
-	color.xy=local_rot.xy;//normal.xy;
-	color.zw=vec2(0.0,1.0);
-#endif
-*/
-
-//light shader code
-#endif
-
 
 #ifdef USE_SHADOWS
 
@@ -634,13 +648,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-
-#if defined(SHADOW_COLOR_USED)
-	color=mix(shadow_color,color,shadow_attenuation);
-#else
 	//color*=shadow_attenuation;
-	color=mix(light_shadow_color,color,shadow_attenuation);
-#endif
+	color=mix(real_light_shadow_color,color,shadow_attenuation);
 //use shadows
 #endif
 	}
