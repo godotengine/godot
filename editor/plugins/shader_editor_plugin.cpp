@@ -57,6 +57,28 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	_line_col_changed();
 }
 
+void ShaderTextEditor::_zoom_in() {
+	shader_font_resize_val += EDSCALE;
+	_zoom_changed();
+}
+
+void ShaderTextEditor::_zoom_out() {
+	shader_font_resize_val -= EDSCALE;
+	_zoom_changed();
+}
+
+void ShaderTextEditor::_zoom_changed() {
+	if (shader_font_resize_timer->get_time_left() == 0)
+		shader_font_resize_timer->start();
+}
+
+void ShaderTextEditor::_shader_font_resize_timeout() {
+
+	if (_add_font_size(shader_font_resize_val)) {
+		shader_font_resize_val = 0;
+	}
+}
+
 void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->clear_colors();
@@ -229,9 +251,19 @@ void ShaderTextEditor::_validate_script() {
 }
 
 void ShaderTextEditor::_bind_methods() {
+	ClassDB::bind_method("_shader_font_resize_timeout", &ShaderTextEditor::_shader_font_resize_timeout);
 }
 
 ShaderTextEditor::ShaderTextEditor() {
+	set_font_name("shader_source");
+	set_font_size_name("interface/editor/shader_code_font_size");
+
+	shader_font_resize_val = 0;
+	shader_font_resize_timer = memnew(Timer);
+	add_child(shader_font_resize_timer);
+	shader_font_resize_timer->set_one_shot(true);
+	shader_font_resize_timer->set_wait_time(0.07);
+	shader_font_resize_timer->connect("timeout", this, "_shader_font_resize_timeout");
 }
 
 /*** SCRIPT EDITOR ******/

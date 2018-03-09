@@ -179,6 +179,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
+	MAKE_SOURCE_FONT(df_shader_code, int(EditorSettings::get_singleton()->get("interface/editor/shader_code_font_size")) * EDSCALE);
+	p_theme->set_font("shader_source", "EditorFonts", df_shader_code);
+
 	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 

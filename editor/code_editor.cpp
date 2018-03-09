@@ -594,6 +594,22 @@ FindReplaceBar::FindReplaceBar() {
 
 /*** CODE EDITOR ****/
 
+void CodeTextEditor::set_font_name(String p_font_name) {
+	font_name = p_font_name;
+}
+
+String CodeTextEditor::get_font_name() const {
+	return font_name;
+}
+
+void CodeTextEditor::set_font_size_name(String p_font_size_name) {
+	font_size_name = p_font_size_name;
+}
+
+String CodeTextEditor::get_font_size_name() const {
+	return font_size_name;
+}
+
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -664,7 +680,7 @@ void CodeTextEditor::_reset_zoom() {
 	Ref<DynamicFont> font = text_editor->get_font("font"); // reset source font size to default
 
 	if (font.is_valid()) {
-		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
+		EditorSettings::get_singleton()->set(font_size_name, 14);
 		font->set_size(14);
 		zoom_nb->set_text("100%");
 	}
@@ -732,7 +748,7 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 		zoom_nb->set_text(itos(100 * new_size / 14) + "%");
 
 		if (new_size != font->get_size()) {
-			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
+			EditorSettings::get_singleton()->set(font_size_name, new_size / EDSCALE);
 			font->set_size(new_size);
 		}
 
@@ -774,7 +790,7 @@ void CodeTextEditor::set_error(const String &p_error) {
 
 void CodeTextEditor::_update_font() {
 
-	text_editor->add_font_override("font", get_font("source", "EditorFonts"));
+	text_editor->add_font_override("font", get_font(font_name, "EditorFonts"));
 
 	Ref<Font> status_bar_font = get_font("status_source", "EditorFonts");
 	int count = status_bar->get_child_count();

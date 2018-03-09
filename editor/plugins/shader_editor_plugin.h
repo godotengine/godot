@@ -46,8 +46,14 @@ class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
 	Ref<Shader> shader;
+	int shader_font_resize_val;
+	Timer *shader_font_resize_timer;
 
 	void _check_shader_mode();
+	void _zoom_in(); // override
+	void _zoom_out(); // override
+	void _zoom_changed(); // override
+	void _shader_font_resize_timeout();
 
 protected:
 	static void _bind_methods();

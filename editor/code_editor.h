@@ -150,6 +150,8 @@ class CodeTextEditor : public VBoxContainer {
 	Timer *idle;
 	Timer *code_complete_timer;
 	bool enable_complete_timer;
+	String font_name;
+	String font_size_name;
 
 	Timer *font_resize_timer;
 	int font_resize_val;
@@ -162,18 +164,18 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_font();
 	void _complete_request();
 	void _font_resize_timeout();
-	bool _add_font_size(int p_delta);
 
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
-	void _zoom_in();
-	void _zoom_out();
-	void _zoom_changed();
+	virtual void _zoom_in();
+	virtual void _zoom_out();
+	virtual void _zoom_changed();
 	void _reset_zoom();
 
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 
 protected:
+	bool _add_font_size(int p_delta);
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
 	virtual void _code_complete_script(const String &p_code, List<String> *r_options) {}
@@ -186,6 +188,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_font_name(String p_font_name);
+	String get_font_name() const;
+	void set_font_size_name(String p_font_size_name);
+	String get_font_size_name() const;
+
 	void update_editor_settings();
 	void set_error(const String &p_error);
 	void update_line_and_column() { _line_col_changed(); }
