@@ -318,8 +318,8 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "}\n";
 
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
-	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", p_class_name);
+	script_template = script_template.replace("%BASE_CLASS_NAME%", base_class_name)
+							  .replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
