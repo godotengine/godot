@@ -1615,10 +1615,10 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() &&
-				((b->get_button_index() == BUTTON_LEFT && b->get_alt() && tool == TOOL_SELECT) ||
+				((b->get_button_index() == BUTTON_RIGHT && b->get_alt() && tool == TOOL_SELECT) ||
 						(b->get_button_index() == BUTTON_LEFT && tool == TOOL_LIST_SELECT))) {
 			// Popup the selection menu list
-			Point2 click = transform.xform(b->get_position());
+			Point2 click = transform.affine_inverse().xform(b->get_position());
 
 			Node *scene = editor->get_edited_scene();
 
