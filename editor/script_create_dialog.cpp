@@ -434,6 +434,13 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
+	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
+	if (path_error != "") {
+		_msg_path_valid(false, path_error);
+		_update_dialog();
+		return;
+	}
+
 	/* All checks passed */
 
 	is_path_valid = true;
