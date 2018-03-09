@@ -1268,7 +1268,20 @@ void AnimationKeyEditor::_track_editor_draw() {
 		int decimals = 2;
 		bool step_found = false;
 
+		const int period_width = font->get_char_size('.').width;
+		int max_digit_width = font->get_char_size('0').width;
+		for (int i = 1; i <= 9; i++) {
+			const int digit_width = font->get_char_size('0' + i).width;
+			max_digit_width = MAX(digit_width, max_digit_width);
+		}
+		const int max_sc = int(Math::ceil(zoomw / scale));
+		const int max_sc_width = String::num(max_sc).length() * max_digit_width;
+
 		while (!step_found) {
+
+			min = max_sc_width;
+			if (decimals > 0)
+				min += period_width + max_digit_width * decimals;
 
 			static const int _multp[3] = { 1, 2, 5 };
 			for (int i = 0; i < 3; i++) {
