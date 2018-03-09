@@ -3417,17 +3417,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 
 Variant Variant::duplicate(bool deep) const {
 	switch (type) {
-		case OBJECT: {
-			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
-				Ref<Resource> resource = _get_obj().ref;
-				if (resource.is_valid()) {
-					return resource->duplicate(true);
-				}
-			}
-			*/
-			return *this;
-		} break;
+		// case OBJECT:
+		// 	return operator Object *()->duplicate();
 		case DICTIONARY:
 			return operator Dictionary().duplicate(deep);
 		case ARRAY:
