@@ -1535,6 +1535,17 @@ bool _File::is_open() const {
 
 	return f != NULL;
 }
+String _File::get_path() const {
+
+	ERR_FAIL_COND_V(!f, "");
+	return f->get_path();
+}
+
+String _File::get_path_absolute() const {
+
+	ERR_FAIL_COND_V(!f, "");
+	return f->get_path_absolute();
+}
 
 void _File::seek(int64_t p_position) {
 
@@ -1824,6 +1835,8 @@ void _File::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("open", "path", "flags"), &_File::open);
 	ClassDB::bind_method(D_METHOD("close"), &_File::close);
+	ClassDB::bind_method(D_METHOD("get_path"), &_File::get_path);
+	ClassDB::bind_method(D_METHOD("get_path_absolute"), &_File::get_path_absolute);
 	ClassDB::bind_method(D_METHOD("is_open"), &_File::is_open);
 	ClassDB::bind_method(D_METHOD("seek", "position"), &_File::seek);
 	ClassDB::bind_method(D_METHOD("seek_end", "position"), &_File::seek_end, DEFVAL(0));

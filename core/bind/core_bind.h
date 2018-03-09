@@ -415,6 +415,9 @@ public:
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
 
+	String get_path() const; /// returns the path for the current open file
+	String get_path_absolute() const; /// returns the absolute path for the current open file
+
 	void seek(int64_t p_position); ///< seek to a given position
 	void seek_end(int64_t p_position = 0); ///< seek from the end of file
 	int64_t get_position() const; ///< get position in the file

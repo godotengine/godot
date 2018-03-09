@@ -69,6 +69,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		fclose(f);
 	f = NULL;
 
+	path_src = p_path;
 	path = fix_path(p_path);
 	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
@@ -150,6 +151,16 @@ void FileAccessUnix::close() {
 bool FileAccessUnix::is_open() const {
 
 	return (f != NULL);
+}
+
+String FileAccessUnix::get_path() const {
+
+	return path_src;
+}
+
+String FileAccessUnix::get_path_absolute() const {
+
+	return path;
 }
 
 void FileAccessUnix::seek(size_t p_position) {
