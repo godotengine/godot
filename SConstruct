@@ -489,18 +489,8 @@ else:
     print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run SCons again with the argument: platform=<string>")
-
-# The following only makes sense when the env is defined, and assumes it is
-if 'env' in locals():
-    screen = sys.stdout
-    # Progress reporting is not available in non-TTY environments since it
-    # messes with the output (for example, when writing to a file)
-    show_progress = (env['progress'] and sys.stdout.isatty())
-    node_count = 0
-    node_count_max = 0
-    node_count_interval = 1
-    node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+    print("\nPlease run scons again with argument: platform=<string>")
+    sys.exit(255)
 
     import time, math
 
