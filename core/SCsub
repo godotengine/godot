@@ -23,7 +23,7 @@ gd_cpp += gd_inc
 gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
 
 with open("global_defaults.gen.cpp", "w") as f:
-    f.write(gd_cpp)
+	f.write(gd_cpp)
 
 
 # Generate AES256 script encryption key
@@ -50,9 +50,8 @@ if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
         txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
         print("Invalid AES256 encryption key, not 64 bits hex: " + e)
 
-# NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
+	f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
 
 
 # Add required thirdparty code. Header paths are hardcoded, we don't need to append

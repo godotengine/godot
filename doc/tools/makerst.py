@@ -110,7 +110,6 @@ def make_class_list(class_list, columns):
 
     f.close()
 
-
 def rstize_text(text, cclass):
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0

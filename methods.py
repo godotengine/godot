@@ -605,6 +605,9 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
         line = fs.readline()
 
+    fs.close()
+
+
 import glob
 
 
@@ -652,7 +655,6 @@ void unregister_module_types() {
 }
 """
 
-    # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
         f.write(modules_cpp)
 
@@ -894,7 +896,6 @@ def save_active_platforms(apnames, ap):
 
             pngf.close()
 
-            # NOTE: It is safe to generate this file here, since this is still executed serially
             wf = x + "/" + name + ".gen.h"
             with open(wf, "w") as pngw:
                 pngw.write(str)
