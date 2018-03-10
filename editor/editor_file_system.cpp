@@ -274,9 +274,13 @@ void EditorFileSystem::_scan_filesystem() {
 	memdelete(d);
 
 	f = FileAccess::open(fscache, FileAccess::WRITE);
-	_save_filesystem_cache(new_filesystem, f);
-	f->close();
-	memdelete(f);
+	if (f == NULL) {
+		ERR_PRINTS("Error writing fscache: " + fscache);
+	} else {
+		_save_filesystem_cache(new_filesystem, f);
+		f->close();
+		memdelete(f);
+	}
 
 	scanning = false;
 }
@@ -285,9 +289,13 @@ void EditorFileSystem::_save_filesystem_cache() {
 	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache3");
 
 	FileAccess *f = FileAccess::open(fscache, FileAccess::WRITE);
-	_save_filesystem_cache(filesystem, f);
-	f->close();
-	memdelete(f);
+	if (f == NULL) {
+		ERR_PRINTS("Error writing fscache: " + fscache);
+	} else {
+		_save_filesystem_cache(filesystem, f);
+		f->close();
+		memdelete(f);
+	}
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
