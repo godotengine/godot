@@ -64,6 +64,8 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const;
 
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+
 public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 _edit_get_pivot() const;
@@ -108,6 +110,7 @@ public:
 	int get_hframes() const;
 
 	Sprite();
+	~Sprite();
 };
 
 #endif // SPRITE_H
