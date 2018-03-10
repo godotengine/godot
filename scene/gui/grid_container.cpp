@@ -88,10 +88,10 @@ void GridContainer::_notification(int p_what) {
 			remaining_space.width -= hsep * (max_col - 1);
 
 			bool can_fit = false;
-			while (!can_fit) {
+			while (!can_fit && col_expanded.size() > 0) {
 				// Check if all minwidth constraints are ok if we use the remaining space
 				can_fit = true;
-				int max_index = 0;
+				int max_index = col_expanded.front()->get();
 				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
 					if (col_minw[E->get()] > col_minw[max_index]) {
 						max_index = col_minw[E->get()];
@@ -109,10 +109,10 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			can_fit = false;
-			while (!can_fit) {
+			while (!can_fit && row_expanded.size() > 0) {
 				// Check if all minwidth constraints are ok if we use the remaining space
 				can_fit = true;
-				int max_index = 0;
+				int max_index = row_expanded.front()->get();
 				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
 					if (row_minh[E->get()] > row_minh[max_index]) {
 						max_index = row_minh[E->get()];
