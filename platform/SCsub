@@ -18,11 +18,10 @@ for platform in env.platform_apis:
 reg_apis_inc += '\n'
 reg_apis += '}\n\n'
 unreg_apis += '}\n'
-f = open_utf8('register_platform_apis.gen.cpp', 'w')
-f.write(reg_apis_inc)
-f.write(reg_apis)
-f.write(unreg_apis)
-f.close()
+with open_utf8('register_platform_apis.gen.cpp', 'w') as f:
+	f.write(reg_apis_inc)
+	f.write(reg_apis)
+	f.write(unreg_apis)
 platform_sources.append('register_platform_apis.gen.cpp')
 
 lib = env.add_library('platform', platform_sources)

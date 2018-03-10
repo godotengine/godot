@@ -104,6 +104,7 @@ def make_class_list(class_list, columns):
         f.write("--+-------+")
     f.write("\n")
 
+    f.close()
 
 def rstize_text(text, cclass):
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
@@ -571,6 +572,8 @@ def make_rst_class(node):
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
         f.write('\n')
+
+    f.close()
 
 
 file_list = []
