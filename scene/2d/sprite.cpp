@@ -121,7 +121,15 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 
 	if (p_texture == texture)
 		return;
+
+	if (texture.is_valid())
+		texture->remove_change_receptor(this);
+
 	texture = p_texture;
+
+	if (texture.is_valid())
+		texture->add_change_receptor(this);
+
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
@@ -362,6 +370,15 @@ void Sprite::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+void Sprite::_changed_callback(Object *p_changed, const char *p_prop) {
+
+	// Changes to the texture need to trigger an update to make
+	// the editor redraw the sprite with the updated texture.
+	if (texture.is_valid() && texture.ptr() == p_changed) {
+		update();
+	}
+}
+
 void Sprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite::set_texture);
@@ -435,4 +452,9 @@ Sprite::Sprite() {
 
 	vframes = 1;
 	hframes = 1;
+}
+
+Sprite::~Sprite() {
+	if (texture.is_valid())
+		texture->remove_change_receptor(this);
 }
