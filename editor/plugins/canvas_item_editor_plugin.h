@@ -387,6 +387,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_selection();
 	void _draw_axis();
 	void _draw_bones();
+	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
 	void _draw_viewport();
