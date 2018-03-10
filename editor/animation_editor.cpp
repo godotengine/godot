@@ -1155,9 +1155,6 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 	Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
 
-	Ref<Texture> type_hover = get_icon("KeyHover", "EditorIcons");
-	Ref<Texture> type_selected = get_icon("KeySelected", "EditorIcons");
-
 	int right_separator_ofs = right_data_size_cache;
 
 	int h = font->get_height() + sep;
