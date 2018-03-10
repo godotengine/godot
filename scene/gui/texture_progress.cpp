@@ -117,22 +117,45 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 
 	Point2 p = get_relative_center();
 
-	if (val < 0.125)
-		return Point2(p.x + (1 - p.x) * val * 8, 0);
-	if (val < 0.25)
-		return Point2(1, p.y * (val - 0.125) * 8);
-	if (val < 0.375)
-		return Point2(1, p.y + (1 - p.y) * (val - 0.25) * 8);
-	if (val < 0.5)
-		return Point2(1 - (1 - p.x) * (val - 0.375) * 8, 1);
-	if (val < 0.625)
-		return Point2(p.x * (1 - (val - 0.5) * 8), 1);
-	if (val < 0.75)
-		return Point2(0, 1 - ((1 - p.y) * (val - 0.625) * 8));
-	if (val < 0.875)
-		return Point2(0, p.y - p.y * (val - 0.75) * 8);
-	else
-		return Point2(p.x * (val - 0.875) * 8, 0);
+	// Minimal version of Liang-Barsky clipping algorithm
+	float angle = (val * Math_TAU) - Math_PI * 0.5;
+	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
+	float t1 = 1.0;
+	float cp;
+	float cq;
+	float cr;
+	float edgeLeft = 0.0;
+	float edgeRight = 1.0;
+	float edgeBottom = 0.0;
+	float edgeTop = 1.0;
+
+	for (int edge = 0; edge < 4; edge++) {
+		if (edge == 0) {
+			if (dir.x > 0)
+				continue;
+			cp = -dir.x;
+			cq = -(edgeLeft - p.x);
+		} else if (edge == 1) {
+			if (dir.x < 0)
+				continue;
+			cp = dir.x;
+			cq = (edgeRight - p.x);
+		} else if (edge == 2) {
+			if (dir.y > 0)
+				continue;
+			cp = -dir.y;
+			cq = -(edgeBottom - p.y);
+		} else if (edge == 3) {
+			if (dir.y < 0)
+				continue;
+			cp = dir.y;
+			cq = (edgeTop - p.y);
+		}
+		cr = cq / cp;
+		if (cr >= 0 && cr < t1)
+			t1 = cr;
+	}
+	return (p + t1 * dir);
 }
 
 Point2 TextureProgress::get_relative_center() {
