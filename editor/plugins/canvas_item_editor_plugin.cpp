@@ -2143,7 +2143,9 @@ void CanvasItemEditor::_draw_grid() {
 
 void CanvasItemEditor::_draw_selection() {
 	Ref<Texture> pivot_icon = get_icon("EditorPivot", "EditorIcons");
-	Ref<Texture> position_icon = get_icon("EditorPivot", "EditorIcons");
+	Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
+	Ref<Texture> previous_position_icon = get_icon("EditorPositionPrevious", "EditorIcons");
+
 	RID ci = viewport->get_canvas_item();
 
 	List<CanvasItem *> selection = _get_edited_canvas_items(false, false);
@@ -2174,7 +2176,7 @@ void CanvasItemEditor::_draw_selection() {
 					viewport->draw_line(pre_drag_endpoints[i], pre_drag_endpoints[(i + 1) % 4], pre_drag_color, 2);
 				}
 			} else {
-				viewport->draw_texture(position_icon, (pre_drag_xform.xform(Point2()) - (position_icon->get_size() / 2)).floor(), Color(0.5, 1.0, 2.0));
+				viewport->draw_texture(previous_position_icon, (pre_drag_xform.xform(Point2()) - (previous_position_icon->get_size() / 2)).floor());
 			}
 		}
 
@@ -2572,6 +2574,52 @@ void CanvasItemEditor::_draw_bones() {
 	}
 }
 
+void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
+	ERR_FAIL_COND(!p_node);
+
+	Node *scene = editor->get_edited_scene();
+	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
+		return;
+	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	if (canvas_item && !canvas_item->is_visible())
+		return;
+
+	Transform2D parent_xform = p_parent_xform;
+	Transform2D canvas_xform = p_canvas_xform;
+
+	if (canvas_item && !canvas_item->is_set_as_toplevel()) {
+		parent_xform = parent_xform * canvas_item->get_transform();
+	} else {
+		CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+		parent_xform = Transform2D();
+		canvas_xform = cl ? cl->get_transform() : p_canvas_xform;
+	}
+
+	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
+		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
+	}
+
+	if (canvas_item && !canvas_item->_edit_use_rect() && !editor_selection->is_selected(canvas_item)) {
+		Transform2D xform = transform * canvas_xform * parent_xform;
+
+		Ref<Texture> position_icon = get_icon("EditorPivot", "EditorIcons");
+		Transform2D transform = Transform2D(xform.get_rotation(), xform.get_origin());
+		viewport->draw_set_transform_matrix(transform);
+		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
+		viewport->draw_set_transform_matrix(Transform2D());
+
+		Ref<Texture> node_icon;
+		if (has_icon(canvas_item->get_class(), "EditorIcons"))
+			node_icon = get_icon(canvas_item->get_class(), "EditorIcons");
+		else
+			node_icon = get_icon("Object", "EditorIcons");
+		viewport->draw_texture(node_icon, xform.get_origin() + position_icon->get_size() / 3, Color(1.0, 1.0, 1.0, 0.5));
+
+		Ref<Font> font = get_font("font", "Label");
+		viewport->draw_string(font, xform.get_origin() + position_icon->get_size() / 3 + node_icon->get_size() + Point2(4, -3), canvas_item->get_name(), Color(1.0, 1.0, 1.0, 0.5));
+	}
+}
+
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	ERR_FAIL_COND(!p_node);
 
@@ -2676,8 +2724,10 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_grid();
 	_draw_selection();
 	_draw_axis();
-	if (editor->get_edited_scene())
+	if (editor->get_edited_scene()) {
 		_draw_locks_and_groups(editor->get_edited_scene());
+		_draw_invisible_nodes_positions(editor->get_edited_scene());
+	}
 
 	RID ci = viewport->get_canvas_item();
 	VisualServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
