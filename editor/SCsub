@@ -4,6 +4,7 @@ Import('env')
 env.editor_sources = []
 
 import os
+import os.path
 from compat import encode_utf8, byte_to_str, open_utf8, escape_string
 
 
@@ -29,6 +30,9 @@ def make_certs_header(target, source, env):
     g.write("};\n")
     g.write("#endif")
 
+    g.close()
+    f.close()
+
 
 def make_doc_header(target, source, env):
 
@@ -41,8 +45,8 @@ def make_doc_header(target, source, env):
         src = s.srcnode().abspath
         if not src.endswith(".xml"):
             continue
-        f = open_utf8(src, "r")
-        content = f.read()
+        with open_utf8(src, "r") as f:
+            content = f.read()
         buf += content
 
     buf = encode_utf8(docbegin + buf + docend)
@@ -62,6 +66,8 @@ def make_doc_header(target, source, env):
 
     g.write("#endif")
 
+    g.close()
+
 
 def make_fonts_header(target, source, env):
 
@@ -76,9 +82,8 @@ def make_fonts_header(target, source, env):
     # saving uncompressed, since freetype will reference from memory pointer
     xl_names = []
     for i in range(len(source)):
-        f = open(source[i].srcnode().abspath, "rb")
-        buf = f.read()
-        import os.path
+        with open(source[i].srcnode().abspath, "rb")as f:
+            buf = f.read()
 
         name = os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
 
@@ -90,6 +95,8 @@ def make_fonts_header(target, source, env):
         g.write("};\n")
 
     g.write("#endif")
+
+    g.close()
 
 
 def make_translations_header(target, source, env):
@@ -110,8 +117,8 @@ def make_translations_header(target, source, env):
 
     xl_names = []
     for i in range(len(sorted_paths)):
-        f = open(sorted_paths[i], "rb")
-        buf = f.read()
+        with open(sorted_paths[i], "rb") as f:
+            buf = f.read()
         decomp_size = len(buf)
         buf = zlib.compress(buf)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
@@ -137,6 +144,9 @@ def make_translations_header(target, source, env):
     g.write("};\n")
 
     g.write("#endif")
+
+    g.close()
+
 
 def make_authors_header(target, source, env):
 
@@ -180,6 +190,9 @@ def make_authors_header(target, source, env):
 
     g.write("#endif\n")
 
+    g.close()
+    f.close()
+
 def make_donors_header(target, source, env):
 
     sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors", "Gold donors", "Silver donors", "Bronze donors"]
@@ -221,6 +234,10 @@ def make_donors_header(target, source, env):
         close_section()
 
     g.write("#endif\n")
+
+    g.close()
+    f.close()
+
 
 def make_license_header(target, source, env):
 
@@ -387,17 +404,23 @@ def make_license_header(target, source, env):
 
     g.write("#endif\n")
 
+    g.close()
+    fc.close()
+    f.close()
+
 
 def _make_doc_data_class_path(to_path):
-      g = open_utf8(os.path.join(to_path,"doc_data_class_path.gen.h"), "w")
-      g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
-      g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+    g = open_utf8(os.path.join(to_path,"doc_data_class_path.gen.h"), "w")
+    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
+    g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
-      g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n");
-      for c in sorted(env.doc_class_path):
-          g.write("\t{\"" + c + "\", \"" + env.doc_class_path[c] + "\"},\n")
-      g.write("\t{NULL, NULL}\n")
-      g.write("};\n")
+    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n");
+    for c in sorted(env.doc_class_path):
+        g.write("\t{\"" + c + "\", \"" + env.doc_class_path[c] + "\"},\n")
+    g.write("\t{NULL, NULL}\n")
+    g.write("};\n")
+
+    g.close()
 
 
 if env['tools']:
@@ -409,10 +432,9 @@ if env['tools']:
         reg_exporters += '\tregister_' + e + '_exporter();\n'
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += '}\n'
-    f = open_utf8("register_exporters.gen.cpp", "w")
-    f.write(reg_exporters_inc)
-    f.write(reg_exporters)
-    f.close()
+    with open_utf8("register_exporters.gen.cpp", "w") as f:
+        f.write(reg_exporters_inc)
+        f.write(reg_exporters)
 
     # API documentation
     docs = []

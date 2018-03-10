@@ -52,11 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\\n"
 """
 
-print("Updating the editor.pot template...")
-
-for fname in matches:
-
-    f = open(fname, "rb")
+def process_file(f, fname):
 
     l = f.readline()
     lc = 1
@@ -100,12 +96,14 @@ for fname in matches:
         l = f.readline()
         lc += 1
 
-    f.close()
+print("Updating the editor.pot template...")
 
+for fname in matches:
+    with open(fname, "rb") as f:
+        process_file(f, fname)
 
-f = open("editor.pot", "wb")
-f.write(main_po)
-f.close()
+with open("editor.pot", "wb") as f:
+    f.write(main_po)
 
 if (os.name == "posix"):
     print("Wrapping template at 79 characters for compatibility with Weblate.")
