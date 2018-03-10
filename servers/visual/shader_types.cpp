@@ -259,9 +259,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].can_discard = false;
 
-	shader_modes[VS::SHADER_PARTICLES].modes.push_back("disable_force");
-	shader_modes[VS::SHADER_PARTICLES].modes.push_back("disable_velocity");
-	shader_modes[VS::SHADER_PARTICLES].modes.push_back("keep_data");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_force");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_velocity");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("keep_data");
 
 	shader_types.insert("spatial");
 	shader_types.insert("canvas_item");
