@@ -2,6 +2,7 @@
 
 EnsureSConsVersion(0, 98, 1)
 
+
 import string
 import os
 import os.path
@@ -491,7 +492,7 @@ else:
     for x in platform_list:
         print("\t" + x)
     print("\nPlease run scons again with argument: platform=<string>")
-	sys.exit(255)
+    sys.exit(255)
 
 
 screen = sys.stdout
