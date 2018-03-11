@@ -1219,7 +1219,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
+				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("Error saving MeshLibrary!"));
 				accept->popup_centered_minsize();
 				return;
@@ -1254,7 +1254,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
+				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("Error saving TileSet!"));
 				accept->popup_centered_minsize();
 				return;
