@@ -5379,18 +5379,23 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	if (select_word(s, col, beg, end)) {
 
 		bool inside_quotes = false;
+		char selected_quote = '\0';
 		int qbegin = 0, qend = 0;
 		for (int i = 0; i < s.length(); i++) {
-			if (s[i] == '"') {
-				if (inside_quotes) {
-					qend = i;
-					inside_quotes = false;
-					if (col >= qbegin && col <= qend) {
-						return s.substr(qbegin, qend - qbegin);
+			if (s[i] == '"' || s[i] == '\'') {
+				if (i == 0 || s[i - 1] != '\\') {
+					if (inside_quotes && selected_quote == s[i]) {
+						qend = i;
+						inside_quotes = false;
+						selected_quote = '\0';
+						if (col >= qbegin && col <= qend) {
+							return s.substr(qbegin, qend - qbegin);
+						}
+					} else if (!inside_quotes) {
+						qbegin = i + 1;
+						inside_quotes = true;
+						selected_quote = s[i];
 					}
-				} else {
-					qbegin = i + 1;
-					inside_quotes = true;
 				}
 			}
 		}
