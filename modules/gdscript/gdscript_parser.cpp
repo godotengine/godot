@@ -30,6 +30,7 @@
 
 #include "gdscript_parser.h"
 
+#include "core/io/json.h"
 #include "gdscript.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
@@ -452,18 +453,45 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				return NULL;
 			}
 
-			Ref<Resource> res;
+			ConstantNode *constant = alloc_node<ConstantNode>();
+
 			if (!validating) {
 
-				//this can be too slow for just validating code
-				if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
-					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
-				} else if (!for_completion || FileAccess::exists(path)) {
-					res = ResourceLoader::load(path);
-				}
-				if (!res.is_valid()) {
-					_set_error("Can't preload resource at path: " + path);
-					return NULL;
+				if (path.get_extension() == "json") { // json is a non-resource special case
+
+					if (FileAccess::exists(path)) {
+
+						Vector<uint8_t> data = FileAccess::get_file_as_array(path);
+						String json;
+						json.parse_utf8((const char *)data.ptr(), data.size());
+
+						String err_str;
+						int err_line;
+						Error err = JSON::parse(json, constant->value, err_str, err_line);
+
+						if (err) {
+							_set_error("Can't preload JSON at " + path + ", line " + String::num(err_line) + ": " + err_str);
+							return NULL;
+						}
+					} else {
+
+						_set_error("Can't find JSON at path: " + path);
+						return NULL;
+					}
+				} else {
+
+					Ref<Resource> res;
+					//this can be too slow for just validating code
+					if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
+						res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
+					} else if (!for_completion || FileAccess::exists(path)) {
+						res = ResourceLoader::load(path);
+					}
+					if (!res.is_valid()) {
+						_set_error("Can't preload resource at path: " + path);
+						return NULL;
+					}
+					constant->value = res;
 				}
 			} else {
 
@@ -478,9 +506,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				return NULL;
 			}
 			tokenizer->advance();
-
-			ConstantNode *constant = alloc_node<ConstantNode>();
-			constant->value = res;
 
 			expr = constant;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD) {
@@ -4087,7 +4112,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else*/ {
+						} else*/
+						{
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 
