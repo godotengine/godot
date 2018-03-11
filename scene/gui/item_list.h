@@ -54,6 +54,7 @@ private:
 
 		Ref<Texture> icon;
 		Rect2i icon_region;
+		Color icon_modulate;
 		Ref<Texture> tag_icon;
 		String text;
 		bool selectable;
@@ -134,6 +135,9 @@ public:
 
 	void set_item_icon_region(int p_idx, const Rect2 &p_region);
 	Rect2 get_item_icon_region(int p_idx) const;
+
+	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
+	Color get_item_icon_modulate(int p_idx) const;
 
 	void set_item_selectable(int p_idx, bool p_selectable);
 	bool is_item_selectable(int p_idx) const;
