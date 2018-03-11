@@ -217,6 +217,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+
 public:
 	enum {
 		INVALID_CELL = -1
