@@ -37,6 +37,7 @@ void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, boo
 	Item item;
 	item.icon = p_texture;
 	item.icon_region = Rect2i();
+	item.icon_modulate = Color(1, 1, 1, 1);
 	item.text = p_item;
 	item.selectable = p_selectable;
 	item.selected = false;
@@ -54,6 +55,7 @@ void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;
 	item.icon_region = Rect2i();
+	item.icon_modulate = Color(1, 1, 1, 1);
 	//item.text=p_item;
 	item.selectable = p_selectable;
 	item.selected = false;
@@ -136,6 +138,21 @@ Rect2 ItemList::get_item_icon_region(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	return items[p_idx].icon_region;
+}
+
+void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items[p_idx].icon_modulate = p_modulate;
+	update();
+}
+
+Color ItemList::get_item_icon_modulate(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
+
+	return items[p_idx].icon_modulate;
 }
 
 void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color) {
@@ -1045,7 +1062,7 @@ void ItemList::_notification(int p_what) {
 					draw_rect.size = adj.size;
 				}
 
-				Color modulate = Color(1, 1, 1, 1);
+				Color modulate = items[i].icon_modulate;
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
@@ -1388,6 +1405,9 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_region", "idx", "rect"), &ItemList::set_item_icon_region);
 	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region);
+
+	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "idx", "modulate"), &ItemList::set_item_icon_modulate);
+	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "idx"), &ItemList::get_item_icon_modulate);
 
 	ClassDB::bind_method(D_METHOD("set_item_selectable", "idx", "selectable"), &ItemList::set_item_selectable);
 	ClassDB::bind_method(D_METHOD("is_item_selectable", "idx"), &ItemList::is_item_selectable);
