@@ -646,7 +646,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_column_min_width(2, 80 * EDSCALE);
 
 	tree->set_column_expand(3, false);
-	tree->set_column_min_width(3, 120);
+	tree->set_column_min_width(3, 120 * EDSCALE);
 
 	tree->connect("cell_selected", this, "_autoload_selected");
 	tree->connect("item_edited", this, "_autoload_edited");
