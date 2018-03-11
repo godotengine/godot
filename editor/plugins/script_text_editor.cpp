@@ -347,9 +347,51 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	code_editor->set_edit_state(p_state);
 }
 
-void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
+void ScriptTextEditor::_convert_case(CaseStyle p_case) {
+	TextEdit *te = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+	if (scr.is_null()) {
+		return;
+	}
 
-	code_editor->convert_case(p_case);
+	if (te->is_selection_active()) {
+		te->begin_complex_operation();
+
+		int begin = te->get_selection_from_line();
+		int end = te->get_selection_to_line();
+		int begin_col = te->get_selection_from_column();
+		int end_col = te->get_selection_to_column();
+
+		for (int i = begin; i <= end; i++) {
+			int len = te->get_line(i).length();
+			if (i == end)
+				len -= len - end_col;
+			if (i == begin)
+				len -= begin_col;
+			String new_line = te->get_line(i).substr(i == begin ? begin_col : 0, len);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = te->get_line(i).left(begin_col) + new_line;
+			}
+			if (i == end) {
+				new_line = new_line + te->get_line(i).right(end_col);
+			}
+			te->set_line(i, new_line);
+		}
+		te->end_complex_operation();
+	}
 }
 
 void ScriptTextEditor::trim_trailing_whitespace() {
