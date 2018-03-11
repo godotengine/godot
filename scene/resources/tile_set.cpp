@@ -347,6 +347,7 @@ void TileSet::tile_set_modulate(int p_id, const Color &p_modulate) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].modulate = p_modulate;
 	emit_changed();
+	_change_notify("modulate");
 }
 
 Color TileSet::tile_get_modulate(int p_id) const {

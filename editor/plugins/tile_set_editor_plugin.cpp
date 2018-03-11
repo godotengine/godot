@@ -278,10 +278,11 @@ void TileSetEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 	} else if (p_prop == StringName("name")) {
 		update_tile_list_icon();
-	} else if (p_prop == StringName("texture") || p_prop == StringName("tile_mode")) {
+	} else if (p_prop == StringName("texture") || p_prop == StringName("modulate") || p_prop == StringName("tile_mode")) {
 		_on_tile_list_selected(get_current_tile());
 		workspace->update();
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
+		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE)
 			property_editor->show();
@@ -578,6 +579,7 @@ void TileSetEditor::_on_tile_list_selected(int p_index) {
 	if (get_current_tile() >= 0) {
 		current_item_index = p_index;
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
+		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		workspace->set_custom_minimum_size(tileset->tile_get_region(get_current_tile()).size);
 		update_workspace_tile_mode();
@@ -1736,6 +1738,7 @@ void TileSetEditor::update_tile_list() {
 			region.position += pos;
 		}
 		tile_list->set_item_icon_region(tile_list->get_item_count() - 1, region);
+		tile_list->set_item_icon_modulate(tile_list->get_item_count() - 1, tileset->tile_get_modulate(E->get()));
 	}
 	if (tile_list->get_item_count() > 0 && selected_tile < tile_list->get_item_count()) {
 		tile_list->select(selected_tile);
@@ -1763,6 +1766,7 @@ void TileSetEditor::update_tile_list_icon() {
 		tile_list->set_item_metadata(current_idx, E->get());
 		tile_list->set_item_icon(current_idx, tileset->tile_get_texture(E->get()));
 		tile_list->set_item_icon_region(current_idx, region);
+		tile_list->set_item_icon_modulate(current_idx, tileset->tile_get_modulate(E->get()));
 		tile_list->set_item_text(current_idx, tileset->tile_get_name(E->get()));
 		current_idx += 1;
 	}
