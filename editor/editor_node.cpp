@@ -5557,7 +5557,8 @@ EditorNode::EditorNode() {
 	bottom_panel_vb->add_child(bottom_panel_hb);
 
 	log = memnew(EditorLog);
-	add_bottom_panel_item(TTR("Output"), log);
+	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);
+	log->set_tool_button(output_button);
 
 	old_split_ofs = 0;
 
