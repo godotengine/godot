@@ -51,6 +51,7 @@ class EditorLog : public VBoxContainer {
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
 	//PaneDrag *pd;
+	ToolButton *tool_button;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 
@@ -68,6 +69,7 @@ protected:
 
 public:
 	void add_message(const String &p_msg, bool p_error = false);
+	void set_tool_button(ToolButton *p_tool_button);
 	void deinit();
 
 	void clear();
