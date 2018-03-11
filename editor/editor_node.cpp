@@ -60,6 +60,7 @@
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
+#include "editor/import/resource_importer_atlas.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv_translation.h"
 #include "editor/import/resource_importer_obj.h"
@@ -4826,6 +4827,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterBitMap> import_bitmap;
 		import_bitmap.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_bitmap);
+
+		Ref<ResourceImporterAtlas> import_atlas;
+		import_atlas.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_atlas);
 	}
 
 	_pvrtc_register_compressors();
