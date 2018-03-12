@@ -478,6 +478,10 @@ public:
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 			bool uses_world_coordinates;
+			bool disable_channel_r;
+			bool disable_channel_g;
+			bool disable_channel_b;
+			bool disable_channel_a;
 
 		} spatial;
 

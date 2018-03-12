@@ -1584,7 +1584,8 @@ void RasterizerCanvasGLES3::reset_canvas() {
 
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-		glColorMask(1, 1, 1, 1); //don't touch alpha
+		scene_render->state.color_write_disabled = false;
+		scene_render->_set_color_mask(true, true, true, true); //don't touch alpha
 	}
 
 	glBindVertexArray(0);

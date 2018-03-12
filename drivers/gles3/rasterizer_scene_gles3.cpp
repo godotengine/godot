@@ -1135,6 +1135,12 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_draw = p_material->shader->spatial.depth_draw_mode;
 	}
 
+	_set_color_mask(
+			!state.color_write_disabled && !p_material->shader->spatial.disable_channel_r,
+			!state.color_write_disabled && !p_material->shader->spatial.disable_channel_g,
+			!state.color_write_disabled && !p_material->shader->spatial.disable_channel_b,
+			!state.color_write_disabled && !p_material->shader->spatial.disable_channel_a);
+
 #if 0
 	//blend mode
 	if (state.current_blend_mode!=p_material->shader->spatial.blend_mode) {
@@ -1901,6 +1907,16 @@ void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_rever
 	}
 }
 
+void RasterizerSceneGLES3::_set_color_mask(bool p_color_mask_red, bool p_color_mask_green, bool p_color_mask_blue, bool p_color_mask_alpha) {
+	if (p_color_mask_red != state.color_mask_red || p_color_mask_green != state.color_mask_green || p_color_mask_blue != state.color_mask_blue || p_color_mask_alpha != state.color_mask_alpha) {
+		glColorMask(p_color_mask_red ? 1 : 0, p_color_mask_green ? 1 : 0, p_color_mask_blue ? 1 : 0, p_color_mask_alpha ? 1 : 0);
+		state.color_mask_red = p_color_mask_red;
+		state.color_mask_green = p_color_mask_green;
+		state.color_mask_blue = p_color_mask_blue;
+		state.color_mask_alpha = p_color_mask_alpha;
+	}
+}
+
 void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows) {
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.scene_ubo); //bind globals ubo
@@ -2381,7 +2397,8 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 
 	// Camera
 	CameraMatrix camera;
@@ -2454,7 +2471,8 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glBindVertexArray(0);
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_ASYM_PANO, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_MULTIPLIER, false);
@@ -3034,7 +3052,8 @@ void RasterizerSceneGLES3::_copy_to_front_buffer(Environment *env) {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->buffers.diffuse);
@@ -3068,7 +3087,8 @@ void RasterizerSceneGLES3::_copy_texture_to_front_buffer(GLuint p_texture) {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, p_texture);
@@ -3536,7 +3556,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 
 	//turn off everything used
 
@@ -4074,8 +4095,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(0, NULL);
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+		state.color_write_disabled = true;
+		_set_color_mask(false, false, false, false);
 
-		glColorMask(0, 0, 0, 0);
 		glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -4086,7 +4108,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, 0, false, false, true, false, false);
 		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, false);
 
-		glColorMask(1, 1, 1, 1);
+		state.color_write_disabled = false;
+		_set_color_mask(true, true, true, true);
 
 		if (state.used_contact_shadows) {
 
@@ -4639,7 +4662,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glDepthMask(true);
-	glColorMask(0, 0, 0, 0);
+	state.color_write_disabled = true;
+	_set_color_mask(false, false, false, false);
 
 	if (custom_vp_size) {
 		glViewport(0, 0, custom_vp_size, custom_vp_size);
@@ -4716,7 +4740,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		}
 	}
 
-	glColorMask(1, 1, 1, 1);
+	state.color_write_disabled = false;
+	_set_color_mask(true, true, true, true);
 }
 
 void RasterizerSceneGLES3::set_scene_pass(uint64_t p_pass) {
@@ -5096,6 +5121,12 @@ void RasterizerSceneGLES3::initialize() {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
 	}
+
+	glColorMask(1, 1, 1, 1);
+	state.color_mask_red = true;
+	state.color_mask_green = true;
+	state.color_mask_blue = true;
+	state.color_mask_alpha = true;
 
 	state.debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
