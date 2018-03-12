@@ -692,7 +692,10 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
-			file->store_string(F->get() + "=" + vstr + "\n");
+			if (F->get().find(" ") != -1)
+				file->store_string(F->get().quote() + "=" + vstr + "\n");
+			else
+				file->store_string(F->get() + "=" + vstr + "\n");
 		}
 	}
 
