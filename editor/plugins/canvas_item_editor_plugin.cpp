@@ -466,13 +466,14 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
-	if (p_node->get_owner() != editor->get_edited_scene() || !p_node->has_meta("_edit_lock_")) {
+	Node *scene = editor->get_edited_scene();
+	if (!(p_node != scene && p_node->get_owner() != scene && (!scene->is_editable_instance(p_node) || p_node->has_meta("_edit_lock_")))) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
 			} else {
 				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, 0, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
 			}
 			if (limit != 0 && r_items.size() >= limit)
 				return;
@@ -1850,6 +1851,42 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> m = p_event;
+	if (m.is_valid()) {
+		if (drag_type == DRAG_NONE && tool == TOOL_SELECT) {
+			Point2 click = transform.affine_inverse().xform(m->get_position());
+			Node *scene = editor->get_edited_scene();
+
+			//Checks if the hovered items changed, update the viewport if so
+			Vector<_SelectResult> hovering_results_tmp;
+			_find_canvas_items_at_pos(click, scene, hovering_results_tmp);
+			hovering_results_tmp.sort();
+			bool changed = false;
+			if (hovering_results.size() == hovering_results_tmp.size()) {
+				for (int i = 0; i < hovering_results.size(); i++) {
+					if (hovering_results[i].item != hovering_results_tmp[i].item) {
+						changed = true;
+						break;
+					}
+				}
+			} else {
+				changed = true;
+			}
+
+			if (changed) {
+				hovering_results = hovering_results_tmp;
+				viewport->update();
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool accepted = false;
 	if ((accepted = _gui_input_rulers_and_guides(p_event))) {
@@ -1876,6 +1913,9 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	if (accepted)
 		accept_event();
+
+	// Handles the mouse hovering
+	_gui_input_hover(p_event);
 
 	// Change the cursor
 	CursorShape c = CURSOR_ARROW;
@@ -2578,7 +2618,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	ERR_FAIL_COND(!p_node);
 
 	Node *scene = editor->get_edited_scene();
-	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
+	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node))
 		return;
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	if (canvas_item && !canvas_item->is_visible())
@@ -2602,21 +2642,51 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	if (canvas_item && !canvas_item->_edit_use_rect() && !editor_selection->is_selected(canvas_item)) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
-		Ref<Texture> position_icon = get_icon("EditorPivot", "EditorIcons");
+		// Draw the node's position
+		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
 		Transform2D transform = Transform2D(xform.get_rotation(), xform.get_origin());
 		viewport->draw_set_transform_matrix(transform);
 		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
 		viewport->draw_set_transform_matrix(Transform2D());
+	}
+}
 
+void CanvasItemEditor::_draw_hover() {
+	List<Rect2> previous_rects;
+
+	for (int i = 0; i < hovering_results.size(); i++) {
+		// Draw the node's name and icon
+		CanvasItem *canvas_item = hovering_results[i].item;
+
+		if (canvas_item->_edit_use_rect())
+			continue;
+
+		Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
+
+		// Get the resources
 		Ref<Texture> node_icon;
 		if (has_icon(canvas_item->get_class(), "EditorIcons"))
 			node_icon = get_icon(canvas_item->get_class(), "EditorIcons");
 		else
 			node_icon = get_icon("Object", "EditorIcons");
-		viewport->draw_texture(node_icon, xform.get_origin() + position_icon->get_size() / 3, Color(1.0, 1.0, 1.0, 0.5));
-
 		Ref<Font> font = get_font("font", "Label");
-		viewport->draw_string(font, xform.get_origin() + position_icon->get_size() / 3 + node_icon->get_size() + Point2(4, -3), canvas_item->get_name(), Color(1.0, 1.0, 1.0, 0.5));
+		String node_name = canvas_item->get_name();
+		Size2 node_name_size = font->get_string_size(node_name);
+		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
+
+		Point2 pos = xform.get_origin() - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
+		// Rectify the position to avoid overlaping items
+		for (List<Rect2>::Element *E = previous_rects.front(); E; E = E->next()) {
+			if (E->get().intersects(Rect2(pos, item_size))) {
+				pos.y = E->get().get_position().y - item_size.y;
+			}
+		}
+
+		previous_rects.push_back(Rect2(pos, item_size));
+
+		// Draw the node icon and name
+		viewport->draw_texture(node_icon, pos, Color(1.0, 1.0, 1.0, 0.5));
+		viewport->draw_string(font, pos + Point2(node_icon->get_size().x + 4, item_size.y - 3), node_name, Color(1.0, 1.0, 1.0, 0.5));
 	}
 }
 
@@ -2747,6 +2817,7 @@ void CanvasItemEditor::_draw_viewport() {
 	if (show_guides)
 		_draw_guides();
 	_draw_focus();
+	_draw_hover();
 }
 
 void CanvasItemEditor::_notification(int p_what) {
