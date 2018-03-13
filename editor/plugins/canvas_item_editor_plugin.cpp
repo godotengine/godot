@@ -2399,26 +2399,34 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 }
 
 void CanvasItemEditor::_draw_axis() {
-	RID ci = viewport->get_canvas_item();
 
-	Color x_axis_color(1.0, 0.4, 0.4, 0.6);
-	Color y_axis_color(0.4, 1.0, 0.4, 0.6);
-	Color area_axis_color(0.4, 0.4, 1.0, 0.4);
+	if (show_origin) {
 
-	_draw_straight_line(Point2(), Point2(1, 0), x_axis_color);
-	_draw_straight_line(Point2(), Point2(0, 1), y_axis_color);
+		Color x_axis_color(1.0, 0.4, 0.4, 0.6);
+		Color y_axis_color(0.4, 1.0, 0.4, 0.6);
 
-	Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		_draw_straight_line(Point2(), Point2(1, 0), x_axis_color);
+		_draw_straight_line(Point2(), Point2(0, 1), y_axis_color);
+	}
 
-	Vector2 screen_endpoints[4] = {
-		transform.xform(Vector2(0, 0)),
-		transform.xform(Vector2(screen_size.width, 0)),
-		transform.xform(Vector2(screen_size.width, screen_size.height)),
-		transform.xform(Vector2(0, screen_size.height))
-	};
+	if (show_viewport) {
 
-	for (int i = 0; i < 4; i++) {
-		VisualServer::get_singleton()->canvas_item_add_line(ci, screen_endpoints[i], screen_endpoints[(i + 1) % 4], area_axis_color);
+		RID ci = viewport->get_canvas_item();
+
+		Color area_axis_color(0.4, 0.4, 1.0, 0.4);
+
+		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+
+		Vector2 screen_endpoints[4] = {
+			transform.xform(Vector2(0, 0)),
+			transform.xform(Vector2(screen_size.width, 0)),
+			transform.xform(Vector2(screen_size.width, screen_size.height)),
+			transform.xform(Vector2(0, screen_size.height))
+		};
+
+		for (int i = 0; i < 4; i++) {
+			VisualServer::get_singleton()->canvas_item_add_line(ci, screen_endpoints[i], screen_endpoints[(i + 1) % 4], area_axis_color);
+		}
 	}
 }
 
@@ -3000,6 +3008,18 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_grid = !show_grid;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
 			view_menu->get_popup()->set_item_checked(idx, show_grid);
+			viewport->update();
+		} break;
+		case SHOW_ORIGIN: {
+			show_origin = !show_origin;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
+			view_menu->get_popup()->set_item_checked(idx, show_origin);
+			viewport->update();
+		} break;
+		case SHOW_VIEWPORT: {
+			show_viewport = !show_viewport;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
+			view_menu->get_popup()->set_item_checked(idx, show_viewport);
 			viewport->update();
 		} break;
 		case SNAP_USE_NODE_PARENT: {
@@ -3589,6 +3609,8 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_grid"] = snap_grid;
 	state["snap_guides"] = snap_guides;
 	state["show_grid"] = show_grid;
+	state["show_origin"] = show_origin;
+	state["show_viewport"] = show_viewport;
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
@@ -3680,6 +3702,18 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_grid = state["show_grid"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
 		view_menu->get_popup()->set_item_checked(idx, show_grid);
+	}
+
+	if (state.has("show_origin")) {
+		show_origin = state["show_origin"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
+		view_menu->get_popup()->set_item_checked(idx, show_origin);
+	}
+
+	if (state.has("show_viewport")) {
+		show_viewport = state["show_viewport"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
+		view_menu->get_popup()->set_item_checked(idx, show_viewport);
 	}
 
 	if (state.has("show_rulers")) {
@@ -3955,6 +3989,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show Helpers"), KEY_H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers"), KEY_R), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), KEY_Y), SHOW_GUIDES);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
@@ -4040,6 +4076,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_scale = false;
 
 	show_grid = false;
+	show_origin = true;
+	show_viewport = true;
 	show_helpers = false;
 	show_rulers = true;
 	show_guides = true;
