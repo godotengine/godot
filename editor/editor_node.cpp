@@ -597,6 +597,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
+		current_option = -1;
 		accept->set_text(TTR("Error saving resource!"));
 		accept->popup_centered_minsize();
 		return;
@@ -1194,6 +1195,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
 
+				current_option = -1;
 				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("Error saving MeshLibrary!"));
 				accept->popup_centered_minsize();
@@ -1228,6 +1230,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
 
+				current_option = -1;
 				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("Error saving TileSet!"));
 				accept->popup_centered_minsize();
