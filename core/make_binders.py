@@ -265,10 +265,8 @@ def run(target, source, env):
         else:
             text += t
 
-    f = open(target[0].path, "w")
-    f.write(text)
-    f.close()
+    with open(target[0].path, "w") as f:
+        f.write(text)
 
-    f = open(target[1].path, "w")
-    f.write(text_ext)
-    f.close()
+    with open(target[1].path, "w") as f:
+        f.write(text_ext)

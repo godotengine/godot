@@ -82,10 +82,9 @@ def make_editor_icons_action(target, source, env):
 
     s.write("#endif\n")
 
+    with open(dst, "w") as f:
+        f.write(s.getvalue())
 
-    f = open(dst, "w")
-    f.write(s.getvalue())
-    f.close()
     s.close()
     icons_string.close()
 

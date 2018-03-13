@@ -41,10 +41,8 @@ prog = None
 abspath = env.Dir(".").abspath
 
 
-gradle_basein = open_utf8(abspath + "/build.gradle.template", "r")
-gradle_baseout = open_utf8(abspath + "/java/build.gradle", "w")
-
-gradle_text = gradle_basein.read()
+with open_utf8(abspath + "/build.gradle.template", "r") as gradle_basein:
+	gradle_text = gradle_basein.read()
 
 gradle_maven_flat_text = ""
 if len(env.android_flat_dirs) > 0:
@@ -131,17 +129,19 @@ gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$", gradle_default_co
 gradle_text = gradle_text.replace("$$GRADLE_PLUGINS$$", gradle_plugins)
 gradle_text = gradle_text.replace("$$GRADLE_CLASSPATH$$", gradle_classpath)
 
-gradle_baseout.write(gradle_text)
-gradle_baseout.close()
+with open_utf8(abspath + "/java/build.gradle", "w") as gradle_baseout:
+	gradle_baseout.write(gradle_text)
 
 
-pp_basein = open_utf8(abspath + "/AndroidManifest.xml.template", "r")
-pp_baseout = open_utf8(abspath + "/java/AndroidManifest.xml", "w")
-manifest = pp_basein.read()
+with open_utf8(abspath + "/AndroidManifest.xml.template", "r") as pp_basein:
+	manifest = pp_basein.read()
+
 manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$", env.android_manifest_chunk)
 manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$", env.android_permission_chunk)
 manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$", env.android_appattributes_chunk)
-pp_baseout.write(manifest)
+
+with open_utf8(abspath + "/java/AndroidManifest.xml", "w") as pp_baseout:
+	pp_baseout.write(manifest)
 
 
 lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])

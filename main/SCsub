@@ -8,60 +8,59 @@ def make_splash(target, source, env):
 
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
-    g = open(dst, "w")
 
-    buf = f.read()
+    with open(src, "rb") as f:
+        buf = f.read()
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef BOOT_SPLASH_H\n")
-    g.write("#define BOOT_SPLASH_H\n")
-    g.write('static const Color boot_splash_bg_color = Color::html("#232323");\n')
-    g.write("static const unsigned char boot_splash_png[] = {\n")
-    for i in range(len(buf)):
-        g.write(byte_to_str(buf[i]) + ",\n")
-    g.write("};\n")
-    g.write("#endif")
+    with open(dst, "w") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef BOOT_SPLASH_H\n")
+        g.write("#define BOOT_SPLASH_H\n")
+        g.write('static const Color boot_splash_bg_color = Color::html("#232323");\n')
+        g.write("static const unsigned char boot_splash_png[] = {\n")
+        for i in range(len(buf)):
+            g.write(byte_to_str(buf[i]) + ",\n")
+        g.write("};\n")
+        g.write("#endif")
 
 
 def make_splash_editor(target, source, env):
 
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
-    g = open(dst, "w")
 
-    buf = f.read()
+    with open(src, "rb") as f:
+        buf = f.read()
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
-    g.write("#define BOOT_SPLASH_EDITOR_H\n")
-    g.write('static const Color boot_splash_editor_bg_color = Color::html("#232323");\n')
-    g.write("static const unsigned char boot_splash_editor_png[] = {\n")
-    for i in range(len(buf)):
-        g.write(byte_to_str(buf[i]) + ",\n")
-    g.write("};\n")
-    g.write("#endif")
-
+    with open(dst, "w") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
+        g.write("#define BOOT_SPLASH_EDITOR_H\n")
+        g.write('static const Color boot_splash_editor_bg_color = Color::html("#232323");\n')
+        g.write("static const unsigned char boot_splash_editor_png[] = {\n")
+        for i in range(len(buf)):
+            g.write(byte_to_str(buf[i]) + ",\n")
+        g.write("};\n")
+        g.write("#endif")
 
 
 def make_app_icon(target, source, env):
 
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
-    g = open(dst, "w")
 
-    buf = f.read()
+    with open(src, "rb") as f:
+        buf = f.read()
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef APP_ICON_H\n")
-    g.write("#define APP_ICON_H\n")
-    g.write("static const unsigned char app_icon_png[] = {\n")
-    for i in range(len(buf)):
-        g.write(byte_to_str(buf[i]) + ",\n")
-    g.write("};\n")
-    g.write("#endif")
+    with open(dst, "w") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef APP_ICON_H\n")
+        g.write("#define APP_ICON_H\n")
+        g.write("static const unsigned char app_icon_png[] = {\n")
+        for i in range(len(buf)):
+            g.write(byte_to_str(buf[i]) + ",\n")
+        g.write("};\n")
+        g.write("#endif")
 
 
 env.main_sources = []

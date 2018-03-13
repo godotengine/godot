@@ -597,6 +597,9 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
         line = fs.readline()
 
+    fs.close()
+
+
 import glob
 
 
@@ -644,8 +647,8 @@ void unregister_module_types() {
 }
 """
 
-    f = open("modules/register_module_types.gen.cpp", "w")
-    f.write(modules_cpp)
+    with open("modules/register_module_types.gen.cpp", "w") as f:
+        f.write(modules_cpp)
 
     return module_list
 
@@ -744,18 +747,18 @@ def android_add_default_config(self, config):
 
 def android_add_to_manifest(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "r")
-    self.android_manifest_chunk += f.read()
+    with open(base_path, "r") as f:
+        self.android_manifest_chunk += f.read()
 
 def android_add_to_permissions(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "r")
-    self.android_permission_chunk += f.read()
+    with open(base_path, "r") as f:
+        self.android_permission_chunk += f.read()
 
 def android_add_to_attributes(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "r")
-    self.android_appattributes_chunk += f.read()
+    with open(base_path, "r") as f:
+        self.android_appattributes_chunk += f.read()
 
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
@@ -886,9 +889,11 @@ def save_active_platforms(apnames, ap):
 
             str += "};\n"
 
+            pngf.close()
+
             wf = x + "/" + name + ".gen.h"
-            pngw = open(wf, "w")
-            pngw.write(str)
+            with open(wf, "w") as pngw:
+                pngw.write(str)
 
 
 def no_verbose(sys, env):
@@ -1048,8 +1053,8 @@ def generate_cpp_hint_file(filename):
         pass
     else:
         try:
-            fd = open(filename, "w")
-            fd.write("#define GDCLASS(m_class, m_inherits)\n")
+            with open(filename, "w") as fd:
+                fd.write("#define GDCLASS(m_class, m_inherits)\n")
         except IOError:
             print("Could not write cpp.hint file.")
 
