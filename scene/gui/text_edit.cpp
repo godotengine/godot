@@ -5238,7 +5238,7 @@ void TextEdit::_update_completion_candidates() {
 
 	} else {
 
-		while (cofs > 0 && l[cofs - 1] > 32 && _is_completable(l[cofs - 1])) {
+		while (cofs > 0 && l[cofs - 1] > 32 && (l[cofs - 1] == '/' || _is_completable(l[cofs - 1]))) {
 			s = String::chr(l[cofs - 1]) + s;
 			if (l[cofs - 1] == '\'' || l[cofs - 1] == '"' || l[cofs - 1] == '$')
 				break;
