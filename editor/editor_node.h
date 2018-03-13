@@ -496,6 +496,7 @@ private:
 	Set<EditorFileDialog *> editor_file_dialogs;
 
 	Map<String, Ref<Texture> > icon_type_cache;
+	void _build_icon_type_cache();
 
 	bool _initializing_addons;
 	Map<String, EditorPlugin *> plugin_addons;

@@ -247,7 +247,7 @@ void ItemListEditor::_node_removed(Node *p_node) {
 
 void ItemListEditor::_notification(int p_notification) {
 
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
+	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
 
 		add_button->set_icon(get_icon("Add", "EditorIcons"));
 		del_button->set_icon(get_icon("Remove", "EditorIcons"));

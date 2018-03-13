@@ -349,14 +349,20 @@ void EditorNode::_notification(int p_what) {
 
 		// update_icons
 		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
-			Ref<Texture> icon = singleton->main_editor_buttons[i]->get_icon();
+
+			ToolButton *tb = singleton->main_editor_buttons[i];
+			EditorPlugin *p_editor = singleton->editor_table[i];
+			Ref<Texture> icon = p_editor->get_icon();
 
 			if (icon.is_valid()) {
-				main_editor_buttons[i]->set_icon(icon);
-			} else if (singleton->gui_base->has_icon(singleton->main_editor_buttons[i]->get_name(), "EditorIcons")) {
-				main_editor_buttons[i]->set_icon(gui_base->get_icon(singleton->main_editor_buttons[i]->get_name(), "EditorIcons"));
+				tb->set_icon(icon);
+			} else if (singleton->gui_base->has_icon(p_editor->get_name(), "EditorIcons")) {
+				tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
 			}
 		}
+
+		_build_icon_type_cache();
+
 		play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
 		play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
 		play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
@@ -382,6 +388,15 @@ void EditorNode::_notification(int p_what) {
 		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
+
+		PopupMenu *p = help_menu->get_popup();
+		p->set_item_icon(p->get_item_index(HELP_CLASSES), gui_base->get_icon("ClassList", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_icon("Instance", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
+		p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
 	}
 
 	if (p_what == Control::NOTIFICATION_RESIZED) {
@@ -3445,6 +3460,19 @@ Ref<Texture> EditorNode::_file_dialog_get_icon(const String &p_path) {
 	return singleton->icon_type_cache["Object"];
 }
 
+void EditorNode::_build_icon_type_cache() {
+
+	List<StringName> tl;
+	StringName ei = "EditorIcons";
+	theme_base->get_theme()->get_icon_list(ei, &tl);
+	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
+
+		if (!ClassDB::class_exists(E->get()))
+			continue;
+		icon_type_cache[E->get()] = theme_base->get_theme()->get_icon(E->get(), ei);
+	}
+}
+
 void EditorNode::_file_dialog_register(FileDialog *p_dialog) {
 
 	singleton->file_dialogs.insert(p_dialog);
@@ -5136,7 +5164,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(export_template_manager);
 
 	about = memnew(EditorAbout);
-	about->get_logo()->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
 	gui_base->add_child(about);
 
 	warning = memnew(AcceptDialog);
@@ -5802,17 +5829,7 @@ EditorNode::EditorNode() {
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_fs_changed");
 	EditorFileSystem::get_singleton()->connect("resources_reimported", this, "_resources_reimported");
 
-	{
-		List<StringName> tl;
-		StringName ei = "EditorIcons";
-		theme_base->get_theme()->get_icon_list(ei, &tl);
-		for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-
-			if (!ClassDB::class_exists(E->get()))
-				continue;
-			icon_type_cache[E->get()] = theme_base->get_theme()->get_icon(E->get(), ei);
-		}
-	}
+	_build_icon_type_cache();
 
 	Node::set_human_readable_collision_renaming(true);
 

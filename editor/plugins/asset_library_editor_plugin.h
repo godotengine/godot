@@ -194,6 +194,7 @@ class EditorAssetLibrary : public PanelContainer {
 	Button *search;
 	ProgressBar *load_status;
 	HBoxContainer *error_hb;
+	TextureRect *error_tr;
 	Label *error_label;
 	MenuButton *support;
 

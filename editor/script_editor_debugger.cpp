@@ -1160,6 +1160,16 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
 			} else
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
+
+			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			step->set_icon(get_icon("DebugStep", "EditorIcons"));
+			next->set_icon(get_icon("DebugNext", "EditorIcons"));
+			back->set_icon(get_icon("Back", "EditorIcons"));
+			forward->set_icon(get_icon("Forward", "EditorIcons"));
+			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
+			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
+			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+
 		} break;
 	}
 }
