@@ -1826,6 +1826,8 @@ bool TileSetEditorHelper::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (selected_tile < 0 || tileset.is_null())
 		return false;
+	if (!tileset->has_tile(selected_tile))
+		return false;
 
 	String name = p_name.operator String();
 	bool v = false;
@@ -1850,6 +1852,7 @@ void TileSetEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {
 TileSetEditorHelper::TileSetEditorHelper(TileSetEditor *p_tileset_editor) {
 
 	tileset_editor = p_tileset_editor;
+	selected_tile = -1;
 }
 
 void TileSetEditorPlugin::edit(Object *p_node) {
