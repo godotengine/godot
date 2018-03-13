@@ -1423,6 +1423,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect);
+	ClassDB::bind_method(D_METHOD("unselect_all"), &ItemList::unselect_all);
+
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_items"), &ItemList::get_selected_items);
 
