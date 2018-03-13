@@ -1316,6 +1316,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
 
+	// Update preview
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
 	call_deferred("emit_signal", "filesystem_changed"); //update later
 }
 
