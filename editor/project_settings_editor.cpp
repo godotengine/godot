@@ -160,11 +160,11 @@ void ProjectSettingsEditor::_action_edited() {
 		String new_name = ti->get_text(0);
 		String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
 
-	if (new_name.find("/") != -1 || new_name.find(":") != -1 || new_name.find("\"") != -1 || new_name == "") {
+	if (new_name == "" || !_validate_action_name(new_name)) {
 
 		if (new_name == "" || !_validate_action_name(new_name)) {
 
-		message->set_text(TTR("Invalid action (anything goes but '/', ':' or '\"')."));
+		message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
@@ -914,9 +914,9 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 		action_add->set_disabled(true);
 	} else {
 
-		if (p_action.find("/") != -1 || p_action.find(":") != -1 || p_action.find("\"") != -1) {
+		if (!_validate_action_name(p_action)) {
 
-			action_add_error->set_text(TTR("Can't contain '/', ':' or '\"'"));
+			action_add_error->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
