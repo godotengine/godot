@@ -813,7 +813,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 	while (r_len % 4) {
 		r_len++; //pad
 		if (buf) {
-			buf++;
+			*(buf++) = 0;
 		}
 	}
 }
