@@ -74,6 +74,13 @@ void TileMapEditor::_notification(int p_what) {
 
 			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 
+			PopupMenu *p = options->get_popup();
+			p->set_item_icon(p->get_item_index(OPTION_PAINTING), get_icon("Edit", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_PICK_TILE), get_icon("ColorPick", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_SELECT), get_icon("ToolSelect", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_DUPLICATE), get_icon("Duplicate", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
+
 		} break;
 	}
 }
@@ -1512,8 +1519,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	bucket_cache_tile = -1;
 	bucket_cache_visited = 0;
 
-	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase selection"), KEY_DELETE);
-	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find tile"), KEY_MASK_CMD + KEY_F);
+	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
+	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);
 	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"), KEY_T);
 	ED_SHORTCUT("tile_map_editor/mirror_x", TTR("Mirror X"), KEY_A);
 	ED_SHORTCUT("tile_map_editor/mirror_y", TTR("Mirror Y"), KEY_S);
