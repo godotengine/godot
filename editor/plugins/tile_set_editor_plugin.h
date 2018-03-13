@@ -91,6 +91,8 @@ class TileSetEditor : public Control {
 	Sprite *preview;
 	ScrollContainer *scroll;
 	Control *workspace_container;
+	bool draw_handles;
+	Control *workspace_overlay;
 	Control *workspace;
 	Button *tool_editmode[EDITMODE_MAX];
 	HBoxContainer *tool_containers[TOOLBAR_MAX];
@@ -160,6 +162,7 @@ public:
 private:
 	void _on_tile_list_selected(int p_index);
 	void _on_edit_mode_changed(int p_edit_mode);
+	void _on_workspace_overlay_draw();
 	void _on_workspace_draw();
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
 	void _on_tool_clicked(int p_tool);
