@@ -1411,6 +1411,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 	Node *n = p_node;
 	Node *newnode = p_by_node;
+	Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
 	List<PropertyInfo> pinfo;
 	n->get_property_list(&pinfo);
 
@@ -1419,8 +1420,11 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 			continue;
 		if (E->get().name == "__meta__")
 			continue;
-		newnode->set(E->get().name, n->get(E->get().name));
+		if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
+			newnode->set(E->get().name, n->get(E->get().name));
+		}
 	}
+	memdelete(default_oldnode);
 
 	editor->push_item(NULL);
 
