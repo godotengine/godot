@@ -496,7 +496,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (use_dmg()) {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 			Vector<SharedObject> shared_objects;
-			Error err = save_pack(p_preset, pack_path, &shared_objects);
+			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			// see if we can code sign our new package
 			String identity = p_preset->get("codesign/identity");
@@ -504,7 +504,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (err == OK) {
 				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				for (int i = 0; i < shared_objects.size(); i++) {
-					da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+					err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					if (err == OK && identity != "") {
 						err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					}
@@ -549,7 +549,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			String pack_path = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".pck");
 
 			Vector<SharedObject> shared_objects;
-			Error err = save_pack(p_preset, pack_path, &shared_objects);
+			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			if (err == OK) {
 				zipOpenNewFileInZip(dst_pkg_zip,
@@ -581,7 +581,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				} else {
 					err = ERR_CANT_OPEN;
 				}
+			}
 
+			if (err == OK) {
 				//add shared objects
 				for (int i = 0; i < shared_objects.size(); i++) {
 					Vector<uint8_t> file = FileAccess::get_file_as_array(shared_objects[i].path);
@@ -609,7 +611,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		zipClose(dst_pkg_zip, NULL);
 	}
 
-	return OK;
+	return err;
 }
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
