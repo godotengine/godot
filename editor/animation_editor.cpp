@@ -4021,6 +4021,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	//key_edit->ke_dialog=key_edit_dialog;
 
 	type_menu = memnew(PopupMenu);
+	type_menu->set_pass_on_modal_close_click(false);
 	add_child(type_menu);
 	for (int i = 0; i < Variant::VARIANT_MAX; i++)
 		type_menu->add_item(Variant::get_type_name(Variant::Type(i)), i);
@@ -4061,6 +4062,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	add_child(track_name);
 	track_name->connect("text_entered", this, "_track_name_changed");
 	track_menu = memnew(PopupMenu);
+	track_menu->set_pass_on_modal_close_click(false);
 	add_child(track_menu);
 	track_menu->connect("id_pressed", this, "_track_menu_selected");
 
