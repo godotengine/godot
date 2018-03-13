@@ -1269,9 +1269,10 @@ GridMapEditor::~GridMapEditor() {
 			VisualServer::get_singleton()->free(grid_instance[i]);
 		if (cursor_instance.is_valid())
 			VisualServer::get_singleton()->free(cursor_instance);
-		if (selection_level_instance[i].is_valid()) {
+		if (selection_level_instance[i].is_valid())
 			VisualServer::get_singleton()->free(selection_level_instance[i]);
-		}
+		if (selection_level_mesh[i].is_valid())
+			VisualServer::get_singleton()->free(selection_level_mesh[i]);
 	}
 
 	VisualServer::get_singleton()->free(selection_mesh);
