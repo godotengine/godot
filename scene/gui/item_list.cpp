@@ -295,35 +295,21 @@ int ItemList::get_current() const {
 	return current;
 }
 
-void ItemList::move_item(int p_item, int p_to_pos) {
+void ItemList::move_item(int p_from_idx, int p_to_idx) {
 
-	ERR_FAIL_INDEX(p_item, items.size());
-	ERR_FAIL_INDEX(p_to_pos, items.size() + 1);
+	ERR_FAIL_INDEX(p_from_idx, items.size());
+	ERR_FAIL_INDEX(p_to_idx, items.size());
 
-	Item it = items[p_item];
-	items.remove(p_item);
-
-	if (p_to_pos > p_item) {
-		p_to_pos--;
+	if (is_anything_selected() && get_selected_items()[0] == p_from_idx) {
+		current = p_to_idx;
 	}
 
-	if (p_to_pos >= items.size()) {
-		items.push_back(it);
-	} else {
-		items.insert(p_to_pos, it);
-	}
-
-	if (current < 0) {
-		//do none
-	} else if (p_item == current) {
-		current = p_to_pos;
-	} else if (p_to_pos > p_item && current > p_item && current < p_to_pos) {
-		current--;
-	} else if (p_to_pos < p_item && current < p_item && current > p_to_pos) {
-		current++;
-	}
+	Item item = items[p_from_idx];
+	items.remove(p_from_idx);
+	items.insert(p_to_idx, item);
 
 	update();
+	shape_changed = true;
 }
 
 int ItemList::get_item_count() const {
@@ -1427,6 +1413,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_items"), &ItemList::get_selected_items);
+
+	ClassDB::bind_method(D_METHOD("move_item", "p_from_idx", "p_to_idx"), &ItemList::move_item);
 
 	ClassDB::bind_method(D_METHOD("get_item_count"), &ItemList::get_item_count);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &ItemList::remove_item);
