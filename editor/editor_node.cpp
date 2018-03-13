@@ -188,6 +188,8 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo() && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
+		EditorPlugin *old_editor = editor_plugin_screen;
+
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
 			next_tab %= editor_data.get_edited_scene_count();
@@ -216,6 +218,10 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
+		}
+
+		if (old_editor != editor_plugin_screen) {
+			get_tree()->set_input_as_handled();
 		}
 	}
 }
