@@ -1010,6 +1010,7 @@ void AnimationPlayer::stop(bool p_reset) {
 	c.blend.clear();
 	if (p_reset) {
 		c.current.from = NULL;
+		c.current.speed_scale = 1;
 	}
 	_set_process(false);
 	queued.clear();

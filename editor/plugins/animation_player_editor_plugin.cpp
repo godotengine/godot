@@ -1011,6 +1011,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 
 		player->seek_delta(pos, pos - cpos);
 	} else {
+		player->stop(true);
 		player->seek(pos, true);
 	}
 
