@@ -4,8 +4,9 @@
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple rendering options.
 	</brief_description>
 	<description>
-		Resource for environment nodes (like [WorldEnvironment]) that define multiple environment operations (such as background [Sky] or [Color], ambient light, fog, depth-of-field...).	These parameters affect the final render of the scene. The order of these operations is:
- 		- DOF Blur
+		Resource for environment nodes (like [WorldEnvironment]) that define multiple environment operations (such as background [Sky] or [Color], ambient light, fog, depth-of-field...). These parameters affect the final render of the scene. The order of these operations is:
+ 		
+		- DOF Blur
 		- Motion Blur
 		- Bloom
 		- Tonemap (auto exposure)
@@ -13,7 +14,7 @@
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/3.0/tutorials/3d/environment_and_post_processing.html
-	http://docs.godotengine.org/en/3.0/tutorials/3d/high_dynamic_range.html
+		http://docs.godotengine.org/en/3.0/tutorials/3d/high_dynamic_range.html
 	</tutorials>
 	<demos>
 	</demos>
