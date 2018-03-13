@@ -349,7 +349,12 @@ void ScriptTextEditor::_convert_case(CaseStyle p_case) {
 		int end_col = te->get_selection_to_column();
 
 		for (int i = begin; i <= end; i++) {
-			String new_line = te->get_line(i);
+			int len = te->get_line(i).length();
+			if (i == end)
+				len -= len - end_col;
+			if (i == begin)
+				len -= begin_col;
+			String new_line = te->get_line(i).substr(i == begin ? begin_col : 0, len);
 
 			switch (p_case) {
 				case UPPER: {
@@ -364,10 +369,10 @@ void ScriptTextEditor::_convert_case(CaseStyle p_case) {
 			}
 
 			if (i == begin) {
-				new_line = te->get_line(i).left(begin_col) + new_line.right(begin_col);
+				new_line = te->get_line(i).left(begin_col) + new_line;
 			}
 			if (i == end) {
-				new_line = new_line.left(end_col) + te->get_line(i).right(end_col);
+				new_line = new_line + te->get_line(i).right(end_col);
 			}
 			te->set_line(i, new_line);
 		}
