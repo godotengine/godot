@@ -852,6 +852,7 @@ public:
 	void initialize();
 	void finalize();
 	RasterizerSceneGLES3();
+	~RasterizerSceneGLES3();
 };
 
 #endif // RASTERIZERSCENEGLES3_H

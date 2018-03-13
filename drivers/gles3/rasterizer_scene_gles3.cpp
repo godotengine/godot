@@ -5118,3 +5118,23 @@ void RasterizerSceneGLES3::finalize() {
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
+
+RasterizerSceneGLES3::~RasterizerSceneGLES3() {
+
+	memdelete(default_material.get_data());
+	memdelete(default_material_twosided.get_data());
+	memdelete(default_shader.get_data());
+	memdelete(default_shader_twosided.get_data());
+
+	memdelete(default_worldcoord_material.get_data());
+	memdelete(default_worldcoord_material_twosided.get_data());
+	memdelete(default_worldcoord_shader.get_data());
+	memdelete(default_worldcoord_shader_twosided.get_data());
+
+	memdelete(default_overdraw_material.get_data());
+	memdelete(default_overdraw_shader.get_data());
+
+	memfree(state.spot_array_tmp);
+	memfree(state.omni_array_tmp);
+	memfree(state.reflection_array_tmp);
+}
