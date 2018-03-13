@@ -88,6 +88,7 @@ void EditorLog::_notification(int p_what) {
 void EditorLog::_clear_request() {
 
 	log->clear();
+	tool_button->set_icon(Ref<Texture>());
 }
 
 void EditorLog::clear() {
@@ -103,9 +104,7 @@ void EditorLog::add_message(const String &p_msg, bool p_error) {
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
 		log->add_image(icon);
 		log->add_text(" ");
-		//button->set_icon(icon);
-	} else {
-		//button->set_icon(Ref<Texture>());
+		tool_button->set_icon(icon);
 	}
 
 	log->add_text(p_msg);
@@ -113,6 +112,10 @@ void EditorLog::add_message(const String &p_msg, bool p_error) {
 
 	if (p_error)
 		log->pop();
+}
+
+void EditorLog::set_tool_button(ToolButton *p_tool_button) {
+	tool_button = p_tool_button;
 }
 
 /*
