@@ -227,6 +227,10 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 				_bottom_panel_switch(false, i);
 			}
 		}
+
+		if (old_editor != editor_plugin_screen) {
+			get_tree()->set_input_as_handled();
+		}
 	}
 }
 
