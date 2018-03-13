@@ -103,9 +103,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Custom font */
 
 	String custom_font = EditorSettings::get_singleton()->get("interface/editor/main_font");
+	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/main_font_hinting");
 	Ref<DynamicFontData> CustomFont;
 	if (custom_font.length() > 0) {
 		CustomFont.instance();
+		CustomFont->set_hinting(font_hinting);
 		CustomFont->set_font_path(custom_font);
 		CustomFont->set_force_autohinter(true); //just looks better..i think?
 	}
@@ -113,9 +115,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Custom source code font */
 
 	String custom_font_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
+	DynamicFontData::Hinting font_source_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/code_font_hinting");
 	Ref<DynamicFontData> CustomFontSource;
 	if (custom_font_source.length() > 0) {
 		CustomFontSource.instance();
+		CustomFontSource->set_hinting(font_source_hinting);
 		CustomFontSource->set_font_path(custom_font_source);
 	}
 
@@ -123,38 +127,45 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFontData> DefaultFont;
 	DefaultFont.instance();
+	DefaultFont->set_hinting(font_hinting);
 	DefaultFont->set_font_ptr(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size);
 	DefaultFont->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontFallback;
 	FontFallback.instance();
+	FontFallback->set_hinting(font_hinting);
 	FontFallback->set_font_ptr(_font_DroidSansFallback, _font_DroidSansFallback_size);
 	FontFallback->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontJapanese;
 	FontJapanese.instance();
+	FontJapanese->set_hinting(font_hinting);
 	FontJapanese->set_font_ptr(_font_DroidSansJapanese, _font_DroidSansJapanese_size);
 	FontJapanese->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontArabic;
 	FontArabic.instance();
+	FontArabic->set_hinting(font_hinting);
 	FontArabic->set_font_ptr(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
 	FontArabic->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontHebrew;
 	FontHebrew.instance();
+	FontHebrew->set_hinting(font_hinting);
 	FontHebrew->set_font_ptr(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size);
 	FontHebrew->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontThai;
 	FontThai.instance();
+	FontThai->set_hinting(font_hinting);
 	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
 	FontThai->set_force_autohinter(true); //just looks better..i think?
 
-	/* Source Code Pro */
+	/* Hack */
 
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
+	dfmono->set_hinting(font_source_hinting);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 

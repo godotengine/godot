@@ -80,6 +80,14 @@ void DynamicFontData::set_force_autohinter(bool p_force) {
 void DynamicFontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_path", "path"), &DynamicFontData::set_font_path);
 	ClassDB::bind_method(D_METHOD("get_font_path"), &DynamicFontData::get_font_path);
+	ClassDB::bind_method(D_METHOD("set_hinting", "mode"), &DynamicFontData::set_hinting);
+	ClassDB::bind_method(D_METHOD("get_hinting"), &DynamicFontData::get_hinting);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
+
+	BIND_ENUM_CONSTANT(HINTING_NONE);
+	BIND_ENUM_CONSTANT(HINTING_LIGHT);
+	BIND_ENUM_CONSTANT(HINTING_NORMAL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf"), "set_font_path", "get_font_path");
 }
@@ -87,6 +95,7 @@ void DynamicFontData::_bind_methods() {
 DynamicFontData::DynamicFontData() {
 
 	force_autohinter = false;
+	hinting = DynamicFontData::HINTING_NORMAL;
 	font_mem = NULL;
 	font_mem_size = 0;
 }
@@ -211,8 +220,6 @@ Error DynamicFontAtSize::_load() {
 		texture_flags |= Texture::FLAG_MIPMAPS;
 	if (id.filter)
 		texture_flags |= Texture::FLAG_FILTER;
-
-	//print_line("ASCENT: "+itos(ascent)+" descent "+itos(descent)+" hinted: "+itos(face->face_flags&FT_FACE_FLAG_HINTER));
 
 	valid = true;
 	return OK;
@@ -454,15 +461,28 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		char_map[p_char] = ch;
 		return;
 	}
-	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+
+	int ft_hinting;
+
+	switch (font->hinting) {
+		case DynamicFontData::HINTING_NONE:
+			ft_hinting = FT_LOAD_NO_HINTING;
+			break;
+		case DynamicFontData::HINTING_LIGHT:
+			ft_hinting = FT_LOAD_TARGET_LIGHT;
+			break;
+		default:
+			ft_hinting = FT_LOAD_TARGET_NORMAL;
+			break;
+	}
+
+	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0) | ft_hinting);
 	if (!error) {
 		error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
 	}
 	if (error) {
 
 		int advance = 0;
-		//stbtt_GetCodepointHMetrics(&font->info, p_char, &advance, 0);
-		//print_line("char has no bitmap: "+itos(p_char)+" but advance is "+itos(advance*scale));
 		Character ch;
 		ch.texture_idx = -1;
 		ch.advance = advance;
@@ -477,7 +497,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 	int w = slot->bitmap.width;
 	int h = slot->bitmap.rows;
-	//int p = slot->bitmap.pitch;
 	int yofs = slot->bitmap_top;
 	int xofs = slot->bitmap_left;
 	int advance = slot->advance.x >> 6;
@@ -535,8 +554,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		tex_index = i;
 		break;
 	}
-
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
 
 	if (tex_index == -1) {
 		//could not find texture to fit, create one
@@ -644,8 +661,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	chr.rect = chr.rect_uv;
 	chr.rect.position /= oversampling;
 	chr.rect.size /= oversampling;
-
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" RECT: "+chr.rect+" X OFS: "+itos(xofs)+" Y OFS: "+itos(yofs));
 
 	char_map[p_char] = chr;
 }
@@ -756,6 +771,18 @@ void DynamicFont::set_use_filter(bool p_enable) {
 		return;
 	cache_id.filter = p_enable;
 	_reload_cache();
+}
+
+DynamicFontData::Hinting DynamicFontData::get_hinting() const {
+
+	return hinting;
+}
+
+void DynamicFontData::set_hinting(Hinting p_hinting) {
+
+	if (hinting == p_hinting)
+		return;
+	hinting = p_hinting;
 }
 
 int DynamicFont::get_spacing(int p_type) const {
