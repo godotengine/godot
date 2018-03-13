@@ -231,6 +231,10 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
 		}
+
+		if (old_editor != editor_plugin_screen) {
+			get_tree()->set_input_as_handled();
+		}
 	}
 }
 
