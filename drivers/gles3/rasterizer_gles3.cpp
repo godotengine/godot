@@ -413,4 +413,5 @@ RasterizerGLES3::~RasterizerGLES3() {
 
 	memdelete(storage);
 	memdelete(canvas);
+	memdelete(scene);
 }

@@ -205,4 +205,5 @@ VisualServerRaster::~VisualServerRaster() {
 	memdelete(VSG::canvas);
 	memdelete(VSG::viewport);
 	memdelete(VSG::rasterizer);
+	memdelete(VSG::scene);
 }

@@ -3333,6 +3333,7 @@ VisualServerScene::~VisualServerScene() {
 
 #ifndef NO_THREADS
 	probe_bake_thread_exit = true;
+	probe_bake_sem->post();
 	Thread::wait_to_finish(probe_bake_thread);
 	memdelete(probe_bake_thread);
 	memdelete(probe_bake_sem);
