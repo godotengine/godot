@@ -37,6 +37,17 @@ bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = NULL;
 
+Dictionary Script::get_script_metadata() {
+	if (has_method("_get_script_metadata")) {
+		Variant::CallError ce;
+		Variant ret = call("_get_script_metadata", NULL, 0, ce);
+		if (ce.error = Variant::CallError::CALL_OK) {
+			return (Dictionary)ret;
+		}
+	}
+	return Dictionary();
+}
+
 void Script::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
@@ -61,6 +72,8 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_get_script_metadata"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", 0), "set_source_code", "get_source_code");
 }

@@ -590,6 +590,23 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	return lowercase ? new_string.to_lower() : new_string;
 }
 
+String String::typenamify() const {
+	String name = get_file().get_basename().strip_edges();
+	String result;
+
+	for (int i = 0; i < name.length() && name[i] == '_'; i++) {
+		result += '_';
+	}
+
+	result += name.capitalize().replace("_", "").replace(" ", "");
+
+	for (int i = name.length() - 1; i > 0 && name[i] == '_'; i++) {
+		result += '_';
+	}
+
+	return result;
+}
+
 int String::get_slice_count(String p_splitter) const {
 
 	if (empty())

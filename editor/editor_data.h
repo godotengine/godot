@@ -35,6 +35,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "list.h"
 #include "pair.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
 
@@ -108,11 +109,84 @@ class EditorSelection;
 class EditorData {
 
 public:
-	struct CustomType {
+	enum TypeDbTypes {
+		TYPEDB_TYPE_NONE = 0,
+		TYPEDB_TYPE_SCRIPT = 1,
+		TYPEDB_TYPE_SCENE = 2,
+		TYPEDB_TYPE_ALL = 3
+	};
 
-		String name;
-		Ref<Script> script;
+	struct TypeInfo {
+
+		StringName type_name;
+		StringName inherits;
+		StringName base;
+
+		String path;
+
+		bool is_abstract : 1;
+		bool is_custom : 1;
+		bool disabled : 1;
+		TypeDbTypes type : 2;
+
 		Ref<Texture> icon;
+		Vector<StringName> sub_types;
+
+		StringName get_name() const { return String(type_name).get_file(); }
+		StringName get_domain() const { return String(type_name).get_base_dir(); }
+		StringName get_inherits_name() const { return String(inherits).get_file(); }
+		StringName get_inherits_domain() const { return String(inherits).get_base_dir(); }
+		bool is_path_valid() const {
+			return FileAccess::open(path, FileAccess::READ);
+		}
+	};
+
+	class TypeDB {
+	private:
+		typedef HashMap<StringName, TypeInfo, StringNameHasher> TypeMap;
+		typedef HashMap<StringName, TypeInfo *, StringNameHasher> PtrTypeMap;
+		typedef HashMap<StringName, Vector<TypeInfo>, StringNameHasher> DependencyMap;
+
+		TypeMap _scripts;
+		TypeMap _scenes;
+		DependencyMap _script_deps;
+		DependencyMap _scene_deps;
+		PtrTypeMap _paths;
+		bool _globals_dirty = false;
+
+		void _add_type(const StringName &p_type, const StringName &p_inherits, const String &p_path, const Ref<Texture> &p_icon = NULL, bool p_is_abstract = false, bool p_is_custom = false, TypeDbTypes p_db_type = TYPEDB_TYPE_SCRIPT);
+		void _check_for_deps(const StringName &p_type, TypeDbTypes p_db_type = TYPEDB_TYPE_SCRIPT);
+		void _register_type_info(TypeInfo &p_ti, TypeDbTypes p_db_type = TYPEDB_TYPE_SCRIPT);
+
+	public:
+		//replicated ClassDB interface
+		bool class_exists(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_ALL) const;
+		StringName get_parent_class(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_ALL) const;
+		bool is_parent_class(const StringName &p_type, const StringName &p_inherits, TypeDbTypes p_db_types = TYPEDB_TYPE_ALL) const;
+		void get_class_list(List<StringName> *p_types, TypeDbTypes p_db_types = TYPEDB_TYPE_ALL) const;
+		bool can_instance(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_ALL) const;
+		Object *instance(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_SCRIPT);
+
+		bool is_custom(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_SCRIPT) const;
+		bool is_custom_path(const String &p_path, TypeDbTypes p_db_types = TYPEDB_TYPE_SCRIPT) const;
+		StringName get_type_name(const String &p_path, TypeDbTypes p_db_types) const;
+
+		void add_script(const StringName &p_type, const StringName &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon = NULL, bool p_is_abstract = false, bool p_is_custom = false);
+		void add_scene(const StringName &p_type, const StringName &p_inherits, const Ref<PackedScene> &p_scene, const Ref<Texture> &p_icon = NULL, bool p_is_abstract = false, bool p_is_custom = false);
+		void remove_custom_type(const StringName &p_type, TypeDbTypes p_db_types = TYPEDB_TYPE_SCRIPT);
+		const TypeInfo *get_type_info(const StringName &p_type, TypeDbTypes p_db_types) const;
+		void toggle_namespace(const String &p_namespace, bool p_active);
+		void toggle_directory(const String &p_directory, bool p_active);
+
+		bool has_path(const String &p_path) const { return _paths.has(p_path); }
+		TypeInfo &get_path(const String &p_path) { return *_paths[p_path]; }
+
+		void update_res(const String &p_path);
+		void update_globals();
+		String get_script_create_dialog_inherits_field(const EditorData::TypeInfo &p_ti) const;
+
+		TypeDB();
+		~TypeDB();
 	};
 
 	struct EditedScene {
@@ -129,12 +203,13 @@ public:
 private:
 	Vector<EditorPlugin *> editor_plugins;
 
+	TypeDB type_db;
+
 	struct PropertyData {
 
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType> > custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
@@ -174,10 +249,7 @@ public:
 	void save_editor_global_states();
 	void restore_editor_global_states();
 
-	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
-	Object *instance_custom_type(const String &p_type, const String &p_inherits);
-	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	TypeDB &get_type_db() { return type_db; }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);

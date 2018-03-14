@@ -77,6 +77,12 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 
 	String path_chars = "\"res://";
 	bool is_val_path = ScriptServer::get_language(language_menu->get_selected())->can_inherit_from_file();
+
+	EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
+	int type_name_pos = p_string.find(".", 0);
+	String type_name = (type_name_pos != String::npos) ? p_string.substr(type_name_pos + 1, p_string.length() - type_name_pos) : p_string;
+	bool is_type = tdb.class_exists(type_name);
+
 	for (int i = 0; i < p_string.length(); i++) {
 
 		if (i == 0) {
@@ -84,17 +90,17 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 				return false; // no start with number plz
 		}
 
-		if (i == p_string.length() - 1 && is_val_path)
+		if (i == p_string.length() - 1 && is_val_path && !is_type)
 			return p_string[i] == '\"';
 
-		if (is_val_path && i < path_chars.length()) {
+		if (is_val_path && !is_type && i < path_chars.length()) {
 			if (p_string[i] != path_chars[i])
 				is_val_path = false;
 			else
 				continue;
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '-' || (is_val_path && (p_string[i] == '/' || p_string[i] == '.'));
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '-' || (is_val_path && p_string[i] == '.');
 
 		if (!valid_char)
 			return false;
@@ -160,6 +166,8 @@ void ScriptCreateDialog::_create_new() {
 	}
 
 	Ref<Script> scr;
+	bool is_type = EditorNode::get_singleton()->get_editor_data().get_type_db().class_exists(parent_name->get_text());
+	String parent_text = parent_name->get_text();
 	if (script_template != "") {
 		scr = ResourceLoader::load(script_template);
 		if (scr.is_null()) {
@@ -169,9 +177,9 @@ void ScriptCreateDialog::_create_new() {
 			return;
 		}
 		scr = scr->duplicate();
-		ScriptServer::get_language(language_menu->get_selected())->make_template(cname_param, parent_name->get_text(), scr);
+		ScriptServer::get_language(language_menu->get_selected())->make_template(cname_param, parent_text, scr);
 	} else {
-		scr = ScriptServer::get_language(language_menu->get_selected())->get_template(cname_param, parent_name->get_text());
+		scr = ScriptServer::get_language(language_menu->get_selected())->get_template(cname_param, parent_text);
 	}
 
 	if (has_named_classes) {

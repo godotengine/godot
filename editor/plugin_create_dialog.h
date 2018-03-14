@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_plugin_settings.h                                             */
+/*  plugin_create_dialog.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPLUGINSETTINGS_H
-#define EDITORPLUGINSETTINGS_H
+#ifndef PLUGIN_CREATE_DIALOG_H
+#define PLUGIN_CREATE_DIALOG_H
 
-#include "editor/plugin_create_dialog.h";
-#include "editor_data.h"
-#include "property_editor.h"
-#include "scene/gui/dialogs.h"
-#include "undo_redo.h"
+#include "../scene/gui/check_box.h"
+#include "../scene/gui/dialogs.h"
+#include "../scene/gui/line_edit.h"
+#include "../scene/gui/option_button.h"
+#include "../scene/gui/text_edit.h"
 
-class EditorPluginSettings : public VBoxContainer {
+class PluginCreateDialog : public ConfirmationDialog {
 
-	GDCLASS(EditorPluginSettings, VBoxContainer);
+	GDCLASS(PluginCreateDialog, ConfirmationDialog);
 
-	enum {
-		BUTTON_PLUGIN_EDIT
-	};
+	LineEdit *name_edit;
+	LineEdit *subfolder_edit;
+	TextEdit *desc_edit;
+	LineEdit *author_edit;
+	LineEdit *version_edit;
+	OptionButton *script_option_edit;
+	LineEdit *script_edit;
+	CheckBox *active_edit;
 
-	PluginCreateDialog *plugin_create_dialog;
-	Button *create_plugin;
-	Button *update_list;
-	Tree *plugin_list;
-	bool updating;
+	bool _edit_mode;
 
-	void _plugin_activity_changed();
-	void _create_clicked();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _clear_fields();
+	void _on_confirmed();
+	void _on_cancelled();
+	void _on_required_text_changed(const String &p_text);
 
 protected:
-	void _notification(int p_what);
-
+	virtual void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void update_plugins();
+	void config(const String &p_plugin_dir_name);
 
-	EditorPluginSettings();
+	PluginCreateDialog();
+	~PluginCreateDialog();
 };
 
-#endif // EDITORPLUGINSETTINGS_H
+#endif

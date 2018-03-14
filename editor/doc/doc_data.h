@@ -35,6 +35,8 @@
 #include "map.h"
 #include "variant.h"
 
+class Script;
+
 class DocData {
 public:
 	struct ArgumentDoc {
@@ -103,6 +105,7 @@ public:
 	void merge_from(const DocData &p_data);
 	void remove_from(const DocData &p_data);
 	void generate(bool p_basic_types = false);
+	static String get_script_xml(Ref<Script> &p_script);
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);
 	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);

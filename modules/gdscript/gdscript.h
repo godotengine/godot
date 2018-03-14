@@ -58,6 +58,7 @@ class GDScript : public Script {
 	GDCLASS(GDScript, Script);
 	bool tool;
 	bool valid;
+	bool instanceable;
 
 	struct MemberInfo {
 		int index;
@@ -186,7 +187,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual MethodInfo get_method_info(const StringName &p_method) const;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited = false) const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -201,6 +202,8 @@ public:
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
 	virtual void get_members(Set<StringName> *p_members);
+
+	virtual Dictionary get_script_metadata();
 
 	GDScript();
 	~GDScript();

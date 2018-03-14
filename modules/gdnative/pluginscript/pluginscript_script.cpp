@@ -279,7 +279,7 @@ void PluginScript::get_script_method_list(List<MethodInfo> *r_methods) const {
 	}
 }
 
-void PluginScript::get_script_property_list(List<PropertyInfo> *r_properties) const {
+void PluginScript::get_script_property_list(List<PropertyInfo> *r_properties, bool p_no_inherited) const {
 	ASSERT_SCRIPT_VALID();
 	for (Map<StringName, PropertyInfo>::Element *e = _properties_info.front(); e != NULL; e = e->next()) {
 		r_properties->push_back(e->get());
