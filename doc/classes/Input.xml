@@ -7,6 +7,7 @@
 		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/3.0/tutorials/inputs/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -44,7 +45,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				If the device has an accelerometer, this will return the movement.
+				If the device has an accelerometer, this will return the acceleration. Otherwise, it returns an empty [Vector3].
 			</description>
 		</method>
 		<method name="get_connected_joypads">
@@ -58,13 +59,14 @@
 			<return type="Vector3">
 			</return>
 			<description>
+				If the device has an accelerometer, this will return the gravity. Otherwise, it returns an empty [Vector3].
 			</description>
 		</method>
 		<method name="get_gyroscope" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
-				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis.
+				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis. Otherwise, it returns an empty [Vector3].
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -259,6 +261,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code.
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -334,7 +337,7 @@
 			<argument index="1" name="connected" type="bool">
 			</argument>
 			<description>
-				Emitted when a joypad device has been connected or disconnected
+				Emitted when a joypad device has been connected or disconnected.
 			</description>
 		</signal>
 	</signals>
@@ -349,40 +352,58 @@
 			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
+			Makes the mouse cursor visible but confines it to the game window.
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
+			Arrow cursor. Standard, default pointing cursor.
 		</constant>
 		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
+			I-beam cursor. Usually used to show where the text cursor will appear when the mouse is clicked.
 		</constant>
 		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
+			Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
+			Cross cursor. Typically appears over regions in which a drawing operation can be performance or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
+			Wait cursor. Indicates that the application is busy performing an operation.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
+			Busy cursor. See [code]CURSOR_WAIT[/code].
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
+			Drag cursor. Usually displayed when dragging something.
 		</constant>
 		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
+			Can drop cursor. Usually displayed when dragging something to indicate that it can be dropped at the current position.
 		</constant>
 		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
+			Forbidden cursor. Indicates that the current action is forbidden (for example, when dragging something) or that the control at a position is disabled.
 		</constant>
 		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
+			Vertical resize mouse cursor. A double headed vertical arrow. It tells the user they can resize the window or the panel vertically.
 		</constant>
 		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
+			Horizontal resize mouse cursor. A double headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
 		</constant>
 		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
+			Window resize mouse cursor. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
+			Window resize mouse cursor. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
+			Move cursor. Indicates that something can be moved.
 		</constant>
 		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
+			Vertical split mouse cursor. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
 		</constant>
 		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
+			Horizontal split mouse cursor. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
+			Help cursor. Usually a question mark.
 		</constant>
 	</constants>
 </class>
