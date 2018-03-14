@@ -1570,8 +1570,8 @@ bool Main::start() {
 #endif
 		}
 
-		if (!project_manager && !editor) { // game
-			if (game_path != "" || script != "") {
+		if (!project_manager) {
+			if (game_path != "" || script != "" || editor) {
 				//autoload
 				List<PropertyInfo> props;
 				ProjectSettings::get_singleton()->get_property_list(&props);
@@ -1614,6 +1614,18 @@ bool Main::start() {
 					RES res = ResourceLoader::load(path);
 					ERR_EXPLAIN("Can't autoload: " + path);
 					ERR_CONTINUE(res.is_null());
+
+					if (editor) {
+						bool ok = false;
+						if (res->is_class("Script")) {
+							Ref<Script> script = res;
+							ok = script->is_tool();
+						}
+						if (!ok) {
+							continue;
+						}
+					}
+
 					Node *n = NULL;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
@@ -1639,7 +1651,9 @@ bool Main::start() {
 					n->set_name(name);
 
 					//defer so references are all valid on _ready()
-					to_add.push_back(n);
+					if (!editor) {
+						to_add.push_back(n);
+					}
 
 					if (global_var) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -1654,7 +1668,7 @@ bool Main::start() {
 				}
 			}
 
-			if (game_path != "") {
+			if (game_path != "" && !editor) {
 				Node *scene = NULL;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
