@@ -333,7 +333,7 @@ class GDScriptFunctionState : public Reference {
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Ref<GDScriptFunctionState> first_state;
+	Ref<GDScriptFunctionState> previous_state;
 
 protected:
 	static void _bind_methods();
