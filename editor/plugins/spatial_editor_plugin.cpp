@@ -1907,8 +1907,13 @@ void SpatialEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, con
 
 	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y-axis");
 
-	cursor.x_rot += p_relative.y * radians_per_pixel;
+	if (invert_y_axis) {
+		cursor.x_rot -= p_relative.y * radians_per_pixel;
+	} else {
+		cursor.x_rot += p_relative.y * radians_per_pixel;
+	}
 	cursor.y_rot += p_relative.x * radians_per_pixel;
 	if (cursor.x_rot > Math_PI / 2.0)
 		cursor.x_rot = Math_PI / 2.0;
@@ -1925,11 +1930,16 @@ void SpatialEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, cons
 	if (!orthogonal) {
 		real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 		real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+		bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y-axis");
 
 		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
 		Transform prev_camera_transform = to_camera_transform(cursor);
 
-		cursor.x_rot += p_relative.y * radians_per_pixel;
+		if (invert_y_axis) {
+			cursor.x_rot -= p_relative.y * radians_per_pixel;
+		} else {
+			cursor.x_rot += p_relative.y * radians_per_pixel;
+		}
 		cursor.y_rot += p_relative.x * radians_per_pixel;
 		if (cursor.x_rot > Math_PI / 2.0)
 			cursor.x_rot = Math_PI / 2.0;
