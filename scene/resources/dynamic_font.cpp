@@ -308,6 +308,9 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 			ret.x += (delta.x >> 6) / oversampling;
 		}
 	}
+
+	// ensures oversampled glyphs will have enough space when this value is used by clipping/wrapping algorithms
+	ret.x = Math::ceil(ret.x);
 	return ret;
 }
 
