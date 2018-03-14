@@ -89,7 +89,9 @@ BulletPhysicsServer::BulletPhysicsServer() :
 		active(true),
 		active_spaces_count(0) {}
 
-BulletPhysicsServer::~BulletPhysicsServer() {}
+BulletPhysicsServer::~BulletPhysicsServer() {
+	bulletdelete(emptyShape);
+}
 
 RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 	ShapeBullet *shape = NULL;
