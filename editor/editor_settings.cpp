@@ -963,11 +963,8 @@ void EditorSettings::save() {
 	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
 
 	if (err != OK) {
-		ERR_PRINT("Can't Save!");
-		return;
-	}
-
-	if (OS::get_singleton()->is_stdout_verbose()) {
+		ERR_PRINTS("Error saving editor settings to " + singleton->config_file_path);
+	} else if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("EditorSettings Save OK!");
 	}
 }
