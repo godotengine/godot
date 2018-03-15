@@ -332,6 +332,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 			break;
 	}
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
 	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	int mask = os->input->get_mouse_button_mask();

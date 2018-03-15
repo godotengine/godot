@@ -296,21 +296,13 @@
 		try {
 			var testCanvas = document.createElement('canvas');
 			if (majorVersion === 1) {
-				testContext = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+				testContext = testCanvas.getContext('webgl') || testCanvas.getContet('experimental-webgl');
 			} else if (majorVersion === 2) {
-				testContext = testCanvas.getContext('webgl2') || testCanvas.getContext('experimental-webgl2');
+				testContext = testCanvas.getContext('webgl2') || testCanvas.getContet('experimental-webgl2');
 			}
 		} catch (e) {}
 		return !!testContext;
 	};
-
-	Engine.setWebAssemblyFilenameExtension = function(override) {
-
-		if (String(override).length === 0) {
-			throw new Error('Invalid WebAssembly filename extension override');
-		}
-		wasmFilenameExtensionOverride = String(override);
-	}
 
 	Engine.load = function(newBasePath) {
 
