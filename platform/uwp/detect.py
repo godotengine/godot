@@ -25,10 +25,11 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import BoolVariable
 
     return [
         ('msvc_version', 'MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.', None),
-        (BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False)),
+        BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False),
     ]
 
 
