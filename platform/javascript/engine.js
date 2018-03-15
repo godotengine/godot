@@ -138,18 +138,6 @@
 			}
 
 			var actualCanvas = this.rtenv.canvas;
-			var testContext = false;
-			var testCanvas;
-			try {
-				testCanvas = document.createElement('canvas');
-				testContext = testCanvas.getContext('webgl2') || testCanvas.getContext('experimental-webgl2');
-			} catch (e) {}
-			if (!testContext) {
-				throw new Error("WebGL 2 not available");
-			}
-			testCanvas = null;
-			testContext = null;
-
 			// canvas can grab focus on click
 			if (actualCanvas.tabIndex < 0) {
 				actualCanvas.tabIndex = 0;
@@ -272,6 +260,20 @@
 	}; // Engine()
 
 	Engine.RuntimeEnvironment = engine.RuntimeEnvironment;
+
+	Engine.isWebGLAvailable = function(majorVersion = 1) {
+
+		var testContext = false;
+		try {
+			var testCanvas = document.createElement('canvas');
+			if (majorVersion === 1) {
+				testContext = testCanvas.getContext('webgl') || testCanvas.getContet('experimental-webgl');
+			} else if (majorVersion === 2) {
+				testContext = testCanvas.getContext('webgl2') || testCanvas.getContet('experimental-webgl2');
+			}
+		} catch (e) {}
+		return !!testContext;
+	};
 
 	Engine.load = function(newBasePath) {
 
