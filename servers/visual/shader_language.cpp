@@ -3702,26 +3702,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					//todo parse default value
 
 					tk = _get_token();
-					if (tk.type == TK_OP_ASSIGN) {
-
-						Node *expr = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
-						if (!expr)
-							return ERR_PARSE_ERROR;
-						if (expr->type != Node::TYPE_CONSTANT) {
-							_set_error("Expected constant expression after '='");
-							return ERR_PARSE_ERROR;
-						}
-
-						ConstantNode *cn = static_cast<ConstantNode *>(expr);
-
-						uniform.default_value.resize(cn->values.size());
-
-						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
-							_set_error("Can't convert constant to " + get_datatype_name(uniform.type));
-							return ERR_PARSE_ERROR;
-						}
-						tk = _get_token();
-					}
 
 					if (tk.type == TK_COLON) {
 						//hint
@@ -3834,6 +3814,27 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							return ERR_PARSE_ERROR;
 						}
 
+						tk = _get_token();
+					}
+
+					if (tk.type == TK_OP_ASSIGN) {
+
+						Node *expr = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
+						if (!expr)
+							return ERR_PARSE_ERROR;
+						if (expr->type != Node::TYPE_CONSTANT) {
+							_set_error("Expected constant expression after '='");
+							return ERR_PARSE_ERROR;
+						}
+
+						ConstantNode *cn = static_cast<ConstantNode *>(expr);
+
+						uniform.default_value.resize(cn->values.size());
+
+						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
+							_set_error("Can't convert constant to " + get_datatype_name(uniform.type));
+							return ERR_PARSE_ERROR;
+						}
 						tk = _get_token();
 					}
 
