@@ -320,8 +320,9 @@ def configure(env):
 
     print("Configuring for Windows: target=%s, bits=%s" % (env['target'], env['bits']))
 
-    env['ENV'] = os.environ # this makes build less repeatable, but simplifies some things
-    env['ENV']['TMP'] = os.environ['TMP']
+    if (os.name == "nt"):
+        env['ENV'] = os.environ # this makes build less repeatable, but simplifies some things
+        env['ENV']['TMP'] = os.environ['TMP']
 
     # First figure out which compiler, version, and target arch we're using
     if os.getenv("VCINSTALLDIR"):
