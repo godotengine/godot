@@ -855,8 +855,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-				v_scroll->set_value(v_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
-				_update_scroll(0);
+				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
+				_update_scrollbars();
 				viewport->update();
 			} else {
 				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), b->get_position());
@@ -867,8 +867,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_WHEEL_UP) {
 			// Scroll or pan up
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-				v_scroll->set_value(v_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
-				_update_scroll(0);
+				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
+				_update_scrollbars();
 				viewport->update();
 			} else {
 				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), b->get_position());
@@ -879,7 +879,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_WHEEL_LEFT) {
 			// Pan left
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-				h_scroll->set_value(h_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+				view_offset.x -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
+				_update_scrollbars();
+				viewport->update();
 				return true;
 			}
 		}
@@ -887,7 +889,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_WHEEL_RIGHT) {
 			// Pan right
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-				h_scroll->set_value(h_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+				view_offset.x += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
+				_update_scrollbars();
+				viewport->update();
 				return true;
 			}
 		}
@@ -907,9 +911,10 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 				} else {
 					relative = m->get_relative();
 				}
-
-				h_scroll->set_value(h_scroll->get_value() - relative.x / zoom);
-				v_scroll->set_value(v_scroll->get_value() - relative.y / zoom);
+				view_offset.x -= relative.x / zoom;
+				view_offset.y -= relative.y / zoom;
+				_update_scrollbars();
+				viewport->update();
 				return true;
 			}
 		}
@@ -926,8 +931,10 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 	if (pan_gesture.is_valid()) {
 		// Pan gesture
 		const Vector2 delta = (int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom) * pan_gesture->get_delta();
-		h_scroll->set_value(h_scroll->get_value() + delta.x);
-		v_scroll->set_value(v_scroll->get_value() + delta.y);
+		view_offset.x += delta.x;
+		view_offset.y += delta.y;
+		_update_scrollbars();
+		viewport->update();
 		return true;
 	}
 
@@ -2552,6 +2559,11 @@ void CanvasItemEditor::_build_bones_list(Node *p_node) {
 }
 
 void CanvasItemEditor::_draw_viewport() {
+	// Update the transform
+	transform = Transform2D();
+	transform.scale_basis(Size2(zoom, zoom));
+	transform.elements[2] = -view_offset * zoom;
+	editor->get_scene_root()->set_global_canvas_transform(transform);
 
 	// hide/show buttons depending on the selection
 	bool all_locked = true;
@@ -2581,8 +2593,6 @@ void CanvasItemEditor::_draw_viewport() {
 	group_button->set_visible(!all_group);
 	group_button->set_disabled(selection.empty());
 	ungroup_button->set_visible(all_group);
-
-	_update_scrollbars();
 
 	_draw_grid();
 	_draw_selection();
@@ -2784,17 +2794,18 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	// Clear the selection
 	editor_selection->clear(); //_clear_canvas_items();
 	editor_selection->add_node(p_canvas_item);
-	viewport->update();
 }
 
 void CanvasItemEditor::_update_scrollbars() {
 
 	updating_scroll = true;
 
+	// Move the zoom buttons
 	Point2 zoom_hb_begin = Point2(5, 5);
 	zoom_hb_begin += (show_rulers) ? Point2(RULER_WIDTH, RULER_WIDTH) : Point2();
 	zoom_hb->set_begin(zoom_hb_begin);
 
+	// Move and resize the scrollbars
 	Size2 size = viewport->get_size();
 	Size2 hmin = h_scroll->get_minimum_size();
 	Size2 vmin = v_scroll->get_minimum_size();
@@ -2805,8 +2816,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
+	// Get the visible frame
 	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
-
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	bone_last_frame++;
@@ -2836,48 +2847,56 @@ void CanvasItemEditor::_update_scrollbars() {
 	canvas_item_rect.size += screen_rect * 2;
 	canvas_item_rect.position -= screen_rect;
 
-	Point2 ofs;
+	// Constraints the view offset and updates the scrollbars
+	Point2 begin = canvas_item_rect.position;
+	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		v_scroll->hide();
-		ofs.y = canvas_item_rect.position.y;
-	} else {
-
-		v_scroll->show();
-		v_scroll->set_min(canvas_item_rect.position.y);
-		v_scroll->set_max(canvas_item_rect.position.y + canvas_item_rect.size.y);
-		v_scroll->set_page(local_rect.size.y / zoom);
-		if (first_update) {
-			//so 0,0 is visible
-			v_scroll->set_value(-10);
-			h_scroll->set_value(-10);
-			first_update = false;
+		if (ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+			view_offset.y = previous_update_view_offset.y;
 		}
 
-		ofs.y = v_scroll->get_value();
+		v_scroll->hide();
+	} else {
+		if (view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
+			view_offset.y = MAX(end.y, previous_update_view_offset.y);
+		}
+		if (view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
+			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
+		}
+
+		v_scroll->show();
+		v_scroll->set_min(MIN(view_offset.y, begin.y));
+		v_scroll->set_max(MAX(view_offset.y, end.y) + screen_rect.y);
+		v_scroll->set_page(screen_rect.y);
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
+		if (ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+			view_offset.x = previous_update_view_offset.x;
+		}
 
 		h_scroll->hide();
-		ofs.x = canvas_item_rect.position.x;
 	} else {
+		if (view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
+			view_offset.x = MAX(end.x, previous_update_view_offset.x);
+		}
+		if (view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
+			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
+		}
 
 		h_scroll->show();
-		h_scroll->set_min(canvas_item_rect.position.x);
-		h_scroll->set_max(canvas_item_rect.position.x + canvas_item_rect.size.x);
-		h_scroll->set_page(local_rect.size.x / zoom);
-		ofs.x = h_scroll->get_value();
+		h_scroll->set_min(MIN(view_offset.x, begin.x));
+		h_scroll->set_max(MAX(view_offset.x, end.x) + screen_rect.x);
+		h_scroll->set_page(screen_rect.x);
 	}
 
-	//transform=Matrix32();
-	transform.elements[2] = -ofs * zoom;
+	// Calculate scrollable area
+	v_scroll->set_value(view_offset.y);
+	h_scroll->set_value(view_offset.x);
 
-	editor->get_scene_root()->set_global_canvas_transform(transform);
-
+	previous_update_view_offset = view_offset;
 	updating_scroll = false;
-
-	//transform.scale_basis(Vector2(zoom,zoom));
 }
 
 void CanvasItemEditor::_update_scroll(float) {
@@ -2885,19 +2904,8 @@ void CanvasItemEditor::_update_scroll(float) {
 	if (updating_scroll)
 		return;
 
-	Point2 ofs;
-	ofs.x = h_scroll->get_value();
-	ofs.y = v_scroll->get_value();
-
-	//current_window->set_scroll(-ofs);
-
-	transform = Transform2D();
-
-	transform.scale_basis(Size2(zoom, zoom));
-	transform.elements[2] = -ofs;
-
-	editor->get_scene_root()->set_global_canvas_transform(transform);
-
+	view_offset.x = h_scroll->get_value();
+	view_offset.y = v_scroll->get_value();
 	viewport->update();
 }
 
@@ -2964,10 +2972,10 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	zoom = p_zoom;
 	Point2 ofs = p_position;
 	ofs = ofs / prev_zoom - ofs / zoom;
-	h_scroll->set_value(Math::round(h_scroll->get_value() + ofs.x));
-	v_scroll->set_value(Math::round(v_scroll->get_value() + ofs.y));
+	view_offset.x = Math::round(view_offset.x + ofs.x);
+	view_offset.y = Math::round(view_offset.y + ofs.y);
 
-	_update_scroll(0);
+	_update_scrollbars();
 	viewport->update();
 }
 
@@ -3552,8 +3560,10 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 		center = rect.position + rect.size / 2;
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
-		h_scroll->set_value(h_scroll->get_value() - offset.x / zoom);
-		v_scroll->set_value(v_scroll->get_value() - offset.y / zoom);
+		view_offset.x -= offset.x / zoom;
+		view_offset.y -= offset.y / zoom;
+		_update_scrollbars();
+		viewport->update();
 
 	} else { // VIEW_FRAME_TO_SELECTION
 
@@ -3562,7 +3572,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			float scale_y = viewport->get_size().y / rect.size.y;
 			zoom = scale_x < scale_y ? scale_x : scale_y;
 			zoom *= 0.90;
-			_update_scroll(0);
+			viewport->update();
 			call_deferred("_popup_callback", VIEW_CENTER_TO_SELECTION);
 		}
 	}
@@ -3575,6 +3585,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_button_zoom_plus", &CanvasItemEditor::_button_zoom_plus);
 	ClassDB::bind_method("_button_toggle_snap", &CanvasItemEditor::_button_toggle_snap);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
+	ClassDB::bind_method("_update_scrollbars", &CanvasItemEditor::_update_scrollbars);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 	ClassDB::bind_method("_button_tool_select", &CanvasItemEditor::_button_tool_select);
@@ -3595,7 +3606,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 	Dictionary state;
 	state["zoom"] = zoom;
-	state["ofs"] = Point2(h_scroll->get_value(), v_scroll->get_value());
+	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
 	state["snap_rotation_offset"] = snap_rotation_offset;
@@ -3629,10 +3640,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (state.has("ofs")) {
-		_update_scrollbars(); // i wonder how safe is calling this here..
-		Point2 ofs = p_state["ofs"];
-		h_scroll->set_value(ofs.x);
-		v_scroll->set_value(ofs.y);
+		view_offset = p_state["ofs"];
+		previous_update_view_offset = view_offset;
+		_update_scrollbars();
 	}
 
 	if (state.has("grid_offset")) {
@@ -3812,6 +3822,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(SIZE_EXPAND_FILL);
 	viewport_scrollable->set_h_size_flags(SIZE_EXPAND_FILL);
+	viewport_scrollable->connect("draw", this, "_update_scrollbars");
 
 	ViewportContainer *scene_tree = memnew(ViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
@@ -3830,12 +3841,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
-	h_scroll->connect("value_changed", this, "_update_scroll", Vector<Variant>(), Object::CONNECT_DEFERRED);
+	h_scroll->connect("value_changed", this, "_update_scroll");
 	h_scroll->hide();
 
 	v_scroll = memnew(VScrollBar);
 	viewport->add_child(v_scroll);
-	v_scroll->connect("value_changed", this, "_update_scroll", Vector<Variant>(), Object::CONNECT_DEFERRED);
+	v_scroll->connect("value_changed", this, "_update_scroll");
 	v_scroll->hide();
 
 	zoom_hb = memnew(HBoxContainer);
@@ -3858,7 +3869,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	updating_scroll = false;
-	first_update = true;
 
 	select_button = memnew(ToolButton);
 	hb->add_child(select_button);
@@ -4082,6 +4092,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_rulers = true;
 	show_guides = true;
 	zoom = 1;
+	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
+	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
 	grid_step = Point2(10, 10);
 	grid_step_multiplier = 0;
