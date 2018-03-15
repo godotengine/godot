@@ -203,6 +203,7 @@ public:
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const = 0;
+	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
