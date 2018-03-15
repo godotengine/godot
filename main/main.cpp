@@ -689,6 +689,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
+	if (globals->setup(game_path, main_pack, upwards) == OK) {
+		found_project = true;
+	} else {
+
+#ifdef TOOLS_ENABLED
+		editor = false;
+#else
+		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
+
+		goto error;
+#endif
+	}
+
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
 	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
@@ -760,19 +773,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 #endif
-
-	if (globals->setup(game_path, main_pack, upwards) == OK) {
-		found_project = true;
-	} else {
-
-#ifdef TOOLS_ENABLED
-		editor = false;
-#else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
-
-		goto error;
-#endif
-	}
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
