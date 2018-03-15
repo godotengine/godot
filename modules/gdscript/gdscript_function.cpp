@@ -1535,15 +1535,21 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
-		if (gdfs && gdfs->function == function)
+		if (gdfs && gdfs->function == function) {
 			completed = false;
+			gdfs->previous_state = Ref<GDScriptFunctionState>(this);
+		}
 	}
 
 	function = NULL; //cleaned up;
 	state.result = Variant();
 
 	if (completed) {
-		emit_signal("completed", ret);
+		GDScriptFunctionState *state = this;
+		while (state != NULL) {
+			state->emit_signal("completed", ret);
+			state = *(state->previous_state);
+		}
 	}
 
 	return ret;
@@ -1591,15 +1597,21 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
-		if (gdfs && gdfs->function == function)
+		if (gdfs && gdfs->function == function) {
 			completed = false;
+			gdfs->previous_state = Ref<GDScriptFunctionState>(this);
+		}
 	}
 
 	function = NULL; //cleaned up;
 	state.result = Variant();
 
 	if (completed) {
-		emit_signal("completed", ret);
+		GDScriptFunctionState *state = this;
+		while (state != NULL) {
+			state->emit_signal("completed", ret);
+			state = *(state->previous_state);
+		}
 	}
 
 	return ret;
