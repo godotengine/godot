@@ -244,9 +244,6 @@ $GODOT_HEAD_INCLUDE
 			var statusMode = 'hidden';
 			var indeterminiateStatusAnimationId = 0;
 
-			setStatusMode('indeterminate');
-			engine.setCanvas(canvas);
-
 			function setStatusMode(mode) {
 
 				if (statusMode === mode || !initializing)
@@ -367,18 +364,27 @@ $GODOT_HEAD_INCLUDE
 				});
 			}
 
-			engine.startGame(BASENAME + '.pck').then(() => {
-				setStatusMode('hidden');
-				initializing = false;
-			}, err => {
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
 				if (DEBUG_ENABLED) {
-					printError(err.message);
-					console.warn(err);
+					printError(msg);
 				}
-				setStatusNotice(err.message);
+				console.error(msg);
+				setStatusNotice(msg);
 				setStatusMode('notice');
 				initializing = false;
-			});
+			};
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice("WebGL not available");
+			} else {
+				setStatusMode('indeterminate');
+				engine.setCanvas(canvas);
+				engine.startGame(BASENAME + '.pck').then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
 		})();
 	//]]></script>
 </body>
