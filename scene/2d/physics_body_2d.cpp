@@ -1237,7 +1237,8 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 		}
 	}
 
-	Vector2 motion = (floor_motion + p_linear_velocity) * get_physics_process_delta_time();
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	Vector2 motion = (floor_motion + p_linear_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 	Vector2 lv = p_linear_velocity;
 
 	on_floor = false;
