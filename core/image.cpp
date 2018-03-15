@@ -2410,9 +2410,9 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 				Vector3 normal = across.cross(up);
 				normal.normalize();
 
-				write_ptr[((ty * width + tx) << 2) + 0] = (128.0 + normal.x * 127.0);
-				write_ptr[((ty * width + tx) << 2) + 1] = (128.0 + normal.y * 127.0);
-				write_ptr[((ty * width + tx) << 2) + 2] = (128.0 + normal.z * 127.0);
+				write_ptr[((ty * width + tx) << 2) + 0] = (127.5 + normal.x * 127.5);
+				write_ptr[((ty * width + tx) << 2) + 1] = (127.5 + normal.y * 127.5);
+				write_ptr[((ty * width + tx) << 2) + 2] = (127.5 + normal.z * 127.5);
 				write_ptr[((ty * width + tx) << 2) + 3] = 255;
 			}
 		}
