@@ -65,7 +65,7 @@ def get_opts():
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
         ('msvc_version', 'MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.', None),
-        (BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False)),
+        BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False),
     ]
 
 
