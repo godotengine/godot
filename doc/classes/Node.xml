@@ -13,7 +13,8 @@
 		Nodes can also process input events. When present, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
-		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) of the receiving peer. To identify which node receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
+		[b]Groups:[/b] Nodes can be added to as many groups as you want to be easy to manage, you could create groups like "enemies" or "collectables" for example, depending on your game. See [method add_to_group], [method is_in_group] and [method remove_from_group]. You can then retrieve all nodes in these groups, iterate them and even call methods on groups via the methods on [SceneTree].
+		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers). Also take a look at the high-level networking tutorial and corresponding demos.
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/scenes_and_nodes.html
@@ -45,6 +46,8 @@
 			<description>
 				Called when there is an input event. The input event propagates through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
+				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -74,7 +77,8 @@
 			</return>
 			<description>
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
-				Corresponds to the NOTIFICATION_READY notification in [method Object._notification].
+				Corresponds to the NOTIFICATION_READY notification in [method Object._notification]. See also the [code]onready[/code] keyword for variables.
+				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. Also see [method _enter_tree].
 			</description>
 		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
@@ -83,8 +87,10 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Propagated to all nodes when the previous InputEvent is not consumed by any nodes.
+				Propagated to all nodes when the previous [InputEvent] is not consumed by any nodes.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
+				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -93,6 +99,10 @@
 			<argument index="0" name="event" type="InputEventKey">
 			</argument>
 			<description>
+				Propagated to all nodes when the previous [InputEventKey] is not consumed by any nodes.
+				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
+				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 			</description>
 		</method>
 		<method name="add_child">
@@ -129,7 +139,7 @@
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
-				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]).
+				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -203,7 +213,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the peer ID of the network master for this node.
+				Returns the peer ID of the network master for this node. See [method set_network_master].
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -262,7 +272,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Returns the relative path from the current node to the specified node in "node" argument. Both nodes must be in the same scene, or the function will fail.
+				Returns the relative [NodePath] from this node to the specified [code]node[/code]. Both nodes must be in the same scene or the function will fail.
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
@@ -290,6 +300,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
 		<method name="get_tree" qualifiers="const">
@@ -354,7 +365,7 @@
 			<argument index="0" name="group" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this node is in the specified group.
+				Returns [code]true[/code] if this node is in the specified group. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="is_inside_tree" qualifiers="const">
@@ -368,6 +379,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the local system is the master of this node.
 			</description>
 		</method>
 		<method name="is_physics_processing" qualifiers="const">
@@ -381,6 +393,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if internal physics processing is enabled (see [method set_physics_process_internal]).
 			</description>
 		</method>
 		<method name="is_processing" qualifiers="const">
@@ -401,6 +414,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if internal processing is enabled (see [method set_process_internal]).
 			</description>
 		</method>
 		<method name="is_processing_unhandled_input" qualifiers="const">
@@ -432,13 +446,14 @@
 			<return type="void">
 			</return>
 			<description>
+				Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. Works only in debug builds.
 			</description>
 		</method>
 		<method name="print_tree">
 			<return type="void">
 			</return>
 			<description>
-				Prints the scene to stdout. Used mainly for debugging purposes.
+				Prints the scene hierarchy of this node and all it's children to stdout. Used mainly for debugging purposes.
 			</description>
 		</method>
 		<method name="propagate_call">
@@ -499,7 +514,7 @@
 			<argument index="0" name="group" type="String">
 			</argument>
 			<description>
-				Removes a node from a group.
+				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
 		<method name="replace_by">
@@ -526,7 +541,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
-				Sends a remote procedure call request to all peers on the network (and locally), optionally sending additional data as arguments. Call request will be received by nodes with the same [NodePath].
+				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Also see [method rset] and [method rset_config] for properties. Returns an empty [Variant]. Note that you can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [SceneTree]. You also need to keep track of the connection state, either by the [SceneTree] signals like [code]server_disconnected[/code] or by checking [code]SceneTree.network_peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -537,7 +552,7 @@
 			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
 			</argument>
 			<description>
-				Changes the method's RPC mode (one of RPC_MODE_* constants).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, methods are not exposed to networking (and RPCs). Also see [method rset] and [method rset_config] for properties.
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -548,7 +563,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [i]peer_id[/i].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code]. Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
@@ -557,7 +572,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] using an unreliable protocol.
+				Sends a [method rpc] using an unreliable protocol. Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rpc_unreliable_id" qualifiers="vararg">
@@ -568,7 +583,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol. Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rset">
@@ -579,7 +594,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on other peers (and locally).
+				Remotely changes a property's value on other peers (and locally). Behaviour depends on the RPC configuration for the given property, see [method rset_config]. Also see [method rpc] for RPCs for methods, most information applies to this method as well.
 			</description>
 		</method>
 		<method name="rset_config">
@@ -590,7 +605,7 @@
 			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
 			</argument>
 			<description>
-				Changes the property's RPC mode (one of RPC_MODE_* constants).
+				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, properties are not exposed to networking (and RPCs). Also see [method rpc] and [method rpc_config] for methods.
 			</description>
 		</method>
 		<method name="rset_id">
@@ -603,7 +618,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on a specific peer identified by [i]peer_id[/i].
+				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code].
 			</description>
 		</method>
 		<method name="rset_unreliable">
@@ -614,7 +629,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on other peers (and locally) using an unreliable protocol.
+				Remotely changes the property's value on other peers (and locally) using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rset_unreliable_id">
@@ -627,7 +642,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
+				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -647,7 +662,7 @@
 			<argument index="1" name="recursive" type="bool" default="true">
 			</argument>
 			<description>
-				Sets the node network master to the peer with the given peer ID. The network master is the peer that has authority over it on the network. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server).
+				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]slave[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -665,6 +680,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method]_physics_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process">
@@ -691,6 +707,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method]_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
@@ -717,6 +734,7 @@
 			<argument index="0" name="load_placeholder" type="bool">
 			</argument>
 			<description>
+				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
 	</methods>
@@ -725,13 +743,13 @@
 			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name">
-			The name of the node. This name is unique among the siblings (other child nodes from the same parent).
-			When set to an existing name, the node will be automatically renamed
+			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
 		</member>
 		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode">
+			Pause mode. How the node will behave if the [SceneTree] is paused.
 		</member>
 	</members>
 	<signals>
@@ -752,7 +770,7 @@
 		</signal>
 		<signal name="tree_exiting">
 			<description>
-				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization.
+				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization (or a "destructor", if you will).
 			</description>
 		</signal>
 	</signals>
@@ -800,33 +818,37 @@
 			Notification received when the node's [NodePath] changed.
 		</constant>
 		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24">
+			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
+			Notification received every frame when the internal process flag is set (see [method set_process_internal]).
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
+			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
 		</constant>
 		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
+			Used with [method rpc_config] or [method rset_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
 		</constant>
 		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
-			Call a method remotely.
+			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_SYNC" value="2" enum="RPCMode">
-			Call a method both remotely and locally.
+			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed both on the remote end and locally. Analogous to the [code]sync[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_MASTER" value="3" enum="RPCMode">
-			Call a method if the Node is Master.
+			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. See [method set_network_master].
 		</constant>
 		<constant name="RPC_MODE_SLAVE" value="4" enum="RPCMode">
-			Call a method if the Node is Slave.
+			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on slaves for this node. Analogous to the [code]slave[/code] keyword. See [method set_network_master].
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
-			Inherits pause mode from parent. For root node, it is equivalent to PAUSE_MODE_STOP.
+			Inherits pause mode from the node's parent. For the root node, it is equivalent to PAUSE_MODE_STOP. Default.
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1" enum="PauseMode">
-			Stop processing when SceneTree is paused.
+			Stop processing when the [SceneTree] is paused.
 		</constant>
 		<constant name="PAUSE_MODE_PROCESS" value="2" enum="PauseMode">
-			Continue to process regardless of SceneTree pause state.
+			Continue to process regardless of the [SceneTree] pause state.
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signals.
