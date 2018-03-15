@@ -3702,139 +3702,148 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					//todo parse default value
 
 					tk = _get_token();
-					if (tk.type == TK_OP_ASSIGN) {
+					while (true) {
 
-						Node *expr = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
-						if (!expr)
-							return ERR_PARSE_ERROR;
-						if (expr->type != Node::TYPE_CONSTANT) {
-							_set_error("Expected constant expression after '='");
-							return ERR_PARSE_ERROR;
+						if (tk.type == TK_OP_ASSIGN) {
+
+							Node *expr = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
+							if (!expr)
+								return ERR_PARSE_ERROR;
+							if (expr->type != Node::TYPE_CONSTANT) {
+								_set_error("Expected constant expression after '='");
+								return ERR_PARSE_ERROR;
+							}
+
+							ConstantNode *cn = static_cast<ConstantNode *>(expr);
+
+							uniform.default_value.resize(cn->values.size());
+
+							if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
+								_set_error("Can't convert constant to " + get_datatype_name(uniform.type));
+								return ERR_PARSE_ERROR;
+							}
+							tk = _get_token();
 						}
 
-						ConstantNode *cn = static_cast<ConstantNode *>(expr);
-
-						uniform.default_value.resize(cn->values.size());
-
-						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
-							_set_error("Can't convert constant to " + get_datatype_name(uniform.type));
-							return ERR_PARSE_ERROR;
-						}
-						tk = _get_token();
-					}
-
-					if (tk.type == TK_COLON) {
-						//hint
-
-						tk = _get_token();
-						if (tk.type == TK_HINT_WHITE_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_WHITE;
-						} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_BLACK;
-						} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_NORMAL;
-						} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_ANISO;
-						} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_ALBEDO;
-						} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
-							uniform.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
-						} else if (tk.type == TK_HINT_COLOR) {
-							if (type != TYPE_VEC4) {
-								_set_error("Color hint is for vec4 only");
-								return ERR_PARSE_ERROR;
-							}
-							uniform.hint = ShaderNode::Uniform::HINT_COLOR;
-						} else if (tk.type == TK_HINT_RANGE) {
-
-							uniform.hint = ShaderNode::Uniform::HINT_RANGE;
-							if (type != TYPE_FLOAT && type != TYPE_INT) {
-								_set_error("Range hint is for float and int only");
-								return ERR_PARSE_ERROR;
-							}
+						if (tk.type == TK_COLON) {
+							//hint
 
 							tk = _get_token();
-							if (tk.type != TK_PARENTHESIS_OPEN) {
-								_set_error("Expected '(' after hint_range");
-								return ERR_PARSE_ERROR;
-							}
+							if (tk.type == TK_HINT_WHITE_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_WHITE;
+							} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_BLACK;
+							} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_NORMAL;
+							} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_ANISO;
+							} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_ALBEDO;
+							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
+								uniform.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
+							} else if (tk.type == TK_HINT_COLOR) {
+								if (type != TYPE_VEC4) {
+									_set_error("Color hint is for vec4 only");
+									return ERR_PARSE_ERROR;
+								}
+								uniform.hint = ShaderNode::Uniform::HINT_COLOR;
+							} else if (tk.type == TK_HINT_RANGE) {
 
-							tk = _get_token();
+								uniform.hint = ShaderNode::Uniform::HINT_RANGE;
+								if (type != TYPE_FLOAT && type != TYPE_INT) {
+									_set_error("Range hint is for float and int only");
+									return ERR_PARSE_ERROR;
+								}
 
-							float sign = 1.0;
-
-							if (tk.type == TK_OP_SUB) {
-								sign = -1.0;
 								tk = _get_token();
-							}
+								if (tk.type != TK_PARENTHESIS_OPEN) {
+									_set_error("Expected '(' after hint_range");
+									return ERR_PARSE_ERROR;
+								}
 
-							if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
-								_set_error("Expected integer constant");
-								return ERR_PARSE_ERROR;
-							}
-
-							uniform.hint_range[0] = tk.constant;
-							uniform.hint_range[0] *= sign;
-
-							tk = _get_token();
-
-							if (tk.type != TK_COMMA) {
-								_set_error("Expected ',' after integer constant");
-								return ERR_PARSE_ERROR;
-							}
-
-							tk = _get_token();
-
-							sign = 1.0;
-
-							if (tk.type == TK_OP_SUB) {
-								sign = -1.0;
 								tk = _get_token();
-							}
 
-							if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
-								_set_error("Expected integer constant after ','");
-								return ERR_PARSE_ERROR;
-							}
+								float sign = 1.0;
 
-							uniform.hint_range[1] = tk.constant;
-							uniform.hint_range[1] *= sign;
+								if (tk.type == TK_OP_SUB) {
+									sign = -1.0;
+									tk = _get_token();
+								}
 
-							tk = _get_token();
+								if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
+									_set_error("Expected integer constant");
+									return ERR_PARSE_ERROR;
+								}
 
-							if (tk.type == TK_COMMA) {
+								uniform.hint_range[0] = tk.constant;
+								uniform.hint_range[0] *= sign;
+
 								tk = _get_token();
+
+								if (tk.type != TK_COMMA) {
+									_set_error("Expected ',' after integer constant");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+
+								sign = 1.0;
+
+								if (tk.type == TK_OP_SUB) {
+									sign = -1.0;
+									tk = _get_token();
+								}
 
 								if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
 									_set_error("Expected integer constant after ','");
 									return ERR_PARSE_ERROR;
 								}
 
-								uniform.hint_range[2] = tk.constant;
+								uniform.hint_range[1] = tk.constant;
+								uniform.hint_range[1] *= sign;
+
 								tk = _get_token();
-							} else {
-								if (type == TYPE_INT) {
-									uniform.hint_range[2] = 1;
+
+								if (tk.type == TK_COMMA) {
+									tk = _get_token();
+
+									if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
+										_set_error("Expected integer constant after ','");
+										return ERR_PARSE_ERROR;
+									}
+
+									uniform.hint_range[2] = tk.constant;
+									tk = _get_token();
 								} else {
-									uniform.hint_range[2] = 0.001;
+									if (type == TYPE_INT) {
+										uniform.hint_range[2] = 1;
+									} else {
+										uniform.hint_range[2] = 0.001;
+									}
 								}
+
+								if (tk.type != TK_PARENTHESIS_CLOSE) {
+									_set_error("Expected ','");
+									return ERR_PARSE_ERROR;
+								}
+
+							} else {
+								_set_error("Expected valid type hint after ':'.");
 							}
 
-							if (tk.type != TK_PARENTHESIS_CLOSE) {
-								_set_error("Expected ','");
+							if (uniform.hint != ShaderNode::Uniform::HINT_RANGE && uniform.hint != ShaderNode::Uniform::HINT_NONE && uniform.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
+								_set_error("This hint is only for sampler types");
 								return ERR_PARSE_ERROR;
 							}
 
+							tk = _get_token();
+						}
+
+						if (tk.type == TK_OP_ASSIGN) {
+							continue;
 						} else {
-							_set_error("Expected valid type hint after ':'.");
+							break;
 						}
-
-						if (uniform.hint != ShaderNode::Uniform::HINT_RANGE && uniform.hint != ShaderNode::Uniform::HINT_NONE && uniform.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
-							_set_error("This hint is only for sampler types");
-							return ERR_PARSE_ERROR;
-						}
-
-						tk = _get_token();
 					}
 
 					shader->uniforms[name] = uniform;
