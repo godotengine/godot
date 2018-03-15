@@ -778,19 +778,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #endif
 
-	if (globals->setup(game_path, main_pack, upwards) == OK) {
-		found_project = true;
-	} else {
-
-#ifdef TOOLS_ENABLED
-		editor = false;
-#else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
-
-		goto error;
-#endif
-	}
-
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
 	GLOBAL_DEF("logging/file_logging/max_log_files", 10);
