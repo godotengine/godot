@@ -2056,7 +2056,7 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 	f->close();
 }
 
-Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_target_path) {
+Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_target_path, bool mark_converted_lines) {
 
 	FileAccessRef src = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V(!src.operator->(), FAILED);
@@ -2064,9 +2064,11 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 	ERR_FAIL_COND_V(!dst.operator->(), FAILED);
 
 	String http_var = "";
+	const String note = "  #-- NOTE: Automatically converted by Godot 2 to 3 converter, please review";
 
 	while (!src->eof_reached()) {
 		String line = src->get_line();
+		String origline = line;
 
 		// Convert _fixed_process( => _physics_process(
 		RegEx regexp("(.*)_fixed_process\\((.*)");
@@ -2252,13 +2254,18 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 
 		} while (count >= 1 && tries++ < 10);
 
+		if (mark_converted_lines && line != origline) {
+			// Add explanatory comment on the changed line
+			line += note;
+		}
+
 		dst->store_line(line);
 	}
 
 	return OK;
 }
 
-Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scripts) {
+Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scripts, bool mark_converted_lines) {
 
 	List<String> files;
 	_find_files(EditorFileSystem::get_singleton()->get_filesystem(), &files);
@@ -2468,7 +2475,7 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 		} else {
 
 			if (convert_scripts && extension == "gd") {
-				err = _convert_script(path, target_path);
+				err = _convert_script(path, target_path, mark_converted_lines);
 			} else {
 				//single file, copy it
 				err = directory->copy(path, target_path);

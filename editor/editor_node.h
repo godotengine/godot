@@ -280,6 +280,7 @@ private:
 	EditorExportGodot3 export_godot3;
 	FileDialog *export_godot3_dialog;
 	CheckButton *export_godot3_dialog_convert_scripts;
+	CheckButton *export_godot3_dialog_mark_converted_lines;
 
 	CreateDialog *create_dialog;
 

@@ -87,12 +87,12 @@ class EditorExportGodot3 {
 	void _unpack_packed_scene(ExportData &resource);
 	void _pack_packed_scene(ExportData &resource);
 
-	Error _convert_script(const String &p_path, const String &p_target_path);
+	Error _convert_script(const String &p_path, const String &p_target_path, bool mark_converted_lines);
 
 	void _find_files(EditorFileSystemDirectory *p_dir, List<String> *r_files);
 
 public:
-	Error export_godot3(const String &p_path, bool convert_scripts);
+	Error export_godot3(const String &p_path, bool convert_scripts, bool mark_converted_lines);
 
 	EditorExportGodot3();
 };
