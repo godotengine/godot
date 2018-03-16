@@ -113,7 +113,7 @@ public:
 	void set_projection(Camera::Projection p_mode);
 
 	void make_current();
-	void clear_current();
+	void clear_current(bool p_enable_next = true);
 	void set_current(bool p_current);
 	bool is_current() const;
 
