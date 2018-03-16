@@ -267,9 +267,9 @@
 		try {
 			var testCanvas = document.createElement('canvas');
 			if (majorVersion === 1) {
-				testContext = testCanvas.getContext('webgl') || testCanvas.getContet('experimental-webgl');
+				testContext = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
 			} else if (majorVersion === 2) {
-				testContext = testCanvas.getContext('webgl2') || testCanvas.getContet('experimental-webgl2');
+				testContext = testCanvas.getContext('webgl2') || testCanvas.getContext('experimental-webgl2');
 			}
 		} catch (e) {}
 		return !!testContext;
