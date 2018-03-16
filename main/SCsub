@@ -74,10 +74,9 @@ def make_default_controller_mappings(target, source, env):
     platform_mappings = OrderedDict()
     for src in source:
         src_path = src.srcnode().abspath
-        f = open(src_path, "rb")
-
-        # read mapping file and skip header
-        mapping_file_lines = f.readlines()[2:]
+        with open(src_path, "rb") as f:
+            # read mapping file and skip header
+            mapping_file_lines = f.readlines()[2:]
 
         current_platform = None
         for line in mapping_file_lines:
@@ -123,6 +122,7 @@ def make_default_controller_mappings(target, source, env):
         g.write("#endif\n")
 
     g.write("};\n")
+    g.close()
 
 env.main_sources = []
 env.add_source_files(env.main_sources, "*.cpp")
