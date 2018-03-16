@@ -170,6 +170,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 			button_create->set_pressed(true);
 			button_edit->set_pressed(false);
 			button_delete->set_pressed(false);
+			wip_active = true;
 		} break;
 		case MODE_EDIT: {
 
@@ -262,6 +263,9 @@ void AbstractPolygon2DEditor::_wip_close() {
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!_get_node())
+		return false;
+
+	if (!wip_active && !canvas_item_editor->is_in_detail_mode())
 		return false;
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -516,6 +520,9 @@ void AbstractPolygon2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 	if (!_get_node())
 		return;
 
+	if (!wip_active && !canvas_item_editor->is_in_detail_mode())
+		return;
+
 	Control *vpc = canvas_item_editor->get_viewport_control();
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
@@ -615,15 +622,15 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
 		_set_node(p_polygon);
 
-		//Enable the pencil tool if the polygon is empty
-		if (_is_empty())
-			_menu_option(MODE_CREATE);
-
 		wip.clear();
 		wip_active = false;
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
+
+		//Enable the pencil tool if the polygon is empty
+		if (_is_empty())
+			_menu_option(MODE_CREATE);
 
 		canvas_item_editor->get_viewport_control()->update();
 
