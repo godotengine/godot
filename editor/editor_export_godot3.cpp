@@ -2141,65 +2141,74 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			}
 			regexp.clear();
 
-			// Convert .get_opacity() => .get_modulate().a
+			// Convert .get_opacity() => .modulate.a
 			regexp.compile("(.*)\\.get_opacity\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + ".get_modulate().a" + regexp.get_capture(2);
+				line = regexp.get_capture(1) + ".modulate.a" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert .set_opacity(var) => .modulate.a = var
-			regexp.compile("([ \t]*)([a-zA-Z0-9_]*)[ ]*\\.set_opacity\\((.*)\\)(.*)");
+			regexp.compile("(.*)\\.set_opacity\\((.*)\\)(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 5) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + ".modulate.a = " + regexp.get_capture(3) + regexp.get_capture(4);
+			if (res >= 0 && regexp.get_capture_count() == 4) {
+				line = regexp.get_capture(1) + ".modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.KEY => var is InputEventKey
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.KEY(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.KEY(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventKey" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventKey" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_MOTION => var is InputEventMouseMotion
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.MOUSE_MOTION(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.MOUSE_MOTION(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventMouseMotion" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventMouseMotion" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_BUTTON => var is InputEventMouseButton
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventMouseButton" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventMouseButton" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_MOTION => var is InputEventJoypadMotion
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventJoypadMotion" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventJoypadMotion" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_BUTTON => var is InputEventJoypadButton
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventJoypadButton" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventJoypadButton" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert move( => move_and_collide(
+			regexp.compile("(.*)move\\((.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "move_and_collide(" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
@@ -2227,6 +2236,16 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "is_on_wall()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert <any chars but none> extends => <any chars but none> is
+			// The only case where we don't want to convert it is `^extends <Node>`
+			regexp.compile("(^.+ )extends(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "is" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
