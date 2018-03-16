@@ -123,6 +123,7 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 		const char *rootdir = mono_assembly_getrootdir();
 		if (rootdir) {
 			search_dirs.push_back(String(rootdir).plus_file("mono").plus_file("4.5"));
+			search_dirs.push_back(String(rootdir).plus_file("mono").plus_file("4.5").plus_file("Facades"));
 		}
 
 		if (assemblies_path) {
