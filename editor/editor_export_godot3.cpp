@@ -559,9 +559,10 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				String path_value = E->get().value;
 
 				// Check if it's a rotation and save the track number to fix its assigned values
-				if (path_value.find("transform/rot") != 1) {
+				if (path_value.find("transform/rot") != -1) {
 					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
 					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+					print_line("Found Animation track with 2D rotations: " + prop_name + " = " + path_value);
 				}
 
 				// In animation tracks, NodePaths can refer to properties that need to be renamed
@@ -576,7 +577,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				}
 			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
 				// Bingo! We found keys matching the track number we had spotted
-				print_line("Found Animation track with 2D rotations, fixing their sign.");
+				print_line("Fixing sign of 2D rotations in animation track " + found_track_number);
 				Dictionary track_keys = E->get().value;
 				if (track_keys.has("values")) {
 					Array values = track_keys["values"];
@@ -615,7 +616,6 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 		// AnimationPlayer's "playback/active" was renamed to "playback_active", but not AnimationTrrePlayer's
 		// We rename manually only for AnimationPlayer
 		if (E->get().name == "playback/active" && p_type == "AnimationPlayer") {
-			print_line("yep");
 			E->get().name = "playback_active";
 		}
 	}
