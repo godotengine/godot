@@ -74,7 +74,7 @@ def make_default_controller_mappings(target, source, env):
     platform_mappings = OrderedDict()
     for src in source:
         src_path = src.srcnode().abspath
-        with open(src_path, "rb") as f:
+        with open(src_path, "r") as f:
             # read mapping file and skip header
             mapping_file_lines = f.readlines()[2:]
 
