@@ -559,9 +559,10 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				String path_value = E->get().value;
 
 				// Check if it's a rotation and save the track number to fix its assigned values
-				if (path_value.find("transform/rot") != 1) {
+				if (path_value.find("transform/rot") != -1) {
 					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
 					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+					print_line("Found Animation track with 2D rotations: " + prop_name + " = " + path_value);
 				}
 
 				// In animation tracks, NodePaths can refer to properties that need to be renamed
@@ -576,7 +577,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				}
 			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
 				// Bingo! We found keys matching the track number we had spotted
-				print_line("Found Animation track with 2D rotations, fixing their sign.");
+				print_line("Fixing sign of 2D rotations in animation track " + found_track_number);
 				Dictionary track_keys = E->get().value;
 				if (track_keys.has("values")) {
 					Array values = track_keys["values"];
@@ -615,7 +616,6 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 		// AnimationPlayer's "playback/active" was renamed to "playback_active", but not AnimationTrrePlayer's
 		// We rename manually only for AnimationPlayer
 		if (E->get().name == "playback/active" && p_type == "AnimationPlayer") {
-			print_line("yep");
 			E->get().name = "playback_active";
 		}
 	}
@@ -2056,7 +2056,7 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 	f->close();
 }
 
-Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_target_path) {
+Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_target_path, bool mark_converted_lines) {
 
 	FileAccessRef src = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V(!src.operator->(), FAILED);
@@ -2064,9 +2064,11 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 	ERR_FAIL_COND_V(!dst.operator->(), FAILED);
 
 	String http_var = "";
+	const String note = "  #-- NOTE: Automatically converted by Godot 2 to 3 converter, please review";
 
 	while (!src->eof_reached()) {
 		String line = src->get_line();
+		String origline = line;
 
 		// Convert _fixed_process( => _physics_process(
 		RegEx regexp("(.*)_fixed_process\\((.*)");
@@ -2141,65 +2143,74 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			}
 			regexp.clear();
 
-			// Convert .get_opacity() => .get_modulate().a
+			// Convert .get_opacity() => .modulate.a
 			regexp.compile("(.*)\\.get_opacity\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + ".get_modulate().a" + regexp.get_capture(2);
+				line = regexp.get_capture(1) + ".modulate.a" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert .set_opacity(var) => .modulate.a = var
-			regexp.compile("([ \t]*)([a-zA-Z0-9_]*)[ ]*\\.set_opacity\\((.*)\\)(.*)");
+			regexp.compile("(.*)\\.set_opacity\\((.*)\\)(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 5) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + ".modulate.a = " + regexp.get_capture(3) + regexp.get_capture(4);
+			if (res >= 0 && regexp.get_capture_count() == 4) {
+				line = regexp.get_capture(1) + ".modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.KEY => var is InputEventKey
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.KEY(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.KEY(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventKey" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventKey" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_MOTION => var is InputEventMouseMotion
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.MOUSE_MOTION(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.MOUSE_MOTION(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventMouseMotion" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventMouseMotion" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_BUTTON => var is InputEventMouseButton
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventMouseButton" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventMouseButton" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_MOTION => var is InputEventJoypadMotion
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventJoypadMotion" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventJoypadMotion" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_BUTTON => var is InputEventJoypadButton
-			regexp.compile("(.*)([a-zA-Z0-9_]*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
+			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
 			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + regexp.get_capture(2) + " is InputEventJoypadButton" + regexp.get_capture(3);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventJoypadButton" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert move( => move_and_collide(
+			regexp.compile("(.*)move\\((.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "move_and_collide(" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
@@ -2231,7 +2242,22 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			}
 			regexp.clear();
 
+			// Convert <any chars but none> extends => <any chars but none> is
+			// The only case where we don't want to convert it is `^extends <Node>`
+			regexp.compile("(^.+ )extends(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "is" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
 		} while (count >= 1 && tries++ < 10);
+
+		if (mark_converted_lines && line != origline) {
+			// Add explanatory comment on the changed line
+			line += note;
+		}
 
 		dst->store_line(line);
 	}
@@ -2239,7 +2265,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 	return OK;
 }
 
-Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scripts) {
+Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scripts, bool mark_converted_lines) {
 
 	List<String> files;
 	_find_files(EditorFileSystem::get_singleton()->get_filesystem(), &files);
@@ -2449,7 +2475,7 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 		} else {
 
 			if (convert_scripts && extension == "gd") {
-				err = _convert_script(path, target_path);
+				err = _convert_script(path, target_path, mark_converted_lines);
 			} else {
 				//single file, copy it
 				err = directory->copy(path, target_path);

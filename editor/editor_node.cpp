@@ -5101,7 +5101,7 @@ void EditorNode::_export_godot3_path(const String &p_path) {
 		location = nl;
 	}
 
-	Error err = export_godot3.export_godot3(p_path, export_godot3_dialog_convert_scripts->is_pressed());
+	Error err = export_godot3.export_godot3(p_path, export_godot3_dialog_convert_scripts->is_pressed(), export_godot3_dialog_mark_converted_lines->is_pressed());
 	if (err != OK) {
 		show_warning(TTR("Error exporting project to Godot 3.0."));
 	}
@@ -6370,10 +6370,17 @@ EditorNode::EditorNode() {
 	export_godot3_dialog = memnew(FileDialog);
 	export_godot3_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	export_godot3_dialog->set_mode(FileDialog::MODE_OPEN_DIR);
+
 	export_godot3_dialog_convert_scripts = memnew(CheckButton);
 	export_godot3_dialog_convert_scripts->set_text(TTR("Convert scripts (experimental)"));
-	export_godot3_dialog_convert_scripts->set_pressed(false);
+	export_godot3_dialog_convert_scripts->set_pressed(true);
 	export_godot3_dialog->get_vbox()->add_child(export_godot3_dialog_convert_scripts);
+
+	export_godot3_dialog_mark_converted_lines = memnew(CheckButton);
+	export_godot3_dialog_mark_converted_lines->set_text(TTR("Mark converted lines in scripts with a comment"));
+	export_godot3_dialog_mark_converted_lines->set_pressed(false);
+	export_godot3_dialog->get_vbox()->add_child(export_godot3_dialog_mark_converted_lines);
+
 	gui_base->add_child(export_godot3_dialog);
 	export_godot3_dialog->connect("dir_selected", this, "_export_godot3_path");
 
