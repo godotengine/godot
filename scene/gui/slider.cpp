@@ -118,28 +118,14 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
+		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
 
-		} else {
+			set_value(get_min());
+			accept_event();
+		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
 
-			Ref<InputEventKey> k = p_event;
-
-			if (!k.is_valid() || !k->is_pressed())
-				return;
-
-			switch (k->get_scancode()) {
-
-				case KEY_HOME: {
-
-					set_value(get_min());
-					accept_event();
-				} break;
-				case KEY_END: {
-
-					set_value(get_max());
-					accept_event();
-
-				} break;
-			}
+			set_value(get_max());
+			accept_event();
 		}
 	}
 }

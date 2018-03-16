@@ -211,86 +211,69 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
-	Ref<InputEventKey> k = p_event;
+	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
 
-	if (k.is_valid()) {
+		int search_from = mouse_over + 1;
+		if (search_from >= items.size())
+			search_from = 0;
 
-		if (!k->is_pressed())
-			return;
+		for (int i = search_from; i < items.size(); i++) {
 
-		switch (k->get_scancode()) {
+			if (i < 0 || i >= items.size())
+				continue;
 
-			case KEY_DOWN: {
+			if (!items[i].separator && !items[i].disabled) {
 
-				int search_from = mouse_over + 1;
-				if (search_from >= items.size())
-					search_from = 0;
+				mouse_over = i;
+				emit_signal("id_focused", i);
+				update();
+				accept_event();
+				break;
+			}
+		}
+	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
 
-				for (int i = search_from; i < items.size(); i++) {
+		int search_from = mouse_over - 1;
+		if (search_from < 0)
+			search_from = items.size() - 1;
 
-					if (i < 0 || i >= items.size())
-						continue;
+		for (int i = search_from; i >= 0; i--) {
 
-					if (!items[i].separator && !items[i].disabled) {
+			if (i < 0 || i >= items.size())
+				continue;
 
-						mouse_over = i;
-						update();
-						break;
-					}
-				}
-			} break;
-			case KEY_UP: {
+			if (!items[i].separator && !items[i].disabled) {
 
-				int search_from = mouse_over - 1;
-				if (search_from < 0)
-					search_from = items.size() - 1;
+				mouse_over = i;
+				emit_signal("id_focused", i);
+				update();
+				accept_event();
+				break;
+			}
+		}
+	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
 
-				for (int i = search_from; i >= 0; i--) {
+		Node *n = get_parent();
+		if (n && Object::cast_to<PopupMenu>(n)) {
+			hide();
+			accept_event();
+		}
+	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 
-					if (i < 0 || i >= items.size())
-						continue;
+		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+			_activate_submenu(mouse_over);
+			accept_event();
+		}
+	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 
-					if (!items[i].separator && !items[i].disabled) {
+		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 
-						mouse_over = i;
-						update();
-						break;
-					}
-				}
-			} break;
-
-			case KEY_LEFT: {
-
-				Node *n = get_parent();
-				if (!n)
-					break;
-
-				PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-				if (!pm)
-					break;
-
-				hide();
-			} break;
-
-			case KEY_RIGHT: {
-
-				if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over)
-					_activate_submenu(mouse_over);
-			} break;
-
-			case KEY_ENTER:
-			case KEY_KP_ENTER: {
-
-				if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-
-					if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-						_activate_submenu(mouse_over);
-						break;
-					}
-
-					activate_item(mouse_over);
-				}
-			} break;
+			if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+				_activate_submenu(mouse_over);
+			} else {
+				activate_item(mouse_over);
+			}
+			accept_event();
 		}
 	}
 
@@ -1229,6 +1212,7 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "ID")));
+	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "ID")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 }
 

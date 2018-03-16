@@ -75,6 +75,10 @@ void OptionButton::_notification(int p_what) {
 	}
 }
 
+void OptionButton::_focused(int p_which) {
+	emit_signal("item_focused", p_which);
+}
+
 void OptionButton::_selected(int p_which) {
 
 	int selid = -1;
@@ -290,6 +294,7 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_selected"), &OptionButton::_selected);
+	ClassDB::bind_method(D_METHOD("_focused"), &OptionButton::_focused);
 
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item);
@@ -322,6 +327,7 @@ void OptionButton::_bind_methods() {
 	// "selected" property must come after "items", otherwise GH-10213 occurs
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "ID")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "ID")));
 }
 
 OptionButton::OptionButton() {
@@ -336,6 +342,7 @@ OptionButton::OptionButton() {
 	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
 	popup->connect("id_pressed", this, "_selected");
+	popup->connect("id_focused", this, "_focused");
 }
 
 OptionButton::~OptionButton() {
