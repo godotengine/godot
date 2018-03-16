@@ -167,6 +167,33 @@
 		<member name="linear_limit_z/upper_distance" type="float" setter="set_param_z" getter="get_param_z">
 			The maximum difference between the pivot points' z-axis.
 		</member>
+		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+			If [code]true[/code] then there is a linear motor on the x-axis. It will attempt to reach the target velocity while staying within the force limits.
+		</member>
+		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
+			The maximum force the linear motor can apply on the x-axis while trying to reach the target velocity.
+		</member>
+		<member name="linear_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x">
+			The speed that the linear motor will attempt to reach on the x-axis.
+		</member>
+		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+			If [code]true[/code] then there is a linear motor on the y-axis. It will attempt to reach the target velocity while staying within the force limits.
+		</member>
+		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
+			The maximum force the linear motor can apply on the y-axis while trying to reach the target velocity.
+		</member>
+		<member name="linear_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y">
+			The speed that the linear motor will attempt to reach on the y-axis.
+		</member>
+		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+			If [code]true[/code] then there is a linear motor on the z-axis. It will attempt to reach the target velocity while staying within the force limits.
+		</member>
+		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
+			The maximum force the linear motor can apply on the z-axis while trying to reach the target velocity.
+		</member>
+		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
+			The speed that the linear motor will attempt to reach on the z-axis.
+		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_LINEAR_LOWER_LIMIT" value="0" enum="Param">
@@ -184,34 +211,40 @@
 		<constant name="PARAM_LINEAR_DAMPING" value="4" enum="Param">
 			The amount of damping that happens at the linear motion across the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="5" enum="Param">
+		<constant name="PARAM_LINEAR_MOTOR_TARGET_VELOCITY" value="5" enum="Param">
+			The velocity the linear motor will try to reach.
+		</constant>
+		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param">
+			The maximum force the linear motor will apply while trying to reach the velocity target.
+		</constant>
+		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="7" enum="Param">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="6" enum="Param">
+		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="8" enum="Param">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="7" enum="Param">
+		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="9" enum="Param">
 			The speed of all rotations across the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_DAMPING" value="8" enum="Param">
+		<constant name="PARAM_ANGULAR_DAMPING" value="10" enum="Param">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_RESTITUTION" value="9" enum="Param">
+		<constant name="PARAM_ANGULAR_RESTITUTION" value="11" enum="Param">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="10" enum="Param">
+		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="12" enum="Param">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_ERP" value="11" enum="Param">
+		<constant name="PARAM_ANGULAR_ERP" value="13" enum="Param">
 			When rotating across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="12" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="Param">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="13" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="Param">
 			Maximum acceleration for the motor at the axes.
 		</constant>
-		<constant name="PARAM_MAX" value="14" enum="Param">
+		<constant name="PARAM_MAX" value="16" enum="Param">
 			End flag of PARAM_* constants, used internally.
 		</constant>
 		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="Flag">
@@ -223,7 +256,9 @@
 		<constant name="FLAG_ENABLE_MOTOR" value="2" enum="Flag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="FLAG_MAX" value="3" enum="Flag">
+		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="Flag">
+		</constant>
+		<constant name="FLAG_MAX" value="4" enum="Flag">
 			End flag of FLAG_* constants, used internally.
 		</constant>
 	</constants>
