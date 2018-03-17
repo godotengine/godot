@@ -2016,16 +2016,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case EDIT_REDO: {
 
-			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't REDO while mouse buttons are pressed.");
-			} else {
-				if (!editor_data.get_undo_redo().redo()) {
-					log->add_message("There is nothing to REDO.");
-				} else {
-					String action = editor_data.get_undo_redo().get_current_action_name();
-					log->add_message("REDO: " + action);
-				}
-			}
+			if (Input::get_singleton()->get_mouse_button_mask() & 0x7)
+				break; // can't redo while mouse buttons are pressed
+
+			editor_data.get_undo_redo().redo();
+			String action = editor_data.get_undo_redo().get_current_action_name();
+			if (action != "")
+				log->add_message("REDO: " + action);
+
 		} break;
 
 		case EDIT_REVERT: {
