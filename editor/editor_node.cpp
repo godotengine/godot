@@ -604,6 +604,10 @@ void EditorNode::open_resource(const String &p_type) {
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 
 	editor_data.apply_changes_in_editors();
+	if (p_resource->get_last_modified_time() == p_resource->get_import_last_modified_time()) {
+		return;
+	}
+
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
@@ -1089,7 +1093,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 void EditorNode::_save_all_scenes() {
 
-	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+	int i = _next_unsaved_scene(true, 0);
+	while (i != -1) {
 		Node *scene = editor_data.get_edited_scene_root(i);
 		if (scene && scene->get_filename() != "") {
 			if (i != editor_data.get_edited_scene())
@@ -1097,6 +1102,7 @@ void EditorNode::_save_all_scenes() {
 			else
 				_save_scene_with_preview(scene->get_filename());
 		} // else: ignore new scenes
+		i = _next_unsaved_scene(true, ++i);
 	}
 
 	_save_default_environment();
