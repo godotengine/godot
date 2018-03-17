@@ -1,4 +1,5 @@
 # -*- coding: ibm850 -*-
+from platform_methods import subprocess_main
 
 
 template_typed = """
@@ -265,8 +266,12 @@ def run(target, source, env):
         else:
             text += t
 
-    with open(target[0].path, "w") as f:
+    with open(target[0], "w") as f:
         f.write(text)
 
-    with open(target[1].path, "w") as f:
+    with open(target[1], "w") as f:
         f.write(text_ext)
+
+
+if __name__ == '__main__':
+    subprocess_main(globals())
