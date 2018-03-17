@@ -1,773 +1,52 @@
 import os
-from compat import iteritems, itervalues, open_utf8, escape_string
+import os.path
+import sys
+import re
+import glob
+import string
+import datetime
+import subprocess
+from compat import iteritems
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
-    import glob
-    import string
-    # if not lib_objects:
-    if not lib_env:
-        lib_env = self
-    if type(filetype) == type(""):
 
-        dir = self.Dir('.').abspath
-        list = glob.glob(dir + "/" + filetype)
-        for f in list:
-            sources.append(self.Object(f))
-    else:
-        for f in filetype:
-            sources.append(self.Object(f))
+    if isinstance(filetype, basestring):
+        dir_path = self.Dir('.').abspath
+        filetype = glob.glob(dir_path + "/" + filetype)
 
+    for path in filetype:
+        sources.append(self.Object(path))
 
 
-class LegacyGLHeaderStruct:
-
-    def __init__(self):
-        self.vertex_lines = []
-        self.fragment_lines = []
-        self.uniforms = []
-        self.attributes = []
-        self.feedbacks = []
-        self.fbos = []
-        self.conditionals = []
-        self.enums = {}
-        self.texunits = []
-        self.texunit_names = []
-        self.ubos = []
-        self.ubo_names = []
-
-        self.vertex_included_files = []
-        self.fragment_included_files = []
-
-        self.reading = ""
-        self.line_offset = 0
-        self.vertex_offset = 0
-        self.fragment_offset = 0
-
-
-def include_file_in_legacygl_header(filename, header_data, depth):
-    fs = open(filename, "r")
-    line = fs.readline()
-
-    while(line):
-
-        if (line.find("[vertex]") != -1):
-            header_data.reading = "vertex"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.vertex_offset = header_data.line_offset
-            continue
-
-        if (line.find("[fragment]") != -1):
-            header_data.reading = "fragment"
-            line = fs.readline()
-            header_data.line_offset += 1
-            header_data.fragment_offset = header_data.line_offset
-            continue
-
-        while(line.find("#include ") != -1):
-            includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
-
-            included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-            if (not included_file in header_data.vertex_included_files and header_data.reading == "vertex"):
-                header_data.vertex_included_files += [included_file]
-                if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-            elif (not included_file in header_data.fragment_included_files and header_data.reading == "fragment"):
-                header_data.fragment_included_files += [included_file]
-                if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-
-            line = fs.readline()
-
-        if (line.find("#ifdef ") != -1 or line.find("#elif defined(") != -1):
-            if (line.find("#ifdef ") != -1):
-                ifdefline = line.replace("#ifdef ", "").strip()
-            else:
-                ifdefline = line.replace("#elif defined(", "").strip()
-                ifdefline = ifdefline.replace(")", "").strip()
-
-            if (line.find("_EN_") != -1):
-                enumbase = ifdefline[:ifdefline.find("_EN_")]
-                ifdefline = ifdefline.replace("_EN_", "_")
-                line = line.replace("_EN_", "_")
-                if (enumbase not in header_data.enums):
-                    header_data.enums[enumbase] = []
-                if (ifdefline not in header_data.enums[enumbase]):
-                    header_data.enums[enumbase].append(ifdefline)
-
-            elif (not ifdefline in header_data.conditionals):
-                header_data.conditionals += [ifdefline]
-
-        if (line.find("uniform") != -1 and line.lower().find("texunit:") != -1):
-            # texture unit
-            texunitstr = line[line.find(":") + 1:].strip()
-            if (texunitstr == "auto"):
-                texunit = "-1"
-            else:
-                texunit = str(int(texunitstr))
-            uline = line[:line.lower().find("//")]
-            uline = uline.replace("uniform", "")
-            uline = uline.replace("highp", "")
-            uline = uline.replace(";", "")
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.texunit_names):
-                    header_data.texunits += [(x, texunit)]
-                    header_data.texunit_names += [x]
-
-        elif (line.find("uniform") != -1 and line.lower().find("ubo:") != -1):
-            # uniform buffer object
-            ubostr = line[line.find(":") + 1:].strip()
-            ubo = str(int(ubostr))
-            uline = line[:line.lower().find("//")]
-            uline = uline[uline.find("uniform") + len("uniform"):]
-            uline = uline.replace("highp", "")
-            uline = uline.replace(";", "")
-            uline = uline.replace("{", "").strip()
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.ubo_names):
-                    header_data.ubos += [(x, ubo)]
-                    header_data.ubo_names += [x]
-
-        elif (line.find("uniform") != -1 and line.find("{") == -1 and line.find(";") != -1):
-            uline = line.replace("uniform", "")
-            uline = uline.replace(";", "")
-            lines = uline.split(",")
-            for x in lines:
-
-                x = x.strip()
-                x = x[x.rfind(" ") + 1:]
-                if (x.find("[") != -1):
-                    # unfiorm array
-                    x = x[:x.find("[")]
-
-                if (not x in header_data.uniforms):
-                    header_data.uniforms += [x]
-
-        if (line.strip().find("attribute ") == 0 and line.find("attrib:") != -1):
-            uline = line.replace("in ", "")
-            uline = uline.replace("attribute ", "")
-            uline = uline.replace("highp ", "")
-            uline = uline.replace(";", "")
-            uline = uline[uline.find(" "):].strip()
-
-            if (uline.find("//") != -1):
-                name, bind = uline.split("//")
-                if (bind.find("attrib:") != -1):
-                    name = name.strip()
-                    bind = bind.replace("attrib:", "").strip()
-                    header_data.attributes += [(name, bind)]
-
-        if (line.strip().find("out ") == 0 and line.find("tfb:") != -1):
-            uline = line.replace("out ", "")
-            uline = uline.replace("highp ", "")
-            uline = uline.replace(";", "")
-            uline = uline[uline.find(" "):].strip()
-
-            if (uline.find("//") != -1):
-                name, bind = uline.split("//")
-                if (bind.find("tfb:") != -1):
-                    name = name.strip()
-                    bind = bind.replace("tfb:", "").strip()
-                    header_data.feedbacks += [(name, bind)]
-
-        line = line.replace("\r", "")
-        line = line.replace("\n", "")
-
-        if (header_data.reading == "vertex"):
-            header_data.vertex_lines += [line]
-        if (header_data.reading == "fragment"):
-            header_data.fragment_lines += [line]
-
-        line = fs.readline()
-        header_data.line_offset += 1
-
-    fs.close()
-
-    return header_data
-
-
-def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2=False):
-
-    header_data = LegacyGLHeaderStruct()
-    include_file_in_legacygl_header(filename, header_data, 0)
-
-    out_file = filename + ".gen.h"
-    fd = open(out_file, "w")
-
-    enum_constants = []
-
-    fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
-
-    out_file_base = out_file
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-    out_file_ifdef = out_file_base.replace(".", "_").upper()
-    fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
-    fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
-
-    out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "Shader" + class_suffix
-    fd.write("\n\n")
-    fd.write("#include \"" + include + "\"\n\n\n")
-    fd.write("class " + out_file_class + " : public Shader" + class_suffix + " {\n\n")
-    fd.write("\t virtual String get_shader_name() const { return \"" + out_file_class + "\"; }\n")
-
-    fd.write("public:\n\n")
-
-    if (len(header_data.conditionals)):
-        fd.write("\tenum Conditionals {\n")
-        for x in header_data.conditionals:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-
-    if (len(header_data.uniforms)):
-        fd.write("\tenum Uniforms {\n")
-        for x in header_data.uniforms:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-
-    fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n")
-    if (len(header_data.conditionals)):
-
-        fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n")
-    fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Size2i& p_vec2) { _FU GLint vec2[2]={p_vec2.x,p_vec2.y}; glUniform2iv(get_uniform(p_uniform),1,vec2); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b) { _FU glUniform2f(get_uniform(p_uniform),p_a,p_b); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c) { _FU glUniform3f(get_uniform(p_uniform),p_a,p_b,p_c); }\n\n")
-    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c, float p_d) { _FU glUniform4f(get_uniform(p_uniform),p_a,p_b,p_c,p_d); }\n\n")
-
-    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
-
-		const Transform &tr = p_transform;
-
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-
-
-	}
-
-	""")
-
-    fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
-
-		const Transform2D &tr = p_transform;
-
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-
-
-	}
-
-	""")
-
-    fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
-
-		GLfloat matrix[16];
-
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
-
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
-
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-        } """)
-
-    fd.write("\n\n#undef _FU\n\n\n")
-
-    fd.write("\tvirtual void init() {\n\n")
-
-    enum_value_count = 0
-
-    if (len(header_data.enums)):
-
-        fd.write("\t\t//Written using math, given nonstandarity of 64 bits integer constants..\n")
-        fd.write("\t\tstatic const Enum _enums[]={\n")
-
-        bitofs = len(header_data.conditionals)
-        enum_vals = []
-
-        for xv in header_data.enums:
-            x = header_data.enums[xv]
-            bits = 1
-            amt = len(x)
-            while(2**bits < amt):
-                bits += 1
-            strs = "{"
-            for i in range(amt):
-                strs += "\"#define " + x[i] + "\\n\","
-
-                v = {}
-                v["set_mask"] = "uint64_t(" + str(i) + ")<<" + str(bitofs)
-                v["clear_mask"] = "((uint64_t(1)<<40)-1) ^ (((uint64_t(1)<<" + str(bits) + ") - 1)<<" + str(bitofs) + ")"
-                enum_vals.append(v)
-                enum_constants.append(x[i])
-
-            strs += "NULL}"
-
-            fd.write("\t\t\t{(uint64_t(1<<" + str(bits) + ")-1)<<" + str(bitofs) + "," + str(bitofs) + "," + strs + "},\n")
-            bitofs += bits
-
-        fd.write("\t\t};\n\n")
-
-        fd.write("\t\tstatic const EnumValue _enum_values[]={\n")
-
-        enum_value_count = len(enum_vals)
-        for x in enum_vals:
-            fd.write("\t\t\t{" + x["set_mask"] + "," + x["clear_mask"] + "},\n")
-
-        fd.write("\t\t};\n\n")
-
-    conditionals_found = []
-    if (len(header_data.conditionals)):
-
-        fd.write("\t\tstatic const char* _conditional_strings[]={\n")
-        if (len(header_data.conditionals)):
-            for x in header_data.conditionals:
-                fd.write("\t\t\t\"#define " + x + "\\n\",\n")
-                conditionals_found.append(x)
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
-
-    if (len(header_data.uniforms)):
-
-        fd.write("\t\tstatic const char* _uniform_strings[]={\n")
-        if (len(header_data.uniforms)):
-            for x in header_data.uniforms:
-                fd.write("\t\t\t\"" + x + "\",\n")
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
-
-    if output_attribs:
-        if (len(header_data.attributes)):
-
-            fd.write("\t\tstatic AttributePair _attribute_pairs[]={\n")
-            for x in header_data.attributes:
-                fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-            fd.write("\t\t};\n\n")
-        else:
-            fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
-
-    feedback_count = 0
-
-    if (not gles2 and len(header_data.feedbacks)):
-
-        fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
-        for x in header_data.feedbacks:
-            name = x[0]
-            cond = x[1]
-            if (cond in conditionals_found):
-                fd.write("\t\t\t{\"" + name + "\"," + str(conditionals_found.index(cond)) + "},\n")
-            else:
-                fd.write("\t\t\t{\"" + name + "\",-1},\n")
-
-            feedback_count += 1
-
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
-
-    if (len(header_data.texunits)):
-        fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
-        for x in header_data.texunits:
-            fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-        fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
-
-    if (not gles2 and len(header_data.ubos)):
-        fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
-        for x in header_data.ubos:
-            fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
-
-    fd.write("\t\tstatic const char _vertex_code[]={\n")
-    for x in header_data.vertex_lines:
-        for i in range(len(x)):
-            fd.write(str(ord(x[i])) + ",")
-
-        fd.write(str(ord('\n')) + ",")
-    fd.write("\t\t0};\n\n")
-
-    fd.write("\t\tstatic const int _vertex_code_start=" + str(header_data.vertex_offset) + ";\n")
-
-    fd.write("\t\tstatic const char _fragment_code[]={\n")
-    for x in header_data.fragment_lines:
-        for i in range(len(x)):
-            fd.write(str(ord(x[i])) + ",")
-
-        fd.write(str(ord('\n')) + ",")
-    fd.write("\t\t0};\n\n")
-
-    fd.write("\t\tstatic const int _fragment_code_start=" + str(header_data.fragment_offset) + ";\n")
-
-    if output_attribs:
-        if gles2:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-        else:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-    else:
-        if gles2:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-        else:
-            fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
-
-    fd.write("\t}\n\n")
-
-    if (len(enum_constants)):
-
-        fd.write("\tenum EnumConditionals {\n")
-        for x in enum_constants:
-            fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
-        fd.write("\tvoid set_enum_conditional(EnumConditionals p_cond) { _set_enum_conditional(p_cond); }\n")
-
-    fd.write("};\n\n")
-    fd.write("#endif\n\n")
-    fd.close()
-
-
-def build_gles3_headers(target, source, env):
-
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
-
-
-def build_gles2_headers(target, source, env):
-
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True)
-
-def make_authors_header(target, source, env):
-
-    sections = ["Project Founders", "Lead Developer", "Project Manager", "Developers"]
-    sections_id = ["AUTHORS_FOUNDERS", "AUTHORS_LEAD_DEVELOPERS", "AUTHORS_PROJECT_MANAGERS", "AUTHORS_DEVELOPERS"]
-
-    src = source[0].srcnode().abspath
-    dst = target[0].srcnode().abspath
-    f = open_utf8(src, "r")
-    g = open_utf8(dst, "w")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_AUTHORS_H\n")
-    g.write("#define _EDITOR_AUTHORS_H\n")
-
-    current_section = ""
-    reading = False
-
-    def close_section():
-        g.write("\t0\n")
-        g.write("};\n")
-
-    for line in f:
-        if reading:
-            if line.startswith("    "):
-                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
-                continue
-        if line.startswith("## "):
-            if reading:
-                close_section()
-                reading = False
-            for i in range(len(sections)):
-                if line.strip().endswith(sections[i]):
-                    current_section = escape_string(sections_id[i])
-                    reading = True
-                    g.write("const char *const " + current_section + "[] = {\n")
-                    break
-
-    if reading:
-        close_section()
-
-    g.write("#endif\n")
-
-    g.close()
-    f.close()
-
-def make_donors_header(target, source, env):
-
-    sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors",
-            "Gold donors", "Silver donors", "Bronze donors"]
-    sections_id = ["DONORS_SPONSOR_PLAT", "DONORS_SPONSOR_GOLD", "DONORS_SPONSOR_MINI",
-            "DONORS_GOLD", "DONORS_SILVER", "DONORS_BRONZE"]
-
-    src = source[0].srcnode().abspath
-    dst = target[0].srcnode().abspath
-    f = open_utf8(src, "r")
-    g = open_utf8(dst, "w")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_DONORS_H\n")
-    g.write("#define _EDITOR_DONORS_H\n")
-
-    current_section = ""
-    reading = False
-
-    def close_section():
-        g.write("\t0\n")
-        g.write("};\n")
-
-    for line in f:
-        if reading >= 0:
-            if line.startswith("    "):
-                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
-                continue
-        if line.startswith("## "):
-            if reading:
-                close_section()
-                reading = False
-            for i in range(len(sections)):
-                if line.strip().endswith(sections[i]):
-                    current_section = escape_string(sections_id[i])
-                    reading = True
-                    g.write("const char *const " + current_section + "[] = {\n")
-                    break
-
-    if reading:
-        close_section()
-
-    g.write("#endif\n")
-
-    g.close()
-    f.close()
-
-
-def make_license_header(target, source, env):
-    src_copyright = source[0].srcnode().abspath
-    src_license = source[1].srcnode().abspath
-    dst = target[0].srcnode().abspath
-
-    class LicenseReader:
-        def __init__(self, license_file):
-            self._license_file = license_file
-            self.line_num = 0
-            self.current = self.next_line()
-
-        def next_line(self):
-            line = self._license_file.readline()
-            self.line_num += 1
-            while line.startswith("#"):
-                line = self._license_file.readline()
-                self.line_num += 1
-            self.current = line
-            return line
-
-        def next_tag(self):
-            if not ':' in self.current:
-                return ('',[])
-            tag, line = self.current.split(":", 1)
-            lines = [line.strip()]
-            while self.next_line() and self.current.startswith(" "):
-                lines.append(self.current.strip())
-            return (tag, lines)
-
-    from collections import OrderedDict
-    projects = OrderedDict()
-    license_list = []
-
-    with open_utf8(src_copyright, "r") as copyright_file:
-        reader = LicenseReader(copyright_file)
-        part = {}
-        while reader.current:
-            tag, content = reader.next_tag()
-            if tag in ("Files", "Copyright", "License"):
-                part[tag] = content[:]
-            elif tag == "Comment":
-                # attach part to named project
-                projects[content[0]] = projects.get(content[0], []) + [part]
-
-            if not tag or not reader.current:
-                # end of a paragraph start a new part
-                if "License" in part and not "Files" in part:
-                    # no Files tag in this one, so assume standalone license
-                    license_list.append(part["License"])
-                part = {}
-                reader.next_line()
-
-    data_list = []
-    for project in itervalues(projects):
-        for part in project:
-            part["file_index"] = len(data_list)
-            data_list += part["Files"]
-            part["copyright_index"] = len(data_list)
-            data_list += part["Copyright"]
-
-    with open_utf8(dst, "w") as f:
-
-        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        f.write("#ifndef _EDITOR_LICENSE_H\n")
-        f.write("#define _EDITOR_LICENSE_H\n")
-        f.write("const char *const GODOT_LICENSE_TEXT =")
-
-        with open_utf8(src_license, "r") as license_file:
-            for line in license_file:
-                escaped_string = escape_string(line.strip())
-                f.write("\n\t\t\"" + escaped_string + "\\n\"")
-        f.write(";\n\n")
-
-        f.write("struct ComponentCopyrightPart {\n"
-                "\tconst char *license;\n"
-                "\tconst char *const *files;\n"
-                "\tconst char *const *copyright_statements;\n"
-                "\tint file_count;\n"
-                "\tint copyright_count;\n"
-                "};\n\n")
-
-        f.write("struct ComponentCopyright {\n"
-                "\tconst char *name;\n"
-                "\tconst ComponentCopyrightPart *parts;\n"
-                "\tint part_count;\n"
-                "};\n\n")
-
-        f.write("const char *const COPYRIGHT_INFO_DATA[] = {\n")
-        for line in data_list:
-            f.write("\t\"" + escape_string(line) + "\",\n")
-        f.write("};\n\n")
-
-        f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
-        part_index = 0
-        part_indexes = {}
-        for project_name, project in iteritems(projects):
-            part_indexes[project_name] = part_index
-            for part in project:
-                f.write("\t{ \"" + escape_string(part["License"][0]) + "\", "
-                        + "&COPYRIGHT_INFO_DATA[" + str(part["file_index"]) + "], "
-                        + "&COPYRIGHT_INFO_DATA[" + str(part["copyright_index"]) + "], "
-                        + str(len(part["Files"])) + ", "
-                        + str(len(part["Copyright"])) + " },\n")
-                part_index += 1
-        f.write("};\n\n")
-
-        f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
-
-        f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
-        for project_name, project in iteritems(projects):
-            f.write("\t{ \"" + escape_string(project_name) + "\", "
-                    + "&COPYRIGHT_PROJECT_PARTS[" + str(part_indexes[project_name]) + "], "
-                    + str(len(project)) + " },\n")
-        f.write("};\n\n")
-
-        f.write("const int LICENSE_COUNT = " + str(len(license_list)) + ";\n")
-
-        f.write("const char *const LICENSE_NAMES[] = {\n")
-        for l in license_list:
-            f.write("\t\"" + escape_string(l[0]) + "\",\n")
-        f.write("};\n\n")
-
-        f.write("const char *const LICENSE_BODIES[] = {\n\n")
-        for l in license_list:
-            for line in l[1:]:
-                if line == ".":
-                    f.write("\t\"\\n\"\n")
-                else:
-                    f.write("\t\"" + escape_string(line) + "\\n\"\n")
-            f.write("\t\"\",\n\n")
-        f.write("};\n\n")
-
-        f.write("#endif\n")
 def add_module_version_string(self,s):
     self.module_version_string += "." + s
+
 
 def update_version(module_version_string=""):
 
     build_name = "custom_build"
-    if (os.getenv("BUILD_NAME") != None):
+    if os.getenv("BUILD_NAME") != None:
         build_name = os.getenv("BUILD_NAME")
         print("Using custom build name: " + build_name)
 
     import version
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     f = open("core/version_generated.gen.h", "w")
     f.write("#define VERSION_SHORT_NAME \"" + str(version.short_name) + "\"\n")
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if (hasattr(version, 'patch')):
+    if hasattr(version, 'patch'):
         f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
-    import datetime
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
     f.close()
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     fhash = open("core/version_hash.gen.h", "w")
     githash = ""
     if os.path.isfile(".git/HEAD"):
@@ -784,7 +63,6 @@ def update_version(module_version_string=""):
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
 
-    import re
     fs = open(fname, "r")
     line = fs.readline()
 
@@ -798,7 +76,7 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
             uniforms.append(name)
 
-            if (type.find("texobj") != -1):
+            if type.find("texobj") != -1:
                 sizes.append(1)
             else:
                 t = re.match(r"float(\d)x(\d)", type)
@@ -816,9 +94,6 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-import glob
-
-
 def detect_modules():
 
     module_list = []
@@ -829,9 +104,9 @@ def detect_modules():
     files = glob.glob("modules/*")
     files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
     for x in files:
-        if (not os.path.isdir(x)):
+        if not os.path.isdir(x):
             continue
-        if (not os.path.exists(x + "/config.py")):
+        if not os.path.exists(x + "/config.py"):
             continue
         x = x.replace("modules/", "")  # rest of world
         x = x.replace("modules\\", "")  # win32
@@ -863,6 +138,7 @@ void unregister_module_types() {
 }
 """
 
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
         f.write(modules_cpp)
 
@@ -998,8 +274,6 @@ def use_windows_spawn_fix(self, platform=None):
     # changes, no multiple versions of the same object file will be present.
     self.Replace(ARFLAGS='q')
 
-    import subprocess
-
     def mySubProcess(cmdline, env):
 
         startupinfo = subprocess.STARTUPINFO()
@@ -1036,7 +310,6 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def split_lib(self, libname, src_list = None, env_lib = None):
-    import string
     env = self
 
     num = 0
@@ -1072,7 +345,6 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     lib_list.append(lib)
 
     if len(lib_list) > 0:
-        import os, sys
         if os.name == 'posix' and sys.platform == 'msys':
             env.Replace(ARFLAGS=['rcsT'])
             lib = env_lib.add_library(libname + "_collated", lib_list)
@@ -1098,7 +370,7 @@ def save_active_platforms(apnames, ap):
             b = pngf.read(1)
             str = " /* AUTOGENERATED FILE, DO NOT EDIT */ \n"
             str += " static const unsigned char _" + x[9:] + "_" + name + "[]={"
-            while(len(b) == 1):
+            while len(b) == 1:
                 str += hex(ord(b))
                 b = pngf.read(1)
                 if (len(b) == 1):
@@ -1108,6 +380,7 @@ def save_active_platforms(apnames, ap):
 
             pngf.close()
 
+            # NOTE: It is safe to generate this file here, since this is still executed serially
             wf = x + "/" + name + ".gen.h"
             with open(wf, "w") as pngw:
                 pngw.write(str)
@@ -1249,14 +522,13 @@ def detect_visual_c_compiler_version(tools_env):
     return vc_chosen_compiler_str
 
 def find_visual_c_batch_file(env):
-    from  SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
+    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
     version = get_default_version(env)
     (host_platform, target_platform,req_target_platform) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
 def generate_cpp_hint_file(filename):
-    import os.path
     if os.path.isfile(filename):
         # Don't overwrite an existing hint file since the user may have customized it.
         pass
@@ -1306,13 +578,14 @@ def generate_vs_project(env, num_jobs):
         release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
         release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
         targets = debug_targets + release_targets + release_debug_targets
-        msvproj = env.MSVSProject(target=['#godot' + env['MSVSPROJECTSUFFIX']],
-                                    incs=env.vs_incs,
-                                    srcs=env.vs_srcs,
-                                    runfile=targets,
-                                    buildtarget=targets,
-                                    auto_build_solution=1,
-                                    variant=variants)
+        env.MSVSProject(
+            target=['#godot' + env['MSVSPROJECTSUFFIX']],
+            incs=env.vs_incs,
+            srcs=env.vs_srcs,
+            runfile=targets,
+            buildtarget=targets,
+            auto_build_solution=1,
+            variant=variants)
     else:
         print("Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project.")
 
