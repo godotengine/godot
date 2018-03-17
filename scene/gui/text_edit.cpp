@@ -819,7 +819,7 @@ void TextEdit::_notification(int p_what) {
 
 			int line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-			draw_amount += times_line_wraps(line + 1);
+			FontDrawer drawer(cache.font, Color(1, 1, 1));
 			for (int i = 0; i < draw_amount; i++) {
 
 				line++;
@@ -1061,25 +1061,16 @@ void TextEdit::_notification(int p_what) {
 						if ((brace_open_match_line == line && brace_open_match_column == j) ||
 								(cursor.column == j && cursor.line == line && (brace_open_matching || brace_open_mismatch))) {
 
-						if (str[j] >= 32) {
-							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
-							if (underlined) {
-								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
-							}
-						} else if (draw_tabs && str[j] == '\t') {
-							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
-							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							if (brace_open_mismatch)
+								color = cache.brace_mismatch_color;
+							drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 
 						char_ofs += char_w;
 
-						if (line_wrap_index == line_wrap_amount && j == str.length() - 1 && is_folded(line)) {
-							int yofs = (get_row_height() - cache.folded_eol_icon->get_height()) / 2;
-							int xofs = cache.folded_eol_icon->get_width() / 2;
-							Color eol_color = cache.code_folding_color;
-							eol_color.a = 1;
-							cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), eol_color);
+							if (brace_close_mismatch)
+								color = cache.brace_mismatch_color;
+							drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 					}
 
@@ -1135,6 +1126,83 @@ void TextEdit::_notification(int p_what) {
 #endif
 									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, get_row_height())), cache.caret_color);
 								}
+							}
+						}
+					}
+
+					if (cursor.column == j && cursor.line == line && block_caret && draw_caret && !insert_mode) {
+						color = cache.caret_background_color;
+					} else if (!syntax_coloring && block_caret) {
+						color = cache.font_color;
+						color.a *= readonly_alpha;
+					}
+
+					if (str[j] >= 32) {
+						int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+						if (underlined) {
+							draw_rect(Rect2(char_ofs + char_margin + ofs_x, ofs_y + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+						}
+					}
+
+					else if (draw_tabs && str[j] == '\t') {
+						int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
+						cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+					}
+
+					char_ofs += char_w;
+
+					if (j == str.length() - 1 && is_folded(line)) {
+						int yofs = (get_row_height() - cache.folded_eol_icon->get_height()) / 2;
+						int xofs = cache.folded_eol_icon->get_width() / 2;
+						Color eol_color = cache.code_folding_color;
+						eol_color.a = 1;
+						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), eol_color);
+					}
+				}
+
+				if (cursor.column == str.length() && cursor.line == line && (char_ofs + char_margin) >= xmargin_beg) {
+
+					cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
+
+					if (insert_mode) {
+						cursor_pos.y += (get_row_height() - 3);
+					}
+					if (ime_text.length() > 0) {
+						int ofs = 0;
+						while (true) {
+							if (ofs >= ime_text.length())
+								break;
+
+							CharType cchar = ime_text[ofs];
+							CharType next = ime_text[ofs + 1];
+							int im_char_width = cache.font->get_char_size(cchar, next).width;
+
+							if ((char_ofs + char_margin + im_char_width) >= xmargin_end)
+								break;
+
+							bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
+							if (selected) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 3)), color);
+							} else {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 1)), color);
+							}
+
+							drawer.draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, color);
+
+							char_ofs += im_char_width;
+							ofs++;
+						}
+					}
+					if (ime_text.length() == 0) {
+						if (draw_caret) {
+							if (insert_mode) {
+								int char_w = cache.font->get_char_size(' ').width;
+								int caret_h = (block_caret) ? 4 : 1;
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(char_w, caret_h)), cache.caret_color);
+							} else {
+								int char_w = cache.font->get_char_size(' ').width;
+								int caret_w = (block_caret) ? char_w : 1;
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, get_row_height())), cache.caret_color);
 							}
 						}
 					}
