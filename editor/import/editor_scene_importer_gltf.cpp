@@ -762,14 +762,22 @@ PoolVector<Color> EditorSceneImporterGLTF::_decode_accessor_as_color(GLTFState &
 	PoolVector<Color> ret;
 	if (attribs.size() == 0)
 		return ret;
-	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
+	int type = state.accessors[p_accessor].type;
+	ERR_FAIL_COND_V(!(type == TYPE_VEC3 || type == TYPE_VEC4), ret);
+	int components;
+	if (type == TYPE_VEC3) {
+		components = 3;
+	} else { // TYPE_VEC4
+		components = 4;
+	}
+	ERR_FAIL_COND_V(attribs.size() % components != 0, ret);
 	const double *attribs_ptr = attribs.ptr();
-	int ret_size = attribs.size() / 4;
+	int ret_size = attribs.size() / components;
 	ret.resize(ret_size);
 	{
 		PoolVector<Color>::Write w = ret.write();
 		for (int i = 0; i < ret_size; i++) {
-			w[i] = Color(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			w[i] = Color(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], components == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
 		}
 	}
 	return ret;
