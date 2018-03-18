@@ -444,7 +444,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 				goto append_npos;
 			}
 			if (c == '.') {
-				if (ctx->dcount || (ctx->f & LEJP_SEEN_POINT)) {
+				if (!ctx->dcount || (ctx->f & LEJP_SEEN_POINT)) {
 					ret = LEJP_REJECT_MP_VAL_NUM_FORMAT;
 					goto reject;
 				}

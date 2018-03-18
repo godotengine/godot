@@ -270,9 +270,12 @@ LWS_VISIBLE int lws_write(struct lws *wsi, unsigned char *buf, size_t len,
 
 	if (wsi->state != LWSS_ESTABLISHED &&
 	    ((wsi->state != LWSS_RETURNED_CLOSE_ALREADY &&
+	      wsi->state != LWSS_WAITING_TO_SEND_CLOSE_NOTIFICATION &&
 	      wsi->state != LWSS_AWAITING_CLOSE_ACK) ||
-			    wp != LWS_WRITE_CLOSE))
+			    wp != LWS_WRITE_CLOSE)) {
+		lwsl_debug("binning\n");
 		return 0;
+	}
 
 	/* if we are continuing a frame that already had its header done */
 
@@ -507,7 +510,7 @@ send_raw:
 			     (wp & 0x1f) == LWS_WRITE_HTTP_FINAL) &&
 			    wsi->u.http.tx_content_length) {
 				wsi->u.http.tx_content_remain -= len;
-				lwsl_info("%s: content_remain = %llu\n", __func__,
+				lwsl_info("%s: wsi %p: tx_content_remain = %llu\n", __func__, wsi,
 					  (unsigned long long)wsi->u.http.tx_content_remain);
 				if (!wsi->u.http.tx_content_remain) {
 					lwsl_info("%s: selecting final write mode\n", __func__);
@@ -638,6 +641,9 @@ LWS_VISIBLE int lws_serve_http_file_fragment(struct lws *wsi)
 #endif
 
 		poss = context->pt_serv_buf_size - n - LWS_H2_FRAME_HEADER_LENGTH;
+
+		if (poss > wsi->u.http.tx_content_remain)
+			poss = wsi->u.http.tx_content_remain;
 
 		/*
 		 * if there is a hint about how much we will do well to send at one time,
