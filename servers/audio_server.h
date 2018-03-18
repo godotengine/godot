@@ -133,6 +133,7 @@ private:
 	float channel_disable_threshold_db;
 	uint32_t channel_disable_frames;
 
+	int channel_count;
 	int to_mix;
 
 	struct Bus {
@@ -188,6 +189,8 @@ private:
 	size_t audio_data_max_mem;
 
 	Mutex *audio_data_lock;
+
+	void init_channels_and_buffers();
 
 	void _mix_step();
 
