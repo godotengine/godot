@@ -1883,6 +1883,8 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 	animation.instance();
 	animation->set_name(name);
 
+	float length = 0;
+
 	for (Map<int, GLTFAnimation::Track>::Element *E = anim.tracks.front(); E; E = E->next()) {
 
 		const GLTFAnimation::Track &track = E->get();
@@ -1901,8 +1903,6 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				node_path = ap->get_parent()->get_path_to(node->godot_nodes[i]);
 			}
 
-			float length = 0;
-
 			for (int i = 0; i < track.rotation_track.times.size(); i++) {
 				length = MAX(length, track.rotation_track.times[i]);
 			}
@@ -1918,8 +1918,6 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 					length = MAX(length, track.weight_tracks[i].times[j]);
 				}
 			}
-
-			animation->set_length(length);
 
 			if (track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) {
 				//make transform track
@@ -2038,6 +2036,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			}
 		}
 	}
+	animation->set_length(length);
 
 	ap->add_animation(name, animation);
 }
