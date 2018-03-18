@@ -778,7 +778,7 @@ AudioServerJavascript::AudioServerJavascript() {
 
 		_as_audioctx = new (window.AudioContext || window.webkitAudioContext)();
 
-		audio_server_mix_function = Module.cwrap('audio_server_mix_function', 'void', ['number']);
+		audio_server_mix_function = cwrap('audio_server_mix_function', null, ['number']);
 	);
 	/* clang-format on */
 
