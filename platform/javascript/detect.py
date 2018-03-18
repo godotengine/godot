@@ -65,13 +65,14 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
-        env.Append(LINKFLAGS=['-O2', '-s', 'ASSERTIONS=1'])
+        env.Append(LINKFLAGS=['-O2'])
         # retain function names at the cost of file size, for backtraces and profiling
         env.Append(LINKFLAGS=['--profiling-funcs'])
 
     elif (env["target"] == "debug"):
         env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
         env.Append(LINKFLAGS=['-O1', '-g'])
+        env.Append(LINKFLAGS=['-s', 'ASSERTIONS=1'])
 
     ## Compiler configuration
 
