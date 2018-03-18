@@ -900,8 +900,6 @@ void AudioServer::init() {
 	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	buffer_size = 1024; //hardcoded for now
 
-	temp_buffer.resize(get_channel_count());
-
 	init_channels_and_buffers();
 
 	mix_count = 0;
