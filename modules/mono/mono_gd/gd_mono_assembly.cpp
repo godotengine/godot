@@ -85,19 +85,22 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 			path = search_dir.plus_file(name);
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name.get_basename(), path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 		} else {
 			path = search_dir.plus_file(name + ".dll");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 
 			path = search_dir.plus_file(name + ".exe");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 		}
 	}
@@ -152,19 +155,15 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 				path = search_dir.plus_file(name);
 				if (FileAccess::exists(path)) {
 					res = _load_assembly_from(name.get_basename(), path, refonly);
-					break;
+					if (res != NULL)
+						break;
 				}
 			} else {
 				path = search_dir.plus_file(name + ".dll");
 				if (FileAccess::exists(path)) {
 					res = _load_assembly_from(name, path, refonly);
-					break;
-				}
-
-				path = search_dir.plus_file(name + ".exe");
-				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name, path, refonly);
-					break;
+					if (res != NULL)
+						break;
 				}
 			}
 		}
@@ -213,14 +212,15 @@ Error GDMonoAssembly::load(bool p_refonly) {
 
 	String image_filename(path);
 
-	MonoImageOpenStatus status;
+	MonoImageOpenStatus status = MONO_IMAGE_OK;
 
 	image = mono_image_open_from_data_with_name(
 			(char *)&data[0], data.size(),
 			true, &status, refonly,
 			image_filename.utf8().get_data());
 
-	ERR_FAIL_COND_V(status != MONO_IMAGE_OK || image == NULL, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V(status != MONO_IMAGE_OK, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_NULL_V(image, ERR_FILE_CANT_OPEN);
 
 #ifdef DEBUG_ENABLED
 	String pdb_path(path + ".pdb");

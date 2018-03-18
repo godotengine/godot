@@ -74,7 +74,31 @@ void gdmono_MonoPrintCallback(const char *string, mono_bool is_stdout) {
 
 GDMono *GDMono::singleton = NULL;
 
+namespace {
+
+void setup_runtime_main_args() {
+	CharString execpath = OS::get_singleton()->get_executable_path().utf8();
+
+	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+
+	List<CharString> cmdline_args_utf8;
+	Vector<char *> main_args;
+	main_args.resize(cmdline_args.size() + 1);
+
+	main_args[0] = execpath.ptrw();
+
+	int i = 1;
+	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
+		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
+		main_args[i] = stored.ptrw();
+		i++;
+	}
+
+	mono_runtime_set_main_args(main_args.size(), main_args.ptrw());
+}
+
 #ifdef DEBUG_ENABLED
+
 static bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 
 	do {
@@ -96,9 +120,7 @@ static bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 
 	return mono_is_debugger_attached();
 }
-#endif
 
-#ifdef DEBUG_ENABLED
 void gdmono_debug_init() {
 
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
@@ -125,7 +147,10 @@ void gdmono_debug_init() {
 	};
 	mono_jit_parse_options(2, (char **)options);
 }
+
 #endif
+
+} // namespace
 
 void GDMono::initialize() {
 
@@ -178,6 +203,8 @@ void GDMono::initialize() {
 	ERR_FAIL_NULL(root_domain);
 
 	GDMonoUtils::set_main_thread(GDMonoUtils::get_current_thread());
+
+	setup_runtime_main_args(); // Required for System.Environment.GetCommandLineArgs
 
 	runtime_initialized = true;
 
