@@ -50,6 +50,8 @@
 #include "main/input_default.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
+#include "servers/visual/visual_server_global.h"
+#include "servers/visual/visual_server_viewport.h"
 
 #include "editor/animation_editor.h"
 #include "editor/editor_audio_buses.h"
@@ -951,6 +953,8 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	}
 	save.step(TTR("Creating Thumbnail"), 1);
 	//current view?
+
+	VSG::viewport->draw_viewport(viewport, true);
 
 	Ref<Image> img;
 	if (is2d) {
