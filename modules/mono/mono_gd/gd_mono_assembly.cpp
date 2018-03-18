@@ -86,19 +86,22 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 			path = search_dir.plus_file(name);
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name.get_basename(), path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 		} else {
 			path = search_dir.plus_file(name + ".dll");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 
 			path = search_dir.plus_file(name + ".exe");
 			if (FileAccess::exists(path)) {
 				res = _load_assembly_from(name, path, refonly);
-				break;
+				if (res != NULL)
+					break;
 			}
 		}
 	}
@@ -153,19 +156,15 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 				path = search_dir.plus_file(name);
 				if (FileAccess::exists(path)) {
 					res = _load_assembly_from(name.get_basename(), path, refonly);
-					break;
+					if (res != NULL)
+						break;
 				}
 			} else {
 				path = search_dir.plus_file(name + ".dll");
 				if (FileAccess::exists(path)) {
 					res = _load_assembly_from(name, path, refonly);
-					break;
-				}
-
-				path = search_dir.plus_file(name + ".exe");
-				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name, path, refonly);
-					break;
+					if (res != NULL)
+						break;
 				}
 			}
 		}

@@ -120,9 +120,7 @@ static bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 
 	return mono_is_debugger_attached();
 }
-#endif
 
-#ifdef DEBUG_ENABLED
 void gdmono_debug_init() {
 
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
