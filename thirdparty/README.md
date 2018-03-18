@@ -234,7 +234,7 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 2.4.1
+- Version: 2.4.2
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
