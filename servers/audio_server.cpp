@@ -188,10 +188,6 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 	int todo = p_frames;
 
-#ifdef DEBUG_ENABLED
-	uint64_t prof_ticks = OS::get_singleton()->get_ticks_usec();
-#endif
-
 	if (channel_count != get_channel_count()) {
 		// Amount of channels changed due to a device change
 		// reinitialize the buses channels and buffers
@@ -506,10 +502,10 @@ void AudioServer::set_bus_count(int p_count) {
 			}
 		}
 
-		buses.write[i] = memnew(Bus);
-		buses.write[i]->channels.resize(channel_count);
+		buses[i] = memnew(Bus);
+		buses[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
-			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
+			buses[i]->channels[j].buffer.resize(buffer_size);
 		}
 		buses[i]->name = attempt;
 		buses[i]->solo = false;
@@ -581,7 +577,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	Bus *bus = memnew(Bus);
 	bus->channels.resize(channel_count);
 	for (int j = 0; j < channel_count; j++) {
-		bus->channels.write[j].buffer.resize(buffer_size);
+		bus->channels[j].buffer.resize(buffer_size);
 	}
 	bus->name = attempt;
 	bus->solo = false;
@@ -885,17 +881,29 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 	return buses[p_bus]->channels[p_channel].active;
 }
 
+void AudioServer::init_channels_and_buffers() {
+	channel_count = get_channel_count();
+	temp_buffer.resize(channel_count);
+
+	for (int i = 0; i < temp_buffer.size(); i++) {
+		temp_buffer[i].resize(buffer_size);
+	}
+
+	for (int i = 0; i < buses.size(); i++) {
+		buses[i]->channels.resize(channel_count);
+		for (int j = 0; j < channel_count; j++) {
+			buses[i]->channels[j].buffer.resize(buffer_size);
+		}
+	}
+}
+
 void AudioServer::init() {
 
 	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	buffer_size = 1024; //hardcoded for now
 
-	temp_buffer.resize(get_channel_count());
-
-	for (int i = 0; i < temp_buffer.size(); i++) {
-		temp_buffer.write[i].resize(buffer_size);
-	}
+	init_channels_and_buffers();
 
 	for (int i = 0; i < buses.size(); i++) {
 		buses[i]->channels.resize(channel_count);
@@ -1154,7 +1162,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 		buses[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
-			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
+			buses[i]->channels[j].buffer.resize(buffer_size);
 		}
 		_update_bus_effects(i);
 	}
