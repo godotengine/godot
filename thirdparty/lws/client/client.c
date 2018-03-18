@@ -258,9 +258,10 @@ start_ws_handshake:
 #ifdef LWS_OPENSSL_SUPPORT
 		/* we can retry this... just cook the SSL BIO the first time */
 
-		if (wsi->use_ssl && !wsi->ssl) {
-			if (lws_ssl_client_bio_create(wsi))
-				return -1;
+		if (wsi->use_ssl && !wsi->ssl &&
+		    lws_ssl_client_bio_create(wsi) < 0) {
+			cce = "bio_create failed";
+			goto bail3;
 		}
 
 		if (wsi->use_ssl) {
@@ -727,9 +728,10 @@ lws_client_interpret_server_handshake(struct lws *wsi)
 		return 0;
 	}
 
-	if (lws_hdr_total_length(wsi, WSI_TOKEN_ACCEPT) == 0) {
-		lwsl_info("no ACCEPT\n");
-		cce = "HS: ACCEPT missing";
+	if (p && !strncmp(p, "401", 3)) {
+		lwsl_warn(
+		       "lws_client_handshake: got bad HTTP response '%s'\n", p);
+		cce = "HS: ws upgrade unauthorized";
 		goto bail3;
 	}
 
@@ -737,6 +739,12 @@ lws_client_interpret_server_handshake(struct lws *wsi)
 		lwsl_warn(
 		       "lws_client_handshake: got bad HTTP response '%s'\n", p);
 		cce = "HS: ws upgrade response not 101";
+		goto bail3;
+	}
+
+	if (lws_hdr_total_length(wsi, WSI_TOKEN_ACCEPT) == 0) {
+		lwsl_info("no ACCEPT\n");
+		cce = "HS: ACCEPT missing";
 		goto bail3;
 	}
 

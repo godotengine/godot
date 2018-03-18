@@ -45,7 +45,7 @@ struct sha1_ctxt {
 	} h;
 	union {
 		unsigned char		b8[8];
-		u_int64_t		b64[1];
+		uint64_t		b64[1];
 	} c;
 	union {
 		unsigned char		b8[64];

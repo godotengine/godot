@@ -142,9 +142,9 @@ int SSL_get_error(const SSL *ssl, int ret_code)
         ret = SSL_ERROR_NONE;
     else if (ret_code < 0)
     {
-        if (SSL_want_read(ssl))
+        if (ssl->err == SSL_ERROR_WANT_READ || SSL_want_read(ssl))
             ret = SSL_ERROR_WANT_READ;
-        else if (SSL_want_write(ssl))
+        else if (ssl->err == SSL_ERROR_WANT_WRITE || SSL_want_write(ssl))
             ret = SSL_ERROR_WANT_WRITE;
         else
             ret = SSL_ERROR_SYSCALL; //unknown
@@ -457,7 +457,7 @@ int SSL_read(SSL *ssl, void *buffer, int len)
 int SSL_write(SSL *ssl, const void *buffer, int len)
 {
     int ret;
-    int send_bytes;
+    int send_bytes, bytes;
     const unsigned char *pbuf;
 
     SSL_ASSERT1(ssl);
@@ -470,25 +470,36 @@ int SSL_write(SSL *ssl, const void *buffer, int len)
     pbuf = (const unsigned char *)buffer;
 
     do {
-        int bytes;
-
         if (send_bytes > SSL_SEND_DATA_MAX_LENGTH)
             bytes = SSL_SEND_DATA_MAX_LENGTH;
         else
             bytes = send_bytes;
 
+	if (ssl->interrupted_remaining_write) {
+		bytes = ssl->interrupted_remaining_write;
+		ssl->interrupted_remaining_write = 0;
+	}
+
         ret = SSL_METHOD_CALL(send, ssl, pbuf, bytes);
+	//printf("%s: ssl_pm said %d for %d requested (cum %d)\n", __func__, ret, bytes, len -send_bytes);
+        /* the return is a NEGATIVE OpenSSL error code, or the length sent */
         if (ret > 0) {
             pbuf += ret;
             send_bytes -= ret;
-        }
-    } while (ret > 0 && send_bytes);
+        } else
+		ssl->interrupted_remaining_write = bytes;
+    } while (ret > 0 && send_bytes && ret == bytes);
 
     if (ret >= 0) {
         ret = len - send_bytes;
-        ssl->rwstate = SSL_NOTHING;
-    } else
-        ret = -1;
+	if (!ret)
+	        ssl->rwstate = SSL_NOTHING;
+    } else {
+	    if (send_bytes == len)
+		ret = -1;
+	    else
+		    ret = len - send_bytes;
+    }
 
     return ret;
 }

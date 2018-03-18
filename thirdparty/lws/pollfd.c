@@ -537,8 +537,13 @@ LWS_VISIBLE int
 lws_callback_on_writable_all_protocol(const struct lws_context *context,
 				      const struct lws_protocols *protocol)
 {
-	struct lws_vhost *vhost = context->vhost_list;
+	struct lws_vhost *vhost;
 	int n;
+
+	if (!context)
+		return 0;
+
+	vhost = context->vhost_list;
 
 	while (vhost) {
 		for (n = 0; n < vhost->count_protocols; n++)

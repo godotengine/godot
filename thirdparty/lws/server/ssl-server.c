@@ -155,7 +155,7 @@ lws_ssl_server_name_cb(SSL *ssl, int *ad, void *arg)
 	 */
 	vh = context->vhost_list;
 	while (vh) {
-		if (!vh->being_destroyed && vh->ssl_ctx == SSL_get_SSL_CTX(ssl))
+		if (!vh->being_destroyed && ssl && vh->ssl_ctx == SSL_get_SSL_CTX(ssl))
 			break;
 		vh = vh->vhost_next;
 	}

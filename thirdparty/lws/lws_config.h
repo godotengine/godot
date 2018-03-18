@@ -1,5 +1,10 @@
 /* lws_config.h  Generated from lws_config.h.in  */
-#include "lws_config_private.h"
+
+/* GODOT ADDITION */
+#ifndef DEBUG_ENABLED
+#define LWS_WITH_NO_LOGS
+#endif
+/* END GODOT ADDITION */
 
 #ifndef NDEBUG
 	#ifndef _DEBUG
@@ -25,54 +30,45 @@
 
 /* #undef LWS_WITH_PLUGINS */
 /* #undef LWS_WITH_NO_LOGS */
-#ifndef DEBUG_ENABLED
-#define LWS_WITH_NO_LOGS
-#endif
 
 /* The Libwebsocket version */
-#define LWS_LIBRARY_VERSION "2.4.1"
+#define LWS_LIBRARY_VERSION "2.4.2"
 
 #define LWS_LIBRARY_VERSION_MAJOR 2
 #define LWS_LIBRARY_VERSION_MINOR 4
-#define LWS_LIBRARY_VERSION_PATCH 1
+#define LWS_LIBRARY_VERSION_PATCH 2
 /* LWS_LIBRARY_VERSION_NUMBER looks like 1005001 for e.g. version 1.5.1 */
 #define LWS_LIBRARY_VERSION_NUMBER (LWS_LIBRARY_VERSION_MAJOR*1000000)+(LWS_LIBRARY_VERSION_MINOR*1000)+LWS_LIBRARY_VERSION_PATCH
 
 /* The current git commit hash that we're building from */
-#define LWS_BUILD_HASH "55f97b7806e07db2d4c8a158172cd309d0faf450"
+#define LWS_BUILD_HASH "8964ce9db75a98e463dfafd2e89f2bc8a95ec6ed"
 
 /* Build with OpenSSL support */
 #define LWS_OPENSSL_SUPPORT
 
 /* The client should load and trust CA root certs it finds in the OS */
-#define LWS_SSL_CLIENT_USE_OS_CA_CERTS
+/* #undef LWS_SSL_CLIENT_USE_OS_CA_CERTS */
 
 /* Sets the path where the client certs should be installed. */
-#define LWS_OPENSSL_CLIENT_CERTS "../share"
+/* #undef LWS_OPENSSL_CLIENT_CERTS "../share" */
 
 /* Turn off websocket extensions */
 /* #undef LWS_NO_EXTENSIONS */
 
 /* Enable libev io loop */
 /* #undef LWS_WITH_LIBEV */
-#undef LWS_WITH_LIBEV
 
 /* Enable libuv io loop */
 /* #undef LWS_WITH_LIBUV */
-#undef LWS_WITH_LIBUV
 
 /* Enable libevent io loop */
 /* #undef LWS_WITH_LIBEVENT */
-#undef LWS_WITH_LIBEVENT
 
 /* Build with support for ipv6 */
 /* #undef LWS_WITH_IPV6 */
 
 /* Build with support for UNIX domain socket */
 /* #undef LWS_WITH_UNIX_SOCK */
-#ifdef WINDOWS_ENABLED
-#undef LWS_USE_UNIX_SOCK
-#endif
 
 /* Build with support for HTTP2 */
 /* #undef LWS_WITH_HTTP2 */
@@ -100,7 +96,7 @@
 
 /* SSL server using ECDH certificate */
 /* #undef LWS_SSL_SERVER_WITH_ECDH_CERT */
-#define LWS_HAVE_SSL_CTX_set1_param
+/* #undef LWS_HAVE_SSL_CTX_set1_param */
 #define LWS_HAVE_X509_VERIFY_PARAM_set1_host
 /* #undef LWS_HAVE_RSA_SET0_KEY */
 
@@ -110,7 +106,7 @@
 /* #undef LWS_WITH_CGI */
 
 /* whether the Openssl is recent enough, and / or built with, ecdh */
-#define LWS_HAVE_OPENSSL_ECDH_H
+/* #undef LWS_HAVE_OPENSSL_ECDH_H */
 
 /* HTTP Proxy support */
 /* #undef LWS_WITH_HTTP_PROXY */
@@ -157,9 +153,9 @@
 
 /* OpenSSL various APIs */
 
-/* #undef LWS_HAVE_TLS_CLIENT_METHOD */
-#define LWS_HAVE_TLSV1_2_CLIENT_METHOD
-#define LWS_HAVE_SSL_SET_INFO_CALLBACK
+#define LWS_HAVE_TLS_CLIENT_METHOD
+/* #undef LWS_HAVE_TLSV1_2_CLIENT_METHOD */
+/* #undef LWS_HAVE_SSL_SET_INFO_CALLBACK */
 
 #define LWS_HAS_INTPTR_T
 

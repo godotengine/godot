@@ -25,11 +25,13 @@
 */
 #include "string.h"
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
+/* GODOT ADDITION */
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <stdlib.h>
 #else
 #include "malloc.h"
 #endif
+/* END GODOT ADDITION */
 
 void *ssl_mem_zalloc(size_t size);
 

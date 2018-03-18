@@ -1073,6 +1073,8 @@ lws_service_fd_tsi(struct lws_context *context, struct lws_pollfd *pollfd, int t
 				c = lws_token_to_string(m);
 				if (!c)
 					break;
+				if (!(*c))
+					break;
 
 				len = lws_hdr_total_length(wsi, m);
 				if (!len || len > sizeof(buf) - 1) {
@@ -1090,6 +1092,11 @@ lws_service_fd_tsi(struct lws_context *context, struct lws_pollfd *pollfd, int t
 				m++;
 			} while (1);
 
+			/* explicitly detach the ah */
+
+			lws_header_table_force_to_detachable_state(wsi);
+			lws_header_table_detach(wsi, 0);
+
 			/* ... and then drop the connection */
 
 			if (wsi->desc.sockfd == our_fd)
@@ -1098,7 +1105,7 @@ lws_service_fd_tsi(struct lws_context *context, struct lws_pollfd *pollfd, int t
 
 			lws_close_free_wsi(wsi, LWS_CLOSE_STATUS_NOSTATUS);
 
-			ah = ah->next;
+			ah = pt->ah_list;
 		}
 
 #ifdef LWS_WITH_CGI
@@ -1644,6 +1651,14 @@ drain:
 			break;
 		}
 #endif
+	/*
+	 * something went wrong with parsing the handshake, and
+	 * we ended up back in the event loop without completing it
+	 */
+	case LWSCM_PRE_WS_SERVING_ACCEPT:
+		wsi->socket_is_permanently_unusable = 1;
+		goto close_and_handled;
+
 	default:
 #ifdef LWS_NO_CLIENT
 		break;
