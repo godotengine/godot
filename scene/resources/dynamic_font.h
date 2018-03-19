@@ -192,7 +192,7 @@ public:
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only = false) const;
 
 	void set_texture_flags(uint32_t p_flags);
-	bool update_oversampling();
+	void update_oversampling();
 
 	DynamicFontAtSize();
 	~DynamicFontAtSize();

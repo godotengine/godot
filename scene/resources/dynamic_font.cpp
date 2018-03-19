@@ -444,7 +444,7 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 		ret.x = 0;
 		ret.y = 0;
 
-		int texsize = MAX(id.size * 8, 256);
+		int texsize = MAX(id.size * oversampling * 8, 256);
 		if (mw > texsize)
 			texsize = mw; //special case, adapt to it?
 		if (mh > texsize)
@@ -644,11 +644,9 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	char_map[p_char] = character;
 }
 
-bool DynamicFontAtSize::update_oversampling() {
-	if (oversampling == font_oversampling)
-		return false;
-	if (!valid)
-		return false;
+void DynamicFontAtSize::update_oversampling() {
+	if (oversampling == font_oversampling || !valid)
+		return;
 
 	FT_Done_FreeType(library);
 	textures.clear();
@@ -656,8 +654,6 @@ bool DynamicFontAtSize::update_oversampling() {
 	oversampling = font_oversampling;
 	valid = false;
 	_load();
-
-	return true;
 }
 
 DynamicFontAtSize::DynamicFontAtSize() {
@@ -1082,7 +1078,8 @@ void DynamicFont::update_oversampling() {
 	SelfList<DynamicFont> *E = dynamic_fonts.first();
 	while (E) {
 
-		if (E->self()->data_at_size.is_valid() && E->self()->data_at_size->update_oversampling()) {
+		if (E->self()->data_at_size.is_valid()) {
+			E->self()->data_at_size->update_oversampling();
 			changed.push_back(Ref<DynamicFont>(E->self()));
 		}
 		E = E->next();
