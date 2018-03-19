@@ -1162,9 +1162,11 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
 
-	fw->store_32(VERSION_MAJOR); //current version
-	fw->store_32(VERSION_MINOR);
-	fw->store_32(FORMAT_VERSION);
+	// Since we're not actually converting the file contents, leave the version
+	// numbers in the file untouched.
+	fw->store_32(ver_major);
+	fw->store_32(ver_minor);
+	fw->store_32(ver_format);
 
 	save_ustring(fw, get_ustring(f)); //type
 
