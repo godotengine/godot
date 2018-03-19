@@ -182,7 +182,8 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when you start pressing the action event.
+				Returns [code]true[/code] when the user starts pressing the action event, meaning it's true only on the frame that the user pressed down the button.
+				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -191,7 +192,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when you stop pressing the action event.
+				Returns [code]true[/code] when the user stops pressing the action event, meaning it's true only on the frame that the user released the button.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
