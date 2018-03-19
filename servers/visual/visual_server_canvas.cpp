@@ -440,13 +440,17 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (p_antialiased) {
 				pline->line_colors.push_back(Color(1, 1, 1, 1));
 			}
-		}
-		if (p_colors.size() == 1) {
+		} else if (p_colors.size() == 1) {
 			pline->triangle_colors = p_colors;
 			pline->line_colors = p_colors;
 		} else {
-			pline->triangle_colors.resize(pline->triangles.size());
-			pline->line_colors.resize(pline->lines.size());
+			if (p_colors.size() != p_points.size()) {
+				pline->triangle_colors.push_back(p_colors[0]);
+				pline->line_colors.push_back(p_colors[0]);
+			} else {
+				pline->triangle_colors.resize(pline->triangles.size());
+				pline->line_colors.resize(pline->lines.size());
+			}
 		}
 
 		for (int i = 0; i < p_points.size(); i++) {
