@@ -2045,6 +2045,55 @@ bool OS_OSX::get_borderless_window() {
 	return [window_object styleMask] == NSWindowStyleMaskBorderless;
 }
 
+Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool p_read_stderr) {
+
+	NSTask *task = [[NSTask alloc] init];
+	NSPipe *stdout_pipe = nil;
+	[task setLaunchPath:[NSString stringWithUTF8String:p_path.utf8().get_data()]];
+
+	NSMutableArray *arguments = [[NSMutableArray alloc] initWithCapacity:p_arguments.size()];
+	for (int i = 0; i < p_arguments.size(); i++) {
+		[arguments addObject:[NSString stringWithUTF8String:p_arguments[i].utf8().get_data()]];
+	}
+	[task setArguments:arguments];
+
+	if (p_blocking && r_pipe) {
+		stdout_pipe = [NSPipe pipe];
+		[task setStandardOutput:stdout_pipe];
+		if (p_read_stderr) [task setStandardError:[task standardOutput]];
+	}
+
+	@try {
+		[task launch];
+		if (r_child_id)
+			*r_child_id = [task processIdentifier];
+
+		if (p_blocking) {
+			if (r_pipe) {
+				NSFileHandle *read_handle = [stdout_pipe fileHandleForReading];
+				NSData *data = nil;
+				while ((data = [read_handle availableData]) && [data length]) {
+					NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+					(*r_pipe) += [string UTF8String];
+					[string release];
+				}
+			} else {
+				[task waitUntilExit];
+			}
+		}
+
+		[arguments release];
+		[task release];
+		return OK;
+	} @catch (NSException *exception) {
+		ERR_PRINTS("NSException: " + String([exception reason].UTF8String) + "; Path: " + p_path);
+
+		[arguments release];
+		[task release];
+		return ERR_CANT_OPEN;
+	}
+}
+
 String OS_OSX::get_executable_path() const {
 
 	int ret;
