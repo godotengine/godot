@@ -647,53 +647,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	char_map[p_char] = character;
 }
 
-void DynamicFontAtSize::_update_char(CharType p_char) {
-
-	if (char_map.has(p_char))
-		return;
-
-	_THREAD_SAFE_METHOD_
-
-	Character character = Character::not_found();
-
-	FT_GlyphSlot slot = face->glyph;
-
-	if (FT_Get_Char_Index(face, p_char) == 0) {
-		char_map[p_char] = character;
-		return;
-	}
-
-	int ft_hinting;
-
-	switch (font->hinting) {
-		case DynamicFontData::HINTING_NONE:
-			ft_hinting = FT_LOAD_NO_HINTING;
-			break;
-		case DynamicFontData::HINTING_LIGHT:
-			ft_hinting = FT_LOAD_TARGET_LIGHT;
-			break;
-		default:
-			ft_hinting = FT_LOAD_TARGET_NORMAL;
-			break;
-	}
-
-	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0) | ft_hinting);
-	if (error) {
-		char_map[p_char] = character;
-		return;
-	}
-
-	if (id.outline_size > 0) {
-		character = _make_outline_char(p_char);
-	} else {
-		error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-		if (!error)
-			character = _bitmap_to_character(slot->bitmap, slot->bitmap_top, slot->bitmap_left, slot->advance.x / 64.0);
-	}
-
-	char_map[p_char] = character;
-}
-
 void DynamicFontAtSize::update_oversampling() {
 	if (oversampling == font_oversampling || !valid)
 		return;
@@ -1130,11 +1083,6 @@ void DynamicFont::update_oversampling() {
 
 		if (E->self()->data_at_size.is_valid()) {
 			E->self()->data_at_size->update_oversampling();
-
-			if (E->self()->outline_data_at_size.is_valid()) {
-				E->self()->outline_data_at_size->update_oversampling();
-			}
-
 			changed.push_back(Ref<DynamicFont>(E->self()));
 		}
 		E = E->next();
