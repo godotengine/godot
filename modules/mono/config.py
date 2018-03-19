@@ -161,7 +161,7 @@ def configure(env):
 
             mono_lib_path = ''
             mono_so_name = ''
-            mono_prefix = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"], encoding="utf8").strip()
+            mono_prefix = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
 
             tmpenv = Environment()
             tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
