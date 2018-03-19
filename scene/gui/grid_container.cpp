@@ -84,8 +84,8 @@ void GridContainer::_notification(int p_what) {
 				if (!row_expanded.has(E->key()))
 					remaining_space.height -= E->get();
 			}
-			remaining_space.height -= vsep * (max_row - 1);
-			remaining_space.width -= hsep * (max_col - 1);
+			remaining_space.height -= vsep * MAX(max_row - 1, 0);
+			remaining_space.width -= hsep * MAX(max_col - 1, 0);
 
 			bool can_fit = false;
 			while (!can_fit && col_expanded.size() > 0) {
