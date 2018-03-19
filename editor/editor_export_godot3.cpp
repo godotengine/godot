@@ -210,7 +210,7 @@ static const char *prop_renames[][2] = {
 	{ "cell/tile_origin", "cell_tile_origin" }, // TileMap
 	{ "cell/y_sort", "cell_y_sort" }, // TileMap
 	{ "collision/bounce", "collision_bounce" }, // TileMap
-	//{ "collision/exclude_nodes", "disable_collision" }, // Joint, Joint2D // FIXME: Joint2D can be converted, not Joint, so manual handling
+	//{ "collision/exclude_nodes", "disable_collision" }, // Joint, Joint2D // Joint2D can be converted, not Joint, handle manually
 	{ "collision/friction", "collision_friction" }, // TileMap
 	{ "collision/layers", "collision_layer" }, // Area, Area2D, PhysicsBody, PhysicsBody2D, TileMap
 	{ "collision/margin", "collision/safe_margin" }, // PhysicsBody, PhysicsBody2D
@@ -280,7 +280,7 @@ static const char *prop_renames[][2] = {
 	{ "material/use_parent", "use_parent_material" }, // CanvasItem
 	{ "mesh/mesh", "mesh" }, // MeshInstance
 	{ "mesh/skeleton", "skeleton" }, // MeshInstance
-	//{ "mode", "fill_mode" }, // TextureProgress // FIXME: breaks TileMap and others, handle manually
+	//{ "mode", "fill_mode" }, // TextureProgress & others // Would break TileMap and others, handle manually
 	{ "motion/brake", "brake" }, // VehicleBody
 	{ "motion/engine_force", "engine_force" }, // VehicleBody
 	{ "motion/mirroring", "motion_mirroring" }, // ParallaxLayer
@@ -304,7 +304,7 @@ static const char *prop_renames[][2] = {
 	{ "percent/visible", "percent_visible" }, // ProgressBar
 	{ "placeholder/alpha", "placeholder_alpha" }, // LineEdit
 	{ "placeholder/text", "placeholder_text" }, // LineEdit
-	//{ "playback/active", "playback_active" }, // AnimationPlayer, AnimationTreePlayer // properly renamed for AnimationPlayer, but not AnimationTreePlayer, so handle manually
+	//{ "playback/active", "playback_active" }, // AnimationPlayer, AnimationTreePlayer // properly renamed for AnimationPlayer, but not AnimationTreePlayer, handle manually
 	{ "playback/default_blend_time", "playback_default_blend_time" }, // AnimationPlayer
 	{ "playback/process_mode", "playback_process_mode" }, // AnimationPlayer, AnimationTreePlayer, Tween
 	{ "playback/speed", "playback_speed" }, // AnimationPlayer, Tween
@@ -332,7 +332,7 @@ static const char *prop_renames[][2] = {
 	{ "rect/rotation", "rect_rotation" }, // Control
 	{ "rect/scale", "rect_scale" }, // Control
 	{ "rect/size", "rect_size" }, // Control
-	//{ "region", "region_enabled" }, // FIXME: Rename manually for Sprite, Sprite3D but not Texture
+	//{ "region", "region_enabled" }, // Sprite, Sprite3D // Not renamed for Texture, handle manually
 	{ "resource/name", "resource_name" }, // Resource
 	{ "resource/path", "resource_path" }, // Resource
 	{ "root/root", "root_node" }, // AnimationPlayer
@@ -349,9 +349,9 @@ static const char *prop_renames[][2] = {
 	{ "shadow/color", "shadow_color" }, // Light2D
 	{ "shadow/enabled", "shadow_enabled" }, // Light2D
 	{ "shadow/item_mask", "shadow_item_cull_mask" }, // Light2D
-	{ "size_flags/horizontal", "size_flags_horizontal" }, // Control // FIXME: Fix enum order got inverted Expand,Fill -> Fill,Expand
+	{ "size_flags/horizontal", "size_flags_horizontal" }, // Control // Enum order got inverted Expand,Fill -> Fill,Expand, handle manually after rename
 	{ "size_flags/stretch_ratio", "size_flags_stretch_ratio" }, // Control
-	{ "size_flags/vertical", "size_flags_vertical" }, // Control // FIXME: Fix enum order got inverted Expand,Fill -> Fill,Expand
+	{ "size_flags/vertical", "size_flags_vertical" }, // Control // Enum order got inverted Expand,Fill -> Fill,Expand, handle manually after rename
 	{ "smoothing/enable", "smoothing_enabled" }, // Camera2D
 	{ "smoothing/speed", "smoothing_speed" }, // Camera2D
 	{ "sort/enabled", "sort_enabled" }, // YSort
@@ -399,6 +399,8 @@ static const char *prop_renames[][2] = {
 	{ "visibility/behind_parent", "show_behind_parent" }, // CanvasItem
 	{ "visibility/light_mask", "light_mask" }, // CanvasItem
 	{ "visibility/on_top", "show_on_top" }, // CanvasItem
+	//{ "visibility/opacity", "modulate" }, // CanvasItem // Can't be converted this way, handle manually
+	//{ "visibility/self_opacity", "self_modulate" }, // CanvasItem // Can't be converted this way, handle manually
 	{ "visibility/visible", "visible" }, // CanvasItem, Spatial
 	{ "wheel/friction_slip", "wheel_friction_slip" }, // VehicleWheel
 	{ "wheel/radius", "wheel_radius" }, // VehicleWheel
@@ -425,28 +427,39 @@ static const char *type_renames[][2] = {
 	{ "SpatialSamplePlayer", "AudioStreamPlayer3D" },
 	{ "SpatialStreamPlayer", "AudioStreamPlayer3D" },
 	{ "StreamPlayer", "AudioStreamPlayer" },
-	{ "TestCube", "MeshInstance" }, // TODO: Handle assignment of CubeMesh + default material?
+	{ "TestCube", "MeshInstance" },
 	{ "TextureFrame", "TextureRect" },
 	{ NULL, NULL }
 };
 
 static const char *signal_renames[][2] = {
-	{ "area_enter", "area_entered" },
-	{ "area_enter_shape", "area_shape_entered" },
-	{ "area_exit", "area_exited" },
-	{ "area_exit_shape", "area_shape_exited" },
-	{ "body_enter", "body_entered" },
-	{ "body_enter_shape", "body_shape_entered" },
-	{ "body_exit", "body_exited" },
-	{ "body_exit_shape", "body_shape_exited" },
-	{ "enter_tree", "tree_entered" },
-	{ "exit_tree", "tree_exited" },
-	{ "focus_enter", "focus_entered" },
-	{ "focus_exit", "focus_exited" },
-	{ "input_event", "gui_input" },
-	{ "modal_close", "modal_closed" },
-	{ "mouse_enter", "mouse_entered" },
-	{ "mouse_exit", "mouse_exited" },
+	{ "area_enter", "area_entered" }, // Area, Area2D
+	{ "area_enter_shape", "area_shape_entered" }, // Area, Area2D
+	{ "area_exit", "area_exited" }, // Area, Area2D
+	{ "area_exit_shape", "area_shape_exited" }, // Area, Area2D
+	{ "body_enter", "body_entered" }, // Area, Area2D, PhysicsBody, PhysicsBody2D
+	{ "body_enter_shape", "body_shape_entered" }, // Area, Area2D, PhysicsBody, PhysicsBody2D
+	{ "body_exit", "body_exited" }, // Area, Area2D, PhysicsBody, PhysicsBody2D
+	{ "body_exit_shape", "body_shape_exited" }, // Area, Area2D, PhysicsBody, PhysicsBody2D
+	{ "enter_camera", "camera_entered" }, // VisibilityNotifier
+	{ "enter_screen", "screen_entered" }, // VisibilityNotifier, VisibilityNotifier2D
+	{ "enter_tree", "tree_entered" }, // Node
+	{ "enter_viewport", "viewport_entered" }, // VisibilityNotifier2D
+	{ "exit_camera", "camera_exited" }, // VisibilityNotifier
+	{ "exit_screen", "screen_exited" }, // VisibilityNotifier, VisibilityNotifier2D
+	{ "exit_tree", "tree_exited" }, // Node
+	{ "exit_viewport", "viewport_exited" }, // VisibilityNotifier2D
+	//{ "finished", "animation_finished" }, // AnimationPlayer, AnimatedSprite, but not StreamPlayer, handle manually
+	{ "fixed_frame", "physics_frame" }, // SceneTree
+	{ "focus_enter", "focus_entered" }, // Control
+	{ "focus_exit", "focus_exited" }, // Control
+	{ "input_event", "gui_input" }, // Control // FIXME: but not CollisionObject and CollisionObject2D, it should be handled manually
+	{ "item_pressed", "id_pressed" }, // PopupMenu
+	{ "modal_close", "modal_closed" }, // Control
+	{ "mouse_enter", "mouse_entered" }, // CollisionObject, CollisionObject2D, Control
+	{ "mouse_exit", "mouse_exited" }, // CollisionObject, CollisionObject2D, Control
+	{ "tween_start", "tween_started" }, // Tween
+	{ "tween_complete", "tween_completed" }, // Tween
 	{ NULL, NULL }
 };
 
@@ -476,7 +489,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 		// Do this before the renaming, as afterwards we can't distinguish
 		// between 2D and 3D rotations_degrees
 		if (E->get().name == "transform/rot") {
-			E->get().value = E->get().value.operator real_t() * -1.0;
+			E->get().value = (real_t)E->get().value * -1.0;
 		}
 
 		// To fix 2D rotations in the properties of Animation tracks (see below),
@@ -507,6 +520,16 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 					if (prop_rename_map.has(track_prop)) {
 						track_prop = prop_rename_map[track_prop];
 					}
+
+					// "[self_]opacity" was removed, and is replaced by the alpha component of "[self_]modulate"
+					// "modulate" may already exist, but we posit that the "opacity" value is more important
+					// Thankfully in NodePaths we can access the alpha property directly
+					if (track_prop == "visibility/opacity") {
+						track_prop = "modulate:a";
+					} else if (track_prop == "visibility/self_opacity") {
+						track_prop = "self_modulate:a";
+					}
+
 					E->get().value = NodePath(track_nodepath + ":" + track_prop);
 				}
 			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
@@ -516,10 +539,11 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				if (track_keys.has("values")) {
 					Array values = track_keys["values"];
 					for (int i = 0; i < values.size(); i++) {
-						values[i] = values[i].operator real_t() * -1.0;
+						values[i] = (real_t)values[i] * -1.0;
 					}
 					track_keys["values"] = values;
 					E->get().value = track_keys;
+					found_track_number = "";
 				} else {
 					print_line("Tried to change rotation in Animation tracks, but no value set found.");
 				}
@@ -536,7 +560,8 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 		// Anchors changed from Begin,End,Ratio,Center to Begin,End,Center
 		if (E->get().name.begins_with("anchor_")) {
-			switch (E->get().value.operator int()) {
+			int prop_value = (int)E->get().value;
+			switch (prop_value) {
 				case 0: // Begin
 				case 1: // End
 					break;
@@ -547,10 +572,49 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 			}
 		}
 
-		// AnimationPlayer's "playback/active" was renamed to "playback_active", but not AnimationTrrePlayer's
-		// We rename manually only for AnimationPlayer
-		if (E->get().name == "playback/active" && p_type == "AnimationPlayer") {
+		// Size flags enum changed ordering from "Expand,Fill" to "Fill,Expand,..."
+		// So we swap 1 (Expand) and 2 (Fill), keep 0 (none) and 3 (Expand + Fill)
+		if (E->get().name == "size_flags_horizontal" || E->get().name == "size_flags_vertical") {
+			int prop_value = (int)E->get().value;
+			switch (prop_value) {
+				case 1: // Expand -> Fill
+					E->get().value = 2;
+				case 2: // Fill -> Expand
+					E->get().value = 1;
+				default: // none or both, keep
+					break;
+			}
+		}
+
+		// "[self_]opacity" was removed, and is replaced by the alpha component of "[self_]modulate"
+		// "modulate" may already exist, but we posit that the "opacity" value is more important
+		if (E->get().name == "visibility/opacity" || E->get().name == "visibility/self_opacity") {
+			if (E->get().name == "visibility/self_opacity") {
+				E->get().name = "self_modulate";
+			} else {
+				E->get().name = "modulate";
+			}
+			E->get().value = Color(1.0, 1.0, 1.0, (float)E->get().value);
+		}
+
+		// AnimationPlayer's "playback/active" was renamed to "playback_active", but not AnimationTreePlayer's
+		if (p_type == "AnimationPlayer" && E->get().name == "playback/active") {
 			E->get().name = "playback_active";
+		}
+
+		// Joint2D's "collision/exclude_nodes" was renamed to "disable_collision", but not Joint's
+		if (p_type == "Joint2D" && E->get().name == "collision/exclude_nodes") {
+			E->get().name = "disable_collision";
+		}
+
+		// TextureProgress' "mode" was renamed to "fill_mode", but not that of other nodes like TileMap
+		if (p_type == "TextureProgress" && E->get().name == "mode") {
+			E->get().name = "fill_mode";
+		}
+
+		// Sprite and Sprite3D's "region" was renamed to "region_enabled", but not Texture's
+		if ((p_type == "Sprite" || p_type == "Sprite3D") && E->get().name == "region") {
+			E->get().name = "region_enabled";
 		}
 	}
 }
@@ -579,6 +643,32 @@ void EditorExportGodot3::_convert_resources(ExportData &resource) {
 
 		if (signal_rename_map.has(resource.connections[i].signal)) {
 			resource.connections[i].signal = signal_rename_map[resource.connections[i].signal];
+		}
+
+		/* Manual handling for signals which need to be conditionally renamed based on their Node's type */
+
+		// AnimationPlayer and AnimatedSprite's "finished" signal was renamed to "animation_finished",
+		// but not that of StreamPlayer. Since node information is missing from the connection data
+		// (we only have the NodePath), we'll have to compare against the nodes array to find out.
+		if (resource.connections[i].signal == "finished") {
+			String from = resource.connections[i].from;
+			// NodePath "from" is relative to root node, can be direct child (no '/') or further down
+			int slice_count = from.get_slice_count("/");
+			String parent = ".";
+			String nodename = from;
+			if (slice_count > 1) {
+				parent = from.get_slice("/", slice_count - 2);
+				nodename = from.get_slice("/", slice_count - 1);
+			}
+
+			for (int j = 0; j < resource.nodes.size(); j++) {
+				if (resource.nodes[j].name == nodename && resource.nodes[j].parent == parent) {
+					if (resource.nodes[j].type == "AnimationPlayer" || resource.nodes[j].type == "AnimatedSprite") {
+						resource.connections[i].signal = "animation_finished";
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -1355,10 +1445,10 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 	for (int i = 0; i < resource.connections.size(); i++) {
 
-		String prop;
-		_get_property_as_text(resource.connections[i].binds, prop);
+		String binds_array;
+		_get_property_as_text(resource.connections[i].binds, binds_array);
 
-		f->store_line("\n[connection signal=\"" + resource.connections[i].signal + "\"  from=\"" + String(resource.connections[i].from).c_escape() + "\"  to=\"" + String(resource.connections[i].to).c_escape() + "\" method=\"" + resource.connections[i].method + "\" binds=" + prop + "]");
+		f->store_line("\n[connection signal=\"" + resource.connections[i].signal + "\" from=\"" + String(resource.connections[i].from).c_escape() + "\" to=\"" + String(resource.connections[i].to).c_escape() + "\" method=\"" + resource.connections[i].method + "\" binds=" + binds_array + "]");
 	}
 
 	for (int i = 0; i < resource.editables.size(); i++) {
@@ -2012,27 +2102,11 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 		}
 		regexp.clear();
 
-		// Convert RawArray() => PoolByteArray()
-		regexp.compile("(.*)RawArray\\(\\)(.*)");
+		// Convert _input_event( => _gui_input(
+		regexp.compile("(.*)_input_event\\((.*)");
 		res = regexp.find(line);
 		if (res >= 0 && regexp.get_capture_count() == 3) {
-			line = regexp.get_capture(1) + "PoolByteArray()" + regexp.get_capture(2);
-		}
-		regexp.clear();
-
-		// Convert Vector2Array() => PoolVector2Array()
-		regexp.compile("(.*)Vector2Array\\(\\)(.*)");
-		res = regexp.find(line);
-		if (res >= 0 && regexp.get_capture_count() == 3) {
-			line = regexp.get_capture(1) + "PoolVector2Array()" + regexp.get_capture(2);
-		}
-		regexp.clear();
-
-		// Convert ReferenceFrame => Control
-		regexp.compile("(.*)ReferenceFrame(.*)");
-		res = regexp.find(line);
-		if (res >= 0 && regexp.get_capture_count() == 3) {
-			line = regexp.get_capture(1) + "Control" + regexp.get_capture(2);
+			line = regexp.get_capture(1) + "_gui_input(" + regexp.get_capture(2);
 		}
 		regexp.clear();
 
@@ -2054,10 +2128,83 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 		}
 
+		// The following replacements may be needed more than once per line, hence the loop
 		int count;
 		int tries = 0;
 		do {
 			count = 0;
+
+			// Convert RawArray() => PoolByteArray()
+			regexp.compile("(.*)RawArray\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolByteArray()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert IntArray() => PoolIntArray()
+			regexp.compile("(.*)IntArray\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolIntArray()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert RealArray() => PoolRealArray()
+			regexp.compile("(.*)RealArray\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolRealArray()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert StringArray() => PoolStringArray()
+			regexp.compile("(.*)StringArray\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolStringArray()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert Vector2Array() => PoolVector2Array()
+			regexp.compile("(.*)Vector2Array\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolVector2Array()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert Vector3Array() => PoolVector3Array()
+			regexp.compile("(.*)Vector3Array\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolVector3Array()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert ColorArray() => PoolColorArray()
+			regexp.compile("(.*)ColorArray\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "PoolColorArray()" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert ReferenceFrame => ReferenceRect
+			regexp.compile("(.*)ReferenceFrame(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "ReferenceRect" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
 
 			// Convert _pos( => _position(
 			regexp.compile("(.*)_pos\\((.*)");
@@ -2091,6 +2238,24 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 4) {
 				line = regexp.get_capture(1) + ".modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert .get_self_opacity() => .self_modulate.a
+			regexp.compile("(.*)\\.get_self_opacity\\(\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + ".self_modulate.a" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert .set_self_opacity(var) => .self_modulate.a = var
+			regexp.compile("(.*)\\.set_self_opacity\\((.*)\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 4) {
+				line = regexp.get_capture(1) + ".self_modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
 				count++;
 			}
 			regexp.clear();
