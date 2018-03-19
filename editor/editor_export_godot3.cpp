@@ -2135,7 +2135,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			count = 0;
 
 			// Convert RawArray() => PoolByteArray()
-			regexp.compile("(.*)RawArray\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])RawArray\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolByteArray()" + regexp.get_capture(2);
@@ -2144,7 +2144,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert IntArray() => PoolIntArray()
-			regexp.compile("(.*)IntArray\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])IntArray\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolIntArray()" + regexp.get_capture(2);
@@ -2153,7 +2153,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert RealArray() => PoolRealArray()
-			regexp.compile("(.*)RealArray\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])RealArray\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolRealArray()" + regexp.get_capture(2);
@@ -2162,7 +2162,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert StringArray() => PoolStringArray()
-			regexp.compile("(.*)StringArray\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])StringArray\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolStringArray()" + regexp.get_capture(2);
@@ -2171,7 +2171,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert Vector2Array() => PoolVector2Array()
-			regexp.compile("(.*)Vector2Array\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])Vector2Array\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolVector2Array()" + regexp.get_capture(2);
@@ -2180,7 +2180,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert Vector3Array() => PoolVector3Array()
-			regexp.compile("(.*)Vector3Array\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])Vector3Array\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolVector3Array()" + regexp.get_capture(2);
@@ -2189,7 +2189,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert ColorArray() => PoolColorArray()
-			regexp.compile("(.*)ColorArray\\(\\)(.*)");
+			regexp.compile("(.*[^a-zA-Z])ColorArray\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "PoolColorArray()" + regexp.get_capture(2);
@@ -2198,7 +2198,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert ReferenceFrame => ReferenceRect
-			regexp.compile("(.*)ReferenceFrame(.*)");
+			regexp.compile("(.*[^a-zA-Z])ReferenceFrame(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "ReferenceRect" + regexp.get_capture(2);
