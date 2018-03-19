@@ -67,7 +67,7 @@ static void _godot_draw(void) {
 
 extern "C" {
 
-void main_after_fs_sync(int value) {
+void main_after_fs_sync() {
 
 	start_step = 1;
 	printf("FS SYNCHED!\n");
@@ -110,9 +110,7 @@ int main(int argc, char *argv[]) {
 		 FS.syncfs(true, function (err) {
 			 assert(!err);
 			 console.log("done syncinc!");
-			 _after_sync_cb = Module.cwrap('main_after_fs_sync', 'void',['number']);
-			 _after_sync_cb(0);
-
+			 ccall('main_after_fs_sync');
 		 });
 
 	  );

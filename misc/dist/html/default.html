@@ -365,34 +365,33 @@
 
 		Presentation.setStatus("Downloading...");
 
-	//]]></script>
-	<script type="text/javascript" src="$GODOT_FS"></script>
-	<script>
 		(function() {
 			var script = document.createElement('script');
 			script.src = "$GODOT_ASM";
 			script.onload = function() {
 				setTimeout(function() {
-					(function() {
-						var memoryInitializer = '$GODOT_MEM';
-						if (typeof Module.locateFile === 'function') {
-							memoryInitializer = Module.locateFile(memoryInitializer);
-						} else if (Module.memoryInitializerPrefixURL) {
-							memoryInitializer = Module.memoryInitializerPrefixURL + memoryInitializer;
-						}
-						var xhr = Module.memoryInitializerRequest = new XMLHttpRequest();
-						xhr.open('GET', memoryInitializer, true);
-						xhr.responseType = 'arraybuffer';
-						xhr.send(null);
-					})();
+					var memoryInitializer = '$GODOT_MEM';
+					if (typeof Module.locateFile === 'function') {
+						memoryInitializer = Module.locateFile(memoryInitializer);
+					} else if (Module.memoryInitializerPrefixURL) {
+						memoryInitializer = Module.memoryInitializerPrefixURL + memoryInitializer;
+					}
+
+					var xhr = Module.memoryInitializerRequest = new XMLHttpRequest();
+					xhr.open('GET', memoryInitializer, true);
+					xhr.responseType = 'arraybuffer';
+					xhr.send(null);
 
 					var script = document.createElement('script');
 					script.src = "$GODOT_JS";
+					script.onload = function() {
+						Module.FS.createPreloadedFile('/data.pck', null, 'data.pck', true, true, null, null, false, true);
+					};
 					document.body.appendChild(script);
 				}, 1); // delaying even 1ms is enough to allow compilation memory to be reclaimed
 			};
 			document.body.appendChild(script);
 		})();
-	</script>
+	//]]></script>
 </body>
 </html>
