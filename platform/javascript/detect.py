@@ -108,11 +108,8 @@ def configure(env):
     ## Compile flags
 
     env.Append(CPPPATH=['#platform/javascript'])
-    env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
-
-    # No multi-threading (SharedArrayBuffer) available yet,
-    # once feasible also consider memory buffer size issues.
-    env.Append(CPPDEFINES=['NO_THREADS'])
+    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
+    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
     # These flags help keep the file size down.
     env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
