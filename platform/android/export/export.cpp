@@ -301,8 +301,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 							args.push_back("-s");
 							args.push_back(d.id);
 							args.push_back("shell");
-							args.push_back("cat");
-							args.push_back("/system/build.prop");
+							args.push_back("getprop");
 							int ec;
 							String dp;
 
@@ -315,7 +314,14 @@ class EditorExportAndroid : public EditorExportPlatform {
 							d.api_level = 0;
 							for (int j = 0; j < props.size(); j++) {
 
+								// got information by `shell cat /system/build.prop` before and its format is "property=value"
+								// it's now changed to use `shell getporp` because of permission issue with Android 8.0 and above
+								// its format is "[property]: [value]" so changed it as like build.prop
 								String p = props[j];
+								p = p.replace("]: ", "=");
+								p = p.replace("[", "");
+								p = p.replace("]", "");
+
 								if (p.begins_with("ro.product.model=")) {
 									device = p.get_slice("=", 1).strip_edges();
 								} else if (p.begins_with("ro.product.brand=")) {
