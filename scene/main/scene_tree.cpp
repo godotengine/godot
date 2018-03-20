@@ -498,13 +498,13 @@ bool SceneTree::idle(float p_time) {
 	Size2 win_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
 	if (win_size != last_screen_size) {
 
+		last_screen_size = win_size;
+		_update_root_rect();
+
 		if (use_font_oversampling) {
 			DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
 			DynamicFont::update_oversampling();
 		}
-
-		last_screen_size = win_size;
-		_update_root_rect();
 
 		emit_signal("screen_resized");
 	}
