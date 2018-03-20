@@ -33,17 +33,8 @@
 #include "os/mutex.h"
 #include "version.h"
 
-#ifdef NO_THREADS
-
-#define OBJTYPE_RLOCK
-#define OBJTYPE_WLOCK
-
-#else
-
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
-
-#endif
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -895,15 +886,9 @@ void ClassDB::add_property_group(StringName p_class, const String &p_name, const
 
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
 
-#ifndef NO_THREADS
 	lock->read_lock();
-#endif
-
 	ClassInfo *type = classes.getptr(p_class);
-
-#ifndef NO_THREADS
 	lock->read_unlock();
-#endif
 
 	ERR_FAIL_COND(!type);
 
@@ -1380,10 +1365,7 @@ RWLock *ClassDB::lock = NULL;
 
 void ClassDB::init() {
 
-#ifndef NO_THREADS
-
 	lock = RWLock::create();
-#endif
 }
 
 void ClassDB::cleanup() {
@@ -1406,10 +1388,7 @@ void ClassDB::cleanup() {
 	resource_base_extensions.clear();
 	compat_classes.clear();
 
-#ifndef NO_THREADS
-
 	memdelete(lock);
-#endif
 }
 
 //

@@ -103,7 +103,7 @@ def configure(env):
     ## Compile flags
 
     env.Append(CPPPATH=['#platform/javascript'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
+    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
     env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
     # These flags help keep the file size down
