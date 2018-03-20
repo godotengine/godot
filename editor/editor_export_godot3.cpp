@@ -216,6 +216,16 @@ static const char *prop_renames[][2] = {
 	{ "collision/margin", "collision/safe_margin" }, // PhysicsBody, PhysicsBody2D
 	{ "collision/mask", "collision_mask" }, // Area, Area2D, PhysicsBody, PhysicsBody2D, TileMap
 	{ "collision/use_kinematic", "collision_use_kinematic" }, // TileMap
+	{ "config/amount", "amount" }, // Particles2D
+	{ "config/emitting", "emitting" }, // Particles2D
+	{ "config/explosiveness", "explosiveness" }, // Particles2D
+	{ "config/h_frames", "h_frames" }, // Particles2D
+	{ "config/lifetime", "lifetime" }, // Particles2D
+	{ "config/local_space", "local_coords" }, // Particles2D
+	{ "config/preprocess", "preprocess" }, // Particles2D
+	{ "config/texture", "texture" }, // Particles2D
+	{ "config/time_scale", "speed_scale" }, // Particles2D
+	{ "config/v_frames", "v_frames" }, // Particles2D
 	{ "content_margin/bottom", "content_margin_bottom" }, // StyleBox
 	{ "content_margin/left", "content_margin_left" }, // StyleBox
 	{ "content_margin/right", "content_margin_right" }, // StyleBox
@@ -394,8 +404,10 @@ static const char *prop_renames[][2] = {
 	{ "transform/translation", "translation" }, // Spatial
 	{ "type/steering", "use_as_steering" }, // VehicleWheel
 	{ "type/traction", "use_as_traction" }, // VehicleWheel
+	{ "vars/lifetime", "lifetime" }, // Particles
 	{ "velocity/angular", "angular_velocity" }, // PhysicsBody, PhysicsBody2D
 	{ "velocity/linear", "linear_velocity" }, // PhysicsBody, PhysicsBody2D
+	{ "visibility", "visibility_aabb" }, // Particles
 	{ "visibility/behind_parent", "show_behind_parent" }, // CanvasItem
 	{ "visibility/light_mask", "light_mask" }, // CanvasItem
 	{ "visibility/on_top", "show_on_top" }, // CanvasItem
@@ -429,6 +441,16 @@ static const char *type_renames[][2] = {
 	{ "StreamPlayer", "AudioStreamPlayer" },
 	{ "TestCube", "MeshInstance" },
 	{ "TextureFrame", "TextureRect" },
+	// Only for scripts
+	{ "Matrix32", "Transform2D" },
+	{ "Matrix3", "Basis" },
+	{ "RawArray", "PoolByteArray" },
+	{ "IntArray", "PoolIntArray" },
+	{ "RealArray", "PoolRealArray" },
+	{ "StringArray", "PoolStringArray" },
+	{ "Vector2Array", "PoolVector2Array" },
+	{ "Vector3Array", "PoolVector3Array" },
+	{ "ColorArray", "PoolColorArray" },
 	{ NULL, NULL }
 };
 
@@ -480,6 +502,13 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 	// We need specific hacks to fix compatibility breakage in the tracks of Animations
 	bool fix_animation_tracks = (p_type == "Animation");
 	String found_track_number = "";
+
+	// Anchors/margins changed in 3.0 from always-positive to relative to their ratio anchor,
+	// so we need to flip the sign of margins based on their anchor mode.
+	int flip_margin_left = false;
+	int flip_margin_right = false;
+	int flip_margin_top = false;
+	int flip_margin_bottom = false;
 
 	for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
 
@@ -558,17 +587,34 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 		/* Hardcoded fixups for properties that changed definition in 3.0 */
 
-		// Anchors changed from Begin,End,Ratio,Center to Begin,End,Center
+		// Anchors changed from Begin,End,Ratio,Center to only a ratio
 		if (E->get().name.begins_with("anchor_")) {
+			String side = E->get().name.substr(7, E->get().name.length() - 1);
 			int prop_value = (int)E->get().value;
 			switch (prop_value) {
-				case 0: // Begin
-				case 1: // End
-					break;
-				case 2: // Ratio
-					E->get().value = 0;
-				case 3: // Center
-					E->get().value = 2;
+				case 0: { // Begin
+					E->get().value = 0.0;
+				} break;
+				case 1: { // End
+					E->get().value = 1.0;
+					// Flip corresponding margin's sign
+					if (side == "left") flip_margin_left = true;
+					else if (side == "right") flip_margin_right = true;
+					else if (side == "top") flip_margin_top = true;
+					else if (side == "bottom") flip_margin_bottom = true;
+				} break;
+				case 2: { // Ratio
+					E->get().value = 0.0;
+					print_line("WARNING: Property '" + E->get().name + "' with value 'Ratio' cannot be converted to the format used in Godot 3. Convert it to 'Begin' or 'End' to avoid losing the corresponding margin value.");
+				} break;
+				case 3: { // Center
+					E->get().value = 0.5;
+					// Flip corresponding margin's sign
+					if (side == "left") flip_margin_left = true;
+					else if (side == "right") flip_margin_right = true;
+					else if (side == "top") flip_margin_top = true;
+					else if (side == "bottom") flip_margin_bottom = true;
+				} break;
 			}
 		}
 
@@ -615,6 +661,22 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 		// Sprite and Sprite3D's "region" was renamed to "region_enabled", but not Texture's
 		if ((p_type == "Sprite" || p_type == "Sprite3D") && E->get().name == "region") {
 			E->get().name = "region_enabled";
+		}
+	}
+
+	// Flip margins based on the previously fixed anchor modes
+	if (flip_margin_left || flip_margin_right || flip_margin_top || flip_margin_bottom) {
+		// Loop again and fix the margins
+		for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
+			if (!E->get().name.begins_with("margin_")) {
+				continue;
+			}
+			if ((flip_margin_left && E->get().name == "margin_left")
+				|| (flip_margin_right && E->get().name == "margin_right")
+				|| (flip_margin_top && E->get().name == "margin_top")
+				|| (flip_margin_bottom && E->get().name == "margin_bottom")) {
+				E->get().value = (real_t)E->get().value * -1.0;
+			}
 		}
 	}
 }
@@ -2134,83 +2196,50 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 		do {
 			count = 0;
 
-			// Convert RawArray() => PoolByteArray()
-			regexp.compile("(.*[^a-zA-Z])RawArray\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolByteArray()" + regexp.get_capture(2);
-				count++;
+			// Convert all types to fix instances of renamed Nodes, or renamed core types (Pool*Array, Basis, etc.)
+			for (Map<String, String>::Element *E = type_rename_map.front(); E; E = E->next()) {
+				//regexp.compile("(.*[^a-zA-Z0-9_])" + E->key() + "([^a-zA-Z0-9_].*)");
+				regexp.compile("(.*\\b)" + E->key() + "(\\b.*)");
+				res = regexp.find(line);
+				if (res >= 0 && regexp.get_capture_count() == 3) {
+					line = regexp.get_capture(1) + E->get() + regexp.get_capture(2);
+					count++;
+				}
+				regexp.clear();
 			}
-			regexp.clear();
-
-			// Convert IntArray() => PoolIntArray()
-			regexp.compile("(.*[^a-zA-Z])IntArray\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolIntArray()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert RealArray() => PoolRealArray()
-			regexp.compile("(.*[^a-zA-Z])RealArray\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolRealArray()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert StringArray() => PoolStringArray()
-			regexp.compile("(.*[^a-zA-Z])StringArray\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolStringArray()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert Vector2Array() => PoolVector2Array()
-			regexp.compile("(.*[^a-zA-Z])Vector2Array\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolVector2Array()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert Vector3Array() => PoolVector3Array()
-			regexp.compile("(.*[^a-zA-Z])Vector3Array\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolVector3Array()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert ColorArray() => PoolColorArray()
-			regexp.compile("(.*[^a-zA-Z])ColorArray\\(\\)(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "PoolColorArray()" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
-
-			// Convert ReferenceFrame => ReferenceRect
-			regexp.compile("(.*[^a-zA-Z])ReferenceFrame(.*)");
-			res = regexp.find(line);
-			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + "ReferenceRect" + regexp.get_capture(2);
-				count++;
-			}
-			regexp.clear();
 
 			// Convert _pos( => _position(
 			regexp.compile("(.*)_pos\\((.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + "_position(" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert .pos => .position
+			regexp.compile("(.*)\\.pos([^a-zA-Z0-9_-].*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + ".position" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert _rot( => _rotation(
+			regexp.compile("(.*)_rot\\((.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "_rotation(" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert _speed( => _speed_scale(
+			regexp.compile("(.*)_speed\\((.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + "_speed_scale(" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
@@ -2224,38 +2253,47 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			}
 			regexp.clear();
 
-			// Convert .get_opacity() => .modulate.a
-			regexp.compile("(.*)\\.get_opacity\\(\\)(.*)");
+			// Convert get_opacity() => modulate.a
+			regexp.compile("(.*)get_opacity\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + ".modulate.a" + regexp.get_capture(2);
+				line = regexp.get_capture(1) + "modulate.a" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
-			// Convert .set_opacity(var) => .modulate.a = var
-			regexp.compile("(.*)\\.set_opacity\\((.*)\\)(.*)");
+			// Convert set_opacity(var) => modulate.a = var
+			regexp.compile("(.*)set_opacity\\((.*)\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + ".modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
+				line = regexp.get_capture(1) + "modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
 				count++;
 			}
 			regexp.clear();
 
-			// Convert .get_self_opacity() => .self_modulate.a
-			regexp.compile("(.*)\\.get_self_opacity\\(\\)(.*)");
+			// Convert get_self_opacity() => self_modulate.a
+			regexp.compile("(.*)get_self_opacity\\(\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
-				line = regexp.get_capture(1) + ".self_modulate.a" + regexp.get_capture(2);
+				line = regexp.get_capture(1) + "self_modulate.a" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
 
-			// Convert .set_self_opacity(var) => .self_modulate.a = var
-			regexp.compile("(.*)\\.set_self_opacity\\((.*)\\)(.*)");
+			// Convert set_self_opacity(var) => self_modulate.a = var
+			regexp.compile("(.*)set_self_opacity\\((.*)\\)(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 4) {
-				line = regexp.get_capture(1) + ".self_modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
+				line = regexp.get_capture(1) + "self_modulate.a = " + regexp.get_capture(2) + regexp.get_capture(3);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert set_hidden(var) => visible = !(var)
+			regexp.compile("(.*)set_hidden\\((.*)\\)(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 4) {
+				line = regexp.get_capture(1) + "visible = !(" + regexp.get_capture(2) + ")" + regexp.get_capture(3);
 				count++;
 			}
 			regexp.clear();
