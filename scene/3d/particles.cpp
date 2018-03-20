@@ -849,9 +849,9 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000,  0.000,  0.000, 0.0)) * hue_rot_s;\n";
 	if (color_ramp.is_valid()) {
-		code += "	COLOR = textureLod(color_ramp,vec2(CUSTOM.y,0.0),0.0) * hue_rot_mat;\n";
+		code += "	COLOR = hue_rot_mat * textureLod(color_ramp,vec2(CUSTOM.y,0.0),0.0);\n";
 	} else {
-		code += "	COLOR = color_value * hue_rot_mat;\n";
+		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
 	if (emission_color_texture.is_valid() && emission_shape >= EMISSION_SHAPE_POINTS) {
 		code += "	COLOR*= texelFetch(emission_texture_color,emission_tex_ofs,0);\n";
