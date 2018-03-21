@@ -127,6 +127,7 @@ static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static bool auto_build_solutions = false;
 static bool auto_quit = false;
+static bool print_fps = false;
 
 static OS::ProcessID allow_focus_steal_pid = 0;
 
