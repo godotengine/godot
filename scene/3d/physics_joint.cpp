@@ -47,13 +47,13 @@ void Joint::_update_joint(bool p_only_free) {
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
 
-	if (!node_a || !node_b)
+	if (!node_a && !node_b)
 		return;
 
 	PhysicsBody *body_a = node_a ? node_a->cast_to<PhysicsBody>() : (PhysicsBody *)NULL;
 	PhysicsBody *body_b = node_b ? node_b->cast_to<PhysicsBody>() : (PhysicsBody *)NULL;
 
-	if (!body_a || !body_b)
+	if (!body_a && !body_b)
 		return;
 
 	if (!body_a) {
@@ -68,10 +68,10 @@ void Joint::_update_joint(bool p_only_free) {
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
 	ba = body_a->get_rid();
-	bb = body_b->get_rid();
+	bb = body_b ? body_b->get_rid() : RID();
 
-	if (exclude_from_collision)
-		PhysicsServer::get_singleton()->body_add_collision_exception(body_a->get_rid(), body_b->get_rid());
+	if (exclude_from_collision && bb.is_valid())
+		PhysicsServer::get_singleton()->body_add_collision_exception(ba, bb);
 }
 
 void Joint::set_node_a(const NodePath &p_node_a) {
