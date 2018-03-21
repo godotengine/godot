@@ -11,7 +11,7 @@ def get_name():
 
 
 def can_build():
-    return 'EM_CONFIG' in os.environ or os.path.exists(os.path.expanduser('~/.emscripten'))
+    return 'EMSCRIPTEN_ROOT' in os.environ or 'EMSCRIPTEN' in os.environ
 
 
 def get_opts():
@@ -38,7 +38,7 @@ def configure(env):
 
     ## Build type
 
-    if env['target'] != 'debug':
+    if env['target'] == 'release' or env['target'] == 'profile':
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -47,35 +47,29 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=['-Os'])
         env.Append(LINKFLAGS=['-Os'])
+        if env['target'] == 'profile':
+            env.Append(LINKFLAGS=['--profiling-funcs'])
 
-    elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+    elif env['target'] == 'release_debug':
+        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O2'])
         env.Append(LINKFLAGS=['-O2'])
-        # retain function names at the cost of file size, for backtraces and profiling
+        # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=['--profiling-funcs'])
 
-    elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
+    elif env['target'] == 'debug':
+        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-s', 'ASSERTIONS=1'])
 
     ## Compiler configuration
 
     env['ENV'] = os.environ
-
-    em_config_file = os.getenv('EM_CONFIG') or os.path.expanduser('~/.emscripten')
-    if not os.path.exists(em_config_file):
-        raise RuntimeError("Emscripten configuration file '%s' does not exist" % em_config_file)
-    with open(em_config_file) as f:
-        em_config = {}
-        try:
-            # Emscripten configuration file is a Python file with simple assignments.
-            exec(f.read(), em_config)
-        except StandardError as e:
-            raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
-    if 'EMSCRIPTEN_ROOT' not in em_config:
-        raise RuntimeError("'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
-    env.PrependENVPath('PATH', em_config['EMSCRIPTEN_ROOT'])
+    if 'EMSCRIPTEN_ROOT' in os.environ:
+        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
+    elif 'EMSCRIPTEN' in os.environ:
+        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN'])
 
     env['CC'] = 'emcc'
     env['CXX'] = 'em++'
@@ -108,8 +102,11 @@ def configure(env):
     ## Compile flags
 
     env.Append(CPPPATH=['#platform/javascript'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
-    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
+    env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
+
+    # No multi-threading (SharedArrayBuffer) available yet,
+    # once feasible also consider memory buffer size issues.
+    env.Append(CPPDEFINES=['NO_THREADS'])
 
     # These flags help keep the file size down.
     env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
@@ -130,6 +127,13 @@ def configure(env):
 
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
+
+    # engine.js uses FS but is not currently evaluated by Emscripten, so export FS.
+    # TODO: Getting rid of this export is desirable.
+    extra_exports = [
+        'FS',
+    ]
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="%s"' % repr(extra_exports)])
 
     env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
 

@@ -300,14 +300,12 @@ EM_BOOL OS_JavaScript::keyup_callback(int p_event_type, const EmscriptenKeyboard
 
 // Mouse
 
-Point2 OS_JavaScript::get_mouse_position() const {
+extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int notif) {
 
-	return input->get_mouse_position();
-}
-
-int OS_JavaScript::get_mouse_button_state() const {
-
-	return input->get_mouse_button_mask();
+	if (notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || notif == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
+		_cursor_inside_canvas = notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
+	}
+	OS_JavaScript::get_singleton()->get_main_loop()->notification(notif);
 }
 
 EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
@@ -362,8 +360,65 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 
 	print_line("Init VS");
 
-	ev->set_position(pos);
-	ev->set_global_position(ev->get_position());
+	visual_server = memnew(VisualServerRaster());
+	//	visual_server->cursor_set_visible(false, 0);
+
+	print_line("Init Physicsserver");
+
+	input = memnew(InputDefault);
+	_input = input;
+
+#define EM_CHECK(ev)                         \
+	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
+	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
+#define SET_EM_CALLBACK(target, ev, cb)                               \
+	result = emscripten_set_##ev##_callback(target, this, true, &cb); \
+	EM_CHECK(ev)
+#define SET_EM_CALLBACK_NODATA(ev, cb)                        \
+	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
+	EM_CHECK(ev)
+
+	EMSCRIPTEN_RESULT result;
+	SET_EM_CALLBACK("#window", mousemove, _mousemove_callback)
+	SET_EM_CALLBACK("#canvas", mousedown, _mousebutton_callback)
+	SET_EM_CALLBACK("#window", mouseup, _mousebutton_callback)
+	SET_EM_CALLBACK("#window", wheel, _wheel_callback)
+	SET_EM_CALLBACK("#window", touchstart, _touchpress_callback)
+	SET_EM_CALLBACK("#window", touchmove, _touchmove_callback)
+	SET_EM_CALLBACK("#window", touchend, _touchpress_callback)
+	SET_EM_CALLBACK("#window", touchcancel, _touchpress_callback)
+	SET_EM_CALLBACK("#canvas", keydown, _keydown_callback)
+	SET_EM_CALLBACK("#canvas", keypress, _keypress_callback)
+	SET_EM_CALLBACK("#canvas", keyup, _keyup_callback)
+	SET_EM_CALLBACK(NULL, resize, _browser_resize_callback)
+	SET_EM_CALLBACK(NULL, fullscreenchange, _fullscreen_change_callback)
+	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
+	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
+
+#undef SET_EM_CALLBACK_NODATA
+#undef SET_EM_CALLBACK
+#undef EM_CHECK
+
+	visual_server->init();
+
+	return OK;
+}
+
+void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
+
+	main_loop = p_main_loop;
+	input->set_main_loop(p_main_loop);
+}
+
+void OS_JavaScript::delete_main_loop() {
+
+	memdelete(main_loop);
+}
+
+void OS_JavaScript::finalize() {
+
+	memdelete(input);
+}
 
 	ev->set_relative(Vector2(p_event->movementX, p_event->movementY));
 	os->input->set_mouse_position(ev->get_position());
@@ -942,6 +997,10 @@ int OS_JavaScript::get_power_seconds_left() {
 }
 
 int OS_JavaScript::get_power_percent_left() {
+
+	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
+	return -1;
+}
 
 	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
 	return -1;
