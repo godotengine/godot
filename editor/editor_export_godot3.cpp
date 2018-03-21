@@ -598,10 +598,14 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				case 1: { // End
 					E->get().value = 1.0;
 					// Flip corresponding margin's sign
-					if (side == "left") flip_margin_left = true;
-					else if (side == "right") flip_margin_right = true;
-					else if (side == "top") flip_margin_top = true;
-					else if (side == "bottom") flip_margin_bottom = true;
+					if (side == "left")
+						flip_margin_left = true;
+					else if (side == "right")
+						flip_margin_right = true;
+					else if (side == "top")
+						flip_margin_top = true;
+					else if (side == "bottom")
+						flip_margin_bottom = true;
 				} break;
 				case 2: { // Ratio
 					E->get().value = 0.0;
@@ -610,10 +614,14 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				case 3: { // Center
 					E->get().value = 0.5;
 					// Flip corresponding margin's sign
-					if (side == "left") flip_margin_left = true;
-					else if (side == "right") flip_margin_right = true;
-					else if (side == "top") flip_margin_top = true;
-					else if (side == "bottom") flip_margin_bottom = true;
+					if (side == "left")
+						flip_margin_left = true;
+					else if (side == "right")
+						flip_margin_right = true;
+					else if (side == "top")
+						flip_margin_top = true;
+					else if (side == "bottom")
+						flip_margin_bottom = true;
 				} break;
 			}
 		}
@@ -671,10 +679,10 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 			if (!E->get().name.begins_with("margin_")) {
 				continue;
 			}
-			if ((flip_margin_left && E->get().name == "margin_left")
-				|| (flip_margin_right && E->get().name == "margin_right")
-				|| (flip_margin_top && E->get().name == "margin_top")
-				|| (flip_margin_bottom && E->get().name == "margin_bottom")) {
+			if ((flip_margin_left && E->get().name == "margin_left") ||
+					(flip_margin_right && E->get().name == "margin_right") ||
+					(flip_margin_top && E->get().name == "margin_top") ||
+					(flip_margin_bottom && E->get().name == "margin_bottom")) {
 				E->get().value = (real_t)E->get().value * -1.0;
 			}
 		}
