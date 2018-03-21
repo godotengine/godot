@@ -413,13 +413,12 @@ static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_eve
 	return false;
 }
 
-extern "C" {
-void send_notification(int notif) {
+extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int notif) {
+
 	if (notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || notif == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
 		_cursor_inside_canvas = notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
 	}
 	OS_JavaScript::get_singleton()->get_main_loop()->notification(notif);
-}
 }
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -479,8 +478,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	input = memnew(InputDefault);
 	_input = input;
-
-	power_manager = memnew(PowerJavascript);
 
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
@@ -968,15 +965,21 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 }
 
 OS::PowerState OS_JavaScript::get_power_state() {
-	return power_manager->get_power_state();
+
+	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to POWERSTATE_UNKNOWN");
+	return OS::POWERSTATE_UNKNOWN;
 }
 
 int OS_JavaScript::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
+
+	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
+	return -1;
 }
 
 int OS_JavaScript::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
+
+	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
+	return -1;
 }
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {

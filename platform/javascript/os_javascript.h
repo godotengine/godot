@@ -36,7 +36,6 @@
 #include "main/input_default.h"
 #include "os/input.h"
 #include "os/main_loop.h"
-#include "power_javascript.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 
@@ -63,8 +62,6 @@ class OS_JavaScript : public OS_Unix {
 	MainLoop *main_loop;
 
 	GetUserDataDirFunc get_user_data_dir_func;
-
-	PowerJavascript *power_manager;
 
 	static void _close_notification_funcs(const String &p_file, int p_flags);
 

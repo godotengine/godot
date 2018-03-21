@@ -781,13 +781,10 @@ def use_windows_spawn_fix(self, platform=None):
     import subprocess
 
     def mySubProcess(cmdline, env):
-        prefix = ""
-        if(platform == 'javascript'):
-            prefix = "python.exe "
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        proc = subprocess.Popen(prefix + cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
         data, err = proc.communicate()
         rv = proc.wait()
