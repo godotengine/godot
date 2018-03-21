@@ -89,10 +89,11 @@ void handle_sigchld(int sig) {
 
 void OS_Unix::initialize_core() {
 
-#ifdef NO_PTHREADS
+#ifdef NO_THREADS
 	ThreadDummy::make_default();
 	SemaphoreDummy::make_default();
 	MutexDummy::make_default();
+	RWLockDummy::make_default();
 #else
 	ThreadPosix::make_default();
 	SemaphorePosix::make_default();
