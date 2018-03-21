@@ -49,13 +49,13 @@ void Joint2D::_update_joint(bool p_only_free) {
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
 
-	if (!node_a || !node_b)
+	if (!node_a && !node_b)
 		return;
 
 	PhysicsBody2D *body_a = node_a ? node_a->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
 	PhysicsBody2D *body_b = node_b ? node_b->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
 
-	if (!body_a || !body_b)
+	if (!body_a && !body_b)
 		return;
 
 	if (!body_a) {
@@ -70,10 +70,10 @@ void Joint2D::_update_joint(bool p_only_free) {
 	Physics2DServer::get_singleton()->get_singleton()->joint_set_param(joint, Physics2DServer::JOINT_PARAM_BIAS, bias);
 
 	ba = body_a->get_rid();
-	bb = body_b->get_rid();
+	bb = body_b ? body_b->get_rid() : RID();
 
-	if (exclude_from_collision)
-		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(), body_b->get_rid());
+	if (exclude_from_collision && bb.is_valid())
+		Physics2DServer::get_singleton()->body_add_collision_exception(ba, bb);
 }
 
 void Joint2D::set_node_a(const NodePath &p_node_a) {
