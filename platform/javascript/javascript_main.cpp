@@ -40,7 +40,7 @@ static void main_loop() {
 	os->main_loop_iterate();
 }
 
-extern "C" void main_after_fs_sync(char *p_idbfs_err) {
+extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 
 	String idbfs_err = String::utf8(p_idbfs_err);
 	if (!idbfs_err.empty()) {

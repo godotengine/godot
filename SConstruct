@@ -62,11 +62,11 @@ custom_tools = ['default']
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if (os.name == "posix"):
-    pass
-elif (os.name == "nt"):
-    if platform_arg == "android" or platform_arg == "javascript" or ARGUMENTS.get("use_mingw", False):
-        custom_tools = ['mingw']
+if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
+    custom_tools = ['mingw']
+elif platform_arg == 'javascript':
+    # Use generic POSIX build toolchain for Emscripten.
+    custom_tools = ['cc', 'c++', 'ar', 'link', 'textfile', 'zip']
 
 env_base = Environment(tools=custom_tools)
 if 'TERM' in os.environ:

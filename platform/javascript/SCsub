@@ -3,38 +3,35 @@
 Import('env')
 
 javascript_files = [
-    "os_javascript.cpp",
-    "audio_driver_javascript.cpp",
-    "javascript_main.cpp",
-    "power_javascript.cpp",
-    "http_client_javascript.cpp",
-    "javascript_eval.cpp",
+    'audio_driver_javascript.cpp',
+    'http_client_javascript.cpp',
+    'javascript_eval.cpp',
+    'javascript_main.cpp',
+    'os_javascript.cpp',
 ]
 
-env_javascript = env.Clone()
-if env['target'] == "profile":
-    env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
-
-javascript_objects = []
-for x in javascript_files:
-    javascript_objects.append(env_javascript.Object(x))
-
-env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_main_after_fs_sync','_send_notification']\""])
-
-target_dir = env.Dir("#bin")
-build = env.add_program(['#bin/godot', target_dir.File('godot' + env['PROGSUFFIX'] + '.wasm')], javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js');
+build = env.add_program(['#bin/godot${PROGSUFFIX}.js', '#bin/godot${PROGSUFFIX}.wasm'], javascript_files);
 js, wasm = build
 
-js_libraries = []
-js_libraries.append(env.File('http_request.js'))
+js_libraries = [
+    'http_request.js',
+]
 for lib in js_libraries:
-    env.Append(LINKFLAGS=['--js-library', lib.path])
+    env.Append(LINKFLAGS=['--js-library', env.File(lib).path])
 env.Depends(build, js_libraries)
 
 wrapper_start = env.File('pre.js')
 wrapper_end = env.File('engine.js')
-js_final = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX=env['PROGSUFFIX'] + '.wrapped.js')
+js_wrapped = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX='${PROGSUFFIX}.wrapped.js')
 
-zip_dir = target_dir.Dir('.javascript_zip')
-zip_files = env.InstallAs([zip_dir.File('godot.js'), zip_dir.File('godot.wasm'), zip_dir.File('godot.html')], [js_final, wasm, '#misc/dist/html/default.html'])
-Zip('#bin/godot', zip_files, ZIPSUFFIX=env['PROGSUFFIX'] + env['ZIPSUFFIX'], ZIPROOT=zip_dir, ZIPCOMSTR="Archving $SOURCES as $TARGET")
+zip_dir = env.Dir('#bin/.javascript_zip')
+zip_files = env.InstallAs([
+    zip_dir.File('godot.js'),
+    zip_dir.File('godot.wasm'),
+    zip_dir.File('godot.html')
+], [
+	js_wrapped,
+	wasm,
+	'#misc/dist/html/default.html'
+])
+env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')
