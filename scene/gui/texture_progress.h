@@ -82,6 +82,9 @@ public:
 	void set_nine_patch_stretch(bool p_stretch);
 	bool get_nine_patch_stretch() const;
 
+	void set_tint(const Color &p_tint);
+	Color get_tint() const;
+
 	Size2 get_minimum_size() const;
 
 	TextureProgress();
@@ -93,10 +96,11 @@ private:
 	Point2 rad_center_off;
 	bool nine_patch_stretch;
 	int stretch_margin[4];
+	Color tint;
 
 	Point2 unit_val_to_uv(float val);
 	Point2 get_relative_center();
-	void draw_nine_patch_stretched(const Ref<Texture> &p_texture, FillMode p_mode, double p_ratio);
+	void draw_nine_patch_stretched(const Ref<Texture> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate = Color(1, 1, 1));
 };
 
 VARIANT_ENUM_CAST(TextureProgress::FillMode);
