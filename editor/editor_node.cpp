@@ -1504,7 +1504,21 @@ void EditorNode::_edit_current() {
 
 	if (!inspector_only) {
 
-		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
+		// special case if use of external editor is true
+		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (!changing_scene)
+				main_plugin->edit(current_obj);
+		}
+
+		else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+			// update screen main_plugin
+
+			if (!changing_scene) {
+
+				if (editor_plugin_screen)
+					editor_plugin_screen->make_visible(false);
+				editor_plugin_screen = main_plugin;
+				editor_plugin_screen->edit(current_obj);
 
 		if (main_plugin) {
 
