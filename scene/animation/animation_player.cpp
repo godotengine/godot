@@ -348,6 +348,26 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 		if (a->track_get_key_count(i) == 0)
 			continue; // do nothing if track is empty
 
+		int frame = a->track_find_key(i, p_time);
+		if (p_delta != 0) {
+
+			float old_pos = p_time - p_delta;
+			int delta_sign = p_delta > 0 ? 1 : -1;
+			int max_frame = a->track_get_key_count(i);
+			float max_length = a->get_length();
+
+			if (old_pos < 0)
+				old_pos += max_length;
+			else if (old_pos >= max_length)
+				old_pos -= max_length;
+
+			int old_frame = a->track_find_key(i, old_pos);
+			while (old_frame != frame) {
+				emit_signal(SceneStringNames::get_singleton()->frame_changed, a->get_name(), a->track_get_path(i), i, old_frame);
+				old_frame = (old_frame + delta_sign + max_frame) % max_frame;
+			}
+		}
+
 		switch (a->track_get_type(i)) {
 
 			case Animation::TYPE_TRANSFORM: {
@@ -1352,6 +1372,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING, "anim_name")));
+	ADD_SIGNAL(MethodInfo("frame_changed", PropertyInfo(Variant::STRING, "anim_name"), PropertyInfo(Variant::STRING, "track_name"), PropertyInfo(Variant::INT, "track_index"), PropertyInfo(Variant::INT, "frame")));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
