@@ -100,7 +100,7 @@ public:
 	id context;
 
 	CursorShape cursor_shape;
-	NSCursor *cursors[CURSOR_MAX] = { NULL };
+	NSCursor *cursors[CURSOR_MAX];
 	MouseMode mouse_mode;
 
 	String title;

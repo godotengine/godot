@@ -309,9 +309,9 @@ class CommandQueueMT {
 	};
 
 	uint8_t command_mem[COMMAND_MEM_SIZE];
-	uint32_t read_ptr = 0;
-	uint32_t write_ptr = 0;
-	uint32_t dealloc_ptr = 0;
+	uint32_t read_ptr;
+	uint32_t write_ptr;
+	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex *mutex;
 	Semaphore *sync;
