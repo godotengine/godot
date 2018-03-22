@@ -63,7 +63,7 @@ public:
 template <class T>
 class Ref {
 
-	T *reference = NULL;
+	T *reference;
 
 	void ref(const Ref &p_from) {
 
@@ -213,10 +213,9 @@ public:
 
 	Ref(T *p_reference) {
 
+		reference = NULL;
 		if (p_reference)
 			ref_pointer(p_reference);
-		else
-			reference = NULL;
 	}
 
 	Ref(const Variant &p_variant) {
