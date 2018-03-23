@@ -125,7 +125,6 @@ public:
 	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_radio_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_ID = -1);
 
 	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
@@ -169,7 +168,6 @@ public:
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	bool is_item_radio_checkable(int p_idx) const;
-	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
