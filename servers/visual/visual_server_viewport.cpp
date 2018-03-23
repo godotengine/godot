@@ -239,10 +239,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 void VisualServerViewport::draw_viewports() {
 	// get our arvr interface in case we need it
 	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
-	if (arvr_interface.is_valid()) {
-		// update our positioning information as late as possible...
-		arvr_interface->process();
-	}
+
+	// process all our active interfaces
+	ARVRServer::get_singleton()->_process();
 
 	clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
 
@@ -286,6 +285,9 @@ void VisualServerViewport::draw_viewports() {
 				_draw_viewport(vp, ARVRInterface::EYE_RIGHT);
 				arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
 			}
+
+			// and for our frame timing, mark when we've finished commiting our eyes
+			ARVRServer::get_singleton()->_mark_commit();
 		} else {
 			VSG::rasterizer->set_current_render_target(vp->render_target);
 
