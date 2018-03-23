@@ -46,7 +46,11 @@ class PopupMenu : public Popup {
 		String text;
 		String xl_text;
 		bool checked;
-		bool checkable;
+		enum {
+			CHECKABLE_TYPE_NONE,
+			CHECKABLE_TYPE_CHECK_BOX,
+			CHECKABLE_TYPE_RADIO_BUTTON,
+		} checkable_type;
 		int max_states;
 		int state;
 		bool separator;
@@ -63,7 +67,7 @@ class PopupMenu : public Popup {
 
 		Item() {
 			checked = false;
-			checkable = false;
+			checkable_type = CHECKABLE_TYPE_NONE;
 			separator = false;
 			max_states = 0;
 			state = 0;
@@ -115,12 +119,14 @@ public:
 	void add_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
+	void add_radio_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_ID = -1);
 
 	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
 	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
 	void add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
 	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
+	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_ID = -1, uint32_t p_accel = 0);
 
@@ -134,6 +140,7 @@ public:
 	void set_item_submenu(int p_idx, const String &p_submenu);
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
+	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<ShortCut> &p_shortcut, bool p_global = false);
 	void set_item_h_offset(int p_idx, int p_offset);
@@ -154,6 +161,7 @@ public:
 	String get_item_submenu(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
+	bool is_item_radio_checkable(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
