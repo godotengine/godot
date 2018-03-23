@@ -303,7 +303,7 @@ struct Rect2 {
 
 	inline real_t distance_to(const Vector2 &p_point) const {
 
-		real_t dist;
+		real_t dist = 0.0;
 		bool inside = true;
 
 		if (p_point.x < position.x) {
