@@ -1599,7 +1599,8 @@ void EditorNode::_edit_current() {
 
 		// special case if use of external editor is true
 		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
-			main_plugin->edit(current_obj);
+			if (!changing_scene)
+				main_plugin->edit(current_obj);
 		}
 
 		else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
