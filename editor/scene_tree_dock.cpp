@@ -1079,13 +1079,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 						NodePath root_path = p_base->get_path();
 
 						NodePath rel_path_old = root_path.rel_path_to(E->get().first);
-
-						NodePath rel_path_new = E->get().second;
-
-						// if not empty, get new relative path
-						if (E->get().second != NodePath()) {
-							rel_path_new = root_path.rel_path_to(E->get().second);
-						}
+						NodePath rel_path_new = root_path.rel_path_to(E->get().second);
 
 						// if old path detected, then it needs to be replaced with the new one
 						if (p == rel_path_old) {
@@ -1359,7 +1353,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			path_renames[ni].second = fixed_node_path;
 		}
 
-		editor_data->get_undo_redo().add_do_method(sed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, p_position_in_parent + inc);
+		editor_data->get_undo_redo().add_do_method(sed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, -1);
 		editor_data->get_undo_redo().add_undo_method(sed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)) + "/" + new_name), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index());
 
 		if (p_keep_global_xform) {
