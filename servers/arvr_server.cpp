@@ -58,6 +58,8 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &ARVRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &ARVRServer::set_primary_interface);
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "primary_interface"), "set_primary_interface", "get_primary_interface");
+
 	ClassDB::bind_method(D_METHOD("get_last_process_usec"), &ARVRServer::get_last_process_usec);
 	ClassDB::bind_method(D_METHOD("get_last_commit_usec"), &ARVRServer::get_last_commit_usec);
 	ClassDB::bind_method(D_METHOD("get_last_frame_usec"), &ARVRServer::get_last_frame_usec);

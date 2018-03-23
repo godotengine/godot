@@ -40,6 +40,7 @@
 			<return type="Transform">
 			</return>
 			<description>
+				Returns the primary interface's transformation.
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
@@ -79,12 +80,6 @@
 		</method>
 		<method name="get_last_process_usec">
 			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_primary_interface" qualifiers="const">
-			<return type="ARVRInterface">
 			</return>
 			<description>
 			</description>
