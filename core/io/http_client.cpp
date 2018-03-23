@@ -618,7 +618,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
 	Array keys = p_dict.keys();
 	for (int i = 0; i < keys.size(); ++i) {
-		query += "&" + String(keys[i]).http_escape() + "=" + String(p_dict[keys[i]]).http_escape();
+		query += "&" + String(keys[i]).percent_encode() + "=" + String(p_dict[keys[i]]).percent_encode();
 	}
 	query.erase(0, 1);
 	return query;
