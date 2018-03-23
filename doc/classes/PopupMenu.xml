@@ -495,6 +495,7 @@
 			<argument index="0" name="ID" type="int">
 			</argument>
 			<description>
+				This event is emitted when user navigated to an item of some id using [code]ui_up[/code] or [code]ui_down[/code] action.
 			</description>
 		</signal>
 		<signal name="id_pressed">

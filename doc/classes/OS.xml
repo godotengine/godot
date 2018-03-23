@@ -127,7 +127,7 @@
 		<method name="get_audio_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="driver" type="int">
 			</argument>
 			<description>
 				Returns the audio driver name for the given index.
@@ -418,7 +418,7 @@
 		<method name="get_video_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="driver" type="int">
 			</argument>
 			<description>
 			</description>
