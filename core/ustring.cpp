@@ -35,6 +35,8 @@
 #include "ucaps.h"
 #include "variant.h"
 
+#include "thirdparty/misc/aes256.h"
+#include "thirdparty/misc/base64.h"
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
 
@@ -2311,6 +2313,107 @@ String String::sha256_text() const {
 	return String::hex_encode_buffer(hash, 32);
 }
 
+String String::encrypt_text(const String &p_key) const {
+
+	// Validate key
+	String cs = p_key.md5_text();
+
+	ERR_FAIL_COND_V(cs.length() != 32, String());
+
+	Vector<uint8_t> key;
+	key.resize(32);
+	for (int i = 0; i < 32; i++) {
+
+		key[i] = cs[i];
+	}
+
+	// Prepare buffer
+	const CharType *clear_str = c_str();
+	Vector<uint8_t> encrypted_buf;
+
+	// Note:
+	// Converting extended ascii to char, 4 bytes to 1 (due to unsigned/signed types).
+	// This has to be done only in the encryption part.
+	size_t len = length() * 4;
+	if (len % 16) {
+		len += 16 - (len % 16);
+	}
+
+	encrypted_buf.resize(len);
+	zeromem(encrypted_buf.ptr(), len);
+	for (int i = 0; i < length() * 4; i++) {
+		encrypted_buf[i] = ((uint8_t *)clear_str)[i];
+	}
+
+	aes256_context ctx;
+	aes256_init(&ctx, key.ptr());
+
+	for (size_t i = 0; i < len; i += 16) {
+
+		aes256_encrypt_ecb(&ctx, &encrypted_buf[i]);
+	}
+
+	aes256_done(&ctx);
+
+	// Preparing encrypted buffer encoded in base64
+	len = encrypted_buf.size();
+	size_t b64len = len / 3 * 4 + 4 + 1;
+
+	Vector<uint8_t> encrypted_buf_base64;
+	encrypted_buf_base64.resize(b64len);
+	zeromem((char *)(&encrypted_buf_base64[0]), len);
+
+	size_t strlen = base64_encode((char *)(&encrypted_buf_base64[0]), (char *)(&encrypted_buf[0]), len);
+	encrypted_buf_base64[strlen] = 0;
+	String encrypted_str = (char *)&encrypted_buf_base64[0];
+
+	return encrypted_str;
+}
+
+String String::decrypt_text(const String &p_key) const {
+
+	// Validate key
+	String cs = p_key.md5_text();
+
+	ERR_FAIL_COND_V(cs.length() != 32, String());
+
+	Vector<uint8_t> key;
+	key.resize(32);
+	for (int i = 0; i < 32; i++) {
+
+		key[i] = cs[i];
+	}
+
+	// Prepare buffer, base64 to raw array
+	size_t strlen = length();
+	CharString cstr = utf8();
+
+	size_t len;
+	Vector<uint8_t> decrypted_buf;
+	{
+		decrypted_buf.resize(strlen / 4 * 3 + 1);
+
+		len = base64_decode((char *)(&decrypted_buf[0]), (char *)cstr.get_data(), strlen);
+	};
+	decrypted_buf.resize(len);
+
+	aes256_context ctx;
+	aes256_init(&ctx, key.ptr());
+
+	for (size_t i = 0; i < len; i += 16) {
+
+		aes256_decrypt_ecb(&ctx, &decrypted_buf[i]);
+	}
+
+	aes256_done(&ctx);
+
+	// decrypted_buf is originally stored using unsigned short, this is
+	// why we are casting it to CharType
+	String decrypted_str = (CharType *)&decrypted_buf[0];
+
+	return decrypted_str;
+}
+
 Vector<uint8_t> String::md5_buffer() const {
 
 	CharString cs = utf8();
@@ -3099,6 +3202,7 @@ String String::humanize_size(size_t p_size) {
 
 	return String::num(p_size / divisor, digits) + prefix[prefix_idx];
 }
+
 bool String::is_abs_path() const {
 
 	if (length() > 1)

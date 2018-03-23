@@ -39294,11 +39294,29 @@
 				Perform a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
 			</description>
 		</method>
+		<method name="decrypt_text">
+			<return type="String">
+			</return>
+			<argument index="0" name="key" type="String">
+			</argument>
+			<description>
+				Copy the String and return it decrypted.
+			</description>
+		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>
 			<description>
 				Return true if the string is empty.
+			</description>
+		</method>
+		<method name="encrypt_text">
+			<return type="String">
+			</return>
+			<argument index="0" name="key" type="String">
+			</argument>
+			<description>
+				Copy the String and return it encrypted.
 			</description>
 		</method>
 		<method name="ends_with">
