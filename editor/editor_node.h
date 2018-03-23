@@ -141,6 +141,7 @@ private:
 		EDIT_REDO,
 		EDIT_REVERT,
 		TOOLS_ORPHAN_RESOURCES,
+		TOOLS_CUSTOM,
 		RESOURCE_NEW,
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
@@ -426,6 +427,7 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
+	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
 
 	void _property_editor_forward();
@@ -599,21 +601,6 @@ private:
 
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
-
-	bool _initializing_tool_menu;
-
-	struct ToolMenuItem {
-		String name;
-		String submenu;
-		Variant ud;
-		ObjectID handler;
-		String callback;
-	};
-
-	Vector<ToolMenuItem> tool_menu_items;
-
-	void _tool_menu_insert_item(const ToolMenuItem &p_item);
-	void _rebuild_tool_menu() const;
 
 	bool _dimming;
 	float _dim_time;
