@@ -24,7 +24,32 @@
 				Add a new checkable item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
+		<method name="add_radio_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				The same as [method add_check_item] but the inserted item will look as a radio button. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
+			</description>
+		</method>
 		<method name="add_check_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_radio_check_shortcut">
 			<return type="void">
 			</return>
 			<argument index="0" name="shortcut" type="ShortCut">
@@ -239,7 +264,16 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Return whether the item at index "idx" is checkable in some way, i.e., whether has a checkbox or radio button. Note that checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="is_item_radio_checkable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return whether the item at index "idx" has radio-button-style checkability. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -248,7 +282,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the checkstate status of the item at index "idx".
+				Return whether the item at index "idx" is checked.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -298,6 +332,18 @@
 			</argument>
 			<description>
 				Set whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="set_item_as_radio_checkable">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				The same as [method set_item_as_checkable] but placing a radio button in case of enabling. If used for disabling, it's the same.
+				Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="set_item_as_separator">
