@@ -228,16 +228,13 @@ godot_string GDAPI godot_string_simplify_path(const godot_string *p_self);
 godot_string GDAPI godot_string_c_escape(const godot_string *p_self);
 godot_string GDAPI godot_string_c_escape_multiline(const godot_string *p_self);
 godot_string GDAPI godot_string_c_unescape(const godot_string *p_self);
-godot_string GDAPI godot_string_http_escape(const godot_string *p_self);
-godot_string GDAPI godot_string_http_unescape(const godot_string *p_self);
+godot_string GDAPI godot_string_percent_decode(const godot_string *p_self);
+godot_string GDAPI godot_string_percent_encode(const godot_string *p_self);
 godot_string GDAPI godot_string_json_escape(const godot_string *p_self);
 godot_string GDAPI godot_string_word_wrap(const godot_string *p_self, godot_int p_chars_per_line);
 godot_string GDAPI godot_string_xml_escape(const godot_string *p_self);
 godot_string GDAPI godot_string_xml_escape_with_quotes(const godot_string *p_self);
 godot_string GDAPI godot_string_xml_unescape(const godot_string *p_self);
-
-godot_string GDAPI godot_string_percent_decode(const godot_string *p_self);
-godot_string GDAPI godot_string_percent_encode(const godot_string *p_self);
 
 godot_bool GDAPI godot_string_is_valid_float(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_hex_number(const godot_string *p_self, godot_bool p_with_prefix);
