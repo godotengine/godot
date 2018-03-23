@@ -201,7 +201,7 @@ void Camera::make_current() {
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
-void Camera::clear_current() {
+void Camera::clear_current(bool p_enable_next) {
 
 	current = false;
 	if (!is_inside_tree())
@@ -209,7 +209,10 @@ void Camera::clear_current() {
 
 	if (get_viewport()->get_camera() == this) {
 		get_viewport()->_camera_set(NULL);
-		get_viewport()->_camera_make_next_current(this);
+
+		if (p_enable_next) {
+			get_viewport()->_camera_make_next_current(this);
+		}
 	}
 }
 
@@ -439,7 +442,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera::make_current);
-	ClassDB::bind_method(D_METHOD("clear_current"), &Camera::clear_current);
+	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera::clear_current, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_current"), &Camera::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera::get_camera_transform);
