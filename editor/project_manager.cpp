@@ -1517,18 +1517,43 @@ ProjectManager::ProjectManager() {
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
 	{
-		int dpi_mode = EditorSettings::get_singleton()->get("interface/editor/hidpi_mode");
-		if (dpi_mode == 0) {
-			const int screen = OS::get_singleton()->get_current_screen();
-			editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
-		} else if (dpi_mode == 1) {
-			editor_set_scale(0.75);
-		} else if (dpi_mode == 2) {
-			editor_set_scale(1.0);
-		} else if (dpi_mode == 3) {
-			editor_set_scale(1.5);
-		} else if (dpi_mode == 4) {
-			editor_set_scale(2.0);
+		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
+		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
+
+		switch (display_scale) {
+			case 0: {
+				// Try applying a suitable display scale automatically
+				const int screen = OS::get_singleton()->get_current_screen();
+				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+			} break;
+
+			case 1: {
+				editor_set_scale(0.75);
+			} break;
+
+			case 2: {
+				editor_set_scale(1.0);
+			} break;
+
+			case 3: {
+				editor_set_scale(1.25);
+			} break;
+
+			case 4: {
+				editor_set_scale(1.5);
+			} break;
+
+			case 5: {
+				editor_set_scale(1.75);
+			} break;
+
+			case 6: {
+				editor_set_scale(2.0);
+			} break;
+
+			default: {
+				editor_set_scale(custom_display_scale);
+			} break;
 		}
 	}
 
