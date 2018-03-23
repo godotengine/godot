@@ -199,6 +199,14 @@ void EditorSettingsDialog::_update_icons() {
 
 void EditorSettingsDialog::_update_shortcuts() {
 
+	Map<String, bool> collapsed;
+
+	if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+		for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
+			collapsed[item->get_text(0)] = item->is_collapsed();
+		}
+	}
+
 	shortcuts->clear();
 
 	List<String> slist;
@@ -223,7 +231,13 @@ void EditorSettingsDialog::_update_shortcuts() {
 			section = sections[section_name];
 		} else {
 			section = shortcuts->create_item(root);
-			section->set_text(0, section_name.capitalize());
+
+			String item_name = section_name.capitalize();
+			section->set_text(0, item_name);
+
+			if (collapsed.has(item_name)) {
+				section->set_collapsed(collapsed[item_name]);
+			}
 
 			sections[section_name] = section;
 			section->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
