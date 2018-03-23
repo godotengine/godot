@@ -345,16 +345,29 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				break;
 
-			Ref<Script> existing = selected->get_script();
-			if (existing.is_valid()) {
-				const RefPtr empty;
-				selected->set_script(empty);
-				_update_script_button();
+			List<Node *> selection = editor_selection->get_selected_node_list();
+
+			if (selection.empty())
+				return;
+
+			editor_data->get_undo_redo().create_action(TTR("Clear Script"));
+			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Ref<Script> existing = E->get()->get_script();
+				if (existing.is_valid()) {
+					const RefPtr empty;
+					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
+					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+				}
 			}
+
+			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+
+			editor_data->get_undo_redo().commit_action();
 
 		} break;
 		case TOOL_MOVE_UP:
@@ -1208,12 +1221,26 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
 
-	Node *selected = scene_tree->get_selected();
-	if (!selected)
+	List<Node *> selected = editor_selection->get_selected_node_list();
+
+	if (selected.empty())
 		return;
-	selected->set_script(p_script.get_ref_ptr());
-	editor->push_item(p_script.operator->());
-	_update_script_button();
+
+	editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+	for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
+
+		Ref<Script> existing = E->get()->get_script();
+		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
+		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+	}
+
+	editor_data->get_undo_redo().add_do_method(editor, "push_item", p_script.operator->());
+	editor_data->get_undo_redo().add_undo_method(editor, "push_item", (Script *)NULL);
+
+	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+
+	editor_data->get_undo_redo().commit_action();
 }
 
 void SceneTreeDock::_delete_confirm() {
@@ -1669,8 +1696,12 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	ERR_FAIL_COND(!scr.is_valid());
 	Node *n = get_node(p_to);
 	if (n) {
-		n->set_script(scr.get_ref_ptr());
-		_update_script_button();
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
+		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
+		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().commit_action();
 	}
 }
 
@@ -1807,6 +1838,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
 			}
 		}
+	} else {
+		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
@@ -1925,6 +1960,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_focus_node"), &SceneTreeDock::_focus_node);
 	ClassDB::bind_method(D_METHOD("_remote_tree_selected"), &SceneTreeDock::_remote_tree_selected);
 	ClassDB::bind_method(D_METHOD("_local_tree_selected"), &SceneTreeDock::_local_tree_selected);
+	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
 
