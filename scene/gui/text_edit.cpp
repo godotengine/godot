@@ -1412,6 +1412,7 @@ void TextEdit::_notification(int p_what) {
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
 				draw_rect(Rect2(completion_rect.position, Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
 
+				String cache_string = String();
 				for (int i = 0; i < lines; i++) {
 
 					int l = line_from + i;
@@ -1422,7 +1423,31 @@ void TextEdit::_notification(int p_what) {
 							text_color = color_regions[j].color;
 						}
 					}
-					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
+
+					cache_string = completion_options[l];
+					if (cache.font->get_string_size(completion_options[l]).x > cmax_width) {
+						// Make path short
+						Vector<String> path = completion_options[l].split("/", false);
+						for (int k = 0; k < path.size() - 1; k++) {
+							if (path[k].length() > 4) {
+								cache_string = path[k];
+								path[k] = cache_string.left(2) + "." + cache_string.right(cache_string.length() - 2);
+							}
+							cache_string = "";
+							for (int m = 0; m < path.size(); m++) {
+								cache_string += path[m] + "/";
+							}
+							if (cache.font->get_string_size(cache_string).x <= completion_rect.size.width) {
+								break;
+							}
+						}
+						cache_string = "";
+						for (int m = 0; m < path.size(); m++) {
+							cache_string += path[m] + "/";
+						}
+						cache_string = cache_string.left(cache_string.length() - 1);
+					}
+					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), cache_string, text_color, completion_rect.size.width);
 				}
 
 				if (scrollw) {
