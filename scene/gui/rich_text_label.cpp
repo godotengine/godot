@@ -583,7 +583,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							int dif = table->columns[i].width - table->columns[i].max_width;
 							if (dif > 0) {
 								table_need_fit = true;
-								table->columns.write[i].width = table->columns[i].max_width;
+								table->columns[i].width = table->columns[i].max_width;
 								table->total_width -= dif;
 								total_ratio -= table->columns[i].expand_ratio;
 							}
@@ -597,7 +597,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									if (dif > 0) {
 										int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
 										int incr = MIN(dif, slice);
-										table->columns.write[i].width += incr;
+										table->columns[i].width += incr;
 										table->total_width += incr;
 									}
 								}
