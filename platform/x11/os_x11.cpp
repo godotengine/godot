@@ -1398,7 +1398,7 @@ static Property read_property(Display *p_display, Window p_window, Atom p_proper
 
 	} while (bytes_after != 0);
 
-	Property p = { ret, actual_format, nitems, actual_type };
+	Property p = { ret, actual_format, (int)nitems, actual_type };
 
 	return p;
 }
