@@ -248,15 +248,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->is_type("Spatial")) {
-		bool v = bool(p_node->call("is_visible"));
-		p_node->call("set_visible", !v);
-	}
-	else if (p_node->is_type("CanvasItem")) {
+		bool v = !bool(p_node->call("is_hidden"));
+		p_node->call("_set_visible_", !v);
+	} else if (p_node->is_type("CanvasItem")) {
 		bool v = bool(p_node->call("is_visible"));
 		if (v) {
 			p_node->call("hide");
-		}
-		else {
+		} else {
 			p_node->call("show");
 		}
 	}
