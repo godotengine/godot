@@ -1,12 +1,18 @@
 using System;
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     public struct Plane : IEquatable<Plane>
     {
         Vector3 normal;
 
-        public float x
+        public real_t x
         {
             get
             {
@@ -18,7 +24,7 @@ namespace Godot
             }
         }
 
-        public float y
+        public real_t y
         {
             get
             {
@@ -30,7 +36,7 @@ namespace Godot
             }
         }
 
-        public float z
+        public real_t z
         {
             get
             {
@@ -42,7 +48,7 @@ namespace Godot
             }
         }
 
-        float d;
+        real_t d;
 
         public Vector3 Center
         {
@@ -52,7 +58,7 @@ namespace Godot
             }
         }
 
-        public float DistanceTo(Vector3 point)
+        public real_t DistanceTo(Vector3 point)
         {
             return normal.Dot(point) - d;
         }
@@ -62,15 +68,15 @@ namespace Godot
             return normal * d;
         }
 
-        public bool HasPoint(Vector3 point, float epsilon = Mathf.Epsilon)
+        public bool HasPoint(Vector3 point, real_t epsilon = Mathf.Epsilon)
         {
-            float dist = normal.Dot(point) - d;
+            real_t dist = normal.Dot(point) - d;
             return Mathf.Abs(dist) <= epsilon;
         }
 
         public Vector3 Intersect3(Plane b, Plane c)
         {
-            float denom = normal.Cross(b.normal).Dot(c.normal);
+            real_t denom = normal.Cross(b.normal).Dot(c.normal);
 
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
@@ -84,12 +90,12 @@ namespace Godot
 
         public Vector3 IntersectRay(Vector3 from, Vector3 dir)
         {
-            float den = normal.Dot(dir);
+            real_t den = normal.Dot(dir);
 
             if (Mathf.Abs(den) <= Mathf.Epsilon)
                 return new Vector3();
 
-            float dist = (normal.Dot(from) - d) / den;
+            real_t dist = (normal.Dot(from) - d) / den;
 
             // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
@@ -101,12 +107,12 @@ namespace Godot
         public Vector3 IntersectSegment(Vector3 begin, Vector3 end)
         {
             Vector3 segment = begin - end;
-            float den = normal.Dot(segment);
+            real_t den = normal.Dot(segment);
 
             if (Mathf.Abs(den) <= Mathf.Epsilon)
                 return new Vector3();
 
-            float dist = (normal.Dot(begin) - d) / den;
+            real_t dist = (normal.Dot(begin) - d) / den;
 
             if (dist < -Mathf.Epsilon || dist > (1.0f + Mathf.Epsilon))
                 return new Vector3();
@@ -121,7 +127,7 @@ namespace Godot
 
         public Plane Normalized()
         {
-            float len = normal.Length();
+            real_t len = normal.Length();
 
             if (len == 0)
                 return new Plane(0, 0, 0, 0);
@@ -133,14 +139,14 @@ namespace Godot
         {
             return point - normal * DistanceTo(point);
         }
-
-        public Plane(float a, float b, float c, float d)
+        
+        // Constructors 
+        public Plane(real_t a, real_t b, real_t c, real_t d)
         {
             normal = new Vector3(a, b, c);
             this.d = d;
         }
-
-        public Plane(Vector3 normal, float d)
+        public Plane(Vector3 normal, real_t d)
         {
             this.normal = normal;
             this.d = d;

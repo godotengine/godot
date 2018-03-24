@@ -7,6 +7,12 @@ using System;
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
 
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
+
 namespace Godot
 {
     public struct AABB : IEquatable<AABB>
@@ -75,7 +81,7 @@ namespace Godot
             return new AABB(begin, end - begin);
         }
 
-        public float GetArea()
+        public real_t GetArea()
         {
             return size.x * size.y * size.z;
         }
@@ -108,7 +114,7 @@ namespace Godot
         public Vector3 GetLongestAxis()
         {
             Vector3 axis = new Vector3(1f, 0f, 0f);
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y > max_size)
             {
@@ -128,7 +134,7 @@ namespace Godot
         public Vector3.Axis GetLongestAxisIndex()
         {
             Vector3.Axis axis = Vector3.Axis.X;
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y > max_size)
             {
@@ -145,9 +151,9 @@ namespace Godot
             return axis;
         }
 
-        public float GetLongestAxisSize()
+        public real_t GetLongestAxisSize()
         {
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y > max_size)
                 max_size = size.y;
@@ -161,7 +167,7 @@ namespace Godot
         public Vector3 GetShortestAxis()
         {
             Vector3 axis = new Vector3(1f, 0f, 0f);
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -181,7 +187,7 @@ namespace Godot
         public Vector3.Axis GetShortestAxisIndex()
         {
             Vector3.Axis axis = Vector3.Axis.X;
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -198,9 +204,9 @@ namespace Godot
             return axis;
         }
 
-        public float GetShortestAxisSize()
+        public real_t GetShortestAxisSize()
         {
-            float max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
                 max_size = size.y;
@@ -222,7 +228,7 @@ namespace Godot
                 (dir.z > 0f) ? -half_extents.z : half_extents.z);
         }
 
-        public AABB Grow(float by)
+        public AABB Grow(real_t by)
         {
             AABB res = this;
 
@@ -354,23 +360,23 @@ namespace Godot
 
         public bool IntersectsSegment(Vector3 from, Vector3 to)
         {
-            float min = 0f;
-            float max = 1f;
+            real_t min = 0f;
+            real_t max = 1f;
 
             for (int i = 0; i < 3; i++)
             {
-                float seg_from = from[i];
-                float seg_to = to[i];
-                float box_begin = position[i];
-                float box_end = box_begin + size[i];
-                float cmin, cmax;
+                real_t seg_from = from[i];
+                real_t seg_to = to[i];
+                real_t box_begin = position[i];
+                real_t box_end = box_begin + size[i];
+                real_t cmin, cmax;
 
                 if (seg_from < seg_to)
                 {
                     if (seg_from > box_end || seg_to < box_begin)
                         return false;
 
-                    float length = seg_to - seg_from;
+                    real_t length = seg_to - seg_from;
                     cmin = seg_from < box_begin ? (box_begin - seg_from) / length : 0f;
                     cmax = seg_to > box_end ? (box_end - seg_from) / length : 1f;
                 }
@@ -379,7 +385,7 @@ namespace Godot
                     if (seg_to > box_end || seg_from < box_begin)
                         return false;
 
-                    float length = seg_to - seg_from;
+                    real_t length = seg_to - seg_from;
                     cmin = seg_from > box_end ? (box_end - seg_from) / length : 0f;
                     cmax = seg_to < box_begin ? (box_begin - seg_from) / length : 1f;
                 }
@@ -419,7 +425,8 @@ namespace Godot
 
             return new AABB(min, max - min);
         }
-
+        
+        // Constructors 
         public AABB(Vector3 position, Vector3 size)
         {
             this.position = position;
