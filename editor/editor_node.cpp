@@ -610,9 +610,6 @@ void EditorNode::open_resource(const String &p_type) {
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 
 	editor_data.apply_changes_in_editors();
-	if (p_resource->get_last_modified_time() == p_resource->get_import_last_modified_time()) {
-		return;
-	}
 
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
@@ -1459,7 +1456,8 @@ void EditorNode::_save_default_environment() {
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
 		Map<RES, bool> processed;
 		_find_and_save_edited_subresources(fallback.ptr(), processed, 0);
-		save_resource_in_path(fallback, fallback->get_path());
+		if (fallback->get_last_modified_time() != fallback->get_import_last_modified_time())
+			save_resource_in_path(fallback, fallback->get_path());
 	}
 }
 
