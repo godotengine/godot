@@ -153,7 +153,6 @@ String DirAccessJAndroid::get_current_dir() {
 
 bool DirAccessJAndroid::file_exists(String p_file) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
 	String sd;
 	if (current_dir == "")
 		sd = p_file;

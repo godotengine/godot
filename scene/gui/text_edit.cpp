@@ -336,10 +336,6 @@ void TextEdit::_update_scrollbars() {
 	int hscroll_rows = ((hmin.height - 1) / get_row_height()) + 1;
 	int visible_rows = get_visible_rows();
 
-	int first_vis_line = get_first_visible_line();
-	int wi;
-	int num_rows = MAX(visible_rows, num_lines_from_rows(first_vis_line, cursor.wrap_ofs, visible_rows, wi));
-
 	int total_rows = get_total_visible_rows();
 	if (scroll_past_end_of_file_enabled) {
 		total_rows += visible_rows - 1;
@@ -1672,7 +1668,6 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	rows /= get_row_height();
 	rows += get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
-	int last_vis_line = get_last_visible_line();
 	int row = first_vis_line + Math::floor(rows);
 	int wrap_index = 0;
 
@@ -3799,7 +3794,6 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 	}
 	// line ends before hit wrap_at; add this word to the substring
 	wrap_substring += word_str;
-	px += word_px;
 	lines.push_back(wrap_substring);
 	return lines;
 }
@@ -5506,9 +5500,8 @@ int TextEdit::get_last_visible_line() const {
 int TextEdit::get_last_visible_line_wrap_index() const {
 
 	int first_vis_line = get_first_visible_line();
-	int last_vis_line = 0;
 	int wi;
-	last_vis_line = first_vis_line + num_lines_from_rows(first_vis_line, cursor.wrap_ofs, get_visible_rows() + 1, wi) - 1;
+	num_lines_from_rows(first_vis_line, cursor.wrap_ofs, get_visible_rows() + 1, wi);
 	return wi;
 }
 

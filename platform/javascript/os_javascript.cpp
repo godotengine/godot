@@ -188,7 +188,6 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
-	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
 	int input_mask = _input->get_mouse_button_mask();
 	Point2 pos = Point2(mouse_event->canvasX, mouse_event->canvasY);
 	// outside the canvas, only read mouse movement if dragging started inside

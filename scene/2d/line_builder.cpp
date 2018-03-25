@@ -290,7 +290,6 @@ void LineBuilder::build() {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-			uvx0 = current_distance0 / (width * tile_aspect);
 			uvx1 = current_distance1 / (width * tile_aspect);
 		}
 
@@ -301,7 +300,6 @@ void LineBuilder::build() {
 		u0 = u1;
 		f0 = f1;
 		pos0 = pos1;
-		current_distance0 = current_distance1;
 		if (intersection_result == SEGMENT_INTERSECT) {
 			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
 				pos_up0 = pos_up1;

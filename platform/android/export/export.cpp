@@ -528,11 +528,9 @@ class EditorExportAndroid : public EditorExportPlatform {
 		bool exported = false;
 		for (int i = 0; i < p_so.tags.size(); ++i) {
 			// shared objects can be fat (compatible with multiple ABIs)
-			int start_pos = 0;
 			int abi_index = abis.find(p_so.tags[i]);
 			if (abi_index != -1) {
 				exported = true;
-				start_pos = abi_index + 1;
 				String abi = abis[abi_index];
 				String dst_path = "lib/" + abi + "/" + p_so.path.get_file();
 				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
