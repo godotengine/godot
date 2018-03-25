@@ -37,14 +37,20 @@
 #include "core/os/thread.h"
 #include "servers/audio_server.h"
 
-#include <pulse/simple.h>
+#include <pulse/pulseaudio.h>
 
 class AudioDriverPulseAudio : public AudioDriver {
 
 	Thread *thread;
 	Mutex *mutex;
 
-	pa_simple *pulse;
+	pa_mainloop *pa_ml;
+	pa_context *pa_ctx;
+	pa_stream *pa_str;
+
+	String device_name;
+	String new_device;
+	String default_device;
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
@@ -54,12 +60,25 @@ class AudioDriverPulseAudio : public AudioDriver {
 	unsigned int pa_buffer_size;
 	int channels;
 	int pa_channels;
+	int pa_ready;
+	int pa_status;
+	Array pa_devices;
 
 	bool active;
 	bool thread_exited;
 	mutable bool exit_thread;
 
 	float latency;
+
+	static void pa_state_cb(pa_context *c, void *userdata);
+	static void pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
+	static void pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata);
+	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
+
+	Error init_device();
+	void finish_device();
+
+	void detect_channels();
 
 	static void thread_func(void *p_udata);
 
@@ -72,6 +91,9 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device);
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
