@@ -56,17 +56,18 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	Vector<int32_t> samples_in;
 
-#ifdef OSX_ENABLED
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
-#endif
 
 	static OSStatus output_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
 			const AudioTimeStamp *inTimeStamp,
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
+
+	Error init_device();
+	Error finish_device();
 
 public:
 	const char *get_name() const {
@@ -87,7 +88,6 @@ public:
 	virtual void finish();
 
 	bool try_lock();
-	void stop();
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio();

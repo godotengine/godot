@@ -335,8 +335,6 @@ public:
 	String get_device();
 	void set_device(String device);
 
-	float get_output_latency() { return output_latency; }
-
 	AudioServer();
 	virtual ~AudioServer();
 };
