@@ -60,7 +60,7 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 		return;
 	}
 
-	ad->pa_map = l->channel_map;
+	ad->pa_channels = l->channel_map.channels;
 	ad->pa_status++;
 }
 
@@ -73,7 +73,7 @@ void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_inf
 
 void AudioDriverPulseAudio::detect_channels() {
 
-	pa_channel_map_init_stereo(&pa_map);
+	pa_channels = 2;
 
 	if (device_name == "Default") {
 		// Get the default output device name
@@ -128,13 +128,11 @@ Error AudioDriverPulseAudio::init_device() {
 		}
 	}
 
-	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
-
 	// Detect the amount of channels PulseAudio is using
 	// Note: If using an even amount of channels (2, 4, etc) channels and pa_channels will be equal,
 	// if not then pa_channels will have the real amount of channels PulseAudio is using and channels
 	// will have the amount of channels Godot is using (in this case it's pa_channels + 1)
-	pa_channels = detect_channels();
+	detect_channels();
 	switch (pa_channels) {
 		case 1: // Mono
 		case 3: // Surround 2.1
@@ -189,6 +187,9 @@ Error AudioDriverPulseAudio::init_device() {
 	attr.maxlength = (uint32_t)-1;
 	attr.minreq = (uint32_t)-1;
 
+	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, NULL);
+	ERR_FAIL_COND_V(pa_ctx == NULL, ERR_CANT_OPEN);
+
 	const char *dev = device_name == "Default" ? NULL : device_name.utf8().get_data();
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
 	int error_code = pa_stream_connect_playback(pa_str, dev, &attr, flags, NULL, NULL);
@@ -236,8 +237,20 @@ Error AudioDriverPulseAudio::init() {
 		pa_mainloop_iterate(pa_ml, 1, NULL);
 	}
 
-	samples_in.resize(buffer_frames * channels);
-	samples_out.resize(pa_buffer_size);
+	if (pa_ready < 0) {
+		if (pa_ctx) {
+			pa_context_disconnect(pa_ctx);
+			pa_context_unref(pa_ctx);
+			pa_ctx = NULL;
+		}
+
+		if (pa_ml) {
+			pa_mainloop_free(pa_ml);
+			pa_ml = NULL;
+		}
+
+		return ERR_CANT_OPEN;
+	}
 
 	Error err = init_device();
 	if (err == OK) {
@@ -313,12 +326,52 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		int error_code;
 		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
-		if (pa_simple_write(ad->pulse, ad->samples_out.ptr(), byte_size, &error_code) < 0) {
-			// can't recover here
-			fprintf(stderr, "PulseAudio failed and can't recover: %s\n", pa_strerror(error_code));
-			ad->active = false;
-			ad->exit_thread = true;
-			break;
+
+		ad->lock();
+
+		int ret;
+		do {
+			ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
+		} while (ret > 0);
+
+		if (pa_stream_get_state(ad->pa_str) == PA_STREAM_READY) {
+			const void *ptr = ad->samples_out.ptr();
+			while (byte_size > 0) {
+				size_t bytes = pa_stream_writable_size(ad->pa_str);
+				if (bytes > 0) {
+					if (bytes > byte_size) {
+						bytes = byte_size;
+					}
+
+					int ret = pa_stream_write(ad->pa_str, ptr, bytes, NULL, 0LL, PA_SEEK_RELATIVE);
+					if (ret >= 0) {
+						byte_size -= bytes;
+						ptr = (const char *)ptr + bytes;
+					}
+				} else {
+					pa_mainloop_iterate(ad->pa_ml, 1, NULL);
+				}
+			}
+		}
+
+		// User selected a new device, finish the current one so we'll init the new device
+		if (ad->device_name != ad->new_device) {
+			ad->device_name = ad->new_device;
+			ad->finish_device();
+
+			Error err = ad->init_device();
+			if (err != OK) {
+				ERR_PRINT("PulseAudio: init_device error");
+				ad->device_name = "Default";
+				ad->new_device = "Default";
+
+				err = ad->init_device();
+				if (err != OK) {
+					ad->active = false;
+					ad->exit_thread = true;
+					break;
+				}
+			}
 		}
 
 		ad->unlock();
@@ -471,6 +524,8 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	pa_buffer_size = 0;
 	channels = 0;
 	pa_channels = 0;
+	pa_ready = 0;
+	pa_status = 0;
 
 	active = false;
 	thread_exited = false;
