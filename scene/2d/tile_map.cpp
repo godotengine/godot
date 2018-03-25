@@ -265,10 +265,16 @@ void TileMap::_update_dirty_quadrants() {
 
 	SceneTree *st = SceneTree::get_singleton();
 	Color debug_collision_color;
+	Color debug_navigation_color;
 
 	bool debug_shapes = st && st->is_debugging_collisions_hint();
 	if (debug_shapes) {
 		debug_collision_color = st->get_debug_collisions_color();
+	}
+
+	bool debug_navigation = st && st->is_debugging_navigation_hint();
+	if (debug_navigation) {
+		debug_navigation_color = st->get_debug_navigation_color();
 	}
 
 	while (dirty_quadrant_list.first()) {
@@ -497,6 +503,55 @@ void TileMap::_update_dirty_quadrants() {
 					np.id = pid;
 					np.xform = xform;
 					q.navpoly_ids[E->key()] = np;
+
+					if (debug_navigation) {
+						RID debug_navigation_item = vs->canvas_item_create();
+						vs->canvas_item_set_parent(debug_navigation_item, canvas_item);
+						vs->canvas_item_set_z_as_relative_to_parent(debug_navigation_item, false);
+						vs->canvas_item_set_z_index(debug_navigation_item, VS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
+
+						if (debug_navigation_item.is_valid()) {
+							PoolVector<Vector2> navigation_polygon_vertices = navpoly->get_vertices();
+							int vsize = navigation_polygon_vertices.size();
+
+							if (vsize > 2) {
+								Vector<Color> colors;
+								Vector<Vector2> vertices;
+								vertices.resize(vsize);
+								colors.resize(vsize);
+								{
+									PoolVector<Vector2>::Read vr = navigation_polygon_vertices.read();
+									for (int i = 0; i < vsize; i++) {
+										vertices[i] = vr[i];
+										colors[i] = debug_navigation_color;
+									}
+								}
+
+								Vector<int> indices;
+
+								for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+									Vector<int> polygon = navpoly->get_polygon(i);
+
+									for (int j = 2; j < polygon.size(); j++) {
+
+										int kofs[3] = { 0, j - 1, j };
+										for (int k = 0; k < 3; k++) {
+
+											int idx = polygon[kofs[k]];
+											ERR_FAIL_INDEX(idx, vsize);
+											indices.push_back(idx);
+										}
+									}
+								}
+								Transform2D navxform;
+								navxform.set_origin(offset.floor());
+								_fix_cell_transform(navxform, c, npoly_ofs + center_ofs, s);
+
+								vs->canvas_item_set_transform(debug_navigation_item, navxform);
+								vs->canvas_item_add_triangle_array(debug_navigation_item, indices, vertices, colors);
+							}
+						}
+					}
 				}
 			}
 
