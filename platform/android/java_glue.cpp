@@ -890,9 +890,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
 				const char *rawString = env->GetStringUTFChars(string, 0);
-				if (rawString && strcmp(rawString, "--main-pack") == 0) {
-					use_apk_expansion = true;
-				}
 
 				cmdline[i] = rawString;
 			}

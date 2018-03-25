@@ -211,9 +211,9 @@ Error DynamicFontAtSize::_load() {
 				scale_color_font = float(id.size) / face->available_sizes[i].width;
 			}
 		}
-		error = FT_Select_Size(face, best_match);
+		FT_Select_Size(face, best_match);
 	} else {
-		error = FT_Set_Pixel_Sizes(face, 0, id.size * oversampling);
+		FT_Set_Pixel_Sizes(face, 0, id.size * oversampling);
 	}
 
 	ascent = (face->size->metrics.ascender / 64.0) / oversampling * scale_color_font;

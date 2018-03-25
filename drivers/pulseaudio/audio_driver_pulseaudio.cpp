@@ -403,7 +403,6 @@ AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 
 void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
-	int ctr = 0;
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {

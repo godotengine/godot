@@ -45,10 +45,6 @@ RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_origi
 
 	dstbuff.resize(rowsize * height);
 
-	PoolVector<uint8_t>::Write dstbuff_write = dstbuff.write();
-
-	uint8_t *data = dstbuff_write.ptr();
-
 	uint8_t **row_p = memnew_arr(uint8_t *, height);
 
 	for (unsigned int i = 0; i < height; i++) {
