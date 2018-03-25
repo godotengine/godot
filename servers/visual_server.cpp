@@ -187,16 +187,14 @@ RID VisualServer::_make_test_cube() {
 	PoolVector<float> tangents;
 	PoolVector<Vector3> uvs;
 
-	int vtx_idx = 0;
-#define ADD_VTX(m_idx)                                                             \
-	vertices.push_back(face_points[m_idx]);                                        \
-	normals.push_back(normal_points[m_idx]);                                       \
-	tangents.push_back(normal_points[m_idx][1]);                                   \
-	tangents.push_back(normal_points[m_idx][2]);                                   \
-	tangents.push_back(normal_points[m_idx][0]);                                   \
-	tangents.push_back(1.0);                                                       \
-	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0)); \
-	vtx_idx++;
+#define ADD_VTX(m_idx)                           \
+	vertices.push_back(face_points[m_idx]);      \
+	normals.push_back(normal_points[m_idx]);     \
+	tangents.push_back(normal_points[m_idx][1]); \
+	tangents.push_back(normal_points[m_idx][2]); \
+	tangents.push_back(normal_points[m_idx][0]); \
+	tangents.push_back(1.0);                     \
+	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0));
 
 	for (int i = 0; i < 6; i++) {
 

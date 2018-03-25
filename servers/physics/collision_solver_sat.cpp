@@ -217,8 +217,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 	// generate contacts
 	//Plane plane_A(p_points_A[0],p_points_A[1],p_points_A[2]);
 
-	int added = 0;
-
 	for (int i = 0; i < clipbuf_len; i++) {
 
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
@@ -233,7 +231,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 			continue;
 
 		p_callback->call(clipbuf_src[i], closest_B);
-		added++;
 	}
 }
 

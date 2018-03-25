@@ -146,9 +146,6 @@ void AudioDriverOpenSL::start() {
 	res = (*sl)->GetInterface(sl, SL_IID_ENGINE, (void *)&EngineItf);
 
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
-	/* Initialize arrays required[] and iidArray[] */
-	SLboolean required[MAX_NUMBER_INTERFACES];
-	SLInterfaceID iidArray[MAX_NUMBER_INTERFACES];
 
 	{
 		const SLInterfaceID ids[1] = { SL_IID_ENVIRONMENTALREVERB };
@@ -188,10 +185,7 @@ void AudioDriverOpenSL::start() {
 	//cntxt.pDataBase = (void*)&pcmData;
 	//cntxt.pData = cntxt.pDataBase;
 	//cntxt.size = sizeof(pcmData);
-	/* Set arrays required[] and iidArray[] for SEEK interface
-	(PlayItf is implicit) */
-	required[0] = SL_BOOLEAN_TRUE;
-	iidArray[0] = SL_IID_BUFFERQUEUE;
+
 	/* Create the music player */
 
 	{
