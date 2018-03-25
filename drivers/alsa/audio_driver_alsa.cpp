@@ -148,11 +148,15 @@ Error AudioDriverALSA::init_device() {
 	return OK;
 }
 
+	return OK;
+}
+
 Error AudioDriverALSA::init() {
 
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
+	pcm_open = false;
 
 	Error err = init_device();
 	if (err == OK) {
@@ -174,8 +178,12 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 		if (!ad->active) {
 			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out.write[i] = 0;
-			}
+				ad->samples_out[i] = 0;
+			};
+		} else {
+			ad->lock();
+
+			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
 		} else {
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
@@ -188,7 +196,9 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		int todo = ad->period_size;
 		int total = 0;
 
-		while (todo && !ad->exit_thread) {
+		while (todo) {
+			if (ad->exit_thread)
+				break;
 			uint8_t *src = (uint8_t *)ad->samples_out.ptr();
 			int wrote = snd_pcm_writei(ad->pcm_handle, (void *)(src + (total * ad->channels)), todo);
 
@@ -218,6 +228,15 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 			ad->device_name = ad->new_device;
 			ad->finish_device();
 
+			total += wrote;
+			todo -= wrote;
+		};
+
+		// User selected a new device, finish the current one so we'll init the new device
+		if (ad->device_name != ad->new_device) {
+			ad->device_name = ad->new_device;
+			ad->finish_device();
+
 			Error err = ad->init_device();
 			if (err != OK) {
 				ERR_PRINT("ALSA: init_device error");
@@ -228,12 +247,10 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 				if (err != OK) {
 					ad->active = false;
 					ad->exit_thread = true;
+					break;
 				}
 			}
 		}
-
-		ad->stop_counting_ticks();
-		ad->unlock();
 	};
 
 	ad->thread_exited = true;
@@ -294,9 +311,7 @@ String AudioDriverALSA::get_device() {
 
 void AudioDriverALSA::set_device(String device) {
 
-	lock();
 	new_device = device;
-	unlock();
 }
 
 void AudioDriverALSA::lock() {
@@ -315,6 +330,14 @@ void AudioDriverALSA::unlock() {
 
 void AudioDriverALSA::finish_device() {
 
+	if (pcm_open) {
+		snd_pcm_close(pcm_handle);
+		pcm_open = NULL;
+	}
+}
+
+void AudioDriverALSA::finish() {
+
 	if (pcm_handle) {
 		snd_pcm_close(pcm_handle);
 		pcm_handle = NULL;
@@ -323,21 +346,15 @@ void AudioDriverALSA::finish_device() {
 
 void AudioDriverALSA::finish() {
 
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-
-		if (mutex) {
-			memdelete(mutex);
-			mutex = NULL;
-		}
-	}
-
 	finish_device();
-}
+
+	memdelete(thread);
+	if (mutex) {
+		memdelete(mutex);
+		mutex = NULL;
+	}
+	thread = NULL;
+};
 
 AudioDriverALSA::AudioDriverALSA() {
 
