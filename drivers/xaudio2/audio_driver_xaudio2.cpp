@@ -97,7 +97,7 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 
 	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
 
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
+	//uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
 

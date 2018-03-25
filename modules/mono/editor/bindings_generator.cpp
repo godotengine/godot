@@ -1491,7 +1491,6 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	}
 
 	if (tools_sequence) {
-		tools_sequence = false;
 		output.push_back("#endif\n");
 	}
 

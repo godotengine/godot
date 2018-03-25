@@ -1371,10 +1371,12 @@ Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
+#ifdef OSX_ENABLED
 struct ShortCutMapping {
 	const char *path;
 	uint32_t keycode;
 };
+#endif
 
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 

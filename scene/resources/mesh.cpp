@@ -1189,8 +1189,6 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 
 		for (int j = 0; j < 3; j++) {
 
-			int vertex_idx = gen_vertices[gen_indices[i + j]];
-
 			SurfaceTool::Vertex v = surfaces[surface].vertices[uv_index[gen_vertices[gen_indices[i + j]]].second];
 
 			if (surfaces[surface].format & ARRAY_FORMAT_COLOR) {

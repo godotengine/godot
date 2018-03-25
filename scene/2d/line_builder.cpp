@@ -290,7 +290,7 @@ void LineBuilder::build() {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-			uvx0 = current_distance0 / (width * tile_aspect);
+			//uvx0 = current_distance0 / (width * tile_aspect);
 			uvx1 = current_distance1 / (width * tile_aspect);
 		}
 

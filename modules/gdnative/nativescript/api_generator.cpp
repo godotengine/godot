@@ -110,7 +110,7 @@ struct ClassAPI {
 	bool is_singleton;
 	bool is_instanciable;
 	// @Unclear
-	bool is_creatable;
+	//bool is_creatable;
 	bool is_reference;
 
 	List<MethodAPI> methods;

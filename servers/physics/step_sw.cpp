@@ -286,7 +286,6 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(SpaceSW::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
-		profile_begtime = profile_endtime;
 	}
 
 	p_space->update();

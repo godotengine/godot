@@ -64,7 +64,6 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 
 	String str = "ws://";
 	String proto_string = "";
-	int i = 0;
 
 	if (p_ssl)
 		str = "wss://";

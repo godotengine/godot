@@ -42,7 +42,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		/*   SLuint32 eventFlags,
     const void * pBuffer,
     SLuint32 bufferSize,
-    SLuint32 dataUsed*/) {
+    SLuint32 dataUsed*/
+) {
 
 	bool mix = true;
 
@@ -189,8 +190,8 @@ void AudioDriverOpenSL::start() {
 	//cntxt.size = sizeof(pcmData);
 	/* Set arrays required[] and iidArray[] for SEEK interface
 	(PlayItf is implicit) */
-	required[0] = SL_BOOLEAN_TRUE;
-	iidArray[0] = SL_IID_BUFFERQUEUE;
+	//required[0] = SL_BOOLEAN_TRUE;
+	//iidArray[0] = SL_IID_BUFFERQUEUE;
 	/* Create the music player */
 
 	{

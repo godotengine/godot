@@ -156,9 +156,8 @@ void Light::_update_visibility() {
 	if (!is_inside_tree())
 		return;
 
-	bool editor_ok = true;
-
 #ifdef TOOLS_ENABLED
+	bool editor_ok = true;
 	if (editor_only) {
 		if (!Engine::get_singleton()->is_editor_hint()) {
 			editor_ok = false;
@@ -167,6 +166,7 @@ void Light::_update_visibility() {
 		}
 	}
 #else
+	bool editor_ok = true;
 	if (editor_only) {
 		editor_ok = false;
 	}
