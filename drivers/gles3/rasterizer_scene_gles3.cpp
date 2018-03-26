@@ -783,8 +783,9 @@ bool RasterizerSceneGLES3::reflection_probe_instance_postprocess_step(RID p_inst
 RID RasterizerSceneGLES3::environment_create() {
 
 	Environment *env = memnew(Environment);
-
-	return environment_owner.make_rid(env);
+	RID rid = environment_owner.make_rid(env);
+	environment_vector.push_back(rid);
+	return rid;
 }
 
 void RasterizerSceneGLES3::environment_set_background(RID p_env, VS::EnvironmentBG p_bg) {
@@ -5137,4 +5138,9 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	memfree(state.spot_array_tmp);
 	memfree(state.omni_array_tmp);
 	memfree(state.reflection_array_tmp);
+
+	for (unsigned int i = 0; i < environment_vector.size(); ++i) {
+		memdelete(environment_vector[i].get_data());
+	}
+	environment_vector.clear();
 }
