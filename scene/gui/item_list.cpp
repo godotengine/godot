@@ -984,6 +984,35 @@ void ItemList::_notification(int p_what) {
 				rcache.size.width = width - rcache.position.x;
 			}
 
+			Vector2 text_ofs = Vector2(0, 0);
+			Point2 pos = items[i].rect_cache.position + base_ofs;
+			Size2 icon_size = Size2(0, 0);
+			//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
+
+			if (items[i].icon.is_valid()) {
+
+				if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
+					icon_size = fixed_icon_size * icon_scale;
+				} else {
+					icon_size = items[i].get_icon_size() * icon_scale;
+				}
+
+				if (icon_mode == ICON_MODE_TOP) {
+
+					pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
+					pos.y += MIN(
+							Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2),
+							items[i].rect_cache.size.height - items[i].min_rect_cache.size.height);
+					text_ofs.y = icon_size.height + icon_margin;
+					text_ofs.y += items[i].rect_cache.size.height - items[i].min_rect_cache.size.height;
+				} else {
+
+					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
+					text_ofs.x = icon_size.width + icon_margin;
+				}
+			}
+
+			const Vector2 base_text_ofs = text_ofs;
 			if (items[i].selected) {
 				Rect2 r = rcache;
 				r.position += base_ofs;
@@ -991,6 +1020,10 @@ void ItemList::_notification(int p_what) {
 				r.size.y += vseparation;
 				r.position.x -= hseparation / 2;
 				r.size.x += hseparation;
+
+				if (icon_mode == ICON_MODE_TOP) {
+					r.size.y = base_text_ofs.y + vseparation;
+				}
 
 				draw_style_box(sbsel, r);
 			}
@@ -1007,35 +1040,7 @@ void ItemList::_notification(int p_what) {
 				draw_rect(r, items[i].custom_bg);
 			}
 
-			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
-
-				Size2 icon_size;
-				//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
-
-				if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
-					icon_size = fixed_icon_size * icon_scale;
-				} else {
-					icon_size = items[i].get_icon_size() * icon_scale;
-				}
-
-				Vector2 icon_ofs;
-
-				Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
-
-				if (icon_mode == ICON_MODE_TOP) {
-
-					pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-					pos.y += MIN(
-							Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2),
-							items[i].rect_cache.size.height - items[i].min_rect_cache.size.height);
-					text_ofs.y = icon_size.height + icon_margin;
-					text_ofs.y += items[i].rect_cache.size.height - items[i].min_rect_cache.size.height;
-				} else {
-
-					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
-					text_ofs.x = icon_size.width + icon_margin;
-				}
 
 				Rect2 draw_rect = Rect2(pos, icon_size);
 
@@ -1144,6 +1149,11 @@ void ItemList::_notification(int p_what) {
 				r.size.y += vseparation;
 				r.position.x -= hseparation / 2;
 				r.size.x += hseparation;
+
+				if (icon_mode == ICON_MODE_TOP) {
+					r.size.y = base_text_ofs.y + vseparation;
+				}
+
 				draw_style_box(cursor, r);
 			}
 		}
