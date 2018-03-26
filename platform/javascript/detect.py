@@ -8,23 +8,22 @@ def is_active():
 
 
 def get_name():
-    return "JavaScript"
+    return 'JavaScript'
 
 
 def can_build():
-
-    return ("EMSCRIPTEN_ROOT" in os.environ or "EMSCRIPTEN" in os.environ)
+    return 'EMSCRIPTEN_ROOT' in os.environ or 'EMSCRIPTEN' in os.environ
 
 
 def get_opts():
     from SCons.Variables import BoolVariable
     return [
+        # eval() can be a security concern, so it can be disabled.
         BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
     ]
 
 
 def get_flags():
-
     return [
         ('tools', False),
         ('module_theora_enabled', False),
@@ -36,24 +35,11 @@ def get_flags():
     ]
 
 
-def create(env):
-
-    # remove Windows' .exe suffix
-    return env.Clone(tools=['textfile', 'zip'], PROGSUFFIX='')
-
-
-def escape_sources_backslashes(target, source, env, for_signature):
-    return [path.replace('\\','\\\\') for path in env.GetBuildPath(source)]
-
-def escape_target_backslashes(target, source, env, for_signature):
-    return env.GetBuildPath(target[0]).replace('\\','\\\\')
-
-
 def configure(env):
 
     ## Build type
 
-    if (env["target"] == "release"):
+    if env['target'] == 'release' or env['target'] == 'profile':
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -62,66 +48,99 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=['-Os'])
         env.Append(LINKFLAGS=['-Os'])
+        if env['target'] == 'profile':
+            env.Append(LINKFLAGS=['--profiling-funcs'])
 
-    elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+    elif env['target'] == 'release_debug':
+        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O2'])
         env.Append(LINKFLAGS=['-O2'])
-        # retain function names at the cost of file size, for backtraces and profiling
+        # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=['--profiling-funcs'])
 
-    elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
+    elif env['target'] == 'debug':
+        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-s', 'ASSERTIONS=1'])
 
     ## Compiler configuration
 
     env['ENV'] = os.environ
-    if ("EMSCRIPTEN_ROOT" in os.environ):
+    if 'EMSCRIPTEN_ROOT' in os.environ:
         env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
-    elif ("EMSCRIPTEN" in os.environ):
+    elif 'EMSCRIPTEN' in os.environ:
         env.PrependENVPath('PATH', os.environ['EMSCRIPTEN'])
-    env['CC']      = 'emcc'
-    env['CXX']     = 'em++'
-    env['LINK']    = 'emcc'
-    env['RANLIB']  = 'emranlib'
-    # Emscripten's ar has issues with duplicate file names, so use cc
-    env['AR']      = 'emcc'
+
+    env['CC'] = 'emcc'
+    env['CXX'] = 'em++'
+    env['LINK'] = 'emcc'
+
+    # Emscripten's ar has issues with duplicate file names, so use cc.
+    env['AR'] = 'emcc'
     env['ARFLAGS'] = '-o'
+    # emranlib is a noop, so it's safe to use with AR=emcc.
+    env['RANLIB'] = 'emranlib'
 
-    if (os.name == 'nt'):
-        # use TempFileMunge on Windows since some commands get too long for
-        # cmd.exe even with spawn_fix
-        # need to escape backslashes for this
-        env['ESCAPED_SOURCES'] = escape_sources_backslashes
-        env['ESCAPED_TARGET'] = escape_target_backslashes
-        env['ARCOM'] = '${TEMPFILE("%s")}' % env['ARCOM'].replace('$SOURCES', '$ESCAPED_SOURCES').replace('$TARGET', '$ESCAPED_TARGET')
+    # Use TempFileMunge since some AR invocations are too long for cmd.exe.
+    # Use POSIX-style paths, required with TempFileMunge.
+    env['ARCOM_POSIX'] = env['ARCOM'].replace(
+        '$TARGET', '$TARGET.posix').replace(
+        '$SOURCES', '$SOURCES.posix')
+    env['ARCOM'] = '${TEMPFILE(ARCOM_POSIX)}'
 
+    # All intermediate files are just LLVM bitcode.
+    env['OBJPREFIX'] = ''
     env['OBJSUFFIX'] = '.bc'
+    env['PROGPREFIX'] = ''
+    # Program() output consists of multiple files, so specify suffixes manually at builder.
+    env['PROGSUFFIX'] = ''
+    env['LIBPREFIX'] = 'lib'
     env['LIBSUFFIX'] = '.bc'
+    env['LIBPREFIXES'] = ['$LIBPREFIX']
+    env['LIBSUFFIXES'] = ['$LIBSUFFIX']
 
     ## Compile flags
 
     env.Append(CPPPATH=['#platform/javascript'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
-    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
+    env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
 
-    # These flags help keep the file size down
-    env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
+    # No multi-threading (SharedArrayBuffer) available yet,
+    # once feasible also consider memory buffer size issues.
+    env.Append(CPPDEFINES=['NO_THREADS'])
+
+    # These flags help keep the file size down.
+    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
+    # Don't use dynamic_cast, necessary with no-rtti.
+    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     if env['javascript_eval']:
-        env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
+        env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
 
     ## Link flags
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
+
+    # Allow increasing memory buffer size during runtime. This is efficient
+    # when using WebAssembly (in comparison to asm.js) and works well for
+    # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
+
+    # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
-    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
+
+    # engine.js uses FS but is not currently evaluated by Emscripten, so export FS.
+    # TODO: Getting rid of this export is desirable.
+    extra_exports = [
+        'FS',
+    ]
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="%s"' % repr(extra_exports)])
 
     env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
+
+    # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
     env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
 
-    # TODO: Move that to opus module's config
+    # TODO: Move that to opus module's config.
     if 'module_opus_enabled' in env and env['module_opus_enabled']:
-        env.opus_fixed_point = "yes"
+        env.opus_fixed_point = 'yes'
