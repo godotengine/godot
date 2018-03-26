@@ -84,5 +84,5 @@ int main(int argc, char **argv) {
 		os.run(); // it is actually the OS that decides how to run
 	Main::cleanup();
 
-	return 0;
+	return os.get_exit_code();
 };
