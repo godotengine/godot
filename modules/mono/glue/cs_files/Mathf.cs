@@ -257,5 +257,17 @@ namespace Godot
         {
             return (real_t)Math.Tanh(s);
         }
+
+        public static int Wrap(int val, int min, int max)
+        {
+            int rng = max - min;
+            return min + ((((val - min) % rng) + rng) % rng);
+        }
+
+        public static real_t Wrap(real_t val, real_t min, real_t max)
+        {
+            real_t rng = max - min;
+            return min + (val - min) - (rng * Floor((val - min) / rng));
+        }
     }
 }
