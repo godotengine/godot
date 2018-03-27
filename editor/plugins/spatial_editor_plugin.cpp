@@ -886,8 +886,6 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 		selection_menu->set_global_position(b->get_global_position());
 		selection_menu->popup();
-		selection_menu->call_deferred("grab_click_focus");
-		selection_menu->set_invalidate_click_until_motion();
 	}
 }
 
