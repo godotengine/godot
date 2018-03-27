@@ -756,6 +756,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 					if (rclick_type == CLICK_INPUT_SLOT || rclick_type == CLICK_OUTPUT_SLOT) {
 
 						node_popup->clear();
+						node_popup->set_size(Size2(1, 1));
 						node_popup->add_item(TTR("Disconnect"), NODE_DISCONNECT);
 						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION) {
 							node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
@@ -774,6 +775,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 
 					if (rclick_type == CLICK_NODE) {
 						node_popup->clear();
+						node_popup->set_size(Size2(1, 1));
 						node_popup->add_item(TTR("Rename"), NODE_RENAME);
 						node_popup->add_item(TTR("Remove"), NODE_ERASE);
 						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION)
