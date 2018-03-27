@@ -98,8 +98,10 @@ void CollisionPolygon2D::_update_xform_in_parent() {
 
 	if (shape_from >= 0 && shape_to >= 0) {
 		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
-		for (int i = shape_from; i <= shape_to; i++) {
-			co->set_shape_transform(i, get_transform());
+		if (co) {
+			for (int i = shape_from; i <= shape_to; i++) {
+				co->set_shape_transform(i, get_transform());
+			}
 		}
 	}
 }
