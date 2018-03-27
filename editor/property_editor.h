@@ -362,6 +362,7 @@ class PropertyValueEvaluator : public ValueEvaluator {
 public:
 	void edit(Object *p_obj);
 	double eval(const String &p_text);
+	double eval_with_error(const String &p_text, Error *p_error);
 
 	PropertyValueEvaluator();
 	~PropertyValueEvaluator();

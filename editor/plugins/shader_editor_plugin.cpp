@@ -39,6 +39,7 @@
 #include "editor/property_editor.h"
 #include "scene/resources/shader_graph.h"
 #include "servers/visual/shader_types.h"
+#include "servers/visual/shader_preprocessor.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -147,6 +148,16 @@ void ShaderTextEditor::_load_theme_settings() {
 	//colorize comments
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
+
+	List<String> preprocessor_keywords;
+	ShaderPreprocessor::get_keyword_list(&preprocessor_keywords);
+
+	for (List<String>::Element *E = preprocessor_keywords.front(); E; E = E->next()) {
+		get_text_edit()->add_keyword_color(E->get(), keyword_color);
+	}
+
+	//colorize preprocessor include strings
+	get_text_edit()->add_color_region("\"", "\"", string_color, false);
 
 	/*//colorize strings
 	Color string_color = EDITOR_DEF("text_editor/string_color",Color::hex(0x6b6f00ff));
@@ -575,6 +586,8 @@ void ShaderEditor::apply_shaders() {
 	if (shader.is_valid()) {
 		shader->set_code(shader_editor->get_text_edit()->get_text());
 		shader->set_edited(true);
+
+		ShaderPreprocessor::refresh_shader_dependencies(*shader);
 	}
 }
 

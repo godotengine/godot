@@ -650,6 +650,8 @@ private:
 
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
 
+	String _preprocess_shader(const String &p_code, Error *p_error);
+
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 

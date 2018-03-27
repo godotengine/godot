@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_language.h"
+#include "shader_preprocessor.h"
 #include "os/os.h"
 #include "print_string.h"
 static bool _is_text_char(CharType c) {
@@ -4032,6 +4033,25 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	return OK;
 }
 
+String ShaderLanguage::_preprocess_shader(const String &p_code, Error *p_error) {
+
+	*p_error = OK;
+
+	ShaderPreprocessor processor(p_code);
+	String processed = processor.preprocess();
+
+	PreprocessorState *state = processor.get_state();
+	if (!state->error.empty()) {
+		error_line = state->error_line;
+		error_set = true;
+		error_str = state->error;
+
+		*p_error = FAILED;
+	}
+
+	return processed;
+}
+
 String ShaderLanguage::get_shader_type(const String &p_code) {
 
 	bool reading_type = false;
@@ -4071,12 +4091,16 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 
 	clear();
 
-	code = p_code;
-
 	nodes = NULL;
 
+	Error err = OK;
+	code = _preprocess_shader(p_code, &err);
+	if (err != OK) {
+		return err;
+	}
+
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	err = _parse_shader(p_functions, p_render_modes, p_shader_types);
 
 	if (err != OK) {
 		return err;
@@ -4088,12 +4112,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 	clear();
 
-	code = p_code;
-
 	nodes = NULL;
 
+	Error err = OK;
+	code = _preprocess_shader(p_code, &err);
+	if (err != OK) {
+		return err;
+	}
+
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	err = _parse_shader(p_functions, p_render_modes, p_shader_types);
 	if (err != OK)
 		ERR_PRINT("Failed to parse shader");
 

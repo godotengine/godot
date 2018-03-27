@@ -4652,6 +4652,14 @@ SectionedPropertyEditor::~SectionedPropertyEditor() {
 
 double PropertyValueEvaluator::eval(const String &p_text) {
 
+	return eval_with_error(p_text, NULL);
+}
+
+double PropertyValueEvaluator::eval_with_error(const String &p_text, Error *p_error) {
+
+	if (p_error)
+		*p_error = FAILED;
+
 	// If range value contains a comma replace it with dot (issue #6028)
 	const String &p_new_text = p_text.replace(",", ".");
 
@@ -4676,6 +4684,9 @@ double PropertyValueEvaluator::eval(const String &p_text) {
 	const Variant *args[] = { &arg };
 	double result = script_instance->call("eval", args, 1, call_err);
 	if (call_err.error == Variant::CallError::CALL_OK) {
+		if (p_error)
+			*p_error = OK;
+
 		return result;
 	}
 	print_line("[PropertyValueEvaluator]: Error eval! Error code: " + itos(call_err.error));
