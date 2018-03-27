@@ -224,7 +224,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		rotation = p_canvas_item->get_global_transform_with_canvas().get_rotation();
 
 		// Parent sides and center
-		if ((snap_active && snap_node_parent && (p_modes & SNAP_NODE_PARENT)) || (p_forced_modes & SNAP_NODE_PARENT)) {
+		if ((is_snap_active && snap_node_parent && (p_modes & SNAP_NODE_PARENT)) || (p_forced_modes & SNAP_NODE_PARENT)) {
 			Point2 begin;
 			Point2 end;
 			bool can_snap = false;
@@ -259,7 +259,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Self anchors
-		if ((snap_active && snap_node_anchors && (p_modes & SNAP_NODE_ANCHORS)) || (p_forced_modes & SNAP_NODE_ANCHORS)) {
+		if ((is_snap_active && snap_node_anchors && (p_modes & SNAP_NODE_ANCHORS)) || (p_forced_modes & SNAP_NODE_ANCHORS)) {
 			if (const Control *c = Object::cast_to<Control>(p_canvas_item)) {
 				Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_LEFT), c->get_anchor(MARGIN_TOP))));
 				Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_RIGHT), c->get_anchor(MARGIN_BOTTOM))));
@@ -269,7 +269,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Self sides
-		if ((snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
+		if ((is_snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
 			Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position());
 			Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position() + p_canvas_item->_edit_get_rect().get_size());
 			_snap_if_closer_point(p_target, begin, output, snapped, rotation);
@@ -277,7 +277,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Self center
-		if ((snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
+		if ((is_snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
 			Point2 center = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position() + p_canvas_item->_edit_get_rect().get_size() / 2.0);
 			_snap_if_closer_point(p_target, center, output, snapped, rotation);
 		}
@@ -331,7 +331,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 }
 
 float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
-	return (snap_rotation && snap_rotation_step != 0) ? Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset : p_target;
+	return (((snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) ? Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset : p_target;
 }
 
 void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
@@ -2014,7 +2014,7 @@ void CanvasItemEditor::_draw_rulers() {
 
 	// The rule transform
 	Transform2D ruler_transform = Transform2D();
-	if (show_grid || (snap_active && snap_grid)) {
+	if (show_grid || (is_snap_active && snap_grid)) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (snap_relative && selection.size() > 0) {
 			ruler_transform.translate(_get_encompassing_rect_from_list(selection).position);
