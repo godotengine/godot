@@ -88,7 +88,7 @@
 			});
 		}
 
-		this.preloadFile = function(pathOrBuffer, bufferFilename) {
+		this.preloadFile = function(pathOrBuffer, destPath) {
 
 			if (pathOrBuffer instanceof ArrayBuffer) {
 				pathOrBuffer = new Uint8Array(pathOrBuffer);
@@ -97,14 +97,14 @@
 			}
 			if (pathOrBuffer instanceof Uint8Array) {
 				preloadedFiles.push({
-					path: bufferFilename,
+					path: destPath,
 					buffer: pathOrBuffer
 				});
 				return Promise.resolve();
 			} else if (typeof pathOrBuffer === 'string') {
 				return loadPromise(pathOrBuffer, preloadProgressTracker).then(function(xhr) {
 					preloadedFiles.push({
-						path: pathOrBuffer,
+						path: destPath || pathOrBuffer,
 						buffer: xhr.response
 					});
 				});
