@@ -14,6 +14,13 @@
 
 	var loadingFiles = {};
 
+	function getPathLeaf(path) {
+
+		while (path.endsWith('/'))
+			path = path.slice(0, -1);
+		return path.slice(path.lastIndexOf('/') + 1);
+	}
+
 	function getBasePath(path) {
 
 		if (path.endsWith('/'))
@@ -25,8 +32,7 @@
 
 	function getBaseName(path) {
 
-		path = getBasePath(path);
-		return path.slice(path.lastIndexOf('/') + 1);
+		return getPathLeaf(getBasePath(path));
 	}
 
 	Engine = function Engine() {
@@ -123,7 +129,12 @@
 		this.startGame = function(mainPack) {
 
 			executableName = getBaseName(mainPack);
-			return Promise.all([this.init(getBasePath(mainPack)), this.preloadFile(mainPack)]).then(
+			return Promise.all([
+				// Load from directory,
+				this.init(getBasePath(mainPack)),
+				// ...but write to root where the engine expects it.
+				this.preloadFile(mainPack, getPathLeaf(mainPack))
+			]).then(
 				Function.prototype.apply.bind(synchronousStart, this, [])
 			);
 		};
