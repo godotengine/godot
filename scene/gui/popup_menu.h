@@ -201,13 +201,7 @@ public:
 	void set_hide_on_multistate_item_selection(bool p_enabled);
 	bool is_hide_on_multistate_item_selection() const;
 
-	void set_submenu_popup_delay(float p_time);
-	float get_submenu_popup_delay() const;
-
 	virtual void popup(const Rect2 &p_bounds = Rect2());
-
-	void set_hide_on_window_lose_focus(bool p_enabled);
-	bool is_hide_on_window_lose_focus() const;
 
 	PopupMenu();
 	~PopupMenu();
