@@ -979,6 +979,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jobject obj, jint ev, jint pointer, jint count, jintArray positions) {
 
+	if (step == 0)
+		return;
+
 	Vector<OS_Android::TouchPos> points;
 	for (int i = 0; i < count; i++) {
 
