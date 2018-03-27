@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "dictionary.h"
+#include "dictionary_iterator.h"
 
 #include "ordered_hash_map.h"
+#include "reference.h"
 #include "safe_refcount.h"
 #include "variant.h"
 
@@ -196,6 +198,11 @@ Array Dictionary::values() const {
 	return varr;
 }
 
+Ref<DictionaryIterator> Dictionary::items() const {
+
+	return Ref<DictionaryIterator>(memnew(DictionaryIterator(*this)));
+}
+
 const Variant *Dictionary::next(const Variant *p_key) const {
 
 	if (p_key == NULL) {
@@ -243,4 +250,54 @@ Dictionary::Dictionary() {
 Dictionary::~Dictionary() {
 
 	_unref();
+}
+
+Variant DictionaryIterator::_iter_init(const Array &r_iter) {
+
+	const Variant *next = _dict.next();
+	if (next) {
+		Array state = r_iter;
+		state[0] = *next;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant DictionaryIterator::_iter_next(const Array &r_iter) {
+
+	if (r_iter.size() != 1)
+		return false;
+
+	Variant key = r_iter[0];
+	const Variant *next = _dict.next(&key);
+
+	if (next) {
+		Array out = r_iter;
+		out[0] = *next;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant DictionaryIterator::_iter_get(const Variant &p_iter) {
+
+	Array pair;
+	pair.resize(2);
+	pair[0] = p_iter;
+	pair[1] = *_dict.getptr(p_iter);
+	return pair;
+}
+
+void DictionaryIterator::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_iter_init"), &DictionaryIterator::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"), &DictionaryIterator::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"), &DictionaryIterator::_iter_next);
+}
+
+DictionaryIterator::DictionaryIterator(const Dictionary &p_dict) {
+
+	_dict = p_dict;
 }

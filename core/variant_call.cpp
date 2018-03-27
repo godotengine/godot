@@ -31,6 +31,7 @@
 #include "variant.h"
 
 #include "core_string_names.h"
+#include "dictionary_iterator.h"
 #include "io/compression.h"
 #include "object.h"
 #include "os/os.h"
@@ -465,6 +466,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Dictionary, hash);
 	VCALL_LOCALMEM0R(Dictionary, keys);
 	VCALL_LOCALMEM0R(Dictionary, values);
+	VCALL_LOCALMEM0R(Dictionary, items);
 	VCALL_LOCALMEM0R(Dictionary, duplicate);
 
 	VCALL_LOCALMEM2(Array, set);
@@ -1613,6 +1615,7 @@ void register_variant_methods() {
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, hash, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
+	ADDFUNC0R(DICTIONARY, OBJECT, Dictionary, items, varray());
 	ADDFUNC0R(DICTIONARY, DICTIONARY, Dictionary, duplicate, varray());
 
 	ADDFUNC0R(ARRAY, INT, Array, size, varray());

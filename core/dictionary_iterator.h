@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dictionary.h                                                         */
+/*  dictionary_iterator.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef DICTIONARY_ITERATOR_H
+#define DICTIONARY_ITERATOR_H
 
-#include "array.h"
-#include "list.h"
-#include "ustring.h"
-class Variant;
+#include "reference.h"
 
-template <class T>
-class Ref;
+class DictionaryIterator : public Reference {
+	GDCLASS(DictionaryIterator, Reference);
 
-struct DictionaryPrivate;
+	Dictionary _dict;
 
-class DictionaryIterator;
-
-class Dictionary {
-
-	mutable DictionaryPrivate *_p;
-
-	void _ref(const Dictionary &p_from) const;
-	void _unref() const;
+protected:
+	static void _bind_methods();
 
 public:
-	void get_key_list(List<Variant> *p_keys) const;
+	Variant _iter_init(const Array &r_iter);
+	Variant _iter_next(const Array &r_iter);
+	Variant _iter_get(const Variant &p_iter);
 
-	Variant &operator[](const Variant &p_key);
-	const Variant &operator[](const Variant &p_key) const;
-
-	const Variant *getptr(const Variant &p_key) const;
-	Variant *getptr(const Variant &p_key);
-
-	Variant get_valid(const Variant &p_key) const;
-
-	int size() const;
-	bool empty() const;
-	void clear();
-
-	bool has(const Variant &p_key) const;
-	bool has_all(const Array &p_keys) const;
-
-	void erase(const Variant &p_key);
-
-	bool operator==(const Dictionary &p_dictionary) const;
-
-	uint32_t hash() const;
-	void operator=(const Dictionary &p_dictionary);
-
-	const Variant *next(const Variant *p_key = NULL) const;
-
-	Array keys() const;
-	Array values() const;
-	Ref<DictionaryIterator> items() const;
-
-	Dictionary duplicate() const;
-
-	Dictionary(const Dictionary &p_from);
-	Dictionary();
-	~Dictionary();
+	DictionaryIterator(const Dictionary &p_dict);
 };
 
-#endif // DICTIONARY_H
+#endif // DICTIONARY_ITERATOR_H
