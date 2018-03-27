@@ -1,4 +1,3 @@
-		exposedLibs['PATH'] = PATH;
 		exposedLibs['FS'] = FS;
 		return Module;
 	},
@@ -182,16 +181,7 @@
 			this.rtenv.thisProgram = executableName || getBaseName(basePath);
 
 			preloadedFiles.forEach(function(file) {
-				var dir = LIBS.PATH.dirname(file.path);
-				try {
-					LIBS.FS.stat(dir);
-				} catch (e) {
-					if (e.code !== 'ENOENT') {
-						throw e;
-					}
-					LIBS.FS.mkdirTree(dir);
-				}
-				LIBS.FS.createDataFile('/', file.path, new Uint8Array(file.buffer), true, true, true);
+				LIBS.FS.createDataFile('/', file.name, new Uint8Array(file.buffer), true, true, true);
 			}, this);
 
 			preloadedFiles = null;
