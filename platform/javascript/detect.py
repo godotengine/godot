@@ -129,13 +129,6 @@ def configure(env):
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
-    # engine.js uses FS but is not currently evaluated by Emscripten, so export FS.
-    # TODO: Getting rid of this export is desirable.
-    extra_exports = [
-        'FS',
-    ]
-    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="%s"' % repr(extra_exports)])
-
     env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
 
     # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.

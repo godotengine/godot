@@ -1,3 +1,4 @@
+		exposedLibs['FS'] = FS;
 		return Module;
 	},
 };
@@ -30,6 +31,8 @@
 	Engine = function Engine() {
 
 		this.rtenv = null;
+
+		var LIBS = {};
 
 		var initPromise = null;
 		var unloadAfterInit = true;
@@ -80,7 +83,7 @@
 			return new Promise(function(resolve, reject) {
 				rtenvProps.onRuntimeInitialized = resolve;
 				rtenvProps.onAbort = reject;
-				rtenvProps.engine.rtenv = Engine.RuntimeEnvironment(rtenvProps);
+				rtenvProps.engine.rtenv = Engine.RuntimeEnvironment(rtenvProps, LIBS);
 			});
 		}
 
@@ -163,7 +166,7 @@
 			this.rtenv.thisProgram = executableName || getBaseName(basePath);
 
 			preloadedFiles.forEach(function(file) {
-				this.rtenv.FS.createDataFile('/', file.name, new Uint8Array(file.buffer), true, true, true);
+				LIBS.FS.createDataFile('/', file.name, new Uint8Array(file.buffer), true, true, true);
 			}, this);
 
 			preloadedFiles = null;
