@@ -1,3 +1,4 @@
+		exposedLibs['PATH'] = PATH;
 		exposedLibs['FS'] = FS;
 		return Module;
 	},
@@ -102,14 +103,14 @@
 			}
 			if (pathOrBuffer instanceof Uint8Array) {
 				preloadedFiles.push({
-					path: destPath,
+					path: bufferFilename,
 					buffer: pathOrBuffer
 				});
 				return Promise.resolve();
 			} else if (typeof pathOrBuffer === 'string') {
 				return loadPromise(pathOrBuffer, preloadProgressTracker).then(function(xhr) {
 					preloadedFiles.push({
-						path: destPath || pathOrBuffer,
+						path: pathOrBuffer,
 						buffer: xhr.response
 					});
 				});
@@ -181,7 +182,16 @@
 			this.rtenv.thisProgram = executableName || getBaseName(basePath);
 
 			preloadedFiles.forEach(function(file) {
-				LIBS.FS.createDataFile('/', file.name, new Uint8Array(file.buffer), true, true, true);
+				var dir = LIBS.PATH.dirname(file.path);
+				try {
+					LIBS.FS.stat(dir);
+				} catch (e) {
+					if (e.code !== 'ENOENT') {
+						throw e;
+					}
+					LIBS.FS.mkdirTree(dir);
+				}
+				LIBS.FS.createDataFile('/', file.path, new Uint8Array(file.buffer), true, true, true);
 			}, this);
 
 			preloadedFiles = null;
