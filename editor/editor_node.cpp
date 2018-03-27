@@ -1134,6 +1134,24 @@ void EditorNode::_mark_unsaved_scenes() {
 	_update_scene_tabs();
 }
 
+void EditorNode::_prevent_duplicate_edited_scenes(const String &p_scene_name) {
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+
+		Node *node = editor_data.get_edited_scene_root(i);
+		if (!node)
+			continue;
+
+		String path = node->get_filename();
+
+		// If this scene already exists then it gets closed
+		if ((path != String() && p_scene_name.casecmp_to(path) == 0)) {
+			editor_data.remove_scene(i);
+			_update_scene_tabs();
+			break;
+		}
+	}
+}
+
 void EditorNode::_dialog_action(String p_file) {
 
 	switch (current_option) {
@@ -1176,6 +1194,9 @@ void EditorNode::_dialog_action(String p_file) {
 			int scene_idx = (current_option == FILE_SAVE_SCENE || current_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
 
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+
+				// when saving as an already open scene we must first close the scene otherwise we will have two of the same scene open with different nodes
+				_prevent_duplicate_edited_scenes(p_file);
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);

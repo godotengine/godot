@@ -1563,10 +1563,12 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			return;
 		}
 
+		// Sometimes the file is cached and doesn't get reloaded from disk when using EditorNode::get_singleton()->reload_scene
+		bool overwriting_loaded_resource = ResourceCache::has(p_file);
+
 		int flg = 0;
 		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 			flg |= ResourceSaver::FLAG_COMPRESS;
-
 		err = ResourceSaver::save(p_file, sdata, flg);
 		if (err != OK) {
 			accept->get_ok()->set_text(TTR("I see.."));
@@ -1574,7 +1576,19 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			accept->popup_centered_minsize();
 			return;
 		}
+
+		// Forces reload from file so that next step doesn't use the cached resource file
+		// TODO: Resource saver should invalidate cache?
+		if (overwriting_loaded_resource) {
+			Resource *cached_resource = ResourceCache::get(p_file);
+			cached_resource->reload_from_file();
+		}
+
 		_replace_with_branch_scene(p_file, base);
+
+		// If this scene was already opened in the editor previously, or if child instances of this scene already exist, the scene needs to be reloaded so that it all updates properly
+		EditorNode::get_singleton()->reload_scene(p_file);
+
 	} else {
 		accept->get_ok()->set_text(TTR("I see.."));
 		accept->set_text(TTR("Error duplicating scene to save it."));
