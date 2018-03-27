@@ -125,14 +125,13 @@ btScaledBvhTriangleMeshShape *ShapeBullet::create_shape_concave(btBvhTriangleMes
 	}
 }
 
-btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_cell_size) {
+btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	const btScalar ignoredHeightScale(1);
-	const btScalar fieldHeight(500); // Meters
 	const int YAxis = 1; // 0=X, 1=Y, 2=Z
 	const bool flipQuadEdges = false;
 	const void *heightsPtr = p_heights.read().ptr();
 
-	return bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, -fieldHeight, fieldHeight, YAxis, PHY_FLOAT, flipQuadEdges));
+	return bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
 }
 
 btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope) {
@@ -387,19 +386,44 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
 	ERR_FAIL_COND(!d.has("width"));
 	ERR_FAIL_COND(!d.has("depth"));
-	ERR_FAIL_COND(!d.has("cell_size"));
 	ERR_FAIL_COND(!d.has("heights"));
+
+	real_t l_min_height = 0.0;
+	real_t l_max_height = 0.0;
+
+	// If specified, min and max height will be used as precomputed values
+	if (d.has("min_height"))
+		l_min_height = d["min_height"];
+	if (d.has("max_height"))
+		l_max_height = d["max_height"];
+
+	ERR_FAIL_COND(l_min_height > l_max_height);
 
 	int l_width = d["width"];
 	int l_depth = d["depth"];
-	real_t l_cell_size = d["cell_size"];
 	PoolVector<real_t> l_heights = d["heights"];
 
 	ERR_FAIL_COND(l_width <= 0);
 	ERR_FAIL_COND(l_depth <= 0);
-	ERR_FAIL_COND(l_cell_size <= CMP_EPSILON);
-	ERR_FAIL_COND(l_heights.size() != (width * depth));
-	setup(heights, width, depth, cell_size);
+	ERR_FAIL_COND(l_heights.size() != (l_width * l_depth));
+
+	// Compute min and max heights if not specified.
+	if (!d.has("min_height") && !d.has("max_height")) {
+
+		PoolVector<real_t>::Read r = heights.read();
+		int heights_size = heights.size();
+
+		for (int i = 0; i < heights_size; ++i) {
+			real_t h = r[i];
+
+			if (h < l_min_height)
+				l_min_height = h;
+			else if (h > l_max_height)
+				l_max_height = h;
+		}
+	}
+
+	setup(l_heights, l_width, l_depth, l_min_height, l_max_height);
 }
 
 Variant HeightMapShapeBullet::get_data() const {
@@ -410,8 +434,14 @@ PhysicsServer::ShapeType HeightMapShapeBullet::get_type() const {
 	return PhysicsServer::SHAPE_HEIGHTMAP;
 }
 
-void HeightMapShapeBullet::setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_cell_size) {
+void HeightMapShapeBullet::setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+	// TODO cell size must be tweaked using localScaling, which is a shared property for all Bullet shapes
+
 	{ // Copy
+
+		// TODO If Godot supported 16-bit integer image format, we could share the same memory block for heightfields
+		// without having to copy anything, optimizing memory and loading performance (Bullet only reads and doesn't take ownership of the data).
+
 		const int heights_size = p_heights.size();
 		heights.resize(heights_size);
 		PoolVector<real_t>::Read p_heights_r = p_heights.read();
@@ -420,14 +450,16 @@ void HeightMapShapeBullet::setup(PoolVector<real_t> &p_heights, int p_width, int
 			heights_w[i] = p_heights_r[i];
 		}
 	}
+
 	width = p_width;
 	depth = p_depth;
-	cell_size = p_cell_size;
+	min_height = p_min_height;
+	max_height = p_max_height;
 	notifyShapeChanged();
 }
 
 btCollisionShape *HeightMapShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin) {
-	btCollisionShape *cs(ShapeBullet::create_shape_height_field(heights, width, depth, cell_size));
+	btCollisionShape *cs(ShapeBullet::create_shape_height_field(heights, width, depth, min_height, max_height));
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
 	cs->setMargin(p_margin);
