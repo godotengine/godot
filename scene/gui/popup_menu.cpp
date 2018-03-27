@@ -284,7 +284,8 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (b->is_pressed())
 			return;
 
-		switch (b->get_button_index()) {
+		int button_idx = b->get_button_index();
+		switch (button_idx) {
 
 			case BUTTON_WHEEL_DOWN: {
 
@@ -298,30 +299,37 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 					_scroll(b->get_factor(), b->get_position());
 				}
 			} break;
-			case BUTTON_LEFT: {
+			default: {
+				// Allow activating item by releasing the LMB or any that was down when the popup appeared
+				if (button_idx == BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
 
-				int over = _get_mouse_over(b->get_position());
+					bool was_during_grabbed_click = during_grabbed_click;
+					during_grabbed_click = false;
 
-				if (invalidated_click) {
-					invalidated_click = false;
-					break;
+					int over = _get_mouse_over(b->get_position());
+
+					if (invalidated_click) {
+						invalidated_click = false;
+						break;
+					}
+					if (over < 0) {
+						if (!was_during_grabbed_click) {
+							hide();
+						}
+						break; //non-activable
+					}
+
+					if (items[over].separator || items[over].disabled)
+						break;
+
+					if (items[over].submenu != "") {
+
+						_activate_submenu(over);
+						return;
+					}
+					activate_item(over);
 				}
-				if (over < 0) {
-					hide();
-					break; //non-activable
-				}
-
-				if (items[over].separator || items[over].disabled)
-					break;
-
-				if (items[over].submenu != "") {
-
-					_activate_submenu(over);
-					return;
-				}
-				activate_item(over);
-
-			} break;
+			}
 		}
 
 		//update();
@@ -502,6 +510,11 @@ void PopupMenu::_notification(int p_what) {
 				mouse_over = -1;
 				update();
 			}
+		} break;
+		case NOTIFICATION_POST_POPUP: {
+
+			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
+			during_grabbed_click = (bool)initial_button_mask;
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 
@@ -1216,15 +1229,20 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 }
 
-void PopupMenu::set_invalidate_click_until_motion() {
+void PopupMenu::popup(const Rect2 &p_bounds) {
+
+	grab_click_focus();
 	moved = Vector2();
 	invalidated_click = true;
+	Popup::popup(p_bounds);
 }
 
 PopupMenu::PopupMenu() {
 
 	mouse_over = -1;
 	submenu_over = -1;
+	initial_button_mask = 0;
+	during_grabbed_click = false;
 
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);

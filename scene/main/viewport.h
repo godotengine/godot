@@ -248,6 +248,7 @@ private:
 
 		bool key_event_accepted;
 		Control *mouse_focus;
+		Control *mouse_click_grabber;
 		int mouse_focus_button;
 		Control *key_focus;
 		Control *mouse_over;
@@ -323,6 +324,7 @@ private:
 	bool _gui_control_has_focus(const Control *p_control);
 	void _gui_control_grab_focus(Control *p_control);
 	void _gui_grab_click_focus(Control *p_control);
+	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
 
 	Control *_gui_get_focus_owner();

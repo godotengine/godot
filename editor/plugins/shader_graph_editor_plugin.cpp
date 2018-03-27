@@ -2769,8 +2769,6 @@ void ShaderGraphEditor::_popup_requested(const Vector2 &p_position)
 	popup->set_global_position(p_position);
 	popup->set_size( Size2( 200, 0) );
 	popup->popup();
-	popup->call_deferred("grab_click_focus");
-	popup->set_invalidate_click_until_motion();
 }
 
 void ShaderGraphEditor::_notification(int p_what) {

@@ -59,7 +59,6 @@ void MenuButton::pressed() {
 	popup->set_size(Size2(size.width, 0));
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
 	popup->popup();
-	popup->set_invalidate_click_until_motion();
 }
 
 void MenuButton::_gui_input(Ref<InputEvent> p_event) {
@@ -109,7 +108,6 @@ MenuButton::MenuButton() {
 	add_child(popup);
 	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
-	connect("button_up", popup, "call_deferred", make_binds("grab_click_focus"));
 	set_process_unhandled_key_input(true);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 }

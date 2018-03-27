@@ -181,6 +181,7 @@ public:
 Viewport::GUI::GUI() {
 
 	mouse_focus = NULL;
+	mouse_click_grabber = NULL;
 	mouse_focus_button = -1;
 	key_focus = NULL;
 	mouse_over = NULL;
@@ -2278,7 +2279,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 	else
 		p_control->_modal_set_prev_focus_owner(0);
 
-	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus)) {
+	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus) && !gui.mouse_click_grabber) {
 		Ref<InputEventMouseButton> mb;
 		mb.instance();
 		mb->set_position(gui.mouse_focus->get_local_mouse_position());
@@ -2300,9 +2301,22 @@ Control *Viewport::_gui_get_focus_owner() {
 
 void Viewport::_gui_grab_click_focus(Control *p_control) {
 
+	gui.mouse_click_grabber = p_control;
+	call_deferred("_post_gui_grab_click_focus");
+}
+
+void Viewport::_post_gui_grab_click_focus() {
+
+	Control *focus_grabber = gui.mouse_click_grabber;
+	if (!focus_grabber) {
+		// Redundant grab requests were made
+		return;
+	}
+	gui.mouse_click_grabber = NULL;
+
 	if (gui.mouse_focus) {
 
-		if (gui.mouse_focus == p_control)
+		if (gui.mouse_focus == focus_grabber)
 			return;
 		Ref<InputEventMouseButton> mb;
 		mb.instance();
@@ -2313,9 +2327,9 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 		mb->set_position(click);
 		mb->set_button_index(gui.mouse_focus_button);
 		mb->set_pressed(false);
-		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
+		gui.mouse_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
 
-		gui.mouse_focus = p_control;
+		gui.mouse_focus = focus_grabber;
 		gui.focus_inv_xform = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse();
 		click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 		mb->set_position(click);
@@ -2648,6 +2662,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
+	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
