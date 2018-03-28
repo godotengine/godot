@@ -93,6 +93,7 @@ def configure(env):
         env['AR'] = basecmd + "ar"
         env['RANLIB'] = basecmd + "ranlib"
         env['AS'] = basecmd + "as"
+        env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if (env["CXX"] == "clang++"):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
