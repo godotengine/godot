@@ -12,7 +12,7 @@ def get_name():
 
 
 def can_build():
-    return 'EMSCRIPTEN_ROOT' in os.environ or 'EMSCRIPTEN' in os.environ
+    return 'EM_CONFIG' in os.environ or os.path.exists(os.path.expanduser('~/.emscripten'))
 
 
 def get_opts():
@@ -67,10 +67,20 @@ def configure(env):
     ## Compiler configuration
 
     env['ENV'] = os.environ
-    if 'EMSCRIPTEN_ROOT' in os.environ:
-        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
-    elif 'EMSCRIPTEN' in os.environ:
-        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN'])
+
+    em_config_file = os.getenv('EM_CONFIG') or os.path.expanduser('~/.emscripten')
+    if not os.path.exists(em_config_file):
+        raise RuntimeError("Emscripten configuration file '%s' does not exist" % em_config_file)
+    with open(em_config_file) as f:
+        em_config = {}
+        try:
+            # Emscripten configuration file is a Python file with simple assignments.
+            exec(f.read(), em_config)
+        except StandardError as e:
+            raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
+    if 'EMSCRIPTEN_ROOT' not in em_config:
+        raise RuntimeError("'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
+    env.PrependENVPath('PATH', em_config['EMSCRIPTEN_ROOT'])
 
     env['CC'] = 'emcc'
     env['CXX'] = 'em++'
