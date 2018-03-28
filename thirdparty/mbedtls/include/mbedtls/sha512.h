@@ -35,10 +35,6 @@
 
 #define MBEDTLS_ERR_SHA512_HW_ACCEL_FAILED                -0x0039  /**< SHA-512 hardware accelerator failed */
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
 #if !defined(MBEDTLS_SHA512_ALT)
 // Regular implementation
 //
@@ -156,12 +152,8 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
  *                 <ul><li>0: Use SHA-512.</li>
  *                 <li>1: Use SHA-384.</li></ul>
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha512_starts(
-                                                mbedtls_sha512_context *ctx,
-                                                int is384 )
-{
-    mbedtls_sha512_starts_ret( ctx, is384 );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha512_starts( mbedtls_sha512_context *ctx,
+                                               int is384 );
 
 /**
  * \brief          This function feeds an input buffer into an ongoing
@@ -173,13 +165,9 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha512_starts(
  * \param input    The buffer holding the data.
  * \param ilen     The length of the input data.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha512_update(
-                                                mbedtls_sha512_context *ctx,
-                                                const unsigned char *input,
-                                                size_t ilen )
-{
-    mbedtls_sha512_update_ret( ctx, input, ilen );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha512_update( mbedtls_sha512_context *ctx,
+                                               const unsigned char *input,
+                                               size_t ilen );
 
 /**
  * \brief          This function finishes the SHA-512 operation, and writes
@@ -190,12 +178,8 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha512_update(
  * \param ctx      The SHA-512 context.
  * \param output   The SHA-384 or SHA-512 checksum result.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha512_finish(
-                                                mbedtls_sha512_context *ctx,
-                                                unsigned char output[64] )
-{
-    mbedtls_sha512_finish_ret( ctx, output );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha512_finish( mbedtls_sha512_context *ctx,
+                                               unsigned char output[64] );
 
 /**
  * \brief          This function processes a single data block within
@@ -207,12 +191,9 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha512_finish(
  * \param ctx      The SHA-512 context.
  * \param data     The buffer holding one block of data.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha512_process(
+MBEDTLS_DEPRECATED void mbedtls_sha512_process(
                                             mbedtls_sha512_context *ctx,
-                                            const unsigned char data[128] )
-{
-    mbedtls_internal_sha512_process( ctx, data );
-}
+                                            const unsigned char data[128] );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
@@ -278,14 +259,10 @@ int mbedtls_sha512_ret( const unsigned char *input,
  *                 <ul><li>0: Use SHA-512.</li>
  *                 <li>1: Use SHA-384.</li></ul>
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha512(
-                                                    const unsigned char *input,
-                                                    size_t ilen,
-                                                    unsigned char output[64],
-                                                    int is384 )
-{
-    mbedtls_sha512_ret( input, ilen, output, is384 );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha512( const unsigned char *input,
+                                        size_t ilen,
+                                        unsigned char output[64],
+                                        int is384 );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */

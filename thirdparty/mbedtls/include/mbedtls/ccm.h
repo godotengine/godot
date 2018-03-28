@@ -105,7 +105,7 @@ void mbedtls_ccm_free( mbedtls_ccm_context *ctx );
  *                  Must be at least \p length Bytes wide.
  * \param tag       The buffer holding the tag.
  * \param tag_len   The length of the tag to generate in Bytes:
- *                  4, 6, 8, 10, 14 or 16.
+ *                  4, 6, 8, 10, 12, 14 or 16.
  *
  * \note            The tag is written to a separate buffer. To concatenate
  *                  the \p tag with the \p output, as done in <em>RFC-3610:
@@ -131,10 +131,13 @@ int mbedtls_ccm_encrypt_and_tag( mbedtls_ccm_context *ctx, size_t length,
  * \param iv_len    The length of the IV in Bytes: 7, 8, 9, 10, 11, 12, or 13.
  * \param add       The additional data field.
  * \param add_len   The length of additional data in Bytes.
+ *                  Must be less than 2^16 - 2^8.
  * \param input     The buffer holding the input data.
  * \param output    The buffer holding the output data.
+ *                  Must be at least \p length Bytes wide.
  * \param tag       The buffer holding the tag.
  * \param tag_len   The length of the tag in Bytes.
+ *                  4, 6, 8, 10, 12, 14 or 16.
  *
  * \return          0 if successful and authenticated, or
  *                  #MBEDTLS_ERR_CCM_AUTH_FAILED if the tag does not match.

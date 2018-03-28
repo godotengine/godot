@@ -442,7 +442,7 @@ int mbedtls_pem_write_buffer( const char *header, const char *footer,
                       unsigned char *buf, size_t buf_len, size_t *olen )
 {
     int ret;
-    unsigned char *encode_buf, *c, *p = buf;
+    unsigned char *encode_buf = NULL, *c, *p = buf;
     size_t len = 0, use_len, add_len = 0;
 
     mbedtls_base64_encode( NULL, 0, &use_len, der_data, der_len );
@@ -454,7 +454,8 @@ int mbedtls_pem_write_buffer( const char *header, const char *footer,
         return( MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL );
     }
 
-    if( ( encode_buf = mbedtls_calloc( 1, use_len ) ) == NULL )
+    if( use_len != 0 &&
+        ( ( encode_buf = mbedtls_calloc( 1, use_len ) ) == NULL ) )
         return( MBEDTLS_ERR_PEM_ALLOC_FAILED );
 
     if( ( ret = mbedtls_base64_encode( encode_buf, use_len, &use_len, der_data,

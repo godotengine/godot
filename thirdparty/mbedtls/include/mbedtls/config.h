@@ -1049,7 +1049,8 @@
 /**
  * \def MBEDTLS_RSA_NO_CRT
  *
- * Do not use the Chinese Remainder Theorem for the RSA private operation.
+ * Do not use the Chinese Remainder Theorem
+ * for the RSA private operation.
  *
  * Uncomment this macro to disable the use of CRT in RSA.
  *
@@ -1412,6 +1413,30 @@
 #define MBEDTLS_SSL_TRUNCATED_HMAC
 
 /**
+ * \def MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT
+ *
+ * Fallback to old (pre-2.7), non-conforming implementation of the truncated
+ * HMAC extension which also truncates the HMAC key. Note that this option is
+ * only meant for a transitory upgrade period and is likely to be removed in
+ * a future version of the library.
+ *
+ * \warning The old implementation is non-compliant and has a security weakness
+ *          (2^80 brute force attack on the HMAC key used for a single,
+ *          uninterrupted connection). This should only be enabled temporarily
+ *          when (1) the use of truncated HMAC is essential in order to save
+ *          bandwidth, and (2) the peer is an Mbed TLS stack that doesn't use
+ *          the fixed implementation yet (pre-2.7).
+ *
+ * \deprecated This option is deprecated and will likely be removed in a
+ *             future version of Mbed TLS.
+ *
+ * Uncomment to fallback to old, non-compliant truncated HMAC implementation.
+ *
+ * Requires: MBEDTLS_SSL_TRUNCATED_HMAC
+ */
+//#define MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT
+
+/**
  * \def MBEDTLS_THREADING_ALT
  *
  * Provide your own alternate threading implementation.
@@ -1516,6 +1541,9 @@
  * CRIME or similar exploits may be a applicable to your use case.
  *
  * \note Currently compression can't be used with DTLS.
+ *
+ * \deprecated This feature is deprecated and will be removed
+ *             in the next major revision of the library.
  *
  * Used in: library/ssl_tls.c
  *          library/ssl_cli.c

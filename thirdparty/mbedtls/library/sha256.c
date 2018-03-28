@@ -135,6 +135,14 @@ int mbedtls_sha256_starts_ret( mbedtls_sha256_context *ctx, int is224 )
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha256_starts( mbedtls_sha256_context *ctx,
+                            int is224 )
+{
+    mbedtls_sha256_starts_ret( ctx, is224 );
+}
+#endif
+
 #if !defined(MBEDTLS_SHA256_PROCESS_ALT)
 static const uint32_t K[] =
 {
@@ -238,6 +246,14 @@ int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha256_process( mbedtls_sha256_context *ctx,
+                             const unsigned char data[64] )
+{
+    mbedtls_internal_sha256_process( ctx, data );
+}
+#endif
 #endif /* !MBEDTLS_SHA256_PROCESS_ALT */
 
 /*
@@ -290,6 +306,15 @@ int mbedtls_sha256_update_ret( mbedtls_sha256_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha256_update( mbedtls_sha256_context *ctx,
+                            const unsigned char *input,
+                            size_t ilen )
+{
+    mbedtls_sha256_update_ret( ctx, input, ilen );
+}
+#endif
+
 static const unsigned char sha256_padding[64] =
 {
  0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -339,6 +364,14 @@ int mbedtls_sha256_finish_ret( mbedtls_sha256_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha256_finish( mbedtls_sha256_context *ctx,
+                            unsigned char output[32] )
+{
+    mbedtls_sha256_finish_ret( ctx, output );
+}
+#endif
+
 #endif /* !MBEDTLS_SHA256_ALT */
 
 /*
@@ -368,6 +401,16 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha256( const unsigned char *input,
+                     size_t ilen,
+                     unsigned char output[32],
+                     int is224 )
+{
+    mbedtls_sha256_ret( input, ilen, output, is224 );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*

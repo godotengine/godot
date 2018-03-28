@@ -35,10 +35,6 @@
 
 #define MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED                -0x0037  /**< SHA-256 hardware accelerator failed */
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
 #if !defined(MBEDTLS_SHA256_ALT)
 // Regular implementation
 //
@@ -156,12 +152,8 @@ int mbedtls_internal_sha256_process( mbedtls_sha256_context *ctx,
  *                 <ul><li>0: Use SHA-256.</li>
  *                 <li>1: Use SHA-224.</li></ul>
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha256_starts(
-                                                mbedtls_sha256_context *ctx,
-                                                int is224 )
-{
-    mbedtls_sha256_starts_ret( ctx, is224 );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha256_starts( mbedtls_sha256_context *ctx,
+                                               int is224 );
 
 /**
  * \brief          This function feeds an input buffer into an ongoing
@@ -173,13 +165,9 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha256_starts(
  * \param input    The buffer holding the data.
  * \param ilen     The length of the input data.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha256_update(
-                                                mbedtls_sha256_context *ctx,
-                                                const unsigned char *input,
-                                                size_t ilen )
-{
-    mbedtls_sha256_update_ret( ctx, input, ilen );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha256_update( mbedtls_sha256_context *ctx,
+                                               const unsigned char *input,
+                                               size_t ilen );
 
 /**
  * \brief          This function finishes the SHA-256 operation, and writes
@@ -190,12 +178,8 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha256_update(
  * \param ctx      The SHA-256 context.
  * \param output   The SHA-224or SHA-256 checksum result.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha256_finish(
-                                                mbedtls_sha256_context *ctx,
-                                                unsigned char output[32] )
-{
-    mbedtls_sha256_finish_ret( ctx, output );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha256_finish( mbedtls_sha256_context *ctx,
+                                               unsigned char output[32] );
 
 /**
  * \brief          This function processes a single data block within
@@ -207,12 +191,8 @@ MBEDTLS_DEPRECATED static inline void mbedtls_sha256_finish(
  * \param ctx      The SHA-256 context.
  * \param data     The buffer holding one block of data.
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha256_process(
-                                                mbedtls_sha256_context *ctx,
-                                                const unsigned char data[64] )
-{
-    mbedtls_internal_sha256_process( ctx, data );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha256_process( mbedtls_sha256_context *ctx,
+                                                const unsigned char data[64] );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
@@ -276,14 +256,10 @@ int mbedtls_sha256_ret( const unsigned char *input,
  *                 <ul><li>0: Use SHA-256.</li>
  *                 <li>1: Use SHA-224.</li></ul>
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_sha256(
-                                                    const unsigned char *input,
-                                                    size_t ilen,
-                                                    unsigned char output[32],
-                                                    int is224 )
-{
-    mbedtls_sha256_ret( input, ilen, output, is224 );
-}
+MBEDTLS_DEPRECATED void mbedtls_sha256( const unsigned char *input,
+                                        size_t ilen,
+                                        unsigned char output[32],
+                                        int is224 );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */

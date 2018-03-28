@@ -49,6 +49,15 @@
 #endif
 
 #if defined(MBEDTLS_ZLIB_SUPPORT)
+
+#if defined(MBEDTLS_DEPRECATED_WARNING)
+#warning "Record compression support via MBEDTLS_ZLIB_SUPPORT is deprecated and will be removed in the next major revision of the library"
+#endif
+
+#if defined(MBEDTLS_DEPRECATED_REMOVED)
+#error "Record compression support via MBEDTLS_ZLIB_SUPPORT is deprecated and cannot be used if MBEDTLS_DEPRECATED_REMOVED is set"
+#endif
+
 #include "zlib.h"
 #endif
 
@@ -971,8 +980,13 @@ void mbedtls_ssl_init( mbedtls_ssl_context *ssl );
  * \note           No copy of the configuration context is made, it can be
  *                 shared by many mbedtls_ssl_context structures.
  *
- * \warning        Modifying the conf structure after it has been used in this
- *                 function is unsupported!
+ * \warning        The conf structure will be accessed during the session.
+ *                 It must not be modified or freed as long as the session
+ *                 is active.
+ *
+ * \warning        This function must be called exactly once per context.
+ *                 Calling mbedtls_ssl_setup again is not supported, even
+ *                 if no session is active.
  *
  * \param ssl      SSL context
  * \param conf     SSL configuration to use

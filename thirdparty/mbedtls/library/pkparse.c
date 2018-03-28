@@ -181,6 +181,10 @@ static int pk_get_ecparams( unsigned char **p, const unsigned char *end,
 {
     int ret;
 
+    if ( end - *p < 1 )
+        return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT +
+                MBEDTLS_ERR_ASN1_OUT_OF_DATA );
+
     /* Tag may be either OID or SEQUENCE */
     params->tag = **p;
     if( params->tag != MBEDTLS_ASN1_OID
@@ -1277,6 +1281,9 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
     {
         unsigned char *key_copy;
 
+        if( keylen == 0 )
+            return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
+
         if( ( key_copy = mbedtls_calloc( 1, keylen ) ) == NULL )
             return( MBEDTLS_ERR_PK_ALLOC_FAILED );
 
@@ -1348,11 +1355,45 @@ int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
 {
     int ret;
     unsigned char *p;
+#if defined(MBEDTLS_RSA_C)
+    const mbedtls_pk_info_t *pk_info;
+#endif
 #if defined(MBEDTLS_PEM_PARSE_C)
     size_t len;
     mbedtls_pem_context pem;
 
     mbedtls_pem_init( &pem );
+#if defined(MBEDTLS_RSA_C)
+    /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
+    if( keylen == 0 || key[keylen - 1] != '\0' )
+        ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
+    else
+        ret = mbedtls_pem_read_buffer( &pem,
+                               "-----BEGIN RSA PUBLIC KEY-----",
+                               "-----END RSA PUBLIC KEY-----",
+                               key, NULL, 0, &len );
+
+    if( ret == 0 )
+    {
+        p = pem.buf;
+        if( ( pk_info = mbedtls_pk_info_from_type( MBEDTLS_PK_RSA ) ) == NULL )
+            return( MBEDTLS_ERR_PK_UNKNOWN_PK_ALG );
+
+        if( ( ret = mbedtls_pk_setup( ctx, pk_info ) ) != 0 )
+            return( ret );
+
+        if ( ( ret = pk_get_rsapubkey( &p, p + pem.buflen, mbedtls_pk_rsa( *ctx ) ) ) != 0 )
+            mbedtls_pk_free( ctx );
+
+        mbedtls_pem_free( &pem );
+        return( ret );
+    }
+    else if( ret != MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT )
+    {
+        mbedtls_pem_free( &pem );
+        return( ret );
+    }
+#endif /* MBEDTLS_RSA_C */
 
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
     if( keylen == 0 || key[keylen - 1] != '\0' )
@@ -1368,22 +1409,42 @@ int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
         /*
          * Was PEM encoded
          */
-        key = pem.buf;
-        keylen = pem.buflen;
+        p = pem.buf;
+
+        ret = mbedtls_pk_parse_subpubkey( &p,  p + pem.buflen, ctx );
+        mbedtls_pem_free( &pem );
+        return( ret );
     }
     else if( ret != MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT )
     {
         mbedtls_pem_free( &pem );
         return( ret );
     }
+    mbedtls_pem_free( &pem );
 #endif /* MBEDTLS_PEM_PARSE_C */
+
+#if defined(MBEDTLS_RSA_C)
+    if( ( pk_info = mbedtls_pk_info_from_type( MBEDTLS_PK_RSA ) ) == NULL )
+        return( MBEDTLS_ERR_PK_UNKNOWN_PK_ALG );
+
+    if( ( ret = mbedtls_pk_setup( ctx, pk_info ) ) != 0 )
+        return( ret );
+
+    p = (unsigned char *)key;
+    ret = pk_get_rsapubkey( &p, p + keylen, mbedtls_pk_rsa( *ctx ) );
+    if( ret == 0 )
+    {
+        return( ret );
+    }
+    mbedtls_pk_free( ctx );
+    if( ret != ( MBEDTLS_ERR_PK_INVALID_PUBKEY + MBEDTLS_ERR_ASN1_UNEXPECTED_TAG ) )
+    {
+        return( ret );
+    }
+#endif /* MBEDTLS_RSA_C */
     p = (unsigned char *) key;
 
     ret = mbedtls_pk_parse_subpubkey( &p, p + keylen, ctx );
-
-#if defined(MBEDTLS_PEM_PARSE_C)
-    mbedtls_pem_free( &pem );
-#endif
 
     return( ret );
 }
