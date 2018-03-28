@@ -284,9 +284,13 @@ some_wait:
 			char *p = (char *)&pt->serv_buf[0];
 			char *sb = p;
 
-			lwsl_err("ssl hs1 error, X509_V_ERR = %d: %s\n",
-				 n, ERR_error_string(n, sb));
+			lwsl_err("ssl hs1 error, X509_V_ERR = %d: errno %d: %s\n",
+				 n, errno, ERR_error_string(n, sb));
 			lws_ssl_elaborate_error();
+#if defined(LWS_WITH_MBEDTLS)
+			if (n == SSL_ERROR_SYSCALL)
+				return -1;
+#endif
 		}
 
 		n = -1;
