@@ -192,6 +192,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	// Note: called before main loop init!
 	char *utfs = strdup([filename UTF8String]);
 	OS_OSX::singleton->open_with_filename.parse_utf8(utfs);
+	free(utfs);
 	return YES;
 }
 
@@ -838,6 +839,108 @@ static int translateKey(unsigned int key) {
 	return table[key];
 }
 
+struct _KeyCodeMap {
+	UniChar kchar;
+	int kcode;
+};
+
+static const _KeyCodeMap _keycodes[55] = {
+	{ '`', KEY_QUOTELEFT },
+	{ '~', KEY_ASCIITILDE },
+	{ '0', KEY_KP_0 },
+	{ '1', KEY_KP_1 },
+	{ '2', KEY_KP_2 },
+	{ '3', KEY_KP_3 },
+	{ '4', KEY_KP_4 },
+	{ '5', KEY_KP_5 },
+	{ '6', KEY_KP_6 },
+	{ '7', KEY_KP_7 },
+	{ '8', KEY_KP_8 },
+	{ '9', KEY_KP_9 },
+	{ '-', KEY_MINUS },
+	{ '_', KEY_UNDERSCORE },
+	{ '=', KEY_EQUAL },
+	{ '+', KEY_PLUS },
+	{ 'q', KEY_Q },
+	{ 'w', KEY_W },
+	{ 'e', KEY_E },
+	{ 'r', KEY_R },
+	{ 't', KEY_T },
+	{ 'y', KEY_Y },
+	{ 'u', KEY_U },
+	{ 'i', KEY_I },
+	{ 'o', KEY_O },
+	{ 'p', KEY_P },
+	{ '[', KEY_BRACERIGHT },
+	{ ']', KEY_BRACELEFT },
+	{ '{', KEY_BRACERIGHT },
+	{ '}', KEY_BRACELEFT },
+	{ 'a', KEY_A },
+	{ 's', KEY_S },
+	{ 'd', KEY_D },
+	{ 'f', KEY_F },
+	{ 'g', KEY_G },
+	{ 'h', KEY_H },
+	{ 'j', KEY_J },
+	{ 'k', KEY_K },
+	{ 'l', KEY_L },
+	{ ';', KEY_SEMICOLON },
+	{ ':', KEY_COLON },
+	{ '\'', KEY_APOSTROPHE },
+	{ '\"', KEY_QUOTEDBL },
+	{ '\\', KEY_BACKSLASH },
+	{ '#', KEY_NUMBERSIGN },
+	{ 'z', KEY_Z },
+	{ 'x', KEY_X },
+	{ 'c', KEY_C },
+	{ 'v', KEY_V },
+	{ 'b', KEY_B },
+	{ 'n', KEY_N },
+	{ 'm', KEY_M },
+	{ ',', KEY_COMMA },
+	{ '.', KEY_PERIOD },
+	{ '/', KEY_SLASH }
+};
+
+static int remapKey(unsigned int key) {
+
+	TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+	if (!currentKeyboard)
+		return translateKey(key);
+
+	CFDataRef layoutData = (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
+	if (!layoutData)
+		return nil;
+
+	const UCKeyboardLayout *keyboardLayout = (const UCKeyboardLayout *)CFDataGetBytePtr(layoutData);
+
+	UInt32 keysDown = 0;
+	UniChar chars[4];
+	UniCharCount realLength;
+
+	OSStatus err = UCKeyTranslate(keyboardLayout,
+			key,
+			kUCKeyActionDisplay,
+			0,
+			LMGetKbdType(),
+			kUCKeyTranslateNoDeadKeysBit,
+			&keysDown,
+			sizeof(chars) / sizeof(chars[0]),
+			&realLength,
+			chars);
+
+	if (err != noErr) {
+		return translateKey(key);
+	}
+
+	for (unsigned int i = 0; i < 55; i++) {
+		if (_keycodes[i].kchar == chars[0]) {
+			return _keycodes[i].kcode;
+		}
+	}
+	return translateKey(key);
+}
+
 - (void)keyDown:(NSEvent *)event {
 
 	//disable raw input in IME mode
@@ -847,7 +950,7 @@ static int translateKey(unsigned int key) {
 		ke.osx_state = [event modifierFlags];
 		ke.pressed = true;
 		ke.echo = [event isARepeat];
-		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+		ke.scancode = remapKey([event keyCode]);
 		ke.unicode = 0;
 
 		push_to_key_event_buffer(ke);
@@ -900,7 +1003,7 @@ static int translateKey(unsigned int key) {
 		}
 
 		ke.osx_state = mod;
-		ke.scancode = latin_keyboard_keycode_convert(translateKey(key));
+		ke.scancode = remapKey(key);
 		ke.unicode = 0;
 
 		push_to_key_event_buffer(ke);
@@ -916,7 +1019,7 @@ static int translateKey(unsigned int key) {
 		ke.osx_state = [event modifierFlags];
 		ke.pressed = false;
 		ke.echo = false;
-		ke.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+		ke.scancode = remapKey([event keyCode]);
 		ke.unicode = 0;
 
 		push_to_key_event_buffer(ke);
