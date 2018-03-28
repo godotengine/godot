@@ -176,11 +176,7 @@ lws_ssl_client_bio_create(struct lws *wsi)
 #endif
 #else
 #if defined(LWS_WITH_MBEDTLS)
-	if (wsi->vhost->x509_client_CA)
-		SSL_set_verify(wsi->ssl, SSL_VERIFY_PEER, OpenSSL_client_verify_callback);
-	else
-		SSL_set_verify(wsi->ssl, SSL_VERIFY_NONE, OpenSSL_client_verify_callback);
-
+	SSL_set_verify(wsi->ssl, SSL_VERIFY_PEER, OpenSSL_client_verify_callback);
 #else
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
 	SSL_set_tlsext_host_name(wsi->ssl, hostname);

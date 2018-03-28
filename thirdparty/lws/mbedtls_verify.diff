@@ -1,0 +1,74 @@
+diff --git a/thirdparty/lws/client/ssl-client.c b/thirdparty/lws/client/ssl-client.c
+index 6626e0844..962c6e3cb 100644
+--- a/thirdparty/lws/client/ssl-client.c
++++ b/thirdparty/lws/client/ssl-client.c
+@@ -176,11 +176,7 @@ lws_ssl_client_bio_create(struct lws *wsi)
+ #endif
+ #else
+ #if defined(LWS_WITH_MBEDTLS)
+-	if (wsi->vhost->x509_client_CA)
+-		SSL_set_verify(wsi->ssl, SSL_VERIFY_PEER, OpenSSL_client_verify_callback);
+-	else
+-		SSL_set_verify(wsi->ssl, SSL_VERIFY_NONE, OpenSSL_client_verify_callback);
+-
++	SSL_set_verify(wsi->ssl, SSL_VERIFY_PEER, OpenSSL_client_verify_callback);
+ #else
+ #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
+ 	SSL_set_tlsext_host_name(wsi->ssl, hostname);
+diff --git a/thirdparty/lws/mbedtls_wrapper/platform/ssl_pm.c b/thirdparty/lws/mbedtls_wrapper/platform/ssl_pm.c
+index 63504919c..4e3d61109 100644
+--- a/thirdparty/lws/mbedtls_wrapper/platform/ssl_pm.c
++++ b/thirdparty/lws/mbedtls_wrapper/platform/ssl_pm.c
+@@ -218,7 +218,7 @@ static int ssl_pm_reload_crt(SSL *ssl)
+     struct x509_pm *crt_pm = (struct x509_pm *)ssl->cert->x509->x509_pm;
+ 
+     if (ssl->verify_mode == SSL_VERIFY_PEER)
+-        mode = MBEDTLS_SSL_VERIFY_REQUIRED;
++        mode = MBEDTLS_SSL_VERIFY_OPTIONAL;
+     else if (ssl->verify_mode == SSL_VERIFY_FAIL_IF_NO_PEER_CERT)
+         mode = MBEDTLS_SSL_VERIFY_OPTIONAL;
+     else if (ssl->verify_mode == SSL_VERIFY_CLIENT_ONCE)
+@@ -712,11 +712,39 @@ long ssl_pm_get_verify_result(const SSL *ssl)
+     struct ssl_pm *ssl_pm = (struct ssl_pm *)ssl->ssl_pm;
+ 
+     ret = mbedtls_ssl_get_verify_result(&ssl_pm->ssl);
+-    if (ret) {
+-        SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL, "mbedtls_ssl_get_verify_result() return 0x%x", ret);
++
++    if (!ret)
++            return X509_V_OK;
++
++    if (ret & MBEDTLS_X509_BADCERT_NOT_TRUSTED ||
++        (ret & MBEDTLS_X509_BADCRL_NOT_TRUSTED))
++        // Allows us to use LCCSCF_ALLOW_SELFSIGNED to skip verification
++        verify_result = X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN;
++
++    else if (ret & MBEDTLS_X509_BADCERT_CN_MISMATCH)
++        verify_result = X509_V_ERR_HOSTNAME_MISMATCH;
++
++    else if ((ret & MBEDTLS_X509_BADCERT_BAD_KEY) ||
++        (ret & MBEDTLS_X509_BADCRL_BAD_KEY))
++        verify_result = X509_V_ERR_CA_KEY_TOO_SMALL;
++
++    else if ((ret & MBEDTLS_X509_BADCERT_BAD_MD) ||
++        (ret & MBEDTLS_X509_BADCRL_BAD_MD))
++        verify_result = X509_V_ERR_CA_MD_TOO_WEAK;
++
++    else if ((ret & MBEDTLS_X509_BADCERT_FUTURE) ||
++        (ret & MBEDTLS_X509_BADCRL_FUTURE))
++        verify_result = X509_V_ERR_CERT_NOT_YET_VALID;
++
++    else if ((ret & MBEDTLS_X509_BADCERT_EXPIRED) ||
++        (ret & MBEDTLS_X509_BADCRL_EXPIRED))
++        verify_result = X509_V_ERR_CERT_HAS_EXPIRED;
++
++    else
+         verify_result = X509_V_ERR_UNSPECIFIED;
+-    } else
+-        verify_result = X509_V_OK;
++
++    SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL,
++              "mbedtls_ssl_get_verify_result() return 0x%x", ret);
+ 
+     return verify_result;
+ }
