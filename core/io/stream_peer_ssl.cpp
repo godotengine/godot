@@ -52,14 +52,6 @@ bool StreamPeerSSL::is_available() {
 	return available;
 }
 
-void StreamPeerSSL::set_blocking_handshake_enabled(bool p_enabled) {
-	blocking_handshake = p_enabled;
-}
-
-bool StreamPeerSSL::is_blocking_handshake_enabled() const {
-	return blocking_handshake;
-}
-
 PoolByteArray StreamPeerSSL::get_project_cert_array() {
 
 	PoolByteArray out;
