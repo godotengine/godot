@@ -66,6 +66,7 @@ public:
 
 	static StreamPeerSSL *create();
 
+	static PoolByteArray get_project_cert_array();
 	static void load_certs_from_memory(const PoolByteArray &p_memory);
 	static bool is_available();
 
