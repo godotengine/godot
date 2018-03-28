@@ -254,12 +254,12 @@ Godot build configurations, check them out when updating.
 ## mbedTLS
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.7.0
+- Version: 2.8.0
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.7.0-apache.tgz`:
-- All `*.h` from `include/mbedtls/` to `thirdparty/include/mbedtls/`
-- All `*.c` from `library/` to `thirdparty/library/`
+File extracted from upstream release tarball `mbedtls-2.8.0-apache.tgz`:
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
+- All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 
 ## minizip
 

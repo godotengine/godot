@@ -112,6 +112,13 @@ int mbedtls_ripemd160_starts_ret( mbedtls_ripemd160_context *ctx )
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_starts( mbedtls_ripemd160_context *ctx )
+{
+    mbedtls_ripemd160_starts_ret( ctx );
+}
+#endif
+
 #if !defined(MBEDTLS_RIPEMD160_PROCESS_ALT)
 /*
  * Process one block
@@ -295,6 +302,14 @@ int mbedtls_internal_ripemd160_process( mbedtls_ripemd160_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_process( mbedtls_ripemd160_context *ctx,
+                                const unsigned char data[64] )
+{
+    mbedtls_internal_ripemd160_process( ctx, data );
+}
+#endif
 #endif /* !MBEDTLS_RIPEMD160_PROCESS_ALT */
 
 /*
@@ -349,6 +364,15 @@ int mbedtls_ripemd160_update_ret( mbedtls_ripemd160_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_update( mbedtls_ripemd160_context *ctx,
+                               const unsigned char *input,
+                               size_t ilen )
+{
+    mbedtls_ripemd160_update_ret( ctx, input, ilen );
+}
+#endif
+
 static const unsigned char ripemd160_padding[64] =
 {
  0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -395,6 +419,14 @@ int mbedtls_ripemd160_finish_ret( mbedtls_ripemd160_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_finish( mbedtls_ripemd160_context *ctx,
+                               unsigned char output[20] )
+{
+    mbedtls_ripemd160_finish_ret( ctx, output );
+}
+#endif
+
 #endif /* ! MBEDTLS_RIPEMD160_ALT */
 
 /*
@@ -423,6 +455,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160( const unsigned char *input,
+                        size_t ilen,
+                        unsigned char output[20] )
+{
+    mbedtls_ripemd160_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*
