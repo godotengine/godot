@@ -62,18 +62,6 @@
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 #include <windows.h>
-#if _MSC_VER <= 1600
-/* Visual Studio 2010 and earlier issue a warning when both <stdint.h> and <intsafe.h> are included, as they
- * redefine a number of <TYPE>_MAX constants. These constants are guaranteed to be the same, though, so
- * we suppress the warning when including intsafe.h.
- */
-#pragma warning( push )
-#pragma warning( disable : 4005 )
-#endif
-#include <intsafe.h>
-#if _MSC_VER <= 1600
-#pragma warning( pop )
-#endif
 #else
 #include <time.h>
 #endif
@@ -145,7 +133,8 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_suiteb =
     MBEDTLS_X509_ID_FLAG( MBEDTLS_MD_SHA256 ) |
     MBEDTLS_X509_ID_FLAG( MBEDTLS_MD_SHA384 ),
     /* Only ECDSA */
-    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECDSA ),
+    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECDSA ) |
+    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECKEY ),
 #if defined(MBEDTLS_ECP_C)
     /* Only NIST P-256 and P-384 */
     MBEDTLS_X509_ID_FLAG( MBEDTLS_ECP_DP_SECP256R1 ) |
@@ -484,9 +473,12 @@ static int x509_get_subject_alt_name( unsigned char **p,
         if( ( ret = mbedtls_asn1_get_len( p, end, &tag_len ) ) != 0 )
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
 
-        if( ( tag & MBEDTLS_ASN1_CONTEXT_SPECIFIC ) != MBEDTLS_ASN1_CONTEXT_SPECIFIC )
+        if( ( tag & MBEDTLS_ASN1_TAG_CLASS_MASK ) !=
+                MBEDTLS_ASN1_CONTEXT_SPECIFIC )
+        {
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
                     MBEDTLS_ERR_ASN1_UNEXPECTED_TAG );
+        }
 
         /* Skip everything but DNS name */
         if( tag != ( MBEDTLS_ASN1_CONTEXT_SPECIFIC | 2 ) )
@@ -1122,7 +1114,6 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
     char filename[MAX_PATH];
     char *p;
     size_t len = strlen( path );
-    int lengthAsInt = 0;
 
     WIN32_FIND_DATAW file_data;
     HANDLE hFind;
@@ -1137,10 +1128,7 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
     p = filename + len;
     filename[len++] = '*';
 
-    if ( FAILED ( SizeTToInt( len, &lengthAsInt ) ) )
-        return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
-
-    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, lengthAsInt, szDir,
+    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, (int)len, szDir,
                                  MAX_PATH - 3 );
     if( w_ret == 0 )
         return( MBEDTLS_ERR_X509_BAD_INPUT_DATA );
@@ -1157,11 +1145,8 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
         if( file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
             continue;
 
-        if ( FAILED( SizeTToInt( wcslen( file_data.cFileName ), &lengthAsInt ) ) )
-            return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
-
         w_ret = WideCharToMultiByte( CP_ACP, 0, file_data.cFileName,
-                                     lengthAsInt,
+                                     lstrlenW( file_data.cFileName ),
                                      p, (int) len - 1,
                                      NULL, NULL );
         if( w_ret == 0 )

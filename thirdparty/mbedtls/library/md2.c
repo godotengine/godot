@@ -115,6 +115,13 @@ int mbedtls_md2_starts_ret( mbedtls_md2_context *ctx )
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_starts( mbedtls_md2_context *ctx )
+{
+    mbedtls_md2_starts_ret( ctx );
+}
+#endif
+
 #if !defined(MBEDTLS_MD2_PROCESS_ALT)
 int mbedtls_internal_md2_process( mbedtls_md2_context *ctx )
 {
@@ -151,6 +158,13 @@ int mbedtls_internal_md2_process( mbedtls_md2_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_process( mbedtls_md2_context *ctx )
+{
+    mbedtls_internal_md2_process( ctx );
+}
+#endif
 #endif /* !MBEDTLS_MD2_PROCESS_ALT */
 
 /*
@@ -187,6 +201,15 @@ int mbedtls_md2_update_ret( mbedtls_md2_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_update( mbedtls_md2_context *ctx,
+                         const unsigned char *input,
+                         size_t ilen )
+{
+    mbedtls_md2_update_ret( ctx, input, ilen );
+}
+#endif
+
 /*
  * MD2 final digest
  */
@@ -213,6 +236,14 @@ int mbedtls_md2_finish_ret( mbedtls_md2_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_finish( mbedtls_md2_context *ctx,
+                         unsigned char output[16] )
+{
+    mbedtls_md2_finish_ret( ctx, output );
+}
+#endif
 
 #endif /* !MBEDTLS_MD2_ALT */
 
@@ -242,6 +273,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2( const unsigned char *input,
+                  size_t ilen,
+                  unsigned char output[16] )
+{
+    mbedtls_md2_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 

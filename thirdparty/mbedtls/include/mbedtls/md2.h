@@ -39,11 +39,6 @@
 
 #define MBEDTLS_ERR_MD2_HW_ACCEL_FAILED                   -0x002B  /**< MD2 hardware accelerator failed */
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
-
 #if !defined(MBEDTLS_MD2_ALT)
 // Regular implementation
 //
@@ -187,11 +182,7 @@ int mbedtls_internal_md2_process( mbedtls_md2_context *ctx );
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_md2_starts(
-                                                    mbedtls_md2_context *ctx )
-{
-    mbedtls_md2_starts_ret( ctx );
-}
+MBEDTLS_DEPRECATED void mbedtls_md2_starts( mbedtls_md2_context *ctx );
 
 /**
  * \brief          MD2 process buffer
@@ -207,13 +198,9 @@ MBEDTLS_DEPRECATED static inline void mbedtls_md2_starts(
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_md2_update(
-                                                mbedtls_md2_context *ctx,
-                                                const unsigned char *input,
-                                                size_t ilen )
-{
-    mbedtls_md2_update_ret( ctx, input, ilen );
-}
+MBEDTLS_DEPRECATED void mbedtls_md2_update( mbedtls_md2_context *ctx,
+                                            const unsigned char *input,
+                                            size_t ilen );
 
 /**
  * \brief          MD2 final digest
@@ -228,12 +215,8 @@ MBEDTLS_DEPRECATED static inline void mbedtls_md2_update(
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_md2_finish(
-                                                    mbedtls_md2_context *ctx,
-                                                    unsigned char output[16] )
-{
-    mbedtls_md2_finish_ret( ctx, output );
-}
+MBEDTLS_DEPRECATED void mbedtls_md2_finish( mbedtls_md2_context *ctx,
+                                            unsigned char output[16] );
 
 /**
  * \brief          MD2 process data block (internal use only)
@@ -247,11 +230,7 @@ MBEDTLS_DEPRECATED static inline void mbedtls_md2_finish(
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_md2_process(
-                                                    mbedtls_md2_context *ctx )
-{
-    mbedtls_internal_md2_process( ctx );
-}
+MBEDTLS_DEPRECATED void mbedtls_md2_process( mbedtls_md2_context *ctx );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
@@ -304,12 +283,9 @@ int mbedtls_md2_ret( const unsigned char *input,
  *                 stronger message digests instead.
  *
  */
-MBEDTLS_DEPRECATED static inline void mbedtls_md2( const unsigned char *input,
-                                                   size_t ilen,
-                                                   unsigned char output[16] )
-{
-    mbedtls_md2_ret( input, ilen, output );
-}
+MBEDTLS_DEPRECATED void mbedtls_md2( const unsigned char *input,
+                                     size_t ilen,
+                                     unsigned char output[16] );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */

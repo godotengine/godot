@@ -372,7 +372,7 @@ MBEDTLS_DEPRECATED typedef char const * mbedtls_deprecated_constant_t;
  * in <em>RFC-5114: Additional Diffie-Hellman Groups for Use with
  * IETF Standards</em>.
  */
-#define MBEDTLS_DHM_RFC5114_MODP_P                              \
+#define MBEDTLS_DHM_RFC5114_MODP_2048_P                         \
     MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
         "AD107E1E9123A9D0D660FAA79559C51FA20D64E5683B9FD1"      \
         "B54B1597B61D0A75E6FA141DF95A56DBAF9A3C407BA1DF15"      \
