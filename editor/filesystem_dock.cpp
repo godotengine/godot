@@ -1611,7 +1611,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	if (num_items >= 1) {
 		if (num_items == 1) {
 			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-			file_options->add_item(TTR("Rename.."), FILE_RENAME);
+			file_options->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
 			file_options->add_item(TTR("Duplicate.."), FILE_DUPLICATE);
 		}
 		file_options->add_item(TTR("Move To.."), FILE_MOVE);
@@ -1660,6 +1660,8 @@ void FileSystemDock::_files_gui_input(Ref<InputEvent> p_event) {
 			_file_option(FILE_COPY_PATH);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_file_option(FILE_REMOVE);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
+			_file_option(FILE_RENAME);
 		}
 	}
 }
@@ -1770,6 +1772,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_MASK_CMD | KEY_F);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	add_child(toolbar_hbc);
