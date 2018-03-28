@@ -1492,11 +1492,6 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "abs", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID } },
 	{ "abs", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID } },
 
-	{ "abs", TYPE_UINT, { TYPE_UINT, TYPE_VOID } },
-	{ "abs", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "abs", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "abs", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID } },
-
 	{ "sign", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "sign", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
 	{ "sign", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
