@@ -246,6 +246,7 @@ File extracted from upstream source:
 - Also copy `win32helpers/` from `win32port/`
 - `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX and FreeBSD (missing `malloc.h`).
   The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
+- You might need to apply the patch in `thirdparty/lws/mbedtls_verify.diff` (port of PR 1215) to future `2.4.x` releases if it does not get cherry picked.
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom 
 Godot build configurations, check them out when updating.
