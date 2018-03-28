@@ -293,28 +293,10 @@ void StreamPeerMbedTLS::initialize_ssl() {
 	mbedtls_debug_set_threshold(1);
 #endif
 
-	String certs_path = GLOBAL_DEF("network/ssl/certificates", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificates", PropertyInfo(Variant::STRING, "network/ssl/certificates", PROPERTY_HINT_FILE, "*.crt"));
+	PoolByteArray cert_array = StreamPeerSSL::get_project_cert_array();
 
-	if (certs_path != "") {
-
-		FileAccess *f = FileAccess::open(certs_path, FileAccess::READ);
-		if (f) {
-			PoolByteArray arr;
-			int flen = f->get_len();
-			arr.resize(flen + 1);
-			{
-				PoolByteArray::Write w = arr.write();
-				f->get_buffer(w.ptr(), flen);
-				w[flen] = 0; //end f string
-			}
-
-			memdelete(f);
-
-			_load_certs(arr);
-			print_line("Loaded certs from '" + certs_path);
-		}
-	}
+	if (cert_array.size() > 0)
+		_load_certs(cert_array);
 
 	available = true;
 }
