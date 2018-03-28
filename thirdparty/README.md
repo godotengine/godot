@@ -260,6 +260,8 @@ Godot build configurations, check them out when updating.
 File extracted from upstream release tarball `mbedtls-2.8.0-apache.tgz`:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
+- In file `thirdparty/mbedtls/library/net_sockets.c` mbedTLS overrides the `_WIN32_WINNT` define.
+  Be sure to check the Godot addition to only redfine it when undefined or `< 0x0501` (PRed upstream).
 
 ## minizip
 
