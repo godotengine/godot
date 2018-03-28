@@ -4,7 +4,7 @@
 		The generic 6 degrees of freedom joint can implement a variety of joint-types by locking certain axes' rotation or translation.
 	</brief_description>
 	<description>
-		The first 3 dof axes are linear axes, which represent translation of Bodies, and the latter 3 dof axes represent the angular motion. Each axis can be either locked, or limited.
+		The first 3 DOF axes are linear axes, which represent translation of Bodies, and the latter 3 DOF axes represent the angular motion. Each axis can be either locked, or limited.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +18,7 @@
 			The lower, the longer an impulse from one side takes to travel to the other side.
 		</member>
 		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] rotation across the x-axis is enabled.
+			If [code]true[/code] rotation across the x-axis is limited.
 		</member>
 		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x">
 			When rotating across x-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -42,7 +42,7 @@
 			The amount of rotational damping across the y-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] rotation across the y-axis is enabled.
+			If [code]true[/code] rotation across the y-axis is limited.
 		</member>
 		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y">
 			When rotating across y-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -66,7 +66,7 @@
 			The amount of rotational damping across the z-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] rotation across the z-axis is enabled.
+			If [code]true[/code] rotation across the z-axis is limited.
 		</member>
 		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z">
 			When rotating across z-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -117,7 +117,7 @@
 			The amount of damping that happens at the x-motion.
 		</member>
 		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] the linear motion across the x-axis is enabled.
+			If [code]true[/code] the linear motion across the x-axis is limited.
 		</member>
 		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x">
 			The minimum difference between the pivot points' x-axis.
@@ -135,7 +135,7 @@
 			The amount of damping that happens at the y-motion.
 		</member>
 		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] the linear motion across the y-axis is enabled.
+			If [code]true[/code] the linear motion across the y-axis is limited.
 		</member>
 		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y">
 			The minimum difference between the pivot points' y-axis.
@@ -153,7 +153,7 @@
 			The amount of damping that happens at the z-motion.
 		</member>
 		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] the linear motion across the z-axis is enabled.
+			If [code]true[/code] the linear motion across the z-axis is limited.
 		</member>
 		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z">
 			The minimum difference between the pivot points' z-axis.
