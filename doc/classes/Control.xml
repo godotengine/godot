@@ -158,7 +158,7 @@
 			</argument>
 			<description>
 				Forces drag and bypasses [method get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
-				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to recieve drop data.
+				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
@@ -208,7 +208,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Return null if there is no data to drag. Controls that want to recieve drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
+				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Return null if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
 				[codeblock]
 				extends Control
