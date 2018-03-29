@@ -340,7 +340,7 @@ if webm_simd_optimizations == False:
 
 env_libvpx.add_source_files(env.modules_sources, libvpx_sources)
 if webm_cpu_x86:
-    is_clang_or_gcc = ('gcc' in env["CC"]) or ('clang' in env["CC"])
+    is_clang_or_gcc = ('gcc' in env["CC"]) or ('clang' in env["CC"]) or ("OSXCROSS_ROOT" in os.environ)
 
     env_libvpx_mmx = env_libvpx.Clone()
     if cpu_bits == '32' and is_clang_or_gcc:
