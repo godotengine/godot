@@ -175,10 +175,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("world_vertex_coords");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("ensure_correct_normals");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.push_back("shadows_disabled");
-	shader_modes[VS::SHADER_SPATIAL].modes.push_back("ambient_light_disabled");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("shadows_disabled");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_lighting");
 
 	/************ CANVAS ITEM **************************/
 
