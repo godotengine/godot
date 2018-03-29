@@ -176,6 +176,13 @@
 				Return the mouse mode. See the constants for more information.
 			</description>
 		</method>
+		<method name="clear_mouse_wheel_mask">
+			<return type="bool">
+			</return>
+			<description>
+				Clear wheel mask. Call it after usage of [code]is_mouse_wheel_[/code] methods.
+			</description>
+		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -240,6 +247,34 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button. You can pass [code]BUTTON_*[/code], which are pre-defined constants listed in [@GlobalScope].
+			</description>
+		</method>
+		<method name="is_mouse_wheel_up" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if you scroll wheel up.
+			</description>
+		</method>
+		<method name="is_mouse_wheel_down" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if you scroll wheel down.
+			</description>
+		</method>
+		<method name="is_mouse_wheel_left" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if you scroll wheel left.
+			</description>
+		</method>
+		<method name="is_mouse_wheel_right" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if you scroll wheel right.
 			</description>
 		</method>
 		<method name="joy_connection_changed">

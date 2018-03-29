@@ -39,6 +39,7 @@ class InputDefault : public Input {
 	_THREAD_SAFE_CLASS_
 
 	int mouse_button_mask;
+	int mouse_wheel_mask;
 
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
@@ -178,11 +179,16 @@ private:
 public:
 	virtual bool is_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
+	virtual bool is_mouse_wheel_up() const;
+	virtual bool is_mouse_wheel_down() const;
+	virtual bool is_mouse_wheel_left() const;
+	virtual bool is_mouse_wheel_right() const;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
 
+	virtual void clear_mouse_wheel_mask();
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
 	virtual Array get_connected_joypads();
