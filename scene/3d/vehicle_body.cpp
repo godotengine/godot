@@ -524,7 +524,7 @@ void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
 
 //bilateral constraint between two dynamic objects
 void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
-		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse) {
+		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
@@ -582,8 +582,12 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 
 	rel_vel = normal.dot(vel);
 
-	//TODO: move this into proper structure
-	real_t contactDamping = real_t(0.4);
+	// !BAS! We had this set to 0.4, in bullet its 0.2
+	// real_t contactDamping = real_t(0.2);
+
+	// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
+	// keeping in mind our anti roll factor
+	real_t contactDamping = s->get_step() / p_rollInfluence;
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
 	real_t massTerm = real_t(1.) / ((1.0 / mass) + b2invmass);
@@ -704,7 +708,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				_resolve_single_bilateral(s, wheelInfo.m_raycastInfo.m_contactPointWS,
 						wheelInfo.m_raycastInfo.m_groundObject, wheelInfo.m_raycastInfo.m_contactPointWS,
-						m_axle[i], m_sideImpulse[i]);
+						m_axle[i], m_sideImpulse[i], wheelInfo.m_rollInfluence);
 
 				m_sideImpulse[i] *= sideFrictionStiffness2;
 			}
