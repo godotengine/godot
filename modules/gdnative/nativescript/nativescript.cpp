@@ -881,6 +881,9 @@ NativeScriptInstance::~NativeScriptInstance() {
 NativeScriptLanguage *NativeScriptLanguage::singleton;
 
 void NativeScriptLanguage::_unload_stuff(bool p_reload) {
+
+	Map<String, Ref<GDNative> > erase_and_unload;
+
 	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *L = library_classes.front(); L; L = L->next()) {
 
 		String lib_path = L->key();
@@ -916,18 +919,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			gdn = E->get();
 		}
 
-		if (gdn.is_valid() && gdn->get_library().is_valid()) {
-			Ref<GDNativeLibrary> lib = gdn->get_library();
-			void *terminate_fn;
-			Error err = gdn->get_symbol(lib->get_symbol_prefix() + _terminate_call_name, terminate_fn, true);
-
-			if (err == OK) {
-				void (*terminate)(void *) = (void (*)(void *))terminate_fn;
-
-				terminate((void *)&lib_path);
-			}
-		}
-
 		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
 
 			// free property stuff first
@@ -951,6 +942,27 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 
 			if (C->get().destroy_func.free_func)
 				C->get().destroy_func.free_func(C->get().destroy_func.method_data);
+		}
+
+		erase_and_unload.insert(lib_path, gdn);
+	}
+
+	for (Map<String, Ref<GDNative> >::Element *E = erase_and_unload.front(); E; E = E->next()) {
+		String lib_path = E->key();
+		Ref<GDNative> gdn = E->get();
+
+		library_classes.erase(lib_path);
+
+		if (gdn.is_valid() && gdn->get_library().is_valid()) {
+			Ref<GDNativeLibrary> lib = gdn->get_library();
+			void *terminate_fn;
+			Error err = gdn->get_symbol(lib->get_symbol_prefix() + _terminate_call_name, terminate_fn, true);
+
+			if (err == OK) {
+				void (*terminate)(void *) = (void (*)(void *))terminate_fn;
+
+				terminate((void *)&lib_path);
+			}
 		}
 	}
 }
@@ -1363,6 +1375,7 @@ void NativeReloadNode::_notification(int p_what) {
 			MutexLock lock(NSL->mutex);
 #endif
 			NSL->_unload_stuff(true);
+
 			for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
 				Ref<GDNative> gdn = L->get();
@@ -1376,7 +1389,6 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				gdn->terminate();
-				NSL->library_classes.erase(L->key());
 			}
 
 			unloaded = true;
