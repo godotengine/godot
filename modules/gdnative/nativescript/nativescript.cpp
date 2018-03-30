@@ -932,18 +932,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			gdn = E->get();
 		}
 
-		if (gdn.is_valid() && gdn->get_library().is_valid()) {
-			Ref<GDNativeLibrary> lib = gdn->get_library();
-			void *terminate_fn;
-			Error err = gdn->get_symbol(lib->get_symbol_prefix() + _terminate_call_name, terminate_fn, true);
-
-			if (err == OK) {
-				void (*terminate)(void *) = (void (*)(void *))terminate_fn;
-
-				terminate((void *)&lib_path);
-			}
-		}
-
 		for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
 
 			// free property stuff first
