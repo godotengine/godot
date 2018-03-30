@@ -285,8 +285,6 @@ Error AudioDriverWASAPI::finish_device() {
 	if (audio_client) {
 		if (active) {
 			audio_client->Stop();
-			audio_client->Release();
-			audio_client = NULL;
 			active = false;
 		}
 
