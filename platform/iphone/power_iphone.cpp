@@ -30,7 +30,7 @@
 
 #include "power_iphone.h"
 
-bool OS::PowerState::UpdatePowerInfo() {
+bool PowerIphone::UpdatePowerInfo() {
 	return false;
 }
 
