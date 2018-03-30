@@ -651,7 +651,6 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	}
 
 	type->constant_map[p_name] = p_constant;
-#ifdef DEBUG_METHODS_ENABLED
 
 	String enum_name = p_enum;
 	if (enum_name != String()) {
@@ -670,6 +669,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 		}
 	}
 
+#ifdef DEBUG_METHODS_ENABLED
 	type->constant_order.push_back(p_name);
 #endif
 }
@@ -725,7 +725,6 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 	return 0;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 
 	OBJTYPE_RLOCK;
@@ -794,7 +793,6 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 		type = type->inherits_ptr;
 	}
 }
-#endif
 
 void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 
