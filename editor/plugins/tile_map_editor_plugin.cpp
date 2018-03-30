@@ -79,6 +79,7 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_PAINTING), get_icon("Edit", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_PICK_TILE), get_icon("ColorPick", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_SELECT), get_icon("ToolSelect", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_MOVE), get_icon("ToolMove", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_DUPLICATE), get_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
 
@@ -154,6 +155,14 @@ void TileMapEditor::_menu_option(int p_option) {
 			undo_redo->add_do_method(node, "set", "tile_data", node->get("tile_data"));
 			undo_redo->commit_action();
 
+		} break;
+		case OPTION_MOVE: {
+
+			if (selection_active) {
+				_update_copydata();
+				tool = TOOL_MOVING;
+				canvas_item_editor->update();
+			}
 		} break;
 	}
 }
@@ -970,22 +979,21 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					} else if (tool == TOOL_MOVING) {
 
 						Point2 ofs = over_tile - rectangle.position;
-						Vector<int> ids;
 
-						_start_undo(TTR("Move"));
-						ids.push_back(TileMap::INVALID_CELL);
+						undo_redo->create_action(TTR("Move"));
+						undo_redo->add_undo_method(node, "set", "tile_data", node->get("tile_data"));
 						for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 							for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
 
-								_set_cell(Point2i(j, i), ids, false, false, false);
+								_set_cell(Point2i(j, i), TileMap::INVALID_CELL, false, false, false);
 							}
 						}
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 
-							ids.write[0] = E->get().cell;
-							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose);
+							_set_cell(E->get().pos + ofs, E->get().cell, E->get().flip_h, E->get().flip_v, E->get().transpose);
 						}
-						_finish_undo();
+						undo_redo->add_do_method(node, "set", "tile_data", node->get("tile_data"));
+						undo_redo->commit_action();
 
 						copydata.clear();
 						selection_active = false;
