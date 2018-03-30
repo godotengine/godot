@@ -88,7 +88,7 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
-	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + "/" + p_url;
+	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	godot_xhr_reset(xhr_id);
 	godot_xhr_open(xhr_id, _methods[p_method], url.utf8().get_data(),
 			username.empty() ? NULL : username.utf8().get_data(),
