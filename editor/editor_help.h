@@ -152,6 +152,7 @@ class EditorHelp : public VBoxContainer {
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
+	Map<String, Map<String, int> > enum_values_line;
 	int description_line;
 
 	RichTextLabel *class_desc;
