@@ -139,19 +139,22 @@ void FileAccessWindows::close() {
 				//atomic replace for existing file
 				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
 			}
-			if (rename_error && close_fail_notify) {
-				close_fail_notify(save_path);
-			}
 			if (rename_error) {
 				attempts--;
 				OS::get_singleton()->delay_usec(1000000); //wait 100msec and try again
 			}
 		}
 
-		save_path = "";
 		if (rename_error) {
+			if (close_fail_notify) {
+				close_fail_notify(save_path);
+			}
+
 			ERR_EXPLAIN("Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 		}
+
+		save_path = "";
+
 		ERR_FAIL_COND(rename_error);
 	}
 }
