@@ -220,10 +220,10 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object);
 // instance binding API
 
 typedef struct {
-	void *(*alloc_instance_binding_data)(void *, godot_object *);
-	void (*free_instance_binding_data)(void *, void *);
+	GDCALLINGCONV void *(*alloc_instance_binding_data)(void *, godot_object *);
+	GDCALLINGCONV void (*free_instance_binding_data)(void *, void *);
 	void *data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_instance_binding_functions;
 
 int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_instance_binding_functions p_binding_functions);
