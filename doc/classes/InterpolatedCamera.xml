@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InterpolatedCamera" inherits="Camera" category="Core" version="3.1">
 	<brief_description>
-		Camera which moves toward another node
+		Camera which moves toward another node.
 	</brief_description>
 	<description>
 		InterpolatedCamera is a [Camera] which smoothly moves to match a target node's position and rotation.
