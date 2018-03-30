@@ -3345,6 +3345,109 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			GDScriptCompletionIdentifier base;
 			if (!_guess_expression_type(context, static_cast<const GDScriptParser::OperatorNode *>(node)->arguments[0], base)) {
 				break;
+
+			GDScriptCompletionIdentifier t;
+			if (_guess_expression_type(context, static_cast<const GDScriptParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t)) {
+
+				if (t.type == Variant::OBJECT && t.obj_type == "GDScriptNativeClass") {
+					//native enum
+					Ref<GDScriptNativeClass> gdn = t.value;
+					if (gdn.is_valid()) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name = gdn->get_name();
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+				} else if (t.type == Variant::OBJECT && t.obj_type != StringName()) {
+
+					Ref<GDScript> on_script;
+
+					if (t.value.get_type()) {
+						Object *obj = t.value;
+
+						if (obj) {
+
+							on_script = obj->get_script();
+
+							if (on_script.is_valid()) {
+								int loc = on_script->get_member_line(p_symbol);
+								if (loc >= 0) {
+									r_result.script = on_script;
+									r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+									r_result.location = loc;
+									return OK;
+								}
+							}
+						}
+					}
+
+					if (ClassDB::has_method(t.obj_type, p_symbol)) {
+
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name = t.obj_type;
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+					StringName enumName = ClassDB::get_integer_constant_enum(t.obj_type, p_symbol, true);
+					if (enumName != StringName()) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_ENUM;
+						r_result.class_name = t.obj_type;
+						r_result.class_member = enumName;
+						return OK;
+					}
+
+					bool success;
+					ClassDB::get_integer_constant(t.obj_type, p_symbol, &success);
+					if (success) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name = t.obj_type;
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+					ClassDB::get_property_type(t.obj_type, p_symbol, &success);
+
+					if (success) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name = t.obj_type;
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+				} else {
+
+					Variant::CallError ce;
+					Variant v = Variant::construct(t.type, NULL, 0, ce);
+
+					bool valid;
+					v.get_numeric_constant_value(t.type, p_symbol, &valid);
+					if (valid) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name = Variant::get_type_name(t.type);
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+					//todo check all inputevent types for property
+
+					v.get(p_symbol, &valid);
+
+					if (valid) {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name = Variant::get_type_name(t.type);
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+
+					if (v.has_method(p_symbol)) {
+
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name = Variant::get_type_name(t.type);
+						r_result.class_member = p_symbol;
+						return OK;
+					}
+				}
 			}
 
 			if (_lookup_symbol_from_base(base.type, p_symbol, is_function, r_result) == OK) {

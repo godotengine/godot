@@ -114,10 +114,10 @@ public:
 
 		APIType api;
 		ClassInfo *inherits_ptr;
-		HashMap<StringName, MethodBind *> method_map;
-		HashMap<StringName, int> constant_map;
+		HashMap<StringName, MethodBind *, StringNameHasher> method_map;
+		HashMap<StringName, int, StringNameHasher> constant_map;
 		HashMap<StringName, List<StringName> > enum_map;
-		HashMap<StringName, MethodInfo> signal_map;
+		HashMap<StringName, MethodInfo, StringNameHasher> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
