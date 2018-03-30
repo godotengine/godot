@@ -296,8 +296,6 @@ Error AudioDriverWASAPI::finish_device() {
 	if (audio_client) {
 		if (active) {
 			audio_client->Stop();
-			audio_client->Release();
-			audio_client = NULL;
 			active = false;
 		}
 
@@ -320,7 +318,7 @@ Error AudioDriverWASAPI::finish_device() {
 
 Error AudioDriverWASAPI::init() {
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
 
 	Error err = init_device();
 	if (err != OK) {
