@@ -53,6 +53,11 @@ void Input::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "scancode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
+	ClassDB::bind_method(D_METHOD("is_mouse_wheel_up"), &Input::is_mouse_wheel_up);
+	ClassDB::bind_method(D_METHOD("is_mouse_wheel_down"), &Input::is_mouse_wheel_down);
+	ClassDB::bind_method(D_METHOD("is_mouse_wheel_left"), &Input::is_mouse_wheel_left);
+	ClassDB::bind_method(D_METHOD("is_mouse_wheel_right"), &Input::is_mouse_wheel_right);
+	ClassDB::bind_method(D_METHOD("clear_mouse_wheel_mask"), &Input::clear_mouse_wheel_mask);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &Input::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action"), &Input::is_action_just_pressed);

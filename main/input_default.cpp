@@ -85,6 +85,30 @@ bool InputDefault::is_mouse_button_pressed(int p_button) const {
 	return (mouse_button_mask & (1 << (p_button - 1))) != 0;
 }
 
+bool InputDefault::is_mouse_wheel_up() const {
+
+	_THREAD_SAFE_METHOD_
+	return (mouse_wheel_mask & (1 << (BUTTON_WHEEL_UP - 1))) != 0;
+}
+
+bool InputDefault::is_mouse_wheel_down() const {
+
+	_THREAD_SAFE_METHOD_
+	return (mouse_wheel_mask & (1 << (BUTTON_WHEEL_DOWN - 1))) != 0;
+}
+
+bool InputDefault::is_mouse_wheel_left() const {
+
+	_THREAD_SAFE_METHOD_
+	return (mouse_wheel_mask & (1 << (BUTTON_WHEEL_LEFT - 1))) != 0;
+}
+
+bool InputDefault::is_mouse_wheel_right() const {
+
+	_THREAD_SAFE_METHOD_
+	return (mouse_wheel_mask & (1 << (BUTTON_WHEEL_RIGHT - 1))) != 0;
+}
+
 static int _combine_device(int p_value, int p_device) {
 
 	return p_value | (p_device << 20);
@@ -248,6 +272,10 @@ Vector3 InputDefault::get_gyroscope() const {
 	return gyroscope;
 }
 
+void InputDefault::clear_mouse_wheel_mask() {
+	mouse_wheel_mask = 0;
+}
+
 void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	_THREAD_SAFE_METHOD_
@@ -267,13 +295,22 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && !mb->is_doubleclick()) {
 
+		int button_index = mb->get_button_index();
+
 		if (mb->is_pressed()) {
-			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
+			mouse_button_mask |= (1 << (button_index - 1));
+			if (button_index >= BUTTON_WHEEL_UP && button_index <= BUTTON_WHEEL_RIGHT) {
+				mouse_wheel_mask &= ~(1 << (button_index - 1));
+			}
 		} else {
-			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
+			if (button_index >= BUTTON_WHEEL_UP && button_index <= BUTTON_WHEEL_RIGHT) {
+				mouse_wheel_mask |= (1 << (button_index - 1));
+			}
+
+			mouse_button_mask &= ~(1 << (button_index - 1));
 		}
 
-		if (main_loop && emulate_touch && mb->get_button_index() == 1) {
+		if (main_loop && emulate_touch && button_index == 1) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
@@ -529,6 +566,7 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 InputDefault::InputDefault() {
 
 	mouse_button_mask = 0;
+	mouse_wheel_mask = 0;
 	emulate_touch = false;
 	main_loop = NULL;
 
