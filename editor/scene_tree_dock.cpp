@@ -933,7 +933,13 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 						NodePath root_path = p_base->get_path();
 
 						NodePath rel_path_old = root_path.rel_path_to(E->get().first);
-						NodePath rel_path_new = root_path.rel_path_to(E->get().second);
+
+						NodePath rel_path_new = E->get().second;
+
+						// if not empty, get new relative path
+						if (E->get().second != NodePath()) {
+							rel_path_new = root_path.rel_path_to(E->get().second);
+						}
 
 						// if old path detected, then it needs to be replaced with the new one
 						if (p == rel_path_old) {
