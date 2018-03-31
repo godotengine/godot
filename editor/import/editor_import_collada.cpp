@@ -480,7 +480,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 		}
 	}
 
-	float roughness = -Math::sqrt(1.0 - ((Math::log(effect.shininess) / Math::log(2.0)) / 9.0)) + 1;
+	float roughness = (512.0 * (1.0 - Math::sqrt(1.0 - ((Math::log(effect.shininess) / Math::log(2.0)) / 9.0)))) / 503.0;
 	material->set_roughness(roughness);
 
 	if (effect.double_sided) {
