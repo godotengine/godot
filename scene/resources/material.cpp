@@ -378,6 +378,13 @@ void SpatialMaterial::_update_shader() {
 		case SPECULAR_DISABLED: code += ",specular_disabled"; break;
 	}
 
+	switch (billboard_mode) {
+		case BILLBOARD_DISABLED: break;
+		case BILLBOARD_ENABLED: code += ",skip_vertex_transform"; break;
+		case BILLBOARD_FIXED_Y: code += ",skip_vertex_transform"; break;
+		case BILLBOARD_PARTICLES: code += ",skip_vertex_transform"; break;
+	}
+
 	if (flags[FLAG_UNSHADED]) {
 		code += ",unshaded";
 	}
@@ -535,9 +542,13 @@ void SpatialMaterial::_update_shader() {
 		case BILLBOARD_ENABLED: {
 
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
+			code += "\tVERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;\n";
+			code += "\tNORMAL = (MODELVIEW_MATRIX * vec4(VERTEX, 0.0)).xyz;\n";
 		} break;
 		case BILLBOARD_FIXED_Y: {
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)),0.0),WORLD_MATRIX[3]);\n";
+			code += "\tVERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;\n";
+			code += "\tNORMAL = (MODELVIEW_MATRIX * vec4(VERTEX, 0.0)).xyz;\n";
 		} break;
 		case BILLBOARD_PARTICLES: {
 
@@ -547,7 +558,8 @@ void SpatialMaterial::_update_shader() {
 			code += "\tmat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x),0.0,0.0), vec4(sin(INSTANCE_CUSTOM.x),cos(INSTANCE_CUSTOM.x),0.0,0.0),vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));\n";
 			//set modelview
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
-
+			code += "\tVERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;\n";
+			code += "\tNORMAL = (MODELVIEW_MATRIX * vec4(VERTEX, 0.0)).xyz;\n";
 			//handle animation
 			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 			code += "\tint particle_frame = int(INSTANCE_CUSTOM.y * float(particle_total_frames));\n";
