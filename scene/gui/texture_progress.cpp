@@ -80,15 +80,6 @@ bool TextureProgress::get_nine_patch_stretch() const {
 	return nine_patch_stretch;
 }
 
-void TextureProgress::set_tint(const Color &p_tint) {
-	tint = p_tint;
-	update();
-}
-
-Color TextureProgress::get_tint() const {
-	return tint;
-}
-
 Size2 TextureProgress::get_minimum_size() const {
 
 	if (nine_patch_stretch)
@@ -113,6 +104,33 @@ void TextureProgress::set_progress_texture(const Ref<Texture> &p_texture) {
 Ref<Texture> TextureProgress::get_progress_texture() const {
 
 	return progress;
+}
+
+void TextureProgress::set_tint_under(const Color &p_tint) {
+	tint_under = p_tint;
+	update();
+}
+
+Color TextureProgress::get_tint_under() const {
+	return tint_under;
+}
+
+void TextureProgress::set_tint_progress(const Color &p_tint) {
+	tint_progress = p_tint;
+	update();
+}
+
+Color TextureProgress::get_tint_progress() const {
+	return tint_progress;
+}
+
+void TextureProgress::set_tint_over(const Color &p_tint) {
+	tint_over = p_tint;
+	update();
+}
+
+Color TextureProgress::get_tint_over() const {
+	return tint_over;
 }
 
 Point2 TextureProgress::unit_val_to_uv(float val) {
@@ -260,42 +278,42 @@ void TextureProgress::_notification(int p_what) {
 
 			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP)) {
 				if (under.is_valid()) {
-					draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0);
+					draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0, tint_under);
 				}
 				if (progress.is_valid()) {
-					draw_nine_patch_stretched(progress, mode, get_as_ratio(), tint);
+					draw_nine_patch_stretched(progress, mode, get_as_ratio(), tint_progress);
 				}
 				if (over.is_valid()) {
-					draw_nine_patch_stretched(over, FILL_LEFT_TO_RIGHT, 1.0);
+					draw_nine_patch_stretched(over, FILL_LEFT_TO_RIGHT, 1.0, tint_over);
 				}
 			} else {
 				if (under.is_valid())
-					draw_texture(under, Point2());
+					draw_texture(under, Point2(), tint_under);
 				if (progress.is_valid()) {
 					Size2 s = progress->get_size();
 					switch (mode) {
 						case FILL_LEFT_TO_RIGHT: {
 							Rect2 region = Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region, tint);
+							draw_texture_rect_region(progress, region, region, tint_progress);
 						} break;
 						case FILL_RIGHT_TO_LEFT: {
 							Rect2 region = Rect2(Point2(s.x - s.x * get_as_ratio(), 0), Size2(s.x * get_as_ratio(), s.y));
-							draw_texture_rect_region(progress, region, region, tint);
+							draw_texture_rect_region(progress, region, region, tint_progress);
 						} break;
 						case FILL_TOP_TO_BOTTOM: {
 							Rect2 region = Rect2(Point2(), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region, tint);
+							draw_texture_rect_region(progress, region, region, tint_progress);
 						} break;
 						case FILL_BOTTOM_TO_TOP: {
 							Rect2 region = Rect2(Point2(0, s.y - s.y * get_as_ratio()), Size2(s.x, s.y * get_as_ratio()));
-							draw_texture_rect_region(progress, region, region, tint);
+							draw_texture_rect_region(progress, region, region, tint_progress);
 						} break;
 						case FILL_CLOCKWISE:
 						case FILL_COUNTER_CLOCKWISE: {
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
 								Rect2 region = Rect2(Point2(), s);
-								draw_texture_rect_region(progress, region, region, tint);
+								draw_texture_rect_region(progress, region, region, tint_progress);
 							} else if (val != 0) {
 								Array pts;
 								float direction = mode == FILL_CLOCKWISE ? 1 : -1;
@@ -321,7 +339,7 @@ void TextureProgress::_notification(int p_what) {
 									points.push_back(Point2(uv.x * s.x, uv.y * s.y));
 								}
 								Vector<Color> colors;
-								colors.push_back(tint);
+								colors.push_back(tint_progress);
 								draw_polygon(points, colors, uvs, progress);
 							}
 							if (Engine::get_singleton()->is_editor_hint()) {
@@ -334,11 +352,11 @@ void TextureProgress::_notification(int p_what) {
 							}
 						} break;
 						default:
-							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint);
+							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint_progress);
 					}
 				}
 				if (over.is_valid())
-					draw_texture(over, Point2());
+					draw_texture(over, Point2(), tint_over);
 			}
 
 		} break;
@@ -400,6 +418,15 @@ void TextureProgress::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &TextureProgress::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgress::get_fill_mode);
 
+	ClassDB::bind_method(D_METHOD("set_tint_under", "tint"), &TextureProgress::set_tint_under);
+	ClassDB::bind_method(D_METHOD("get_tint_under"), &TextureProgress::get_tint_under);
+
+	ClassDB::bind_method(D_METHOD("set_tint_progress", "tint"), &TextureProgress::set_tint_progress);
+	ClassDB::bind_method(D_METHOD("get_tint_progress"), &TextureProgress::get_tint_progress);
+
+	ClassDB::bind_method(D_METHOD("set_tint_over", "tint"), &TextureProgress::set_tint_over);
+	ClassDB::bind_method(D_METHOD("get_tint_over"), &TextureProgress::get_tint_over);
+
 	ClassDB::bind_method(D_METHOD("set_radial_initial_angle", "mode"), &TextureProgress::set_radial_initial_angle);
 	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
 
@@ -415,15 +442,15 @@ void TextureProgress::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_nine_patch_stretch", "stretch"), &TextureProgress::set_nine_patch_stretch);
 	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgress::get_nine_patch_stretch);
 
-	ClassDB::bind_method(D_METHOD("set_tint", "tint"), &TextureProgress::set_tint);
-	ClassDB::bind_method(D_METHOD("get_tint"), &TextureProgress::get_tint);
-
 	ADD_GROUP("Textures", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_under_texture", "get_under_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_over_texture", "get_over_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_progress_texture", "get_progress_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint", "get_tint");
+	ADD_GROUP("Tint", "tint_");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_under", "get_tint_under");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_over", "get_tint_over");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_progress", "get_tint_progress");
 	ADD_GROUP("Radial Fill", "radial_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
@@ -456,5 +483,5 @@ TextureProgress::TextureProgress() {
 	stretch_margin[MARGIN_BOTTOM] = 0;
 	stretch_margin[MARGIN_TOP] = 0;
 
-	tint = Color(1, 1, 1);
+	tint_under = tint_progress = tint_over = Color(1, 1, 1);
 }
