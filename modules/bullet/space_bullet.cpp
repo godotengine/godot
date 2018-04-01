@@ -660,7 +660,10 @@ void SpaceBullet::check_ghost_overlaps() {
 		// For each overlapping
 		for (i = ghostOverlaps.size() - 1; 0 <= i; --i) {
 
-			if (!(ghostOverlaps[i]->getUserIndex() == CollisionObjectBullet::TYPE_RIGID_BODY || ghostOverlaps[i]->getUserIndex() == CollisionObjectBullet::TYPE_AREA))
+			if (ghostOverlaps[i]->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
+				if (!static_cast<AreaBullet *>(ghostOverlaps[i]->getUserPointer())->is_monitorable())
+					continue;
+			} else if (ghostOverlaps[i]->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
 				continue;
 
 			otherObject = static_cast<RigidCollisionObjectBullet *>(ghostOverlaps[i]->getUserPointer());
