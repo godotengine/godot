@@ -315,6 +315,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		}
 	}
 
+	ERR_FAIL_COND_V(arrays.size() != ARRAY_MAX, Ref<ArrayMesh>());
+
 	{
 		PoolVector<int>::Write ir;
 		PoolVector<int> indices = arrays[ARRAY_INDEX];
