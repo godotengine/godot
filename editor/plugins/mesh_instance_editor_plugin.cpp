@@ -344,6 +344,10 @@ void MeshInstanceEditor::_create_outline_mesh() {
 		err_dialog->set_text(TTR("Mesh has not surface to create outlines from!"));
 		err_dialog->popup_centered_minsize();
 		return;
+	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+		err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES!"));
+		err_dialog->popup_centered_minsize();
+		return;
 	}
 
 	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_value());
