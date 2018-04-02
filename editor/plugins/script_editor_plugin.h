@@ -80,6 +80,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
+	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
+
 	virtual void apply_code() = 0;
 	virtual Ref<Script> get_edited_script() const = 0;
 	virtual Vector<String> get_functions() = 0;
@@ -112,6 +115,7 @@ public:
 	ScriptEditorBase() {}
 };
 
+typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Script> &p_script);
 
 class EditorScriptCodeCompletionCache;
@@ -214,11 +218,15 @@ class ScriptEditor : public PanelContainer {
 	ToolButton *script_forward;
 
 	enum {
-		SCRIPT_EDITOR_FUNC_MAX = 32
+		SCRIPT_EDITOR_FUNC_MAX = 32,
+		SYNTAX_HIGHLIGHTER_FUNC_MAX = 32
 	};
 
 	static int script_editor_func_count;
 	static CreateScriptEditorFunc script_editor_funcs[SCRIPT_EDITOR_FUNC_MAX];
+
+	static int syntax_highlighters_func_count;
+	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
 
 	struct ScriptHistory {
 
@@ -399,7 +407,9 @@ public:
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
+	static void register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func);
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
+
 	ScriptEditor(EditorNode *p_editor);
 	~ScriptEditor();
 };
