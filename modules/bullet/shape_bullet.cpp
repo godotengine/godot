@@ -337,10 +337,10 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 	int src_face_count = faces.size();
 	if (0 < src_face_count) {
 
-		btTriangleMesh *shapeInterface = bulletnew(btTriangleMesh);
-
 		// It counts the faces and assert the array contains the correct number of vertices.
 		ERR_FAIL_COND(src_face_count % 3);
+
+		btTriangleMesh *shapeInterface = bulletnew(btTriangleMesh);
 		src_face_count /= 3;
 		PoolVector<Vector3>::Read r = p_faces.read();
 		const Vector3 *facesr = r.ptr();
