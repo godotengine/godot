@@ -43,6 +43,8 @@ def get_flags():
 
 def configure(env):
 
+    env.msvc = True
+
     if (env["bits"] != "default"):
         print("Error: bits argument is disabled for MSVC")
         print("""
