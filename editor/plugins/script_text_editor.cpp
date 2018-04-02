@@ -464,6 +464,21 @@ Ref<Texture> ScriptTextEditor::get_icon() {
 	return Ref<Texture>();
 }
 
+void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
+
+	ERR_FAIL_COND(!script.is_null());
+
+	script = p_script;
+	_set_theme_for_script();
+
+	code_editor->get_text_edit()->set_text(script->get_source_code());
+	code_editor->get_text_edit()->clear_undo_history();
+	code_editor->get_text_edit()->tag_saved_version();
+
+	emit_signal("name_changed");
+	code_editor->update_line_and_column();
+}
+
 void ScriptTextEditor::_validate_script() {
 
 	String errortxt;
@@ -1066,26 +1081,16 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	highlighters[p_highlighter->get_name()] = p_highlighter;
-	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
+	highlighter_menu->get_popup()->add_item(p_highlighter->get_name());
 }
 
 void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != NULL)
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
-	else
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
 }
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
-	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
-	while (el != NULL) {
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
-		el = el->next();
-	}
-	// highlighter_menu->set_item_checked(p_idx, true);
-	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
+	set_syntax_highlighter(highlighters[highlighter_menu->get_popup()->get_item_text(p_idx)]);
 }
 
 void ScriptTextEditor::_bind_methods() {
@@ -1515,6 +1520,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_hb->add_child(edit_menu);
+
+	highlighters["Standard"] = NULL;
+
+	highlighter_menu = memnew(MenuButton);
+	highlighter_menu->set_text(TTR("Syntax Highlighter"));
+	highlighter_menu->get_popup()->add_item("Standard");
+	highlighter_menu->get_popup()->connect("id_pressed", this, "_change_syntax_highlighter");
+	edit_hb->add_child(highlighter_menu);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	add_child(quick_open);

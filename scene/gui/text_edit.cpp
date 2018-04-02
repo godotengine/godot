@@ -135,6 +135,7 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 
 	text.write[p_line].region_info.clear();
 
+	int ending_color_region = -1;
 	for (int i = 0; i < len; i++) {
 
 		if (!_is_symbol(str[i]))
@@ -175,6 +176,11 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text.write[p_line].region_info[i] = cri;
 				i += lr - 1;
 
+				if (ending_color_region == -1 && !cr.line_only) {
+					ending_color_region = j;
+				} else if (ending_color_region == j) {
+					ending_color_region = -1;
+				}
 				break;
 			}
 
@@ -203,10 +209,15 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text.write[p_line].region_info[i] = cri;
 				i += lr - 1;
 
+				if (ending_color_region == j) {
+					ending_color_region = -1;
+				}
+
 				break;
 			}
 		}
 	}
+	text[p_line].ending_color_region = ending_color_region;
 }
 
 const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) const {
@@ -659,36 +670,6 @@ void TextEdit::_notification(int p_what) {
 				if (cache.background_color.a > 0.01) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 				}
-				//compute actual region to start (may be inside say, a comment).
-				//slow in very large documents :( but ok for source!
-
-				for (int i = 0; i < cursor.line_ofs; i++) {
-
-					const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
-
-					if (in_region >= 0 && color_regions[in_region].line_only) {
-						in_region = -1; //reset regions that end at end of line
-					}
-
-					for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-
-						const Text::ColorRegionInfo &cri = E->get();
-
-						if (in_region == -1) {
-
-							if (!cri.end) {
-
-								in_region = cri.region;
-							}
-						} else if (in_region == cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
-
-							if (cri.end || color_regions[cri.region].eq) {
-
-								in_region = -1;
-							}
-						}
-					}
-				}
 			}
 
 			int brace_open_match_line = -1;
@@ -881,9 +862,10 @@ void TextEdit::_notification(int p_what) {
 
 				bool underlined = false;
 
-				int line_wrap_amount = times_line_wraps(line);
-				int last_wrap_column = 0;
-				Vector<String> wrap_rows = get_wrap_rows_text(line);
+				// check if line contains highlighted word
+				int highlighted_text_col = -1;
+				int search_text_col = -1;
+				int highlighted_word_col = -1;
 
 				for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
 					if (line_wrap_index != 0) {
@@ -892,8 +874,11 @@ void TextEdit::_notification(int p_what) {
 							break;
 					}
 
-					const String &str = wrap_rows[line_wrap_index];
-					int indent_px = line_wrap_index != 0 ? get_indent_level(line) * cache.font->get_char_size(' ').width : 0;
+				if (select_identifiers_enabled && highlighted_word.length() != 0) {
+					if (_is_char(highlighted_word[0])) {
+						highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+					}
+				}
 
 					if (line_wrap_index > 0)
 						last_wrap_column += wrap_rows[line_wrap_index - 1].length();
@@ -938,161 +923,32 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (text.is_marked(line)) {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
+					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
+				}
+
+				//loop through characters in one line
+				Map<int, HighlighterInfo> color_map;
+				if (syntax_coloring) {
+					color_map = _get_line_syntax_highlighting(line);
+				}
+
+				// ensure we at least use the font color
+				Color current_color = cache.font_color;
+				if (readonly) {
+					current_color.a *= readonly_alpha;
+				}
+				for (int j = 0; j < str.length(); j++) {
+
+					if (syntax_coloring) {
+						if (color_map.has(j)) {
+							current_color = color_map[j].color;
+							if (readonly) {
+								current_color.a *= readonly_alpha;
+							}
+						}
+						color = current_color;
 					}
-
-					if (str.length() == 0) {
-						// draw line background if empty as we won't loop at at all
-						if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
-						}
-
-						// give visual indication of empty selected line
-						if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
-							int char_w = cache.font->get_char_size(' ').width;
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
-						}
-					} else {
-						// if it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
-						if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg, get_row_height()), cache.current_line_color);
-						}
-					}
-
-					if (line_wrap_index == 0) {
-						// only do these if we are on the first wrapped part of a line
-
-						if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
-#ifdef TOOLS_ENABLED
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
-#else
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.breakpoint_color);
-#endif
-						}
-
-						// draw breakpoint marker
-						if (text.is_breakpoint(line)) {
-							if (draw_breakpoint_gutter) {
-								int vertical_gap = (get_row_height() * 40) / 100;
-								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
-								int marker_height = get_row_height() - (vertical_gap * 2);
-								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2);
-								// no transparency on marker
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2, ofs_y + vertical_gap, marker_width, marker_height), Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
-							}
-						}
-
-						// draw fold markers
-						if (draw_fold_gutter) {
-							int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + cache.line_number_w;
-							if (is_folded(line)) {
-								int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
-								int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
-								cache.folded_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), cache.code_folding_color);
-							} else if (can_fold(line)) {
-								int xofs = -cache.can_fold_icon->get_width() / 2 - horizontal_gap + 3;
-								int yofs = (get_row_height() - cache.can_fold_icon->get_height()) / 2;
-								cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), cache.code_folding_color);
-							}
-						}
-
-						// draw line numbers
-						if (cache.line_number_w) {
-							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-							String fc = String::num(line + 1);
-							while (fc.length() < line_number_char_count) {
-								fc = line_num_padding + fc;
-							}
-
-							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, text.is_safe(line) ? cache.safe_line_number_color : cache.line_number_color);
-						}
-					}
-
-					//loop through characters in one line
-					for (int j = 0; j < str.length(); j++) {
-
-						if (syntax_coloring) {
-							if (color_map.has(last_wrap_column + j)) {
-								current_color = color_map[last_wrap_column + j].color;
-								if (readonly) {
-									current_color.a *= readonly_alpha;
-								}
-							}
-							color = current_color;
-						}
-
-						int char_w;
-
-						//handle tabulator
-						char_w = text.get_char_width(str[j], str[j + 1], char_ofs);
-
-						if ((char_ofs + char_margin) < xmargin_beg) {
-							char_ofs += char_w;
-
-							// line highlighting handle horizontal clipping
-							if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
-
-								if (j == str.length() - 1) {
-									// end of line when last char is skipped
-									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
-								} else if ((char_ofs + char_margin) > xmargin_beg) {
-									// char next to margin is skipped
-									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
-								}
-							}
-							continue;
-						}
-
-						if ((char_ofs + char_margin + char_w) >= xmargin_end) {
-							if (syntax_coloring)
-								continue;
-							else
-								break;
-						}
-
-						bool in_search_result = false;
-
-						if (search_text_col != -1) {
-							// if we are at the end check for new search result on same line
-							if (j >= search_text_col + search_text.length())
-								search_text_col = _get_column_pos_of_word(search_text, str, search_flags, j);
-
-							in_search_result = j >= search_text_col && j < search_text_col + search_text.length();
-
-							if (in_search_result) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.search_result_color);
-							}
-						}
-
-						//current line highlighting
-						bool in_selection = (selection.active && line >= selection.from_line && line <= selection.to_line && (line > selection.from_line || last_wrap_column + j >= selection.from_column) && (line < selection.to_line || last_wrap_column + j < selection.to_column));
-
-						if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
-							// draw the wrap indent offset highlight
-							if (line_wrap_index != 0 && j == 0) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin - indent_px, ofs_y, (char_ofs + char_margin), get_row_height()), cache.current_line_color);
-							}
-							// if its the last char draw to end of the line
-							if (j == str.length() - 1) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin + char_w, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
-							}
-							// actual text
-							if (!in_selection) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.current_line_color);
-							}
-						}
-
-						if (in_selection) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.selection_color);
-						}
-
-						if (in_search_result) {
-							Color border_color = (line == search_result_line && j >= search_result_col && j < search_result_col + search_text.length()) ? cache.font_color : cache.search_result_border_color;
-
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, 1)), border_color);
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y + get_row_height() - 1), Size2i(char_w, 1)), border_color);
+					int char_w;
 
 							if (j == search_text_col)
 								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(1, get_row_height())), border_color);
@@ -1205,12 +1061,16 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
-						if (cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index && block_caret && draw_caret && !insert_mode) {
-							color = cache.caret_background_color;
-						} else if (!syntax_coloring && block_caret) {
-							color = cache.font_color;
-							color.a *= readonly_alpha;
+					if (highlighted_word_col != -1) {
+						if (j > highlighted_word_col + highlighted_word.length()) {
+							highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, j);
 						}
+						underlined = (j >= highlighted_word_col && j < highlighted_word_col + highlighted_word.length());
+					}
+
+					if (brace_matching_enabled) {
+						if ((brace_open_match_line == line && brace_open_match_column == j) ||
+								(cursor.column == j && cursor.line == line && (brace_open_matching || brace_open_mismatch))) {
 
 						if (str[j] >= 32) {
 							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
@@ -4413,52 +4273,15 @@ void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter)
 	update();
 }
 
-int TextEdit::_is_line_in_region(int p_line) {
-
-	// do we have in cache?
-	if (color_region_cache.has(p_line)) {
-		return color_region_cache[p_line];
+int TextEdit::_get_line_ending_color_region(int p_line) const {
+	if (p_line < 0 || p_line > text.size() - 1) {
+		return -1;
 	}
-
-	// if not find the closest line we have
-	int previous_line = p_line - 1;
-	for (previous_line; previous_line > -1; previous_line--) {
-		if (color_region_cache.has(p_line)) {
-			break;
-		}
-	}
-
-	// calculate up to line we need and update the cache along the way.
-	int in_region = color_region_cache[previous_line];
-	if (previous_line == -1) {
-		in_region = -1;
-	}
-	for (int i = previous_line; i < p_line; i++) {
-		const Map<int, Text::ColorRegionInfo> &cri_map = _get_line_color_region_info(i);
-		for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-			const Text::ColorRegionInfo &cri = E->get();
-			if (in_region == -1) {
-				if (!cri.end) {
-					in_region = cri.region;
-				}
-			} else if (in_region == cri.region && !_get_color_region(cri.region).line_only) {
-				if (cri.end || _get_color_region(cri.region).eq) {
-					in_region = -1;
-				}
-			}
-		}
-
-		if (in_region >= 0 && _get_color_region(in_region).line_only) {
-			in_region = -1;
-		}
-
-		color_region_cache[i + 1] = in_region;
-	}
-	return in_region;
+	return text.get_line_ending_color_region(p_line);
 }
 
 TextEdit::ColorRegion TextEdit::_get_color_region(int p_region) const {
-	if (p_region < 0 || p_region >= color_regions.size()) {
+	if (p_region < 0 || p_region > color_regions.size()) {
 		return ColorRegion();
 	}
 	return color_regions[p_region];
@@ -6410,8 +6233,24 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 	Color keyword_color;
 	Color color;
 
-	int in_region = _is_line_in_region(p_line);
+	int in_region = -1;
 	int deregion = 0;
+	for (int i = 0; i < p_line; i++) {
+		int ending_color_region = text.get_line_ending_color_region(i);
+		if (in_region == -1) {
+			in_region = ending_color_region;
+		} else if (in_region == ending_color_region) {
+			in_region = -1;
+		} else {
+			const Map<int, TextEdit::Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
+			for (const Map<int, TextEdit::Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
+				const TextEdit::Text::ColorRegionInfo &cri = E->get();
+				if (cri.region == in_region) {
+					in_region = -1;
+				}
+			}
+		}
+	}
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text.get_color_region_info(p_line);
 	const String &str = text[p_line];

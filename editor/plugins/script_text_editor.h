@@ -49,6 +49,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	HBoxContainer *edit_hb;
 
 	MenuButton *edit_menu;
+	MenuButton *highlighter_menu;
 	MenuButton *search_menu;
 	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
