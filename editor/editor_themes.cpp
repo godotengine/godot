@@ -260,6 +260,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
 
 	bool use_gn_headers = EDITOR_DEF("interface/theme/use_graph_node_headers", false);
+	int gn_roundness = EDITOR_DEF("interface/theme/graph_node_roundness", 0);
 
 	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
 

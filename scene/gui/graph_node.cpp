@@ -202,6 +202,9 @@ void GraphNode::_notification(int p_what) {
 
 			sb = get_stylebox(selected ? "selectedframe" : "frame");
 		}
+		if (use_roundness) {
+			((Ref<StyleBoxFlat>)sb)->set_corner_radius_all(roundness);
+		}
 
 		//sb=sb->duplicate();
 		//sb->call("set_modulate",modulate);
@@ -660,6 +663,15 @@ bool GraphNode::is_resizable() const {
 	return resizable;
 }
 
+void GraphNode::set_roundness(int p_roundness) {
+	roundness = p_roundness;
+	use_roundness = true;
+}
+
+int GraphNode::get_roundness() const {
+	return roundness;
+}
+
 void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);
@@ -733,4 +745,6 @@ GraphNode::GraphNode() {
 	resizable = false;
 	resizing = false;
 	selected = false;
+	roundness = 0;
+	use_roundness = false;
 }

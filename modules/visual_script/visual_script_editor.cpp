@@ -527,6 +527,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		GraphNode *gnode = memnew(GraphNode);
 		gnode->set_title(node->get_caption());
+		gnode->set_roundness((int)EDITOR_GET("interface/theme/graph_node_roundness"));
 		if (error_line == E->get()) {
 			gnode->set_overlay(GraphNode::OVERLAY_POSITION);
 		} else if (node->is_breakpoint()) {

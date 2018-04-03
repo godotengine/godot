@@ -37,6 +37,8 @@ class GraphNode : public Container {
 
 	GDCLASS(GraphNode, Container);
 
+	friend class VisualScriptEditor;
+
 public:
 	enum Overlay {
 		OVERLAY_DISABLED,
@@ -99,6 +101,13 @@ private:
 	bool selected;
 
 	Overlay overlay;
+
+	int roundness;
+	bool use_roundness;
+
+	// private(for now)
+	void set_roundness(int p_roundness);
+	int get_roundness() const;
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_ev);
