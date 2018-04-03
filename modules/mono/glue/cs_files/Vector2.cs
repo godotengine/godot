@@ -16,9 +16,19 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// Vector2 is a class primarily used for representing positions in 2D space.
+    /// It is also used for representing direction, velocity, and vectorizable math.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector2 : IEquatable<Vector2>
     {
+        public enum Axis
+        {
+            X = 0,
+            Y
+        }
+
         public real_t x;
         public real_t y;
 
@@ -401,3 +411,6 @@ namespace Godot
         }
     }
 }
+
+
+

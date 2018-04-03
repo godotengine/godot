@@ -381,47 +381,47 @@ namespace Godot
             );
         }
 
-		public Quat Quat() {
-			real_t trace = _x[0] + _y[1] + _z[2];
+        public Quat Quat() {
+            real_t trace = _x[0] + _y[1] + _z[2];
 
-			if (trace > 0.0f) {
-				real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_z[1] - _y[2]) * inv_s,
-					(_x[2] - _z[0]) * inv_s,
-					(_y[0] - _x[1]) * inv_s,
-					s * 0.25f
-				);
-			} else if (_x[0] > _y[1] && _x[0] > _z[2]) {
-				real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					s * 0.25f,
-					(_x[1] + _y[0]) * inv_s,
-					(_x[2] + _z[0]) * inv_s,
-					(_z[1] - _y[2]) * inv_s
-				);
-			} else if (_y[1] > _z[2]) {
-				real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_x[1] + _y[0]) * inv_s,
-					s * 0.25f,
-					(_y[2] + _z[1]) * inv_s,
-					(_x[2] - _z[0]) * inv_s
-				);
-			} else {
-				real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_x[2] + _z[0]) * inv_s,
-					(_y[2] + _z[1]) * inv_s,
-					s * 0.25f,
-					(_y[0] - _x[1]) * inv_s
-				);
-			}
-		}
+            if (trace > 0.0f) {
+                real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (_z[1] - _y[2]) * inv_s,
+                    (_x[2] - _z[0]) * inv_s,
+                    (_y[0] - _x[1]) * inv_s,
+                    s * 0.25f
+                );
+            } else if (_x[0] > _y[1] && _x[0] > _z[2]) {
+                real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    s * 0.25f,
+                    (_x[1] + _y[0]) * inv_s,
+                    (_x[2] + _z[0]) * inv_s,
+                    (_z[1] - _y[2]) * inv_s
+                );
+            } else if (_y[1] > _z[2]) {
+                real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (_x[1] + _y[0]) * inv_s,
+                    s * 0.25f,
+                    (_y[2] + _z[1]) * inv_s,
+                    (_x[2] - _z[0]) * inv_s
+                );
+            } else {
+                real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
+                real_t inv_s = 1f / s;
+                return new Quat(
+                    (_x[2] + _z[0]) * inv_s,
+                    (_y[2] + _z[1]) * inv_s,
+                    s * 0.25f,
+                    (_y[0] - _x[1]) * inv_s
+                );
+            }
+        }
 
         public Basis(Quat quat)
         {

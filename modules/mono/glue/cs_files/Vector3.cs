@@ -16,6 +16,10 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// Vector3 is a class primarily used for representing positions in 3D space.
+    /// It is also used for representing direction, velocity, and vectorizable math.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -466,3 +470,6 @@ namespace Godot
         }
     }
 }
+
+
+
