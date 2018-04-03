@@ -109,11 +109,9 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 		//	continue;
 
 		int device = e->get_device();
-		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (e->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
+		if (device == ALL_DEVICES || device == p_event->get_device())
+			if (e->action_match(p_event))
 				return E;
-			}
-		}
 	}
 
 	return NULL;
