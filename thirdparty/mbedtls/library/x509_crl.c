@@ -95,17 +95,23 @@ static int x509_crl_get_version( unsigned char **p,
 }
 
 /*
- * X.509 CRL v2 extensions (no extensions parsed yet.)
+ * X.509 CRL v2 extensions
+ *
+ * We currently don't parse any extension's content, but we do check that the
+ * list of extensions is well-formed and abort on critical extensions (that
+ * are unsupported as we don't support any extension so far)
  */
 static int x509_get_crl_ext( unsigned char **p,
                              const unsigned char *end,
                              mbedtls_x509_buf *ext )
 {
     int ret;
-    size_t len = 0;
 
-    /* Get explicit tag */
-    if( ( ret = mbedtls_x509_get_ext( p, end, ext, 0) ) != 0 )
+    /*
+     * crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
+     *                              -- if present, version MUST be v2
+     */
+    if( ( ret = mbedtls_x509_get_ext( p, end, ext, 0 ) ) != 0 )
     {
         if( ret == MBEDTLS_ERR_ASN1_UNEXPECTED_TAG )
             return( 0 );
@@ -115,11 +121,54 @@ static int x509_get_crl_ext( unsigned char **p,
 
     while( *p < end )
     {
+        /*
+         * Extension  ::=  SEQUENCE  {
+         *      extnID      OBJECT IDENTIFIER,
+         *      critical    BOOLEAN DEFAULT FALSE,
+         *      extnValue   OCTET STRING  }
+         */
+        int is_critical = 0;
+        const unsigned char *end_ext_data;
+        size_t len;
+
+        /* Get enclosing sequence tag */
         if( ( ret = mbedtls_asn1_get_tag( p, end, &len,
                 MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) ) != 0 )
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
 
+        end_ext_data = *p + len;
+
+        /* Get OID (currently ignored) */
+        if( ( ret = mbedtls_asn1_get_tag( p, end_ext_data, &len,
+                                          MBEDTLS_ASN1_OID ) ) != 0 )
+        {
+            return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
+        }
         *p += len;
+
+        /* Get optional critical */
+        if( ( ret = mbedtls_asn1_get_bool( p, end_ext_data,
+                                           &is_critical ) ) != 0 &&
+            ( ret != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG ) )
+        {
+            return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
+        }
+
+        /* Data should be octet string type */
+        if( ( ret = mbedtls_asn1_get_tag( p, end_ext_data, &len,
+                MBEDTLS_ASN1_OCTET_STRING ) ) != 0 )
+            return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
+
+        /* Ignore data so far and just check its length */
+        *p += len;
+        if( *p != end_ext_data )
+            return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
+                    MBEDTLS_ERR_ASN1_LENGTH_MISMATCH );
+
+        /* Abort on (unsupported) critical extensions */
+        if( is_critical )
+            return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
+                    MBEDTLS_ERR_ASN1_UNEXPECTED_TAG );
     }
 
     if( *p != end )
@@ -257,7 +306,7 @@ int mbedtls_x509_crl_parse_der( mbedtls_x509_crl *chain,
 {
     int ret;
     size_t len;
-    unsigned char *p, *end;
+    unsigned char *p = NULL, *end = NULL;
     mbedtls_x509_buf sig_params1, sig_params2, sig_oid2;
     mbedtls_x509_crl *crl = chain;
 
@@ -294,7 +343,11 @@ int mbedtls_x509_crl_parse_der( mbedtls_x509_crl *chain,
     /*
      * Copy raw DER-encoded CRL
      */
-    if( ( p = mbedtls_calloc( 1, buflen ) ) == NULL )
+    if( buflen == 0 )
+        return( MBEDTLS_ERR_X509_INVALID_FORMAT );
+
+    p = mbedtls_calloc( 1, buflen );
+    if( p == NULL )
         return( MBEDTLS_ERR_X509_ALLOC_FAILED );
 
     memcpy( p, buf, buflen );

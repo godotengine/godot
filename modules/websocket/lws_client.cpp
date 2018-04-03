@@ -31,6 +31,7 @@
 
 #include "lws_client.h"
 #include "core/io/ip.h"
+#include "core/io/stream_peer_ssl.h"
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
@@ -64,6 +65,9 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	info.uid = -1;
 	//info.ws_ping_pong_interval = 5;
 	info.user = _lws_ref;
+#if defined(LWS_OPENSSL_SUPPORT)
+	info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+#endif
 	context = lws_create_context(&info);
 
 	if (context == NULL) {
@@ -87,7 +91,14 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	i.host = hbuf;
 	i.path = pbuf;
 	i.port = p_port;
-	i.ssl_connection = p_ssl;
+
+	if (p_ssl) {
+		i.ssl_connection = LCCSCF_USE_SSL;
+		if (!verify_ssl)
+			i.ssl_connection |= LCCSCF_ALLOW_SELFSIGNED;
+	} else {
+		i.ssl_connection = 0;
+	}
 
 	lws_client_connect_via_info(&i);
 	return OK;
@@ -104,6 +115,13 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 	LWSPeer::PeerData *peer_data = (LWSPeer::PeerData *)user;
 
 	switch (reason) {
+		case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS: {
+			PoolByteArray arr = StreamPeerSSL::get_project_cert_array();
+			if (arr.size() > 0)
+				SSL_CTX_add_client_CA((SSL_CTX *)user, d2i_X509(NULL, &arr.read()[0], arr.size()));
+			else if (verify_ssl)
+				WARN_PRINTS("No CA cert specified in project settings, SSL will not work");
+		} break;
 
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
 			peer->set_wsi(wsi);

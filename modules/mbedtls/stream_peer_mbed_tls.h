@@ -32,8 +32,6 @@
 #define STREAM_PEER_OPEN_SSL_H
 
 #include "io/stream_peer_ssl.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 
 #include "mbedtls/config.h"
 #include "mbedtls/ctr_drbg.h"

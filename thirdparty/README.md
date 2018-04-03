@@ -234,7 +234,7 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 2.4.1
+- Version: 2.4.2
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
@@ -246,6 +246,7 @@ File extracted from upstream source:
 - Also copy `win32helpers/` from `win32port/`
 - `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX and FreeBSD (missing `malloc.h`).
   The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
+- You might need to apply the patch in `thirdparty/lws/mbedtls_verify.diff` (port of PR 1215) to future `2.4.x` releases if it does not get cherry picked.
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom 
 Godot build configurations, check them out when updating.
@@ -253,12 +254,15 @@ Godot build configurations, check them out when updating.
 ## mbedTLS
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.7.0
+- Version: 2.8.0
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.7.0-apache.tgz`:
-- All `*.h` from `include/mbedtls/` to `thirdparty/include/mbedtls/`
-- All `*.c` from `library/` to `thirdparty/library/`
+File extracted from upstream release tarball `mbedtls-2.8.0-apache.tgz`:
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
+- All `*.c` from `library/` to `thirdparty/mbedtls/library/`
+- In file `thirdparty/mbedtls/library/net_sockets.c` mbedTLS overrides the `_WIN32_WINNT` define.
+  Be sure to check the Godot addition to only redfine it when undefined or `< 0x0501` (PRed upstream).
+- Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.
 
 ## minizip
 

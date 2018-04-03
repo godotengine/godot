@@ -218,7 +218,7 @@ static int ssl_pm_reload_crt(SSL *ssl)
     struct x509_pm *crt_pm = (struct x509_pm *)ssl->cert->x509->x509_pm;
 
     if (ssl->verify_mode == SSL_VERIFY_PEER)
-        mode = MBEDTLS_SSL_VERIFY_REQUIRED;
+        mode = MBEDTLS_SSL_VERIFY_OPTIONAL;
     else if (ssl->verify_mode == SSL_VERIFY_FAIL_IF_NO_PEER_CERT)
         mode = MBEDTLS_SSL_VERIFY_OPTIONAL;
     else if (ssl->verify_mode == SSL_VERIFY_CLIENT_ONCE)
@@ -360,17 +360,52 @@ int ssl_pm_read(SSL *ssl, void *buffer, int len)
     return ret;
 }
 
+/*
+ * This returns -1, or the length sent.
+ * If -1, then you need to find out if the error was
+ * fatal or recoverable using SSL_get_error()
+ */
 int ssl_pm_send(SSL *ssl, const void *buffer, int len)
 {
     int ret;
     struct ssl_pm *ssl_pm = (struct ssl_pm *)ssl->ssl_pm;
 
     ret = mbedtls_ssl_write(&ssl_pm->ssl, buffer, len);
+    /*
+     * We can get a positive number, which may be less than len... that
+     * much was sent successfully and you can call again to send more.
+     *
+     * We can get a negative mbedtls error code... if WANT_WRITE or WANT_READ,
+     * it's nonfatal and means it should be retried as-is.  If something else,
+     * it's fatal actually.
+     *
+     * If this function returns something other than a positive value or
+     * MBEDTLS_ERR_SSL_WANT_READ/WRITE, the ssl context becomes unusable, and
+     * you should either free it or call mbedtls_ssl_session_reset() on it
+     * before re-using it for a new connection; the current connection must
+     * be closed.
+     *
+     * When this function returns MBEDTLS_ERR_SSL_WANT_WRITE/READ, it must be
+     * called later with the same arguments, until it returns a positive value.
+     */
+
     if (ret < 0) {
-	if (ret == MBEDTLS_ERR_NET_CONN_RESET)
+	    SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL, "mbedtls_ssl_write() return -0x%x", -ret);
+	switch (ret) {
+	case MBEDTLS_ERR_NET_CONN_RESET:
 		ssl->err = SSL_ERROR_SYSCALL;
-        SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL, "mbedtls_ssl_write() return -0x%x", -ret);
-        ret = -1;
+		break;
+	case MBEDTLS_ERR_SSL_WANT_WRITE:
+		ssl->err = SSL_ERROR_WANT_WRITE;
+		break;
+	case MBEDTLS_ERR_SSL_WANT_READ:
+		ssl->err = SSL_ERROR_WANT_READ;
+		break;
+	default:
+		break;
+	}
+
+	ret = -1;
     }
 
     return ret;
@@ -677,11 +712,39 @@ long ssl_pm_get_verify_result(const SSL *ssl)
     struct ssl_pm *ssl_pm = (struct ssl_pm *)ssl->ssl_pm;
 
     ret = mbedtls_ssl_get_verify_result(&ssl_pm->ssl);
-    if (ret) {
-        SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL, "mbedtls_ssl_get_verify_result() return 0x%x", ret);
+
+    if (!ret)
+            return X509_V_OK;
+
+    if (ret & MBEDTLS_X509_BADCERT_NOT_TRUSTED ||
+        (ret & MBEDTLS_X509_BADCRL_NOT_TRUSTED))
+        // Allows us to use LCCSCF_ALLOW_SELFSIGNED to skip verification
+        verify_result = X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN;
+
+    else if (ret & MBEDTLS_X509_BADCERT_CN_MISMATCH)
+        verify_result = X509_V_ERR_HOSTNAME_MISMATCH;
+
+    else if ((ret & MBEDTLS_X509_BADCERT_BAD_KEY) ||
+        (ret & MBEDTLS_X509_BADCRL_BAD_KEY))
+        verify_result = X509_V_ERR_CA_KEY_TOO_SMALL;
+
+    else if ((ret & MBEDTLS_X509_BADCERT_BAD_MD) ||
+        (ret & MBEDTLS_X509_BADCRL_BAD_MD))
+        verify_result = X509_V_ERR_CA_MD_TOO_WEAK;
+
+    else if ((ret & MBEDTLS_X509_BADCERT_FUTURE) ||
+        (ret & MBEDTLS_X509_BADCRL_FUTURE))
+        verify_result = X509_V_ERR_CERT_NOT_YET_VALID;
+
+    else if ((ret & MBEDTLS_X509_BADCERT_EXPIRED) ||
+        (ret & MBEDTLS_X509_BADCRL_EXPIRED))
+        verify_result = X509_V_ERR_CERT_HAS_EXPIRED;
+
+    else
         verify_result = X509_V_ERR_UNSPECIFIED;
-    } else
-        verify_result = X509_V_OK;
+
+    SSL_DEBUG(SSL_PLATFORM_ERROR_LEVEL,
+              "mbedtls_ssl_get_verify_result() return 0x%x", ret);
 
     return verify_result;
 }

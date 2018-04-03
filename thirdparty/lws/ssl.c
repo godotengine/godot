@@ -20,11 +20,7 @@
  */
 
 #include "private-libwebsockets.h"
-
-/* workaround for mingw */
-#if !defined(ECONNABORTED)
-#define ECONNABORTED 103
-#endif
+#include <errno.h>
 
 int lws_alloc_vfs_file(struct lws_context *context, const char *filename, uint8_t **buf,
 		lws_filepos_t *amount)
@@ -463,7 +459,7 @@ lws_ssl_capable_read(struct lws *wsi, unsigned char *buf, int len)
 
 	lwsl_debug("%p: SSL_read says %d\n", wsi, n);
 	/* manpage: returning 0 means connection shut down */
-	if (!n) {
+	if (!n || (n == -1 && errno == ENOTCONN)) {
 		wsi->socket_is_permanently_unusable = 1;
 
 		return LWS_SSL_CAPABLE_ERROR;
@@ -476,12 +472,12 @@ lws_ssl_capable_read(struct lws *wsi, unsigned char *buf, int len)
 		    m == SSL_ERROR_SYSCALL)
 			return LWS_SSL_CAPABLE_ERROR;
 
-		if (SSL_want_read(wsi->ssl)) {
+		if (m == SSL_ERROR_WANT_READ || SSL_want_read(wsi->ssl)) {
 			lwsl_debug("%s: WANT_READ\n", __func__);
 			lwsl_debug("%p: LWS_SSL_CAPABLE_MORE_SERVICE\n", wsi);
 			return LWS_SSL_CAPABLE_MORE_SERVICE;
 		}
-		if (SSL_want_write(wsi->ssl)) {
+		if (m == SSL_ERROR_WANT_WRITE || SSL_want_write(wsi->ssl)) {
 			lwsl_debug("%s: WANT_WRITE\n", __func__);
 			lwsl_debug("%p: LWS_SSL_CAPABLE_MORE_SERVICE\n", wsi);
 			return LWS_SSL_CAPABLE_MORE_SERVICE;
@@ -885,6 +881,7 @@ go_again:
 failed:
 		lws_stats_atomic_bump(wsi->context, pt,
 				      LWSSTATS_C_SSL_CONNECTIONS_FAILED, 1);
+		wsi->socket_is_permanently_unusable = 1;
                 lwsl_info("SSL_accept failed socket %u: %s\n", wsi->desc.sockfd,
                          lws_ssl_get_error_string(m, n, buf, sizeof(buf)));
 		lws_ssl_elaborate_error();
@@ -903,7 +900,7 @@ accepted:
 		/* adapt our vhost to match the SNI SSL_CTX that was chosen */
 		vh = context->vhost_list;
 		while (vh) {
-			if (!vh->being_destroyed &&
+			if (!vh->being_destroyed && wsi->ssl &&
 			    vh->ssl_ctx == SSL_get_SSL_CTX(wsi->ssl)) {
 				lwsl_info("setting wsi to vh %s\n", vh->name);
 				wsi->vhost = vh;

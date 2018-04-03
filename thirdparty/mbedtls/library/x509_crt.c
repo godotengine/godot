@@ -62,16 +62,17 @@
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 #include <windows.h>
-#if _MSC_VER <= 1600
-/* Visual Studio 2010 and earlier issue a warning when both <stdint.h> and <intsafe.h> are included, as they
- * redefine a number of <TYPE>_MAX constants. These constants are guaranteed to be the same, though, so
- * we suppress the warning when including intsafe.h.
+#if defined(_MSC_VER) && _MSC_VER <= 1600
+/* Visual Studio 2010 and earlier issue a warning when both <stdint.h> and
+ * <intsafe.h> are included, as they redefine a number of <TYPE>_MAX constants.
+ * These constants are guaranteed to be the same, though, so we suppress the
+ * warning when including intsafe.h.
  */
 #pragma warning( push )
 #pragma warning( disable : 4005 )
 #endif
 #include <intsafe.h>
-#if _MSC_VER <= 1600
+#if defined(_MSC_VER) && _MSC_VER <= 1600
 #pragma warning( pop )
 #endif
 #else
@@ -145,7 +146,8 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_suiteb =
     MBEDTLS_X509_ID_FLAG( MBEDTLS_MD_SHA256 ) |
     MBEDTLS_X509_ID_FLAG( MBEDTLS_MD_SHA384 ),
     /* Only ECDSA */
-    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECDSA ),
+    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECDSA ) |
+    MBEDTLS_X509_ID_FLAG( MBEDTLS_PK_ECKEY ),
 #if defined(MBEDTLS_ECP_C)
     /* Only NIST P-256 and P-384 */
     MBEDTLS_X509_ID_FLAG( MBEDTLS_ECP_DP_SECP256R1 ) |
@@ -484,9 +486,12 @@ static int x509_get_subject_alt_name( unsigned char **p,
         if( ( ret = mbedtls_asn1_get_len( p, end, &tag_len ) ) != 0 )
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS + ret );
 
-        if( ( tag & MBEDTLS_ASN1_CONTEXT_SPECIFIC ) != MBEDTLS_ASN1_CONTEXT_SPECIFIC )
+        if( ( tag & MBEDTLS_ASN1_TAG_CLASS_MASK ) !=
+                MBEDTLS_ASN1_CONTEXT_SPECIFIC )
+        {
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
                     MBEDTLS_ERR_ASN1_UNEXPECTED_TAG );
+        }
 
         /* Skip everything but DNS name */
         if( tag != ( MBEDTLS_ASN1_CONTEXT_SPECIFIC | 2 ) )
@@ -1140,6 +1145,14 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
     if ( FAILED ( SizeTToInt( len, &lengthAsInt ) ) )
         return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
 
+    /*
+     * Note this function uses the code page CP_ACP, and assumes the incoming
+     * string is encoded in ANSI, before translating it into Unicode. If the
+     * incoming string were changed to be UTF-8, then the length check needs to
+     * change to check the number of characters, not the number of bytes, in the
+     * incoming string are less than MAX_PATH to avoid a buffer overrun with
+     * MultiByteToWideChar().
+     */
     w_ret = MultiByteToWideChar( CP_ACP, 0, filename, lengthAsInt, szDir,
                                  MAX_PATH - 3 );
     if( w_ret == 0 )

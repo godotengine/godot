@@ -215,6 +215,7 @@ struct ssl_st
     int (*verify_callback) (int ok, X509_STORE_CTX *ctx);
 
     int rwstate;
+    int interrupted_remaining_write;
 
     long verify_result;
 
