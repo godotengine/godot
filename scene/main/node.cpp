@@ -1975,8 +1975,11 @@ void Node::print_stray_nodes() {
 
 void Node::queue_delete() {
 
-	ERR_FAIL_COND(!is_inside_tree());
-	get_tree()->queue_delete(this);
+	if (is_inside_tree()) {
+		get_tree()->queue_delete(this);
+	} else {
+		SceneTree::get_singleton()->queue_delete(this);
+	}
 }
 
 Array Node::_get_children() const {
