@@ -261,14 +261,12 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		/* look for further theora headers */
 		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
 			if (ret < 0) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-								"corrupt stream?\n");
+				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
 				return;
 			}
 			if (!th_decode_headerin(&ti, &tc, &ts, &op)) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-								"corrupt stream?\n");
+				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
 				return;
 			}
@@ -312,9 +310,15 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
 		switch (ti.pixel_fmt) {
-			case TH_PF_420: printf(" 4:2:0 video\n"); break;
-			case TH_PF_422: printf(" 4:2:2 video\n"); break;
-			case TH_PF_444: printf(" 4:4:4 video\n"); break;
+			case TH_PF_420:
+				//printf(" 4:2:0 video\n");
+				break;
+			case TH_PF_422:
+				//printf(" 4:2:2 video\n");
+				break;
+			case TH_PF_444:
+				//printf(" 4:4:4 video\n");
+				break;
 			case TH_PF_RSVD:
 			default:
 				printf(" video\n  (UNKNOWN Chroma sampling!)\n");
@@ -519,7 +523,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 #else
 		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
-			printf("video done, stopping\n");
+			//printf("video done, stopping\n");
 			stop();
 			return;
 		};
