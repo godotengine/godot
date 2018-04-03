@@ -1794,6 +1794,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		subresources.clear();
 		menu_subresources->clear();
+		menu_subresources->set_size(Size2(1, 1));
 		_add_children_to_popup(selection.front()->get(), 0);
 		if (menu->get_item_count() > 0)
 			menu->add_separator();
