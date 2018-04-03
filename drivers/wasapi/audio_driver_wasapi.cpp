@@ -151,7 +151,6 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 
 	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
 	wasapi_channels = pwfex->nChannels;
-	mix_rate = pwfex->nSamplesPerSec;
 	format_tag = pwfex->wFormatTag;
 	bits_per_sample = pwfex->wBitsPerSample;
 
@@ -187,7 +186,14 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 		}
 	}
 
-	hr = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 0, 0, pwfex, NULL);
+	DWORD streamflags = AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
+	if (mix_rate != pwfex->nSamplesPerSec) {
+		streamflags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
+		pwfex->nSamplesPerSec = mix_rate;
+		pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
+	}
+
+	hr = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, 0, 0, pwfex, NULL);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	event = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -223,10 +229,11 @@ Error AudioDriverWASAPI::finish_device() {
 	if (audio_client) {
 		if (active) {
 			audio_client->Stop();
-			audio_client->Release();
-			audio_client = NULL;
 			active = false;
 		}
+
+		audio_client->Release();
+		audio_client = NULL;
 	}
 
 	if (render_client) {
@@ -243,6 +250,8 @@ Error AudioDriverWASAPI::finish_device() {
 }
 
 Error AudioDriverWASAPI::init() {
+
+	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
 
 	Error err = init_device();
 	if (err != OK) {
