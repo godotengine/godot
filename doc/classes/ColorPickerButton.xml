@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ColorPickerButton" inherits="Button" category="Core" version="3.1">
 	<brief_description>
-		Button that pops out a [ColorPicker]
+		Button that pops out a [ColorPicker].
 	</brief_description>
 	<description>
 		Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
