@@ -257,12 +257,9 @@ int OS_Android::get_mouse_button_state() const {
 
 	return 0;
 }
+
 void OS_Android::set_window_title(const String &p_title) {
 }
-
-//interesting byt not yet
-//void set_clipboard(const String& p_text);
-//String get_clipboard() const;
 
 void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
@@ -599,6 +596,23 @@ String OS_Android::get_locale() const {
 	return OS_Unix::get_locale();
 }
 
+void OS_Android::set_clipboard(const String &p_text) {
+
+	if (set_clipboard_func) {
+		set_clipboard_func(p_text);
+	} else {
+		OS_Unix::set_clipboard(p_text);
+	}
+}
+
+String OS_Android::get_clipboard() const {
+	if (get_clipboard_func) {
+		return get_clipboard_func();
+	}
+
+	return OS_Unix::get_clipboard();
+}
+
 String OS_Android::get_model_name() const {
 
 	if (get_model_func)
@@ -732,7 +746,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -764,6 +778,9 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	show_virtual_keyboard_func = p_show_vk;
 	hide_virtual_keyboard_func = p_hide_vk;
 	get_virtual_keyboard_height_func = p_vk_height_func;
+
+	set_clipboard_func = p_set_clipboard_func;
+	get_clipboard_func = p_get_clipboard_func;
 
 	set_screen_orientation_func = p_screen_orient;
 	set_keep_screen_on_func = p_set_keep_screen_on_func;

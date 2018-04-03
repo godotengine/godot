@@ -59,6 +59,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.media.MediaPlayer;
 
+import android.content.ClipboardManager;
+import android.content.ClipData;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
@@ -103,6 +106,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private TextView mAverageSpeed;
 	private TextView mTimeRemaining;
 	private ProgressBar mPB;
+	private ClipboardManager mClipboard;
 
 	private View mDashboard;
 	private View mCellMessage;
@@ -441,6 +445,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		Window window = getWindow();
 		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
 		//check for apk expansion API
 		if (true) {
@@ -605,6 +610,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainPause();
 		}
+	}
+
+	public String getClipboard() {
+
+		String copiedText = "";
+
+		if (mClipboard.getPrimaryClip() != null) {
+			ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
+			copiedText = item.getText().toString();
+		}
+
+		return copiedText;
+	}
+
+	public void setClipboard(String p_text) {
+
+		ClipData clip = ClipData.newPlainText("myLabel", p_text);
+		mClipboard.setPrimaryClip(clip);
 	}
 
 	@Override
