@@ -789,6 +789,26 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal("go_to_help", "class_method:" + result.class_name + ":" + result.class_member);
 
 			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
+
+				StringName cname = result.class_name;
+				StringName success;
+				while (true) {
+					success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
+					if (success != StringName()) {
+						result.class_name = cname;
+						cname = ClassDB::get_parent_class(cname);
+					} else {
+						break;
+					}
+				}
+
+				emit_signal("go_to_help", "class_enum:" + result.class_name + ":" + result.class_member);
+
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
+				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
+			} break;
 		}
 	}
 }

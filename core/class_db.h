@@ -116,10 +116,10 @@ public:
 		ClassInfo *inherits_ptr;
 		HashMap<StringName, MethodBind *, StringNameHasher> method_map;
 		HashMap<StringName, int, StringNameHasher> constant_map;
+		HashMap<StringName, List<StringName> > enum_map;
 		HashMap<StringName, MethodInfo, StringNameHasher> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
-		HashMap<StringName, List<StringName> > enum_map;
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		Set<StringName> methods_in_properties;
@@ -344,11 +344,9 @@ public:
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = NULL);
 
-#ifdef DEBUG_METHODS_ENABLED
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
-#endif
 
 	static StringName get_category(const StringName &p_node);
 

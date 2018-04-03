@@ -1172,7 +1172,12 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->push_indent(1);
 				Vector<DocData::ConstantDoc> enum_list = E->get();
 
+				Map<String, int> enumValuesContainer;
+				int enumStartingLine = enum_line[E->key()];
+
 				for (int i = 0; i < enum_list.size(); i++) {
+					if (cd.name == "@GlobalScope")
+						enumValuesContainer[enum_list[i].name] = enumStartingLine;
 
 					class_desc->push_font(doc_code_font);
 					class_desc->push_color(headline_color);
@@ -1199,6 +1204,9 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 					class_desc->add_newline();
 				}
+
+				if (cd.name == "@GlobalScope")
+					enum_values_line[E->key()] = enumValuesContainer;
 
 				class_desc->pop();
 
@@ -1485,21 +1493,32 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		if (method_line.has(name))
 			line = method_line[name];
 	} else if (what == "class_property") {
-
 		if (property_line.has(name))
 			line = property_line[name];
 	} else if (what == "class_enum") {
-
 		if (enum_line.has(name))
 			line = enum_line[name];
 	} else if (what == "class_theme_item") {
-
 		if (theme_property_line.has(name))
 			line = theme_property_line[name];
 	} else if (what == "class_constant") {
-
 		if (constant_line.has(name))
 			line = constant_line[name];
+	} else if (what == "class_global") {
+		if (constant_line.has(name))
+			line = constant_line[name];
+		else {
+			Map<String, Map<String, int> >::Element *iter = enum_values_line.front();
+			while (true) {
+				if (iter->value().has(name)) {
+					line = iter->value()[name];
+					break;
+				} else if (iter == enum_values_line.back())
+					break;
+				else
+					iter = iter->next();
+			}
+		}
 	}
 
 	class_desc->call_deferred("scroll_to_line", line);
