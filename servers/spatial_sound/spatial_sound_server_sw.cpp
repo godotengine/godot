@@ -689,7 +689,7 @@ bool SpatialSoundServerSW::internal_buffer_mix(int32_t *p_buffer, int p_frames) 
 				case 2: {
 
 					float p = sd.panning.x * 0.5 + 0.5;
-					float panf[2] = { (1.0 - p), p };
+					float panf[2] = { (1.0f - p), p };
 					panf[0] *= sd.volume;
 					panf[1] *= sd.volume;
 
@@ -740,7 +740,7 @@ bool SpatialSoundServerSW::internal_buffer_mix(int32_t *p_buffer, int p_frames) 
 
 					float xp = sd.panning.x * 0.5 + 0.5;
 					float yp = sd.panning.y * 0.5 + 0.5;
-					float panf[4] = { (1.0 - xp) * (1.0 - yp), (xp) * (1.0 - yp), (1.0 - xp) * (yp), (xp) * (yp) };
+					float panf[4] = { (1.0f - xp) * (1.0f - yp), (xp) * (1.0f - yp), (1.0f - xp) * (yp), (xp) * (yp) };
 					panf[0] *= sd.volume;
 					panf[1] *= sd.volume;
 					panf[2] *= sd.volume;
