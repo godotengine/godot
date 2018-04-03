@@ -590,8 +590,8 @@ void AnimationPlayer::_animation_update_transforms() {
 
 			Transform t;
 			t.origin = nc->loc_accum;
-			t.basis = nc->rot_accum;
 			t.basis.scale(nc->scale_accum);
+			t.basis.rotate(nc->rot_accum.get_euler());
 
 			if (nc->skeleton && nc->bone_idx >= 0) {
 
