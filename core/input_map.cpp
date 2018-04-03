@@ -35,6 +35,8 @@
 
 InputMap *InputMap::singleton = NULL;
 
+int InputMap::ALL_DEVICES = -1;
+
 void InputMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
@@ -103,10 +105,10 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(List<Ref<InputEvent> > &p
 		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
 		//	continue;
 
-		if (e->get_device() != p_event->get_device())
-			continue;
-		if (e->action_match(p_event))
-			return E;
+		int device = e->get_device();
+		if (device == ALL_DEVICES || device == p_event->get_device())
+			if (e->action_match(p_event))
+				return E;
 	}
 
 	return NULL;

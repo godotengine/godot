@@ -31,6 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/global_constants.h"
+#include "core/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
@@ -212,7 +213,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
 			mb->set_button_index(device_index->get_selected() + 1);
-			mb->set_device(device_id->get_value());
+			mb->set_device(_get_current_device());
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -233,7 +234,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
 			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
-			jm->set_device(device_id->get_value());
+			jm->set_device(_get_current_device());
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -254,7 +255,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			jb.instance();
 
 			jb->set_button_index(device_index->get_selected());
-			jb->set_device(device_id->get_value());
+			jb->set_device(_get_current_device());
 
 			for (int i = 0; i < arr.size(); i++) {
 
@@ -287,6 +288,20 @@ void ProjectSettingsEditor::_device_input_add() {
 	undo_redo->commit_action();
 
 	_show_last_added(ie, name);
+}
+
+void ProjectSettingsEditor::_set_current_device(int i_device) {
+	device_id->select(i_device + 1);
+}
+
+int ProjectSettingsEditor::_get_current_device() {
+	return device_id->get_selected() - 1;
+}
+
+String ProjectSettingsEditor::_get_device_string(int i_device) {
+	if (i_device == InputMap::ALL_DEVICES)
+		return TTR("All Devices");
+	return TTR("Device") + " " + itos(i_device);
 }
 
 void ProjectSettingsEditor::_press_a_key_confirm() {
@@ -422,10 +437,10 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			Ref<InputEventMouseButton> mb = p_exiting_event;
 			if (mb.is_valid()) {
 				device_index->select(mb->get_button_index() - 1);
-				device_id->set_value(mb->get_device());
+				_set_current_device(mb->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
-				device_id->set_value(0);
+				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
 		} break;
@@ -443,10 +458,10 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			Ref<InputEventJoypadMotion> jm = p_exiting_event;
 			if (jm.is_valid()) {
 				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
-				device_id->set_value(jm->get_device());
+				_set_current_device(jm->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
-				device_id->set_value(0);
+				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
 		} break;
@@ -464,10 +479,10 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			Ref<InputEventJoypadButton> jb = p_exiting_event;
 			if (jb.is_valid()) {
 				device_index->select(jb->get_button_index());
-				device_id->set_value(jb->get_device());
+				_set_current_device(jb->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
-				device_id->set_value(0);
+				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
 
@@ -676,7 +691,7 @@ void ProjectSettingsEditor::_update_actions() {
 
 			if (jb.is_valid()) {
 
-				String str = TTR("Device") + " " + itos(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
+				String str = _get_device_string(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
 				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX)
 					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
 				else
@@ -689,7 +704,7 @@ void ProjectSettingsEditor::_update_actions() {
 			Ref<InputEventMouseButton> mb = ie;
 
 			if (mb.is_valid()) {
-				String str = TTR("Device") + " " + itos(mb->get_device()) + ", ";
+				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
 					case BUTTON_LEFT: str += TTR("Left Button."); break;
 					case BUTTON_RIGHT: str += TTR("Right Button."); break;
@@ -710,7 +725,7 @@ void ProjectSettingsEditor::_update_actions() {
 				int ax = jm->get_axis();
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
 				String desc = _axis_names[n];
-				String str = TTR("Device") + " " + itos(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
 				action->set_text(0, str);
 				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
@@ -1781,8 +1796,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_text(TTR("Device:"));
 	vbc_left->add_child(l);
 
-	device_id = memnew(SpinBox);
-	device_id->set_value(0);
+	device_id = memnew(OptionButton);
+	for (int i = -1; i < 8; i++)
+		device_id->add_item(_get_device_string(i));
+	_set_current_device(0);
 	vbc_left->add_child(device_id);
 
 	VBoxContainer *vbc_right = memnew(VBoxContainer);
