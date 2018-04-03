@@ -149,6 +149,22 @@ namespace Godot
             return Mathf.Sqrt((x - to.x) * (x - to.x) + (y - to.y) * (y - to.y));
         }
 
+        public Vector2 DivFloor(real_t div) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.DivFloor(v.x, div);
+            v.y = Mathf.DivFloor(v.y, div);
+            return v;
+        }
+
+        public Vector2 DivFloor(Vector2 divv) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.DivFloor(v.x, divv.x);
+            v.y = Mathf.DivFloor(v.y, divv.y);
+            return v;
+        }
+
         public real_t Dot(Vector2 with)
         {
             return x * with.x + y * with.y;
@@ -184,6 +200,32 @@ namespace Godot
             return res;
         }
 
+        public Axis MaxAxis()
+        {
+            return x < y ? Axis.Y : Axis.X;
+        }
+
+        public Axis MinAxis()
+        {
+            return x > y ? Axis.Y : Axis.X;
+        }
+
+        public Vector2 Mod(real_t mod) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.Mod(v.x, mod);
+            v.y = Mathf.Mod(v.y, mod);
+            return v;
+        }
+
+        public Vector2 Mod(Vector2 modv) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.Mod(v.x, modv.x);
+            v.y = Mathf.Mod(v.y, modv.y);
+            return v;
+        }
+
         public Vector2 Normalized()
         {
             Vector2 result = this;
@@ -194,6 +236,22 @@ namespace Godot
         public Vector2 Reflect(Vector2 n)
         {
             return 2.0f * n * Dot(n) - this;
+        }
+
+        public Vector2 Rem(real_t rem) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.Rem(v.x, rem);
+            v.y = Mathf.Rem(v.y, rem);
+            return v;
+        }
+
+        public Vector2 Rem(Vector2 remv) 
+        {
+            Vector2 v = this;
+            v.x = Mathf.Rem(v.x, remv.x);
+            v.y = Mathf.Rem(v.y, remv.y);
+            return v;
         }
 
         public Vector2 Rotated(real_t phi)
@@ -212,6 +270,11 @@ namespace Godot
             this.x = v.x;
             this.y = v.y;
         }
+        public void Set(Point2 p)
+        {
+            this.x = (real_t) p.x;
+            this.y = (real_t) p.y;
+        }
 
         public Vector2 Slide(Vector2 n)
         {
@@ -226,6 +289,10 @@ namespace Godot
         public Vector2 Tangent()
         {
             return new Vector2(y, -x);
+        }
+
+        public Point2 ToPoint() {
+            return new Point2 (this);
         }
         
         private static readonly Vector2 zero   = new Vector2 (0, 0);
@@ -256,6 +323,16 @@ namespace Godot
         {
             this.x = v.x;
             this.y = v.y;
+        }
+        public Vector2(Point2 p)
+        {
+            this.x = (real_t) p.x;
+            this.y = (real_t) p.y;
+        }
+
+        public static implicit operator Vector2(Point2 point) 
+        {
+            return new Vector2(point);
         }
 
         public static Vector2 operator +(Vector2 left, Vector2 right)
@@ -314,6 +391,16 @@ namespace Godot
             return left;
         }
 
+        public static Vector2 operator %(Vector2 vec, real_t mod)
+        {
+            return vec.Mod(mod);
+        }
+
+        public static Vector2 operator %(Vector2 left, Vector2 right)
+        {
+            return left.Mod(right);
+        }
+
         public static bool operator ==(Vector2 left, Vector2 right)
         {
             return left.Equals(right);
@@ -330,10 +417,7 @@ namespace Godot
             {
                 return left.y < right.y;
             }
-            else
-            {
-                return left.x < right.x;
-            }
+            return left.x < right.x;
         }
 
         public static bool operator >(Vector2 left, Vector2 right)
@@ -342,10 +426,7 @@ namespace Godot
             {
                 return left.y > right.y;
             }
-            else
-            {
-                return left.x > right.x;
-            }
+            return left.x > right.x;
         }
 
         public static bool operator <=(Vector2 left, Vector2 right)
@@ -354,10 +435,7 @@ namespace Godot
             {
                 return left.y <= right.y;
             }
-            else
-            {
-                return left.x <= right.x;
-            }
+            return left.x <= right.x;
         }
 
         public static bool operator >=(Vector2 left, Vector2 right)
@@ -366,10 +444,7 @@ namespace Godot
             {
                 return left.y >= right.y;
             }
-            else
-            {
-                return left.x >= right.x;
-            }
+            return left.x >= right.x;
         }
 
         public override bool Equals(object obj)

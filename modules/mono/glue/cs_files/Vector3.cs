@@ -142,6 +142,24 @@ namespace Godot
             return (b - this).Length();
         }
 
+        public Vector3 DivFloor(real_t div) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.DivFloor(v.x, div);
+            v.y = Mathf.DivFloor(v.y, div);
+            v.z = Mathf.DivFloor(v.z, div);
+            return v;
+        }
+
+        public Vector3 DivFloor(Vector3 divv) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.DivFloor(v.x, divv.x);
+            v.y = Mathf.DivFloor(v.y, divv.y);
+            v.z = Mathf.DivFloor(v.z, divv.z);
+            return v;
+        }
+
         public real_t Dot(Vector3 b)
         {
             return x * b.x + y * b.y + z * b.z;
@@ -200,6 +218,24 @@ namespace Godot
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }
 
+        public Vector3 Mod(real_t mod) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.Mod(v.x, mod);
+            v.y = Mathf.Mod(v.y, mod);
+            v.z = Mathf.Mod(v.z, mod);
+            return v;
+        }
+
+        public Vector3 Mod(Vector3 modv) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.Mod(v.x, modv.x);
+            v.y = Mathf.Mod(v.y, modv.y);
+            v.z = Mathf.Mod(v.z, modv.z);
+            return v;
+        }
+
         public Vector3 Normalized()
         {
             Vector3 v = this;
@@ -225,6 +261,24 @@ namespace Godot
             return 2.0f * n * Dot(n) - this;
         }
 
+        public Vector3 Rem(real_t rem) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.Rem(v.x, rem);
+            v.y = Mathf.Rem(v.y, rem);
+            v.z = Mathf.Rem(v.z, rem);
+            return v;
+        }
+
+        public Vector3 Rem(Vector3 remv) 
+        {
+            Vector3 v = this;
+            v.x = Mathf.Rem(v.x, remv.x);
+            v.y = Mathf.Rem(v.y, remv.y);
+            v.z = Mathf.Rem(v.z, remv.z);
+            return v;
+        }
+
         public Vector3 Rotated(Vector3 axis, real_t phi)
         {
             return new Basis(axis, phi).Xform(this);
@@ -241,6 +295,12 @@ namespace Godot
             this.x = v.x;
             this.y = v.y;
             this.z = v.z;
+        }
+        public void Set(Point3 p)
+        {
+            this.x = (real_t) p.x;
+            this.y = (real_t) p.y;
+            this.z = (real_t) p.z;
         }
 
         public Vector3 Slide(Vector3 n)
@@ -265,6 +325,10 @@ namespace Godot
                 0f, y, 0f,
                 0f, 0f, z
             );
+        }
+
+        public Point3 ToPoint() {
+            return new Point3 (this);
         }
         
         private static readonly Vector3 zero    = new Vector3 (0, 0, 0);
@@ -301,6 +365,17 @@ namespace Godot
             this.x = v.x;
             this.y = v.y;
             this.z = v.z;
+        }
+        public Vector3(Point3 p)
+        {
+            this.x = (real_t) p.x;
+            this.y = (real_t) p.y;
+            this.z = (real_t) p.z;
+        }
+
+        public static implicit operator Vector3(Point3 point) 
+        {
+            return new Vector3(point);
         }
 
         public static Vector3 operator +(Vector3 left, Vector3 right)
@@ -365,6 +440,16 @@ namespace Godot
             left.y /= right.y;
             left.z /= right.z;
             return left;
+        }
+
+        public static Vector3 operator %(Vector3 vec, real_t mod)
+        {
+            return vec.Mod(mod);
+        }
+
+        public static Vector3 operator %(Vector3 left, Vector3 right)
+        {
+            return left.Mod(right);
         }
 
         public static bool operator ==(Vector3 left, Vector3 right)
