@@ -525,11 +525,10 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	}
 }
 
-GodotSharpBuilds::BuildProcess::BuildProcess(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback) {
-
-	build_info = p_build_info;
-	build_tab = NULL;
-	exit_callback = p_callback;
-	exited = true;
-	exit_code = -1;
+GodotSharpBuilds::BuildProcess::BuildProcess(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback) :
+		build_info(p_build_info),
+		build_tab(NULL),
+		exit_callback(p_callback),
+		exited(true),
+		exit_code(-1) {
 }
