@@ -49,20 +49,20 @@ namespace Godot
 
         public Vector3 x
         {
-            get => GetAxis(0);
-            set => SetAxis(0, value);
+            get { return GetAxis(0); }
+            set { SetAxis(0, value); }
         }
 
         public Vector3 y
         {
-            get => GetAxis(1);
-            set => SetAxis(1, value);
+            get { return GetAxis(1); }
+            set { SetAxis(1, value); }
         }
 
         public Vector3 z
         {
-            get => GetAxis(2);
-            set => SetAxis(2, value);
+            get { return GetAxis(2); }
+            set { SetAxis(2, value); }
         }
 
         private Vector3 _x;
