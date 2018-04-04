@@ -199,11 +199,29 @@ EditorExportPlugin::EditorExportPlugin() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void _add_to_list(EditorFileSystemDirectory *p_efsd, Set<StringName> &r_list) {
+static void _split_by_comma(List<String> &p_list, const String &p_src) {
+
+	if (p_src == "")
+		return;
+	Vector<String> split = p_src.split(",");
+	for (int i = 0; i < split.size(); i++) {
+		String f = split[i].strip_edges();
+		if (f.empty())
+			continue;
+		p_list.push_back(f);
+	}
+}
+
+static void _add_to_list(EditorFileSystemDirectory *p_efsd, Set<StringName> &r_list, const String &p_filter) {
+
+	List<String> filters;
+	_split_by_comma(filters, p_filter);
 
 	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
-
-		_add_to_list(p_efsd->get_subdir(i), r_list);
+		if (p_filter == "" || filters.find(p_efsd->get_subdir(i)->get_name()) == NULL)
+			_add_to_list(p_efsd->get_subdir(i), r_list, p_filter);
+		else
+			print_line("Folder ignored by settings: " + p_efsd->get_subdir(i)->get_name());
 	}
 
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
@@ -273,14 +291,8 @@ static void _edit_filter_list(Set<StringName> &r_list, const String &p_filter, b
 
 	if (p_filter == "")
 		return;
-	Vector<String> split = p_filter.split(",");
 	List<String> filters;
-	for (int i = 0; i < split.size(); i++) {
-		String f = split[i].strip_edges();
-		if (f.empty())
-			continue;
-		filters.push_back(f);
-	}
+	_split_by_comma(filters, p_filter);
 
 	DirAccess *da = DirAccess::open("res://");
 	ERR_FAIL_NULL(da);
@@ -365,8 +377,9 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 		if (EditorImportExport::get_singleton()->get_export_filter() == EditorImportExport::EXPORT_ALL) {
 			_add_filter_to_list(exported, "*");
 		} else {
-			_add_to_list(EditorFileSystem::get_singleton()->get_filesystem(), exported);
-			String cf = EditorImportExport::get_singleton()->get_export_custom_filter();
+			String cf = EditorImportExport::get_singleton()->get_export_custom_filter_exclude_dir();
+			_add_to_list(EditorFileSystem::get_singleton()->get_filesystem(), exported, cf);
+			cf = EditorImportExport::get_singleton()->get_export_custom_filter();
 			if (cf != "")
 				cf += ",";
 			cf += "*.flags";
@@ -1550,11 +1563,17 @@ void EditorImportExport::set_export_custom_filter(const String &p_custom_filter)
 void EditorImportExport::set_export_custom_filter_exclude(const String &p_custom_filter) {
 	export_custom_filter_exclude = p_custom_filter;
 }
+void EditorImportExport::set_export_custom_filter_exclude_dir(const String &p_custom_filter) {
+	export_custom_filter_exclude_dir = p_custom_filter;
+}
 String EditorImportExport::get_export_custom_filter() const {
 	return export_custom_filter;
 }
 String EditorImportExport::get_export_custom_filter_exclude() const {
 	return export_custom_filter_exclude;
+}
+String EditorImportExport::get_export_custom_filter_exclude_dir() const {
+	return export_custom_filter_exclude_dir;
 }
 
 void EditorImportExport::set_export_image_action(ImageAction p_action) {
@@ -1703,6 +1722,7 @@ void EditorImportExport::load_config() {
 
 	export_custom_filter = cf->get_value("export_filter", "filter");
 	export_custom_filter_exclude = cf->get_value("export_filter", "filter_exclude");
+	export_custom_filter_exclude_dir = cf->get_value("export_filter", "filter_exclude_dir");
 	String t = cf->get_value("export_filter", "type");
 	if (t == "selected")
 		export_filter = EXPORT_SELECTED;
@@ -1880,6 +1900,7 @@ void EditorImportExport::save_config() {
 
 	cf->set_value("export_filter", "filter", export_custom_filter);
 	cf->set_value("export_filter", "filter_exclude", export_custom_filter_exclude);
+	cf->set_value("export_filter", "filter_exclude_dir", export_custom_filter_exclude_dir);
 
 	String file_action_section = "export_filter_files";
 
@@ -2090,6 +2111,9 @@ void EditorImportExport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_export_custom_filter_exclude", "filter_exclude"), &EditorImportExport::set_export_custom_filter_exclude);
 	ObjectTypeDB::bind_method(_MD("get_export_custom_filter_exclude"), &EditorImportExport::get_export_custom_filter_exclude);
+
+	ObjectTypeDB::bind_method(_MD("set_export_custom_filter_exclude_dir", "filter_exclude_dir"), &EditorImportExport::set_export_custom_filter_exclude_dir);
+	ObjectTypeDB::bind_method(_MD("get_export_custom_filter_exclude_dir"), &EditorImportExport::get_export_custom_filter_exclude_dir);
 
 	ObjectTypeDB::bind_method(_MD("image_export_group_create"), &EditorImportExport::image_export_group_create);
 	ObjectTypeDB::bind_method(_MD("image_export_group_remove"), &EditorImportExport::image_export_group_remove);

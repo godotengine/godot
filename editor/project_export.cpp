@@ -202,7 +202,14 @@ void ProjectExportDialog::_filters_edited(String what) {
 }
 
 void ProjectExportDialog::_filters_exclude_edited(String what) {
+
 	EditorImportExport::get_singleton()->set_export_custom_filter_exclude(what);
+	_save_export_cfg();
+}
+
+void ProjectExportDialog::_filters_exclude_dir_edited(String what) {
+
+	EditorImportExport::get_singleton()->set_export_custom_filter_exclude_dir(what);
 	_save_export_cfg();
 }
 
@@ -296,6 +303,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			convert_text_scenes->set_pressed(EditorImportExport::get_singleton()->get_convert_text_scenes());
 			filters->set_text(EditorImportExport::get_singleton()->get_export_custom_filter());
 			filters_exclude->set_text(EditorImportExport::get_singleton()->get_export_custom_filter_exclude());
+			filters_exclude_dir->set_text(EditorImportExport::get_singleton()->get_export_custom_filter_exclude_dir());
 			if (EditorImportExport::get_singleton()->get_export_filter() != EditorImportExport::EXPORT_SELECTED)
 				tree_vb->hide();
 			else
@@ -1228,6 +1236,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_export_mode_changed"), &ProjectExportDialog::_export_mode_changed);
 	ObjectTypeDB::bind_method(_MD("_filters_edited"), &ProjectExportDialog::_filters_edited);
 	ObjectTypeDB::bind_method(_MD("_filters_exclude_edited"), &ProjectExportDialog::_filters_exclude_edited);
+	ObjectTypeDB::bind_method(_MD("_filters_exclude_dir_edited"), &ProjectExportDialog::_filters_exclude_dir_edited);
 	ObjectTypeDB::bind_method(_MD("_export_action"), &ProjectExportDialog::_export_action);
 	ObjectTypeDB::bind_method(_MD("_export_action_pck"), &ProjectExportDialog::_export_action_pck);
 	ObjectTypeDB::bind_method(_MD("_quality_edited"), &ProjectExportDialog::_quality_edited);
@@ -1340,6 +1349,9 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	filters_exclude = memnew(LineEdit);
 	vb->add_margin_child(TTR("Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"), filters_exclude);
 	filters_exclude->connect("text_changed", this, "_filters_exclude_edited");
+	filters_exclude_dir = memnew(LineEdit);
+	vb->add_margin_child(TTR("Filters to exclude directories from export (comma-separated, e.g.: addons, devs, test):"), filters_exclude_dir);
+	filters_exclude_dir->connect("text_changed", this, "_filters_exclude_dir_edited");
 
 	convert_text_scenes = memnew(CheckButton);
 	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export."));
