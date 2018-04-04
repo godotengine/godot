@@ -22,7 +22,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Get the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
+				Gets the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
@@ -31,14 +31,14 @@
 			<argument index="0" name="world_point" type="Vector3">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given position is behind the Camera.
+				Returns [code]true[/code] if the given position is behind the Camera. Note that a position which returns [code]false[/code] may still be outside the Camera's field of view.
 			</description>
 		</method>
 		<method name="make_current">
 			<return type="void">
 			</return>
 			<description>
-				Make this camera the current Camera for the [Viewport] (see class description). If the Camera Node is outside the scene tree, it will attempt to become current once it's added.
+				Makes this camera the current Camera for the [Viewport] (see class description). If the Camera Node is outside the scene tree, it will attempt to become current once it's added.
 			</description>
 		</method>
 		<method name="project_local_ray_normal" qualifiers="const">
@@ -56,7 +56,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-				Returns how a 2D coordinate in the Viewport rectangle maps to a 3D point in worldspace.
+				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">
@@ -87,7 +87,7 @@
 			<argument index="2" name="z_far" type="float">
 			</argument>
 			<description>
-				Set the camera projection to orthogonal mode, by specifying a width and the [i]near[/i] and [i]far[/i] clip planes in worldspace units. (As a hint, 2D games often use this projection, with values specified in pixels)
+				Sets the camera projection to orthogonal mode, by specifying a width and the [i]near[/i] and [i]far[/i] clip planes in worldspace units. (As a hint, 2D games often use this projection, with values specified in pixels)
 			</description>
 		</method>
 		<method name="set_perspective">
@@ -100,7 +100,7 @@
 			<argument index="2" name="z_far" type="float">
 			</argument>
 			<description>
-				Set the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
+				Sets the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
 			</description>
 		</method>
 		<method name="unproject_position" qualifiers="const">
@@ -109,7 +109,7 @@
 			<argument index="0" name="world_point" type="Vector3">
 			</argument>
 			<description>
-				Returns how a 3D point in worldspace maps to a 2D coordinate in the [Viewport] rectangle.
+				Returns the 2D coordinate in the [Viewport] rectangle that maps to the given 3D point in worldspace.
 			</description>
 		</method>
 	</methods>
@@ -124,7 +124,7 @@
 			If not [code]DOPPLER_TRACKING_DISABLED[/code] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [code]DOPPLER_TRACKING_DISABLED[/code].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
-			Set the [Environment] to use for this Camera.
+			The [Environment] to use for this Camera.
 		</member>
 		<member name="far" type="float" setter="set_zfar" getter="get_zfar">
 			The distance to the far culling boundary for this Camera relative to its local z-axis.
@@ -136,7 +136,7 @@
 			The horizontal (X) offset of the Camera viewport.
 		</member>
 		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect">
-			The axis to lock during [member fov]/[member size] adjustments.
+			The axis to lock during [member fov]/[member size] adjustments. Can be either [code]KEEP_WIDTH[/code] or [code]KEEP_HEIGHT[/code].
 		</member>
 		<member name="near" type="float" setter="set_znear" getter="get_znear">
 			The distance to the near culling boundary for this Camera relative to its local z-axis.
@@ -148,7 +148,7 @@
 			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
-			The horizontal (Y) offset of the Camera viewport.
+			The vertical (Y) offset of the Camera viewport.
 		</member>
 	</members>
 	<constants>
