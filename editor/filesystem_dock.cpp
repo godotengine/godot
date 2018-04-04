@@ -1671,6 +1671,8 @@ void FileSystemDock::_files_gui_input(Ref<InputEvent> p_event) {
 			_file_option(FILE_COPY_PATH);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_file_option(FILE_REMOVE);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
+			_file_option(FILE_RENAME);
 		}
 	}
 }
@@ -1781,6 +1783,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename"));
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	add_child(toolbar_hbc);
