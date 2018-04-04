@@ -56,12 +56,11 @@ abstract public class HandlePurchaseTask {
 	}
 
 	public void handlePurchaseRequest(int resultCode, Intent data) {
-		PaymentsCache pc = new PaymentsCache(context);
-
-		String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-		String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
-
 		if (resultCode == Activity.RESULT_OK) {
+			PaymentsCache pc = new PaymentsCache(context);
+
+			String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+			String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
 
 			try {
 				JSONObject jo = new JSONObject(purchaseData);
