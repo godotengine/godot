@@ -60,6 +60,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"pow",
 	"log",
 	"exp",
+	"is_close",
 	"is_nan",
 	"is_inf",
 	"ease",
@@ -207,6 +208,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_DECTIME:
 		case MATH_WRAP:
 		case MATH_WRAPF:
+		case MATH_ISCLOSE:
 		case LOGIC_CLAMP:
 			return 3;
 		case MATH_RANGE_LERP:
@@ -276,7 +278,14 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::REAL, "s");
 
 		} break;
-
+		case MATH_ISCLOSE: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "a");
+			else if (p_idx == 1)
+				return PropertyInfo(Variant::REAL, "b");
+			else
+				return PropertyInfo(Variant::REAL, "tolerance");
+		} break;
 		case MATH_POW: {
 			if (p_idx == 0)
 				return PropertyInfo(Variant::REAL, "x");
@@ -544,6 +553,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_EXP: {
 			t = Variant::REAL;
 		} break;
+		case MATH_ISCLOSE:
 		case MATH_ISNAN:
 		case MATH_ISINF: {
 			t = Variant::BOOL;
@@ -831,6 +841,13 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::exp((double)*p_inputs[0]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_ISCLOSE: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::is_close((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ISNAN: {
 
@@ -1310,6 +1327,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_POW);
 	BIND_ENUM_CONSTANT(MATH_LOG);
 	BIND_ENUM_CONSTANT(MATH_EXP);
+	BIND_ENUM_CONSTANT(MATH_ISCLOSE);
 	BIND_ENUM_CONSTANT(MATH_ISNAN);
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
@@ -1397,6 +1415,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/pow", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_POW>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/log", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LOG>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/exp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EXP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/isclose", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_ISCLOSE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/isnan", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_ISNAN>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/isinf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_ISINF>);
 

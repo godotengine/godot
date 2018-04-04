@@ -475,6 +475,27 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="is_close">
+			<return type="bool">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<argument index="2" name="tolerance" type="float" default="1e-05">
+			</argument>
+			<description>
+				Correctly compares two float numbers(third parameter is comparsion precision). Use this function instead == operator on floats.
+				[codeblock]
+				var a = 1.01
+				var b = 1.011
+				print(a == b) # False
+				print(is_close(a, b, 0.001)) # True
+				print(is_close(a, b, 0.0001)) # False due higher precision
+				print(is_close(a, b)) # Same as above(with default parameter)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="is_inf">
 			<return type="bool">
 			</return>
