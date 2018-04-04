@@ -3236,6 +3236,12 @@ void VisualScriptEditor::_member_option(int p_option) {
 	}
 }
 
+void VisualScriptEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+}
+
+void VisualScriptEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+}
+
 void VisualScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_member_button", &VisualScriptEditor::_member_button);

@@ -49,6 +49,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	HBoxContainer *edit_hb;
 
 	MenuButton *edit_menu;
+	MenuButton *highlighter_menu;
 	MenuButton *search_menu;
 	PopupMenu *context_menu;
 
@@ -125,6 +126,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	Map<String, SyntaxHighlighter *> highlighters;
+	void _change_syntax_highlighter(int p_idx);
+
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_color, bool p_can_fold, bool p_is_folded);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
@@ -145,6 +149,9 @@ protected:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
+	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
+	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
+
 	virtual void apply_code();
 	virtual Ref<Script> get_edited_script() const;
 	virtual Vector<String> get_functions();

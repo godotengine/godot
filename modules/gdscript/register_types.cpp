@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "gdscript.h"
+#include "gdscript_highlighter.h"
 #include "gdscript_tokenizer.h"
 #include "io/file_access_encrypted.h"
 #include "io/resource_loader.h"
@@ -92,6 +93,7 @@ void register_gdscript_types() {
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
 #ifdef TOOLS_ENABLED
+	ScriptEditor::register_create_syntax_highlighter_function(GDSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
 #endif
 }
