@@ -61,6 +61,7 @@ class TileMapEditor : public VBoxContainer {
 		TOOL_BUCKET,
 		TOOL_PICKING,
 		TOOL_DUPLICATING,
+		TOOL_MOVING
 	};
 
 	enum Options {
@@ -72,6 +73,7 @@ class TileMapEditor : public VBoxContainer {
 		OPTION_ERASE_SELECTION,
 		OPTION_PAINTING,
 		OPTION_FIX_INVALID,
+		OPTION_MOVE
 	};
 
 	TileMap *node;
