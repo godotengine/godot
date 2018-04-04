@@ -66,8 +66,93 @@ GDNativeLibrary::GDNativeLibrary() {
 GDNativeLibrary::~GDNativeLibrary() {
 }
 
+bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_property) {
+
+	String name = p_name;
+
+	if (name.begins_with("entry/")) {
+		String key = name.substr(6, name.length() - 6);
+
+		config_file->set_value("entry", key, p_property);
+
+		set_config_file(config_file);
+
+		return true;
+	}
+
+	if (name.begins_with("dependency/")) {
+		String key = name.substr(11, name.length() - 11);
+
+		config_file->set_value("dependencies", key, p_property);
+
+		set_config_file(config_file);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool GDNativeLibrary::_get(const StringName &p_name, Variant &r_property) const {
+	String name = p_name;
+
+	if (name.begins_with("entry/")) {
+		String key = name.substr(6, name.length() - 6);
+
+		r_property = config_file->get_value("entry", key);
+
+		return true;
+	}
+
+	if (name.begins_with("dependency/")) {
+		String key = name.substr(11, name.length() - 11);
+
+		r_property = config_file->get_value("dependencies", key);
+
+		return true;
+	}
+
+	return false;
+}
+
+void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
+	// set entries
+	List<String> entry_key_list;
+
+	if (config_file->has_section("entry"))
+		config_file->get_section_keys("entry", &entry_key_list);
+
+	for (List<String>::Element *E = entry_key_list.front(); E; E = E->next()) {
+		String key = E->get();
+
+		PropertyInfo prop;
+
+		prop.type = Variant::STRING;
+		prop.name = "entry/" + key;
+
+		p_list->push_back(prop);
+	}
+
+	// set dependencies
+	List<String> dependency_key_list;
+
+	if (config_file->has_section("dependencies"))
+		config_file->get_section_keys("dependencies", &dependency_key_list);
+
+	for (List<String>::Element *E = dependency_key_list.front(); E; E = E->next()) {
+		String key = E->get();
+
+		PropertyInfo prop;
+
+		prop.type = Variant::STRING;
+		prop.name = "dependency/" + key;
+
+		p_list->push_back(prop);
+	}
+}
+
 void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
-	
+
 	set_singleton(p_config_file->get_value("general", "singleton", default_singleton));
 	set_load_once(p_config_file->get_value("general", "load_once", default_load_once));
 	set_symbol_prefix(p_config_file->get_value("general", "symbol_prefix", default_symbol_prefix));
@@ -77,7 +162,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 	{
 
 		List<String> entry_keys;
-		p_config_file->get_section_keys("entry", &entry_keys);
+
+		if (p_config_file->has_section("entry"))
+			p_config_file->get_section_keys("entry", &entry_keys);
 
 		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
 			String key = E->get();
@@ -107,7 +194,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 	{
 
 		List<String> dependency_keys;
-		p_config_file->get_section_keys("dependencies", &dependency_keys);
+
+		if (p_config_file->has_section("dependencies"))
+			p_config_file->get_section_keys("dependencies", &dependency_keys);
 
 		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
 			String key = E->get();
