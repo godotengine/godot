@@ -66,7 +66,13 @@ public:
 	GDNativeLibrary();
 	~GDNativeLibrary();
 
+	virtual bool _set(const StringName &p_name, const Variant &p_property);
+	virtual bool _get(const StringName &p_name, Variant &r_property) const;
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	_FORCE_INLINE_ Ref<ConfigFile> get_config_file() { return config_file; }
+
+	void set_config_file(Ref<ConfigFile> p_config_file);
 
 	// things that change per-platform
 	// so there are no setters for this

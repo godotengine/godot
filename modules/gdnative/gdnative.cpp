@@ -66,8 +66,169 @@ GDNativeLibrary::GDNativeLibrary() {
 GDNativeLibrary::~GDNativeLibrary() {
 }
 
+bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_property) {
+
+	String name = p_name;
+
+	if (name.begins_with("entry/")) {
+		String key = name.substr(6, name.length() - 6);
+
+		config_file->set_value("entry", key, p_property);
+
+		set_config_file(config_file);
+
+		return true;
+	}
+
+	if (name.begins_with("dependency/")) {
+		String key = name.substr(11, name.length() - 11);
+
+		config_file->set_value("dependencies", key, p_property);
+
+		set_config_file(config_file);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool GDNativeLibrary::_get(const StringName &p_name, Variant &r_property) const {
+	String name = p_name;
+
+	if (name.begins_with("entry/")) {
+		String key = name.substr(6, name.length() - 6);
+
+		r_property = config_file->get_value("entry", key);
+
+		return true;
+	}
+
+	if (name.begins_with("dependency/")) {
+		String key = name.substr(11, name.length() - 11);
+
+		r_property = config_file->get_value("dependencies", key);
+
+		return true;
+	}
+
+	return false;
+}
+
+void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
+	// set entries
+	List<String> entry_key_list;
+
+	if (config_file->has_section("entry"))
+		config_file->get_section_keys("entry", &entry_key_list);
+
+	for (List<String>::Element *E = entry_key_list.front(); E; E = E->next()) {
+		String key = E->get();
+
+		PropertyInfo prop;
+
+		prop.type = Variant::STRING;
+		prop.name = "entry/" + key;
+
+		p_list->push_back(prop);
+	}
+
+	// set dependencies
+	List<String> dependency_key_list;
+
+	if (config_file->has_section("dependencies"))
+		config_file->get_section_keys("dependencies", &dependency_key_list);
+
+	for (List<String>::Element *E = dependency_key_list.front(); E; E = E->next()) {
+		String key = E->get();
+
+		PropertyInfo prop;
+
+		prop.type = Variant::STRING;
+		prop.name = "dependency/" + key;
+
+		p_list->push_back(prop);
+	}
+}
+
+void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
+
+	set_singleton(p_config_file->get_value("general", "singleton", default_singleton));
+	set_load_once(p_config_file->get_value("general", "load_once", default_load_once));
+	set_symbol_prefix(p_config_file->get_value("general", "symbol_prefix", default_symbol_prefix));
+	set_reloadable(p_config_file->get_value("general", "reloadable", default_reloadable));
+
+	String entry_lib_path;
+	{
+
+		List<String> entry_keys;
+
+		if (p_config_file->has_section("entry"))
+			p_config_file->get_section_keys("entry", &entry_keys);
+
+		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			entry_lib_path = p_config_file->get_value("entry", key);
+			break;
+		}
+	}
+
+	Vector<String> dependency_paths;
+	{
+
+		List<String> dependency_keys;
+
+		if (p_config_file->has_section("dependencies"))
+			p_config_file->get_section_keys("dependencies", &dependency_keys);
+
+		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			dependency_paths = p_config_file->get_value("dependencies", key);
+			break;
+		}
+	}
+
+	current_library_path = entry_lib_path;
+	current_dependencies = dependency_paths;
+}
+
 void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_config_file"), &GDNativeLibrary::get_config_file);
+	ClassDB::bind_method(D_METHOD("set_config_file", "config_file"), &GDNativeLibrary::set_config_file);
 
 	ClassDB::bind_method(D_METHOD("get_current_library_path"), &GDNativeLibrary::get_current_library_path);
 	ClassDB::bind_method(D_METHOD("get_current_dependencies"), &GDNativeLibrary::get_current_dependencies);
@@ -81,6 +242,8 @@ void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_singleton", "singleton"), &GDNativeLibrary::set_singleton);
 	ClassDB::bind_method(D_METHOD("set_symbol_prefix", "symbol_prefix"), &GDNativeLibrary::set_symbol_prefix);
 	ClassDB::bind_method(D_METHOD("set_reloadable", "reloadable"), &GDNativeLibrary::set_reloadable);
+
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "config_file", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile"), "set_config_file", "get_config_file");
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");
@@ -337,73 +500,7 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 		*r_error = err;
 	}
 
-	lib->set_singleton(config->get_value("general", "singleton", default_singleton));
-	lib->set_load_once(config->get_value("general", "load_once", default_load_once));
-	lib->set_symbol_prefix(config->get_value("general", "symbol_prefix", default_symbol_prefix));
-	lib->set_reloadable(config->get_value("general", "reloadable", default_reloadable));
-
-	String entry_lib_path;
-	{
-
-		List<String> entry_keys;
-		config->get_section_keys("entry", &entry_keys);
-
-		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
-			Vector<String> tags = key.split(".");
-
-			bool skip = false;
-			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
-
-				if (!has_feature) {
-					skip = true;
-					break;
-				}
-			}
-
-			if (skip) {
-				continue;
-			}
-
-			entry_lib_path = config->get_value("entry", key);
-			break;
-		}
-	}
-
-	Vector<String> dependency_paths;
-	{
-
-		List<String> dependency_keys;
-		config->get_section_keys("dependencies", &dependency_keys);
-
-		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
-			Vector<String> tags = key.split(".");
-
-			bool skip = false;
-			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
-
-				if (!has_feature) {
-					skip = true;
-					break;
-				}
-			}
-
-			if (skip) {
-				continue;
-			}
-
-			dependency_paths = config->get_value("dependencies", key);
-			break;
-		}
-	}
-
-	lib->current_library_path = entry_lib_path;
-	lib->current_dependencies = dependency_paths;
+	lib->set_config_file(config);
 
 	return lib;
 }
