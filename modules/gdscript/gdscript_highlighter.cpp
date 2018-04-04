@@ -58,7 +58,7 @@ static bool _is_hex_symbol(CharType c) {
 	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-Map<int, TextEdit::HighlighterInfo> GDSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
 	Map<int, TextEdit::HighlighterInfo> color_map;
 
 	bool prev_is_char = false;
@@ -255,17 +255,17 @@ Map<int, TextEdit::HighlighterInfo> GDSyntaxHighlighter::_get_line_syntax_highli
 	return color_map;
 }
 
-String GDSyntaxHighlighter::get_name() {
+String GDScriptSyntaxHighlighter::get_name() {
 	return "GDScript";
 }
 
-List<String> GDSyntaxHighlighter::get_supported_languages() {
+List<String> GDScriptSyntaxHighlighter::get_supported_languages() {
 	List<String> languages;
 	languages.push_back("GDScript");
 	return languages;
 }
 
-void GDSyntaxHighlighter::_update_cache() {
+void GDScriptSyntaxHighlighter::_update_cache() {
 	font_color = text_editor->get_color("font_color");
 	symbol_color = text_editor->get_color("symbol_color");
 	function_color = text_editor->get_color("function_color");
@@ -273,6 +273,6 @@ void GDSyntaxHighlighter::_update_cache() {
 	member_color = text_editor->get_color("member_variable_color");
 }
 
-SyntaxHighlighter *GDSyntaxHighlighter::create() {
-	return memnew(GDSyntaxHighlighter);
+SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
+	return memnew(GDScriptSyntaxHighlighter);
 }
