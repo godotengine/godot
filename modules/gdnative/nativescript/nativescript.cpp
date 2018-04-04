@@ -1208,8 +1208,11 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 	}
 
 	if (!(*binding_data)[p_idx]) {
+
+		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
+
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, (godot_object *)p_object);
+		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1249,6 +1252,27 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	binding_instances.erase(&binding_data);
 
 	delete &binding_data;
+}
+
+void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
+	if (!global_type_tags.has(p_idx)) {
+		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
+	}
+
+	HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	tags.set(p_class_name, p_type_tag);
+}
+
+const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_class_name) const {
+	if (!global_type_tags.has(p_idx))
+		return NULL;
+
+	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	const void *tag = tags.get(p_class_name);
+
+	return tag;
 }
 
 #ifndef NO_THREADS
