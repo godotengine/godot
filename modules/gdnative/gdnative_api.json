@@ -5822,6 +5822,23 @@
             ]
           },
           {
+            "name": "godot_nativescript_set_global_type_tag",
+            "return_type": "void",
+            "arguments": [
+              ["int", "p_idx"],
+              ["const char *", "p_name"],
+              ["const void *", "p_type_tag"]
+            ]
+          },
+          {
+            "name": "godot_nativescript_get_global_type_tag",
+            "return_type": "const void *",
+            "arguments": [
+              ["int", "p_idx"],
+              ["const char *", "p_name"]
+            ]
+          },
+          {
             "name": "godot_nativescript_set_type_tag",
             "return_type": "void",
             "arguments": [

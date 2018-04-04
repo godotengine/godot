@@ -55,12 +55,6 @@
 #include "editor/editor_node.h"
 #endif
 
-//
-//
-// Script stuff
-//
-//
-
 void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_class_name", "class_name"), &NativeScript::set_class_name);
 	ClassDB::bind_method(D_METHOD("get_class_name"), &NativeScript::get_class_name);
@@ -528,12 +522,6 @@ NativeScript::~NativeScript() {
 #endif
 }
 
-	//
-	//
-	// ScriptInstance stuff
-	//
-	//
-
 #define GET_SCRIPT_DESC() script->get_script_desc()
 
 void NativeScriptInstance::_ml_call_reversed(NativeScriptDesc *script_data, const StringName &p_method, const Variant **p_args, int p_argcount) {
@@ -872,12 +860,6 @@ NativeScriptInstance::~NativeScriptInstance() {
 	}
 }
 
-//
-//
-// ScriptingLanguage stuff
-//
-//
-
 NativeScriptLanguage *NativeScriptLanguage::singleton;
 
 void NativeScriptLanguage::_unload_stuff(bool p_reload) {
@@ -1195,8 +1177,11 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 	}
 
 	if (!(*binding_data)[p_idx]) {
+
+		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
+
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, (godot_object *)p_object);
+		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1236,6 +1221,27 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	binding_instances.erase(&binding_data);
 
 	delete &binding_data;
+}
+
+void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
+	if (!global_type_tags.has(p_idx)) {
+		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
+	}
+
+	HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	tags.set(p_class_name, p_type_tag);
+}
+
+const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_class_name) const {
+	if (!global_type_tags.has(p_idx))
+		return NULL;
+
+	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	const void *tag = tags.get(p_class_name);
+
+	return tag;
 }
 
 #ifndef NO_THREADS
