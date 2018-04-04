@@ -33,7 +33,7 @@
 
 #include "scene/gui/text_edit.h"
 
-class GDSyntaxHighlighter : public SyntaxHighlighter {
+class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
 private:
 	// colours
 	Color font_color;
