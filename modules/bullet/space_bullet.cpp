@@ -1117,7 +1117,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 		dispatcher->freeCollisionAlgorithm(algorithm);
 
 		if (contactPointResult.hasHit()) {
-			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * p_recover_movement_scale);
+			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1 * p_recover_movement_scale);
 
 			if (r_recover_result) {
 				if (contactPointResult.m_penetration_distance < r_recover_result->penetration_distance) {
