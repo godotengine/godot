@@ -1209,18 +1209,21 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("tile_map_editor/mirror_x", p_event)) {
 			flip_h = !flip_h;
 			mirror_x->set_pressed(flip_h);
+			_update_transform_buttons();
 			canvas_item_editor->update();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/mirror_y", p_event)) {
 			flip_v = !flip_v;
 			mirror_y->set_pressed(flip_v);
+			_update_transform_buttons();
 			canvas_item_editor->update();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/transpose", p_event)) {
 			transpose = !transpose;
 			transp->set_pressed(transpose);
+			_update_transform_buttons();
 			canvas_item_editor->update();
 			return true;
 		}
