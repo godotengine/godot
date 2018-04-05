@@ -91,8 +91,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, true);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, false);
 				}
 			}
 		});
@@ -110,8 +110,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(0, newChars[i], true);
-					GodotLib.key(0, newChars[i], false);
+					GodotLib.key(0, 0, newChars[i], true);
+					GodotLib.key(0, 0, newChars[i], false);
 				}
 			}
 		});
@@ -127,8 +127,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 				public void run() {
 					for (int i = 0; i < characters.length(); i++) {
 						final int ch = characters.codePointAt(i);
-						GodotLib.key(0, ch, true);
-						GodotLib.key(0, ch, false);
+						GodotLib.key(0, 0, ch, true);
+						GodotLib.key(0, 0, ch, false);
 					}
 				}
 			});

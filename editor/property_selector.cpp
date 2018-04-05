@@ -45,7 +45,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	if (k.is_valid()) {
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:

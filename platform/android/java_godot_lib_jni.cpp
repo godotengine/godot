@@ -1160,28 +1160,29 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobject obj, jint p_keycode, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 	if (step == 0)
 		return;
 
 	Ref<InputEventKey> ievent;
 	ievent.instance();
 	int val = p_unicode_char;
-	int scancode = android_get_keysym(p_scancode);
-	ievent->set_scancode(scancode);
+	int keycode = android_get_keysym(p_keycode);
+	int phy_keycode = android_get_keysym(p_scancode);
+	ievent->set_keycode(keycode);
+	ievent->set_physical_keycode(phy_keycode);
 	ievent->set_unicode(val);
 	ievent->set_pressed(p_pressed);
 
 	if (val == '\n') {
-		ievent->set_scancode(KEY_ENTER);
+		ievent->set_keycode(KEY_ENTER);
 	} else if (val == 61448) {
-		ievent->set_scancode(KEY_BACKSPACE);
+		ievent->set_keycode(KEY_BACKSPACE);
 		ievent->set_unicode(KEY_BACKSPACE);
 	} else if (val == 61453) {
-		ievent->set_scancode(KEY_ENTER);
+		ievent->set_keycode(KEY_ENTER);
 		ievent->set_unicode(KEY_ENTER);
-	} else if (p_scancode == 4) {
-
+	} else if (p_keycode == 4) {
 		os_android->main_loop_request_go_back();
 	}
 

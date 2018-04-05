@@ -136,7 +136,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events from the main thread to the GL thread.
 	 */
-	public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);
 
 	/**
 	 * Forward game device's key events from the main thread to the GL thread.

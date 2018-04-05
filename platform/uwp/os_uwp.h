@@ -61,7 +61,8 @@ public:
 		bool alt, shift, control;
 		MessageType type;
 		bool pressed;
-		unsigned int scancode;
+		unsigned int keycode;
+		unsigned int physical_keycode;
 		unsigned int unicode;
 		bool echo;
 		CorePhysicalKeyStatus status;

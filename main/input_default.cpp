@@ -73,10 +73,10 @@ InputDefault::SpeedTrack::SpeedTrack() {
 	reset();
 }
 
-bool InputDefault::is_key_pressed(int p_scancode) const {
+bool InputDefault::is_key_pressed(int p_keycode) const {
 
 	_THREAD_SAFE_METHOD_
-	return keys_pressed.has(p_scancode);
+	return keys_pressed.has(p_keycode);
 }
 
 bool InputDefault::is_mouse_button_pressed(int p_button) const {
@@ -271,11 +271,11 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
+	if (k.is_valid() && !k->is_echo() && k->get_keycode() != 0) {
 		if (k->is_pressed())
-			keys_pressed.insert(k->get_scancode());
+			keys_pressed.insert(k->get_keycode());
 		else
-			keys_pressed.erase(k->get_scancode());
+			keys_pressed.erase(k->get_keycode());
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;

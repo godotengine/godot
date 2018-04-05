@@ -549,7 +549,7 @@ void EditorAudioBus::_effect_add(int p_which) {
 void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		accept_event();
 		emit_signal("delete_request");
 	}

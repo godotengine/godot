@@ -124,13 +124,13 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="find_scancode_from_string" qualifiers="const">
+		<method name="find_keycode_from_string" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Returns the scancode of the given string (e.g. "Escape").
+				Returns the keycode of the given string (e.g. "Escape").
 			</description>
 		</method>
 		<method name="get_audio_driver_count" qualifiers="const">
@@ -295,14 +295,14 @@
 				Returns the window size including decorations like window borders.
 			</description>
 		</method>
-		<method name="get_scancode_string" qualifiers="const">
+		<method name="get_keycode_string" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns the given scancode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
-				See also [member InputEventKey.scancode] and [method InputEventKey.get_scancode_with_modifiers].
+				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
+				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
@@ -595,13 +595,13 @@
 				Returns [code]true[/code] if the [b]OK[/b] button should appear on the left and [b]Cancel[/b] on the right.
 			</description>
 		</method>
-		<method name="is_scancode_unicode" qualifiers="const">
+		<method name="is_keycode_unicode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the input scancode corresponds to a Unicode character.
+				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">

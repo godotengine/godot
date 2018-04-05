@@ -1873,11 +1873,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
 
-		} else if (k->get_scancode() == KEY_ESCAPE) {
+		} else if (k->get_keycode() == KEY_ESCAPE) {
 			set_freelook_active(false);
 		}
 
-		if (k->get_scancode() == KEY_SPACE) {
+		if (k->get_keycode() == KEY_SPACE) {
 			if (!k->is_pressed()) emit_signal("toggle_maximize_view", this);
 		}
 	}
@@ -2074,8 +2074,8 @@ static bool is_shortcut_pressed(const String &p_path) {
 		return false;
 	}
 	const Input &input = *Input::get_singleton();
-	int scancode = k->get_scancode();
-	return input.is_key_pressed(scancode);
+	int keycode = k->get_keycode();
+	return input.is_key_pressed(keycode);
 }
 
 void SpatialEditorViewport::_update_freelook(real_t delta) {

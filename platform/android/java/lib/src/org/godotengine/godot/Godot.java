@@ -990,8 +990,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 					int keyCode;
 					if ((keyCode = cc[i]) != 0) {
 						// Simulate key down and up...
-						GodotLib.key(0, keyCode, true);
-						GodotLib.key(0, keyCode, false);
+						GodotLib.key(0, 0, keyCode, true);
+						GodotLib.key(0, 0, keyCode, false);
 					}
 				}
 			}
