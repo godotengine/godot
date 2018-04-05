@@ -3168,8 +3168,8 @@ String String::word_wrap(int p_chars_per_line) const {
 String String::percent_encode() const {
 	const CharString temp = utf8();
 	String res;
-	for (int i = 0; i < length(); ++i) {
-		CharType ord = temp[i];
+	for (int i = 0; i < temp.length(); ++i) {
+		char ord = temp[i];
 		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
 				(ord >= 'a' && ord <= 'z') ||
 				(ord >= 'A' && ord <= 'Z') ||
@@ -3178,9 +3178,9 @@ String String::percent_encode() const {
 		} else {
 			char h_Val[3];
 #if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%.2X", ord);
+			snprintf(h_Val, 3, "%hhX", ord);
 #else
-			sprintf(h_Val, "%.2X", ord);
+			sprintf(h_Val, "%hhX", ord);
 #endif
 			res += "%";
 			res += h_Val;
