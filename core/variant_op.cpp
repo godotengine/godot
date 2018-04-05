@@ -3415,6 +3415,88 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
+int Variant::iter_size(bool &r_valid) const {
+
+	r_valid = true;
+	switch (type) {
+		case INT: {
+			return MAX(0, _data._int);
+		} break;
+		case REAL: {
+			return MAX(0, int64_t(Math::ceil(_data._real)));
+		} break;
+		case VECTOR2: {
+			int64_t from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
+			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+			return MAX(0, to - from);
+		} break;
+		case VECTOR3: {
+			int64_t from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
+			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			int64_t step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+			if (step > 0) {
+				if (to <= from) {
+					return 0;
+				} else {
+					// len(range(0, 2, 1)) == 2, len(range(1, 7, 5)) == 2, len(range(1, 6, 5)) == 1
+					return 1 + ((to - 1) - from) / step;
+				}
+			} else if (step < 0) {
+				if (to >= from) {
+					return 0;
+				} else {
+					// len(range(2, 0, -1) == 2, len(range(7, 1, -5) == 2, len(range(6, 1, -5) == 1
+					return 1 + (from - (to + 1)) / -step;
+				}
+			}
+		} break;
+		case STRING: {
+			const String *str = reinterpret_cast<const String *>(_data._mem);
+			return str->length();
+		} break;
+		case DICTIONARY: {
+			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
+			return dic->size();
+		} break;
+		case ARRAY: {
+			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_BYTE_ARRAY: {
+			const PoolVector<uint8_t> *arr = reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_INT_ARRAY: {
+			const PoolVector<int> *arr = reinterpret_cast<const PoolVector<int> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_REAL_ARRAY: {
+			const PoolVector<real_t> *arr = reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_STRING_ARRAY: {
+			const PoolVector<String> *arr = reinterpret_cast<const PoolVector<String> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_VECTOR2_ARRAY: {
+			const PoolVector<Vector2> *arr = reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_VECTOR3_ARRAY: {
+			const PoolVector<Vector3> *arr = reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
+			return arr->size();
+		} break;
+		case POOL_COLOR_ARRAY: {
+			const PoolVector<Color> *arr = reinterpret_cast<const PoolVector<Color> *>(_data._mem);
+			return arr->size();
+		} break;
+		default: {}
+	}
+
+	r_valid = false;
+	return -1;
+}
+
 void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {

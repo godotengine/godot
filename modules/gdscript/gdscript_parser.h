@@ -50,6 +50,7 @@ public:
 			TYPE_TYPE,
 			TYPE_CONSTANT,
 			TYPE_ARRAY,
+			TYPE_COMPREHENSION,
 			TYPE_DICTIONARY,
 			TYPE_SELF,
 			TYPE_OPERATOR,
@@ -196,6 +197,19 @@ public:
 
 		Vector<Node *> elements;
 		ArrayNode() { type = TYPE_ARRAY; }
+	};
+
+	struct ComprehensionNode : public Node {
+
+		Node *expr;
+		Node *cond;
+		Vector<Vector<IdentifierNode *> > ids;
+		Vector<Node *> containers;
+		ComprehensionNode() {
+			type = TYPE_COMPREHENSION;
+			expr = NULL;
+			cond = NULL;
+		}
 	};
 
 	struct DictionaryNode : public Node {
@@ -501,15 +515,16 @@ private:
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
 	bool _enter_indent_block(BlockNode *p_block = NULL);
 	bool _parse_newline();
-	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
+	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false, bool p_ternary_if = true);
 	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
-	Node *_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false);
+	Node *_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false, bool p_ternary_if = true);
 
 	PatternNode *_parse_pattern(bool p_static);
 	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
 	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
 	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node *> &p_bindings);
 
+	Node *_optimize_container(Node *container);
 	void _parse_block(BlockNode *p_block, bool p_static);
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);

@@ -215,7 +215,7 @@ bool GDScriptParser::_get_completable_identifier(CompletionType p_type, StringNa
 	return false;
 }
 
-GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign, bool p_parsing_constant) {
+GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign, bool p_parsing_constant, bool p_ternary_if) {
 
 	//Vector<Node*> expressions;
 	//Vector<OperatorNode::Operator> operators;
@@ -762,6 +762,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			ArrayNode *arr = alloc_node<ArrayNode>();
 			bool expecting_comma = false;
+			expr = NULL;
 
 			while (true) {
 
@@ -787,7 +788,77 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else {
 					//parse expression
 					if (expecting_comma) {
-						_set_error("',' or ']' expected");
+
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_CF_FOR) {
+
+							ComprehensionNode *cn = alloc_node<ComprehensionNode>();
+							cn->expr = arr->elements[0];
+
+							while (tokenizer->get_token() == GDScriptTokenizer::TK_CF_FOR) {
+
+								tokenizer->advance();
+
+								if (arr->elements.size() != 1) {
+									_set_error("expected expression before 'for'");
+									return NULL;
+								}
+
+								if (!tokenizer->is_token_literal(0, true)) {
+									_set_error("identifier expected after 'for'");
+									return NULL;
+								}
+
+								Vector<IdentifierNode *> ids;
+								while (true) {
+
+									IdentifierNode *id = alloc_node<IdentifierNode>();
+									id->name = tokenizer->get_token_identifier();
+									ids.push_back(id);
+									tokenizer->advance();
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+										break;
+									}
+
+									tokenizer->advance();
+								}
+
+								if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_IN) {
+									_set_error("'in' expected after identifier");
+									return NULL;
+								}
+
+								tokenizer->advance();
+
+								Node *container = _parse_and_reduce_expression(false, p_static, false, false, false);
+								if (!container) {
+									return NULL;
+								}
+
+								cn->ids.push_back(ids);
+								cn->containers.push_back(_optimize_container(container));
+							}
+
+							if (tokenizer->get_token() == GDScriptTokenizer::TK_CF_IF) {
+								tokenizer->advance();
+
+								Node *cond = _parse_and_reduce_expression(false, p_static);
+								if (!cond)
+									return NULL;
+								cn->cond = cond;
+							}
+
+							if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
+								_set_error("']' expected");
+								return NULL;
+							}
+							tokenizer->advance();
+
+							expr = cn;
+							break;
+						}
+
+						_set_error("',' or ']' or 'for' expected");
 						return NULL;
 					}
 					Node *n = _parse_expression(arr, p_static, p_allow_assign, p_parsing_constant);
@@ -798,7 +869,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 			}
 
-			expr = arr;
+			if (!expr)
+				expr = arr;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CURLY_BRACKET_OPEN) {
 			// array
 			tokenizer->advance();
@@ -1159,7 +1231,12 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			case GDScriptTokenizer::TK_OP_BIT_OR: op = OperatorNode::OP_BIT_OR; break;
 			case GDScriptTokenizer::TK_OP_BIT_XOR: op = OperatorNode::OP_BIT_XOR; break;
 			case GDScriptTokenizer::TK_PR_IS: op = OperatorNode::OP_IS; break;
-			case GDScriptTokenizer::TK_CF_IF: op = OperatorNode::OP_TERNARY_IF; break;
+			case GDScriptTokenizer::TK_CF_IF: {
+				if (p_ternary_if)
+					op = OperatorNode::OP_TERNARY_IF;
+				else
+					valid = false;
+			} break;
 			case GDScriptTokenizer::TK_CF_ELSE: op = OperatorNode::OP_TERNARY_ELSE; break;
 			default: valid = false; break;
 		}
@@ -1802,9 +1879,9 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 	}
 }
 
-GDScriptParser::Node *GDScriptParser::_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const, bool p_allow_assign) {
+GDScriptParser::Node *GDScriptParser::_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const, bool p_allow_assign, bool p_ternary_if) {
 
-	Node *expr = _parse_expression(p_parent, p_static, p_allow_assign, p_reduce_const);
+	Node *expr = _parse_expression(p_parent, p_static, p_allow_assign, p_reduce_const, p_ternary_if);
 	if (!expr || error_set)
 		return NULL;
 	expr = _reduce_expression(expr, p_reduce_const);
@@ -2364,6 +2441,69 @@ void GDScriptParser::_transform_match_statment(BlockNode *p_block, MatchNode *p_
 	}
 }
 
+GDScriptParser::Node *GDScriptParser::_optimize_container(Node *container) {
+
+	if (container->type == Node::TYPE_OPERATOR) {
+
+		OperatorNode *op = static_cast<OperatorNode *>(container);
+		if (op->op == OperatorNode::OP_CALL && op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION && static_cast<BuiltInFunctionNode *>(op->arguments[0])->function == GDScriptFunctions::GEN_RANGE) {
+			//iterating a range, so see if range() can be optimized without allocating memory, by replacing it by vectors (which can work as iterable too!)
+
+			Vector<Node *> args;
+			Vector<double> constants;
+
+			bool constant = false;
+
+			for (int i = 1; i < op->arguments.size(); i++) {
+				args.push_back(op->arguments[i]);
+				if (constant && op->arguments[i]->type == Node::TYPE_CONSTANT) {
+					ConstantNode *c = static_cast<ConstantNode *>(op->arguments[i]);
+					if (c->value.get_type() == Variant::REAL || c->value.get_type() == Variant::INT) {
+						constants.push_back(c->value);
+						constant = true;
+					}
+				} else {
+					constant = false;
+				}
+			}
+
+			if (args.size() > 0 && args.size() < 4) {
+
+				if (constant) {
+
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					switch (args.size()) {
+						case 1: cn->value = (int)constants[0]; break;
+						case 2: cn->value = Vector2(constants[0], constants[1]); break;
+						case 3: cn->value = Vector3(constants[0], constants[1], constants[2]); break;
+					}
+					container = cn;
+				} else {
+					OperatorNode *on = alloc_node<OperatorNode>();
+					on->op = OperatorNode::OP_CALL;
+
+					TypeNode *tn = alloc_node<TypeNode>();
+					on->arguments.push_back(tn);
+
+					switch (args.size()) {
+						case 1: tn->vtype = Variant::INT; break;
+						case 2: tn->vtype = Variant::VECTOR2; break;
+						case 3: tn->vtype = Variant::VECTOR3; break;
+					}
+
+					for (int i = 0; i < args.size(); i++) {
+						on->arguments.push_back(args[i]);
+					}
+
+					container = on;
+				}
+			}
+		}
+	}
+
+	return container;
+}
+
 void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 	int indent_level = tab_level.back()->get();
@@ -2703,63 +2843,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					return;
 				}
 
-				if (container->type == Node::TYPE_OPERATOR) {
-
-					OperatorNode *op = static_cast<OperatorNode *>(container);
-					if (op->op == OperatorNode::OP_CALL && op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION && static_cast<BuiltInFunctionNode *>(op->arguments[0])->function == GDScriptFunctions::GEN_RANGE) {
-						//iterating a range, so see if range() can be optimized without allocating memory, by replacing it by vectors (which can work as iterable too!)
-
-						Vector<Node *> args;
-						Vector<double> constants;
-
-						bool constant = false;
-
-						for (int i = 1; i < op->arguments.size(); i++) {
-							args.push_back(op->arguments[i]);
-							if (constant && op->arguments[i]->type == Node::TYPE_CONSTANT) {
-								ConstantNode *c = static_cast<ConstantNode *>(op->arguments[i]);
-								if (c->value.get_type() == Variant::REAL || c->value.get_type() == Variant::INT) {
-									constants.push_back(c->value);
-									constant = true;
-								}
-							} else {
-								constant = false;
-							}
-						}
-
-						if (args.size() > 0 && args.size() < 4) {
-
-							if (constant) {
-
-								ConstantNode *cn = alloc_node<ConstantNode>();
-								switch (args.size()) {
-									case 1: cn->value = (int)constants[0]; break;
-									case 2: cn->value = Vector2(constants[0], constants[1]); break;
-									case 3: cn->value = Vector3(constants[0], constants[1], constants[2]); break;
-								}
-								container = cn;
-							} else {
-								OperatorNode *on = alloc_node<OperatorNode>();
-								on->op = OperatorNode::OP_CALL;
-
-								TypeNode *tn = alloc_node<TypeNode>();
-								on->arguments.push_back(tn);
-
-								switch (args.size()) {
-									case 1: tn->vtype = Variant::INT; break;
-									case 2: tn->vtype = Variant::VECTOR2; break;
-									case 3: tn->vtype = Variant::VECTOR3; break;
-								}
-
-								for (int i = 0; i < args.size(); i++) {
-									on->arguments.push_back(args[i]);
-								}
-
-								container = on;
-							}
-						}
-					}
-				}
+				container = _optimize_container(container);
 
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 

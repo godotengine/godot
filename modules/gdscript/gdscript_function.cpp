@@ -206,6 +206,7 @@ static String _get_var_type(const Variant *p_type) {
 		&&OPCODE_ASSERT,                      \
 		&&OPCODE_BREAKPOINT,                  \
 		&&OPCODE_LINE,                        \
+		&&OPCODE_BUILD_COMPREHENSION,         \
 		&&OPCODE_END                          \
 	};
 
@@ -741,6 +742,57 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = array;
 
 				ip += 3 + argc;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_BUILD_COMPREHENSION) {
+
+				CHECK_SPACE(5);
+				GET_VARIANT_PTR(varr, 1); // comprehension array that is being built
+				GET_VARIANT_PTR(elem, 2); // element that is being copied
+
+#ifdef DEBUG_ENABLED
+				if (varr->get_type() != Variant::ARRAY) {
+					err_text = "Internal error: comprehension array type != ARRAY";
+					OPCODE_BREAK;
+				}
+#endif
+				Array array = *varr;
+
+				if (_code_ptr[ip + 3] == 0) { // no pre-allocate possible, just append
+
+					array.append(*elem);
+
+				} else { // try to estimate and pre-allocate
+
+					GET_VARIANT_PTR(vidx, 3); // index into array that is being set
+					int idx = *vidx;
+
+					if (idx == 0) {
+						// this is the first add to the array. try to estimate the final size.
+
+						GET_VARIANT_PTR(src, 4); // container we're reading from
+						int final_size;
+						bool final_size_valid;
+						final_size = src->iter_size(final_size_valid);
+
+						if (!final_size_valid) {
+							idx = -1;
+							*vidx = idx; // remember we're in append mode for this time
+						} else {
+							array.resize(final_size);
+						}
+					}
+
+					if (idx < 0) {
+						array.append(*elem);
+					} else {
+						array[idx] = *elem;
+						*vidx = idx + 1;
+					}
+				}
+
+				ip += 5;
 			}
 			DISPATCH_OPCODE;
 

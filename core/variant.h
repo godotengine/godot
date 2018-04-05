@@ -381,6 +381,7 @@ public:
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
 	bool iter_next(Variant &r_iter, bool &r_valid) const;
 	Variant iter_get(const Variant &r_iter, bool &r_valid) const;
+	int iter_size(bool &r_valid) const;
 
 	void get_property_list(List<PropertyInfo> *p_list) const;
 
