@@ -661,16 +661,27 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
 
 				String remap = F->get();
+				String remapped_path;
 				if (remap == "path") {
-					String remapped_path = config->get_value("remap", remap);
+					remapped_path = config->get_value("remap", remap);
 					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
 					p_func(p_udata, remapped_path, array, idx, total);
 				} else if (remap.begins_with("path.")) {
 					String feature = remap.get_slice(".", 1);
 					if (features.has(feature)) {
-						String remapped_path = config->get_value("remap", remap);
+						remapped_path = config->get_value("remap", remap);
 						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
 						p_func(p_udata, remapped_path, array, idx, total);
+
+					}
+				}
+				if (remapped_path != String()){
+					List<String> deps;
+					ResourceLoader::get_dependencies(remapped_path, &deps);
+					for (List<String>::Element *D = deps.front(); D; D = D->next()){
+						String dep_path = D->get();
+						Vector<uint8_t> array = FileAccess::get_file_as_array(dep_path);
+						p_func(p_udata, dep_path, array, idx, total);
 					}
 				}
 			}
