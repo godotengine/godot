@@ -201,37 +201,51 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 				return i;
 			}
 		}
-		onInputDeviceAdded(device_id);
-		return joy_devices.size() - 1;
+
+		return -1;
 	}
 
 	@Override
 	public void onInputDeviceAdded(int deviceId) {
-		joystick joy = new joystick();
-		joy.device_id = deviceId;
-		int id = joy_devices.size();
-		InputDevice device = mInputManager.getInputDevice(deviceId);
-		joy.name = device.getName();
-		joy.axes = new ArrayList<InputDevice.MotionRange>();
-		joy.hats = new ArrayList<InputDevice.MotionRange>();
-		List<InputDevice.MotionRange> ranges = device.getMotionRanges();
-		Collections.sort(ranges, new RangeComparator());
-		for (InputDevice.MotionRange range : ranges) {
-			if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
-				joy.hats.add(range);
-			} else {
-				joy.axes.add(range);
+		int id = find_joy_device(deviceId);
+
+		// Check if the device has not been already added
+		if (id < 0) {
+			InputDevice device = mInputManager.getInputDevice(deviceId);
+
+			id = joy_devices.size();
+
+			joystick joy = new joystick();
+			joy.device_id = deviceId;
+			joy.name = device.getName();
+			joy.axes = new ArrayList<InputDevice.MotionRange>();
+			joy.hats = new ArrayList<InputDevice.MotionRange>();
+
+			List<InputDevice.MotionRange> ranges = device.getMotionRanges();
+			Collections.sort(ranges, new RangeComparator());
+
+			for (InputDevice.MotionRange range : ranges) {
+				if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
+					joy.hats.add(range);
+				} else {
+					joy.axes.add(range);
+				}
 			}
+
+			joy_devices.add(joy);
+			GodotLib.joyconnectionchanged(id, true, joy.name);
 		}
-		joy_devices.add(joy);
-		GodotLib.joyconnectionchanged(id, true, joy.name);
 	}
 
 	@Override
 	public void onInputDeviceRemoved(int deviceId) {
 		int id = find_joy_device(deviceId);
-		joy_devices.remove(id);
-		GodotLib.joyconnectionchanged(id, false, "");
+
+		// Check if the evice has not been already removed
+		if (id > -1) {
+			joy_devices.remove(id);
+			GodotLib.joyconnectionchanged(id, false, "");
+		}
 	}
 
 	@Override
@@ -252,14 +266,17 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
 
 			int button = get_godot_button(keyCode);
-			int device = find_joy_device(event.getDeviceId());
+			int id = find_joy_device(event.getDeviceId());
 
-			GodotLib.joybutton(device, button, false);
-			return true;
+			// Check if the device exists
+			if (id > -1) {
+				GodotLib.joybutton(id, button, false);
+				return true;
+			}
 		} else {
-
 			GodotLib.key(keyCode, event.getUnicodeChar(0), false);
 		};
+
 		return super.onKeyUp(keyCode, event);
 	};
 
@@ -283,15 +300,19 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;
+
 			int button = get_godot_button(keyCode);
-			int device = find_joy_device(event.getDeviceId());
+			int id = find_joy_device(event.getDeviceId());
 
-			GodotLib.joybutton(device, button, true);
-			return true;
-
+			// Check if the device exists
+			if (id > -1) {
+				GodotLib.joybutton(id, button, true);
+				return true;
+			}
 		} else {
 			GodotLib.key(keyCode, event.getUnicodeChar(0), true);
 		};
+
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -300,21 +321,25 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 
-			int device_id = find_joy_device(event.getDeviceId());
-			joystick joy = joy_devices.get(device_id);
+			int id = find_joy_device(event.getDeviceId());
 
-			for (int i = 0; i < joy.axes.size(); i++) {
-				InputDevice.MotionRange range = joy.axes.get(i);
-				float value = (event.getAxisValue(range.getAxis()) - range.getMin()) / range.getRange() * 2.0f - 1.0f;
-				GodotLib.joyaxis(device_id, i, value);
-			}
+			// Check if the device exists
+			if (id > -1) {
+				joystick joy = joy_devices.get(id);
 
-			for (int i = 0; i < joy.hats.size(); i += 2) {
-				int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
-				int hatY = Math.round(event.getAxisValue(joy.hats.get(i + 1).getAxis()));
-				GodotLib.joyhat(device_id, hatX, hatY);
+				for (int i = 0; i < joy.axes.size(); i++) {
+					InputDevice.MotionRange range = joy.axes.get(i);
+					float value = (event.getAxisValue(range.getAxis()) - range.getMin()) / range.getRange() * 2.0f - 1.0f;
+					GodotLib.joyaxis(id, i, value);
+				}
+
+				for (int i = 0; i < joy.hats.size(); i += 2) {
+					int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
+					int hatY = Math.round(event.getAxisValue(joy.hats.get(i + 1).getAxis()));
+					GodotLib.joyhat(id, hatX, hatY);
+				}
+				return true;
 			}
-			return true;
 		};
 
 		return super.onGenericMotionEvent(event);
