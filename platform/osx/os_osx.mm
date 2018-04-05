@@ -1556,19 +1556,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			atlas_rect.position.x = atlas_texture->get_region().position.x;
 			atlas_rect.position.y = atlas_texture->get_region().position.y;
 
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else if (image.is_valid()) {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(!texture.is_valid());
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-
-		image = texture->get_data();
-
-		ERR_FAIL_COND(!image.is_valid());
+		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:NULL
