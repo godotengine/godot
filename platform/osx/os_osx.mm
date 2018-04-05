@@ -1507,9 +1507,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		Ref<Texture> texture = p_cursor;
 		Ref<Image> image = texture->get_data();
 
-		int image_size = 32 * 32;
-
-		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
 
 		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:NULL

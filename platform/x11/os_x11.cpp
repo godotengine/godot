@@ -2375,11 +2375,11 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		Ref<Texture> texture = p_cursor;
 		Ref<Image> image = texture->get_data();
 
-		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
 
 		// Create the cursor structure
 		XcursorImage *cursor_image = XcursorImageCreate(texture->get_width(), texture->get_height());
-		XcursorUInt image_size = 32 * 32;
+		XcursorUInt image_size = texture->get_width() * texture->get_height();
 		XcursorDim size = sizeof(XcursorPixel) * image_size;
 
 		cursor_image->version = 1;
@@ -2393,10 +2393,10 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		image->lock();
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int column_index = floor(index / 32);
-			int row_index = index % 32;
+			int row_index = floor(index / texture->get_width());
+			int column_index = index % texture->get_width();
 
-			*(cursor_image->pixels + index) = image->get_pixel(row_index, column_index).to_argb32();
+			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
 
 		image->unlock();
