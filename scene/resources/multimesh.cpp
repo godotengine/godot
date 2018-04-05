@@ -222,11 +222,10 @@ void MultiMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(COLOR_FLOAT);
 }
 
-MultiMesh::MultiMesh() {
-
-	multimesh = VisualServer::get_singleton()->multimesh_create();
-	color_format = COLOR_NONE;
-	transform_format = TRANSFORM_2D;
+MultiMesh::MultiMesh() :
+		multimesh(VisualServer::get_singleton()->multimesh_create()),
+		color_format(COLOR_NONE),
+		transform_format(TRANSFORM_2D) {
 }
 
 MultiMesh::~MultiMesh() {
