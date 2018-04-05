@@ -313,6 +313,14 @@ void GDAPI godot_nativescript_set_signal_documentation(void *p_gdnative_handle, 
 	signal->get().documentation = *(String *)&p_documentation;
 }
 
+void GDAPI godot_nativescript_set_global_type_tag(int p_idx, const char *p_name, const void *p_type_tag) {
+	NativeScriptLanguage::get_singleton()->set_global_type_tag(p_idx, StringName(p_name), p_type_tag);
+}
+
+const void GDAPI *godot_nativescript_get_global_type_tag(int p_idx, const char *p_name) {
+	return NativeScriptLanguage::get_singleton()->get_global_type_tag(p_idx, StringName(p_name));
+}
+
 void GDAPI godot_nativescript_set_type_tag(void *p_gdnative_handle, const char *p_name, const void *p_type_tag) {
 	String *s = (String *)p_gdnative_handle;
 
@@ -347,10 +355,6 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) 
 	return NULL;
 }
 
-#ifdef __cplusplus
-}
-#endif
-
 int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_instance_binding_functions p_binding_functions) {
 	return NativeScriptLanguage::get_singleton()->register_binding_functions(p_binding_functions);
 }
@@ -362,3 +366,7 @@ void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_i
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object) {
 	return NativeScriptLanguage::get_singleton()->get_instance_binding_data(p_idx, (Object *)p_object);
 }
+
+#ifdef __cplusplus
+}
+#endif

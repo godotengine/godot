@@ -214,13 +214,16 @@ void GDAPI godot_nativescript_set_signal_documentation(void *p_gdnative_handle, 
 
 // type tag API
 
+void GDAPI godot_nativescript_set_global_type_tag(int p_idx, const char *p_name, const void *p_type_tag);
+const void GDAPI *godot_nativescript_get_global_type_tag(int p_idx, const char *p_name);
+
 void GDAPI godot_nativescript_set_type_tag(void *p_gdnative_handle, const char *p_name, const void *p_type_tag);
 const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object);
 
 // instance binding API
 
 typedef struct {
-	GDCALLINGCONV void *(*alloc_instance_binding_data)(void *, godot_object *);
+	GDCALLINGCONV void *(*alloc_instance_binding_data)(void *, const void *, godot_object *);
 	GDCALLINGCONV void (*free_instance_binding_data)(void *, void *);
 	void *data;
 	GDCALLINGCONV void (*free_func)(void *);
