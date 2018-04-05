@@ -243,6 +243,7 @@ public:
 	void fix_dependencies(const String &p_for_file);
 
 	void set_display_mode(int p_mode);
+	void rescan();
 
 	int get_split_offset() { return split_box->get_split_offset(); }
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }

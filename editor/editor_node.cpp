@@ -1179,6 +1179,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
+				filesystem_dock->rescan();
 				_add_to_recent_scenes(p_file);
 
 				if (scene_idx != -1)
@@ -1192,6 +1193,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file);
+				filesystem_dock->rescan();
 				_run(false, p_file);
 			}
 		} break;

@@ -932,7 +932,6 @@ void FileSystemDock::_make_dir_confirm() {
 	memdelete(da);
 
 	if (err == OK) {
-		print_line("call rescan!");
 		_rescan();
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
@@ -976,7 +975,6 @@ void FileSystemDock::_rename_operation_confirm() {
 	_update_resource_paths_after_move(renames);
 
 	//Rescan everything
-	print_line("call rescan!");
 	_rescan();
 }
 
@@ -1011,7 +1009,6 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	_try_duplicate_item(to_duplicate, new_path);
 
 	//Rescan everything
-	print_line("call rescan!");
 	_rescan();
 }
 
@@ -1027,7 +1024,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
 	_update_dependencies_after_move(renames);
 	_update_resource_paths_after_move(renames);
 
-	print_line("call rescan!");
 	_rescan();
 }
 
@@ -1144,6 +1140,7 @@ void FileSystemDock::_file_option(int p_option) {
 			}
 		} break;
 		case FILE_DUPLICATE: {
+
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
@@ -1338,8 +1335,13 @@ void FileSystemDock::_search_changed(const String &p_text) {
 
 void FileSystemDock::_rescan() {
 
+	print_line("call rescan!");
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
+}
+
+void FileSystemDock::rescan() {
+	_rescan();
 }
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
