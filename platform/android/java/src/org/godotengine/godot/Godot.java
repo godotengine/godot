@@ -379,6 +379,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
+		// Since there is no way to poll sensors themselves to get actual values
+		// we initialize them to 0
+		GodotLib.accelerometer(0, 0, 0);
+		GodotLib.gravity(0, 0, 0);
+		GodotLib.magnetometer(0, 0, 0);
+		GodotLib.gyroscope(0, 0, 0);
+
 		result_callback = null;
 
 		mPaymentsManager = PaymentsManager.createManager(this).initService();
