@@ -42,7 +42,7 @@ StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
 void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
-	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1) {
 			_erase_selected();
 			accept_event();

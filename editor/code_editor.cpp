@@ -122,7 +122,7 @@ void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 			bool accepted = true;
 
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 
 				case KEY_ESCAPE: {
 

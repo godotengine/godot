@@ -1268,7 +1268,7 @@ void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventKey> k = p_ev;
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 
 			case KEY_A: {
 				if (!k->get_shift())

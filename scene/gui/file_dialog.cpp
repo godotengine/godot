@@ -85,7 +85,7 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 			bool handled = true;
 
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 
 				case KEY_H: {
 

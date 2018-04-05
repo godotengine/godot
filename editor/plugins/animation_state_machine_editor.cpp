@@ -69,7 +69,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		return;
 
 	Ref<InputEventKey> k = p_event;
-	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_node != StringName() || selected_transition_to != StringName() || selected_transition_from != StringName()) {
 			_erase_selected();
 			accept_event();

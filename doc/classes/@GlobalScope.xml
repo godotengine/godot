@@ -4,7 +4,7 @@
 		Global scope constants and variables.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc.
+		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<tutorials>
@@ -146,7 +146,7 @@
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
 		<constant name="SPKEY" value="16777216">
-			Scancodes with this bit applied are non-printable.
+			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="KeyList">
 			Escape key.

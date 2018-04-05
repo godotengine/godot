@@ -273,7 +273,8 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 	event.instance();
 	GetKeyModifierState(event, modifiers);
 	event->set_pressed(message->what == B_KEY_DOWN);
-	event->set_scancode(KeyMappingHaiku::get_keysym(raw_char, key));
+	event->set_keycode(KeyMappingHaiku::get_keysym(raw_char, key));
+	event->set_physical_keycode(KeyMappingHaiku::get_keysym(raw_char, key));
 	event->set_echo(message->HasInt32("be:key_repeat"));
 	event->set_unicode(0);
 
@@ -283,8 +284,9 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 	}
 
 	//make it consistent across platforms.
-	if (event->get_scancode() == KEY_BACKTAB) {
-		event->set_scancode(KEY_TAB);
+	if (event->get_keycode() == KEY_BACKTAB) {
+		event->set_keycode(KEY_TAB);
+		event->set_physical_keycode(KEY_TAB);
 		event->set_shift(true);
 	}
 

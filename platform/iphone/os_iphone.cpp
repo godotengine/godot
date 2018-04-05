@@ -135,7 +135,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	RasterizerRD::make_current();
 #endif
 
-	
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -212,7 +211,8 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_scancode(p_key);
+	ev->set_keycode(p_key);
+	ev->set_physical_keycode(p_key);
 	ev->set_unicode(p_key);
 	queue_event(ev);
 };

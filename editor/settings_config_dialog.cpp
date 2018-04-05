@@ -163,7 +163,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (k->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+		if (k->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
 			_focus_current_search_box();
 			handled = true;
 		}
@@ -317,10 +317,10 @@ void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != 0) {
 
 		last_wait_for_key = k;
-		const String str = keycode_get_string(k->get_scancode_with_modifiers());
+		const String str = keycode_get_string(k->get_keycode_with_modifiers());
 
 		press_a_key_label->set_text(str);
 		press_a_key->accept_event();
@@ -334,7 +334,7 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 
 	Ref<InputEventKey> ie;
 	ie.instance();
-	ie->set_scancode(last_wait_for_key->get_scancode());
+	ie->set_keycode(last_wait_for_key->get_keycode());
 	ie->set_shift(last_wait_for_key->get_shift());
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_alt(last_wait_for_key->get_alt());

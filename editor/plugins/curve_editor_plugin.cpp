@@ -238,7 +238,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		const InputEventKey &key = **key_ref;
 
 		if (key.is_pressed() && _selected_point != -1) {
-			if (key.get_scancode() == KEY_DELETE)
+			if (key.get_keycode() == KEY_DELETE)
 				remove_point(_selected_point);
 		}
 	}

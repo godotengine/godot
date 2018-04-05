@@ -1113,15 +1113,17 @@ String _OS::get_system_dir(SystemDir p_dir) const {
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
 }
 
-String _OS::get_scancode_string(uint32_t p_code) const {
+String _OS::get_keycode_string(uint32_t p_code) const {
 
 	return keycode_get_string(p_code);
 }
-bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
+
+bool _OS::is_keycode_unicode(uint32_t p_unicode) const {
 
 	return keycode_has_unicode(p_unicode);
 }
-int _OS::find_scancode_from_string(const String &p_code) const {
+
+int _OS::find_keycode_from_string(const String &p_code) const {
 
 	return find_keycode(p_code);
 }
@@ -1312,9 +1314,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("native_video_pause"), &_OS::native_video_pause);
 	ClassDB::bind_method(D_METHOD("native_video_unpause"), &_OS::native_video_unpause);
 
-	ClassDB::bind_method(D_METHOD("get_scancode_string", "code"), &_OS::get_scancode_string);
-	ClassDB::bind_method(D_METHOD("is_scancode_unicode", "code"), &_OS::is_scancode_unicode);
-	ClassDB::bind_method(D_METHOD("find_scancode_from_string", "string"), &_OS::find_scancode_from_string);
+	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &_OS::get_keycode_string);
+	ClassDB::bind_method(D_METHOD("is_keycode_unicode", "code"), &_OS::is_keycode_unicode);
+	ClassDB::bind_method(D_METHOD("find_keycode_from_string", "string"), &_OS::find_keycode_from_string);
 
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
 
