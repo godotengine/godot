@@ -339,13 +339,11 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) 
 	const Object *o = (Object *)p_object;
 
 	if (!o->get_script_instance()) {
-		ERR_EXPLAIN("Attempted to get type tag on an object without a script!");
-		ERR_FAIL_V(NULL);
+		return NULL;
 	} else {
 		NativeScript *script = Object::cast_to<NativeScript>(o->get_script_instance()->get_script().ptr());
 		if (!script) {
-			ERR_EXPLAIN("Attempted to get type tag on an object without a nativescript attached");
-			ERR_FAIL_V(NULL);
+			return NULL;
 		}
 
 		if (script->get_script_desc())
