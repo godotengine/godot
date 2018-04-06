@@ -152,7 +152,7 @@ public:
 
 	void remove_all_overlapping_instantly();
 	// Dispatch the callbacks and removes from overlapping list
-	void remove_overlapping_instantly(CollisionObjectBullet *p_object);
+	void remove_overlapping_instantly(CollisionObjectBullet *p_object, bool p_notify);
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}

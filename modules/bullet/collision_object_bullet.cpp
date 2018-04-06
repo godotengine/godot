@@ -68,12 +68,10 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		force_shape_reset(false) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
-	// Remove all overlapping
+	// Remove all overlapping, notify is not required since godot take care of it
 	for (int i = areasOverlapped.size() - 1; 0 <= i; --i) {
-		areasOverlapped[i]->remove_overlapping_instantly(this);
+		areasOverlapped[i]->remove_overlapping_instantly(this, /*Notify*/ false);
 	}
-	// not required
-	// areasOverlapped.clear();
 
 	destroyBulletCollisionObject();
 }
