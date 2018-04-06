@@ -30,9 +30,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     codetrotter
     E Hewert
     Hein-Pieter van Braam
+    Igors Vaitkus
     Jamal Alyafei
     Jay Sistar
     Matthieu Huvé
+    Mike King
     Nathan Warden
     Neal Gompa (Conan Kudo)
     Pascal Julien
@@ -50,6 +52,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Asdf
     cheese65536
     Jake Bo
+    Kris Michael
     Manuele Finocchiaro
     Officine Pixel S.n.c.
     Rémi Verschelde
@@ -60,11 +63,15 @@ generous deed immortalized in the next stable release of Godot Engine.
     Austen McRae
     Benjamin Botwin
     Bernhard Liebl
+    Catalin Moldovan
+    DeepSquid
+    Florian Breisch
+    Gary Oberbrunner
     Johannes Wuensch
     Josep G. Camarasa
-    Kris Michael
+    Joshua Lesperance
     Libre-Dépanne
-    Mike King
+    Matthew Bennett
     Ranoller
     Rob Messick
     Svenne Krap
@@ -81,12 +88,14 @@ generous deed immortalized in the next stable release of Godot Engine.
     Garrett Dockins
     Guilherme Felipe de C. G. da Silva
     Harman Bains
-    Henrique Alves
+    John
+    Justo Delgado Baudí
     Karsten Bock
     Laurence Bannister
     Rami
     Robert Willes
     Robin Arys
+    Rufus Sasparilla
     ScottMakesGames
     Testus Maximus
     Thomas Bjarnelöf
@@ -94,9 +103,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     Xavier Tan
     Zaq Poi
 
+    Alessandra Pereyra
     Alexey Dyadchenko
     Amanda Haldy
-    Arnaud Verstuyf
     Chris Brown
     Chris Wilson
     Cody Parker
@@ -111,23 +120,26 @@ generous deed immortalized in the next stable release of Godot Engine.
     Jeppe Zapp
     Jeremi Biernacki
     joe513
+    John O'Mahoney
     Jordan M Lucas
     Juraj Móza
     Justin Arnold
-    Justo Delgado Baudí
     Leandro Voltolino
     Lisandro Lorea
+    Marco Andrew Cafolla
     Markus Wiesner
-    Marty Plumbo
     Marvin
     Nick Nikitin
     Pablo Cholaky
     Patrick Schnorbus
     Pete Goodwin
     Phyronnaz
+    Simon De Greve
+    Sofox
     Ted
     Travis Womack
     Trent McPheron
+    Vladimir
 
 ## Silver donors
 
@@ -142,13 +154,13 @@ generous deed immortalized in the next stable release of Godot Engine.
     Anthony Bongiovanni
     Arda Erol
     Arthur S. Muszynski
+    Aubrey Falconer
     Avencherus
     Bastian Böhm
     Benedikt
     Benjamin Beshara
     Ben Vercammen
     Blair Allen
-    Bryan Crow
     Bryanna M
     Bryan Stevenson
     Carwyn Edwards
@@ -161,6 +173,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Daniel Kaplan
     Daniel Langegger
     Daniel Mircea
+    David
     David Cravens
     David May
     Dominik Wetzel
@@ -168,21 +181,23 @@ generous deed immortalized in the next stable release of Godot Engine.
     Fabian Becker
     fengjiongmax
     Francesco Lisi
+    Frédéric Alix
     G3Dev sàrl
     Geequlim
     Gerrit Großkopf
     Gerrit Procee
     Gilberto K. Otubo
     Guldoman
-    HeartBeast
     Heribert Hirth
+    hubert jenkins
     Hunter Jones
     ialex32x
+    Ivan Vodopiviz
     Jaime Ruiz-Borau Vizárraga
-    Jed Rose
+    Jed
     Jeff Hungerford
     Joel Fivat
-    Johannes du Randt
+    Johan Lindberg
     Jonas Yamazaki
     Jonathan Martin
     Jonathan Nieto
@@ -199,9 +214,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     Klavdij Voncina
     Lars pfeffer
     Linus Lind Lundgren
+    Macil
     magodev
     Martin Eigel
-    Martin Novák
     Matthew Fitzpatrick
     Matthias Hölzl
     Max R.R. Collada
@@ -229,15 +244,14 @@ generous deed immortalized in the next stable release of Godot Engine.
     Patric Vormstein
     Paul Mason
     Paweł Kowal
-    Pedro Luz
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
     Richman Stewart
-    Rodolfo Baeza
     Roger Burgess
     Roger Smith
     Roman Tinkov
+    Ryan Whited
     Sasori Olkof
     Scott D. Yelich
     Sootstone
@@ -245,10 +259,14 @@ generous deed immortalized in the next stable release of Godot Engine.
     Thibault Barbaroux
     Thomas Bell
     Thomas Herzog & Xananax
+    Thomas Kurz
     Tom Larrow
     Tyler Stafos
     UltyX
+    Victor Gonzalez Fernandez
     Victor Holt
+    Viktor Ferenczi
+    werner mendizabal
     Wout Standaert
     Yu He
 
