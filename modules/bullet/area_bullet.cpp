@@ -68,7 +68,8 @@ AreaBullet::AreaBullet() :
 }
 
 AreaBullet::~AreaBullet() {
-	remove_all_overlapping_instantly();
+	// Call "remove_all_overlapping_instantly();" is not necessary because the exit
+	// signal are handled by godot, so just clear the array
 }
 
 void AreaBullet::dispatch_callbacks() {
@@ -131,12 +132,13 @@ void AreaBullet::remove_all_overlapping_instantly() {
 	overlappingObjects.clear();
 }
 
-void AreaBullet::remove_overlapping_instantly(CollisionObjectBullet *p_object) {
+void AreaBullet::remove_overlapping_instantly(CollisionObjectBullet *p_object, bool p_notify) {
 	CollisionObjectBullet *supportObject;
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		supportObject = overlappingObjects[i].object;
 		if (supportObject == p_object) {
-			call_event(supportObject, PhysicsServer::AREA_BODY_REMOVED);
+			if (p_notify)
+				call_event(supportObject, PhysicsServer::AREA_BODY_REMOVED);
 			supportObject->on_exit_area(this);
 			overlappingObjects.remove(i);
 			break;
