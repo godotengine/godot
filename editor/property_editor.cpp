@@ -2781,6 +2781,7 @@ void PropertyEditor::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
+	show_type_icons = EDITOR_GET("interface/editor/show_type_icons");
 
 	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
 
