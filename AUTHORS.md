@@ -125,4 +125,14 @@ name is available.
     Yuri Roubinski (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
-    Дмитрий Сальников (DmitriySalnikov)
+    박한얼 (volzhs)
+    bruvzg
+    est31
+    m4nu3lf
+    marynate
+    mrezai
+    robfram
+    romulox-x
+    rraallvv
+    sersoong
+    yg2f (SuperUserNameMan)
