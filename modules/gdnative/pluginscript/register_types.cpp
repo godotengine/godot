@@ -64,7 +64,7 @@ static Error _check_language_desc(const godot_pluginscript_language_desc *desc) 
 	// desc->make_function is not mandatory
 	// desc->complete_code is not mandatory
 	// desc->auto_indent_code is not mandatory
-	// desc->add_global_constant is not mandatory
+	ERR_FAIL_COND_V(!desc->add_global_constant, ERR_BUG);
 	// desc->debug_get_error is not mandatory
 	// desc->debug_get_stack_level_count is not mandatory
 	// desc->debug_get_stack_level_line is not mandatory
