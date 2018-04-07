@@ -352,7 +352,7 @@ void AnimatedSprite::_notification(int p_what) {
 				return;
 
 			float speed = frames->get_animation_speed(animation);
-			if (speed == 0)
+			if (speed == 0 && !override)
 				return; //do nothing
 
 			float remaining = get_process_delta_time();
@@ -361,7 +361,11 @@ void AnimatedSprite::_notification(int p_what) {
 
 				if (timeout <= 0) {
 
-					timeout = 1.0 / speed;
+					if (override) {
+						timeout = 1.0 / override_speed;
+					} else {
+						timeout = 1.0 / speed;
+					}
 
 					int fc = frames->get_frame_count(animation);
 					if (frame >= fc - 1) {
@@ -570,7 +574,12 @@ void AnimatedSprite::_reset_timeout() {
 		return;
 
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		float speed = frames->get_animation_speed(animation);
+		float speed;
+		if (override) {
+			speed = override_speed;
+		} else {
+			speed = frames->get_animation_speed(animation);
+		}
 		if (speed > 0) {
 			timeout = 1.0 / speed;
 		} else {
@@ -606,6 +615,34 @@ String AnimatedSprite::get_configuration_warning() const {
 	return String();
 }
 
+void AnimatedSprite::set_override_enabled(bool p_enabled) {
+
+	if (override == p_enabled) return;
+	override = p_enabled;
+	_reset_timeout();
+	update();
+}
+
+bool AnimatedSprite::is_override_enabled() const {
+
+	return override;
+}
+
+void AnimatedSprite::set_override_speed(float p_speed) {
+	ERR_FAIL_COND(p_speed < 0);
+	if (fabs(p_speed - override_speed) < 0.01) return;
+	if (playing && override_speed > 0.0) {
+		timeout = timeout * (p_speed / override_speed);
+	}
+	override_speed = p_speed;
+	update();
+}
+
+float AnimatedSprite::get_override_speed() const {
+
+	return override_speed;
+}
+
 void AnimatedSprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite::set_sprite_frames);
@@ -636,6 +673,12 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_override_enabled", "enabled"), &AnimatedSprite::set_override_enabled);
+	ClassDB::bind_method(D_METHOD("is_override_enabled"), &AnimatedSprite::is_override_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_override_speed", "speed"), &AnimatedSprite::set_override_speed);
+	ClassDB::bind_method(D_METHOD("get_override_speed"), &AnimatedSprite::get_override_speed);
+
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
@@ -649,6 +692,8 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "override_enabled"), "set_override_enabled", "is_override_enabled");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "override_speed", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_override_speed", "get_override_speed");
 }
 
 AnimatedSprite::AnimatedSprite() {
@@ -661,4 +706,6 @@ AnimatedSprite::AnimatedSprite() {
 	playing = false;
 	animation = "default";
 	timeout = 0;
+	override = false;
+	override_speed = 5.0;
 }
