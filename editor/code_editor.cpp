@@ -212,6 +212,42 @@ void FindReplaceBar::_replace_all() {
 
 	text_edit->begin_complex_operation();
 
+	if (search_current()) {
+
+		// replace area
+		Point2i match_from(result_line, result_col);
+		Point2i match_to(result_line, result_col + search_text_len);
+
+		if (match_from < prev_match) {
+
+		}
+		else {
+			prev_match = Point2i(result_line, result_col + replace_text.length());
+
+			text_edit->unfold_line(result_line);
+			text_edit->select(result_line, result_col, result_line, match_to.y);
+
+			if (selection_enabled && is_selection_only()) {
+
+				if (match_from < selection_begin || match_to > selection_end){
+
+				}
+				else {
+					// replace but adjust selection bounds
+					text_edit->insert_text_at_cursor(replace_text);
+					if (match_to.x == selection_end.x)
+						selection_end.y += replace_text.length() - search_text_len;
+					rc++;
+				}
+			}
+			else {
+				// just replace
+				text_edit->insert_text_at_cursor(replace_text);
+				rc++;
+			}
+		}
+	}
+
 	while (search_next()) {
 
 		// replace area
