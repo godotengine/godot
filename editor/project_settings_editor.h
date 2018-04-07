@@ -96,6 +96,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *action_name;
 	Button *action_add;
 	Label *action_add_error;
+	SpinBox *controller_id_sb;
 	Tree *input_editor;
 	bool updating_actions;
 	bool setting;
@@ -134,6 +135,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_adds(String);
 	void _action_add();
 	void _device_input_add();
+
+	void _controller_changed(double p_value);
 
 	void _tab_container_changed(int p_tab);
 	void _item_checked(const String &p_item, bool p_check);

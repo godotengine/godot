@@ -82,11 +82,12 @@ public:
 	virtual bool is_key_pressed(int p_scancode) const = 0;
 	virtual bool is_mouse_button_pressed(int p_button) const = 0;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const = 0;
-	virtual bool is_action_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_released(const StringName &p_action) const = 0;
-	virtual bool is_action_just_changed(const StringName &p_action) const = 0;
-	virtual float get_action_axis_value(const StringName &p_name) const = 0;
+
+	virtual bool is_action_pressed(const StringName &p_action, int p_device = 0) const = 0;
+	virtual bool is_action_just_pressed(const StringName &p_action, int p_device = 0) const = 0;
+	virtual bool is_action_just_released(const StringName &p_action, int p_device = 0) const = 0;
+	virtual bool is_action_just_changed(const StringName &p_action, int p_device = 0) const = 0;
+	virtual float get_action_axis_value(const StringName &p_name, int p_device = 0) const = 0;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;
@@ -114,8 +115,8 @@ public:
 	virtual Vector3 get_magnetometer() const = 0;
 	virtual Vector3 get_gyroscope() const = 0;
 
-	virtual void action_press(const StringName &p_action) = 0;
-	virtual void action_release(const StringName &p_action) = 0;
+	virtual void action_press(const StringName &p_action, int p_device = 0) = 0;
+	virtual void action_release(const StringName &p_action, int p_device = 0) = 0;
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 

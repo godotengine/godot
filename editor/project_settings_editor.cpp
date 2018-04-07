@@ -212,7 +212,8 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
 			mb->set_button_index(device_index->get_selected() + 1);
-			mb->set_device(device_id->get_value());
+			mb->set_device(0);
+			mb->set_data(String::num(controller_id_sb->get_value()));
 			mb->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
@@ -234,6 +235,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			jm.instance();
 			jm->set_axis(device_index->get_selected());
 			jm->set_device(device_id->get_value());
+			jm->set_data(String::num(controller_id_sb->get_value()));
 			jm->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
@@ -256,6 +258,7 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			jb->set_button_index(device_index->get_selected());
 			jb->set_device(device_id->get_value());
+			jb->set_data(String::num(controller_id_sb->get_value()));
 			jb->set_axis_factor(updating_actions ? 0 : axis_factor);
 
 			for (int i = 0; i < arr.size(); i++) {
@@ -304,6 +307,8 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_metakey(last_wait_for_key->get_metakey());
 	ie->set_axis_factor(updating_actions ? 0 : sim_axis_sb->get_value());
+	ie->set_device(0);
+	ie->set_data(String::num(controller_id_sb->get_value()));
 
 	String name = add_at;
 	int idx = edit_idx;
@@ -646,6 +651,7 @@ void ProjectSettingsEditor::_update_actions() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
+	int current_controller_id((int)controller_id_sb->get_value());
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 		const PropertyInfo &pi = E->get();
@@ -681,6 +687,10 @@ void ProjectSettingsEditor::_update_actions() {
 
 			Ref<InputEvent> ie = actions[i];
 			if (ie.is_null())
+				continue;
+
+			// If current device id is different
+			if (current_controller_id != ie->get_data().to_int())
 				continue;
 
 			TreeItem *action = input_editor->create_item(item);
@@ -938,6 +948,10 @@ void ProjectSettingsEditor::_action_add() {
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();
 	action_name->clear();
+}
+
+void ProjectSettingsEditor::_controller_changed(double p_value) {
+	_update_actions();
 }
 
 void ProjectSettingsEditor::_tab_container_changed(int p_tab) {
@@ -1614,6 +1628,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_action_edited"), &ProjectSettingsEditor::_action_edited);
 	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettingsEditor::_action_activated);
 	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
+	ClassDB::bind_method(D_METHOD("_controller_changed", "value"), &ProjectSettingsEditor::_controller_changed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
@@ -1801,6 +1816,28 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add->set_disabled(true);
 	add->connect("pressed", this, "_action_add");
 	action_add = add;
+
+	// Separator between Add action and Device ID Inputs
+	HSeparator *sep = memnew(HSeparator);
+	sep->set_h_size_flags(SIZE_EXPAND_FILL);
+	input_map_vbc->add_child(sep);
+
+	// Controller input
+	hbc = memnew(HBoxContainer);
+	input_map_vbc->add_child(hbc);
+
+	Label *controller_label = memnew(Label);
+	hbc->add_child(controller_label);
+	controller_label->set_text(TTR("Controller: "));
+
+	controller_id_sb = memnew(SpinBox);
+	controller_id_sb->set_min(0);
+	controller_id_sb->set_max(100);
+	controller_id_sb->set_step(1);
+	controller_id_sb->set_value(0); // Default controller 0
+	controller_id_sb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(controller_id_sb);
+	controller_id_sb->connect("value_changed", this, "_controller_changed");
 
 	input_editor = memnew(Tree);
 	input_map_vbc->add_child(input_editor);

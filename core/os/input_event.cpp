@@ -54,13 +54,17 @@ bool InputEvent::is_simulating_axis() {
 	return ABS(axis_factor) > 0;
 }
 
+void InputEvent::set_data(const String &p_data) {
+	data = p_data;
+}
+
 float InputEvent::get_axis_value() const {
 	return pressed;
 }
 
 bool InputEvent::is_action(const StringName &p_action) const {
 
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
+	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), (get_data() == "" ? "0" : get_data()) + ":" + p_action);
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action) const {
@@ -113,6 +117,9 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_factor", "factor"), &InputEvent::set_axis_factor);
 	ClassDB::bind_method(D_METHOD("get_axis_factor"), &InputEvent::get_axis_factor);
 
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &InputEvent::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &InputEvent::get_data);
+
 	ClassDB::bind_method(D_METHOD("is_simulating_axis"), &InputEvent::is_simulating_axis);
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEvent::get_axis_value);
 
@@ -133,6 +140,7 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_factor"), "set_axis_factor", "get_axis_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "data"), "set_data", "get_data");
 }
 
 InputEvent::InputEvent() {

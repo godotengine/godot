@@ -148,7 +148,8 @@ class InputEvent : public Resource {
 protected:
 	int device;
 	bool pressed;
-	float axis_factor; // Used to simulate axis on normal buttons or to scale the real value of axis_value
+	float axis_factor; // Used to simulate axis on buttons event or to scale the axis value in case of axis event
+	String data; // Used to store extra information
 
 protected:
 	static void _bind_methods();
@@ -161,9 +162,12 @@ public:
 	_FORCE_INLINE_ virtual bool is_pressed() const { return pressed; }
 
 	void set_axis_factor(float p_axis_factor);
-	float get_axis_factor() const { return axis_factor; }
+	_FORCE_INLINE_ float get_axis_factor() const { return axis_factor; }
 
 	bool is_simulating_axis();
+
+	void set_data(const String &p_data);
+	_FORCE_INLINE_ const String &get_data() const { return data; }
 
 	virtual float get_axis_value() const;
 

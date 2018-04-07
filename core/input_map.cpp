@@ -37,32 +37,32 @@ InputMap *InputMap::singleton = NULL;
 
 void InputMap::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
+	ClassDB::bind_method(D_METHOD("has_action", "controller_action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
-	ClassDB::bind_method(D_METHOD("add_action", "action"), &InputMap::add_action);
-	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
+	ClassDB::bind_method(D_METHOD("add_action", "controller_action"), &InputMap::add_action);
+	ClassDB::bind_method(D_METHOD("erase_action", "controller_action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
-	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list);
-	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
+	ClassDB::bind_method(D_METHOD("get_action_list", "controller_action"), &InputMap::_get_action_list);
+	ClassDB::bind_method(D_METHOD("event_is_action", "event", "controller_action"), &InputMap::event_is_action);
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
 
-void InputMap::add_action(const StringName &p_action) {
+void InputMap::add_action(const StringName &p_controller_action) {
 
-	ERR_FAIL_COND(input_map.has(p_action));
-	input_map[p_action] = Action();
+	ERR_FAIL_COND(input_map.has(p_controller_action));
+	input_map[p_controller_action] = Action();
 	static int last_id = 1;
-	input_map[p_action].id = last_id;
+	input_map[p_controller_action].id = last_id;
 	last_id++;
 }
 
-void InputMap::erase_action(const StringName &p_action) {
+void InputMap::erase_action(const StringName &p_controller_action) {
 
-	ERR_FAIL_COND(!input_map.has(p_action));
-	input_map.erase(p_action);
+	ERR_FAIL_COND(!input_map.has(p_controller_action));
+	input_map.erase(p_controller_action);
 }
 
 Array InputMap::_get_actions() {
@@ -112,40 +112,60 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(List<Ref<InputEvent> > &p
 	return NULL;
 }
 
-bool InputMap::has_action(const StringName &p_action) const {
+bool InputMap::has_action(const StringName &p_controller_action) const {
 
-	return input_map.has(p_action);
+	return input_map.has(p_controller_action);
 }
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(p_event.is_null());
-	ERR_FAIL_COND(!input_map.has(p_action));
-	if (_find_event(input_map[p_action].inputs, p_event))
+
+	String controller_action = (p_event->get_data() == "" ? "0" : p_event->get_data()) + ":" + p_action;
+
+	ERR_FAIL_COND(!input_map.has(controller_action));
+	if (_find_event(input_map[controller_action].inputs, p_event))
 		return; //already gots
 
-	input_map[p_action].inputs.push_back(p_event);
+	input_map[controller_action].inputs.push_back(p_event);
+}
+
+void InputMap::add_action_with_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+
+	ERR_FAIL_COND(p_event.is_null());
+
+	String controller_action = (p_event->get_data() == "" ? "0" : p_event->get_data()) + ":" + p_action;
+	if (!input_map.has(controller_action))
+		add_action(controller_action);
+
+	if (_find_event(input_map[controller_action].inputs, p_event))
+		return; //already gots
+
+	input_map[controller_action].inputs.push_back(p_event);
 }
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
-	ERR_FAIL_COND_V(!input_map.has(p_action), false);
-	return (_find_event(input_map[p_action].inputs, p_event) != NULL);
+	String controller_action = (p_event->get_data() == "" ? "0" : p_event->get_data()) + ":" + p_action;
+
+	ERR_FAIL_COND_V(!input_map.has(controller_action), false);
+	return (_find_event(input_map[controller_action].inputs, p_event) != NULL);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
-	ERR_FAIL_COND(!input_map.has(p_action));
+	String controller_action = (p_event->get_data() == "" ? "0" : p_event->get_data()) + ":" + p_action;
+	ERR_FAIL_COND(!input_map.has(controller_action));
 
-	List<Ref<InputEvent> >::Element *E = _find_event(input_map[p_action].inputs, p_event);
+	List<Ref<InputEvent> >::Element *E = _find_event(input_map[controller_action].inputs, p_event);
 	if (E)
-		input_map[p_action].inputs.erase(E);
+		input_map[controller_action].inputs.erase(E);
 }
 
-Array InputMap::_get_action_list(const StringName &p_action) {
+Array InputMap::_get_action_list(const StringName &p_controller_action) {
 
 	Array ret;
-	const List<Ref<InputEvent> > *al = get_action_list(p_action);
+	const List<Ref<InputEvent> > *al = get_action_list(p_controller_action);
 	if (al) {
 		for (const List<Ref<InputEvent> >::Element *E = al->front(); E; E = E->next()) {
 
@@ -156,26 +176,26 @@ Array InputMap::_get_action_list(const StringName &p_action) {
 	return ret;
 }
 
-const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_action) {
+const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_controller_action) {
 
-	const Map<StringName, Action>::Element *E = input_map.find(p_action);
+	const Map<StringName, Action>::Element *E = input_map.find(p_controller_action);
 	if (!E)
 		return NULL;
 
 	return &E->get().inputs;
 }
 
-Ref<InputEvent> InputMap::event_get_input_event_if_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
+Ref<InputEvent> InputMap::event_get_input_event_if_action(const Ref<InputEvent> &p_event, const StringName &p_controller_action) const {
 
-	Map<StringName, Action>::Element *E = input_map.find(p_action);
+	Map<StringName, Action>::Element *E = input_map.find(p_controller_action);
 	if (!E) {
-		ERR_EXPLAIN("Request for nonexistent InputMap action: " + String(p_action));
+		ERR_EXPLAIN("Request for nonexistent InputMap action: " + String(p_controller_action));
 		ERR_FAIL_COND_V(!E, Ref<InputEvent>());
 	}
 
 	Ref<InputEventAction> iea = p_event;
 	if (iea.is_valid()) {
-		if (iea->get_action() == p_action)
+		if (iea->get_action() == p_controller_action)
 			return iea;
 	}
 
@@ -186,9 +206,9 @@ Ref<InputEvent> InputMap::event_get_input_event_if_action(const Ref<InputEvent> 
 		return Ref<InputEvent>();
 }
 
-bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
+bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_controller_action) const {
 
-	return event_get_input_event_if_action(p_event, p_action).is_valid();
+	return event_get_input_event_if_action(p_event, p_controller_action).is_valid();
 }
 
 const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
@@ -210,8 +230,6 @@ void InputMap::load_from_globals() {
 
 		String name = pi.name.get_slice("/", 1);
 
-		add_action(name);
-
 		Array va = ProjectSettings::get_singleton()->get(pi.name);
 
 		for (int i = 0; i < va.size(); i++) {
@@ -219,7 +237,8 @@ void InputMap::load_from_globals() {
 			Ref<InputEvent> ie = va[i];
 			if (ie.is_null())
 				continue;
-			action_add_event(name, ie);
+
+			add_action_with_event(name, ie);
 		}
 	}
 }
@@ -228,79 +247,66 @@ void InputMap::load_default() {
 
 	Ref<InputEventKey> key;
 
-	add_action("ui_accept");
 	key.instance();
 	key->set_scancode(KEY_ENTER);
-	action_add_event("ui_accept", key);
+	add_action_with_event("ui_accept", key);
 
 	key.instance();
 	key->set_scancode(KEY_KP_ENTER);
-	action_add_event("ui_accept", key);
+	add_action_with_event("ui_accept", key);
 
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	action_add_event("ui_accept", key);
+	add_action_with_event("ui_accept", key);
 
-	add_action("ui_select");
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	action_add_event("ui_select", key);
+	add_action_with_event("ui_select", key);
 
-	add_action("ui_cancel");
 	key.instance();
 	key->set_scancode(KEY_ESCAPE);
-	action_add_event("ui_cancel", key);
+	add_action_with_event("ui_cancel", key);
 
-	add_action("ui_focus_next");
 	key.instance();
 	key->set_scancode(KEY_TAB);
-	action_add_event("ui_focus_next", key);
+	add_action_with_event("ui_focus_next", key);
 
-	add_action("ui_focus_prev");
 	key.instance();
 	key->set_scancode(KEY_TAB);
 	key->set_shift(true);
-	action_add_event("ui_focus_prev", key);
+	add_action_with_event("ui_focus_prev", key);
 
-	add_action("ui_left");
 	key.instance();
 	key->set_scancode(KEY_LEFT);
-	action_add_event("ui_left", key);
+	add_action_with_event("ui_left", key);
 
-	add_action("ui_right");
 	key.instance();
 	key->set_scancode(KEY_RIGHT);
-	action_add_event("ui_right", key);
+	add_action_with_event("ui_right", key);
 
-	add_action("ui_up");
 	key.instance();
 	key->set_scancode(KEY_UP);
-	action_add_event("ui_up", key);
+	add_action_with_event("ui_up", key);
 
-	add_action("ui_down");
 	key.instance();
 	key->set_scancode(KEY_DOWN);
-	action_add_event("ui_down", key);
+	add_action_with_event("ui_down", key);
 
-	add_action("ui_page_up");
 	key.instance();
 	key->set_scancode(KEY_PAGEUP);
-	action_add_event("ui_page_up", key);
+	add_action_with_event("ui_page_up", key);
 
-	add_action("ui_page_down");
 	key.instance();
 	key->set_scancode(KEY_PAGEDOWN);
-	action_add_event("ui_page_down", key);
+	add_action_with_event("ui_page_down", key);
 
-	add_action("ui_home");
 	key.instance();
 	key->set_scancode(KEY_HOME);
-	action_add_event("ui_home", key);
+	add_action_with_event("ui_home", key);
 
-	add_action("ui_end");
 	key.instance();
 	key->set_scancode(KEY_END);
-	action_add_event("ui_end", key);
+	add_action_with_event("ui_end", key);
 
 	//set("display/window/handheld/orientation", "landscape");
 }
