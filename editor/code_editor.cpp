@@ -212,35 +212,39 @@ void FindReplaceBar::_replace_all() {
 
 	text_edit->begin_complex_operation();
 
-	while (search_next()) {
+	if (search_current()) {
+		do {
+			// replace area
+			Point2i match_from(result_line, result_col);
+			Point2i match_to(result_line, result_col + search_text_len);
 
-		// replace area
-		Point2i match_from(result_line, result_col);
-		Point2i match_to(result_line, result_col + search_text_len);
+			if (match_from < prev_match) {
+				break; // done
+			}
 
-		if (match_from < prev_match)
-			break; // done
+			prev_match = Point2i(result_line, result_col + replace_text.length());
 
-		prev_match = Point2i(result_line, result_col + replace_text.length());
+			text_edit->unfold_line(result_line);
+			text_edit->select(result_line, result_col, result_line, match_to.y);
 
-		text_edit->unfold_line(result_line);
-		text_edit->select(result_line, result_col, result_line, match_to.y);
+			if (selection_enabled && is_selection_only()) {
+				if (match_from < selection_begin || match_to > selection_end) {
+					continue;
+				}
 
-		if (selection_enabled && is_selection_only()) {
+				// replace but adjust selection bounds
+				text_edit->insert_text_at_cursor(replace_text);
+				if (match_to.x == selection_end.x) {
+					selection_end.y += replace_text.length() - search_text_len;
+				}
 
-			if (match_from < selection_begin || match_to > selection_end)
-				continue;
+			} else {
+				// just replace
+				text_edit->insert_text_at_cursor(replace_text);
+			}
 
-			// replace but adjust selection bounds
-			text_edit->insert_text_at_cursor(replace_text);
-			if (match_to.x == selection_end.x)
-				selection_end.y += replace_text.length() - search_text_len;
-		} else {
-			// just replace
-			text_edit->insert_text_at_cursor(replace_text);
-		}
-
-		rc++;
+			rc++;
+		} while (search_next());
 	}
 
 	text_edit->end_complex_operation();
