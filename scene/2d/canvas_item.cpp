@@ -412,7 +412,7 @@ void CanvasItem::_enter_canvas() {
 
 		RID canvas;
 		if (canvas_layer)
-			canvas = canvas_layer->get_world_2d()->get_canvas();
+			canvas = canvas_layer->get_canvas();
 		else
 			canvas = get_viewport()->find_world_2d()->get_canvas();
 
@@ -860,7 +860,7 @@ RID CanvasItem::get_canvas() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 
 	if (canvas_layer)
-		return canvas_layer->get_world_2d()->get_canvas();
+		return canvas_layer->get_canvas();
 	else
 		return get_viewport()->find_world_2d()->get_canvas();
 }
@@ -881,9 +881,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 	CanvasItem *tl = get_toplevel();
 
-	if (tl->canvas_layer) {
-		return tl->canvas_layer->get_world_2d();
-	} else if (tl->get_viewport()) {
+	if (tl->get_viewport()) {
 		return tl->get_viewport()->find_world_2d();
 	} else {
 		return Ref<World2D>();
