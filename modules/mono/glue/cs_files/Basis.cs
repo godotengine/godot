@@ -206,13 +206,13 @@ namespace Godot
                 }
                 else
                 {
-                    euler.x = Mathf.PI * 0.5f;
+                    euler.x = Mathf.Pi * 0.5f;
                     euler.y = -Mathf.Atan2(-m[0, 1], m[0, 0]);
                 }
             }
             else
             {
-                euler.x = -Mathf.PI * 0.5f;
+                euler.x = -Mathf.Pi * 0.5f;
                 euler.y = -Mathf.Atan2(-m[0, 1], m[0, 0]);
             }
 
