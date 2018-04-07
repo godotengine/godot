@@ -52,57 +52,33 @@ void RemoteTransform2D::_update_remote() {
 	if (!cache)
 		return;
 
-	Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
-	if (!n)
+	Node2D *node2d = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
+	if (!node2d)
 		return;
 
-	if (!n->is_inside_tree())
+	if (!node2d->is_inside_tree())
 		return;
 
 	//todo make faster
-	if (use_global_coordinates) {
 
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
-		} else {
-			Transform2D n_trans = n->get_global_transform();
-			Transform2D our_trans = get_global_transform();
-			Vector2 n_scale = n->get_global_scale();
-
-			if (!update_remote_position)
-				our_trans.set_origin(n_trans.get_origin());
-			if (!update_remote_rotation)
-				our_trans.set_rotation(n_trans.get_rotation());
-
-			n->set_global_transform(our_trans);
-
-			if (update_remote_scale)
-				n->set_scale(get_global_scale());
-			else
-				n->set_scale(n_scale);
-		}
-
+	if (update_remote_position && update_remote_rotation && update_remote_scale) {
+		if (use_global_coordinates)
+			node2d->set_global_transform(get_global_transform());
+		else
+			node2d->set_transform(get_transform());
 	} else {
+		Transform2D output_transform;
 
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_transform(get_transform());
-		} else {
-			Transform2D n_trans = n->get_transform();
-			Transform2D our_trans = get_transform();
-			Vector2 n_scale = n->get_scale();
+		Transform2D self_transform = use_global_coordinates ? get_global_transform() : get_transform();
+		Transform2D node2d_transform = use_global_coordinates ? node2d->get_global_transform() : node2d->get_transform();
 
-			if (!update_remote_position)
-				our_trans.set_origin(n_trans.get_origin());
-			if (!update_remote_rotation)
-				our_trans.set_rotation(n_trans.get_rotation());
+		output_transform.set_origin(update_remote_position ? self_transform.get_origin() : node2d_transform.get_origin());
+		output_transform.set_rotation_and_scale(update_remote_rotation ? self_transform.get_rotation() : node2d_transform.get_rotation(), update_remote_scale ? self_transform.get_scale() : node2d_transform.get_scale());
 
-			n->set_transform(our_trans);
-
-			if (update_remote_scale)
-				n->set_scale(get_scale());
-			else
-				n->set_scale(n_scale);
-		}
+		if (use_global_coordinates)
+			node2d->set_global_transform(output_transform);
+		else
+			node2d->set_transform(output_transform);
 	}
 }
 

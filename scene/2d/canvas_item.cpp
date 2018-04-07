@@ -465,6 +465,7 @@ void CanvasItem::_notification(int p_what) {
 			if (!block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
+			global_invalid = true;
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 
@@ -820,11 +821,6 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
-
-	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid) {
-		return; //nothing to do
-	}
-
 	p_node->global_invalid = true;
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
