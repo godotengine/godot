@@ -8,10 +8,17 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// Mathf is Godot's wrapper class for mathematical functions.
+    /// For various reasons, we recommend using Mathf instead of Math for your game.
+    /// </summary>
     public static class Mathf
     {
         // Define constants with Decimal precision and cast down to double or float. 
-        public const real_t PI = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
+        public const real_t TAU = (real_t) 6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
+        public const real_t  PI = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
+        public const real_t   E = (real_t) 2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
+        public const real_t RT2 = (real_t) 1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
 
         #if REAL_T_IS_DOUBLE
         public const real_t Epsilon = 1e-14; // Epsilon size should depend on the precision used.
@@ -52,9 +59,19 @@ namespace Godot
             return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
         }
 
+        public static Vector2 Cartesian2Polar(Vector2 v)
+        {
+            return new Vector2(Sqrt(v.x * v.x + v.y * v.y), Atan2(v.y, v.x));
+        }
+
         public static real_t Ceil(real_t s)
         {
             return (real_t)Math.Ceiling(s);
+        }
+
+        public static int CeilToInt(real_t s)
+        {
+            return (int)Math.Ceiling(s);
         }
 
         public static real_t Clamp(real_t val, real_t min, real_t max)
@@ -94,6 +111,17 @@ namespace Godot
         public static real_t Deg2Rad(real_t deg)
         {
             return deg * Deg2RadConst;
+        }
+
+        /// <summary>
+        /// This method performs floored division, equivalent to // in Python. 
+        /// Ex: DivFloor(10, 7) is 1, while DivFloor(-10, 7) is -2.
+        /// This is useful in conjunction with Modulus.
+        /// </summary>
+        public static int DivFloor(real_t a, real_t b) 
+        {
+            real_t c = a / b;
+            return (int)Math.Floor(c);
         }
 
         public static real_t Ease(real_t s, real_t curve)
@@ -139,16 +167,19 @@ namespace Godot
             return (real_t)Math.Floor(s);
         }
 
-        public static real_t Fposmod(real_t x, real_t y)
+        public static int FloorToInt(real_t s)
         {
-            if (x >= 0f)
+            return (int)Math.Floor(s);
+        }
+
+        public static real_t Fposmod(real_t a, real_t b)
+        {
+            real_t c = a % b;
+            if (c < 0) 
             {
-                return x % y;
+                c += b;
             }
-            else
-            {
-                return y - (-x % y);
-            }
+            return c;
         }
 
         public static real_t Lerp(real_t from, real_t to, real_t weight)
@@ -156,7 +187,33 @@ namespace Godot
             return from + (to - from) * Clamp(weight, 0f, 1f);
         }
 
+        /// <summary>
+        /// This returns the Logarithm with base E (Natural Log)
+        /// </summary>
         public static real_t Log(real_t s)
+        {
+            return (real_t)Math.Log(s);
+        }
+
+        /// <summary>
+        /// This returns the Logarithm with base `b` 
+        /// </summary>
+        public static real_t LogBase(real_t a, real_t b)
+        {
+            return (real_t)Math.Log(a, b);
+        }
+
+        public static real_t Log10(real_t s)
+        {
+            return (real_t)Math.Log10(s);
+        }
+
+        public static real_t Log2(real_t s)
+        {
+            return (real_t)Math.Log(s, 2);
+        }
+
+        public static real_t LogE(real_t s)
         {
             return (real_t)Math.Log(s);
         }
@@ -181,6 +238,57 @@ namespace Godot
             return (a < b) ? a : b;
         }
 
+        public static real_t Mod(real_t a, real_t b)
+        {
+            real_t c = a % b;
+            if (c < 0) 
+            {
+                c += b;
+            }
+            return c;
+        }
+
+        public static int ModInt(real_t a, real_t b)
+        {
+            real_t c = a % b;
+            if (c < 0) 
+            {
+                c += b;
+            }
+            return RoundToInt(c);
+        }
+
+        public static int ModInt(int a, int b)
+        {
+            int c = a % b;
+            if (c < 0) 
+            {
+                c += b;
+            }
+            return c;
+        }
+
+        /// <summary>
+        /// Very fast Modulus function using a bitwise operation. 
+        /// B is only valid for powers of two, such as 2, 4, 8, 16, etc.
+        /// If you are looking for pure speed, see if ModBit2 works for you.
+        /// </summary>
+        public static int ModPow2(int a, int b)
+        {
+            return (a & (b-1));
+        }
+
+        /// <summary>
+        /// Extremely fast Modulus function using a bitwise operation. 
+        /// B is only valid for powers of two minus one, such as 1, 3, 7, 15, etc.
+        /// Output is the same as ModPow2 with the corresponding power of two.
+        /// For example, `ModBit2(a, 15)` is the same as `ModPow2(a, 16)`.
+        /// </summary>
+        public static int ModBit2(int a, int b)
+        {
+            return (a & b);
+        }
+
         public static int NearestPo2(int val)
         {
             val--;
@@ -198,6 +306,11 @@ namespace Godot
             return new Vector2(r * Cos(th), r * Sin(th));
         }
 
+        public static Vector2 Polar2Cartesian(Vector2 v)
+        {
+            return new Vector2(v.x * Cos(v.y), v.x * Sin(v.y));
+        }
+
         public static real_t Pow(real_t x, real_t y)
         {
             return (real_t)Math.Pow(x, y);
@@ -206,6 +319,21 @@ namespace Godot
         public static real_t Rad2Deg(real_t rad)
         {
             return rad * Rad2DegConst;
+        }
+
+        public static real_t Rem(real_t a, real_t b) 
+        {
+            return (a % b);
+        }
+
+        public static int RemInt(real_t a, real_t b) 
+        {
+            return RoundToInt(a % b);
+        }
+
+        public static int RemInt(int a, int b) 
+        {
+            return (a % b);
         }
 
         public static real_t Round(real_t s)
@@ -271,3 +399,6 @@ namespace Godot
         }
     }
 }
+
+
+

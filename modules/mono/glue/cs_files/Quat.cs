@@ -1,6 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 
+// TODO: Add a method for converting the Quaternion into Euler angles (return as Vector3). 
+// TODO: Add a constructor for converting Euler angles into a Quaternion (argument as Vector3). 
+
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -9,20 +12,20 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// Quat is a class for Quaternions, used for rotations in 3D space.
+    /// You should not manipulate Quat variables directly unless you are a mathematician.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Quat : IEquatable<Quat>
     {
-        private static readonly Quat identity = new Quat(0f, 0f, 0f, 1f);
-
         public real_t x;
         public real_t y;
         public real_t z;
         public real_t w;
 
-        public static Quat Identity
-        {
-            get { return identity; }
-        }
+        private static readonly Quat identity = new Quat(0f, 0f, 0f, 1f);
+        public static Quat Identity { get { return identity; } }
 
         public real_t this[int index]
         {

@@ -15,6 +15,9 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// AABB is a class for Axis Aligned Bounding Boxes, used for simple collision math.
+    /// </summary>
     public struct AABB : IEquatable<AABB>
     {
         private Vector3 position;

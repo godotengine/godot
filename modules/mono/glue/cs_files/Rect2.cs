@@ -9,6 +9,9 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// Rect2 is a class for 2D Rectangles, used for simple collision math.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Rect2 : IEquatable<Rect2>
     {
