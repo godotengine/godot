@@ -70,6 +70,9 @@ public:
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
 	virtual SpeakerMode get_speaker_mode() const = 0;
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device) {}
 	virtual void lock() = 0;
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
@@ -299,6 +302,10 @@ public:
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;
+
+	Array get_device_list();
+	String get_device();
+	void set_device(String device);
 
 	AudioServer();
 	virtual ~AudioServer();

@@ -234,10 +234,10 @@ def configure(env):
         print("ALSA libraries not found, disabling driver")
 
     if env['pulseaudio']:
-        if (os.system("pkg-config --exists libpulse-simple") == 0): # 0 means found
+        if (os.system("pkg-config --exists libpulse") == 0): # 0 means found
             print("Enabling PulseAudio")
             env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
-            env.ParseConfig('pkg-config --cflags --libs libpulse-simple')
+            env.ParseConfig('pkg-config --cflags --libs libpulse')
         else:
             print("PulseAudio development libraries not found, disabling driver")
 

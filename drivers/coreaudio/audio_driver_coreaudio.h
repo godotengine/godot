@@ -43,11 +43,11 @@
 class AudioDriverCoreAudio : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
-#ifdef OSX_ENABLED
-	AudioObjectPropertyAddress outputDeviceAddress;
-#endif
+
 	bool active;
 	Mutex *mutex;
+
+	String device_name;
 
 	int mix_rate;
 	unsigned int channels;
@@ -56,14 +56,18 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	Vector<int32_t> samples_in;
 
+	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
+			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+			void *inClientData);
+
 	static OSStatus output_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
 			const AudioTimeStamp *inTimeStamp,
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
-	Error initDevice();
-	Error finishDevice();
+	Error init_device();
+	Error finish_device();
 
 public:
 	const char *get_name() const {
@@ -74,12 +78,16 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
+#ifdef OSX_ENABLED
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device);
+#endif
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
 	bool try_lock();
-	Error reopen();
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio();

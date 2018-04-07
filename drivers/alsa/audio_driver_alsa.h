@@ -44,8 +44,14 @@ class AudioDriverALSA : public AudioDriver {
 
 	snd_pcm_t *pcm_handle;
 
-	int32_t *samples_in;
-	int16_t *samples_out;
+	String device_name;
+	String new_device;
+
+	Vector<int32_t> samples_in;
+	Vector<int16_t> samples_out;
+
+	Error init_device();
+	void finish_device();
 
 	static void thread_func(void *p_udata);
 
@@ -71,6 +77,9 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device);
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();

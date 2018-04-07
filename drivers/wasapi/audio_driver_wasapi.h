@@ -49,6 +49,9 @@ class AudioDriverWASAPI : public AudioDriver {
 	Mutex *mutex;
 	Thread *thread;
 
+	String device_name;
+	String new_device;
+
 	WORD format_tag;
 	WORD bits_per_sample;
 
@@ -80,6 +83,9 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device);
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
