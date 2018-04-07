@@ -3165,11 +3165,11 @@ String String::word_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
-String String::http_escape() const {
+String String::percent_encode() const {
 	const CharString temp = utf8();
 	String res;
-	for (int i = 0; i < length(); ++i) {
-		CharType ord = temp[i];
+	for (int i = 0; i < temp.length(); ++i) {
+		char ord = temp[i];
 		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
 				(ord >= 'a' && ord <= 'z') ||
 				(ord >= 'A' && ord <= 'Z') ||
@@ -3178,9 +3178,9 @@ String String::http_escape() const {
 		} else {
 			char h_Val[3];
 #if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%.2X", ord);
+			snprintf(h_Val, 3, "%hhX", ord);
 #else
-			sprintf(h_Val, "%.2X", ord);
+			sprintf(h_Val, "%hhX", ord);
 #endif
 			res += "%";
 			res += h_Val;
@@ -3189,7 +3189,7 @@ String String::http_escape() const {
 	return res;
 }
 
-String String::http_unescape() const {
+String String::percent_decode() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
 		if (ord_at(i) == '%' && i + 2 < length()) {
@@ -3725,68 +3725,6 @@ String String::plus_file(const String &p_file) const {
 	if (operator[](length() - 1) == '/' || (p_file.size() > 0 && p_file.operator[](0) == '/'))
 		return *this + p_file;
 	return *this + "/" + p_file;
-}
-
-String String::percent_encode() const {
-
-	CharString cs = utf8();
-	String encoded;
-	for (int i = 0; i < cs.length(); i++) {
-		uint8_t c = cs[i];
-		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '~' || c == '.') {
-
-			char p[2] = { (char)c, 0 };
-			encoded += p;
-		} else {
-			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-			p[1] = hex[c >> 4];
-			p[2] = hex[c & 0xF];
-			encoded += p;
-		}
-	}
-
-	return encoded;
-}
-String String::percent_decode() const {
-
-	CharString pe;
-
-	CharString cs = utf8();
-	for (int i = 0; i < cs.length(); i++) {
-
-		uint8_t c = cs[i];
-		if (c == '%' && i < length() - 2) {
-
-			uint8_t a = LOWERCASE(cs[i + 1]);
-			uint8_t b = LOWERCASE(cs[i + 2]);
-
-			c = 0;
-			if (a >= '0' && a <= '9')
-				c = (a - '0') << 4;
-			else if (a >= 'a' && a <= 'f')
-				c = (a - 'a' + 10) << 4;
-			else
-				continue;
-
-			uint8_t d = 0;
-
-			if (b >= '0' && b <= '9')
-				d = (b - '0');
-			else if (b >= 'a' && b <= 'f')
-				d = (b - 'a' + 10);
-			else
-				continue;
-			c += d;
-			i += 2;
-		}
-		pe.push_back(c);
-	}
-
-	pe.push_back(0);
-
-	return String::utf8(pe.ptr());
 }
 
 String String::get_basename() const {
