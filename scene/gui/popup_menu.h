@@ -78,6 +78,8 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
+	int initial_button_mask;
+	bool during_grabbed_click;
 	int mouse_over;
 	int submenu_over;
 	Rect2 parent_rect;
@@ -178,7 +180,6 @@ public:
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();
 
-	void set_invalidate_click_until_motion();
 	void set_hide_on_item_selection(bool p_enabled);
 	bool is_hide_on_item_selection() const;
 
@@ -187,6 +188,8 @@ public:
 
 	void set_hide_on_multistate_item_selection(bool p_enabled);
 	bool is_hide_on_multistate_item_selection() const;
+
+	virtual void popup(const Rect2 &p_bounds = Rect2());
 
 	PopupMenu();
 	~PopupMenu();

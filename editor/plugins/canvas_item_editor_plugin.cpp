@@ -1672,8 +1672,6 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				selection_menu_additive_selection = b->get_shift();
 				selection_menu->set_global_position(b->get_global_position());
 				selection_menu->popup();
-				selection_menu->call_deferred("grab_click_focus");
-				selection_menu->set_invalidate_click_until_motion();
 				return true;
 			}
 		}
