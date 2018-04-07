@@ -516,6 +516,39 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						table->total_width += table->columns[i].width + hseparation;
 					}
 
+					//resize to max_width if needed and distribute the remaining space
+					bool table_need_fit = true;
+					while (table_need_fit) {
+						table_need_fit = false;
+						//fit slim
+						for (int i = 0; i < table->columns.size(); i++) {
+							if (!table->columns[i].expand)
+								continue;
+							int dif = table->columns[i].width - table->columns[i].max_width;
+							if (dif > 0) {
+								table_need_fit = true;
+								table->columns[i].width = table->columns[i].max_width;
+								table->total_width -= dif;
+								total_ratio -= table->columns[i].expand_ratio;
+							}
+						}
+						//grow
+						remaining_width = available_width - table->total_width;
+						if (remaining_width > 0 && total_ratio > 0) {
+							for (int i = 0; i < table->columns.size(); i++) {
+								if (table->columns[i].expand) {
+									int dif = table->columns[i].max_width - table->columns[i].width;
+									if (dif > 0) {
+										int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
+										int incr = MIN(dif, slice);
+										table->columns[i].width += incr;
+										table->total_width += incr;
+									}
+								}
+							}
+						}
+					}
+
 					//compute caches properly again with the right width
 					idx = 0;
 					for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
