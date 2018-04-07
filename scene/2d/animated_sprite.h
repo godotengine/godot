@@ -134,9 +134,11 @@ class AnimatedSprite : public Node2D {
 	Point2 offset;
 
 	float timeout;
+	float override_speed;
 
 	bool hflip;
 	bool vflip;
+	bool override;
 
 	void _res_changed();
 
@@ -185,6 +187,12 @@ public:
 
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
+
+	void set_override_enabled(bool p_enabled);
+	bool is_override_enabled() const;
+
+	void set_override_speed(float p_speed);
+	float get_override_speed() const;
 
 	virtual String get_configuration_warning() const;
 	AnimatedSprite();
