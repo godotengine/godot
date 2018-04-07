@@ -821,6 +821,12 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
+	/* This check exists to avoid re-propagating the transform
+	 * notification down the tree on dirty nodes. It provides
+	 * optimization by avoiding redundancy (nodes are dirty, will get the
+	 * notification anyway).
+	 */
+
 	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid) {
 		return; //nothing to do
 	}
