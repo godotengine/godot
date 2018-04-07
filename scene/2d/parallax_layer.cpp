@@ -72,7 +72,7 @@ void ParallaxLayer::_update_mirroring() {
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
 
-		RID c = pb->get_world_2d()->get_canvas();
+		RID c = pb->get_canvas();
 		RID ci = get_canvas_item();
 		Point2 mirrorScale = mirroring * get_scale();
 		VisualServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirrorScale);
