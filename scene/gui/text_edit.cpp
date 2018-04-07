@@ -135,7 +135,6 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 
 	text.write[p_line].region_info.clear();
 
-	int ending_color_region = -1;
 	for (int i = 0; i < len; i++) {
 
 		if (!_is_symbol(str[i]))
@@ -176,11 +175,6 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text.write[p_line].region_info[i] = cri;
 				i += lr - 1;
 
-				if (ending_color_region == -1 && !cr.line_only) {
-					ending_color_region = j;
-				} else if (ending_color_region == j) {
-					ending_color_region = -1;
-				}
 				break;
 			}
 
@@ -209,15 +203,10 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text.write[p_line].region_info[i] = cri;
 				i += lr - 1;
 
-				if (ending_color_region == j) {
-					ending_color_region = -1;
-				}
-
 				break;
 			}
 		}
 	}
-	text[p_line].ending_color_region = ending_color_region;
 }
 
 const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) const {
@@ -4273,15 +4262,49 @@ void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter)
 	update();
 }
 
-int TextEdit::_get_line_ending_color_region(int p_line) const {
-	if (p_line < 0 || p_line > text.size() - 1) {
-		return -1;
+int TextEdit::_is_line_in_region(int p_line) {
+
+	// do we have in cache?
+	if (color_region_cache.has(p_line)) {
+		return color_region_cache[p_line];
 	}
-	return text.get_line_ending_color_region(p_line);
+
+	// if not find the closest line we have
+	int previous_line = p_line - 1;
+	for (previous_line; previous_line > -1; previous_line--) {
+		if (color_region_cache.has(p_line)) {
+			break;
+		}
+	}
+
+	// calculate up to line we need and update the cache along the way.
+	int in_region = color_region_cache[previous_line];
+	for (int i = previous_line; i < p_line; i++) {
+		const Map<int, Text::ColorRegionInfo> &cri_map = _get_line_color_region_info(i);
+		for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
+			const Text::ColorRegionInfo &cri = E->get();
+			if (in_region == -1) {
+				if (!cri.end) {
+					in_region = cri.region;
+				}
+			} else if (in_region == cri.region && !_get_color_region(cri.region).line_only) {
+				if (cri.end || _get_color_region(cri.region).eq) {
+					in_region = -1;
+				}
+			}
+		}
+
+		if (in_region >= 0 && _get_color_region(in_region).line_only) {
+			in_region = -1;
+		}
+
+		color_region_cache[i + 1] = in_region;
+	}
+	return in_region;
 }
 
 TextEdit::ColorRegion TextEdit::_get_color_region(int p_region) const {
-	if (p_region < 0 || p_region > color_regions.size()) {
+	if (p_region < 0 || p_region >= color_regions.size()) {
 		return ColorRegion();
 	}
 	return color_regions[p_region];
@@ -4299,7 +4322,7 @@ void TextEdit::clear_colors() {
 	keywords.clear();
 	color_regions.clear();
 	color_region_cache.clear();
-	text.clear_width_cache();
+	text.clear_caches();
 }
 
 void TextEdit::add_keyword_color(const String &p_keyword, const Color &p_color) {
@@ -6233,24 +6256,8 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 	Color keyword_color;
 	Color color;
 
-	int in_region = -1;
+	int in_region = _is_line_in_region(p_line);
 	int deregion = 0;
-	for (int i = 0; i < p_line; i++) {
-		int ending_color_region = text.get_line_ending_color_region(i);
-		if (in_region == -1) {
-			in_region = ending_color_region;
-		} else if (in_region == ending_color_region) {
-			in_region = -1;
-		} else {
-			const Map<int, TextEdit::Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
-			for (const Map<int, TextEdit::Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-				const TextEdit::Text::ColorRegionInfo &cri = E->get();
-				if (cri.region == in_region) {
-					in_region = -1;
-				}
-			}
-		}
-	}
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text.get_color_region_info(p_line);
 	const String &str = text[p_line];

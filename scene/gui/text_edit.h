@@ -76,7 +76,6 @@ public:
 			bool marked : 1;
 			bool breakpoint : 1;
 			bool hidden : 1;
-			int ending_color_region;
 			Map<int, ColorRegionInfo> region_info;
 			String data;
 		};
@@ -103,7 +102,6 @@ public:
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		int get_line_ending_color_region(int p_line) const { return text[p_line].ending_color_region; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
@@ -189,6 +187,8 @@ private:
 		int fold_gutter_width;
 		Size2 size;
 	} cache;
+
+	Map<int, int> color_region_cache;
 
 	struct TextOperation {
 
@@ -427,7 +427,7 @@ public:
 	SyntaxHighlighter *_get_syntax_highlighting();
 	void _set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter);
 
-	int _get_line_ending_color_region(int p_line) const;
+	int _is_line_in_region(int p_line);
 	ColorRegion _get_color_region(int p_region) const;
 	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
 
