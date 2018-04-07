@@ -360,15 +360,27 @@ void AnimatedSprite::_notification(int p_what) {
 					timeout = 1.0 / speed;
 
 					int fc = frames->get_frame_count(animation);
-					if (frame >= fc - 1) {
+					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
 						if (frames->get_animation_loop(animation)) {
-							frame = 0;
+							if (backwards) {
+								frame = fc - 1;
+							} else {
+								frame = 0;
+							}
 						} else {
-							frame = fc - 1;
+							if (backwards) {
+								frame = 0;
+							} else {
+								frame = fc - 1;
+							}
 						}
 					} else {
-						frame++;
-						if (frame == fc - 1) {
+						if (backwards) {
+							frame--;
+						} else {
+							frame++;
+						}
+						if ((!backwards && frame == fc - 1) || (backwards && frame == 0)) {
 							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 						}
 					}
@@ -543,11 +555,27 @@ bool AnimatedSprite::_is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite::play(const StringName &p_animation) {
+void AnimatedSprite::set_backwards(bool p_backwards) {
+
+	backwards = p_backwards;
+}
+
+bool AnimatedSprite::is_backwards() const {
+
+	return backwards;
+}
+
+void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards) {
 
 	if (p_animation)
 		set_animation(p_animation);
+	set_backwards(p_backwards);
 	_set_playing(true);
+}
+
+void AnimatedSprite::play_backwards(const StringName &p_animation) {
+
+	play(p_animation, true);
 }
 
 void AnimatedSprite::stop() {
@@ -558,6 +586,10 @@ void AnimatedSprite::stop() {
 bool AnimatedSprite::is_playing() const {
 
 	return playing;
+}
+
+bool AnimatedSprite::is_playing_backwards() const {
+	return playing && backwards;
 }
 
 void AnimatedSprite::_reset_timeout() {
@@ -613,9 +645,13 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play", "anim", "play_backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards", "anim"), &AnimatedSprite::play_backwards, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
+	ClassDB::bind_method(D_METHOD("is_playing_backwards"), &AnimatedSprite::is_playing_backwards);
+	ClassDB::bind_method(D_METHOD("set_backwards", "backwards"), &AnimatedSprite::set_backwards);
+	ClassDB::bind_method(D_METHOD("is_backwards"), &AnimatedSprite::is_backwards);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite::is_centered);
@@ -641,6 +677,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "backwards"), "set_backwards", "is_backwards");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -655,6 +692,7 @@ AnimatedSprite::AnimatedSprite() {
 
 	frame = 0;
 	playing = false;
+	backwards = false;
 	animation = "default";
 	timeout = 0;
 }
