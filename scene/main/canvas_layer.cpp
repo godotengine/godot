@@ -157,9 +157,12 @@ void CanvasLayer::_notification(int p_what) {
 			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas->get_canvas(), layer);
 			VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas->get_canvas(), transform);
 
+			canvas->_register_viewport(vp, Rect2());
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
+			canvas->_remove_viewport(vp);
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas->get_canvas());
 			viewport = RID();
 
@@ -184,6 +187,7 @@ RID CanvasLayer::get_viewport() const {
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	ERR_FAIL_NULL(p_viewport);
 	if (is_inside_tree()) {
+		canvas->_remove_viewport(vp);
 		VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas->get_canvas());
 		viewport = RID();
 	}
@@ -208,6 +212,8 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas->get_canvas());
 		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas->get_canvas(), layer);
 		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas->get_canvas(), transform);
+
+		canvas->_register_viewport(vp, Rect2());
 	}
 }
 

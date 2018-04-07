@@ -38,6 +38,7 @@
 class SpatialIndexer2D;
 class VisibilityNotifier2D;
 class Viewport;
+class CanvasLayer;
 
 class World2D : public Resource {
 
@@ -52,6 +53,7 @@ protected:
 	static void _bind_methods();
 	friend class Viewport;
 	friend class VisibilityNotifier2D;
+	friend class CanvasLayer;
 
 	void _register_viewport(Viewport *p_viewport, const Rect2 &p_rect);
 	void _update_viewport(Viewport *p_viewport, const Rect2 &p_rect);
