@@ -692,6 +692,10 @@ ThemeEditor::ThemeEditor() {
 	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
 	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
 	test_menu_button->get_popup()->set_item_checked(2, true);
+	test_menu_button->get_popup()->add_separator();
+	test_menu_button->get_popup()->add_check_item(TTR("Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
+	test_menu_button->get_popup()->set_item_checked(5, true);
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);

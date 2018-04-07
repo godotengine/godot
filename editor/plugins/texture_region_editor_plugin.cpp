@@ -805,12 +805,10 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	snap_mode_button->set_text(TTR("<None>"));
 	PopupMenu *p = snap_mode_button->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
-	p->add_item(TTR("<None>"), 0);
-	p->add_item(TTR("Pixel Snap"), 1);
-	p->add_item(TTR("Grid Snap"), 2);
-	p->add_item(TTR("Auto Slice"), 3);
-	for (int i = 0; i < 4; i++)
-		p->set_item_as_checkable(i, true);
+	p->add_radio_check_item(TTR("<None>"), 0);
+	p->add_radio_check_item(TTR("Pixel Snap"), 1);
+	p->add_radio_check_item(TTR("Grid Snap"), 2);
+	p->add_radio_check_item(TTR("Auto Slice"), 3);
 	p->set_item_checked(0, true);
 	p->connect("id_pressed", this, "_set_snap_mode");
 	hb_grid = memnew(HBoxContainer);
