@@ -104,7 +104,7 @@ namespace Godot
             }
         }
 
-        private static readonly Color black = new Color(0f, 0f, 0f, 1.0f);
+        private static readonly Color black = new Color(0f, 0f, 0f);
 
         public Color Black
         {
