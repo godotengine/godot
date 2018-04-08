@@ -1,4 +1,5 @@
 //using System;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -43,11 +44,9 @@ namespace Godot
                         {
                             return instance.Substring(prev, i - prev);
                         }
-                        else
-                        {
-                            count++;
-                            prev = i + 1;
-                        }
+
+                        count++;
+                        prev = i + 1;
                     }
 
                     i++;
@@ -178,13 +177,13 @@ namespace Godot
             {
                 if (to[to_idx] == 0 && instance[instance_idx] == 0)
                     return 0; // We're equal
-                else if (instance[instance_idx] == 0)
+                if (instance[instance_idx] == 0)
                     return -1; // If this is empty, and the other one is not, then we're less... I think?
-                else if (to[to_idx] == 0)
+                if (to[to_idx] == 0)
                     return 1; // Otherwise the other one is smaller...
-                else if (instance[instance_idx] < to[to_idx]) // More than
+                if (instance[instance_idx] < to[to_idx]) // More than
                     return -1;
-                else if (instance[instance_idx] > to[to_idx]) // Less than
+                if (instance[instance_idx] > to[to_idx]) // Less than
                     return 1;
 
                 instance_idx++;
@@ -312,7 +311,7 @@ namespace Godot
             int hashv = 5381;
             int c;
 
-            while ((c = (int)instance[index++]) != 0)
+            while ((c = instance[index++]) != 0)
                 hashv = ((hashv << 5) + hashv) + c; // hash * 33 + c
 
             return hashv;
@@ -610,13 +609,13 @@ namespace Godot
             {
                 if (to[to_idx] == 0 && instance[instance_idx] == 0)
                     return 0; // We're equal
-                else if (instance[instance_idx] == 0)
+                if (instance[instance_idx] == 0)
                     return -1; // If this is empty, and the other one is not, then we're less... I think?
-                else if (to[to_idx] == 0)
+                if (to[to_idx] == 0)
                     return 1; // Otherwise the other one is smaller..
-                else if (char.ToUpper(instance[instance_idx]) < char.ToUpper(to[to_idx])) // More than
+                if (char.ToUpper(instance[instance_idx]) < char.ToUpper(to[to_idx])) // More than
                     return -1;
-                else if (char.ToUpper(instance[instance_idx]) > char.ToUpper(to[to_idx])) // Less than
+                if (char.ToUpper(instance[instance_idx]) > char.ToUpper(to[to_idx])) // Less than
                     return 1;
 
                 instance_idx++;
@@ -724,8 +723,7 @@ namespace Godot
         {
             if (instance.Length > 0 && instance[instance.Length - 1] == '/')
                 return instance + file;
-            else
-                return instance + "/" + file;
+            return instance + "/" + file;
         }
 
         // <summary>
@@ -832,7 +830,7 @@ namespace Godot
         // </summary>
         public static string[] Split(this string instance, string divisor, bool allow_empty = true)
         {
-            return instance.Split(new string[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
+            return instance.Split(new[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // <summary>
@@ -878,13 +876,10 @@ namespace Godot
             {
                 if (right)
                     return instance.Trim(non_printable);
-                else
-                    return instance.TrimStart(non_printable);
+                return instance.TrimStart(non_printable);
             }
-            else
-            {
-                return instance.TrimEnd(non_printable);
-            }
+
+            return instance.TrimEnd(non_printable);
         }
 
         // <summary>

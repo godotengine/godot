@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -185,17 +184,17 @@ namespace Godot
         public Rect2(Vector2 position, real_t width, real_t height)
         {
             this.position = position;
-            this.size = new Vector2(width, height);
+            size = new Vector2(width, height);
         }
         public Rect2(real_t x, real_t y, Vector2 size)
         {
-            this.position = new Vector2(x, y);
+            position = new Vector2(x, y);
             this.size = size;
         }
         public Rect2(real_t x, real_t y, real_t width, real_t height)
         {
-            this.position = new Vector2(x, y);
-            this.size = new Vector2(width, height);
+            position = new Vector2(x, y);
+            size = new Vector2(width, height);
         }
 
         public static bool operator ==(Rect2 left, Rect2 right)
@@ -232,8 +231,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.position.ToString(),
-                this.size.ToString()
+                position.ToString(),
+                size.ToString()
             });
         }
 
@@ -241,8 +240,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.position.ToString(format),
-                this.size.ToString(format)
+                position.ToString(format),
+                size.ToString(format)
             });
         }
     }

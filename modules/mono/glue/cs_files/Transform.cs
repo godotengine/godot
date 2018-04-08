@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -107,13 +106,13 @@ namespace Godot
         // Constructors 
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
-            this.basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
+            basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
             this.origin = origin;
         }
 
         public Transform(Quat quat, Vector3 origin)
         {
-            this.basis = new Basis(quat);
+            basis = new Basis(quat);
             this.origin = origin;
         }
 
@@ -164,8 +163,8 @@ namespace Godot
         {
             return String.Format("{0} - {1}", new object[]
             {
-                this.basis.ToString(),
-                this.origin.ToString()
+                basis.ToString(),
+                origin.ToString()
             });
         }
 
@@ -173,8 +172,8 @@ namespace Godot
         {
             return String.Format("{0} - {1}", new object[]
             {
-                this.basis.ToString(format),
-                this.origin.ToString(format)
+                basis.ToString(format),
+                origin.ToString(format)
             });
         }
     }

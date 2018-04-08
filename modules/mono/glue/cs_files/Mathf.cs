@@ -1,5 +1,4 @@
 using System;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -115,7 +114,8 @@ namespace Godot
 
                 return Pow(s, curve);
             }
-            else if (curve < 0f)
+
+            if (curve < 0f)
             {
                 if (s < 0.5f)
                 {
@@ -144,10 +144,8 @@ namespace Godot
             {
                 return x % y;
             }
-            else
-            {
-                return y - (-x % y);
-            }
+
+            return y - (-x % y);
         }
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)

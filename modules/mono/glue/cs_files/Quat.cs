@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -106,10 +105,10 @@ namespace Godot
         }
         public void Set(Quat q)
         {
-            this.x = q.x;
-            this.y = q.y;
-            this.z = q.z;
-            this.w = q.w;
+            x = q.x;
+            y = q.y;
+            z = q.z;
+            w = q.w;
         }
 
         public Quat Slerp(Quat b, real_t t)
@@ -165,7 +164,7 @@ namespace Godot
 
         public Quat Slerpni(Quat b, real_t t)
         {
-            real_t dot = this.Dot(b);
+            real_t dot = Dot(b);
 
             if (Mathf.Abs(dot) > 0.9999f)
             {
@@ -179,17 +178,17 @@ namespace Godot
 
             return new Quat
             (
-                invFactor * this.x + newFactor * b.x,
-                invFactor * this.y + newFactor * b.y,
-                invFactor * this.z + newFactor * b.z,
-                invFactor * this.w + newFactor * b.w
+                invFactor * x + newFactor * b.x,
+                invFactor * y + newFactor * b.y,
+                invFactor * z + newFactor * b.z,
+                invFactor * w + newFactor * b.w
             );
         }
 
         public Vector3 Xform(Vector3 v)
         {
             Quat q = this * v;
-            q *= this.Inverse();
+            q *= Inverse();
             return new Vector3(q.x, q.y, q.z);
         }
 
@@ -203,10 +202,10 @@ namespace Godot
         }   
         public Quat(Quat q)
         {                     
-            this.x = q.x;
-            this.y = q.y;
-            this.z = q.z;
-            this.w = q.w;
+            x = q.x;
+            y = q.y;
+            z = q.z;
+            w = q.w;
         }
         
         public Quat(Vector3 axis, real_t angle)
@@ -327,24 +326,12 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2}, {3})", new object[]
-            {
-                this.x.ToString(),
-                this.y.ToString(),
-                this.z.ToString(),
-                this.w.ToString()
-            });
+            return String.Format("({0}, {1}, {2}, {3})", x.ToString(), y.ToString(), z.ToString(), w.ToString());
         }
 
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2}, {3})", new object[]
-            {
-                this.x.ToString(format),
-                this.y.ToString(format),
-                this.z.ToString(format),
-                this.w.ToString(format)
-            });
+            return String.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
         }
     }
 }
