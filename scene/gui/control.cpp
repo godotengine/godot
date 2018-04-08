@@ -1281,22 +1281,24 @@ void Control::_size_changed() {
 
 	Size2 minimum_size = get_combined_minimum_size();
 
-	if (data.h_grow == GROW_DIRECTION_BEGIN) {
-		if (minimum_size.width > new_size_cache.width) {
-			new_pos_cache.x = new_pos_cache.x + new_size_cache.width - minimum_size.width;
-			new_size_cache.width = minimum_size.width;
+	if (minimum_size.width > new_size_cache.width) {
+		if (data.h_grow == GROW_DIRECTION_BEGIN) {
+			new_pos_cache.x += new_size_cache.width - minimum_size.width;
+		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
+			new_pos_cache.x += 0.5 * (new_size_cache.width - minimum_size.width);
 		}
-	} else {
-		new_size_cache.width = MAX(minimum_size.width, new_size_cache.width);
+
+		new_size_cache.width = minimum_size.width;
 	}
 
-	if (data.v_grow == GROW_DIRECTION_BEGIN) {
-		if (minimum_size.height > new_size_cache.height) {
-			new_pos_cache.y = new_pos_cache.y + new_size_cache.height - minimum_size.height;
-			new_size_cache.height = minimum_size.height;
+	if (minimum_size.height > new_size_cache.height) {
+		if (data.v_grow == GROW_DIRECTION_BEGIN) {
+			new_pos_cache.y += new_size_cache.height - minimum_size.height;
+		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
+			new_pos_cache.y += 0.5 * (new_size_cache.height - minimum_size.height);
 		}
-	} else {
-		new_size_cache.height = MAX(minimum_size.height, new_size_cache.height);
+
+		new_size_cache.height = minimum_size.height;
 	}
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
@@ -2838,8 +2840,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_BOTTOM);
 
 	ADD_GROUP("Grow Direction", "grow_");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End"), "set_h_grow_direction", "get_h_grow_direction");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End"), "set_v_grow_direction", "get_v_grow_direction");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_h_grow_direction", "get_h_grow_direction");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_v_grow_direction", "get_v_grow_direction");
 
 	ADD_GROUP("Rect", "rect_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
@@ -2939,6 +2941,7 @@ void Control::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(GROW_DIRECTION_BEGIN);
 	BIND_ENUM_CONSTANT(GROW_DIRECTION_END);
+	BIND_ENUM_CONSTANT(GROW_DIRECTION_BOTH);
 
 	BIND_ENUM_CONSTANT(ANCHOR_BEGIN);
 	BIND_ENUM_CONSTANT(ANCHOR_END);
