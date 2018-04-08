@@ -9,7 +9,7 @@ namespace Godot
         {
             var ret = new Dictionary<object, object>();
 
-            for (int i = 0; i < keys.Length; i++)
+            for (var i = 0; i < keys.Length; i++)
             {
                 ret.Add(keys[i], values[i]);
             }

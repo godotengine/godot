@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = Math.Max(r, Math.Max(g, b));
+                float min = Math.Min(r, Math.Min(g, b));
 
                 float delta = max - min;
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = Math.Max(r, Math.Max(g, b));
+                float min = Math.Min(r, Math.Min(g, b));
 
                 float delta = max - min;
 
@@ -96,7 +96,7 @@ namespace Godot
         {
             get
             {
-                return Mathf.Max(r, Mathf.Max(g, b));
+                return Math.Max(r, Math.Max(g, b));
             }
             set
             {
@@ -274,12 +274,7 @@ namespace Godot
 
         public Color Lightened(float amount)
         {
-            Color res = this;
-            res.r = res.r + (1.0f - res.r) * amount;
-            res.g = res.g + (1.0f - res.g) * amount;
-            res.b = res.b + (1.0f - res.b) * amount;
-            return res;
-        }
+            var res = this;
 
             res.r += (t * (b.r - r));
             res.g += (t * (b.g - g));
@@ -353,10 +348,10 @@ namespace Godot
         {
             int ig = 0;
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 int c = str[i + ofs];
-                int v;
+                var v = 0;
 
                 if (c >= '0' && c <= '9')
                 {
@@ -388,11 +383,11 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            int v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
+            var v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
 
             var ret = string.Empty;
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 char[] c = { (char)0, (char)0 };
                 int lv = v & 0xF;
@@ -417,7 +412,7 @@ namespace Godot
             if (color[0] == '#')
                 color = color.Substring(1, color.Length - 1);
 
-            bool alpha;
+            var alpha = false;
 
             if (color.Length == 8)
                 alpha = true;
@@ -463,7 +458,7 @@ namespace Godot
             if (rgba[0] == '#')
                 rgba = rgba.Substring(1);
 
-            bool alpha;
+            var alpha = false;
 
             if (rgba.Length == 8)
             {

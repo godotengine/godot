@@ -93,7 +93,7 @@ namespace Godot
         {
             var ret = new int[length];
 
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 ret[i] = i;
             }
@@ -108,7 +108,7 @@ namespace Godot
 
             var ret = new int[to - from];
 
-            for (int i = from; i < to; i++)
+            for (var i = from; i < to; i++)
             {
                 ret[i - from] = i;
             }
@@ -124,7 +124,7 @@ namespace Godot
                 return new int[0];
 
             // Calculate count
-            int count;
+            var count = 0;
 
             if (increment > 0)
                 count = (to - from - 1) / increment + 1;
@@ -135,16 +135,16 @@ namespace Godot
 
             if (increment > 0)
             {
-                int idx = 0;
-                for (int i = from; i < to; i += increment)
+	            int idx = 0;
+                for (var i = from; i < to; i += increment)
                 {
                     ret[idx++] = i;
                 }
             }
             else
             {
-                int idx = 0;
-                for (int i = from; i > to; i += increment)
+	            int idx = 0;
+                for (var i = from; i > to; i += increment)
                 {
                     ret[idx++] = i;
                 }

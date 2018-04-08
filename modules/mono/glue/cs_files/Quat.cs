@@ -116,7 +116,7 @@ namespace Godot
             // Calculate cosine
             real_t cosom = x * b.x + y * b.y + z * b.z + w * b.w;
 
-            real_t[] to1 = new real_t[4];
+            var to1 = new real_t[4];
 
             // Adjust signs if necessary
             if (cosom < 0.0)

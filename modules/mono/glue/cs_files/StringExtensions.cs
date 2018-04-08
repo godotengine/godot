@@ -84,7 +84,7 @@ namespace Godot
         {
             var b = new string[instance.Length - 1];
 
-            for (int i = 0; i < b.Length; i++)
+            for (var i = 0; i < b.Length; i++)
             {
                 b[i] = instance.Substring(i, 2);
             }
@@ -141,12 +141,12 @@ namespace Godot
         // </summary>
         public static string Capitalize(this string instance)
         {
-            string aux = instance.Replace("_", " ").ToLower();
+	        string aux = instance.Replace("_", " ").ToLower();
             var cap = string.Empty;
 
-            for (int i = 0; i < aux.GetSliceCount(" "); i++)
+            for (var i = 0; i < aux.GetSliceCount(" "); i++)
             {
-                string slice = aux.GetSlicec(' ', i);
+	            string slice = aux.GetSlicec(' ', i);
                 if (slice.Length > 0)
                 {
                     slice = char.ToUpper(slice[0]) + slice.Substring(1);
@@ -259,7 +259,7 @@ namespace Godot
         {
             int basepos = instance.Find("://");
 
-            string rs;
+            var rs = string.Empty;
             var @base = string.Empty;
 
             if (basepos != -1)
@@ -378,7 +378,7 @@ namespace Godot
 
             while (instance[src] != 0 && text[tgt] != 0)
             {
-                bool match;
+                var match = false;
 
                 if (case_insensitive)
                 {
@@ -446,7 +446,7 @@ namespace Godot
             if (len == 0)
                 return false;
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
                 if (i == 0)
                 {
@@ -485,7 +485,7 @@ namespace Godot
             if (ip.Length != 4)
                 return false;
 
-            for (int i = 0; i < ip.Length; i++)
+            for (var i = 0; i < ip.Length; i++)
             {
                 string n = ip[i];
                 if (!n.IsValidInteger())
@@ -813,9 +813,9 @@ namespace Godot
             float sum = src_size + tgt_size;
             float inter = 0;
 
-            for (int i = 0; i < src_size; i++)
+            for (var i = 0; i < src_size; i++)
             {
-                for (int j = 0; j < tgt_size; j++)
+                for (var j = 0; j < tgt_size; j++)
                 {
                     if (srcBigrams[i] == tgtBigrams[j])
                     {
@@ -842,8 +842,8 @@ namespace Godot
         public static float[] SplitFloats(this string instance, string divisor, bool allow_empty = true)
         {
             var ret = new List<float>();
-            int from = 0;
-            int len = instance.Length;
+	        int from = 0;
+	        int len = instance.Length;
 
             while (true)
             {
