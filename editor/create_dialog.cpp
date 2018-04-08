@@ -433,26 +433,7 @@ Object *CreateDialog::instance_selected() {
 			custom = md;
 
 		if (custom != String()) {
-			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
-
-				for (int i = 0; i < EditorNode::get_editor_data().get_custom_types()[custom].size(); i++) {
-					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name == selected->get_text(0)) {
-						Ref<Texture> icon = EditorNode::get_editor_data().get_custom_types()[custom][i].icon;
-						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
-						String name = selected->get_text(0);
-
-						Object *ob = ClassDB::instance(custom);
-						ERR_FAIL_COND_V(!ob, NULL);
-						if (ob->is_class("Node")) {
-							ob->call("set_name", name);
-						}
-						ob->set_script(script.get_ref_ptr());
-						if (icon.is_valid())
-							ob->set_meta("_editor_icon", icon);
-						return ob;
-					}
-				}
-			}
+			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
 		} else {
 			return ClassDB::instance(selected->get_text(0));
 		}
