@@ -533,6 +533,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 
 			filelist.push_back(fi);
 		}
+		filelist.sort();
 	}
 
 	String oi = "Object";
