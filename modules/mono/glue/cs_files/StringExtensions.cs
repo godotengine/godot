@@ -259,7 +259,7 @@ namespace Godot
         {
             int basepos = instance.Find("://");
 
-            var rs = string.Empty;
+            string rs;
             var @base = string.Empty;
 
             if (basepos != -1)
@@ -378,7 +378,7 @@ namespace Godot
 
             while (instance[src] != 0 && text[tgt] != 0)
             {
-                var match = false;
+                bool match;
 
                 if (case_insensitive)
                 {
