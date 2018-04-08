@@ -123,7 +123,6 @@ namespace Godot
             if (size.z > max_size)
             {
                 axis = new Vector3(0f, 0f, 1f);
-                max_size = size.z;
             }
 
             return axis;
@@ -143,7 +142,6 @@ namespace Godot
             if (size.z > max_size)
             {
                 axis = Vector3.Axis.Z;
-                max_size = size.z;
             }
 
             return axis;
@@ -176,7 +174,6 @@ namespace Godot
             if (size.z < max_size)
             {
                 axis = new Vector3(0f, 0f, 1f);
-                max_size = size.z;
             }
 
             return axis;
@@ -196,7 +193,6 @@ namespace Godot
             if (size.z < max_size)
             {
                 axis = Vector3.Axis.Z;
-                max_size = size.z;
             }
 
             return axis;

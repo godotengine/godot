@@ -124,7 +124,7 @@ namespace Godot
                 return new int[0];
 
             // Calculate count
-            var count = 0;
+            int count;
 
             if (increment > 0)
                 count = ((to - from - 1) / increment) + 1;

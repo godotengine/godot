@@ -165,7 +165,7 @@ namespace Godot
             // Clamp dot to [-1, 1]
             dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
 
-            var v = new Vector2();
+            Vector2 v;
 
             if (dot > 0.9995f)
             {
