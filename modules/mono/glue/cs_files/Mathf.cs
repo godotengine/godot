@@ -5,12 +5,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     public static partial class Mathf
@@ -151,12 +145,7 @@ namespace Godot
                 return x % y;
             }
 
-            return y - -x % y;
-        }
-
-        public static real_t InverseLerp(real_t from, real_t to, real_t weight)
-        {
-           return (weight - from) / (to - from);
+            return y - (-x % y);
         }
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)

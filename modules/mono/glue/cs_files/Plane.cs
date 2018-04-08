@@ -5,12 +5,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     public struct Plane : IEquatable<Plane>
@@ -86,9 +80,9 @@ namespace Godot
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
 
-            Vector3 result = b._normal.Cross(c._normal) * D +
-                                c._normal.Cross(_normal) * b.D +
-                                _normal.Cross(b._normal) * c.D;
+            Vector3 result = (b.normal.Cross(c.normal) * d) +
+                                (c.normal.Cross(normal) * b.d) +
+                                (normal.Cross(b.normal) * c.d);
 
             return result / denom;
         }
@@ -203,8 +197,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                _normal.ToString(),
-                D.ToString()
+                normal.ToString(),
+                d.ToString()
             });
         }
 
@@ -212,8 +206,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                _normal.ToString(format),
-                D.ToString(format)
+                normal.ToString(format),
+                d.ToString(format)
             });
         }
     }

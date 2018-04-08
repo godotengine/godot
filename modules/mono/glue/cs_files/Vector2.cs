@@ -12,12 +12,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -106,7 +100,7 @@ namespace Godot
         public Vector2 Clamped(real_t length)
         {
             Vector2 v = this;
-            real_t l = this.Length();
+            real_t l = Length();
 
             if (l > 0 && length < l)
             {
@@ -203,8 +197,8 @@ namespace Godot
         }
         public void Set(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public Vector2 Slide(Vector2 n)
@@ -248,8 +242,8 @@ namespace Godot
         }
         public Vector2(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public static Vector2 operator +(Vector2 left, Vector2 right)
