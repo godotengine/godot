@@ -80,7 +80,7 @@ namespace Godot
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
 
-            Vector3 result = (b.normal.Cross(c.normal) * d) +
+	        Vector3 result = (b.normal.Cross(c.normal) * d) +
                                 (c.normal.Cross(normal) * b.d) +
                                 (normal.Cross(b.normal) * c.d);
 
