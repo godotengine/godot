@@ -342,7 +342,7 @@ namespace Godot
             for (var i = 0; i < 2; i++)
             {
                 int c = str[i + ofs];
-                var v = 0;
+                int v;
 
                 if (c >= '0' && c <= '9')
                 {
@@ -403,7 +403,7 @@ namespace Godot
             if (color[0] == '#')
                 color = color.Substring(1, color.Length - 1);
 
-            var alpha = false;
+            bool alpha;
 
             if (color.Length == 8)
                 alpha = true;
@@ -449,7 +449,7 @@ namespace Godot
             if (rgba[0] == '#')
                 rgba = rgba.Substring(1);
 
-            var alpha = false;
+            bool alpha;
 
             if (rgba.Length == 8)
             {
