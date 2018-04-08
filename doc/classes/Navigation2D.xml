@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Navigation2D" inherits="Node2D" category="Core" version="3.1">
 	<brief_description>
-		Class to assist with character navigation and pathfinding.
+		2D navigation and pathfinding node.
 	</brief_description>
 	<description>
 		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default these are automatically collected from child [NavigationPolygonInstance] nodes, but they can also be added on the fly with [method navpoly_add].
