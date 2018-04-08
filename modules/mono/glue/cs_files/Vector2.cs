@@ -1,13 +1,11 @@
-using System;
-using System.Runtime.InteropServices;
-
 // file: core/math/math_2d.h
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/math/math_2d.cpp
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
-
+using System;
+using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -102,7 +100,7 @@ namespace Godot
         public Vector2 Clamped(real_t length)
         {
             Vector2 v = this;
-            real_t l = this.Length();
+            real_t l = Length();
 
             if (l > 0 && length < l)
             {
@@ -199,8 +197,8 @@ namespace Godot
         }
         public void Set(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public Vector2 Slide(Vector2 n)
@@ -244,8 +242,8 @@ namespace Godot
         }
         public Vector2(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public static Vector2 operator +(Vector2 left, Vector2 right)
@@ -320,10 +318,8 @@ namespace Godot
             {
                 return left.y < right.y;
             }
-            else
-            {
-                return left.x < right.x;
-            }
+
+            return left.x < right.x;
         }
 
         public static bool operator >(Vector2 left, Vector2 right)
@@ -332,10 +328,8 @@ namespace Godot
             {
                 return left.y > right.y;
             }
-            else
-            {
-                return left.x > right.x;
-            }
+
+            return left.x > right.x;
         }
 
         public static bool operator <=(Vector2 left, Vector2 right)
@@ -344,10 +338,8 @@ namespace Godot
             {
                 return left.y <= right.y;
             }
-            else
-            {
-                return left.x <= right.x;
-            }
+
+            return left.x <= right.x;
         }
 
         public static bool operator >=(Vector2 left, Vector2 right)
@@ -356,10 +348,8 @@ namespace Godot
             {
                 return left.y >= right.y;
             }
-            else
-            {
-                return left.x >= right.x;
-            }
+
+            return left.x >= right.x;
         }
 
         public override bool Equals(object obj)
@@ -386,8 +376,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.x.ToString(),
-                this.y.ToString()
+                x.ToString(),
+                y.ToString()
             });
         }
 
@@ -395,8 +385,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.x.ToString(format),
-                this.y.ToString(format)
+                x.ToString(format),
+                y.ToString(format)
             });
         }
     }
