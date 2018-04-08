@@ -6,12 +6,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -288,8 +282,8 @@ namespace Godot
 
         public Transform2D(real_t rot, Vector2 pos)
         {
-            real_t cr = Mathf.Cos( (real_t)rot);
-            real_t sr = Mathf.Sin( (real_t)rot);
+            real_t cr = Mathf.Cos(rot);
+            real_t sr = Mathf.Sin(rot);
             x.x = cr;
             y.y = cr;
             x.y = -sr;
