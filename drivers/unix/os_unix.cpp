@@ -280,7 +280,12 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
 	if (pid == 0) {
-		// is child
+		// Child process
+
+		// Disable inherited signal handlers
+		disable_crash_handler(); // Godot's crash handler, in case it handles SIGABRT in the future
+		signal(SIGABRT, SIG_DFL); // Mono's SIGABRT signal handler
+
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
 		for (int i = 0; i < p_arguments.size(); i++)
@@ -292,7 +297,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);
-		// still alive? something failed..
+
+		// If still alive, execvp failed...
 		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
 		abort();
 	}
