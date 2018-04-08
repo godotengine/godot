@@ -39,9 +39,11 @@
 #include "core/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
+#include "script_text_editor.h"
 
 /*** SCRIPT EDITOR ****/
 
@@ -54,6 +56,8 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
+	// TODO This signal is no use for VisualScript...
+	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
 static bool _can_open_in_editor(Script *p_script) {
@@ -298,15 +302,9 @@ void ScriptEditor::_script_created(Ref<Script> p_script) {
 
 void ScriptEditor::_goto_script_line2(int p_line) {
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return;
-
-	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
-	if (!current)
-		return;
-
-	current->goto_line(p_line);
+	ScriptEditorBase *current = _get_current_editor();
+	if (current)
+		current->goto_line(p_line);
 }
 
 void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
@@ -316,17 +314,20 @@ void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
 		if (edit(p_script, p_line, 0)) {
 			editor->push_item(p_script.ptr());
 
-			int selected = tab_container->get_current_tab();
-			if (selected < 0 || selected >= tab_container->get_child_count())
-				return;
-
-			ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
-			if (!current)
-				return;
-
-			current->goto_line(p_line, true);
+			ScriptEditorBase *current = _get_current_editor();
+			if (current)
+				current->goto_line(p_line, true);
 		}
 	}
+}
+
+ScriptEditorBase *ScriptEditor::_get_current_editor() const {
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count())
+		return NULL;
+
+	return Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 }
 
 void ScriptEditor::_update_history_arrows() {
@@ -587,7 +588,7 @@ void ScriptEditor::_close_docs_tab() {
 }
 
 void ScriptEditor::_copy_script_path() {
-	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
+	ScriptEditorBase *se = _get_current_editor();
 	Ref<Script> script = se->get_edited_script();
 	OS::get_singleton()->set_clipboard(script->get_path());
 }
@@ -819,11 +820,8 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 
 Ref<Script> ScriptEditor::_get_current_script() {
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return NULL;
+	ScriptEditorBase *current = _get_current_editor();
 
-	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (current) {
 		return current->get_edited_script();
 	} else {
@@ -939,11 +937,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		}
 	}
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return;
-
-	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
+	ScriptEditorBase *current = _get_current_editor();
 	if (current) {
 
 		switch (p_option) {
@@ -1033,7 +1027,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				_copy_script_path();
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
-				ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
+				ScriptEditorBase *se = _get_current_editor();
 				Ref<Script> script = se->get_edited_script();
 				FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 				file_system_dock->navigate_to_path(script->get_path());
@@ -1223,6 +1217,17 @@ void ScriptEditor::_notification(int p_what) {
 			recent_scripts->set_as_minsize();
 		} break;
 
+		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
+
+			if (is_visible()) {
+				find_in_files_button->show();
+			} else {
+				find_in_files->hide();
+				find_in_files_button->hide();
+			}
+
+		} break;
+
 		default:
 			break;
 	}
@@ -1230,15 +1235,11 @@ void ScriptEditor::_notification(int p_what) {
 
 bool ScriptEditor::can_take_away_focus() const {
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
+	ScriptEditorBase *current = _get_current_editor();
+	if (current)
+		return current->can_lose_focus_on_node_selection();
+	else
 		return true;
-
-	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
-	if (!current)
-		return true;
-
-	return current->can_lose_focus_on_node_selection();
 }
 
 void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
@@ -1315,20 +1316,13 @@ void ScriptEditor::ensure_focus_current() {
 	if (!is_inside_tree())
 		return;
 
-	int cidx = tab_container->get_current_tab();
-	if (cidx < 0 || cidx >= tab_container->get_tab_count())
-		return;
-
-	Control *c = Object::cast_to<Control>(tab_container->get_child(cidx));
-	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(c);
-	if (!se)
-		return;
-	se->ensure_focus();
+	ScriptEditorBase *current = _get_current_editor();
+	if (current)
+		current->ensure_focus();
 }
 
 void ScriptEditor::_members_overview_selected(int p_idx) {
-	Node *current = tab_container->get_child(tab_container->get_current_tab());
-	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(current);
+	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
 		return;
 	}
@@ -1362,18 +1356,12 @@ void ScriptEditor::ensure_select_current() {
 
 	if (tab_container->get_child_count() && tab_container->get_current_tab() >= 0) {
 
-		Node *current = tab_container->get_child(tab_container->get_current_tab());
-
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(current);
+		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
-
-			Ref<Script> script = se->get_edited_script();
 
 			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
 		}
-
-		EditorHelp *eh = Object::cast_to<EditorHelp>(current);
 	}
 
 	_update_selected_editor_menu();
@@ -1413,12 +1401,7 @@ struct _ScriptEditorItemData {
 
 void ScriptEditor::_update_members_overview_visibility() {
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return;
-
-	Node *current = tab_container->get_child(tab_container->get_current_tab());
-	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(current);
+	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
 		members_overview->set_visible(false);
 		return;
@@ -1434,12 +1417,7 @@ void ScriptEditor::_update_members_overview_visibility() {
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
 
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_child_count())
-		return;
-
-	Node *current = tab_container->get_child(tab_container->get_current_tab());
-	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(current);
+	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
 		return;
 	}
@@ -1813,6 +1791,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 	se->connect("request_open_script_at_line", this, "_goto_script_line");
 	se->connect("go_to_help", this, "_help_class_goto");
 	se->connect("request_save_history", this, "_save_history");
+	se->connect("search_in_files_requested", this, "_on_find_in_files_requested");
 
 	//test for modification, maybe the script was not edited but was loaded
 
@@ -2530,6 +2509,48 @@ void ScriptEditor::_script_changed() {
 	NodeDock::singleton->update_lists();
 }
 
+void ScriptEditor::_on_find_in_files_requested(String text) {
+
+	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->popup_centered_minsize();
+}
+
+void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {
+
+	Ref<Resource> res = ResourceLoader::load(fpath);
+	edit(res);
+
+	ScriptEditorBase *seb = _get_current_editor();
+
+	ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(seb);
+	if (ste) {
+		ste->goto_line_selection(line_number - 1, begin, end);
+	}
+}
+
+void ScriptEditor::_start_find_in_files(bool with_replace) {
+
+	FindInFiles *f = find_in_files->get_finder();
+
+	f->set_search_text(find_in_files_dialog->get_search_text());
+	f->set_match_case(find_in_files_dialog->is_match_case());
+	f->set_whole_words(find_in_files_dialog->is_match_case());
+	f->set_folder(find_in_files_dialog->get_folder());
+	f->set_filter(find_in_files_dialog->get_filter());
+
+	find_in_files->set_with_replace(with_replace);
+	find_in_files->start_search();
+
+	find_in_files_button->set_pressed(true);
+	find_in_files->show();
+}
+
+void ScriptEditor::_on_find_in_files_modified_files(PoolStringArray paths) {
+
+	_test_script_times_on_disk();
+	_update_modified_scripts_for_external_editor();
+}
+
 void ScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_file_dialog_action", &ScriptEditor::_file_dialog_action);
@@ -2577,6 +2598,10 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_script_list_gui_input", &ScriptEditor::_script_list_gui_input);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
+	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
+	ClassDB::bind_method("_start_find_in_files", &ScriptEditor::_start_find_in_files);
+	ClassDB::bind_method("_on_find_in_files_result_selected", &ScriptEditor::_on_find_in_files_result_selected);
+	ClassDB::bind_method("_on_find_in_files_modified_files", &ScriptEditor::_on_find_in_files_modified_files);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "point", "from"), &ScriptEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "point", "data", "from"), &ScriptEditor::can_drop_data_fw);
@@ -2837,6 +2862,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_index = memnew(EditorHelpIndex);
 	add_child(help_index);
 	help_index->connect("open_class", this, "_help_class_open");
+
+	find_in_files_dialog = memnew(FindInFilesDialog);
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, this, "_start_find_in_files", varray(false));
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, this, "_start_find_in_files", varray(true));
+	add_child(find_in_files_dialog);
+	find_in_files = memnew(FindInFilesPanel);
+	find_in_files_button = editor->add_bottom_panel_item(TTR("Search results"), find_in_files);
+	find_in_files_button->set_tooltip(TTR("Search in files"));
+	find_in_files->set_custom_minimum_size(Size2(0, 200));
+	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, this, "_on_find_in_files_result_selected");
+	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, this, "_on_find_in_files_modified_files");
+	find_in_files->hide();
+	find_in_files_button->hide();
 
 	history_pos = -1;
 	//debugger_gui->hide();
