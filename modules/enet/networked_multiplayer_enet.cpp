@@ -234,7 +234,7 @@ void NetworkedMultiplayerENet::poll() {
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
-				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1.
+				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1
 					*new_id = 1;
 				}
 
@@ -404,7 +404,7 @@ void NetworkedMultiplayerENet::poll() {
 						incoming_packets.push_back(packet);
 					}
 
-					// Destroy packet later
+					// Destroy packet later..
 				} else {
 					ERR_CONTINUE(true);
 				}
@@ -440,10 +440,7 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 
 	if (peers_disconnected) {
 		enet_host_flush(host);
-
-		if (wait_usec > 0) {
-			OS::get_singleton()->delay_usec(wait_usec); // Wait for disconnection packets to send
-		}
+		OS::get_singleton()->delay_usec(100); // Wait 100ms for disconnection packets to send
 	}
 
 	enet_host_destroy(host);
@@ -576,7 +573,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	} else {
 
 		ERR_FAIL_COND_V(!peer_map.has(1), ERR_BUG);
-		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast
+		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast..
 	}
 
 	enet_host_flush(host);
@@ -820,8 +817,8 @@ bool NetworkedMultiplayerENet::is_always_ordered() const {
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
+	ClassDB::bind_method(D_METHOD("create_client", "ip", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("close_connection"), &NetworkedMultiplayerENet::close_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
@@ -877,7 +874,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 	close_connection();
 }
 
-// Sets IP for ENet to bind when using create_server or create_client
+// Sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
 	ERR_FAIL_COND(!p_ip.is_valid() && !p_ip.is_wildcard());
