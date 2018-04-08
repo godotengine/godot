@@ -312,7 +312,7 @@ namespace Godot
             int c;
 
             while ((c = instance[index++]) != 0)
-                hashv = ((hashv << 5) + hashv) + c; // hash * 33 + c
+                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
 
             return hashv;
         }
@@ -454,7 +454,10 @@ namespace Godot
                         return false; // Don't start with number plz
                 }
 
-                bool valid_char = (instance[i] >= '0' && instance[i] <= '9') || (instance[i] >= 'a' && instance[i] <= 'z') || (instance[i] >= 'A' && instance[i] <= 'Z') || instance[i] == '_';
+                bool valid_char = instance[i] >= '0' && 
+                                  instance[i] <= '9' || instance[i] >= 'a' && 
+                                  instance[i] <= 'z' || instance[i] >= 'A' && 
+                                  instance[i] <= 'Z' || instance[i] == '_';
 
                 if (!valid_char)
                     return false;
@@ -550,7 +553,7 @@ namespace Godot
                 case '\0':
                     return instance[0] == 0;
                 case '*':
-                    return ExprMatch(expr + 1, instance, caseSensitive) || (instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive));
+                    return ExprMatch(expr + 1, instance, caseSensitive) || instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive);
                 case '?':
                     return instance[0] != 0 && instance[0] != '.' && ExprMatch(expr + 1, instance + 1, caseSensitive);
                 default:
@@ -769,7 +772,7 @@ namespace Godot
             if (pos < 0)
                 return string.Empty;
 
-            return instance.Substring(pos, (instance.Length - pos));
+            return instance.Substring(pos, instance.Length - pos);
         }
 
         public static byte[] Sha256Buffer(this string instance)
@@ -822,7 +825,7 @@ namespace Godot
                 }
             }
 
-            return (2.0f * inter) / sum;
+            return 2.0f * inter / sum;
         }
 
         // <summary>
@@ -847,7 +850,7 @@ namespace Godot
                 int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
-                if (allow_empty || (end > from))
+                if (allow_empty || end > @from)
                     ret.Add(float.Parse(instance.Substring(from)));
                 if (end == len)
                     break;

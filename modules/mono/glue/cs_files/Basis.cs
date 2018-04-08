@@ -296,9 +296,9 @@ namespace Godot
             Vector3 zAxis = GetAxis(2);
 
             xAxis.Normalize();
-            yAxis = (yAxis - xAxis * (xAxis.Dot(yAxis)));
+            yAxis = yAxis - xAxis * xAxis.Dot(yAxis);
             yAxis.Normalize();
-            zAxis = (zAxis - xAxis * (xAxis.Dot(zAxis)) - yAxis * (yAxis.Dot(zAxis)));
+            zAxis = zAxis - xAxis * xAxis.Dot(zAxis) - yAxis * yAxis.Dot(zAxis);
             zAxis.Normalize();
 
             return CreateFromAxes(xAxis, yAxis, zAxis);
@@ -374,9 +374,9 @@ namespace Godot
         {
             return new Vector3
             (
-                (this[0, 0] * v.x) + (this[1, 0] * v.y) + (this[2, 0] * v.z),
-                (this[0, 1] * v.x) + (this[1, 1] * v.y) + (this[2, 1] * v.z),
-                (this[0, 2] * v.x) + (this[1, 2] * v.y) + (this[2, 2] * v.z)
+                this[0, 0] * v.x + this[1, 0] * v.y + this[2, 0] * v.z,
+                this[0, 1] * v.x + this[1, 1] * v.y + this[2, 1] * v.z,
+                this[0, 2] * v.x + this[1, 2] * v.y + this[2, 2] * v.z
             );
         }
 
