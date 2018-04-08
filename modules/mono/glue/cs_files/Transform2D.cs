@@ -110,7 +110,7 @@ namespace Godot
 
         public Transform2D AffineInverse()
         {
-            Transform2D inv = this;
+            var inv = this;
 
             real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
 
@@ -157,15 +157,15 @@ namespace Godot
             Vector2 s2 = m.Scale;
 
             // Slerp rotation
-            Vector2 v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
-            Vector2 v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
+            var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
+            var v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
 
             real_t dot = v1.Dot(v2);
 
             // Clamp dot to [-1, 1]
             dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
 
-            Vector2 v = new Vector2();
+            var v = new Vector2();
 
             if (dot > 0.9995f)
             {
@@ -184,8 +184,8 @@ namespace Godot
             Vector2 p2 = m.Origin;
 
             // Construct matrix
-            Transform2D res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
-            Vector2 scale = s1.LinearInterpolate(s2, c);
+            var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
+	        Vector2 scale = s1.LinearInterpolate(s2, c);
             res.x *= scale;
             res.y *= scale;
 
@@ -194,7 +194,7 @@ namespace Godot
 
         public Transform2D Inverse()
         {
-            Transform2D inv = this;
+            var inv = this;
 
             // Swap
             real_t temp = inv.x.y;
@@ -208,7 +208,7 @@ namespace Godot
 
         public Transform2D Orthonormalized()
         {
-            Transform2D on = this;
+            var on = this;
 
             Vector2 onX = on.x;
             Vector2 onY = on.y;
@@ -230,7 +230,7 @@ namespace Godot
 
         public Transform2D Scaled(Vector2 scale)
         {
-            Transform2D copy = this;
+            var copy = this;
             copy.x *= scale;
             copy.y *= scale;
             copy.o *= scale;
@@ -249,7 +249,7 @@ namespace Godot
 
         public Transform2D Translated(Vector2 offset)
         {
-            Transform2D copy = this;
+            var copy = this;
             copy.o += copy.BasisXform(offset);
             return copy;
         }
