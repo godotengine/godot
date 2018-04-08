@@ -850,7 +850,7 @@ namespace Godot
                 int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
-                if (allow_empty || end > @from)
+                if (allow_empty || end > from)
                     ret.Add(float.Parse(instance.Substring(from)));
                 if (end == len)
                     break;
