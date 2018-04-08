@@ -87,6 +87,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_item_icon_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns a [Color] modulating item's icon at the specified index.
+			</description>
+		</method>
 		<method name="get_item_icon_region" qualifiers="const">
 			<return type="Rect2">
 			</return>
@@ -223,6 +232,17 @@
 			</argument>
 			<description>
 				Set (or replace) icon of the item at the specified index.
+			</description>
+		</method>
+		<method name="set_item_icon_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="modulate" type="Color">
+			</argument>
+			<description>
+				Sets a modulating [Color] for item's icon at the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_region">
