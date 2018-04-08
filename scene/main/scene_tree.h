@@ -31,7 +31,7 @@
 #ifndef SCENE_MAIN_LOOP_H
 #define SCENE_MAIN_LOOP_H
 
-#include "io/networked_multiplayer_peer.h"
+#include "io/multiplayer_api.h"
 #include "os/main_loop.h"
 #include "os/thread_safe.h"
 #include "scene/resources/mesh.h"
@@ -185,16 +185,8 @@ private:
 
 	///network///
 
-	enum NetworkCommands {
-		NETWORK_COMMAND_REMOTE_CALL,
-		NETWORK_COMMAND_REMOTE_SET,
-		NETWORK_COMMAND_SIMPLIFY_PATH,
-		NETWORK_COMMAND_CONFIRM_PATH,
-	};
+	Ref<MultiplayerAPI> multiplayer_api;
 
-	Ref<NetworkedMultiplayerPeer> network_peer;
-
-	Set<int> connected_peers;
 	void _network_peer_connected(int p_id);
 	void _network_peer_disconnected(int p_id);
 
@@ -202,38 +194,8 @@ private:
 	void _connection_failed();
 	void _server_disconnected();
 
-	int rpc_sender_id;
-
-	//path sent caches
-	struct PathSentCache {
-		Map<int, bool> confirmed_peers;
-		int id;
-	};
-
-	HashMap<NodePath, PathSentCache> path_send_cache;
-	int last_send_cache_id;
-
-	//path get caches
-	struct PathGetCache {
-		struct NodeInfo {
-			NodePath path;
-			ObjectID instance;
-		};
-
-		Map<int, NodeInfo> nodes;
-	};
-
-	Map<int, PathGetCache> path_get_cache;
-
-	Vector<uint8_t> packet_cache;
-
-	void _network_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _network_poll();
-
 	static SceneTree *singleton;
 	friend class Node;
-
-	void _rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
 
 	void tree_changed();
 	void node_added(Node *p_node);
@@ -450,6 +412,8 @@ public:
 
 	//network API
 
+	Ref<MultiplayerAPI> get_multiplayer_api() const;
+	void set_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	bool is_network_server() const;
