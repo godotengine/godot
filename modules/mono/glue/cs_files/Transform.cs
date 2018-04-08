@@ -97,9 +97,9 @@ namespace Godot
 
             return new Vector3
             (
-                (basis[0, 0] * vInv.x) + (basis[1, 0] * vInv.y) + (basis[2, 0] * vInv.z),
-                (basis[0, 1] * vInv.x) + (basis[1, 1] * vInv.y) + (basis[2, 1] * vInv.z),
-                (basis[0, 2] * vInv.x) + (basis[1, 2] * vInv.y) + (basis[2, 2] * vInv.z)
+                basis[0, 0] * vInv.x + basis[1, 0] * vInv.y + basis[2, 0] * vInv.z,
+                basis[0, 1] * vInv.x + basis[1, 1] * vInv.y + basis[2, 1] * vInv.z,
+                basis[0, 2] * vInv.x + basis[1, 2] * vInv.y + basis[2, 2] * vInv.z
             );
         }
         

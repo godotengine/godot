@@ -121,7 +121,7 @@ namespace Godot
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
-            return 0.5f * ((p1 * 2.0f) +
+            return 0.5f * (p1 * 2.0f +
                                 (-p0 + p2) * t +
                                 (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
                                 (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
@@ -166,8 +166,8 @@ namespace Godot
         {
             var res = this;
 
-            res.x += (t * (b.x - x));
-            res.y += (t * (b.y - y));
+            res.x += t * (b.x - x);
+            res.y += t * (b.y - y);
 
             return res;
         }

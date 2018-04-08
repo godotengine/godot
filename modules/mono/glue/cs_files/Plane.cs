@@ -80,9 +80,9 @@ namespace Godot
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
 
-	        Vector3 result = (b.normal.Cross(c.normal) * d) +
-                                (c.normal.Cross(normal) * b.d) +
-                                (normal.Cross(b.normal) * c.d);
+	        Vector3 result = b.normal.Cross(c.normal) * d +
+                                c.normal.Cross(normal) * b.d +
+                                normal.Cross(b.normal) * c.d;
 
             return result / denom;
         }
@@ -113,7 +113,7 @@ namespace Godot
 
             real_t dist = (normal.Dot(begin) - d) / den;
 
-            if (dist < -Mathf.Epsilon || dist > (1.0f + Mathf.Epsilon))
+            if (dist < -Mathf.Epsilon || dist > 1.0f + Mathf.Epsilon)
                 return new Vector3();
 
             return begin + segment * -dist;
