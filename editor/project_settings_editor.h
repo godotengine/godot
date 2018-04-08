@@ -77,18 +77,28 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *property;
 	OptionButton *type;
 	PopupMenu *popup_add;
+	VBoxContainer *sim_axis_vbc;
+	SpinBox *sim_axis_sb;
 	ConfirmationDialog *press_a_key;
+	VBoxContainer *press_a_key_vbc;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
+	VBoxContainer *device_input_vbc;
 	SpinBox *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
 	MenuButton *popup_copy_to_feature;
 
+	Control *input_base_actions;
+	Control *input_base_axis;
+	VBoxContainer *input_map_vbc;
+	Label *action_label;
 	LineEdit *action_name;
 	Button *action_add;
 	Label *action_add_error;
+	SpinBox *controller_id_sb;
 	Tree *input_editor;
+	bool updating_actions;
 	bool setting;
 	bool updating_translations;
 
@@ -126,6 +136,9 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_add();
 	void _device_input_add();
 
+	void _controller_changed(double p_value);
+
+	void _tab_container_changed(int p_tab);
 	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
 	void _action_edited();

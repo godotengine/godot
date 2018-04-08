@@ -51,13 +51,20 @@ class InputDefault : public Input {
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
 
-	struct Action {
+	struct ActionState {
 		uint64_t physics_frame;
 		uint64_t idle_frame;
 		bool pressed;
+		float axis_value;
+
+		ActionState() :
+				physics_frame(-1),
+				idle_frame(-1),
+				pressed(false),
+				axis_value(0.) {}
 	};
 
-	Map<StringName, Action> action_state;
+	Map<StringName, ActionState> action_state;
 
 	bool emulate_touch;
 
@@ -179,9 +186,12 @@ public:
 	virtual bool is_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
-	virtual bool is_action_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_released(const StringName &p_action) const;
+
+	virtual bool is_action_pressed(const StringName &p_action, int p_controller = 0) const;
+	virtual bool is_action_just_pressed(const StringName &p_action, int p_controller = 0) const;
+	virtual bool is_action_just_released(const StringName &p_action, int p_controller = 0) const;
+	virtual bool is_action_just_changed(const StringName &p_action, int p_controller = 0) const;
+	virtual float get_action_axis_value(const StringName &p_action, int p_controller = 0) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
@@ -218,8 +228,8 @@ public:
 	void set_main_loop(MainLoop *p_main_loop);
 	void set_mouse_position(const Point2 &p_posf);
 
-	void action_press(const StringName &p_action);
-	void action_release(const StringName &p_action);
+	void action_press(const StringName &p_action, int p_controller = 0);
+	void action_release(const StringName &p_action, int p_controller = 0);
 
 	void iteration(float p_step);
 
@@ -250,6 +260,9 @@ public:
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 	InputDefault();
+
+private:
+	const StringName combine_controller_action(int p_controller, const StringName &p_action) const;
 };
 
 #endif // INPUT_DEFAULT_H

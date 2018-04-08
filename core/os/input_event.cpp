@@ -41,14 +41,30 @@ int InputEvent::get_device() const {
 	return device;
 }
 
-bool InputEvent::is_pressed() const {
+void InputEvent::set_pressed(bool p_pressed) {
 
-	return false;
+	pressed = p_pressed;
+}
+
+void InputEvent::set_axis_factor(float p_axis_factor) {
+	axis_factor = p_axis_factor;
+}
+
+bool InputEvent::is_simulating_axis() {
+	return ABS(axis_factor) > 0;
+}
+
+void InputEvent::set_data(const String &p_data) {
+	data = p_data;
+}
+
+float InputEvent::get_axis_value() const {
+	return pressed;
 }
 
 bool InputEvent::is_action(const StringName &p_action) const {
 
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
+	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), (get_data() == "" ? "0" : get_data()) + ":" + p_action);
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action) const {
@@ -95,7 +111,18 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
+	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEvent::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
+
+	ClassDB::bind_method(D_METHOD("set_axis_factor", "factor"), &InputEvent::set_axis_factor);
+	ClassDB::bind_method(D_METHOD("get_axis_factor"), &InputEvent::get_axis_factor);
+
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &InputEvent::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &InputEvent::get_data);
+
+	ClassDB::bind_method(D_METHOD("is_simulating_axis"), &InputEvent::is_simulating_axis);
+	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEvent::get_axis_value);
+
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
@@ -111,11 +138,15 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_factor"), "set_axis_factor", "get_axis_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "data"), "set_data", "get_data");
 }
 
 InputEvent::InputEvent() {
 
 	device = 0;
+	axis_factor = 0;
 }
 
 //////////////////
@@ -208,16 +239,6 @@ InputEventWithModifiers::InputEventWithModifiers() {
 
 //////////////////////////////////
 
-void InputEventKey::set_pressed(bool p_pressed) {
-
-	pressed = p_pressed;
-}
-
-bool InputEventKey::is_pressed() const {
-
-	return pressed;
-}
-
 void InputEventKey::set_scancode(uint32_t p_scancode) {
 
 	scancode = p_scancode;
@@ -307,8 +328,6 @@ bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
 
 void InputEventKey::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventKey::set_pressed);
-
 	ClassDB::bind_method(D_METHOD("set_scancode", "scancode"), &InputEventKey::set_scancode);
 	ClassDB::bind_method(D_METHOD("get_scancode"), &InputEventKey::get_scancode);
 
@@ -319,7 +338,6 @@ void InputEventKey::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_scancode_with_modifiers"), &InputEventKey::get_scancode_with_modifiers);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scancode"), "set_scancode", "get_scancode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "echo"), "set_echo", "is_echo");
@@ -404,15 +422,6 @@ int InputEventMouseButton::get_button_index() const {
 	return button_index;
 }
 
-void InputEventMouseButton::set_pressed(bool p_pressed) {
-
-	pressed = p_pressed;
-}
-bool InputEventMouseButton::is_pressed() const {
-
-	return pressed;
-}
-
 void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
 
 	doubleclick = p_doubleclick;
@@ -438,7 +447,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	mb->set_global_position(g);
 
 	mb->set_button_mask(get_button_mask());
-	mb->set_pressed(pressed);
+	mb->set_pressed(is_pressed());
 	mb->set_doubleclick(doubleclick);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
@@ -484,7 +493,7 @@ String InputEventMouseButton::as_text() const {
 			button_index_string = itos(get_button_index());
 			break;
 	}
-	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
+	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (is_pressed() ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -495,15 +504,11 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_index", "button_index"), &InputEventMouseButton::set_button_index);
 	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventMouseButton::get_button_index);
 
-	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
-
 	ClassDB::bind_method(D_METHOD("set_doubleclick", "doubleclick"), &InputEventMouseButton::set_doubleclick);
 	ClassDB::bind_method(D_METHOD("is_doubleclick"), &InputEventMouseButton::is_doubleclick);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
 }
 
@@ -511,7 +516,6 @@ InputEventMouseButton::InputEventMouseButton() {
 
 	factor = 1;
 	button_index = 0;
-	pressed = false;
 	doubleclick = false;
 }
 
@@ -610,13 +614,13 @@ void InputEventJoypadMotion::set_axis_value(float p_value) {
 
 	axis_value = p_value;
 }
+
 float InputEventJoypadMotion::get_axis_value() const {
 
 	return axis_value;
 }
 
 bool InputEventJoypadMotion::is_pressed() const {
-
 	return Math::abs(axis_value) > 0.5f;
 }
 
@@ -626,7 +630,7 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event) const 
 	if (jm.is_null())
 		return false;
 
-	return (axis == jm->axis && ((axis_value < 0) == (jm->axis_value < 0) || jm->axis_value == 0));
+	return axis == jm->axis;
 }
 
 String InputEventJoypadMotion::as_text() const {
@@ -640,7 +644,6 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventJoypadMotion::get_axis);
 
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
-	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_value"), "set_axis_value", "get_axis_value");
@@ -663,15 +666,6 @@ int InputEventJoypadButton::get_button_index() const {
 	return button_index;
 }
 
-void InputEventJoypadButton::set_pressed(bool p_pressed) {
-
-	pressed = p_pressed;
-}
-bool InputEventJoypadButton::is_pressed() const {
-
-	return pressed;
-}
-
 void InputEventJoypadButton::set_pressure(float p_pressure) {
 
 	pressure = p_pressure;
@@ -692,7 +686,7 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event) const 
 
 String InputEventJoypadButton::as_text() const {
 
-	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
+	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (is_pressed() ? "true" : "false") + ", pressure=" + String(Variant(pressure));
 }
 
 void InputEventJoypadButton::_bind_methods() {
@@ -703,19 +697,14 @@ void InputEventJoypadButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventJoypadButton::set_pressure);
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventJoypadButton::get_pressure);
 
-	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventJoypadButton::is_pressed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
 InputEventJoypadButton::InputEventJoypadButton() {
 
 	button_index = 0;
 	pressure = 0;
-	pressed = false;
 }
 
 //////////////////////////////////////////////
@@ -738,15 +727,6 @@ Vector2 InputEventScreenTouch::get_position() const {
 	return pos;
 }
 
-void InputEventScreenTouch::set_pressed(bool p_pressed) {
-
-	pressed = p_pressed;
-}
-bool InputEventScreenTouch::is_pressed() const {
-
-	return pressed;
-}
-
 Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
 	Ref<InputEventScreenTouch> st;
@@ -754,14 +734,14 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_device(get_device());
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
-	st->set_pressed(pressed);
+	st->set_pressed(is_pressed());
 
 	return st;
 }
 
 String InputEventScreenTouch::as_text() const {
 
-	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + ")";
+	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (is_pressed() ? "true" : "false") + ", position=(" + String(get_position()) + ")";
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -772,18 +752,13 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventScreenTouch::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
-	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
 InputEventScreenTouch::InputEventScreenTouch() {
 
 	index = 0;
-	pressed = false;
 }
 
 /////////////////////////////
@@ -881,15 +856,6 @@ StringName InputEventAction::get_action() const {
 	return action;
 }
 
-void InputEventAction::set_pressed(bool p_pressed) {
-
-	pressed = p_pressed;
-}
-bool InputEventAction::is_pressed() const {
-
-	return pressed;
-}
-
 bool InputEventAction::is_action(const StringName &p_action) const {
 
 	return action == p_action;
@@ -897,7 +863,7 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 
 String InputEventAction::as_text() const {
 
-	return "InputEventAction : action=" + action + ", pressed=(" + (pressed ? "true" : "false");
+	return "InputEventAction : action=" + action + ", pressed=(" + (is_pressed() ? "true" : "false");
 }
 
 void InputEventAction::_bind_methods() {
@@ -905,18 +871,12 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action", "action"), &InputEventAction::set_action);
 	ClassDB::bind_method(D_METHOD("get_action"), &InputEventAction::get_action);
 
-	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
-
 	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
-InputEventAction::InputEventAction() {
-	pressed = false;
-}
+InputEventAction::InputEventAction() {}
 /////////////////////////////
 
 void InputEventGesture::set_position(const Vector2 &p_pos) {

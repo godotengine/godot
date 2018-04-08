@@ -145,7 +145,11 @@ enum JoystickList {
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource)
 
+protected:
 	int device;
+	bool pressed;
+	float axis_factor; // Used to simulate axis on buttons event or to scale the axis value in case of axis event
+	String data; // Used to store extra information
 
 protected:
 	static void _bind_methods();
@@ -154,7 +158,19 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
-	virtual bool is_pressed() const;
+	void set_pressed(bool p_pressed);
+	_FORCE_INLINE_ virtual bool is_pressed() const { return pressed; }
+
+	void set_axis_factor(float p_axis_factor);
+	_FORCE_INLINE_ float get_axis_factor() const { return axis_factor; }
+
+	bool is_simulating_axis();
+
+	void set_data(const String &p_data);
+	_FORCE_INLINE_ const String &get_data() const { return data; }
+
+	virtual float get_axis_value() const;
+
 	virtual bool is_action(const StringName &p_action) const;
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_released(const StringName &p_action) const;
@@ -230,9 +246,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
-
 	void set_scancode(uint32_t p_scancode);
 	uint32_t get_scancode() const;
 
@@ -285,7 +298,6 @@ class InputEventMouseButton : public InputEventMouse {
 
 	float factor;
 	int button_index;
-	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
 
 protected:
@@ -297,9 +309,6 @@ public:
 
 	void set_button_index(int p_index);
 	int get_button_index() const;
-
-	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	void set_doubleclick(bool p_doubleclick);
 	bool is_doubleclick() const;
@@ -349,9 +358,10 @@ public:
 	int get_axis() const;
 
 	void set_axis_value(float p_value);
-	float get_axis_value() const;
+	virtual float get_axis_value() const; // return value -1 to 1
 
 	virtual bool is_pressed() const;
+
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -364,7 +374,6 @@ class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent)
 
 	int button_index;
-	bool pressed;
 	float pressure; //0 to 1
 protected:
 	static void _bind_methods();
@@ -372,9 +381,6 @@ protected:
 public:
 	void set_button_index(int p_index);
 	int get_button_index() const;
-
-	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
@@ -391,7 +397,6 @@ class InputEventScreenTouch : public InputEvent {
 	GDCLASS(InputEventScreenTouch, InputEvent)
 	int index;
 	Vector2 pos;
-	bool pressed;
 
 protected:
 	static void _bind_methods();
@@ -402,9 +407,6 @@ public:
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;
-
-	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
@@ -447,7 +449,6 @@ class InputEventAction : public InputEvent {
 	GDCLASS(InputEventAction, InputEvent)
 
 	StringName action;
-	bool pressed;
 
 protected:
 	static void _bind_methods();
@@ -455,9 +456,6 @@ protected:
 public:
 	void set_action(const StringName &p_action);
 	StringName get_action() const;
-
-	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 

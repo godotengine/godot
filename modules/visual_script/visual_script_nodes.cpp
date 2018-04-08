@@ -3521,7 +3521,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 			if (!pi.name.begins_with("input/"))
 				continue;
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			String name = pi.name.get_slice("/", 1);
 
 			al.push_back(name);
 		}

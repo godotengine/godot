@@ -51,7 +51,7 @@ private:
 
 	List<Ref<InputEvent> >::Element *_find_event(List<Ref<InputEvent> > &p_list, const Ref<InputEvent> &p_event, bool p_action_test = false) const;
 
-	Array _get_action_list(const StringName &p_action);
+	Array _get_action_list(const StringName &p_controller_action);
 	Array _get_actions();
 
 protected:
@@ -60,17 +60,19 @@ protected:
 public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
-	bool has_action(const StringName &p_action) const;
+	bool has_action(const StringName &p_controller_action) const;
 	List<StringName> get_actions() const;
-	void add_action(const StringName &p_action);
-	void erase_action(const StringName &p_action);
+	void add_action(const StringName &p_controller_action);
+	void erase_action(const StringName &p_controller_action);
 
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void add_action_with_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 
-	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
-	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
+	const List<Ref<InputEvent> > *get_action_list(const StringName &p_controller_action);
+	Ref<InputEvent> event_get_input_event_if_action(const Ref<InputEvent> &p_event, const StringName &p_controller_action) const;
+	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_controller_action) const;
 
 	const Map<StringName, Action> &get_action_map() const;
 	void load_from_globals();
