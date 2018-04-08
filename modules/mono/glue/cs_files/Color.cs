@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = Math.Max(r, Math.Max(g, b));
+                float min = Math.Min(r, Math.Min(g, b));
 
                 float delta = max - min;
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.Max(r, Mathf.Max(g, b));
-                float min = Mathf.Min(r, Mathf.Min(g, b));
+                float max = Math.Max(r, Math.Max(g, b));
+                float min = Math.Min(r, Math.Min(g, b));
 
                 float delta = max - min;
 
@@ -96,7 +96,7 @@ namespace Godot
         {
             get
             {
-                return Mathf.Max(r, Mathf.Max(g, b));
+                return Math.Max(r, Math.Max(g, b));
             }
             set
             {
@@ -265,7 +265,7 @@ namespace Godot
 
         public Color LinearInterpolate(Color b, float t)
         {
-            Color res = this;
+            var res = this;
 
             res.r += (t * (b.r - r));
             res.g += (t * (b.g - g));
@@ -303,7 +303,7 @@ namespace Godot
 
         public string ToHtml(bool include_alpha = true)
         {
-            String txt = string.Empty;
+            var txt = string.Empty;
 
             txt += _to_hex(r);
             txt += _to_hex(g);
@@ -339,10 +339,10 @@ namespace Godot
         {
             int ig = 0;
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 int c = str[i + ofs];
-                int v = 0;
+                var v = 0;
 
                 if (c >= '0' && c <= '9')
                 {
@@ -374,11 +374,11 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            int v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
+            var v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
 
-            string ret = string.Empty;
+            var ret = string.Empty;
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 char[] c = { (char)0, (char)0 };
                 int lv = v & 0xF;
@@ -403,7 +403,7 @@ namespace Godot
             if (color[0] == '#')
                 color = color.Substring(1, color.Length - 1);
 
-            bool alpha = false;
+            var alpha = false;
 
             if (color.Length == 8)
                 alpha = true;
@@ -449,7 +449,7 @@ namespace Godot
             if (rgba[0] == '#')
                 rgba = rgba.Substring(1);
 
-            bool alpha = false;
+            var alpha = false;
 
             if (rgba.Length == 8)
             {

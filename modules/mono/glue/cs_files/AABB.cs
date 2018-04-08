@@ -111,8 +111,8 @@ namespace Godot
 
         public Vector3 GetLongestAxis()
         {
-            Vector3 axis = new Vector3(1f, 0f, 0f);
-            real_t max_size = size.x;
+            var axis = new Vector3(1f, 0f, 0f);
+	        real_t max_size = size.x;
 
             if (size.y > max_size)
             {
@@ -131,7 +131,7 @@ namespace Godot
 
         public Vector3.Axis GetLongestAxisIndex()
         {
-            Vector3.Axis axis = Vector3.Axis.X;
+            var axis = Vector3.Axis.X;
             real_t max_size = size.x;
 
             if (size.y > max_size)
@@ -151,7 +151,7 @@ namespace Godot
 
         public real_t GetLongestAxisSize()
         {
-            real_t max_size = size.x;
+	        real_t max_size = size.x;
 
             if (size.y > max_size)
                 max_size = size.y;
@@ -164,8 +164,8 @@ namespace Godot
 
         public Vector3 GetShortestAxis()
         {
-            Vector3 axis = new Vector3(1f, 0f, 0f);
-            real_t max_size = size.x;
+            var axis = new Vector3(1f, 0f, 0f);
+	        real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -184,8 +184,8 @@ namespace Godot
 
         public Vector3.Axis GetShortestAxisIndex()
         {
-            Vector3.Axis axis = Vector3.Axis.X;
-            real_t max_size = size.x;
+            var axis = Vector3.Axis.X;
+	        real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -204,7 +204,7 @@ namespace Godot
 
         public real_t GetShortestAxisSize()
         {
-            real_t max_size = size.x;
+	        real_t max_size = size.x;
 
             if (size.y < max_size)
                 max_size = size.y;
@@ -228,7 +228,7 @@ namespace Godot
 
         public AABB Grow(real_t by)
         {
-            AABB res = this;
+            var res = this;
 
             res.position.x -= by;
             res.position.y -= by;
@@ -339,7 +339,7 @@ namespace Godot
             bool over = false;
             bool under = false;
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 if (plane.DistanceTo(points[i]) > 0)
                     over = true;
@@ -355,7 +355,7 @@ namespace Godot
             real_t min = 0f;
             real_t max = 1f;
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 real_t seg_from = from[i];
                 real_t seg_to = to[i];
@@ -400,16 +400,16 @@ namespace Godot
         {
             Vector3 beg_1 = position;
             Vector3 beg_2 = with.position;
-            Vector3 end_1 = new Vector3(size.x, size.y, size.z) + beg_1;
-            Vector3 end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
+	        var end_1 = new Vector3(size.x, size.y, size.z) + beg_1;
+	        var end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
 
-            Vector3 min = new Vector3(
+            var min = new Vector3(
                               (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x,
                               (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y,
                               (beg_1.z < beg_2.z) ? beg_1.z : beg_2.z
                           );
 
-            Vector3 max = new Vector3(
+            var max = new Vector3(
                               (end_1.x > end_2.x) ? end_1.x : end_2.x,
                               (end_1.y > end_2.y) ? end_1.y : end_2.y,
                               (end_1.z > end_2.z) ? end_1.z : end_2.z
