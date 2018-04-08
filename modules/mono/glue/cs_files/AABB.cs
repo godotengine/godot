@@ -278,24 +278,24 @@ namespace Godot
                 return new AABB();
             }
 
-            min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
-            max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
+            min.x = src_min.x > dst_min.x ? src_min.x : dst_min.x;
+            max.x = src_max.x < dst_max.x ? src_max.x : dst_max.x;
 
             if (src_min.y > dst_max.y || src_max.y < dst_min.y)
             {
                 return new AABB();
             }
 
-            min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
-            max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
+            min.y = src_min.y > dst_min.y ? src_min.y : dst_min.y;
+            max.y = src_max.y < dst_max.y ? src_max.y : dst_max.y;
 
             if (src_min.z > dst_max.z || src_max.z < dst_min.z)
             {
                 return new AABB();
             }
 
-            min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
-            max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
+            min.z = src_min.z > dst_min.z ? src_min.z : dst_min.z;
+            max.z = src_max.z < dst_max.z ? src_max.z : dst_max.z;
 
             return new AABB(min, max - min);
         }
@@ -400,15 +400,15 @@ namespace Godot
 	        var end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
 
             var min = new Vector3(
-                              (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x,
-                              (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y,
-                              (beg_1.z < beg_2.z) ? beg_1.z : beg_2.z
+                              beg_1.x < beg_2.x ? beg_1.x : beg_2.x,
+                              beg_1.y < beg_2.y ? beg_1.y : beg_2.y,
+                              beg_1.z < beg_2.z ? beg_1.z : beg_2.z
                           );
 
             var max = new Vector3(
-                              (end_1.x > end_2.x) ? end_1.x : end_2.x,
-                              (end_1.y > end_2.y) ? end_1.y : end_2.y,
-                              (end_1.z > end_2.z) ? end_1.z : end_2.z
+                              end_1.x > end_2.x ? end_1.x : end_2.x,
+                              end_1.y > end_2.y ? end_1.y : end_2.y,
+                              end_1.z > end_2.z ? end_1.z : end_2.z
                           );
 
             return new AABB(min, max - min);

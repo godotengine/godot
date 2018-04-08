@@ -276,10 +276,10 @@ namespace Godot
         {
             var res = this;
 
-            res.r += (t * (b.r - r));
-            res.g += (t * (b.g - g));
-            res.b += (t * (b.b - this.b));
-            res.a += (t * (b.a - a));
+            res.r += t * (b.r - r);
+            res.g += t * (b.g - g);
+            res.b += t * (b.b - this.b);
+            res.a += t * (b.a - a);
 
             return res;
         }
@@ -520,8 +520,8 @@ namespace Godot
                 if (left.g == right.g)
                 {
                     if (left.b == right.b)
-                        return (left.a < right.a);
-                    return (left.b < right.b);
+                        return left.a < right.a;
+                    return left.b < right.b;
                 }
 
                 return left.g < right.g;
@@ -537,8 +537,8 @@ namespace Godot
                 if (left.g == right.g)
                 {
                     if (left.b == right.b)
-                        return (left.a > right.a);
-                    return (left.b > right.b);
+                        return left.a > right.a;
+                    return left.b > right.b;
                 }
 
                 return left.g > right.g;
