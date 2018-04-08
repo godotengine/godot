@@ -2163,13 +2163,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			if (name == script_property_name)
 				continue;
 
-			Variant value = N->get()->get(name);
-			// Duplicate dictionaries and arrays, mainly needed for __meta__
-			if (value.get_type() == Variant::DICTIONARY) {
-				value = Dictionary(value).duplicate();
-			} else if (value.get_type() == Variant::ARRAY) {
-				value = Array(value).duplicate();
-			}
+			Variant value = N->get()->get(name).duplicate(true);
 
 			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 
@@ -2313,13 +2307,7 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 			continue;
 		String name = E->get().name;
 
-		Variant value = get(name);
-		// Duplicate dictionaries and arrays, mainly needed for __meta__
-		if (value.get_type() == Variant::DICTIONARY) {
-			value = Dictionary(value).duplicate();
-		} else if (value.get_type() == Variant::ARRAY) {
-			value = Array(value).duplicate();
-		}
+		Variant value = get(name).duplicate(true);
 
 		node->set(name, value);
 	}
