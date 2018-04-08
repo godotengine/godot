@@ -18,8 +18,7 @@ namespace Godot
             new Vector3(0f, 0f, 1f)
         );
 
-        private static readonly Basis[] orthoBases = new Basis[24]
-        {
+        private static readonly Basis[] orthoBases = {
             new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
             new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
             new Basis(-1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f),
@@ -252,8 +251,7 @@ namespace Godot
         {
             var inv = this;
 
-            var co = new real_t[3]
-            {
+            real_t[] co = {
                 inv[1, 1] * inv[2, 2] - inv[1, 2] * inv[2, 1],
                 inv[1, 2] * inv[2, 0] - inv[1, 0] * inv[2, 2],
                 inv[1, 0] * inv[2, 1] - inv[1, 1] * inv[2, 0]
