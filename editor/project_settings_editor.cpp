@@ -83,9 +83,11 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
+			axis_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 
 			translation_list->connect("button_pressed", this, "_translation_delete");
 			_update_actions();
+			_update_axes();
 			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
 			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
 			popup_add->add_icon_item(get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
@@ -134,7 +136,7 @@ static bool _validate_action_name(const String &p_name) {
 
 void ProjectSettingsEditor::_action_selected() {
 
-	TreeItem *ti = input_editor->get_selected();
+	TreeItem *ti = input_action_editor->get_selected();
 	if (!ti || !ti->is_editable(0))
 		return;
 
@@ -144,7 +146,7 @@ void ProjectSettingsEditor::_action_selected() {
 
 void ProjectSettingsEditor::_action_edited() {
 
-	TreeItem *ti = input_editor->get_selected();
+	TreeItem *ti = input_action_editor->get_selected();
 	if (!ti)
 		return;
 
@@ -197,6 +199,71 @@ void ProjectSettingsEditor::_action_edited() {
 	add_at = action_prop;
 }
 
+void ProjectSettingsEditor::_axis_selected() {
+
+	TreeItem *ti = input_axis_editor->get_selected();
+	if (!ti || !ti->is_editable(0))
+		return;
+
+	add_at = "input_axes/" + ti->get_text(0);
+	edit_idx = -1;
+}
+
+void ProjectSettingsEditor::_axis_edited() {
+
+	TreeItem *ti = input_axis_editor->get_selected();
+	if (!ti)
+		return;
+
+	String new_name = ti->get_text(0);
+	String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
+
+	if (new_name == old_name)
+		return;
+
+	if (new_name.find("/") != -1 || new_name.find(":") != -1 || new_name == "") {
+
+		ti->set_text(0, old_name);
+		add_at = "input_axes/" + old_name;
+
+		message->set_text(TTR("Invalid axis (anything goes but '/' or ':')."));
+		message->popup_centered(Size2(300, 100) * EDSCALE);
+		return;
+	}
+
+	String axis_prop = "input_axes/" + new_name;
+
+	if (ProjectSettings::get_singleton()->has_setting(axis_prop)) {
+
+		ti->set_text(0, old_name);
+		add_at = "input/" + old_name;
+
+		message->set_text(vformat(TTR("Axis '%s' already exists!"), new_name));
+		message->popup_centered(Size2(300, 100) * EDSCALE);
+		return;
+	}
+
+	int order = ProjectSettings::get_singleton()->get_order(add_at);
+	Array va = ProjectSettings::get_singleton()->get(add_at);
+
+	setting = true;
+	undo_redo->create_action(TTR("Rename Input Axis Event"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", add_at);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", axis_prop, va);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", axis_prop, order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", axis_prop);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", add_at, va);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", add_at, order);
+	undo_redo->add_do_method(this, "_update_axes");
+	undo_redo->add_undo_method(this, "_update_axes");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+	setting = false;
+
+	add_at = axis_prop;
+}
+
 void ProjectSettingsEditor::_device_input_add() {
 
 	Ref<InputEvent> ie;
@@ -204,6 +271,7 @@ void ProjectSettingsEditor::_device_input_add() {
 	int idx = edit_idx;
 	Array old_val = ProjectSettings::get_singleton()->get(name);
 	Array arr = old_val.duplicate();
+	bool is_action = name.find("input_axes/") < 0;
 
 	switch (add_type) {
 
@@ -232,7 +300,10 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			if (is_action)
+				jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			else // Axes use the whole axis
+				jm->set_axis_value(0.0);
 			jm->set_device(device_id->get_value());
 
 			for (int i = 0; i < arr.size(); i++) {
@@ -271,22 +342,46 @@ void ProjectSettingsEditor::_device_input_add() {
 		default: {}
 	}
 
-	if (idx < 0 || idx >= arr.size()) {
-		arr.push_back(ie);
+	if (is_action) {
+		if (idx < 0 || idx >= arr.size()) {
+			arr.push_back(ie);
+		} else {
+			arr[idx] = ie;
+		}
+
+		undo_redo->create_action(TTR("Add Input Action Event"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_do_method(this, "_update_actions");
+		undo_redo->add_undo_method(this, "_update_actions");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+
+		_show_last_added_action(ie, name);
 	} else {
-		arr[idx] = ie;
+		if (idx < 0 || idx >= arr.size()) {
+			Array ev = Array();
+			ev.push_back(ie);
+			ev.push_back(1.0);
+			arr.push_back(ev);
+		} else {
+			Array ev = arr[idx];
+			ev[0] = ie;
+			arr[idx] = ev;
+		}
+
+		undo_redo->create_action(TTR("Add Input Axis Event"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_do_method(this, "_update_axes");
+		undo_redo->add_undo_method(this, "_update_axes");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+
+		_show_last_added_axis(ie, name);
 	}
-
-	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
-
-	_show_last_added(ie, name);
 }
 
 void ProjectSettingsEditor::_press_a_key_confirm() {
@@ -304,40 +399,79 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 
 	String name = add_at;
 	int idx = edit_idx;
+	bool is_action = add_at.find("input_axes/") < 0;
 
 	Array old_val = ProjectSettings::get_singleton()->get(name);
 	Array arr = old_val.duplicate();
 
-	for (int i = 0; i < arr.size(); i++) {
+	if (is_action) {
+		for (int i = 0; i < arr.size(); i++) {
 
-		Ref<InputEventKey> aie = arr[i];
-		if (aie.is_null())
-			continue;
-		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
-			return;
+			Ref<InputEventKey> aie = arr[i];
+			if (aie.is_null())
+				continue;
+			if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
+				return;
+			}
 		}
-	}
 
-	if (idx < 0 || idx >= arr.size()) {
-		arr.push_back(ie);
+		if (idx < 0 || idx >= arr.size()) {
+			arr.push_back(ie);
+		} else {
+			arr[idx] = ie;
+		}
+
+		undo_redo->create_action(TTR("Add Input Action Event"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_do_method(this, "_update_actions");
+		undo_redo->add_undo_method(this, "_update_actions");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+
+		_show_last_added_action(ie, name);
 	} else {
-		arr[idx] = ie;
+		for (int i = 0; i < arr.size(); i++) {
+
+			Array ev = arr[i];
+			if (ev.size() != 2)
+				continue;
+
+			Ref<InputEventKey> aie = ev[0];
+			if (aie.is_null())
+				continue;
+			if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
+				return;
+			}
+		}
+
+		if (idx < 0 || idx >= arr.size()) {
+			Array ev = Array();
+			ev.push_back(ie);
+			ev.push_back(1.0);
+			arr.push_back(ev);
+		} else {
+			Array ev = arr[idx];
+			ev[0] = ie;
+			arr[idx] = ev;
+		}
+
+		undo_redo->create_action(TTR("Add Input Axis Event"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_do_method(this, "_update_axes");
+		undo_redo->add_undo_method(this, "_update_axes");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+
+		_show_last_added_axis(ie, name);
 	}
-
-	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
-
-	_show_last_added(ie, name);
 }
 
-void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, const String &p_name) {
-	TreeItem *r = input_editor->get_root();
+void ProjectSettingsEditor::_show_last_added_action(const Ref<InputEvent> &p_event, const String &p_name) {
+	TreeItem *r = input_action_editor->get_root();
 
 	String name = p_name;
 	name.erase(0, 6);
@@ -366,7 +500,40 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 		r = r->get_next();
 	}
 
-	if (found) input_editor->ensure_cursor_is_visible();
+	if (found) input_action_editor->ensure_cursor_is_visible();
+}
+
+void ProjectSettingsEditor::_show_last_added_axis(const Ref<InputEvent> &p_event, const String &p_name) {
+	TreeItem *r = input_axis_editor->get_root();
+
+	String name = p_name;
+	name.erase(0, 6);
+	if (!r)
+		return;
+	r = r->get_children();
+	if (!r)
+		return;
+	bool found = false;
+	while (r) {
+		if (r->get_text(0) != name) {
+			r = r->get_next();
+			continue;
+		}
+		TreeItem *child = r->get_children();
+		while (child) {
+			Variant input = child->get_meta("__input");
+			if (p_event == input) {
+				child->select(0);
+				found = true;
+				break;
+			}
+			child = child->get_next();
+		}
+		if (found) break;
+		r = r->get_next();
+	}
+
+	if (found) input_axis_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
@@ -430,6 +597,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			}
 		} break;
 		case INPUT_JOY_MOTION: {
+			// TODO: allow full-axis selection for joysticks when editing an input axis
 
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
@@ -500,9 +668,9 @@ void ProjectSettingsEditor::_edit_item(Ref<InputEvent> p_exiting_event) {
 }
 void ProjectSettingsEditor::_action_activated() {
 
-	TreeItem *ti = input_editor->get_selected();
+	TreeItem *ti = input_action_editor->get_selected();
 
-	if (!ti || ti->get_parent() == input_editor->get_root())
+	if (!ti || ti->get_parent() == input_action_editor->get_root())
 		return;
 
 	String name = "input/" + ti->get_parent()->get_text(0);
@@ -528,9 +696,9 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 	ERR_FAIL_COND(!ti);
 
 	if (p_id == 1) {
-		Point2 ofs = input_editor->get_global_position();
-		Rect2 ir = input_editor->get_item_rect(ti);
-		ir.position.y -= input_editor->get_scroll().y;
+		Point2 ofs = input_action_editor->get_global_position();
+		Rect2 ir = input_action_editor->get_item_rect(ti);
+		ir.position.y -= input_action_editor->get_scroll().y;
 		ofs += ir.position + ir.size;
 		ofs.x -= 100;
 		popup_add->set_position(ofs);
@@ -541,7 +709,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 	} else if (p_id == 2) {
 		//remove
 
-		if (ti->get_parent() == input_editor->get_root()) {
+		if (ti->get_parent() == input_action_editor->get_root()) {
 
 			//remove main thing
 
@@ -569,12 +737,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 			ERR_FAIL_INDEX(idx, va.size());
 
-			for (int i = idx; i < va.size() - 1; i++) {
-
-				va[i] = va[i + 1];
-			}
-
-			va.resize(va.size() - 1);
+			va.remove(idx);
 
 			undo_redo->create_action(TTR("Erase Input Action Event"));
 			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
@@ -588,10 +751,10 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 	} else if (p_id == 3) {
 		//edit
 
-		if (ti->get_parent() == input_editor->get_root()) {
+		if (ti->get_parent() == input_action_editor->get_root()) {
 
 			ti->set_as_cursor(0);
-			input_editor->edit_selected();
+			input_action_editor->edit_selected();
 
 		} else {
 			//edit action
@@ -614,14 +777,179 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 	}
 }
 
+void ProjectSettingsEditor::_axis_activated() {
+
+	TreeItem *ti = input_axis_editor->get_selected();
+
+	if (!ti || ti->get_parent() == input_axis_editor->get_root())
+		return;
+
+	String name = "input_axes/" + ti->get_parent()->get_text(0);
+	int idx = ti->get_metadata(0);
+	Array va = ProjectSettings::get_singleton()->get(name);
+
+	ERR_FAIL_INDEX(idx, va.size());
+
+	Array ev = va[idx];
+	ERR_FAIL_INDEX(1, ev.size());
+
+	Ref<InputEvent> ie = ev[0];
+
+	if (ie.is_null())
+		return;
+
+	add_at = name;
+	edit_idx = idx;
+	_edit_item(ie);
+}
+
+void ProjectSettingsEditor::_set_axis_mul_value() {
+
+	String name = add_at;
+	int idx = edit_idx;
+
+	Variant old_arr = ProjectSettings::get_singleton()->get(name);
+	Array arr = old_arr;
+
+	ERR_FAIL_INDEX(idx, arr.size());
+
+	Array ev = arr[idx];
+
+	ERR_FAIL_INDEX(1, ev.size());
+
+	ev[1] = axis_mul_edit->get_value();
+	arr[idx] = ev;
+
+	undo_redo->create_action(TTR("Set Input Axis Event Multiplier"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_arr);
+	undo_redo->add_do_method(this, "_update_axes");
+	undo_redo->add_undo_method(this, "_update_axes");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_axis_button_pressed(Object *p_obj, int p_column, int p_id) {
+
+	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
+
+	ERR_FAIL_COND(!ti);
+
+	if (p_id == 1) {
+		Point2 ofs = input_axis_editor->get_global_position();
+		Rect2 ir = input_axis_editor->get_item_rect(ti);
+		ir.position.y -= input_axis_editor->get_scroll().y;
+		ofs += ir.position + ir.size;
+		ofs.x -= 100;
+		popup_add->set_position(ofs);
+		popup_add->popup();
+		add_at = "input_axes/" + ti->get_text(0);
+		edit_idx = -1;
+
+	} else if (p_id == 2) {
+		//remove
+
+		if (ti->get_parent() == input_axis_editor->get_root()) {
+
+			//remove main thing
+
+			String name = "input_axes/" + ti->get_text(0);
+			Variant old_val = ProjectSettings::get_singleton()->get(name);
+			int order = ProjectSettings::get_singleton()->get_order(name);
+
+			undo_redo->create_action(TTR("Erase Input Axis"));
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", name);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
+			undo_redo->add_do_method(this, "_update_axes");
+			undo_redo->add_undo_method(this, "_update_axes");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+
+		} else {
+			//remove action
+			String name = "input_axes/" + ti->get_parent()->get_text(0);
+			Variant old_val = ProjectSettings::get_singleton()->get(name);
+			int idx = ti->get_metadata(0);
+
+			Array va = old_val;
+
+			ERR_FAIL_INDEX(idx, va.size());
+			va.remove(idx);
+
+			undo_redo->create_action(TTR("Erase Input Axis Event"));
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_do_method(this, "_update_axes");
+			undo_redo->add_undo_method(this, "_update_axes");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+		}
+	} else if (p_id == 3) {
+		//edit
+
+		if (ti->get_parent() == input_axis_editor->get_root()) {
+
+			ti->set_as_cursor(0);
+			input_axis_editor->edit_selected();
+
+		} else {
+			//edit action
+			String name = "input_axes/" + ti->get_parent()->get_text(0);
+			int idx = ti->get_metadata(0);
+			Array va = ProjectSettings::get_singleton()->get(name);
+
+			ERR_FAIL_INDEX(idx, va.size());
+
+			Array ev = va[idx];
+
+			ERR_FAIL_INDEX(1, va.size());
+
+			Ref<InputEvent> ie = ev[0];
+
+			if (ie.is_null())
+				return;
+
+			ti->set_as_cursor(0);
+			add_at = name;
+			edit_idx = idx;
+			_edit_item(ie);
+		}
+	} else if (p_id == 4) {
+		// edit axis multiplier
+		if (ti->get_parent() == input_axis_editor->get_root()) {
+			return;
+		}
+
+		String name = "input_axes/" + ti->get_parent()->get_text(0);
+		int idx = ti->get_metadata(0);
+		Array va = ProjectSettings::get_singleton()->get(name);
+
+		ERR_FAIL_INDEX(idx, va.size());
+		Array ev = va[idx];
+
+		ERR_FAIL_INDEX(1, va.size());
+		float ie_mul = ev[1];
+
+		ti->set_as_cursor(0);
+		add_at = name;
+		edit_idx = idx;
+		axis_mul_edit->set_value(ie_mul);
+		axis_mul_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
+	}
+}
+
 void ProjectSettingsEditor::_update_actions() {
 
 	if (setting)
 		return;
 
-	input_editor->clear();
-	TreeItem *root = input_editor->create_item();
-	input_editor->set_hide_root(true);
+	input_action_editor->clear();
+	TreeItem *root = input_action_editor->create_item();
+	input_action_editor->set_hide_root(true);
 
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
@@ -636,7 +964,7 @@ void ProjectSettingsEditor::_update_actions() {
 		if (name == "")
 			continue;
 
-		TreeItem *item = input_editor->create_item(root);
+		TreeItem *item = input_action_editor->create_item(root);
 		item->set_text(0, name);
 		item->add_button(0, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
@@ -653,7 +981,7 @@ void ProjectSettingsEditor::_update_actions() {
 			if (ie.is_null())
 				continue;
 
-			TreeItem *action = input_editor->create_item(item);
+			TreeItem *action = input_action_editor->create_item(item);
 
 			Ref<InputEventKey> k = ie;
 			if (k.is_valid()) {
@@ -718,6 +1046,121 @@ void ProjectSettingsEditor::_update_actions() {
 			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);
 			action->set_meta("__input", ie);
+		}
+	}
+
+	_action_check(action_name->get_text());
+}
+
+void ProjectSettingsEditor::_update_axes() {
+
+	if (setting)
+		return;
+
+	input_axis_editor->clear();
+	TreeItem *root = input_axis_editor->create_item();
+	input_axis_editor->set_hide_root(true);
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+		const PropertyInfo &pi = E->get();
+		if (!pi.name.begins_with("input_axes/"))
+			continue;
+
+		String name = pi.name.get_slice("/", 1);
+		if (name == "")
+			continue;
+
+		TreeItem *item = input_axis_editor->create_item(root);
+		item->set_text(0, name);
+		item->add_button(0, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
+		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
+			item->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			item->set_editable(0, true);
+		}
+		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+
+		Array axes = ProjectSettings::get_singleton()->get(pi.name);
+
+		for (int i = 0; i < axes.size(); i++) {
+
+			Array va = axes[i];
+			Ref<InputEvent> ie = va[0];
+			float ie_mul = va[1];
+			if (ie.is_null())
+				continue;
+
+			TreeItem *axis = input_axis_editor->create_item(item);
+
+			Ref<InputEventKey> k = ie;
+			if (k.is_valid()) {
+
+				String str = keycode_get_string(k->get_scancode()).capitalize();
+				if (k->get_metakey())
+					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
+				if (k->get_shift())
+					str = TTR("Shift+") + str;
+				if (k->get_alt())
+					str = TTR("Alt+") + str;
+				if (k->get_control())
+					str = TTR("Control+") + str;
+
+				axis->set_text(0, str);
+				axis->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+			}
+
+			Ref<InputEventJoypadButton> jb = ie;
+
+			if (jb.is_valid()) {
+
+				String str = TTR("Device") + " " + itos(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
+				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX)
+					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
+				else
+					str += ".";
+
+				axis->set_text(0, str);
+				axis->set_icon(0, get_icon("JoyButton", "EditorIcons"));
+			}
+
+			Ref<InputEventMouseButton> mb = ie;
+
+			if (mb.is_valid()) {
+				String str = TTR("Device") + " " + itos(mb->get_device()) + ", ";
+				switch (mb->get_button_index()) {
+					case BUTTON_LEFT: str += TTR("Left Button."); break;
+					case BUTTON_RIGHT: str += TTR("Right Button."); break;
+					case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
+					case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
+					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
+					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+				}
+
+				axis->set_text(0, str);
+				axis->set_icon(0, get_icon("Mouse", "EditorIcons"));
+			}
+
+			Ref<InputEventJoypadMotion> jm = ie;
+
+			if (jm.is_valid()) {
+				//TODO: update for full-axis support
+				int ax = jm->get_axis();
+				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
+				String desc = _axis_names[n];
+				String str = TTR("Device") + " " + itos(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				axis->set_text(0, str);
+				axis->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
+			}
+
+			// TODO: more accurate icon.
+			axis->add_button(0, get_icon("Node", "EditorIcons"), 4, false, TTR("Edit Multiplier"));
+			axis->add_button(0, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			axis->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			axis->set_metadata(0, i);
+			axis->set_meta("__input", ie);
 		}
 	}
 
@@ -888,7 +1331,7 @@ void ProjectSettingsEditor::_action_add() {
 	undo_redo->add_undo_method(this, "_settings_changed");
 	undo_redo->commit_action();
 
-	TreeItem *r = input_editor->get_root();
+	TreeItem *r = input_action_editor->get_root();
 
 	if (!r)
 		return;
@@ -901,9 +1344,72 @@ void ProjectSettingsEditor::_action_add() {
 	if (!r)
 		return;
 	r->select(0);
-	input_editor->ensure_cursor_is_visible();
+	input_action_editor->ensure_cursor_is_visible();
 	action_add_error->hide();
 	action_name->clear();
+}
+
+void ProjectSettingsEditor::_axis_check(String p_axis) {
+
+	if (p_axis == "") {
+		axis_add->set_disabled(true);
+
+	} else {
+
+		if (p_axis.find("/") != -1 || p_axis.find(":") != -1) {
+
+			axis_add_error->set_text(TTR("Can't contain '/' or ':'"));
+			axis_add_error->show();
+			axis_add->set_disabled(true);
+			return;
+		}
+		if (ProjectSettings::get_singleton()->has_setting("input_axes/" + p_axis)) {
+
+			axis_add_error->set_text(TTR("Already existing"));
+			axis_add_error->show();
+			axis_add->set_disabled(true);
+			return;
+		}
+
+		axis_add->set_disabled(false);
+	}
+
+	axis_add_error->hide();
+}
+
+void ProjectSettingsEditor::_axis_adds(String) {
+	if (!axis_add->is_disabled())
+		_axis_add();
+}
+
+void ProjectSettingsEditor::_axis_add() {
+	Array va;
+	String name = "input_axes/" + axis_name->get_text();
+	undo_redo->create_action(TTR("Add Input Axis"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
+	undo_redo->add_do_method(this, "_update_axes");
+	undo_redo->add_undo_method(this, "_update_axes");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+
+	TreeItem *r = input_axis_editor->get_root();
+
+	if (!r)
+		return;
+	r = r->get_children();
+	if (!r)
+		return;
+	while (r->get_next())
+		r = r->get_next();
+
+	if (!r)
+		return;
+	r->select(0);
+	input_axis_editor->ensure_cursor_is_visible();
+	axis_add_error->hide();
+	axis_name->clear();
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
@@ -1558,10 +2064,19 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettingsEditor::_action_activated);
 	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
+	ClassDB::bind_method(D_METHOD("_axis_add"), &ProjectSettingsEditor::_axis_add);
+	ClassDB::bind_method(D_METHOD("_axis_adds"), &ProjectSettingsEditor::_axis_adds);
+	ClassDB::bind_method(D_METHOD("_axis_check"), &ProjectSettingsEditor::_axis_check);
+	ClassDB::bind_method(D_METHOD("_axis_selected"), &ProjectSettingsEditor::_axis_selected);
+	ClassDB::bind_method(D_METHOD("_axis_edited"), &ProjectSettingsEditor::_axis_edited);
+	ClassDB::bind_method(D_METHOD("_axis_activated"), &ProjectSettingsEditor::_axis_activated);
+	ClassDB::bind_method(D_METHOD("_axis_button_pressed"), &ProjectSettingsEditor::_axis_button_pressed);
+	ClassDB::bind_method(D_METHOD("_update_axes"), &ProjectSettingsEditor::_update_axes);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
+	ClassDB::bind_method(D_METHOD("_set_axis_mul_value"), &ProjectSettingsEditor::_set_axis_mul_value);
 	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettingsEditor::_settings_prop_edited);
 	ClassDB::bind_method(D_METHOD("_copy_to_platform"), &ProjectSettingsEditor::_copy_to_platform);
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
@@ -1705,97 +2220,153 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	message = memnew(AcceptDialog);
 	add_child(message);
 
-	Control *input_base = memnew(Control);
+	// InputMap
+
+	HBoxContainer *input_base = memnew(HBoxContainer);
 	input_base->set_name(TTR("Input Map"));
 	tab_container->add_child(input_base);
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	input_base->add_child(vbc);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	// InputAction Mappings
+	{
+		VBoxContainer *vbc = memnew(VBoxContainer);
+		input_base->add_child(vbc);
+		vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	hbc = memnew(HBoxContainer);
-	vbc->add_child(hbc);
+		hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
 
-	l = memnew(Label);
-	hbc->add_child(l);
-	l->set_text(TTR("Action:"));
+		l = memnew(Label);
+		hbc->add_child(l);
+		l->set_text(TTR("Action:"));
 
-	action_name = memnew(LineEdit);
-	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc->add_child(action_name);
-	action_name->connect("text_entered", this, "_action_adds");
-	action_name->connect("text_changed", this, "_action_check");
+		action_name = memnew(LineEdit);
+		action_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		hbc->add_child(action_name);
+		action_name->connect("text_entered", this, "_action_adds");
+		action_name->connect("text_changed", this, "_action_check");
 
-	action_add_error = memnew(Label);
-	hbc->add_child(action_add_error);
-	action_add_error->hide();
+		action_add_error = memnew(Label);
+		hbc->add_child(action_add_error);
+		action_add_error->hide();
 
-	add = memnew(Button);
-	hbc->add_child(add);
-	add->set_text(TTR("Add"));
-	add->set_disabled(true);
-	add->connect("pressed", this, "_action_add");
-	action_add = add;
+		add = memnew(Button);
+		hbc->add_child(add);
+		add->set_text(TTR("Add"));
+		add->set_disabled(true);
+		add->connect("pressed", this, "_action_add");
+		action_add = add;
 
-	input_editor = memnew(Tree);
-	vbc->add_child(input_editor);
-	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	input_editor->connect("item_edited", this, "_action_edited");
-	input_editor->connect("item_activated", this, "_action_activated");
-	input_editor->connect("cell_selected", this, "_action_selected");
-	input_editor->connect("button_pressed", this, "_action_button_pressed");
-	popup_add = memnew(PopupMenu);
-	add_child(popup_add);
-	popup_add->connect("id_pressed", this, "_add_item");
+		Tree *input_editor = memnew(Tree);
+		vbc->add_child(input_editor);
+		input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+		input_editor->connect("item_edited", this, "_action_edited");
+		input_editor->connect("item_activated", this, "_action_activated");
+		input_editor->connect("cell_selected", this, "_action_selected");
+		input_editor->connect("button_pressed", this, "_action_button_pressed");
+		input_action_editor = input_editor;
+	}
 
-	press_a_key = memnew(ConfirmationDialog);
-	press_a_key->set_focus_mode(FOCUS_ALL);
-	add_child(press_a_key);
+	// InputAxis Mappings
+	{
+		VBoxContainer* vbc = memnew(VBoxContainer);
+		vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+		input_base->add_child(vbc);
 
-	l = memnew(Label);
-	l->set_text(TTR("Press a Key.."));
-	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	l->set_align(Label::ALIGN_CENTER);
-	l->set_margin(MARGIN_TOP, 20);
-	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
-	press_a_key_label = l;
-	press_a_key->add_child(l);
-	press_a_key->connect("gui_input", this, "_wait_for_key");
-	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+		hbc = memnew(HBoxContainer);
+		vbc->add_child(hbc);
 
-	device_input = memnew(ConfirmationDialog);
-	add_child(device_input);
-	device_input->get_ok()->set_text(TTR("Add"));
-	device_input->connect("confirmed", this, "_device_input_add");
+		l = memnew(Label);
+		hbc->add_child(l);
+		l->set_text(TTR("Axis:"));
 
-	hbc = memnew(HBoxContainer);
-	device_input->add_child(hbc);
+		axis_name = memnew(LineEdit);
+		axis_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		hbc->add_child(axis_name);
+		axis_name->connect("text_entered", this, "_axis_adds");
+		axis_name->connect("text_changed", this, "_axis_check");
 
-	VBoxContainer *vbc_left = memnew(VBoxContainer);
-	hbc->add_child(vbc_left);
+		axis_add_error = memnew(Label);
+		hbc->add_child(axis_add_error);
+		axis_add_error->hide();
 
-	l = memnew(Label);
-	l->set_text(TTR("Device:"));
-	vbc_left->add_child(l);
+		add = memnew(Button);
+		hbc->add_child(add);
+		add->set_text(TTR("Add"));
+		add->set_disabled(true);
+		add->connect("pressed", this, "_axis_add");
+		axis_add = add;
 
-	device_id = memnew(SpinBox);
-	device_id->set_value(0);
-	vbc_left->add_child(device_id);
+		Tree *input_editor = memnew(Tree);
+		vbc->add_child(input_editor);
+		input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+		input_editor->connect("item_edited", this, "_axis_edited");
+		input_editor->connect("item_activated", this, "_axis_activated");
+		input_editor->connect("cell_selected", this, "_axis_selected");
+		input_editor->connect("button_pressed", this, "_axis_button_pressed");
+		input_axis_editor = input_editor;
 
-	VBoxContainer *vbc_right = memnew(VBoxContainer);
-	hbc->add_child(vbc_right);
-	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
+		axis_mul_input = memnew(ConfirmationDialog);
+		add_child(axis_mul_input);
+		axis_mul_input->connect("confirmed", this, "_set_axis_mul_value");
 
-	l = memnew(Label);
-	l->set_text(TTR("Index:"));
-	vbc_right->add_child(l);
-	device_index_label = l;
+		axis_mul_edit = memnew(SpinBox);
+		axis_mul_input->add_child(axis_mul_edit);
+		axis_mul_edit->set_step(0.01);
+		axis_mul_edit->set_min(-100.0);
+	}
 
-	device_index = memnew(OptionButton);
-	vbc_right->add_child(device_index);
+	// Common InputMap dialogs.
+	{
+		popup_add = memnew(PopupMenu);
+		add_child(popup_add);
+		popup_add->connect("id_pressed", this, "_add_item");
+
+		press_a_key = memnew(ConfirmationDialog);
+		press_a_key->set_focus_mode(FOCUS_ALL);
+		add_child(press_a_key);
+
+		l = memnew(Label);
+		l->set_text(TTR("Press a Key.."));
+		l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+		l->set_align(Label::ALIGN_CENTER);
+		l->set_margin(MARGIN_TOP, 20);
+		l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+		press_a_key_label = l;
+		press_a_key->add_child(l);
+		press_a_key->connect("gui_input", this, "_wait_for_key");
+		press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+
+		device_input = memnew(ConfirmationDialog);
+		add_child(device_input);
+		device_input->get_ok()->set_text(TTR("Add"));
+		device_input->connect("confirmed", this, "_device_input_add");
+
+		hbc = memnew(HBoxContainer);
+		device_input->add_child(hbc);
+
+		VBoxContainer *vbc_left = memnew(VBoxContainer);
+		hbc->add_child(vbc_left);
+
+		l = memnew(Label);
+		l->set_text(TTR("Device:"));
+		vbc_left->add_child(l);
+
+		device_id = memnew(SpinBox);
+		device_id->set_value(0);
+		vbc_left->add_child(device_id);
+
+		VBoxContainer *vbc_right = memnew(VBoxContainer);
+		hbc->add_child(vbc_right);
+		vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		l = memnew(Label);
+		l->set_text(TTR("Index:"));
+		vbc_right->add_child(l);
+		device_index_label = l;
+
+		device_index = memnew(OptionButton);
+		vbc_right->add_child(device_index);
+	}
 
 	setting = false;
 

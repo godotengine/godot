@@ -44,15 +44,24 @@ public:
 		List<Ref<InputEvent> > inputs;
 	};
 
+	struct Axis {
+		int id;
+		List<Map<Ref<InputEvent>, float> > inputs;
+	};
+
 private:
 	static InputMap *singleton;
 
 	mutable Map<StringName, Action> input_map;
+	mutable Map<StringName, Axis> input_axis_map;
 
 	List<Ref<InputEvent> >::Element *_find_event(List<Ref<InputEvent> > &p_list, const Ref<InputEvent> &p_event, bool p_action_test = false) const;
+	List<Map<Ref<InputEvent>, float> >::Element *_find_event(List<Map<Ref<InputEvent>, float> > &p_list, const Ref<InputEvent> &p_event, bool p_action_test = false) const;
 
 	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
+	Array _get_axis_list(const StringName &p_axis);
+	Array _get_axes();
 
 protected:
 	static void _bind_methods();
@@ -61,18 +70,35 @@ public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
 	bool has_action(const StringName &p_action) const;
+	bool has_axis(const StringName &p_axis) const;
+
 	List<StringName> get_actions() const;
+	List<StringName> get_axes() const;
+
 	void add_action(const StringName &p_action);
+	void add_axis(const StringName &p_axis);
+
 	void erase_action(const StringName &p_action);
+	void erase_axis(const StringName &p_axis);
 
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 
+	void axis_add_event(const StringName &p_axis, const Ref<InputEvent> &p_event, const float value = 0.0f);
+	bool axis_has_event(const StringName &p_axis, const Ref<InputEvent> &p_event);
+	void axis_erase_event(const StringName &p_axis, const Ref<InputEvent> &p_event);
+
 	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
+	const List<Map<Ref<InputEvent>, float> > *get_axis_list(const StringName &p_axis);
+
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
+	bool event_is_axis(const Ref<InputEvent> &p_event, const StringName &p_axis) const;
+	float event_get_axis_value(const Ref<InputEvent> &p_event, const StringName &p_axis);
 
 	const Map<StringName, Action> &get_action_map() const;
+	const Map<StringName, Axis> &get_axis_map() const;
+
 	void load_from_globals();
 	void load_default();
 

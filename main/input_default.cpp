@@ -127,6 +127,10 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	}
 }
 
+float InputDefault::get_input_axis(const StringName &p_axis) const {
+	return axis_state.has(p_axis) ? axis_state[p_axis].value : 0.0f;
+}
+
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 
 	_THREAD_SAFE_METHOD_
@@ -339,6 +343,14 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_pressed();
 				action_state[E->key()] = action;
+			}
+		}
+
+		for (const Map<StringName, InputMap::Axis>::Element *E = InputMap::get_singleton()->get_axis_map().front(); E; E = E->next()) {
+			if (InputMap::get_singleton()->event_is_axis(p_event, E->key()) && get_input_axis(E->key()) != p_event->get_input_axis_value(E->key())) {
+				Axis axis;
+				axis.value = p_event->get_input_axis_value(E->key());
+				axis_state[E->key()] = axis;
 			}
 		}
 	}

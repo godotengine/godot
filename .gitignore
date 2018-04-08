@@ -308,3 +308,7 @@ platform/windows/godot_res.res
 
 # Scons progress indicator
 .scons_node_count
+
+# Atom build tool plugins
+/.atom-build.*
+/.atom-dbg.*

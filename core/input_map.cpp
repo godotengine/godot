@@ -47,6 +47,18 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
 	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
+
+	ClassDB::bind_method(D_METHOD("has_axis", "axis"), &InputMap::has_axis);
+	ClassDB::bind_method(D_METHOD("get_axes"), &InputMap::_get_axes);
+	ClassDB::bind_method(D_METHOD("add_axis", "axis"), &InputMap::add_axis);
+	ClassDB::bind_method(D_METHOD("erase_axis", "axis"), &InputMap::erase_axis);
+
+	ClassDB::bind_method(D_METHOD("axis_add_event", "axis", "event", "value"), &InputMap::axis_add_event);
+	ClassDB::bind_method(D_METHOD("axis_has_event", "axis", "event"), &InputMap::axis_has_event);
+	ClassDB::bind_method(D_METHOD("axis_erase_event", "axis", "event"), &InputMap::axis_erase_event);
+	ClassDB::bind_method(D_METHOD("get_axis_list", "axis"), &InputMap::_get_axis_list);
+	ClassDB::bind_method(D_METHOD("event_is_axis", "event", "axis"), &InputMap::event_is_axis);
+
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
 
@@ -59,10 +71,22 @@ void InputMap::add_action(const StringName &p_action) {
 	last_id++;
 }
 
+void InputMap::add_axis(const StringName &p_axis) {
+	ERR_FAIL_COND(input_axis_map.has(p_axis));
+	input_axis_map[p_axis] = Axis();
+	static int last_id = 1;
+	input_map[p_axis].id = last_id++;
+}
+
 void InputMap::erase_action(const StringName &p_action) {
 
 	ERR_FAIL_COND(!input_map.has(p_action));
 	input_map.erase(p_action);
+}
+
+void InputMap::erase_axis(const StringName &p_axis) {
+	ERR_FAIL_COND(!input_axis_map.has(p_axis));
+	input_map.erase(p_axis);
 }
 
 Array InputMap::_get_actions() {
@@ -74,6 +98,19 @@ Array InputMap::_get_actions() {
 
 	for (const List<StringName>::Element *E = actions.front(); E; E = E->next()) {
 
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
+
+Array InputMap::_get_axes() {
+	Array ret;
+	List<StringName> axes = get_axes();
+	if (axes.empty())
+		return ret;
+
+	for (const List<StringName>::Element *E = axes.front(); E; E = E->next()) {
 		ret.push_back(E->get());
 	}
 
@@ -94,6 +131,18 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
+List<StringName> InputMap::get_axes() const {
+	List<StringName> axes = List<StringName>();
+	if (input_axis_map.empty())
+		return axes;
+
+	for (Map<StringName, Axis>::Element *E = input_axis_map.front(); E; E = E->next()) {
+		axes.push_back(E->key());
+	}
+
+	return axes;
+}
+
 List<Ref<InputEvent> >::Element *InputMap::_find_event(List<Ref<InputEvent> > &p_list, const Ref<InputEvent> &p_event, bool p_action_test) const {
 
 	for (List<Ref<InputEvent> >::Element *E = p_list.front(); E; E = E->next()) {
@@ -112,9 +161,27 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(List<Ref<InputEvent> > &p
 	return NULL;
 }
 
+List<Map<Ref<InputEvent>, float> >::Element *InputMap::_find_event(List<Map<Ref<InputEvent>, float> > &p_list,
+		const Ref<InputEvent> &p_event, bool p_action_test) const {
+	for (List<Map<Ref<InputEvent>, float> >::Element *E = p_list.front(); E; E = E->next()) {
+		const Ref<InputEvent> e = E->get().front()->key();
+
+		if (e->get_device() != p_event->get_device())
+			continue;
+		if (e->action_match(p_event))
+			return E;
+	}
+
+	return NULL;
+}
+
 bool InputMap::has_action(const StringName &p_action) const {
 
 	return input_map.has(p_action);
+}
+
+bool InputMap::has_axis(const StringName &p_axis) const {
+	return input_axis_map.has(p_axis);
 }
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
@@ -142,6 +209,33 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 		input_map[p_action].inputs.erase(E);
 }
 
+void InputMap::axis_add_event(const StringName &p_axis, const Ref<InputEvent> &p_event, float value) {
+
+	ERR_FAIL_COND(p_event.is_null());
+	ERR_FAIL_COND(!input_axis_map.has(p_axis));
+	if (_find_event(input_axis_map[p_axis].inputs, p_event))
+		return; //already gots
+
+	Map<Ref<InputEvent>, float> newMap = Map<Ref<InputEvent>, float>();
+	newMap.insert(p_event, value);
+	input_axis_map[p_axis].inputs.push_back(newMap);
+}
+
+bool InputMap::axis_has_event(const StringName &p_axis, const Ref<InputEvent> &p_event) {
+
+	ERR_FAIL_COND_V(!input_axis_map.has(p_axis), false);
+	return (_find_event(input_axis_map[p_axis].inputs, p_event) != NULL);
+}
+
+void InputMap::axis_erase_event(const StringName &p_axis, const Ref<InputEvent> &p_event) {
+
+	ERR_FAIL_COND(!input_axis_map.has(p_axis));
+
+	List<Map<Ref<InputEvent>, float> >::Element *E = _find_event(input_axis_map[p_axis].inputs, p_event);
+	if (E)
+		input_axis_map[p_axis].inputs.erase(E);
+}
+
 Array InputMap::_get_action_list(const StringName &p_action) {
 
 	Array ret;
@@ -165,6 +259,33 @@ const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_acti
 	return &E->get().inputs;
 }
 
+Array InputMap::_get_axis_list(const StringName &p_axis) {
+
+	Array ret;
+	const List<Map<Ref<InputEvent>, float> > *al = get_axis_list(p_axis);
+	if (al) {
+		for (const List<Map<Ref<InputEvent>, float> >::Element *E = al->front(); E; E = E->next()) {
+
+			Array m;
+			Map<Ref<InputEvent>, float>::Element *e = E->get().front();
+			m.push_back(e->key());
+			m.push_back(e->value());
+			ret.push_back(m);
+		}
+	}
+
+	return ret;
+}
+
+const List<Map<Ref<InputEvent>, float> > *InputMap::get_axis_list(const StringName &p_axis) {
+
+	const Map<StringName, Axis>::Element *E = input_axis_map.find(p_axis);
+	if (!E)
+		return NULL;
+
+	return &E->get().inputs;
+}
+
 bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
 
 	Map<StringName, Action>::Element *E = input_map.find(p_action);
@@ -181,13 +302,43 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 	return _find_event(E->get().inputs, p_event, true) != NULL;
 }
 
+bool InputMap::event_is_axis(const Ref<InputEvent> &p_event, const StringName &p_axis) const {
+
+	Map<StringName, Axis>::Element *E = input_axis_map.find(p_axis);
+	if (!E) {
+		ERR_EXPLAIN("Request for nonexistent InputMap axis: " + String(p_axis));
+		ERR_FAIL_COND_V(!E, false);
+	}
+
+	Ref<InputEventAxis> iea = p_event;
+	if (iea.is_valid()) {
+		return iea->get_axis() == p_axis;
+	}
+
+	return _find_event(E->get().inputs, p_event, true) != NULL;
+}
+
+float InputMap::event_get_axis_value(const Ref<InputEvent> &p_event, const StringName &p_axis) {
+	if (!event_is_axis(p_event, p_axis))
+		return 0.0f;
+
+	// If event_is_axis returned true, these will be valid pointers.
+	List<Map<Ref<InputEvent>, float> >::Element *E = _find_event(input_axis_map.find(p_axis)->get().inputs, p_event, true);
+	return E->get().front()->get();
+}
+
 const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
 	return input_map;
+}
+
+const Map<StringName, InputMap::Axis> &InputMap::get_axis_map() const {
+	return input_axis_map;
 }
 
 void InputMap::load_from_globals() {
 
 	input_map.clear();
+	input_axis_map.clear();
 
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
@@ -210,6 +361,32 @@ void InputMap::load_from_globals() {
 			if (ie.is_null())
 				continue;
 			action_add_event(name, ie);
+		}
+	}
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		const PropertyInfo &pi = E->get();
+
+		if (!pi.name.begins_with("input_axes"))
+			continue;
+
+		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+
+		add_axis(name);
+
+		Array va = ProjectSettings::get_singleton()->get(pi.name);
+
+		for (int i = 0; i < va.size(); i++) {
+			Array binding = va[i];
+			if (binding.size() < 2)
+				continue;
+
+			Ref<InputEvent> ie = binding[0];
+			float val = binding[1];
+			if (ie.is_null())
+				continue;
+
+			axis_add_event(name, ie, val);
 		}
 	}
 }
