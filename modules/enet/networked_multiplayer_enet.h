@@ -120,6 +120,8 @@ public:
 
 	void close_connection();
 
+	void disconnect_peer(int p_peer, bool now = false);
+
 	virtual void poll();
 
 	virtual bool is_server() const;
