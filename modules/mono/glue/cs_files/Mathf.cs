@@ -5,12 +5,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     public static partial class Mathf
@@ -146,17 +140,12 @@ namespace Godot
 
         public static real_t Fposmod(real_t x, real_t y)
         {
-           return (weight - from) / (to - from);
-        }
+            if (x >= 0f)
+            {
+                return x % y;
+            }
 
-        public static bool IsInf(real_t s)
-        {
-           return real_t.IsInfinity(s);
-        }
-
-        public static bool IsNaN(real_t s)
-        {
-           return real_t.IsNaN(s);
+            return y - (-x % y);
         }
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)

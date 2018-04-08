@@ -12,12 +12,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -71,7 +65,7 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = this.Length();
+            real_t length = Length();
 
             if (length == 0f)
             {
@@ -238,9 +232,9 @@ namespace Godot
         }
         public void Set(Vector3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public Vector3 Slide(Vector3 n)
@@ -298,9 +292,9 @@ namespace Godot
         }
         public Vector3(Vector3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public static Vector3 operator +(Vector3 left, Vector3 right)

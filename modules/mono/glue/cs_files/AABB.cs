@@ -11,12 +11,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     public struct AABB : IEquatable<AABB>
@@ -284,24 +278,24 @@ namespace Godot
                 return new AABB();
             }
 
-            min.x = src_min.x > dst_min.x ? src_min.x : dst_min.x;
-            max.x = src_max.x < dst_max.x ? src_max.x : dst_max.x;
+            min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
+            max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
 
             if (src_min.y > dst_max.y || src_max.y < dst_min.y)
             {
                 return new AABB();
             }
 
-            min.y = src_min.y > dst_min.y ? src_min.y : dst_min.y;
-            max.y = src_max.y < dst_max.y ? src_max.y : dst_max.y;
+            min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
+            max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
 
             if (src_min.z > dst_max.z || src_max.z < dst_min.z)
             {
                 return new AABB();
             }
 
-            min.z = src_min.z > dst_min.z ? src_min.z : dst_min.z;
-            max.z = src_max.z < dst_max.z ? src_max.z : dst_max.z;
+            min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
+            max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
 
             return new AABB(min, max - min);
         }
