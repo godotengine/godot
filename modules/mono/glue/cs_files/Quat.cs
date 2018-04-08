@@ -6,12 +6,6 @@ using real_t = System.Double;
 using real_t = System.Single;
 #endif
 
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
-
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -111,10 +105,10 @@ namespace Godot
         }
         public void Set(Quat q)
         {
-            this.x = q.x;
-            this.y = q.y;
-            this.z = q.z;
-            this.w = q.w;
+            x = q.x;
+            y = q.y;
+            z = q.z;
+            w = q.w;
         }
 
         public Quat Slerp(Quat b, real_t t)
@@ -170,7 +164,7 @@ namespace Godot
 
         public Quat Slerpni(Quat b, real_t t)
         {
-            real_t dot = this.Dot(b);
+            real_t dot = Dot(b);
 
             if (Mathf.Abs(dot) > 0.9999f)
             {
@@ -208,10 +202,10 @@ namespace Godot
         }   
         public Quat(Quat q)
         {                     
-            this.x = q.x;
-            this.y = q.y;
-            this.z = q.z;
-            this.w = q.w;
+            x = q.x;
+            y = q.y;
+            z = q.z;
+            w = q.w;
         }
         
         public Quat(Vector3 axis, real_t angle)
