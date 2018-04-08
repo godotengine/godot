@@ -312,7 +312,7 @@ namespace Godot
             int c;
 
             while ((c = instance[index++]) != 0)
-                hashv = ((hashv << 5) + hashv) + c; // hash * 33 + c
+                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
 
             return hashv;
         }
@@ -850,7 +850,7 @@ namespace Godot
                 int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
-                if (allow_empty || end > from)
+                if (allow_empty || end > @from)
                     ret.Add(float.Parse(instance.Substring(from)));
                 if (end == len)
                     break;

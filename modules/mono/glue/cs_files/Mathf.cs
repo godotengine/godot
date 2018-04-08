@@ -145,7 +145,7 @@ namespace Godot
                 return x % y;
             }
 
-            return y - (-x % y);
+            return y - -x % y;
         }
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
@@ -227,12 +227,12 @@ namespace Godot
 
         public static int Sign(int s)
         {
-            return (s < 0) ? -1 : 1;
+            return s < 0 ? -1 : 1;
         }
 
         public static real_t Sign(real_t s)
         {
-            return s < 0 ? -1 : 1;
+            return s < 0f ? -1f : 1f;
         }
 
         public static real_t Sin(real_t s)
@@ -273,13 +273,13 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int rng = max - min;
-            return min + ((((value - min) % rng) + rng) % rng);
+            return min + ((value - min) % rng + rng) % rng;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t rng = max - min;
-            return min + ((((value - min) % rng) + rng) % rng);
+            return min + ((value - min) % rng + rng) % rng;
         }
     }
 }
