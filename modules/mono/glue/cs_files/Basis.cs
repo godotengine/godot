@@ -251,8 +251,7 @@ namespace Godot
         {
             var inv = this;
 
-            var co = new real_t[3]
-            {
+            real_t[] co = {
                 inv[1, 1] * inv[2, 2] - inv[1, 2] * inv[2, 1],
                 inv[1, 2] * inv[2, 0] - inv[1, 0] * inv[2, 2],
                 inv[1, 0] * inv[2, 1] - inv[1, 1] * inv[2, 0]
