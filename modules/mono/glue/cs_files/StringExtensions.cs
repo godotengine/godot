@@ -312,7 +312,7 @@ namespace Godot
             int c;
 
             while ((c = instance[index++]) != 0)
-                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
+                hashv = ((hashv << 5) + hashv) + c; // hash * 33 + c
 
             return hashv;
         }
