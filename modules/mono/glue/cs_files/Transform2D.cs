@@ -163,7 +163,7 @@ namespace Godot
             real_t dot = v1.Dot(v2);
 
             // Clamp dot to [-1, 1]
-            dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
+            dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
 
             Vector2 v;
 
@@ -214,7 +214,7 @@ namespace Godot
             Vector2 onY = on.y;
 
             onX.Normalize();
-            onY = onY - onX * (onX.Dot(onY));
+            onY = onY - onX * onX.Dot(onY);
             onY.Normalize();
 
             on.x = onX;

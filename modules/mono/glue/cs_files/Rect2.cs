@@ -57,9 +57,9 @@ namespace Godot
 
         public bool Encloses(Rect2 b)
         {
-            return (b.position.x >= position.x) && (b.position.y >= position.y) &&
-               ((b.position.x + b.size.x) < (position.x + size.x)) &&
-               ((b.position.y + b.size.y) < (position.y + size.y));
+            return b.position.x >= position.x && b.position.y >= position.y &&
+               b.position.x + b.size.x < position.x + size.x &&
+               b.position.y + b.size.y < position.y + size.y;
         }
 
         public Rect2 Expand(Vector2 to)
@@ -118,10 +118,10 @@ namespace Godot
         {
             var g = this;
 
-            g.GrowIndividual((Margin.Left == margin) ? by : 0,
-                    (Margin.Top == margin) ? by : 0,
-                    (Margin.Right == margin) ? by : 0,
-                    (Margin.Bottom == margin) ? by : 0);
+            g.GrowIndividual(Margin.Left == margin ? by : 0,
+                    Margin.Top == margin ? by : 0,
+                    Margin.Right == margin ? by : 0,
+                    Margin.Bottom == margin ? by : 0);
 
             return g;
         }
@@ -138,9 +138,9 @@ namespace Godot
             if (point.y < position.y)
                 return false;
 
-            if (point.x >= (position.x + size.x))
+            if (point.x >= position.x + size.x)
                 return false;
-            if (point.y >= (position.y + size.y))
+            if (point.y >= position.y + size.y)
                 return false;
 
             return true;
@@ -148,13 +148,13 @@ namespace Godot
 
         public bool Intersects(Rect2 b)
         {
-            if (position.x > (b.position.x + b.size.x))
+            if (position.x > b.position.x + b.size.x)
                 return false;
-            if ((position.x + size.x) < b.position.x)
+            if (position.x + size.x < b.position.x)
                 return false;
-            if (position.y > (b.position.y + b.size.y))
+            if (position.y > b.position.y + b.size.y)
                 return false;
-            if ((position.y + size.y) < b.position.y)
+            if (position.y + size.y < b.position.y)
                 return false;
 
             return true;

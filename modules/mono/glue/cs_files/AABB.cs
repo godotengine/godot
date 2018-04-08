@@ -49,12 +49,12 @@ namespace Godot
             Vector3 dst_min = with.position;
             Vector3 dst_max = with.position + with.size;
 
-            return ((src_min.x <= dst_min.x) &&
-                    (src_max.x > dst_max.x) &&
-                    (src_min.y <= dst_min.y) &&
-                    (src_max.y > dst_max.y) &&
-                    (src_min.z <= dst_min.z) &&
-                    (src_max.z > dst_max.z));
+            return src_min.x <= dst_min.x &&
+                   src_max.x > dst_max.x &&
+                   src_min.y <= dst_min.y &&
+                   src_max.y > dst_max.y &&
+                   src_min.z <= dst_min.z &&
+                   src_max.z > dst_max.z;
         }
 
         public AABB Expand(Vector3 to_point)
@@ -217,9 +217,9 @@ namespace Godot
             Vector3 ofs = position + half_extents;
 
             return ofs + new Vector3(
-                (dir.x > 0f) ? -half_extents.x : half_extents.x,
-                (dir.y > 0f) ? -half_extents.y : half_extents.y,
-                (dir.z > 0f) ? -half_extents.z : half_extents.z);
+                dir.x > 0f ? -half_extents.x : half_extents.x,
+                dir.y > 0f ? -half_extents.y : half_extents.y,
+                dir.z > 0f ? -half_extents.z : half_extents.z);
         }
 
         public AABB Grow(real_t by)
@@ -278,41 +278,41 @@ namespace Godot
                 return new AABB();
             }
 
-            min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
-            max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
+            min.x = src_min.x > dst_min.x ? src_min.x : dst_min.x;
+            max.x = src_max.x < dst_max.x ? src_max.x : dst_max.x;
 
             if (src_min.y > dst_max.y || src_max.y < dst_min.y)
             {
                 return new AABB();
             }
 
-            min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
-            max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
+            min.y = src_min.y > dst_min.y ? src_min.y : dst_min.y;
+            max.y = src_max.y < dst_max.y ? src_max.y : dst_max.y;
 
             if (src_min.z > dst_max.z || src_max.z < dst_min.z)
             {
                 return new AABB();
             }
 
-            min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
-            max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
+            min.z = src_min.z > dst_min.z ? src_min.z : dst_min.z;
+            max.z = src_max.z < dst_max.z ? src_max.z : dst_max.z;
 
             return new AABB(min, max - min);
         }
 
         public bool Intersects(AABB with)
         {
-            if (position.x >= (with.position.x + with.size.x))
+            if (position.x >= with.position.x + with.size.x)
                 return false;
-            if ((position.x + size.x) <= with.position.x)
+            if (position.x + size.x <= with.position.x)
                 return false;
-            if (position.y >= (with.position.y + with.size.y))
+            if (position.y >= with.position.y + with.size.y)
                 return false;
-            if ((position.y + size.y) <= with.position.y)
+            if (position.y + size.y <= with.position.y)
                 return false;
-            if (position.z >= (with.position.z + with.size.z))
+            if (position.z >= with.position.z + with.size.z)
                 return false;
-            if ((position.z + size.z) <= with.position.z)
+            if (position.z + size.z <= with.position.z)
                 return false;
 
             return true;
@@ -400,15 +400,15 @@ namespace Godot
 	        var end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
 
             var min = new Vector3(
-                              (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x,
-                              (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y,
-                              (beg_1.z < beg_2.z) ? beg_1.z : beg_2.z
+                              beg_1.x < beg_2.x ? beg_1.x : beg_2.x,
+                              beg_1.y < beg_2.y ? beg_1.y : beg_2.y,
+                              beg_1.z < beg_2.z ? beg_1.z : beg_2.z
                           );
 
             var max = new Vector3(
-                              (end_1.x > end_2.x) ? end_1.x : end_2.x,
-                              (end_1.y > end_2.y) ? end_1.y : end_2.y,
-                              (end_1.z > end_2.z) ? end_1.z : end_2.z
+                              end_1.x > end_2.x ? end_1.x : end_2.x,
+                              end_1.y > end_2.y ? end_1.y : end_2.y,
+                              end_1.z > end_2.z ? end_1.z : end_2.z
                           );
 
             return new AABB(min, max - min);

@@ -103,9 +103,9 @@ namespace Godot
         {
             return new Vector3
             (
-                (y * b.z) - (z * b.y),
-                (z * b.x) - (x * b.z),
-                (x * b.y) - (y * b.x)
+                y * b.z - z * b.y,
+                z * b.x - x * b.z,
+                x * b.y - y * b.x
             );
         }
 
@@ -120,7 +120,7 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return 0.5f * (
-                        (p1 * 2.0f) + (-p0 + p2) * t +
+                        p1 * 2.0f + (-p0 + p2) * t +
                         (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
                         (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
                     );
@@ -178,9 +178,9 @@ namespace Godot
         {
             return new Vector3
             (
-                x + (t * (b.x - x)),
-                y + (t * (b.y - y)),
-                z + (t * (b.z - z))
+                x + t * (b.x - x),
+                y + t * (b.y - y),
+                z + t * (b.z - z)
             );
         }
 

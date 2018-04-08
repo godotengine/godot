@@ -137,7 +137,7 @@ namespace Godot
             real_t sinom, scale0, scale1;
 
             // Calculate coefficients
-            if ((1.0 - cosom) > Mathf.Epsilon)
+            if (1.0 - cosom > Mathf.Epsilon)
             {
                 // Standard case (Slerp)
                 real_t omega = Mathf.Acos(cosom);

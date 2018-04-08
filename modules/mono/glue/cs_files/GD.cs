@@ -127,9 +127,9 @@ namespace Godot
             int count;
 
             if (increment > 0)
-                count = ((to - from - 1) / increment) + 1;
+                count = (to - @from - 1) / increment + 1;
             else
-                count = ((from - to - 1) / -increment) + 1;
+                count = (@from - to - 1) / -increment + 1;
 
             var ret = new int[count];
 
