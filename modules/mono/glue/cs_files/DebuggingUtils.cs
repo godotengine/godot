@@ -32,7 +32,7 @@ namespace Godot
                 return;
             }
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             if (methodBase is MethodInfo)
                 sb.AppendTypeName(((MethodInfo)methodBase).ReturnType);
@@ -47,7 +47,7 @@ namespace Godot
 
                 sb.Append("<");
 
-                for (int j = 0; j < genericParams.Length; j++)
+                for (var j = 0; j < genericParams.Length; j++)
                 {
                     if (j > 0)
                         sb.Append(", ");
@@ -64,7 +64,7 @@ namespace Godot
 
             ParameterInfo[] parameter = methodBase.GetParameters();
 
-            for (int i = 0; i < parameter.Length; i++)
+            for (var i = 0; i < parameter.Length; i++)
             {
                 if (i > 0)
                     sb.Append(", ");

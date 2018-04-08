@@ -220,11 +220,11 @@ namespace Godot
 
         public int GetOrthogonalIndex()
         {
-            Basis orth = this;
+            var orth = this;
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                for (int j = 0; j < 3; j++)
+                for (var j = 0; j < 3; j++)
                 {
                     real_t v = orth[i, j];
 
@@ -239,7 +239,7 @@ namespace Godot
                 }
             }
 
-            for (int i = 0; i < 24; i++)
+            for (var i = 0; i < 24; i++)
             {
                 if (orthoBases[i] == orth)
                     return i;
@@ -250,9 +250,9 @@ namespace Godot
 
         public Basis Inverse()
         {
-            Basis inv = this;
+            var inv = this;
 
-            real_t[] co = new real_t[3]
+            var co = new real_t[3]
             {
                 inv[1, 1] * inv[2, 2] - inv[1, 2] * inv[2, 1],
                 inv[1, 2] * inv[2, 0] - inv[1, 0] * inv[2, 2],
@@ -311,7 +311,7 @@ namespace Godot
 
         public Basis Scaled(Vector3 scale)
         {
-            Basis m = this;
+            var m = this;
 
             m[0, 0] *= scale.x;
             m[0, 1] *= scale.x;
@@ -343,7 +343,7 @@ namespace Godot
 
         public Basis Transposed()
         {
-            Basis tr = this;
+            var tr = this;
 
             real_t temp = this[0, 1];
             this[0, 1] = this[1, 0];
@@ -415,8 +415,8 @@ namespace Godot
 		            (_x[2] - _z[0]) * inv_s
 		        );
 		    } else {
-		        real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
-		        real_t inv_s = 1f / s;
+		        var s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
+		        var inv_s = 1f / s;
 		        return new Quat(
 		            (_x[2] + _z[0]) * inv_s,
 		            (_y[2] + _z[1]) * inv_s,
@@ -450,7 +450,7 @@ namespace Godot
 
         public Basis(Vector3 axis, real_t phi)
         {
-            Vector3 axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
+            var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
 
             real_t cosine = Mathf.Cos( phi);
             real_t sine = Mathf.Sin( phi);

@@ -99,8 +99,8 @@ namespace Godot
 
         public Vector2 Clamped(real_t length)
         {
-            Vector2 v = this;
-            real_t l = Length();
+            var v = this;
+	        real_t l = Length();
 
             if (l > 0 && length < l)
             {
@@ -113,10 +113,10 @@ namespace Godot
 
         public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t t)
         {
-            Vector2 p0 = preA;
-            Vector2 p1 = this;
-            Vector2 p2 = b;
-            Vector2 p3 = postB;
+            var p0 = preA;
+            var p1 = this;
+            var p2 = b;
+            var p3 = postB;
 
             real_t t2 = t * t;
             real_t t3 = t2 * t;
@@ -164,7 +164,7 @@ namespace Godot
 
         public Vector2 LinearInterpolate(Vector2 b, real_t t)
         {
-            Vector2 res = this;
+            var res = this;
 
             res.x += (t * (b.x - x));
             res.y += (t * (b.y - y));
@@ -174,7 +174,7 @@ namespace Godot
 
         public Vector2 Normalized()
         {
-            Vector2 result = this;
+            var result = this;
             result.Normalize();
             return result;
         }

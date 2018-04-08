@@ -111,10 +111,10 @@ namespace Godot
 
         public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t t)
         {
-            Vector3 p0 = preA;
-            Vector3 p1 = this;
-            Vector3 p2 = b;
-            Vector3 p3 = postB;
+            var p0 = preA;
+            var p1 = this;
+            var p2 = b;
+            var p3 = postB;
 
             real_t t2 = t * t;
             real_t t3 = t2 * t;
@@ -196,7 +196,7 @@ namespace Godot
 
         public Vector3 Normalized()
         {
-            Vector3 v = this;
+            var v = this;
             v.Normalize();
             return v;
         }

@@ -38,7 +38,7 @@ namespace Godot
 
         public Rect2 Clip(Rect2 b)
         {
-            Rect2 newRect = b;
+            var newRect = b;
 
             if (!Intersects(newRect))
                 return new Rect2();
@@ -64,7 +64,7 @@ namespace Godot
 
         public Rect2 Expand(Vector2 to)
         {
-            Rect2 expanded = this;
+            var expanded = this;
 
             Vector2 begin = expanded.position;
             Vector2 end = expanded.position + expanded.size;
@@ -92,7 +92,7 @@ namespace Godot
 
         public Rect2 Grow(real_t by)
         {
-            Rect2 g = this;
+            var g = this;
 
             g.position.x -= by;
             g.position.y -= by;
@@ -104,7 +104,7 @@ namespace Godot
 
         public Rect2 GrowIndividual(real_t left, real_t top, real_t right, real_t bottom)
         {
-            Rect2 g = this;
+            var g = this;
 
             g.position.x -= left;
             g.position.y -= top;
@@ -116,7 +116,7 @@ namespace Godot
 
         public Rect2 GrowMargin(Margin margin, real_t by)
         {
-            Rect2 g = this;
+            var g = this;
 
             g.GrowIndividual((Margin.Left == margin) ? by : 0,
                     (Margin.Top == margin) ? by : 0,
