@@ -14,7 +14,7 @@ namespace Godot
             else if (type == typeof(void))
                 sb.Append("void");
             else
-                sb.Append(type.ToString());
+                sb.Append(type);
 
             sb.Append(" ");
         }

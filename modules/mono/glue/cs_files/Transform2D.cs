@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -269,22 +268,22 @@ namespace Godot
         // Constructors 
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
         {
-            this.x = xAxis;
-            this.y = yAxis;
-            this.o = origin;
+            x = xAxis;
+            y = yAxis;
+            o = origin;
         }
         
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
-            this.x = new Vector2(xx, xy);
-            this.y = new Vector2(yx, yy);
-            this.o = new Vector2(ox, oy);
+            x = new Vector2(xx, xy);
+            y = new Vector2(yx, yy);
+            o = new Vector2(ox, oy);
         }
 
         public Transform2D(real_t rot, Vector2 pos)
         {
-            real_t cr = Mathf.Cos( (real_t)rot);
-            real_t sr = Mathf.Sin( (real_t)rot);
+            real_t cr = Mathf.Cos(rot);
+            real_t sr = Mathf.Sin(rot);
             x.x = cr;
             y.y = cr;
             x.y = -sr;
@@ -345,9 +344,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(),
-                this.y.ToString(),
-                this.o.ToString()
+                x.ToString(),
+                y.ToString(),
+                o.ToString()
             });
         }
 
@@ -355,9 +354,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(format),
-                this.y.ToString(format),
-                this.o.ToString(format)
+                x.ToString(format),
+                y.ToString(format),
+                o.ToString(format)
             });
         }
     }

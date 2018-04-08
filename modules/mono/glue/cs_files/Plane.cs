@@ -1,5 +1,4 @@
 using System;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -81,7 +80,7 @@ namespace Godot
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
 
-            Vector3 result = (b.normal.Cross(c.normal) * this.d) +
+            Vector3 result = (b.normal.Cross(c.normal) * d) +
                                 (c.normal.Cross(normal) * b.d) +
                                 (normal.Cross(b.normal) * c.d);
 
@@ -198,8 +197,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.normal.ToString(),
-                this.d.ToString()
+                normal.ToString(),
+                d.ToString()
             });
         }
 
@@ -207,8 +206,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.normal.ToString(format),
-                this.d.ToString(format)
+                normal.ToString(format),
+                d.ToString(format)
             });
         }
     }

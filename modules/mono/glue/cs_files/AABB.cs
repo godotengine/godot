@@ -1,12 +1,10 @@
-using System;
-
 // file: core/math/aabb.h
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/math/aabb.cpp
 // commit: bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
-
+using System;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -283,31 +281,25 @@ namespace Godot
             {
                 return new AABB();
             }
-            else
-            {
-                min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
-                max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
-            }
+
+            min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
+            max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
 
             if (src_min.y > dst_max.y || src_max.y < dst_min.y)
             {
                 return new AABB();
             }
-            else
-            {
-                min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
-                max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
-            }
+
+            min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
+            max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
 
             if (src_min.z > dst_max.z || src_max.z < dst_min.z)
             {
                 return new AABB();
             }
-            else
-            {
-                min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
-                max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
-            }
+
+            min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
+            max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
 
             return new AABB(min, max - min);
         }
@@ -341,7 +333,7 @@ namespace Godot
                 new Vector3(position.x + size.x, position.y, position.z),
                 new Vector3(position.x + size.x, position.y, position.z + size.z),
                 new Vector3(position.x + size.x, position.y + size.y, position.z),
-                new Vector3(position.x + size.x, position.y + size.y, position.z + size.z),
+                new Vector3(position.x + size.x, position.y + size.y, position.z + size.z)
             };
 
             bool over = false;
@@ -467,8 +459,8 @@ namespace Godot
         {
             return String.Format("{0} - {1}", new object[]
                 {
-                    this.position.ToString(),
-                    this.size.ToString()
+                    position.ToString(),
+                    size.ToString()
                 });
         }
 
@@ -476,8 +468,8 @@ namespace Godot
         {
             return String.Format("{0} - {1}", new object[]
                 {
-                    this.position.ToString(format),
-                    this.size.ToString(format)
+                    position.ToString(format),
+                    size.ToString(format)
                 });
         }
     }
