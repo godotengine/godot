@@ -165,7 +165,7 @@ namespace Godot
             // Clamp dot to [-1, 1]
             dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
 
-            Vector2 v;
+            var v = new Vector2();
 
             if (dot > 0.9995f)
             {
@@ -185,7 +185,7 @@ namespace Godot
 
             // Construct matrix
             var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
-            Vector2 scale = s1.LinearInterpolate(s2, c);
+	        Vector2 scale = s1.LinearInterpolate(s2, c);
             res.x *= scale;
             res.y *= scale;
 

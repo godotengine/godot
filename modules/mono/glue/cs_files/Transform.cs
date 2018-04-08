@@ -28,7 +28,7 @@ namespace Godot
 
         public Transform LookingAt(Vector3 target, Vector3 up)
         {
-            Transform t = this;
+            var t = this;
             t.SetLookAt(origin, target, up);
             return t;
         }
