@@ -1474,6 +1474,11 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
+	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+		cursor_shape = p_shape;
+		return;
+	}
+
 	if (cursors[p_shape] != NULL) {
 		[cursors[p_shape] set];
 	} else {
