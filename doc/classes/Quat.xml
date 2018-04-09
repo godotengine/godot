@@ -10,6 +10,7 @@
 		It can be used to perform SLERP (spherical-linear interpolation) between two rotations.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions
 	</tutorials>
 	<demos>
 	</demos>

@@ -8,6 +8,7 @@
 		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html
 	</tutorials>
 	<demos>
 	</demos>
