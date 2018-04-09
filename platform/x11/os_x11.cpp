@@ -634,7 +634,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 
 	if (showCursor) {
-		XUndefineCursor(x11_display, x11_window); // show cursor
+		XDefineCursor(x11_display, x11_window, cursors[current_cursor]); // show cursor
 	} else {
 		XDefineCursor(x11_display, x11_window, null_cursor); // hide cursor
 	}
