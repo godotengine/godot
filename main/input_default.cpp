@@ -495,6 +495,15 @@ bool InputDefault::is_emulating_touchscreen() const {
 	return emulate_touch;
 }
 
+Input::CursorShape InputDefault::get_default_cursor_shape() {
+	return default_shape;
+}
+
+void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+	default_shape = p_shape;
+	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
+}
+
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
