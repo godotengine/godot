@@ -615,8 +615,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			bool using_placeholder = text.empty();
-			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
+			int cached_text_width = text.empty() ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -1164,6 +1163,7 @@ void LineEdit::clear_internal() {
 
 	_clear_undo_stack();
 	cached_width = 0;
+	cached_placeholder_width = 0;
 	cursor_pos = 0;
 	window_pos = 0;
 	undo_text = "";
