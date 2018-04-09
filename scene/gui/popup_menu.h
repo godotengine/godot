@@ -122,6 +122,7 @@ public:
 	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_radio_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
+	void add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_ID = -1);
 
 	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
