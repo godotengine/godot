@@ -407,9 +407,14 @@ void MonoBuildTab::stop_build() {
 
 void MonoBuildTab::_issue_activated(int p_idx) {
 
-	ERR_FAIL_INDEX(p_idx, issues.size());
+	ERR_FAIL_INDEX(p_idx, issues_list->get_item_count());
 
-	const BuildIssue &issue = issues[p_idx];
+	// Get correct issue idx from issue list
+	int issue_idx = this->issues_list->get_item_metadata(p_idx);
+
+	ERR_FAIL_INDEX(issue_idx, issues.size());
+
+	const BuildIssue &issue = issues[issue_idx];
 
 	if (issue.project_file.empty() && issue.file.empty())
 		return;
