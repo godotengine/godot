@@ -208,10 +208,17 @@ void InputMap::load_from_globals() {
 
 		for (int i = 0; i < va.size(); i++) {
 
-			Ref<InputEvent> ie = va[i];
-			if (ie.is_null())
-				continue;
-			action_add_event(name, ie);
+			Ref<StoredInputEvent> sie = va[i];
+			if (sie.is_null()) {
+				Ref<InputEvent> ie = va[i];
+				if (ie.is_null())
+					continue;
+				action_add_event(name, ie);
+			} else {
+				if (sie->event.is_null())
+					continue;
+				action_add_event(name, sie->event);
+			}
 		}
 	}
 }
