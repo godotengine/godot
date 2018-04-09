@@ -588,6 +588,13 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p
 	update();
 }
 
+void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID, uint32_t p_accel) {
+
+	add_icon_check_item(p_icon, p_label, p_ID, p_accel);
+	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	update();
+}
+
 void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID, bool p_global) {
 
 	ERR_FAIL_COND(p_shortcut.is_null());
