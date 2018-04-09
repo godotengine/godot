@@ -71,24 +71,8 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	Color keyword_color;
 	Color color;
 
-	int in_region = -1;
+	int in_region = text_editor->_is_line_in_region(p_line);
 	int deregion = 0;
-	for (int i = 0; i < p_line; i++) {
-		int ending_color_region = text_editor->_get_line_ending_color_region(i);
-		if (in_region == -1) {
-			in_region = ending_color_region;
-		} else if (in_region == ending_color_region) {
-			in_region = -1;
-		} else {
-			const Map<int, TextEdit::Text::ColorRegionInfo> &cri_map = text_editor->_get_line_color_region_info(i);
-			for (const Map<int, TextEdit::Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-				const TextEdit::Text::ColorRegionInfo &cri = E->get();
-				if (cri.region == in_region) {
-					in_region = -1;
-				}
-			}
-		}
-	}
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text_editor->_get_line_color_region_info(p_line);
 	const String &str = text_editor->get_line(p_line);
