@@ -618,8 +618,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
 				continue;
-			if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) // skip if another project inside this
-				continue;
 
 			dirs.push_back(f);
 
@@ -674,6 +672,10 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 		}
 
 		p_progress.update(idx, total);
+	}
+
+	if (FileAccess::exists(cd + "/.gdignore")) {
+		return;
 	}
 
 	for (List<String>::Element *E = files.front(); E; E = E->next(), idx++) {
