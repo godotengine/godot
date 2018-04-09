@@ -45,6 +45,7 @@
 #include "drivers/gles3/shaders/ssao_minify.glsl.gen.h"
 #include "drivers/gles3/shaders/subsurf_scattering.glsl.gen.h"
 #include "drivers/gles3/shaders/tonemap.glsl.gen.h"
+#include <vector>
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -526,6 +527,7 @@ public:
 	};
 
 	RID_Owner<Environment> environment_owner;
+	std::vector<RID> environment_vector;
 
 	virtual RID environment_create();
 
