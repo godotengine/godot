@@ -413,10 +413,6 @@ void InputDefault::set_mouse_position(const Point2 &p_posf) {
 
 	mouse_speed_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
-	if (custom_cursor.is_valid()) {
-		//removed, please insist that we implement hardware cursors
-		//		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
-	}
 }
 
 Point2 InputDefault::get_mouse_position() const {
@@ -502,11 +498,6 @@ bool InputDefault::is_emulating_touchscreen() const {
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
-
-	if (custom_cursor == p_cursor)
-		return;
-
-	custom_cursor = p_cursor;
 
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
