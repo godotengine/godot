@@ -516,4 +516,19 @@ public:
 
 	InputEventPanGesture();
 };
+
+class StoredInputEvent : public Resource {
+
+	GDCLASS(StoredInputEvent, Resource)
+
+protected:
+	static void _bind_methods();
+
+public:
+	Ref<InputEvent> event;
+
+	void set_event(Ref<InputEvent> p_event);
+	Ref<InputEvent> get_event() const { return event; }
+};
+
 #endif

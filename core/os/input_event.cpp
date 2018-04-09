@@ -1021,3 +1021,15 @@ InputEventPanGesture::InputEventPanGesture() {
 
 	delta = Vector2(0, 0);
 }
+
+void StoredInputEvent::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_event", "event"), &StoredInputEvent::set_event);
+	ClassDB::bind_method(D_METHOD("get_event"), &StoredInputEvent::get_event);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "event"), "set_event", "get_event");
+}
+
+void StoredInputEvent::set_event(Ref<InputEvent> p_event) {
+	event = p_event;
+}
