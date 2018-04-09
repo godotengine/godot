@@ -90,6 +90,8 @@ private:
 	int hover; // hovered tab
 	int min_width;
 	bool scrolling_enabled;
+	bool drag_to_rearrange_enabled;
+	int tabs_rearrange_group;
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
@@ -142,6 +144,11 @@ public:
 
 	void set_scrolling_enabled(bool p_enabled);
 	bool get_scrolling_enabled() const;
+
+	void set_drag_to_rearrange_enabled(bool p_enabled);
+	bool get_drag_to_rearrange_enabled() const;
+	void set_tabs_rearrange_group(int p_group_id);
+	int get_tabs_rearrange_group() const;
 
 	void ensure_tab_visible(int p_idx);
 	void set_min_width(int p_width);

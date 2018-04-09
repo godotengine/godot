@@ -3892,6 +3892,53 @@ void EditorNode::_update_dock_slots_visibility() {
 	}
 }
 
+void EditorNode::_dock_tab_changed(int p_tab) {
+
+	// update visibility but dont set current tab
+	VSplitContainer *splits[DOCK_SLOT_MAX / 2] = {
+		left_l_vsplit,
+		left_r_vsplit,
+		right_l_vsplit,
+		right_r_vsplit,
+	};
+
+	if (!docks_visible) {
+
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+			dock_slot[i]->hide();
+		}
+
+		for (int i = 0; i < DOCK_SLOT_MAX / 2; i++) {
+			splits[i]->hide();
+		}
+
+		right_hsplit->hide();
+		bottom_panel->hide();
+	} else {
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+
+			if (dock_slot[i]->get_tab_count())
+				dock_slot[i]->show();
+			else
+				dock_slot[i]->hide();
+		}
+
+		for (int i = 0; i < DOCK_SLOT_MAX / 2; i++) {
+			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
+			if (in_use)
+				splits[i]->show();
+			else
+				splits[i]->hide();
+		}
+		bottom_panel->show();
+
+		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+			right_hsplit->show();
+		else
+			right_hsplit->hide();
+	}
+}
+
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
 
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
@@ -4762,6 +4809,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_dock_popup_exit", &EditorNode::_dock_popup_exit);
 	ClassDB::bind_method("_dock_move_left", &EditorNode::_dock_move_left);
 	ClassDB::bind_method("_dock_move_right", &EditorNode::_dock_move_right);
+	ClassDB::bind_method("_dock_tab_changed", &EditorNode::_dock_tab_changed);
 
 	ClassDB::bind_method("_layout_menu_option", &EditorNode::_layout_menu_option);
 
@@ -5121,6 +5169,9 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
 		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
+		dock_slot[i]->set_drag_to_rearrange_enabled(true);
+		dock_slot[i]->set_tabs_rearrange_group(1);
+		dock_slot[i]->connect("tab_changed", this, "_dock_tab_changed");
 	}
 
 	dock_drag_timer = memnew(Timer);
@@ -5158,6 +5209,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
