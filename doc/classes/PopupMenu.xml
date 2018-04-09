@@ -77,6 +77,21 @@
 				created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
+		<method name="add_icon_radio_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				The same as [method add_icon_check_item] but the inserted item will look as a radio button. Remember this is just cosmetic and you have to add the logic for checking/unchecking items in radio groups.
+			</description>
+		</method>
 		<method name="add_icon_check_shortcut">
 			<return type="void">
 			</return>
