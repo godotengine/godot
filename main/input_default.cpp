@@ -557,34 +557,13 @@ bool InputDefault::is_emulating_touchscreen() const {
 	return emulate_touch;
 }
 
-// Calling this whenever the game window is focused helps unstucking the "touch mouse"
-// if the OS or its abstraction class hasn't properly reported that touch pointers raised
-void InputDefault::ensure_touch_mouse_raised() {
-
-	if (mouse_from_touch_index != -1) {
-		mouse_from_touch_index = -1;
-
-		Ref<InputEventMouseButton> button_event;
-		button_event.instance();
-
-		button_event->set_position(mouse_pos);
-		button_event->set_global_position(mouse_pos);
-		button_event->set_pressed(false);
-		button_event->set_button_index(BUTTON_LEFT);
-		button_event->set_button_mask(mouse_button_mask & ~(1 << BUTTON_LEFT - 1));
-
-		_parse_input_event_impl(button_event, true);
-	}
+Input::CursorShape InputDefault::get_default_cursor_shape() {
+	return default_shape;
 }
 
-void InputDefault::set_emulate_mouse_from_touch(bool p_emulate) {
-
-	emulate_mouse_from_touch = p_emulate;
-}
-
-bool InputDefault::is_emulating_mouse_from_touch() const {
-
-	return emulate_mouse_from_touch;
+void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+	default_shape = p_shape;
+	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {

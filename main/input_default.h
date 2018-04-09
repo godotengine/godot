@@ -118,6 +118,7 @@ class InputDefault : public Input {
 	SpeedTrack mouse_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
+	CursorShape default_shape = CURSOR_ARROW;
 
 public:
 	enum HatMask {
@@ -234,6 +235,8 @@ public:
 	void set_emulate_mouse_from_touch(bool p_emulate);
 	virtual bool is_emulating_mouse_from_touch() const;
 
+	virtual CursorShape get_default_cursor_shape();
+	virtual void set_default_cursor_shape(CursorShape p_shape);
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 	virtual void set_mouse_in_window(bool p_in_window);
 
