@@ -1299,7 +1299,9 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
 		hCursor = SetCursor(NULL);
 	} else {
-		SetCursor(hCursor);
+		CursorShape c = cursor_shape;
+		cursor_shape = CURSOR_MAX;
+		set_cursor_shape(c);
 	}
 }
 
@@ -1863,6 +1865,11 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
+	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+		cursor_shape = p_shape;
+		return;
+	}
+
 	static const LPCTSTR win_cursors[CURSOR_MAX] = {
 		IDC_ARROW,
 		IDC_IBEAM,
@@ -1888,6 +1895,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	} else {
 		SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
 	}
+
 	cursor_shape = p_shape;
 }
 
