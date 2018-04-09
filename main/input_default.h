@@ -119,7 +119,6 @@ class InputDefault : public Input {
 	SpeedTrack mouse_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
-	CursorShape default_shape = CURSOR_ARROW;
 
 public:
 	enum HatMask {
