@@ -132,7 +132,7 @@ JNIEnv *ThreadAndroid::get_env() {
 	}
 
 	JNIEnv *env = NULL;
-	int status = java_vm->AttachCurrentThread(&env, NULL);
+	java_vm->AttachCurrentThread(&env, NULL);
 	return env;
 }
 

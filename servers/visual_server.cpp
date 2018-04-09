@@ -198,6 +198,15 @@ RID VisualServer::_make_test_cube() {
 	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0)); \
 	vtx_idx++;
 
+#define FINAL_ADD_VTX(m_idx)                     \
+	vertices.push_back(face_points[m_idx]);      \
+	normals.push_back(normal_points[m_idx]);     \
+	tangents.push_back(normal_points[m_idx][1]); \
+	tangents.push_back(normal_points[m_idx][2]); \
+	tangents.push_back(normal_points[m_idx][0]); \
+	tangents.push_back(1.0);                     \
+	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0));
+
 	for (int i = 0; i < 6; i++) {
 
 		Vector3 face_points[4];
@@ -229,7 +238,7 @@ RID VisualServer::_make_test_cube() {
 		//tri 2
 		ADD_VTX(2);
 		ADD_VTX(3);
-		ADD_VTX(0);
+		FINAL_ADD_VTX(0);
 	}
 
 	RID test_cube = mesh_create();

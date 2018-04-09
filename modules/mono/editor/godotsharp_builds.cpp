@@ -78,7 +78,9 @@ String _find_build_engine_on_unix(const String &p_name) {
 
 void godot_icall_BuildInstance_get_MSBuildInfo(MonoString **r_msbuild_path, MonoString **r_framework_path) {
 
+#if defined(WINDOWS_ENABLED) || defined(UNIX_ENABLED)
 	GodotSharpBuilds::BuildTool build_tool = GodotSharpBuilds::BuildTool(int(EditorSettings::get_singleton()->get("mono/builds/build_tool")));
+#endif
 
 #if defined(WINDOWS_ENABLED)
 	switch (build_tool) {

@@ -250,7 +250,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		ERR_FAIL_COND_V(!custom_code_map.has(conditional_version.code_version), NULL);
 		cc = &custom_code_map[conditional_version.code_version];
 		v.code_version = cc->version;
-		define_line_ofs += 2;
 	}
 
 	/* CREATE PROGRAM */
