@@ -4023,6 +4023,9 @@ int TextEdit::_is_line_in_region(int p_line) {
 
 	// calculate up to line we need and update the cache along the way.
 	int in_region = color_region_cache[previous_line];
+	if (previous_line == -1) {
+		in_region = -1;
+	}
 	for (int i = previous_line; i < p_line; i++) {
 		const Map<int, Text::ColorRegionInfo> &cri_map = _get_line_color_region_info(i);
 		for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
