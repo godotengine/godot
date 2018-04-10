@@ -140,42 +140,6 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 	};
 }
 
-static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
-	if (!*is_focus_out) {
-		*is_focus_out = true;
-		if (OS::get_singleton()->get_main_loop())
-			OS::get_singleton()->get_main_loop()->notification(
-					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-
-		[view_controller.view stopAnimation];
-		if (OS::get_singleton()->native_video_is_playing()) {
-			OSIPhone::get_singleton()->native_video_focus_out();
-		}
-
-		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
-		if (audio)
-			audio->stop();
-	}
-}
-
-static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
-	if (*is_focus_out) {
-		*is_focus_out = false;
-		if (OS::get_singleton()->get_main_loop())
-			OS::get_singleton()->get_main_loop()->notification(
-					MainLoop::NOTIFICATION_WM_FOCUS_IN);
-
-		[view_controller.view startAnimation];
-		if (OSIPhone::get_singleton()->native_video_is_playing()) {
-			OSIPhone::get_singleton()->native_video_unpause();
-		}
-
-		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
-		if (audio)
-			audio->start();
-	}
-}
-
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
 	if (ios_joysticks == nil) {
