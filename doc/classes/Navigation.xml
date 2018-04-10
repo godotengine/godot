@@ -100,7 +100,7 @@
 	</methods>
 	<members>
 		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector">
-			Defines which direction is up. By default this is [code](0, 1, 0)[/code], which is the world up direction. 
+			Defines which direction is up. By default this is [code](0, 1, 0)[/code], which is the world up direction.
 		</member>
 	</members>
 	<constants>

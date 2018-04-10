@@ -28,6 +28,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
+		</member>
+	</members>
 	<signals>
 		<signal name="connection_closed">
 			<description>

@@ -132,13 +132,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_breakpoints" qualifiers="const">
-			<return type="Array">
-			</return>
-			<description>
-				Return an array containing the line number of each breakpoint.
-			</description>
-		</method>
 		<method name="get_keyword_color" qualifiers="const">
 			<return type="Color">
 			</return>

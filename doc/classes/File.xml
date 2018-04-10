@@ -163,14 +163,14 @@
 				Returns a [String] saved in Pascal format from the file.
 			</description>
 		</method>
-		<method name="get_path">
+		<method name="get_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns the path as a [String] for the current open file.
 			</description>
 		</method>
-		<method name="get_path_absolute">
+		<method name="get_path_absolute" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
