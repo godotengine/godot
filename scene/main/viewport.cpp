@@ -1814,7 +1814,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (!over) {
-			OS::get_singleton()->set_cursor_shape(OS::CURSOR_ARROW);
+			OS::get_singleton()->set_cursor_shape((OS::CursorShape)Input::get_singleton()->get_default_cursor_shape());
 			return;
 		}
 
