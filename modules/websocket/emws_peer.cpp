@@ -148,12 +148,14 @@ void EMWSPeer::close() {
 
 IP_Address EMWSPeer::get_connected_host() const {
 
-	return IP_Address();
+	ERR_EXPLAIN("Not supported in HTML5 export");
+	ERR_FAIL_V(IP_Address());
 };
 
 uint16_t EMWSPeer::get_connected_port() const {
 
-	return 1025;
+	ERR_EXPLAIN("Not supported in HTML5 export");
+	ERR_FAIL_V(0);
 };
 
 EMWSPeer::EMWSPeer() {

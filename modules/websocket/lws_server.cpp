@@ -164,6 +164,24 @@ Ref<WebSocketPeer> LWSServer::get_peer(int p_id) const {
 	return _peer_map[p_id];
 }
 
+IP_Address LWSServer::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), IP_Address());
+
+	return _peer_map[p_peer_id]->get_connected_host();
+}
+
+int LWSServer::get_peer_port(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), 0);
+
+	return _peer_map[p_peer_id]->get_connected_port();
+}
+
+void LWSServer::disconnect_peer(int p_peer_id) {
+	ERR_FAIL_COND(!has_peer(p_peer_id));
+
+	get_peer(p_peer_id)->close();
+}
+
 LWSServer::LWSServer() {
 	context = NULL;
 	_lws_ref = NULL;

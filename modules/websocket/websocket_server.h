@@ -52,6 +52,10 @@ public:
 	virtual bool is_server() const;
 	ConnectionStatus get_connection_status() const;
 
+	virtual IP_Address get_peer_address(int p_peer_id) const = 0;
+	virtual int get_peer_port(int p_peer_id) const = 0;
+	virtual void disconnect_peer(int p_peer_id) = 0;
+
 	void _on_peer_packet(int32_t p_peer_id);
 	void _on_connect(int32_t p_peer_id, String p_protocol);
 	void _on_disconnect(int32_t p_peer_id);

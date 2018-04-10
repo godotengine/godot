@@ -780,40 +780,6 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 #endif
 }
 
-void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
-
-	ERR_FAIL_COND(p_channel < -1 || p_channel >= channel_count);
-
-	if (p_channel == SYSCH_CONFIG) {
-		ERR_EXPLAIN("Channel " + itos(SYSCH_CONFIG) + " is reserved");
-		ERR_FAIL();
-	}
-	transfer_channel = p_channel;
-}
-
-int NetworkedMultiplayerENet::get_transfer_channel() const {
-	return transfer_channel;
-}
-
-void NetworkedMultiplayerENet::set_channel_count(int p_channel) {
-
-	ERR_FAIL_COND(active);
-	ERR_FAIL_COND(p_channel < SYSCH_MAX);
-	channel_count = p_channel;
-}
-
-int NetworkedMultiplayerENet::get_channel_count() const {
-	return channel_count;
-}
-
-void NetworkedMultiplayerENet::set_always_ordered(bool p_ordered) {
-	always_ordered = p_ordered;
-}
-
-bool NetworkedMultiplayerENet::is_always_ordered() const {
-	return always_ordered;
-}
-
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
@@ -823,17 +789,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
-	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
-	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
-
-	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
-	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
-	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &NetworkedMultiplayerENet::set_transfer_channel);
-	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &NetworkedMultiplayerENet::get_transfer_channel);
-	ClassDB::bind_method(D_METHOD("set_channel_count", "channels"), &NetworkedMultiplayerENet::set_channel_count);
-	ClassDB::bind_method(D_METHOD("get_channel_count"), &NetworkedMultiplayerENet::get_channel_count);
-	ClassDB::bind_method(D_METHOD("set_always_ordered", "ordered"), &NetworkedMultiplayerENet::set_always_ordered);
-	ClassDB::bind_method(D_METHOD("is_always_ordered"), &NetworkedMultiplayerENet::is_always_ordered);
+	ClassDB::bind_method(D_METHOD("get_peer_address"), &NetworkedMultiplayerENet::get_peer_address);
+	ClassDB::bind_method(D_METHOD("get_peer_port"), &NetworkedMultiplayerENet::get_peer_port);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
