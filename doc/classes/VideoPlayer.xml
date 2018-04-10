@@ -78,6 +78,12 @@
 			Audio volume in dB.
 		</member>
 	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

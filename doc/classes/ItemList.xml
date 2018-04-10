@@ -144,6 +144,12 @@
 				Returns the current vertical scroll bar for the List.
 			</description>
 		</method>
+		<method name="is_anything_selected">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -178,6 +184,16 @@
 			</argument>
 			<description>
 				Returns whether or not item at the specified index is currently selected.
+			</description>
+		</method>
+		<method name="move_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_from_idx" type="int">
+			</argument>
+			<argument index="1" name="p_to_idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="remove_item">
@@ -324,6 +340,12 @@
 			</argument>
 			<description>
 				Ensure item at specified index is not selected.
+			</description>
+		</method>
+		<method name="unselect_all">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>

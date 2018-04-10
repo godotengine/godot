@@ -194,6 +194,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="item_focused">
+			<argument index="0" name="ID" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="item_selected">
 			<argument index="0" name="ID" type="int">
 			</argument>

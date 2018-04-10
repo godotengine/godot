@@ -51,6 +51,12 @@
 		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
 			[Texture] that draws under the progress bar. The bar's background.
 		</member>
+		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over">
+		</member>
+		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress">
+		</member>
+		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under">
+		</member>
 	</members>
 	<constants>
 		<constant name="FILL_LEFT_TO_RIGHT" value="0" enum="FillMode">
