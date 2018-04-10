@@ -372,6 +372,12 @@ void Sprite3D::_draw() {
 	Vector2 src_tsize = Vector2(
 			VS::get_singleton()->texture_get_width(texture_rid),
 			VS::get_singleton()->texture_get_height(texture_rid));
+
+	// texture_get_width and texture_get_height both return 0 for ViewportTexture type.
+	// Use the size returned by texture->get_size() in this case.
+	if (src_tsize.x == 0 || src_tsize.y == 0)
+		src_tsize = tsize;
+
 	Vector2 uvs[4] = {
 		final_src_rect.position / src_tsize,
 		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
@@ -667,6 +673,12 @@ void AnimatedSprite3D::_draw() {
 	Vector2 src_tsize = Vector2(
 			VS::get_singleton()->texture_get_width(texture_rid),
 			VS::get_singleton()->texture_get_height(texture_rid));
+
+	// texture_get_width and texture_get_height both return 0 for ViewportTexture type.
+	// Use the size returned by texture->get_size() in this case.
+	if (src_tsize.x == 0 || src_tsize.y == 0)
+		src_tsize = tsize;
+
 	Vector2 uvs[4] = {
 		final_src_rect.position / src_tsize,
 		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
