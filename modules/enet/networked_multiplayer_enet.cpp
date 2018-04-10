@@ -674,7 +674,35 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 
 void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 
-	//do none
+	// Nothing to do
+}
+
+IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), IP_Address());
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, IP_Address());
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, IP_Address());
+
+	IP_Address out;
+#ifdef GODOT_ENET
+	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#else
+	out.set_ipv4((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#endif
+
+	return out;
+}
+
+int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), 0);
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, 0);
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, 0);
+#ifdef GODOT_ENET
+	return peer_map[p_peer_id]->address.port;
+#else
+	return peer_map[p_peer_id]->address.port;
+#endif
 }
 
 void NetworkedMultiplayerENet::_bind_methods() {
@@ -686,6 +714,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("get_peer_address"), &NetworkedMultiplayerENet::get_peer_address);
+	ClassDB::bind_method(D_METHOD("get_peer_port"), &NetworkedMultiplayerENet::get_peer_port);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 
