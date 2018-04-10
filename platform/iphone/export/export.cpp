@@ -147,6 +147,26 @@ Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_ge
 	return archs;
 }
 
+struct LoadingScreenInfo {
+	const char *preset_key;
+	const char *export_name;
+};
+
+static const LoadingScreenInfo loading_screen_infos[] = {
+	{ "landscape_launch_screens/iphone_2436x1125", "Default-Landscape-X.png" },
+	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png" },
+	{ "landscape_launch_screens/ipad_1024x768", "Default-Landscape.png" },
+	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png" },
+
+	{ "portrait_launch_screens/iphone_640x960", "Default-480h@2x.png" },
+	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png" },
+	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png" },
+	{ "portrait_launch_screens/iphone_1125x2436", "Default-Portrait-X.png" },
+	{ "portrait_launch_screens/ipad_768x1024", "Default-Portrait.png" },
+	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png" },
+	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png" }
+};
+
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
@@ -172,6 +192,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPhone/iPod Touch with retina display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPad
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "png"), "")); // App Store
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPhone with retina HD display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPad with retina display
@@ -179,15 +200,9 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "png"), "")); // Spotlight
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "png"), "")); // Spotlight on devices with retina display
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "landscape_launch_screens/iphone_2208x1242", PROPERTY_HINT_FILE, "png"), "")); // iPhone 6 Plus, 6s Plus, 7 Plus
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "landscape_launch_screens/ipad_2732x2048", PROPERTY_HINT_FILE, "png"), "")); // 12.9-inch iPad Pro
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "landscape_launch_screens/ipad_2048x1536", PROPERTY_HINT_FILE, "png"), "")); // Other iPads
-
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "portrait_launch_screens/iphone_640x1136", PROPERTY_HINT_FILE, "png"), "")); // iPhone 5, 5s, SE
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "portrait_launch_screens/iphone_750x1334", PROPERTY_HINT_FILE, "png"), "")); // iPhone 6, 6s, 7
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "portrait_launch_screens/iphone_1242x2208", PROPERTY_HINT_FILE, "png"), "")); // iPhone 6 Plus, 6s Plus, 7 Plus
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "portrait_launch_screens/ipad_2048x2732", PROPERTY_HINT_FILE, "png"), "")); // 12.9-inch iPad Pro
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "portrait_launch_screens/ipad_1536x2048", PROPERTY_HINT_FILE, "png"), "")); // Other iPads
+	for (int i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "png"), ""));
+	}
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
@@ -313,6 +328,7 @@ static const IconInfo icon_infos[] = {
 	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40", true },
 
 	{ "required_icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76", false },
+	{ "required_icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024", false },
 
 	{ "optional_icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60", false },
 
@@ -380,23 +396,6 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	return OK;
 }
 
-struct LoadingScreenInfo {
-	const char *preset_key;
-	const char *export_name;
-};
-
-static const LoadingScreenInfo loading_screen_infos[] = {
-	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png" },
-	{ "landscape_launch_screens/ipad_2732x2048", "Default-Landscape-1366h@2x.png" },
-	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png" },
-
-	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png" },
-	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png" },
-	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png" },
-	{ "portrait_launch_screens/ipad_2048x2732", "Default-Portrait-1366h@2x.png" },
-	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png" }
-};
-
 Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
 	DirAccess *da = DirAccess::open(p_dest_dir);
 	ERR_FAIL_COND_V(!da, ERR_CANT_OPEN);
@@ -404,12 +403,14 @@ Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPre
 	for (int i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		LoadingScreenInfo info = loading_screen_infos[i];
 		String loading_screen_file = p_preset->get(info.preset_key);
-		Error err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
-		if (err) {
-			memdelete(da);
-			String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path: " + loading_screen_file;
-			ERR_PRINT(err_str.utf8().get_data());
-			return err;
+		if (loading_screen_file.size() > 0) {
+			Error err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
+			if (err) {
+				memdelete(da);
+				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path: " + loading_screen_file;
+				ERR_PRINT(err_str.utf8().get_data());
+				return err;
+			}
 		}
 	}
 	memdelete(da);
@@ -887,7 +888,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	if (err)
 		return err;
 
-	err = _export_loading_screens(p_preset, dest_dir + binary_name + "/");
+	err = _export_loading_screens(p_preset, dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/");
 	if (err)
 		return err;
 
