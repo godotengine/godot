@@ -698,24 +698,22 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			if (_get_completable_identifier(COMPLETION_IDENTIFIER, identifier)) {
 			}
 
-			if (p_parsing_constant) {
-				for (int i = 0; i < cln->constant_expressions.size(); ++i) {
+			for (int i = 0; i < cln->constant_expressions.size(); ++i) {
 
-					if (cln->constant_expressions[i].identifier == identifier) {
+				if (cln->constant_expressions[i].identifier == identifier) {
 
-						expr = cln->constant_expressions[i].expression;
-						bfn = true;
-						break;
-					}
-				}
-
-				if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
-					//check from constants
-					ConstantNode *constant = alloc_node<ConstantNode>();
-					constant->value = GDScriptLanguage::get_singleton()->get_global_array()[GDScriptLanguage::get_singleton()->get_global_map()[identifier]];
-					expr = constant;
+					expr = cln->constant_expressions[i].expression;
 					bfn = true;
+					break;
 				}
+			}
+
+			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
+				//check from constants
+				ConstantNode *constant = alloc_node<ConstantNode>();
+				constant->value = GDScriptLanguage::get_singleton()->get_global_array()[GDScriptLanguage::get_singleton()->get_global_map()[identifier]];
+				expr = constant;
+				bfn = true;
 			}
 
 			if (!bfn) {
@@ -4090,7 +4088,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else*/ {
+						} else*/
+						{
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 
