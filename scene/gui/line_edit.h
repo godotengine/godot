@@ -84,6 +84,7 @@ private:
 	int max_length; // 0 for no maximum
 
 	int cached_width;
+	int cached_placeholder_width;
 
 	struct Selection {
 
