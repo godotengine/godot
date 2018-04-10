@@ -254,6 +254,14 @@
 				Return the texture offset of the tile.
 			</description>
 		</method>
+		<method name="tile_get_tile_mode" qualifiers="const">
+			<return type="int" enum="TileSet.TileMode">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_set_light_occluder">
 			<return type="void">
 			</return>
@@ -410,6 +418,16 @@
 				Set the texture offset of the tile.
 			</description>
 		</method>
+		<method name="tile_set_tile_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="tilemode" type="int" enum="TileSet.TileMode">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="BITMASK_2X2" value="0" enum="BitmaskMode">
@@ -431,6 +449,12 @@
 		<constant name="BIND_BOTTOM" value="128" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_BOTTOMRIGHT" value="256" enum="AutotileBindings">
+		</constant>
+		<constant name="SINGLE_TILE" value="0" enum="TileMode">
+		</constant>
+		<constant name="AUTO_TILE" value="1" enum="TileMode">
+		</constant>
+		<constant name="ANIMATED_TILE" value="2" enum="TileMode">
 		</constant>
 	</constants>
 </class>

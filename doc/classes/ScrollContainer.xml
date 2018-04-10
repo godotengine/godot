@@ -13,6 +13,8 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone">
+		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll">
 			The current horizontal scroll value.
 		</member>
@@ -26,6 +28,16 @@
 			If [code]true[/code], enables vertical scrolling.
 		</member>
 	</members>
+	<signals>
+		<signal name="scroll_ended">
+			<description>
+			</description>
+		</signal>
+		<signal name="scroll_started">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

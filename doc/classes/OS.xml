@@ -116,6 +116,20 @@
 				Returns the scancode of the given string (e.g. "Escape")
 			</description>
 		</method>
+		<method name="get_audio_driver_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_audio_driver_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_cmdline_args">
 			<return type="PoolStringArray">
 			</return>
@@ -389,6 +403,20 @@
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On Windows, this is [code]%APPDATA%/Godot/app_userdata/[project_name][/code], or [code]%APPDATA%/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
+			</description>
+		</method>
+		<method name="get_video_driver_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_video_driver_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">

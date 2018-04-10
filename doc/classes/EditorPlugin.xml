@@ -102,6 +102,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_tool_menu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="handler" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="String">
+			</argument>
+			<argument index="3" name="ud" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_tool_submenu_item">
 			<return type="void">
 			</return>
@@ -343,6 +357,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_tool_menu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>

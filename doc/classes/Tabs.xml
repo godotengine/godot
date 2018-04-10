@@ -80,6 +80,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_tabs_rearrange_group" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="move_tab">
 			<return type="void">
 			</return>
@@ -129,9 +135,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_tabs_rearrange_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		</member>
+		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
 		</member>
