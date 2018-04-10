@@ -40,6 +40,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -120,6 +121,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the total number of available audio drivers.
 			</description>
 		</method>
 		<method name="get_audio_driver_name" qualifiers="const">
@@ -128,6 +130,7 @@
 			<argument index="0" name="arg0" type="int">
 			</argument>
 			<description>
+				Returns the audio driver name for the given index.
 			</description>
 		</method>
 		<method name="get_cmdline_args">
@@ -256,6 +259,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the window size including decorations like window borders.
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
@@ -425,12 +429,6 @@
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or it is currently hidden.
 			</description>
 		</method>
-		<method name="get_window_safe_area" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -513,6 +511,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the window should always be on top of other windows.
 			</description>
 		</method>
 		<method name="kill">
@@ -649,6 +648,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets whether the window should always be on top.
 			</description>
 		</method>
 		<method name="set_window_title">
@@ -697,7 +697,7 @@
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
 			If [code]true[/code] the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
-		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="OS.ScreenOrientation">
 			The current screen orientation.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
