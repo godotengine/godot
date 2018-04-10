@@ -19,6 +19,8 @@
 		<method name="duplicate">
 			<return type="Dictionary">
 			</return>
+			<argument index="0" name="deep" type="bool" default="False">
+			</argument>
 			<description>
 			</description>
 		</method>

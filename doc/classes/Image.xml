@@ -67,6 +67,14 @@
 				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
+		<method name="bumpmap_to_normalmap">
+			<return type="void">
+			</return>
+			<argument index="0" name="bump_scale" type="float" default="1.0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="clear_mipmaps">
 			<return type="void">
 			</return>
@@ -436,109 +444,109 @@
 		<constant name="FORMAT_LA8" value="1" enum="Format">
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
-                        OpenGL texture format RED with a single component and a bitdepth of 8.
+			OpenGL texture format RED with a single component and a bitdepth of 8.
 		</constant>
 		<constant name="FORMAT_RG8" value="3" enum="Format">
-                        OpenGL texture format RG with two components and a bitdepth of 8 for each.
+			OpenGL texture format RG with two components and a bitdepth of 8 for each.
 		</constant>
 		<constant name="FORMAT_RGB8" value="4" enum="Format">
-                        OpenGL texture format RGB with three components, each with a bitdepth of 8.
+			OpenGL texture format RGB with three components, each with a bitdepth of 8.
 		</constant>
 		<constant name="FORMAT_RGBA8" value="5" enum="Format">
-                        OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
 		</constant>
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
-                        OpenGL texture format RGBA with four components, each with a bitdepth of 4.
+			OpenGL texture format RGBA with four components, each with a bitdepth of 4.
 		</constant>
 		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
-                        OpenGL texture format GL_RGB5_A1 where 5 bits of depth for each component of RGB and one bit for alpha.
+			OpenGL texture format GL_RGB5_A1 where 5 bits of depth for each component of RGB and one bit for alpha.
 		</constant>
 		<constant name="FORMAT_RF" value="8" enum="Format">
-                        OpenGL texture format GL_R32F where there's one component, a 32-bit floating-point value.
+			OpenGL texture format GL_R32F where there's one component, a 32-bit floating-point value.
 		</constant>
 		<constant name="FORMAT_RGF" value="9" enum="Format">
-                        OpenGL texture format GL_RG32F where there are two components, each a 32-bit floating-point values.
+			OpenGL texture format GL_RG32F where there are two components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RGBF" value="10" enum="Format">
-                        OpenGL texture format GL_RGB32F where there are three components, each a 32-bit floating-point values.
+			OpenGL texture format GL_RGB32F where there are three components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RGBAF" value="11" enum="Format">
-                        OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point values.
+			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RH" value="12" enum="Format">
-                        OpenGL texture format GL_R32F where there's one component, a 16-bit "half-precision" floating-point value.
+			OpenGL texture format GL_R32F where there's one component, a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGH" value="13" enum="Format">
-                        OpenGL texture format GL_RG32F where there's two components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format GL_RG32F where there's two components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBH" value="14" enum="Format">
-                        OpenGL texture format GL_RGB32F where there's three components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format GL_RGB32F where there's three components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-                        OpenGL texture format GL_RGBA32F where there's four components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format GL_RGBA32F where there's four components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
-                        A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single exponent.
+			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single exponent.
 		</constant>
 		<constant name="FORMAT_DXT1" value="17" enum="Format">
-                        The S3TC texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha. More information can be found at https://www.khronos.org/opengl/wiki/S3_Texture_Compression.
+			The S3TC texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha. More information can be found at https://www.khronos.org/opengl/wiki/S3_Texture_Compression.
 		</constant>
 		<constant name="FORMAT_DXT3" value="18" enum="Format">
-                        The S3TC texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
+			The S3TC texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
 		</constant>
 		<constant name="FORMAT_DXT5" value="19" enum="Format">
-                        The S3TC texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparency gradients than DXT3.
+			The S3TC texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparency gradients than DXT3.
 		</constant>
 		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
-                        Texture format that uses Red Green Texture Compression, normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel. More information can be found here https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression.
+			Texture format that uses Red Green Texture Compression, normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel. More information can be found here https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression.
 		</constant>
 		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
-                        Texture format that uses Red Green Texture Compression, normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+			Texture format that uses Red Green Texture Compression, normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
-                        Texture format that uses BPTC compression with unsigned normalized RGBA components. More information can be found at https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression.
+			Texture format that uses BPTC compression with unsigned normalized RGBA components. More information can be found at https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
-                        Texture format that uses BPTC compression with signed floating-point RGB components.
+			Texture format that uses BPTC compression with signed floating-point RGB components.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
-                        Texture format that uses BPTC compression with unsigned floating-point RGB components.
+			Texture format that uses BPTC compression with unsigned floating-point RGB components.
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
-                        Texture format used on PowerVR-supported mobile platforms, uses 2 bit color depth with no alpha. More information on PVRTC can be found here https://en.wikipedia.org/wiki/PVRTC.
+			Texture format used on PowerVR-supported mobile platforms, uses 2 bit color depth with no alpha. More information on PVRTC can be found here https://en.wikipedia.org/wiki/PVRTC.
 		</constant>
 		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
-                        Same as PVRTC2, but with an alpha component.
+			Same as PVRTC2, but with an alpha component.
 		</constant>
 		<constant name="FORMAT_PVRTC4" value="27" enum="Format">
-                        Similar to PVRTC2, but with 4 bit color depth and no alpha.
+			Similar to PVRTC2, but with 4 bit color depth and no alpha.
 		</constant>
 		<constant name="FORMAT_PVRTC4A" value="28" enum="Format">
-                        Same as PVRTC4, but with an alpha component.
+			Same as PVRTC4, but with an alpha component.
 		</constant>
 		<constant name="FORMAT_ETC" value="29" enum="Format">
-                        Ericsson Texture Compression format, also referred to as 'ETC1', and is part of the OpenGL ES graphics standard. An overview of the format is given at https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1.
+			Ericsson Texture Compression format, also referred to as 'ETC1', and is part of the OpenGL ES graphics standard. An overview of the format is given at https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1.
 		</constant>
 		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
-                        Ericsson Texture Compression format 2 variant R11_EAC, which provides one channel of unsigned data.
+			Ericsson Texture Compression format 2 variant R11_EAC, which provides one channel of unsigned data.
 		</constant>
 		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
-                        Ericsson Texture Compression format 2 variant SIGNED_R11_EAC, which provides one channel of signed data.
+			Ericsson Texture Compression format 2 variant SIGNED_R11_EAC, which provides one channel of signed data.
 		</constant>
 		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
-                        Ericsson Texture Compression format 2 variant RG11_EAC, which provides two channels of unsigned data.
+			Ericsson Texture Compression format 2 variant RG11_EAC, which provides two channels of unsigned data.
 		</constant>
 		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
-                        Ericsson Texture Compression format 2 variant SIGNED_RG11_EAC, which provides two channels of signed data.
+			Ericsson Texture Compression format 2 variant SIGNED_RG11_EAC, which provides two channels of signed data.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
-                        Ericsson Texture Compression format 2 variant RGB8, which is a followup of ETC1 and compresses RGB888 data.
+			Ericsson Texture Compression format 2 variant RGB8, which is a followup of ETC1 and compresses RGB888 data.
 		</constant>
 		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
-                        Ericsson Texture Compression format 2 variant RGBA8, which compresses RGBA8888 data with full alpha support.
+			Ericsson Texture Compression format 2 variant RGBA8, which compresses RGBA8888 data with full alpha support.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
-                        Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque.
+			Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque.
 		</constant>
 		<constant name="FORMAT_MAX" value="37" enum="Format">
 		</constant>

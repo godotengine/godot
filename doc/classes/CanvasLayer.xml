@@ -13,11 +13,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_world_2d" qualifiers="const">
-			<return type="World2D">
+		<method name="get_canvas" qualifiers="const">
+			<return type="RID">
 			</return>
 			<description>
-				Return the [World2D] used by this layer.
+				Returns the RID of the canvas used by this layer.
 			</description>
 		</method>
 	</methods>

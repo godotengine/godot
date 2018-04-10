@@ -9,12 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_config_file">
-			<return type="ConfigFile">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_current_dependencies" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
@@ -29,6 +23,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="config_file" type="ConfigFile" setter="set_config_file" getter="get_config_file">
+		</member>
 		<member name="load_once" type="bool" setter="set_load_once" getter="should_load_once">
 		</member>
 		<member name="reloadable" type="bool" setter="set_reloadable" getter="is_reloadable">
