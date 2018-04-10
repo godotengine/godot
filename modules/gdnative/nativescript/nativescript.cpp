@@ -357,14 +357,13 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 	Set<StringName> existing_properties;
+	List<PropertyInfo>::Element *original_back = p_list->back();
 	while (script_data) {
-		List<PropertyInfo>::Element *insert_position = p_list->front();
-		bool insert_before = true;
+		List<PropertyInfo>::Element *insert_position = original_back;
 
 		for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element E = script_data->properties.front(); E; E = E.next()) {
 			if (!existing_properties.has(E.key())) {
-				insert_position = insert_before ? p_list->insert_before(insert_position, E.get().info) : p_list->insert_after(insert_position, E.get().info);
-				insert_before = false;
+				insert_position = p_list->insert_after(insert_position, E.get().info);
 				existing_properties.insert(E.key());
 			}
 		}
