@@ -79,6 +79,7 @@ static ViewController *mainViewController = nil;
 }
 
 NSMutableDictionary *ios_joysticks = nil;
+NSMutableArray *pending_ios_joysticks = nil;
 
 - (GCControllerPlayerIndex)getFreePlayerIndex {
 	bool have_player_1 = false;
@@ -115,6 +116,30 @@ NSMutableDictionary *ios_joysticks = nil;
 	};
 };
 
+void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
+	// get a new id for our controller
+	int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
+	if (joy_id != -1) {
+		// assign our player index
+		if (controller.playerIndex == GCControllerPlayerIndexUnset) {
+			controller.playerIndex = [delegate getFreePlayerIndex];
+		};
+
+		// tell Godot about our new controller
+		OSIPhone::get_singleton()->joy_connection_changed(
+				joy_id, true, [controller.vendorName UTF8String]);
+
+		// add it to our dictionary, this will retain our controllers
+		[ios_joysticks setObject:controller
+						  forKey:[NSNumber numberWithInt:joy_id]];
+
+		// set our input handler
+		[delegate setControllerInputHandler:controller];
+	} else {
+		printf("Couldn't retrieve new joy id\n");
+	};
+}
+
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
 	if (ios_joysticks == nil) {
@@ -127,28 +152,12 @@ NSMutableDictionary *ios_joysticks = nil;
 		printf("Couldn't retrieve new controller\n");
 	} else if ([[ios_joysticks allKeysForObject:controller] count] != 0) {
 		printf("Controller is already registered\n");
+	} else if (frame_count > 1) {
+		_ios_add_joystick(controller, self);
 	} else {
-		// get a new id for our controller
-		int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
-		if (joy_id != -1) {
-			// assign our player index
-			if (controller.playerIndex == GCControllerPlayerIndexUnset) {
-				controller.playerIndex = [self getFreePlayerIndex];
-			};
-
-			// tell Godot about our new controller
-			OSIPhone::get_singleton()->joy_connection_changed(
-					joy_id, true, [controller.vendorName UTF8String]);
-
-			// add it to our dictionary, this will retain our controllers
-			[ios_joysticks setObject:controller
-							  forKey:[NSNumber numberWithInt:joy_id]];
-
-			// set our input handler
-			[self setControllerInputHandler:controller];
-		} else {
-			printf("Couldn't retrieve new joy id\n");
-		};
+		if (pending_ios_joysticks == nil)
+			pending_ios_joysticks = [[NSMutableArray alloc] init];
+		[pending_ios_joysticks addObject:controller];
 	};
 };
 
@@ -352,6 +361,27 @@ NSMutableDictionary *ios_joysticks = nil;
 		[ios_joysticks dealloc];
 		ios_joysticks = nil;
 	};
+
+	if (pending_ios_joysticks != nil) {
+		[pending_ios_joysticks dealloc];
+		pending_ios_joysticks = nil;
+	};
+};
+
+OS::VideoMode _get_video_mode() {
+	int backingWidth;
+	int backingHeight;
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+
+	OS::VideoMode vm;
+	vm.fullscreen = true;
+	vm.width = backingWidth;
+	vm.height = backingHeight;
+	vm.resizable = false;
+	return vm;
 };
 
 static int frame_count = 0;
@@ -360,19 +390,7 @@ static int frame_count = 0;
 
 	switch (frame_count) {
 		case 0: {
-			int backingWidth;
-			int backingHeight;
-			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-					GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-					GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-			OS::VideoMode vm;
-			vm.fullscreen = true;
-			vm.width = backingWidth;
-			vm.height = backingHeight;
-			vm.resizable = false;
-			OS::get_singleton()->set_video_mode(vm);
+			OS::get_singleton()->set_video_mode(_get_video_mode());
 
 			if (!OS::get_singleton()) {
 				exit(0);
@@ -409,6 +427,14 @@ static int frame_count = 0;
 
 			Main::setup2();
 			++frame_count;
+
+			if (pending_ios_joysticks != nil) {
+				for (GCController *controller in pending_ios_joysticks) {
+					_ios_add_joystick(controller, self);
+				}
+				[pending_ios_joysticks dealloc];
+				pending_ios_joysticks = nil;
+			}
 
 			// this might be necessary before here
 			NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
@@ -562,18 +588,13 @@ static int frame_count = 0;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
 	// UIViewAutoresizingFlexibleWidth];
 
-	int backingWidth;
-	int backingHeight;
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+	OS::VideoMode vm = _get_video_mode();
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
 			NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
 
-	int err = iphone_main(backingWidth, backingHeight, gargc, gargv, String::utf8([documentsDirectory UTF8String]));
+	int err = iphone_main(vm.width, vm.height, gargc, gargv, String::utf8([documentsDirectory UTF8String]));
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);
