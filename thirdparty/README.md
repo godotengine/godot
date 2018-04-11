@@ -83,7 +83,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ### Hack Regular
 
 - Upstream: https://github.com/source-foundry/Hack
-- Version: 3.000
+- Version: 3.003
 - License: MIT + Bitstream Vera License
 
 ### DroidSans*.ttf
@@ -220,7 +220,6 @@ Files extracted from upstream source:
 Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
-
 
 ## minizip
 

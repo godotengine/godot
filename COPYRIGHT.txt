@@ -157,7 +157,7 @@ License: OFL-1.1
 
 Files: ./thirdparty/fonts/Hack_Regular.ttf
 Comment: Hack font
-Copyright: 2017, Source Foundry Authors
+Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
 
