@@ -75,6 +75,13 @@
 				Returns the number of visible lines.
 			</description>
 		</method>
+		<method name="get_content_height">
+			<return type="int">
+			</return>
+			<description>
+				Returns the height of the content.
+			</description>
+		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
