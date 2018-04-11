@@ -575,8 +575,8 @@ void TextEdit::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (scrolling && get_v_scroll() != target_v_scroll) {
-				double target_y = target_v_scroll - get_v_scroll();
+			if (scrolling && v_scroll->get_value() != target_v_scroll) {
+				double target_y = target_v_scroll - v_scroll->get_value();
 				double dist = sqrt(target_y * target_y);
 				double vel = ((target_y / dist) * v_scroll_speed) * get_physics_process_delta_time();
 
