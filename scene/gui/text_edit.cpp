@@ -539,7 +539,7 @@ void TextEdit::_notification(int p_what) {
 			draw_caret = false;
 			update();
 		} break;
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (scrolling && v_scroll->get_value() != target_v_scroll) {
 				double target_y = target_v_scroll - v_scroll->get_value();
 				double dist = sqrt(target_y * target_y);
@@ -548,13 +548,13 @@ void TextEdit::_notification(int p_what) {
 				if (Math::abs(vel) >= dist) {
 					v_scroll->set_value(target_v_scroll);
 					scrolling = false;
-					set_physics_process(false);
+					set_physics_process_internal(false);
 				} else {
 					v_scroll->set_value(v_scroll->get_value() + vel);
 				}
 			} else {
 				scrolling = false;
-				set_physics_process(false);
+				set_physics_process_internal(false);
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -3027,7 +3027,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process(true);
+			set_physics_process_internal(true);
 		}
 	} else {
 		v_scroll->set_value(target_v_scroll);
@@ -3060,7 +3060,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process(true);
+			set_physics_process_internal(true);
 		}
 	} else {
 		v_scroll->set_value(target_v_scroll);

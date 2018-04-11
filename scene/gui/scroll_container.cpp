@@ -68,7 +68,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 };
 
 void ScrollContainer::_cancel_drag() {
-	set_physics_process(false);
+	set_physics_process_internal(false);
 	drag_touching_deaccel = false;
 	drag_touching = false;
 	drag_speed = Vector2();
@@ -141,7 +141,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				beyond_deadzone = false;
 				time_since_motion = 0;
 				if (drag_touching) {
-					set_physics_process(true);
+					set_physics_process_internal(true);
 					time_since_motion = 0;
 				}
 			}
@@ -278,7 +278,7 @@ void ScrollContainer::_notification(int p_what) {
 		update_scrollbars();
 	}
 
-	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
+	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 
 		if (drag_touching) {
 
