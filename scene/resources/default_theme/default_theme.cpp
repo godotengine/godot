@@ -818,6 +818,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
+	theme->set_color("font_color_shadow", "RichTextLabel", Color(0, 0, 0, 0));
+
+	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
+	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * scale);
+
 	theme->set_constant("line_separation", "RichTextLabel", 1 * scale);
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);

@@ -319,6 +319,14 @@
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
+		<theme_item name="font_color_shadow" type="Color">
+		</theme_item>
+		<theme_item name="shadow_as_outline" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_x" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_y" type="int">
+		</theme_item>
 		<theme_item name="italics_font" type="Font">
 		</theme_item>
 		<theme_item name="line_separation" type="int">
