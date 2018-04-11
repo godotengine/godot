@@ -676,9 +676,7 @@ void RichTextLabel::_scroll_changed(double) {
 
 void RichTextLabel::_update_scroll() {
 
-	int total_height = 0;
-	if (main->lines.size())
-		total_height = main->lines[main->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
+	int total_height = get_content_height();
 
 	bool exceeds = total_height > get_size().height && scroll_active;
 
@@ -2030,6 +2028,13 @@ float RichTextLabel::get_percent_visible() const {
 	return percent_visible;
 }
 
+int RichTextLabel::get_content_height() {
+	int total_height = 0;
+	if (main->lines.size())
+		total_height = main->lines[main->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
+	return total_height;
+}
+
 void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &RichTextLabel::_gui_input);
@@ -2095,6 +2100,8 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_line_count"), &RichTextLabel::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &RichTextLabel::get_visible_line_count);
+
+	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 
 	ADD_GROUP("BBCode", "bbcode_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
