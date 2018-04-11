@@ -149,8 +149,9 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 
 		default:
-			ERR_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_channels));
-			ERR_FAIL_V(ERR_CANT_OPEN);
+			WARN_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_channels));
+			pa_channels = 2;
+			channels = 2;
 			break;
 	}
 
