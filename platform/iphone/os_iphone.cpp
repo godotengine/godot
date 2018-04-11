@@ -504,6 +504,12 @@ Size2 OSIPhone::get_window_size() const {
 	return Vector2(video_mode.width, video_mode.height);
 }
 
+extern Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height);
+
+Rect2 OSIPhone::get_window_safe_area() const {
+	return _get_ios_window_safe_area(video_mode.width, video_mode.height);
+}
+
 bool OSIPhone::has_touchscreen_ui_hint() const {
 
 	return true;
