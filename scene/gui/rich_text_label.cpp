@@ -334,7 +334,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				}
 
 				rchar = 0;
-				FontDrawer drawer(font, Color(1, 1, 1));
 				while (*c) {
 
 					int end = 0;
@@ -363,7 +362,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						end++;
 					}
-
 					CHECK_HEIGHT(fh);
 					ENSURE_WIDTH(w);
 
@@ -431,14 +429,24 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
 
-									cw = font->get_char_size(c[i], c[i + 1]).x;
-									draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
-									if (visible)
-										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
+									if (p_font_color_shadow.a > 0) {
+										float x_ofs_shadow = align_ofs + pofs;
+										float y_ofs_shadow = y + lh - line_descent;
+										float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
 
-								} else {
-									if (visible)
+										if (p_shadow_as_outline) {
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
+										}
+										x_ofs_shadow += move;
+									}
+
+									if (selected) {
+										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
+									} else {
 										cw = font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), c[i], c[i + 1], color);
+									}
 								}
 
 								p_char_count++;
@@ -543,7 +551,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						for (int i = 0; i < frame->lines.size(); i++) {
 
-							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color());
+							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
 							table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 							table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
@@ -617,8 +625,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							int ly = 0;
 							_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
-							frame->lines.write[i].height_cache = ly; //actual height
-							frame->lines.write[i].height_accum_cache = ly; //actual height
+							frame->lines[i].height_cache = ly; //actual height
+							frame->lines[i].height_accum_cache = ly; //actual height
 						}
 						idx++;
 					}
@@ -1258,8 +1266,8 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 		int y = 0;
 		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color(), font_color_shadow, use_outline, shadow_ofs);
-		p_frame->lines.write[i].height_cache = y;
-		p_frame->lines.write[i].height_accum_cache = y;
+		p_frame->lines[i].height_cache = y;
+		p_frame->lines[i].height_accum_cache = y;
 
 		if (i > 0)
 			p_frame->lines.write[i].height_accum_cache += p_frame->lines[i - 1].height_accum_cache;
