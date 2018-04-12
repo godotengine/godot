@@ -38,6 +38,7 @@ private:
 	enum Type {
 		NONE,
 		REGION,
+		NODE_PATH,
 		SYMBOL,
 		NUMBER,
 		FUNCTION,
@@ -54,6 +55,7 @@ private:
 	Color built_in_type_color;
 	Color number_color;
 	Color member_color;
+	Color node_path_color;
 
 public:
 	static SyntaxHighlighter *create();

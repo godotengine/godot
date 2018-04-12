@@ -586,6 +586,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 
 	// GDScript highlighter
 	_initial_set("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
+	_initial_set("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
@@ -624,6 +625,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 
 	//GDScript highlighter
 	cf->set_value(theme_section, "gdscript/function_definition_color", ((Color)get("text_editor/highlighting/gdscript/function_definition_color")).to_html());
+	cf->set_value(theme_section, "gdscript/node_path_color", ((Color)get("text_editor/highlighting/gdscript/node_path_color")).to_html());
 
 	Error err = cf->save(p_file);
 
