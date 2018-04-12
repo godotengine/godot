@@ -58,6 +58,19 @@ PoolVector<String> EMWSServer::get_protocols() const {
 	return out;
 }
 
+IP_Address EMWSServer::get_peer_address(int p_peer_id) const {
+
+	return IP_Address();
+}
+
+int EMWSServer::get_peer_port(int p_peer_id) const {
+
+	return 0;
+}
+
+void EMWSServer::disconnect_peer(int p_peer_id) {
+}
+
 EMWSServer::EMWSServer() {
 }
 
