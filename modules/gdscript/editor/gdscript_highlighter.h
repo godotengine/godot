@@ -50,6 +50,7 @@ private:
 	Color font_color;
 	Color symbol_color;
 	Color function_color;
+	Color function_definition_color;
 	Color built_in_type_color;
 	Color number_color;
 	Color member_color;
