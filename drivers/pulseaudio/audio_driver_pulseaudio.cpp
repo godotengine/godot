@@ -177,7 +177,10 @@ Error AudioDriverPulseAudio::init_device() {
 	attr.minreq = (uint32_t)-1;
 
 	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, NULL);
-	ERR_FAIL_COND_V(pa_ctx == NULL, ERR_CANT_OPEN);
+	if (pa_str == NULL) {
+		ERR_PRINTS("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
 
 	const char *dev = device_name == "Default" ? NULL : device_name.utf8().get_data();
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
