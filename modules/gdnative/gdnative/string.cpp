@@ -1168,6 +1168,24 @@ godot_string GDAPI godot_string_c_unescape(const godot_string *p_self) {
 	return result;
 }
 
+godot_string GDAPI godot_string_http_escape(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	godot_string result;
+	String return_value = self->http_escape();
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_http_unescape(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	godot_string result;
+	String return_value = self->http_unescape();
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
 godot_string GDAPI godot_string_json_escape(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 	godot_string result;

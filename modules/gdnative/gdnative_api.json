@@ -5468,6 +5468,20 @@
         ]
       },
       {
+        "name": "godot_string_http_escape",
+        "return_type": "godot_string",
+        "arguments": [
+          ["const godot_string *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_string_http_unescape",
+        "return_type": "godot_string",
+        "arguments": [
+          ["const godot_string *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_string_json_escape",
         "return_type": "godot_string",
         "arguments": [
