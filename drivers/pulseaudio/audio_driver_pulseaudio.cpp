@@ -60,7 +60,7 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 		return;
 	}
 
-	ad->pa_channels = l->channel_map.channels;
+	ad->pa_map = l->channel_map;
 	ad->pa_status++;
 }
 
@@ -73,7 +73,7 @@ void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_inf
 
 void AudioDriverPulseAudio::detect_channels() {
 
-	pa_channels = 2;
+	pa_channel_map_init_stereo(&pa_map);
 
 	if (device_name == "Default") {
 		// Get the default output device name
@@ -129,44 +129,50 @@ Error AudioDriverPulseAudio::init_device() {
 	}
 
 	// Detect the amount of channels PulseAudio is using
-	// Note: If using an even amount of channels (2, 4, etc) channels and pa_channels will be equal,
-	// if not then pa_channels will have the real amount of channels PulseAudio is using and channels
-	// will have the amount of channels Godot is using (in this case it's pa_channels + 1)
+	// Note: If using an even amount of channels (2, 4, etc) channels and pa_map.channels will be equal,
+	// if not then pa_map.channels will have the real amount of channels PulseAudio is using and channels
+	// will have the amount of channels Godot is using (in this case it's pa_map.channels + 1)
 	detect_channels();
-	switch (pa_channels) {
+	switch (pa_map.channels) {
 		case 1: // Mono
 		case 3: // Surround 2.1
 		case 5: // Surround 5.0
 		case 7: // Surround 7.0
-			channels = pa_channels + 1;
+			channels = pa_map.channels + 1;
 			break;
 
 		case 2: // Stereo
 		case 4: // Surround 4.0
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
-			channels = pa_channels;
+			channels = pa_map.channels;
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_channels));
-			pa_channels = 2;
+			WARN_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
+			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
 	}
 
-	pa_sample_spec spec;
-	spec.format = PA_SAMPLE_S16LE;
-	spec.channels = pa_channels;
-	spec.rate = mix_rate;
-
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	pa_buffer_size = buffer_frames * pa_channels;
+	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("PulseAudio: detected " + itos(pa_channels) + " channels");
+		print_line("PulseAudio: detected " + itos(pa_map.channels) + " channels");
 		print_line("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	}
+
+	pa_sample_spec spec;
+	spec.format = PA_SAMPLE_S16LE;
+	spec.channels = pa_map.channels;
+	spec.rate = mix_rate;
+
+	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, &pa_map);
+	if (pa_str == NULL) {
+		ERR_PRINTS("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
 	pa_buffer_attr attr;
@@ -176,12 +182,6 @@ Error AudioDriverPulseAudio::init_device() {
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
 	attr.minreq = (uint32_t)-1;
-
-	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, NULL);
-	if (pa_str == NULL) {
-		ERR_PRINTS("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
 
 	const char *dev = device_name == "Default" ? NULL : device_name.utf8().get_data();
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
@@ -297,7 +297,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			ad->unlock();
 
-			if (ad->channels == ad->pa_channels) {
+			if (ad->channels == ad->pa_map.channels) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 					ad->samples_out[i] = ad->samples_in[i] >> 16;
 				}
@@ -307,7 +307,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				unsigned int out_idx = 0;
 
 				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
-					for (unsigned int j = 0; j < ad->pa_channels - 1; j++) {
+					for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
 						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
 					}
 					uint32_t l = ad->samples_in[in_idx++];
@@ -516,7 +516,6 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	buffer_frames = 0;
 	pa_buffer_size = 0;
 	channels = 0;
-	pa_channels = 0;
 	pa_ready = 0;
 	pa_status = 0;
 
