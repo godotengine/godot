@@ -47,6 +47,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_mainloop *pa_ml;
 	pa_context *pa_ctx;
 	pa_stream *pa_str;
+	pa_channel_map pa_map;
 
 	String device_name;
 	String new_device;
@@ -59,7 +60,6 @@ class AudioDriverPulseAudio : public AudioDriver {
 	unsigned int buffer_frames;
 	unsigned int pa_buffer_size;
 	int channels;
-	int pa_channels;
 	int pa_ready;
 	int pa_status;
 	Array pa_devices;
