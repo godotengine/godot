@@ -81,9 +81,6 @@ addons:
     build_command: "scons p=x11 -j2 $OPTIONS"
     branch_pattern: coverity_scan
 
-before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
       misc/travis/android-tools-linux.sh;
