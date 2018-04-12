@@ -1021,7 +1021,7 @@ public:
 	}
 
 	void reset() {
-		result_collision_objects.empty();
+		result_collision_objects.clear();
 	}
 };
 
