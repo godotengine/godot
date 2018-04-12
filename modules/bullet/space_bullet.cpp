@@ -1031,7 +1031,10 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		for (int i = recover_broad_result.result_collision_objects.size() - 1; 0 <= i; --i) {
 			btCollisionObject *otherObject = recover_broad_result.result_collision_objects[i];
-			if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()) || (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()))
+			if (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()) {
+				otherObject->activate(); // Force activation of hitten rigid, soft body
+				continue;
+			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
 				continue;
 
 			if (otherObject->getCollisionShape()->isCompound()) {
