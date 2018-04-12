@@ -61,6 +61,13 @@ static bool _is_hex_symbol(CharType c) {
 Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
 	Map<int, TextEdit::HighlighterInfo> color_map;
 
+	Type next_type = NONE;
+	Type current_type = NONE;
+	Type previous_type = NONE;
+
+	String previous_text = "";
+	int previous_column = 0;
+
 	bool prev_is_char = false;
 	bool prev_is_number = false;
 	bool in_keyword = false;
@@ -214,18 +221,50 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			in_member_variable = false;
 		}
 
-		if (in_region >= 0)
+		if (in_region >= 0) {
+			next_type = REGION;
 			color = text_editor->_get_color_region(in_region).color;
-		else if (in_keyword)
+		} else if (in_keyword) {
+			next_type = KEYWORD;
 			color = keyword_color;
-		else if (in_member_variable)
+		} else if (in_member_variable) {
+			next_type = MEMBER;
 			color = member_color;
-		else if (in_function_name)
+		} else if (in_function_name) {
+			next_type = FUNCTION;
 			color = function_color;
-		else if (is_symbol)
+		} else if (is_symbol) {
+			next_type = SYMBOL;
 			color = symbol_color;
-		else if (is_number)
+		} else if (is_number) {
+			next_type = NUMBER;
 			color = number_color;
+		} else {
+			next_type = IDENTIFIER;
+		}
+
+		if (next_type != current_type) {
+			if (current_type == NONE) {
+				current_type = next_type;
+			} else {
+				previous_type = current_type;
+				current_type = next_type;
+
+				// no need to store regions...
+				if (previous_type == REGION) {
+					previous_text = "";
+					previous_column = j;
+				} else {
+					String text = str.substr(previous_column, j - previous_column).strip_edges();
+					previous_column = j;
+
+					// ignore if just whitespace
+					if (text != "") {
+						previous_text = text;
+					}
+				}
+			}
+		}
 
 		prev_is_char = is_char;
 		prev_is_number = is_number;

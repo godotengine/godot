@@ -35,6 +35,17 @@
 
 class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
 private:
+	enum Type {
+		NONE,
+		REGION,
+		SYMBOL,
+		NUMBER,
+		FUNCTION,
+		KEYWORD,
+		MEMBER,
+		IDENTIFIER
+	};
+
 	// colours
 	Color font_color;
 	Color symbol_color;
