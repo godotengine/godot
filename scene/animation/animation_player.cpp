@@ -182,8 +182,8 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_physics_process(false);
-				set_process(false);
+				set_physics_process_internal(false);
+				set_process_internal(false);
 			}
 			//_set_process(false);
 			clear_caches();
