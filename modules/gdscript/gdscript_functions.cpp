@@ -66,6 +66,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"pow",
 		"log",
 		"exp",
+		"is_close",
 		"is_nan",
 		"is_inf",
 		"ease",
@@ -299,6 +300,33 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::exp((double)*p_args[0]);
+		} break;
+		case MATH_ISCLOSE: {
+			if (p_arg_count < 2) {
+				r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument = 2;
+				r_ret = Variant();
+
+				return;
+			}
+			if (p_arg_count > 3) {
+				r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.argument = 3;
+				r_ret = Variant();
+
+				return;
+			}
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+
+			double tolerance = CMP_EPSILON;
+
+			if (p_arg_count == 3) {
+				VALIDATE_ARG_NUM(2);
+				tolerance = (double)*p_args[2];
+			}
+
+			r_ret = Math::is_close((double)*p_args[0], (double)*p_args[1], tolerance);
 		} break;
 		case MATH_ISNAN: {
 			VALIDATE_ARG_COUNT(1);
@@ -1312,6 +1340,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_POW:
 		case MATH_LOG:
 		case MATH_EXP:
+		case MATH_ISCLOSE:
 		case MATH_ISNAN:
 		case MATH_ISINF:
 		case MATH_EASE:
@@ -1462,6 +1491,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
+		case MATH_ISCLOSE: {
+			MethodInfo mi("is_close", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"), PropertyInfo(Variant::REAL, "tolerance"));
+			mi.default_arguments.push_back(CMP_EPSILON);
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
 		case MATH_ISNAN: {
 			MethodInfo mi("is_nan", PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::BOOL;
@@ -1581,7 +1616,6 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			MethodInfo mi("max", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
-
 		} break;
 		case LOGIC_MIN: {
 			MethodInfo mi("min", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));

@@ -105,27 +105,27 @@ bool Basis::is_orthogonal() const {
 	Basis id;
 	Basis m = (*this) * transposed();
 
-	return is_equal_approx(id, m);
+	return is_close(id, m);
 }
 
 bool Basis::is_diagonal() const {
 	return (
-			Math::is_equal_approx(elements[0][1], 0) && Math::is_equal_approx(elements[0][2], 0) &&
-			Math::is_equal_approx(elements[1][0], 0) && Math::is_equal_approx(elements[1][2], 0) &&
-			Math::is_equal_approx(elements[2][0], 0) && Math::is_equal_approx(elements[2][1], 0));
+			Math::is_close_internal(elements[0][1], 0) && Math::is_close_internal(elements[0][2], 0) &&
+			Math::is_close_internal(elements[1][0], 0) && Math::is_close_internal(elements[1][2], 0) &&
+			Math::is_close_internal(elements[2][0], 0) && Math::is_close_internal(elements[2][1], 0));
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1) && is_orthogonal();
+	return Math::is_close_internal(determinant(), 1) && is_orthogonal();
 }
 
 bool Basis::is_symmetric() const {
 
-	if (!Math::is_equal_approx(elements[0][1], elements[1][0]))
+	if (!Math::is_close_internal(elements[0][1], elements[1][0]))
 		return false;
-	if (!Math::is_equal_approx(elements[0][2], elements[2][0]))
+	if (!Math::is_close_internal(elements[0][2], elements[2][0]))
 		return false;
-	if (!Math::is_equal_approx(elements[1][2], elements[2][1]))
+	if (!Math::is_close_internal(elements[1][2], elements[2][1]))
 		return false;
 
 	return true;
@@ -170,7 +170,7 @@ Basis Basis::diagonalize() {
 
 		// Compute the rotation angle
 		real_t angle;
-		if (Math::is_equal_approx(elements[j][j], elements[i][i])) {
+		if (Math::is_close_internal(elements[j][j], elements[i][i])) {
 			angle = Math_PI / 4;
 		} else {
 			angle = 0.5 * Math::atan(2 * elements[i][j] / (elements[j][j] - elements[i][i]));
@@ -514,11 +514,11 @@ void Basis::set_euler_yxz(const Vector3 &p_euler) {
 	*this = ymat * xmat * zmat;
 }
 
-bool Basis::is_equal_approx(const Basis &a, const Basis &b) const {
+bool Basis::is_close(const Basis &a, const Basis &b) const {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (Math::is_equal_approx(a.elements[i][j], b.elements[i][j]) == false)
+			if (Math::is_close_internal(a.elements[i][j], b.elements[i][j]) == false)
 				return false;
 		}
 	}
