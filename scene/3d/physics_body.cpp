@@ -1266,3 +1266,163 @@ KinematicCollision::KinematicCollision() {
 	collision.local_shape = 0;
 	owner = NULL;
 }
+
+//////////////////////////////
+
+SpringArm::SpringArm() {
+	spring_max_length = 10;
+	spring_max_height = 5;
+	smoothness = 0.5;
+	looking_at_target = true;
+	interpolate_physic_frames = false;
+	target = NULL;
+	time_since_last_physic_process = 0.0;
+}
+
+void SpringArm::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_process_internal(true);
+			set_physics_process_internal(true);
+			if (!target) {
+				set_process_internal(false);
+				set_physics_process_internal(false);
+			}
+			previous_physic_position = get_global_transform().origin;
+			next_physic_position = get_global_transform().origin;
+			physic_delta = get_physics_process_delta_time();
+			print_line("Spring arm ready");
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			_process(get_process_delta_time());
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			_physic_process();
+		} break;
+	}
+}
+
+void SpringArm::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_target", "target"), &SpringArm::set_target);
+	ClassDB::bind_method(D_METHOD("set_spring_max_length", "length"), &SpringArm::set_spring_max_length);
+	ClassDB::bind_method(D_METHOD("set_spring_max_height", "height"), &SpringArm::set_spring_max_height);
+	ClassDB::bind_method(D_METHOD("set_smoothness", "smoothness"), &SpringArm::set_smoothness);
+	ClassDB::bind_method(D_METHOD("set_looking_at_target", "look_at_target"), &SpringArm::set_looking_at_target);
+	ClassDB::bind_method(D_METHOD("set_interpolate_physic_frames", "interpolate"), &SpringArm::set_interpolate_physic_frames);
+
+	ClassDB::bind_method(D_METHOD("get_target"), &SpringArm::get_target);
+	ClassDB::bind_method(D_METHOD("get_spring_max_length"), &SpringArm::get_spring_max_length);
+	ClassDB::bind_method(D_METHOD("get_spring_max_height"), &SpringArm::get_spring_max_height);
+	ClassDB::bind_method(D_METHOD("get_smoothness"), &SpringArm::get_smoothness);
+	ClassDB::bind_method(D_METHOD("is_looking_at_target"), &SpringArm::is_looking_at_target);
+	ClassDB::bind_method(D_METHOD("is_interpolating_physic_frames"), &SpringArm::is_interpolating_physic_frames);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target"), "set_target", "get_target");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spring_max_length"), "set_spring_max_length", "get_spring_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spring_max_height"), "set_spring_max_height", "get_spring_max_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "smoothness"), "set_smoothness", "get_smoothness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looking_at_target"), "set_looking_at_target", "is_looking_at_target");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate_physic_frames"), "set_interpolate_physic_frames", "is_interpolating_physic_frames");
+}
+
+float SpringArm::get_spring_max_length() const {
+	return spring_max_length;
+}
+
+void SpringArm::set_spring_max_length(float max_length) {
+	spring_max_length = max_length;
+}
+
+float SpringArm::get_spring_max_height() const {
+	return spring_max_height;
+}
+
+void SpringArm::set_spring_max_height(float height) {
+	spring_max_height = height;
+}
+
+float SpringArm::get_smoothness() const {
+	return smoothness;
+}
+
+void SpringArm::set_smoothness(float smoothness) {
+	this->smoothness = CLAMP(smoothness, 0.001, 1.0);
+}
+
+void SpringArm::set_interpolate_physic_frames(bool interpolate) {
+	interpolate_physic_frames = interpolate;
+}
+
+bool SpringArm::is_interpolating_physic_frames() const {
+	return interpolate_physic_frames;
+}
+
+void SpringArm::set_looking_at_target(bool look_at_target) {
+	looking_at_target = look_at_target;
+}
+
+bool SpringArm::is_looking_at_target() const {
+	return looking_at_target;
+}
+
+NodePath SpringArm::get_target() const {
+	if (!target)
+		return NodePath();
+
+	return target->get_path();
+}
+
+void SpringArm::set_target(const NodePath &target) {
+
+	Spatial *target_ptr = Object::cast_to<Spatial>(get_node(target));
+
+	if (!target_ptr) {
+		set_physics_process_internal(false);
+		set_process_internal(false);
+		this->target = NULL;
+		return;
+	}
+	set_physics_process_internal(true);
+	set_process_internal(true);
+	this->target = target_ptr;
+}
+
+void SpringArm::_process(float delta) {
+	if (interpolate_physic_frames) {
+		//Interpolate between the last physic frame and the wanted one
+		time_since_last_physic_process += delta;
+		Transform trans = get_global_transform();
+		trans.origin = previous_physic_position + (next_physic_position - previous_physic_position) *
+														  CLAMP(time_since_last_physic_process / physic_delta, 0.0, 1.0);
+		set_transform(trans);
+	}
+	if (looking_at_target) {
+		look_at(target->get_global_transform().origin, Vector3(0.0, 1.0, 0.0));
+	}
+}
+
+void SpringArm::_physic_process() {
+	time_since_last_physic_process = 0.0;
+	Vector3 wanted_position = _compute_movement();
+	if (interpolate_physic_frames) {
+		previous_physic_position = get_global_transform().origin;
+		next_physic_position = previous_physic_position +
+							   move_and_slide((wanted_position - get_global_transform().origin) / get_physics_process_delta_time());
+		Transform t = get_global_transform();
+		t.origin = previous_physic_position;
+		set_global_transform(t);
+	} else {
+		move_and_slide((wanted_position - get_global_transform().origin) / get_physics_process_delta_time());
+	}
+	if (looking_at_target) {
+		look_at(target->get_global_transform().origin, Vector3(0.0, 1.0, 0.0));
+	}
+}
+
+Vector3 SpringArm::_compute_movement() {
+	Vector3 target_forward = -target->get_global_transform().basis[2].normalized();
+	Vector3 target_up = target->get_global_transform().basis[1].normalized();
+	Vector3 camera_position = target->get_global_transform().origin;
+	camera_position += -target_forward * spring_max_length + target_up * spring_max_height;
+	return get_global_transform().origin.linear_interpolate(camera_position, CLAMP(1.0 - smoothness, 0.001, 1.0));
+}
