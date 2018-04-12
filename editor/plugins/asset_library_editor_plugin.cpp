@@ -902,7 +902,7 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	if (filter->get_text() != String()) {
-		args += "&filter=" + filter->get_text().percent_encode();
+		args += "&filter=" + filter->get_text().http_escape();
 	}
 
 	if (p_page > 0) {
