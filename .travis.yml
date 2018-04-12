@@ -8,7 +8,8 @@ env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
-    - OPTIONS="verbose=yes progress=no openmp=no gdnative_wrapper=yes"
+    - OPTIONS="verbose=yes progress=no gdnative_wrapper=yes"
+    - secure: "n/H0YCWDhq3Pl2vOtv8Ai3IltGBHHh9VdL+SENitCBln1N7ygNf17KTEnmBZA+kVCsAVL3M2no8bXDYshlsU5AwxwOC8x3hn+rLmanNkyY3YQiHvCUeduVRbUj+JmirJZGyf/RDifk1mj43ksHlLxDgRnzKEFh5dnXW1neAywU7XKsOOKbvE1+chmCsGeif9/zrn77y+znq0ZTsoy+TDUEXvBSTJsBc6gvyosD7qCf5BHjsv7/g8WkC1hM8C8qwNw9loihDfurQtYLenOffK8duldyqiFiggbRY4RoPGPn6s92Zd30/NNjFsUGMooVj6If3aYHP4oNqToCW4okMIER94Vt4tExlCrkhqClfUM+H/miQYfPNlYH02cGXREwxyKwHBhb5IEjUcLNV9bnW9hQPaTAVkJLRbaTqDjK1wIADgfNPJZ5p8EDnJL9sd6zVCWDEB3Jnf1nxhUkmDOBYRQv/j22m6tgOhZPt00sjwrJbFq8CB5qCgS5KktSN2Tnq9HMkZFFTK7uwYuMm2DMcuwS9B+eQWC0Cdauc2Pf4j4SF0SC6pbKrDyrb3UHM8Zoq+9BFrBiriAhKfZilCmLk38Jc/fkV8DJ/pkz8CUHVbRsSuKjtpvO50kdNIx+2qDcwVWhkRnbQf+gbJ1bvwbT9yfSRGZuTYr86f3XTBfvDFK9c="
 
 cache:
   directories:
@@ -70,6 +71,18 @@ addons:
 
       # For style checks.
       - clang-format-5.0
+
+  coverity_scan:
+    project:
+      name: "godotengine/godot"
+      description: "Godot Engine Coverity scans"
+    notification_email: coverity@godotengine.org
+    build_command_prepend: ""
+    build_command: "scons p=x11 -j2 $OPTIONS"
+    branch_pattern: coverity_scan
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
