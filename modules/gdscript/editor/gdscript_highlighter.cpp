@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "gdscript_highlighter.h"
+#include "../gdscript_tokenizer.h"
 #include "scene/gui/text_edit.h"
+#include "editor/editor_settings.h"
 
 inline bool _is_symbol(CharType c) {
 
@@ -232,7 +234,12 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
-			color = function_color;
+
+			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::TK_PR_FUNCTION)) {
+				color = function_definition_color;
+			} else {
+				color = function_color;
+			}
 		} else if (is_symbol) {
 			next_type = SYMBOL;
 			color = symbol_color;
@@ -294,6 +301,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	function_color = text_editor->get_color("function_color");
 	number_color = text_editor->get_color("number_color");
 	member_color = text_editor->get_color("member_variable_color");
+
+	function_definition_color = EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
