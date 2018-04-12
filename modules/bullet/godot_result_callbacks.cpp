@@ -172,10 +172,7 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 			result.shape = cp.m_index0;
 		}
 
-		if (colObj)
-			result.collider_id = colObj->get_instance_id();
-		else
-			result.collider_id = 0;
+		result.collider_id = colObj->get_instance_id();
 		result.collider = 0 == result.collider_id ? NULL : ObjectDB::get_instance(result.collider_id);
 		result.rid = colObj->get_self();
 		++m_count;
@@ -250,10 +247,7 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 			m_rest_info_collision_object = colObj0Wrap->getCollisionObject();
 		}
 
-		if (colObj)
-			m_result->collider_id = colObj->get_instance_id();
-		else
-			m_result->collider_id = 0;
+		m_result->collider_id = colObj->get_instance_id();
 		m_result->rid = colObj->get_self();
 
 		m_collided = true;
