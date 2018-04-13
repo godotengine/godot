@@ -92,15 +92,41 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
+Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port, int c_port, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 
-	host = enet_host_create(NULL /* create a client host */,
-			1 /* only allow 1 outgoing connection */,
-			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-			p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
-			p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+	if (c_port != 0) {
+		ENetAddress c_client;
+
+#ifdef GODOT_ENET
+		if (bind_ip.is_wildcard()) {
+			c_client.wildcard = 1;
+		} else {
+			enet_address_set_ip(&c_client, bind_ip.get_ipv6(), 16);
+		}
+#else
+		if (bind_ip.is_wildcard()) {
+			c_client.host = 0;
+		} else {
+			ERR_FAIL_COND_V(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER);
+			c_client.host = *(uint32_t *)bind_ip.get_ipv4();
+		}
+#endif
+		c_client.port = c_port;
+
+		host = enet_host_create(&c_client /* create a client host */,
+				1 /* only allow 1 outgoing connection */,
+				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+				p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
+				p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+	} else {
+		host = enet_host_create(NULL /* create a client host */,
+				1 /* only allow 1 outgoing connection */,
+				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+				p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
+				p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+	}
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
@@ -708,7 +734,7 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "ip", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "ip", "port", "client_port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection"), &NetworkedMultiplayerENet::close_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
