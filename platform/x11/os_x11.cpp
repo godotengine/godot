@@ -1350,18 +1350,23 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// still works in half the cases. (won't handle deadkeys)
 	// For more complex input methods (deadkeys and more advanced)
 	// you have to use XmbLookupString (??).
-	// So.. then you have to chosse which of both results
+	// So.. then you have to choose which of both results
 	// you want to keep.
 	// This is a real bizarreness and cpu waster.
 
 	KeySym keysym_keycode = 0; // keysym used to find a keycode
 	KeySym keysym_unicode = 0; // keysym used to find unicode
 
-	// XLookupString returns keysyms usable as nice scancodes/
-	char str[256 + 1];
-	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
+	// For the keycode, we want a unique value for physical keys. Native X11 keycodes
+	// have little to do with whatever is written on the keys, but we can translate
+	// native keycodes to an indicative keysym here, by grabbing the first in
+	// a list of keysyms mapped to the current X11 keycode.
+	keysym_keycode = XLookupKeysym(xkeyevent, 0);
 
-	// Meanwhile, XLookupString returns keysyms useful for unicode.
+	// XLookupString returns a keysym that takes into account any modifiers pressed,
+	// which is usually what we want for unicode.
+	char str[256 + 1];
+	XLookupString(xkeyevent, str, 256, &keysym_unicode, NULL);
 
 	if (!xmbstring) {
 		// keep a temporary buffer for the string
@@ -1504,8 +1509,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 			::Time tresh = ABS(peek_event.xkey.time - xkeyevent->time);
 			if (peek_event.type == KeyPress && tresh < 5) {
-				KeySym rk;
-				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, NULL);
+				KeySym rk = XLookupKeysym((XKeyEvent *)&peek_event, 0);
 				if (rk == keysym_keycode) {
 					XEvent event;
 					XNextEvent(x11_display, &event); //erase next event
