@@ -62,6 +62,10 @@ Rect2 Line2D::_edit_get_rect() const {
 	return aabb;
 }
 
+bool Line2D::_edit_use_rect() const {
+	return true;
+}
+
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	const real_t d = _width / 2 + p_tolerance;

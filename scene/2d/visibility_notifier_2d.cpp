@@ -89,6 +89,10 @@ Rect2 VisibilityNotifier2D::_edit_get_rect() const {
 	return rect;
 }
 
+bool VisibilityNotifier2D::_edit_use_rect() const {
+	return true;
+}
+
 Rect2 VisibilityNotifier2D::get_rect() const {
 
 	return rect;

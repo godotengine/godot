@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   version="1.1"
+   viewBox="0 0 16 16"
+   id="svg919"
+   sodipodi:docname="icon_editor_position_previous.svg"
+   inkscape:version="0.92.2 5c3e80d, 2017-08-06">
+  <metadata
+     id="metadata925">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs923" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1356"
+     inkscape:window-height="742"
+     id="namedview921"
+     showgrid="false"
+     inkscape:zoom="11.313709"
+     inkscape:cx="14.523034"
+     inkscape:cy="-5.7323703"
+     inkscape:window-x="4"
+     inkscape:window-y="20"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg919"
+     inkscape:snap-page="true" />
+  <path
+     style="fill:#6699ff;stroke:none;fill-opacity:0.69803923"
+     d="M 7 1 L 7 4.0605469 A 4.2661548 4.0576186 0 0 1 8 3.9414062 A 4.2661548 4.0576186 0 0 1 9 4.0605469 L 9 1 L 7 1 z M 1 7 L 1 9 L 3.8691406 9 A 4.2661548 4.0576186 0 0 1 3.734375 8 A 4.2661548 4.0576186 0 0 1 3.8710938 7 L 1 7 z M 12.130859 7 A 4.2661548 4.0576186 0 0 1 12.265625 8 A 4.2661548 4.0576186 0 0 1 12.128906 9 L 15 9 L 15 7 L 12.130859 7 z M 7 11.939453 L 7 15 L 9 15 L 9 11.939453 A 4.2661548 4.0576186 0 0 1 8 12.058594 A 4.2661548 4.0576186 0 0 1 7 11.939453 z "
+     id="path915" />
+  <circle
+     style="fill:#6699ff;fill-opacity:0.69803923;stroke-width:0.97338283"
+     cx="8"
+     cy="8"
+     r="2.9201488"
+     id="circle1517" />
+</svg>

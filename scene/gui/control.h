@@ -283,6 +283,9 @@ public:
 	virtual void _edit_set_position(const Point2 &p_position);
 	virtual Point2 _edit_get_position() const;
 
+	virtual void _edit_set_scale(const Size2 &p_scale);
+	virtual Size2 _edit_get_scale() const;
+
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;

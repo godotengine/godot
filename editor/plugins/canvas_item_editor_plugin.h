@@ -258,6 +258,7 @@ class CanvasItemEditor : public VBoxContainer {
 	};
 
 	Vector<_SelectResult> selection_results;
+	Vector<_SelectResult> hovering_results;
 
 	struct BoneList {
 
@@ -336,7 +337,7 @@ class CanvasItemEditor : public VBoxContainer {
 	Ref<ShortCut> divide_grid_step_shortcut;
 
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int limit = 0, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
 
 	ConfirmationDialog *snap_dialog;
@@ -366,8 +367,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retreive_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
-	void _expand_encompassing_rect_using_children(Rect2 &p_rect, Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	Rect2 _get_scene_encompassing_rect();
+	void _expand_encompassing_rect_using_children(Rect2 &p_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	Rect2 _get_encompassing_rect(const Node *p_node);
 
 	Object *_get_editor_data(Object *p_what);
 
@@ -387,7 +388,9 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_selection();
 	void _draw_axis();
 	void _draw_bones();
-	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
+	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _draw_hover();
 
 	void _draw_viewport();
 
@@ -400,6 +403,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
 	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
+	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 
