@@ -80,6 +80,10 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 void SpriteEditor::_menu_option(int p_option) {
 
+	if (!node) {
+		return;
+	}
+
 	switch (p_option) {
 		case MENU_OPTION_CREATE_MESH_2D: {
 
@@ -389,6 +393,7 @@ SpriteEditorPlugin::SpriteEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	sprite_editor = memnew(SpriteEditor);
 	editor->get_viewport()->add_child(sprite_editor);
+	make_visible(false);
 
 	//sprite_editor->options->hide();
 }

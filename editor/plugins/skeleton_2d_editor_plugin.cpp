@@ -20,6 +20,10 @@ void Skeleton2DEditor::edit(Skeleton2D *p_sprite) {
 
 void Skeleton2DEditor::_menu_option(int p_option) {
 
+	if (!node) {
+		return;
+	}
+
 	switch (p_option) {
 		case MENU_OPTION_MAKE_REST: {
 
@@ -107,6 +111,7 @@ Skeleton2DEditorPlugin::Skeleton2DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	sprite_editor = memnew(Skeleton2DEditor);
 	editor->get_viewport()->add_child(sprite_editor);
+	make_visible(false);
 
 	//sprite_editor->options->hide();
 }
