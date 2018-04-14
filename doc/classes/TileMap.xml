@@ -245,7 +245,7 @@
 		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce">
 			Bounce value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 0.
 		</member>
-		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction">
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			Friction value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 1.
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">

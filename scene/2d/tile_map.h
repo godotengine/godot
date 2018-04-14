@@ -267,6 +267,9 @@ public:
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;
 
+	void set_friction(float p_friction);
+	float get_friction() const;
+
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;
 
