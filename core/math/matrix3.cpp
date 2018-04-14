@@ -247,6 +247,13 @@ Basis Basis::scaled_local(const Vector3 &p_scale) const {
 	return (*this) * b;
 }
 
+void Basis::set_scale(const Vector3 &p_scale) {
+
+	set_axis(0, get_axis(0).normalized() * p_scale.x);
+	set_axis(1, get_axis(1).normalized() * p_scale.y);
+	set_axis(2, get_axis(2).normalized() * p_scale.z);
+}
+
 Vector3 Basis::get_scale_abs() const {
 
 	return Vector3(
@@ -349,7 +356,8 @@ void Basis::rotate(const Quat &p_quat) {
 	*this = rotated(p_quat);
 }
 
-Vector3 Basis::get_rotation_euler() const {
+// TODO: rename this to get_rotation_euler
+Vector3 Basis::get_rotation() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -830,17 +838,4 @@ void Basis::set_diagonal(const Vector3 p_diag) {
 	elements[2][0] = 0;
 	elements[2][1] = 0;
 	elements[2][2] = p_diag.z;
-}
-
-Basis Basis::slerp(const Basis &target, const real_t &t) const {
-// TODO: implement this directly without using quaternions to make it more efficient
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_rotation() == false, Basis());
-	ERR_FAIL_COND_V(target.is_rotation() == false, Basis());
-#endif
-
-	Quat from(*this);
-	Quat to(target);
-
-	return Basis(from.slerp(to, t));
 }

@@ -84,11 +84,9 @@ public:
 	void rotate(const Quat &p_quat);
 	Basis rotated(const Quat &p_quat) const;
 
-	Vector3 get_rotation_euler() const;
+	Vector3 get_rotation() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
-	Quat get_rotation_quat() const;
-	Vector3 get_rotation() const { return get_rotation_euler(); };
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
@@ -238,6 +236,7 @@ public:
 
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
+	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;
