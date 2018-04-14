@@ -678,7 +678,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 			search_string = ""; //any mousepress cancels
 
-			if (current % current_columns != (current_columns - 1)) {
+			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
 				set_current(current + 1);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
