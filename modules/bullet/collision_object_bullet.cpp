@@ -49,7 +49,7 @@
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
 void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
-	G_TO_B(p_transform.get_basis().get_scale(), scale);
+	G_TO_B(p_transform.get_basis().get_scale_abs(), scale);
 	G_TO_B(p_transform, transform);
 	UNSCALE_BT_BASIS(transform);
 }
@@ -158,7 +158,7 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 
 void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 
-	set_body_scale(p_global_transform.basis.get_scale());
+	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
 	G_TO_B(p_global_transform, bt_transform);
