@@ -40,6 +40,8 @@ class Path2D : public Node2D {
 
 	Ref<Curve2D> curve;
 
+	Color color;
+
 	void _curve_changed();
 
 protected:
@@ -53,6 +55,9 @@ public:
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
+
+	void set_path_color(const Color &p_color);
+	Color get_path_color() const;
 
 	Path2D();
 };

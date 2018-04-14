@@ -61,6 +61,15 @@ bool Path2D::_edit_use_rect() const {
 	return true;
 }
 
+void Path2D::set_path_color(const Color &p_color) {
+	color = p_color;
+	update();
+}
+
+Color Path2D::get_path_color() const {
+	return color;
+}
+
 bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	for (int i = 0; i < curve->get_point_count(); i++) {
@@ -96,7 +105,6 @@ void Path2D::_notification(int p_what) {
 #else
 		const float line_width = 2;
 #endif
-		const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
@@ -144,11 +152,15 @@ void Path2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path2D::_curve_changed);
+	ClassDB::bind_method(D_METHOD("set_path_color", "color"), &Path2D::set_path_color);
+	ClassDB::bind_method(D_METHOD("get_path_color"), &Path2D::get_path_color);
 
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "path_color"), "set_path_color", "get_path_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), "set_curve", "get_curve");
 }
 
 Path2D::Path2D() {
+	color = Color(0.5, 0.6, 1.0, 0.7);
 
 	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
 }
