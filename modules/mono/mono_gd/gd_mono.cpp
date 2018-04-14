@@ -412,7 +412,7 @@ bool GDMono::_load_core_api_assembly() {
 		return false;
 #endif
 
-	bool success = load_assembly(API_ASSEMBLY_NAME, &api_assembly);
+	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
 
 	if (success) {
 #ifndef MONO_GLUE_DISABLED
