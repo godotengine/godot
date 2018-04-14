@@ -85,9 +85,7 @@ void Spatial::_notify_dirty() {
 }
 
 void Spatial::_update_local_transform() const {
-	data.local_transform.basis = Basis();
-	data.local_transform.basis.scale(data.scale);
-	data.local_transform.basis.rotate(data.rotation);
+	data.local_transform.basis.set_euler_scale(data.rotation, data.scale);
 
 	data.dirty &= ~DIRTY_LOCAL;
 }
