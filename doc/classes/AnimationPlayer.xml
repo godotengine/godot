@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html
-	http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
+		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -138,8 +138,7 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the
-				animation backwards.
+				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
 			</description>
 		</method>
 		<method name="play_backwards">
