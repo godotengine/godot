@@ -60,7 +60,7 @@ struct StrRange {
 	}
 };
 
-class String : public Vector<CharType> {
+class String : public Slice<CharType> {
 
 	void copy_from(const char *p_cstr);
 	void copy_from(const CharType *p_cstr, int p_clip_to = -1);
@@ -106,7 +106,7 @@ public:
 
 	_FORCE_INLINE_ int length() const {
 		int s = size();
-		return s ? (s - 1) : 0; // length does not include zero
+		return s ? (s - (_is_denormalized() ? 0 : 1)) : 0; // length does not include zero
 	}
 
 	/* complex helpers */
@@ -250,7 +250,9 @@ public:
 	/*	String(CharType p_char);*/
 	inline String() {}
 	inline String(const String &p_str) :
-			Vector(p_str) {}
+			Slice(p_str) {}
+    inline String(const Slice<CharType> &p_str) :
+            Slice(p_str) {}
 	String(const char *p_str);
 	String(const CharType *p_str, int p_clip_to_len = -1);
 	String(const StrRange &p_range);

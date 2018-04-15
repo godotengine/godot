@@ -63,14 +63,15 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 
 	Vector2 ofs;
 
-	for (int i = 0; i < p_text.length(); i++) {
+	const int n = p_text.length();
+	for (int i = 0; i < n; i++) {
 
 		int width = get_char_size(p_text[i]).width;
 
 		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w)
 			break; //clip
 
-		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], p_modulate);
+		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], (i + 1 < n) ? p_text[i + 1] : 0, p_modulate);
 	}
 }
 

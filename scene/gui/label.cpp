@@ -238,7 +238,7 @@ void Label::_notification(int p_what) {
 
 						if (visible_chars < 0 || chars_total_shadow < visible_chars) {
 							CharType c = xl_text[i + pos];
-							CharType n = xl_text[i + pos + 1];
+							CharType n = (i + pos + 1 < xl_text.length()) ? xl_text[i + pos + 1] : 0;
 							if (uppercase) {
 								c = String::char_uppercase(c);
 								n = String::char_uppercase(c);
@@ -259,7 +259,7 @@ void Label::_notification(int p_what) {
 
 					if (visible_chars < 0 || chars_total < visible_chars) {
 						CharType c = xl_text[i + pos];
-						CharType n = xl_text[i + pos + 1];
+						CharType n = (i + pos + 1 < xl_text.length()) ? xl_text[i + pos + 1] : 0;
 						if (uppercase) {
 							c = String::char_uppercase(c);
 							n = String::char_uppercase(c);
@@ -312,8 +312,9 @@ int Label::get_longest_line_width() const {
 	Ref<Font> font = get_font("font");
 	int max_line_width = 0;
 	int line_width = 0;
+	const int n = xl_text.length();
 
-	for (int i = 0; i < xl_text.size(); i++) {
+	for (int i = 0; i < n; i++) {
 
 		CharType current = xl_text[i];
 		if (uppercase)
@@ -329,7 +330,7 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			int char_width = font->get_char_size(current, (i + 1 < n) ? xl_text[i + 1] : 0).width;
 			line_width += char_width;
 		}
 	}
@@ -388,10 +389,11 @@ void Label::regenerate_word_cache() {
 	total_char_cache = 0;
 
 	WordCache *last = NULL;
+	const int len = xl_text.length();
 
-	for (int i = 0; i < xl_text.size() + 1; i++) {
+	for (int i = 0; i <= len; i++) {
 
-		CharType current = i < xl_text.length() ? xl_text[i] : ' '; //always a space at the end, so the algo works
+		CharType current = i < len ? xl_text[i] : ' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current = String::char_uppercase(current);
@@ -445,7 +447,7 @@ void Label::regenerate_word_cache() {
 				word_pos = i;
 			}
 
-			char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			char_width = font->get_char_size(current, (i + 1 < len) ? xl_text[i + 1] : 0).width;
 			current_word_size += char_width;
 			line_width += char_width;
 			total_char_cache++;

@@ -686,7 +686,7 @@ void LineEdit::_notification(int p_what) {
 				}
 
 				CharType cchar = (pass && !text.empty()) ? '*' : t[char_ofs];
-				CharType next = (pass && !text.empty()) ? '*' : t[char_ofs + 1];
+				CharType next = (pass && !text.empty()) ? '*' : ((char_ofs + 1 < t.length()) ? t[char_ofs + 1] : 0);
 				int char_width = font->get_char_size(cchar, next).width;
 
 				// end of widget, break!

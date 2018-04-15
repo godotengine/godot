@@ -149,7 +149,7 @@ void String::copy_from(const CharType *p_cstr, int p_clip_to) {
 
 	int len = 0;
 	const CharType *ptr = p_cstr;
-	while (*(ptr++) != 0)
+	while ((len < p_clip_to || p_clip_to < 0) && *(ptr++) != 0)
 		len++;
 
 	if (p_clip_to >= 0 && len > p_clip_to)
@@ -164,7 +164,7 @@ void String::copy_from(const CharType *p_cstr, int p_clip_to) {
 	resize(len + 1);
 	set(len, 0);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	for (int i = 0; i < len; i++) {
 
@@ -188,8 +188,8 @@ bool String::operator==(const String &p_str) const {
 
 	int l = length();
 
-	const CharType *src = c_str();
-	const CharType *dst = p_str.c_str();
+	const CharType *src = ptr();
+	const CharType *dst = p_str.ptr();
 
 	/* Compare char by char */
 	for (int i = 0; i < l; i++) {
@@ -233,10 +233,10 @@ String &String::operator+=(const String &p_str) {
 
 	int from = length();
 
-	resize(length() + p_str.size());
+	resize(length() + p_str.length() + 1);
 
-	const CharType *src = p_str.c_str();
-	CharType *dst = &operator[](0);
+	const CharType *src = p_str.ptr();
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -254,7 +254,7 @@ String &String::operator+=(const CharType *p_str) {
 
 String &String::operator+=(CharType p_char) {
 
-	resize(size() ? size() + 1 : 2);
+	resize(length() + 2);
 	set(length(), 0);
 	set(length() - 1, p_char);
 
@@ -275,7 +275,7 @@ String &String::operator+=(const char *p_str) {
 
 	resize(from + src_len + 1);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -305,7 +305,7 @@ bool String::operator==(const StrRange &p_str_range) const {
 		return true;
 
 	const CharType *c_str = p_str_range.c_str;
-	const CharType *dst = &operator[](0);
+	const CharType *dst = ptr();
 
 	/* Compare char by char */
 	for (int i = 0; i < len; i++) {
@@ -332,7 +332,7 @@ bool String::operator==(const char *p_str) const {
 
 	int l = length();
 
-	const CharType *dst = c_str();
+	const CharType *dst = ptr();
 
 	/* Compare char by char */
 	for (int i = 0; i < l; i++) {
@@ -359,7 +359,7 @@ bool String::operator==(const CharType *p_str) const {
 
 	int l = length();
 
-	const CharType *dst = c_str();
+	const CharType *dst = ptr();
 
 	/* Compare char by char */
 	for (int i = 0; i < l; i++) {
@@ -562,20 +562,21 @@ String String::capitalize() const {
 }
 
 String String::camelcase_to_underscore(bool lowercase) const {
-	const CharType *cstr = c_str();
+	const CharType *cstr = ptr();
 	String new_string;
 	const char A = 'A', Z = 'Z';
 	const char a = 'a', z = 'z';
 	int start_index = 0;
+	const int n = length();
 
-	for (int i = 1; i < this->size(); i++) {
+	for (int i = 1; i < n; i++) {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
 		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;
 		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
 		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
 
-		if (i + 2 < this->size()) {
+		if (i + 2 < n) {
 			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
 		}
 
@@ -586,7 +587,7 @@ String String::camelcase_to_underscore(bool lowercase) const {
 		}
 	}
 
-	new_string += this->substr(start_index, this->size() - start_index);
+	new_string += this->substr(start_index, n - start_index);
 	return lowercase ? new_string.to_lower() : new_string;
 }
 
@@ -659,14 +660,15 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 	int i = 0;
 	int prev = 0;
 	int count = 0;
-	while (true) {
+	const int n = length();
+	while (i <= n) {
 
-		if (c[i] == 0 || c[i] == p_splitter) {
+		if (i == n || c[i] == p_splitter) {
 
 			if (p_slice == count) {
 
 				return substr(prev, i - prev);
-			} else if (c[i] == 0) {
+			} else if (i == n) {
 				return String();
 			} else {
 				count++;
@@ -691,7 +693,7 @@ Vector<String> String::split_spaces() const {
 
 	bool inside = false;
 
-	while (true) {
+	while (i < len) {
 
 		bool empty = operator[](i) < 33;
 
@@ -883,7 +885,8 @@ String String::to_upper() const {
 
 	String upper = *this;
 
-	for (int i = 0; i < upper.size(); i++) {
+	const int n = upper.length();
+	for (int i = 0; i < n; i++) {
 
 		const char s = upper[i];
 		const char t = _find_upper(s);
@@ -898,7 +901,8 @@ String String::to_lower() const {
 
 	String lower = *this;
 
-	for (int i = 0; i < lower.size(); i++) {
+	const int n = lower.length();
+	for (int i = 0; i < n; i++) {
 
 		const char s = lower[i];
 		const char t = _find_lower(s);
@@ -913,7 +917,14 @@ const CharType *String::c_str() const {
 
 	static const CharType zero = 0;
 
-	return size() ? &operator[](0) : &zero;
+	if (empty())
+		return &zero;
+
+    if (_is_denormalized())
+        *const_cast<String*>(this) = String(ptr(), length());
+
+    ERR_FAIL_COND_V(_is_denormalized(), NULL);
+	return ptr();
 }
 
 String String::md5(const uint8_t *p_md5) {
@@ -1272,11 +1283,14 @@ CharString String::ascii(bool p_allow_extended) const {
 	if (!length())
 		return CharString();
 
-	CharString cs;
-	cs.resize(size());
+	const int n = length();
 
-	for (int i = 0; i < size(); i++)
+	CharString cs;
+	cs.resize(n + 1);
+
+	for (int i = 0; i < n; i++)
 		cs[i] = operator[](i);
+	cs[n] = '\0';
 
 	return cs;
 }
@@ -1368,7 +1382,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	resize(str_size + 1);
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 	dst[str_size] = 0;
 
 	while (cstr_size) {
@@ -1448,7 +1462,7 @@ CharString String::utf8() const {
 	if (!l)
 		return CharString();
 
-	const CharType *d = &operator[](0);
+	const CharType *d = ptr();
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 
@@ -1551,10 +1565,13 @@ String::String(const StrRange &p_range) {
 int String::hex_to_int(bool p_with_prefix) const {
 
 	int l = length();
+	if (l < 1)
+		return 0;
 	if (p_with_prefix && l < 3)
 		return 0;
 
 	const CharType *s = ptr();
+	const CharType *end = s + l;
 
 	int sign = s[0] == '-' ? -1 : 1;
 
@@ -1563,10 +1580,12 @@ int String::hex_to_int(bool p_with_prefix) const {
 		l--;
 		if (p_with_prefix && l < 2)
 			return 0;
+		if (s >= end)
+			return 0;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x')
+		if (s + 2 > end || (s[0] != '0' || s[1] != 'x'))
 			return 0;
 		s += 2;
 		l -= 2;
@@ -1574,7 +1593,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 
 	int hex = 0;
 
-	while (*s) {
+	while (s < end) {
 
 		CharType c = LOWERCASE(*s);
 		int n;
@@ -1597,10 +1616,13 @@ int String::hex_to_int(bool p_with_prefix) const {
 int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 	int l = length();
+	if (l < 1)
+		return 0;
 	if (p_with_prefix && l < 3)
 		return 0;
 
 	const CharType *s = ptr();
+	const CharType *end = s + l;
 
 	int64_t sign = s[0] == '-' ? -1 : 1;
 
@@ -1609,10 +1631,12 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 		l--;
 		if (p_with_prefix && l < 2)
 			return 0;
+		if (s >= end)
+			return 0;
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x')
+		if (s + 2 > end || (s[0] != '0' || s[1] != 'x'))
 			return 0;
 		s += 2;
 		l -= 2;
@@ -1620,7 +1644,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 	int64_t hex = 0;
 
-	while (*s) {
+	while (s < end) {
 
 		CharType c = LOWERCASE(*s);
 		int64_t n;
@@ -1806,8 +1830,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 				 * string. */
 
 	/*
-     * Strip off leading blanks and check for a sign.
-     */
+	 * Strip off leading blanks and check for a sign.
+	 */
 
 	p = string;
 	while (*p == ' ' || *p == '\t' || *p == '\n') {
@@ -1824,9 +1848,9 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Count the number of digits in the mantissa (including the decimal
-     * point), and also locate the decimal point.
-     */
+	 * Count the number of digits in the mantissa (including the decimal
+	 * point), and also locate the decimal point.
+	 */
 
 	decPt = -1;
 	for (mantSize = 0;; mantSize += 1) {
@@ -1841,11 +1865,11 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Now suck up the digits in the mantissa. Use two integers to collect 9
-     * digits each (this is faster than using floating-point). If the mantissa
-     * has more than 18 digits, ignore the extras, since they can't affect the
-     * value anyway.
-     */
+	 * Now suck up the digits in the mantissa. Use two integers to collect 9
+	 * digits each (this is faster than using floating-point). If the mantissa
+	 * has more than 18 digits, ignore the extras, since they can't affect the
+	 * value anyway.
+	 */
 
 	pExp = p;
 	p -= mantSize;
@@ -1891,8 +1915,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Skim off the exponent.
-     */
+	 * Skim off the exponent.
+	 */
 
 	p = pExp;
 	if ((*p == 'E') || (*p == 'e')) {
@@ -1922,10 +1946,10 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Generate a floating-point number that represents the exponent. Do this
-     * by processing the exponent one bit at a time to combine many powers of
-     * 2 of 10. Then combine the exponent with the fraction.
-     */
+	 * Generate a floating-point number that represents the exponent. Do this
+	 * by processing the exponent one bit at a time to combine many powers of
+	 * 2 of 10. Then combine the exponent with the fraction.
+	 */
 
 	if (exp < 0) {
 		expSign = true;
@@ -2107,28 +2131,20 @@ uint32_t String::hash(const CharType *p_cstr) {
 
 uint32_t String::hash() const {
 
-	/* simple djb2 hashing */
-
-	const CharType *chr = c_str();
-	uint32_t hashv = 5381;
-	uint32_t c;
-
-	while ((c = *chr++))
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
-
-	return hashv;
+	return hash(ptr(), length());
 }
 
 uint64_t String::hash64() const {
 
 	/* simple djb2 hashing */
 
-	const CharType *chr = c_str();
+	const CharType *chr = ptr();
 	uint64_t hashv = 5381;
 	uint64_t c;
+	const int n = length();
 
-	while ((c = *chr++))
-		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+	for (int i = 0; i < n; i++)
+		hashv = ((hashv << 5) + hashv) + chr[i]; /* hash * 33 + c */
 
 	return hashv;
 }
@@ -2220,7 +2236,8 @@ String String::substr(int p_from, int p_chars) const {
 		return String(*this);
 	}
 
-	return String(&c_str()[p_from], p_chars);
+	return String(slice(p_from, p_chars));
+	//return String(&c_str()[p_from], p_chars);
 }
 
 int String::find_last(const String &p_str) const {
@@ -2249,8 +2266,8 @@ int String::find(const String &p_str, int p_from) const {
 	if (src_len == 0 || len == 0)
 		return -1; // won't find anything!
 
-	const CharType *src = c_str();
-	const CharType *str = p_str.c_str();
+	const CharType *src = ptr();
+	const CharType *str = p_str.ptr();
 
 	for (int i = p_from; i <= (len - src_len); i++) {
 
@@ -2288,7 +2305,7 @@ int String::find(const char *p_str, int p_from) const {
 	if (len == 0)
 		return -1; // won't find anything!
 
-	const CharType *src = c_str();
+	const CharType *src = ptr();
 
 	int src_len = 0;
 	while (p_str[src_len] != '\0')
@@ -2349,7 +2366,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (len == 0)
 		return -1; // won't find anything!
 
-	const CharType *src = c_str();
+	const CharType *src = ptr();
 
 	for (int i = p_from; i < len; i++) {
 
@@ -2359,7 +2376,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 			found = true;
 			if (r_key)
 				*r_key = k;
-			const CharType *cmp = keys[k].c_str();
+			const CharType *cmp = keys[k].ptr();
 			int l = keys[k].length();
 
 			for (int j = 0; j < l; j++) {
@@ -2398,7 +2415,7 @@ int String::findn(const String &p_str, int p_from) const {
 	if (src_len == 0 || length() == 0)
 		return -1; // won't find anything!
 
-	const CharType *srcd = c_str();
+	const CharType *srcd = ptr();
 
 	for (int i = p_from; i <= (length() - src_len); i++) {
 
@@ -2448,7 +2465,7 @@ int String::rfind(const String &p_str, int p_from) const {
 	if (src_len == 0 || len == 0)
 		return -1; // won't find anything!
 
-	const CharType *src = c_str();
+	const CharType *src = ptr();
 
 	for (int i = p_from; i >= 0; i--) {
 
@@ -2494,7 +2511,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 	if (src_len == 0 || len == 0)
 		return -1; // won't find anything!
 
-	const CharType *src = c_str();
+	const CharType *src = ptr();
 
 	for (int i = p_from; i >= 0; i--) {
 
@@ -2542,8 +2559,8 @@ bool String::begins_with(const String &p_string) const {
 	if (l == 0)
 		return true;
 
-	const CharType *src = &p_string[0];
-	const CharType *str = &operator[](0);
+	const CharType *src = p_string.ptr();
+	const CharType *str = ptr();
 
 	int i = 0;
 	for (; i < l; i++) {
@@ -2561,7 +2578,7 @@ bool String::begins_with(const char *p_string) const {
 	if (l == 0 || !p_string)
 		return false;
 
-	const CharType *str = &operator[](0);
+	const CharType *str = ptr();
 	int i = 0;
 
 	while (*p_string && i < l) {
@@ -2607,10 +2624,12 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 		return false;
 	}
 
-	const CharType *src = &operator[](0);
-	const CharType *tgt = &p_string[0];
+	const CharType *src = ptr();
+	const CharType *src_end = src + length();
+	const CharType *tgt = p_string.ptr();
+	const CharType *tgt_end = tgt + p_string.length();
 
-	for (; *src && *tgt; tgt++) {
+	for (; src < src_end && tgt < tgt_end; tgt++) {
 		bool match = false;
 		if (case_insensitive) {
 			CharType srcc = _find_lower(*src);
@@ -2621,7 +2640,7 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 		}
 		if (match) {
 			src++;
-			if (!*src) {
+			if (src >= src_end) {
 				return true;
 			}
 		}
@@ -2705,7 +2724,7 @@ bool String::matchn(const String &p_wildcard) const {
 
 String String::format(const Variant &values, String placeholder) const {
 
-	String new_string = String(this->ptr());
+	String new_string = String(*this);
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
@@ -3114,7 +3133,7 @@ bool String::is_valid_identifier() const {
 	if (len == 0)
 		return false;
 
-	const wchar_t *str = &operator[](0);
+	const wchar_t *str = ptr();
 
 	for (int i = 0; i < len; i++) {
 

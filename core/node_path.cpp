@@ -402,10 +402,11 @@ NodePath::NodePath(const String &p_path) {
 	last_is_slash = true;
 	int from = absolute;
 	int slice = 0;
+	const int n = path.length();
 
-	for (int i = absolute; i < path.length() + 1; i++) {
+	for (int i = absolute; i < n + 1; i++) {
 
-		if (path[i] == '/' || path[i] == 0) {
+		if (i == n || path[i] == '/') {
 
 			if (!last_is_slash) {
 

@@ -3728,7 +3728,7 @@ int TextEdit::get_column_x_offset(int p_char, String p_str) {
 				px += tab_w - px % tab_w; // is right...
 
 		} else {
-			px += cache.font->get_char_size(p_str[i], p_str[i + 1]).width;
+			px += cache.font->get_char_size(p_str[i], (i + 1 < p_str.length()) ? p_str[i + 1] : 0).width;
 		}
 	}
 
