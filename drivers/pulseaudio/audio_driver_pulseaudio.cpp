@@ -177,7 +177,11 @@ Error AudioDriverPulseAudio::init_device() {
 
 	pa_buffer_attr attr;
 	// set to appropriate buffer length (in bytes) from global settings
-	attr.tlength = pa_buffer_size * sizeof(int16_t);
+	// Note: PulseAudio defaults to 4 fragments, which means that the actual
+	// latency is tlength / fragments. It seems that the PulseAudio has no way
+	// to get the fragments number so we're hardcoding this to the default of 4
+	const int fragments = 4;
+	attr.tlength = pa_buffer_size * sizeof(int16_t) * fragments;
 	// set them to be automatically chosen
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
