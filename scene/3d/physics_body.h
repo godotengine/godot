@@ -342,4 +342,45 @@ public:
 	KinematicCollision();
 };
 
+class SpringArm : public KinematicBody {
+	GDCLASS(SpringArm, KinematicBody);
+
+	Spatial *target;
+	float spring_max_length;
+	float spring_max_height;
+	float smoothness;
+	bool looking_at_target;
+	bool interpolate_physic_frames;
+
+	float physic_delta;
+	float time_since_last_physic_process;
+	Vector3 previous_physic_position;
+	Vector3 next_physic_position;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_target(const NodePath &target);
+	NodePath get_target() const;
+	void set_spring_max_length(float length);
+	float get_spring_max_length() const;
+	void set_spring_max_height(float height);
+	float get_spring_max_height() const;
+	void set_smoothness(float smoothness);
+	float get_smoothness() const;
+	void set_looking_at_target(bool look_at_target);
+	bool is_looking_at_target() const;
+	void set_interpolate_physic_frames(bool interpolate_physic_frames);
+	bool is_interpolating_physic_frames() const;
+
+	SpringArm();
+
+private:
+	void _process(float delta);
+	void _physic_process();
+	Vector3 _compute_movement();
+};
+
 #endif // PHYSICS_BODY__H
