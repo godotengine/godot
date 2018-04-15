@@ -80,7 +80,7 @@
 			Return the natural logarithm of the input. Note that this is not the typical base-10 logarithm function calculators use.
 		</constant>
 		<constant name="MATH_EXP" value="20" enum="BuiltinFunc">
-			Return [b]e[/b] raised to the power of the input. [b]e[/b] sometimes called "Euler's number" is a mathematical constant whose value is approximately 2.71828.
+			Return the mathematical constant [b]e[/b] raised to the specified power of the input. [b]e[/b] has an approximate value of 2.71828.
 		</constant>
 		<constant name="MATH_ISNAN" value="21" enum="BuiltinFunc">
 			Return whether the input is NaN (Not a Number) or not. NaN is usually produced by dividing 0 by 0, though other ways exist.

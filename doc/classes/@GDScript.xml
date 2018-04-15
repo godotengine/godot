@@ -326,7 +326,8 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Raises the Euler's constant [b]e[/b] to the power of [code]s[/code] and returns it. [b]e[/b] has an approximate value of 2.71828.
+				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
+				[b]e[/b] has an approximate value of 2.71828.
 				[codeblock]
 				a = exp(2) # approximately 7.39
 				[/codeblock]
