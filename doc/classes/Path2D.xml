@@ -13,6 +13,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="path_color" type="Color" setter="set_path_color" getter="get_path_color">
+			The [Color] of the path.
+		</member>
 		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve">
 			A [Curve2D] describing the path.
 		</member>
