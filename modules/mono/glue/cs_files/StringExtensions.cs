@@ -84,7 +84,7 @@ namespace Godot
         {
             var b = new string[instance.Length - 1];
 
-            for (var i = 0; i < b.Length; i++)
+            for (int i = 0; i < b.Length; i++)
             {
                 b[i] = instance.Substring(i, 2);
             }
@@ -144,7 +144,7 @@ namespace Godot
 	        string aux = instance.Replace("_", " ").ToLower();
             var cap = string.Empty;
 
-            for (var i = 0; i < aux.GetSliceCount(" "); i++)
+            for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
 	            string slice = aux.GetSlicec(' ', i);
                 if (slice.Length > 0)
@@ -446,7 +446,7 @@ namespace Godot
             if (len == 0)
                 return false;
 
-            for (var i = 0; i < len; i++)
+            for (int i = 0; i < len; i++)
             {
                 if (i == 0)
                 {
@@ -485,7 +485,7 @@ namespace Godot
             if (ip.Length != 4)
                 return false;
 
-            for (var i = 0; i < ip.Length; i++)
+            for (int i = 0; i < ip.Length; i++)
             {
                 string n = ip[i];
                 if (!n.IsValidInteger())
@@ -813,9 +813,9 @@ namespace Godot
             float sum = src_size + tgt_size;
             float inter = 0;
 
-            for (var i = 0; i < src_size; i++)
+            for (int i = 0; i < src_size; i++)
             {
-                for (var j = 0; j < tgt_size; j++)
+                for (int j = 0; j < tgt_size; j++)
                 {
                     if (srcBigrams[i] == tgtBigrams[j])
                     {
