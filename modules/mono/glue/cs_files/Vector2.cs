@@ -100,7 +100,7 @@ namespace Godot
         public Vector2 Clamped(real_t length)
         {
             var v = this;
-	        real_t l = Length();
+            real_t l = Length();
 
             if (l > 0 && length < l)
             {
