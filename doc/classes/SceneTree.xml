@@ -367,12 +367,16 @@
 	</signals>
 	<constants>
 		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">
+			Call a group with no flags (default).
 		</constant>
 		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
+			Call a group in reverse scene order.
 		</constant>
 		<constant name="GROUP_CALL_REALTIME" value="2" enum="GroupCallFlags">
+			Call a group immediately (calls are normally made on idle).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
+			Call a group only once even if the call is executed many times.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
 		</constant>
