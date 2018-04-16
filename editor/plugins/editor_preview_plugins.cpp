@@ -834,7 +834,16 @@ bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "DynamicFontData");
 }
 
-Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) const {
+Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) {
+	if (canvas.is_valid()) {
+		VS::get_singleton()->viewport_remove_canvas(viewport, canvas);
+	}
+
+	canvas = VS::get_singleton()->canvas_create();
+	canvas_item = VS::get_singleton()->canvas_item_create();
+
+	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
 	Ref<DynamicFontData> SampledFont;
 	SampledFont.instance();
@@ -863,7 +872,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) c
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 	preview_done = false;
-	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
+	VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
@@ -883,7 +892,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) c
 	return ptex;
 }
 
-Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from) const {
+Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from) {
 
 	return generate_from_path(p_from->get_path());
 }
@@ -896,12 +905,6 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
-
-	canvas = VS::get_singleton()->canvas_create();
-	canvas_item = VS::get_singleton()->canvas_item_create();
-
-	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
-	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
