@@ -112,7 +112,7 @@ namespace Godot
         public Vector3 GetLongestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-	        real_t max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y > max_size)
             {
@@ -149,7 +149,7 @@ namespace Godot
 
         public real_t GetLongestAxisSize()
         {
-	        real_t max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y > max_size)
                 max_size = size.y;
@@ -163,7 +163,7 @@ namespace Godot
         public Vector3 GetShortestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-	        real_t max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -182,7 +182,7 @@ namespace Godot
         public Vector3.Axis GetShortestAxisIndex()
         {
             var axis = Vector3.Axis.X;
-	        real_t max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
             {
@@ -200,7 +200,7 @@ namespace Godot
 
         public real_t GetShortestAxisSize()
         {
-	        real_t max_size = size.x;
+            real_t max_size = size.x;
 
             if (size.y < max_size)
                 max_size = size.y;
@@ -396,8 +396,8 @@ namespace Godot
         {
             Vector3 beg_1 = position;
             Vector3 beg_2 = with.position;
-	        var end_1 = new Vector3(size.x, size.y, size.z) + beg_1;
-	        var end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
+            var end_1 = new Vector3(size.x, size.y, size.z) + beg_1;
+            var end_2 = new Vector3(with.size.x, with.size.y, with.size.z) + beg_2;
 
             var min = new Vector3(
                               beg_1.x < beg_2.x ? beg_1.x : beg_2.x,
