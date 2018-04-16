@@ -93,7 +93,7 @@ namespace Godot
         {
             var ret = new int[length];
 
-            for (var i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
                 ret[i] = i;
             }
@@ -108,7 +108,7 @@ namespace Godot
 
             var ret = new int[to - from];
 
-            for (var i = from; i < to; i++)
+            for (int i = from; i < to; i++)
             {
                 ret[i - from] = i;
             }
@@ -136,7 +136,7 @@ namespace Godot
             if (increment > 0)
             {
 	            int idx = 0;
-                for (var i = from; i < to; i += increment)
+                for (int i = from; i < to; i += increment)
                 {
                     ret[idx++] = i;
                 }
@@ -144,7 +144,7 @@ namespace Godot
             else
             {
 	            int idx = 0;
-                for (var i = from; i > to; i += increment)
+                for (int i = from; i > to; i += increment)
                 {
                     ret[idx++] = i;
                 }
