@@ -227,11 +227,6 @@ namespace Godot
             return (real_t)Math.Round(s);
         }
 
-        public static int RoundToInt(real_t s)
-        {
-            return (int)Math.Round(s);
-        }
-
         public static int Sign(int s)
         {
             return (s < 0) ? -1 : 1;
