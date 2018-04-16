@@ -135,7 +135,7 @@ namespace Godot
 
             if (increment > 0)
             {
-	            int idx = 0;
+                int idx = 0;
                 for (int i = from; i < to; i += increment)
                 {
                     ret[idx++] = i;
@@ -143,7 +143,7 @@ namespace Godot
             }
             else
             {
-	            int idx = 0;
+                int idx = 0;
                 for (int i = from; i > to; i += increment)
                 {
                     ret[idx++] = i;

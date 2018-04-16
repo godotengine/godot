@@ -141,12 +141,12 @@ namespace Godot
         // </summary>
         public static string Capitalize(this string instance)
         {
-	        string aux = instance.Replace("_", " ").ToLower();
+            string aux = instance.Replace("_", " ").ToLower();
             var cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
-	            string slice = aux.GetSlicec(' ', i);
+                string slice = aux.GetSlicec(' ', i);
                 if (slice.Length > 0)
                 {
                     slice = char.ToUpper(slice[0]) + slice.Substring(1);
@@ -842,8 +842,8 @@ namespace Godot
         public static float[] SplitFloats(this string instance, string divisor, bool allow_empty = true)
         {
             var ret = new List<float>();
-	        int from = 0;
-	        int len = instance.Length;
+            int from = 0;
+            int len = instance.Length;
 
             while (true)
             {
