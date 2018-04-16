@@ -331,6 +331,9 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	ERR_FAIL_COND_V(image.is_null(), false);
+	if (image->is_compressed()) {
+		return dst_rect.has_point(p_point);
+	}
 
 	bool is_repeat = texture->get_flags() & Texture::FLAG_REPEAT;
 	bool is_mirrored_repeat = texture->get_flags() & Texture::FLAG_MIRRORED_REPEAT;
