@@ -47,7 +47,7 @@ namespace Godot
 
                 sb.Append("<");
 
-                for (var j = 0; j < genericParams.Length; j++)
+                for (int j = 0; j < genericParams.Length; j++)
                 {
                     if (j > 0)
                         sb.Append(", ");
@@ -64,7 +64,7 @@ namespace Godot
 
             ParameterInfo[] parameter = methodBase.GetParameters();
 
-            for (var i = 0; i < parameter.Length; i++)
+            for (int i = 0; i < parameter.Length; i++)
             {
                 if (i > 0)
                     sb.Append(", ");

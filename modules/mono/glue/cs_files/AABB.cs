@@ -335,7 +335,7 @@ namespace Godot
             bool over = false;
             bool under = false;
 
-            for (var i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
                 if (plane.DistanceTo(points[i]) > 0)
                     over = true;
@@ -351,7 +351,7 @@ namespace Godot
             real_t min = 0f;
             real_t max = 1f;
 
-            for (var i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
             {
                 real_t seg_from = from[i];
                 real_t seg_to = to[i];

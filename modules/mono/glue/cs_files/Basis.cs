@@ -221,9 +221,9 @@ namespace Godot
         {
             var orth = this;
 
-            for (var i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
             {
-                for (var j = 0; j < 3; j++)
+                for (int j = 0; j < 3; j++)
                 {
                     real_t v = orth[i, j];
 
@@ -238,7 +238,7 @@ namespace Godot
                 }
             }
 
-            for (var i = 0; i < 24; i++)
+            for (int i = 0; i < 24; i++)
             {
                 if (orthoBases[i] == orth)
                     return i;
@@ -413,8 +413,8 @@ namespace Godot
 		            (_x[2] - _z[0]) * inv_s
 		        );
 		    } else {
-		        var s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
-		        var inv_s = 1f / s;
+		        real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
+		        real_t inv_s = 1f / s;
 		        return new Quat(
 		            (_x[2] + _z[0]) * inv_s,
 		            (_y[2] + _z[1]) * inv_s,
