@@ -348,7 +348,7 @@ namespace Godot
         {
             int ig = 0;
 
-            for (var i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 int c = str[i + ofs];
                 int v;
@@ -387,7 +387,7 @@ namespace Godot
 
             var ret = string.Empty;
 
-            for (var i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 char[] c = { (char)0, (char)0 };
                 int lv = v & 0xF;
