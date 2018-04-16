@@ -185,7 +185,7 @@ namespace Godot
 
             // Construct matrix
             var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
-	        Vector2 scale = s1.LinearInterpolate(s2, c);
+            Vector2 scale = s1.LinearInterpolate(s2, c);
             res.x *= scale;
             res.y *= scale;
 
