@@ -26,6 +26,18 @@
 			If [code]true[/code], enables vertical scrolling.
 		</member>
 	</members>
+	<signals>
+		<signal name="scroll_ended">
+			<description>
+				Emitted whenever scrolling stops.
+			</description>
+		</signal>
+		<signal name="scroll_started">
+			<description>
+				Emitted whenever scrolling is started.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

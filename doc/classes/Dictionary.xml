@@ -20,6 +20,7 @@
 			<return type="Dictionary">
 			</return>
 			<description>
+				Creates a copy of the dictionary, and returns it.
 			</description>
 		</method>
 		<method name="empty">
