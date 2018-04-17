@@ -226,7 +226,6 @@
 		</signal>
 		<signal name="node_selected">
 			<argument index="0" name="node" type="Object">
-				Selected Node
 			</argument>
 			<description>
 				Emitted when a GraphNode is selected.
