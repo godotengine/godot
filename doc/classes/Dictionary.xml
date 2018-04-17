@@ -22,6 +22,7 @@
 			<argument index="0" name="deep" type="bool" default="False">
 			</argument>
 			<description>
+				Creates a copy of the dictionary, and returns it.
 			</description>
 		</method>
 		<method name="empty">
