@@ -182,7 +182,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Sets the given collision layer bit.
+				Set any collision layer to be [code]true[/code] or [code]false[/code].
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
