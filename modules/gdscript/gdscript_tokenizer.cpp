@@ -539,6 +539,36 @@ void GDScriptTokenizerText::_advance() {
 						INCPOS(1);
 
 					} break;
+					case '*': { // multiline comment
+
+						INCPOS(1);
+						bool is_in_comment = true;
+						while (is_in_comment) {
+							INCPOS(1);
+
+							switch (GETCHAR(0)) {
+								case 0: { // end of file
+									_make_error("Unterminated Comment");
+									_make_token(TK_EOF);
+									return;
+								} break;
+								case '\n': { // newline
+									INCPOS(1);
+									column = 1;
+									line++;
+								} break;
+								case '*': { // candidate for end of comment
+									if (GETCHAR(1) == '/') { // end of comment
+										INCPOS(1);
+										is_in_comment = false;
+									}
+								} break;
+							}
+						}
+						INCPOS(1)
+						continue; // get the token after this comment
+
+					} break;
 					default:
 						_make_token(TK_OP_DIV);
 				}
