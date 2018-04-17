@@ -3008,7 +3008,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 
 			if (next_op + 2 >= expression.size() || !expression[next_op + 2].is_op || expression[next_op + 2].op != OP_SELECT_ELSE) {
-				_set_error("Mising matching ':' for select operator");
+				_set_error("Missing matching ':' for select operator");
 				return NULL;
 			}
 
@@ -3213,7 +3213,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				precision = get_token_precision(tk.type);
 				tk = _get_token();
 				if (!is_token_nonvoid_datatype(tk.type)) {
-					_set_error("Expected datatype after precission");
+					_set_error("Expected datatype after precision");
 					return ERR_PARSE_ERROR;
 				}
 			}
@@ -3511,7 +3511,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			if (!p_can_break) {
 				//all is good
-				_set_error("Contiuning is not allowed here");
+				_set_error("Continuing is not allowed here");
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
