@@ -212,6 +212,7 @@ Error StreamPeerTCPWinsock::read(uint8_t *p_buffer, int p_bytes, int &r_received
 			_block(sockfd, true, false);
 		} else if (read == 0) {
 			disconnect_from_host();
+			r_received = total_read;
 			return ERR_FILE_EOF;
 		} else {
 
