@@ -311,4 +311,14 @@ extern bool _err_error_exists;
 		_err_error_exists = false;                                                                                   \
 	}
 
+#define WARN_DEPRECATED                                                               \
+	{                                                                                      \
+		static bool warning_shown=false;\
+		if (!warning_shown) {\
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__,"This method has been deprecated and will be removed in the future", ERR_HANDLER_WARNING); \
+			_err_error_exists = false;                                   \
+			warning_shown=true;\
+		}\
+	}
+
 #endif
