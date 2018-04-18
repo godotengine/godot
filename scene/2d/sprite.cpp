@@ -331,7 +331,31 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	ERR_FAIL_COND_V(image.is_null(), false);
+	if (image->is_compressed()) {
+		return dst_rect.has_point(p_point);
+	}
 
+	bool is_repeat = texture->get_flags() & Texture::FLAG_REPEAT;
+	bool is_mirrored_repeat = texture->get_flags() & Texture::FLAG_MIRRORED_REPEAT;
+	if (is_repeat) {
+		int mirror_x = 0;
+		int mirror_y = 0;
+		if (is_mirrored_repeat) {
+			mirror_x = (int)(q.x / texture->get_size().width);
+			mirror_y = (int)(q.y / texture->get_size().height);
+		}
+		q.x = Math::fmod(q.x, texture->get_size().width);
+		q.y = Math::fmod(q.y, texture->get_size().height);
+		if (mirror_x % 2 == 1) {
+			q.x = texture->get_size().width - q.x - 1;
+		}
+		if (mirror_y % 2 == 1) {
+			q.y = texture->get_size().height - q.y - 1;
+		}
+	} else {
+		q.x = MIN(q.x, texture->get_size().width - 1);
+		q.y = MIN(q.y, texture->get_size().height - 1);
+	}
 	image->lock();
 	const Color c = image->get_pixel((int)q.x, (int)q.y);
 	image->unlock();
