@@ -42,7 +42,7 @@
 #include "variant_parser.h"
 #include <zlib.h>
 
-#define FORMAT_VERSION 3
+#define FORMAT_VERSION 4
 
 ProjectSettings *ProjectSettings::singleton = NULL;
 
@@ -262,6 +262,23 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack) {
 	return true;
 }
 
+void ProjectSettings::_convert_to_last_version() {
+	if (!has_setting("config_version") || (int)get_setting("config_version") <= 3) {
+
+		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
+		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
+			Variant value = E->get().variant;
+			if (String(E->key()).begins_with("input/") && value.get_type() == Variant::ARRAY) {
+				Array array = value;
+				Dictionary action;
+				action["deadzone"] = Variant(0.5f);
+				action["events"] = array;
+				E->get().variant = action;
+			}
+		}
+	}
+}
+
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
 
 	//If looking for files in network, just use network!
@@ -389,6 +406,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
+
+	_convert_to_last_version();
 
 	return OK;
 }
