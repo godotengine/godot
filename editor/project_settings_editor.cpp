@@ -234,6 +234,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
+			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
 			jm->set_device(_get_current_device());
 
 			bool should_update_event = true;
@@ -243,7 +244,7 @@ void ProjectSettingsEditor::_device_input_add() {
 				Ref<InputEventJoypadMotion> aie = events[i];
 				if (aie.is_null())
 					continue;
-				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis()) {
+				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
 					should_update_event = false;
 					break;
 				}
