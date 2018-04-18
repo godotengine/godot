@@ -293,28 +293,80 @@ namespace Godot
             return res;
         }
 
-        public int ToRgba32()
+        public int ToAbgr32()
         {
-            int c = (byte)(r * 255);
+            int c = (byte)Math.Round(a * 255);
             c <<= 8;
-            c |= (byte)(g * 255);
+            c |= (byte)Math.Round(b * 255);
             c <<= 8;
-            c |= (byte)(b * 255);
+            c |= (byte)Math.Round(g * 255);
             c <<= 8;
-            c |= (byte)(a * 255);
+            c |= (byte)Math.Round(r * 255);
+
+            return c;
+        }
+
+        public long ToAbgr64()
+        {
+            long c = (ushort)Math.Round(a * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(b * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(g * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(r * 65535);
 
             return c;
         }
 
         public int ToArgb32()
         {
-            int c = (byte)(a * 255);
+            int c = (byte)Math.Round(a * 255);
             c <<= 8;
-            c |= (byte)(r * 255);
+            c |= (byte)Math.Round(r * 255);
             c <<= 8;
-            c |= (byte)(g * 255);
+            c |= (byte)Math.Round(g * 255);
             c <<= 8;
-            c |= (byte)(b * 255);
+            c |= (byte)Math.Round(b * 255);
+
+            return c;
+        }
+
+        public long ToArgb64()
+        {
+            long c = (ushort)Math.Round(a * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(r * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(g * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(b * 65535);
+
+            return c;
+        }
+
+        public int ToRgba32()
+        {
+            int c = (byte)Math.Round(r * 255);
+            c <<= 8;
+            c |= (byte)Math.Round(g * 255);
+            c <<= 8;
+            c |= (byte)Math.Round(b * 255);
+            c <<= 8;
+            c |= (byte)Math.Round(a * 255);
+
+            return c;
+        }
+
+        public long ToRgba64()
+        {
+            long c = (ushort)Math.Round(r * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(g * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(b * 65535);
+            c <<= 16;
+            c |= (ushort)Math.Round(a * 65535);
 
             return c;
         }
@@ -351,6 +403,17 @@ namespace Godot
             g = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
             r = (rgba & 0xFF) / 255.0f;
+        }
+
+        public Color(long rgba)
+        {
+            a = (rgba & 0xFFFF) / 65535.0f;
+            rgba >>= 16;
+            b = (rgba & 0xFFFF) / 65535.0f;
+            rgba >>= 16;
+            g = (rgba & 0xFFFF) / 65535.0f;
+            rgba >>= 16;
+            r = (rgba & 0xFFFF) / 65535.0f;
         }
 
         private static int _parse_col(string str, int ofs)
@@ -392,7 +455,7 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            var v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
+            int v = Mathf.RoundToInt(Mathf.Clamp(val * 255, 0, 255));
 
             var ret = string.Empty;
 
