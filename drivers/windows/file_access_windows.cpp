@@ -78,7 +78,6 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	/* pretty much every implementation that uses fopen as primary
 	   backend supports utf8 encoding */
 
-
 	struct _stat st;
 	if (_wstat(path.c_str(), &st) == 0) {
 
@@ -87,26 +86,30 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	};
 
 #ifdef TOOLS_ENABLED
-	if (p_mode_flags==READ) {
-		WIN32_FIND_DATAW d = {0};
-		HANDLE f = FindFirstFileW(filename.c_str(),&d);
+	// Windows is case insensitive, but all other platforms are sensitive to it
+	// To ease cross-platform development, we issue a warning if users try to access
+	// a file using the wrong case (which *works* on Windows, but won't on other
+	// platforms).
+	if (p_mode_flags == READ) {
+		WIN32_FIND_DATAW d = { 0 };
+		HANDLE f = FindFirstFileW(path.c_str(), &d);
 		if (f) {
 			String fname = d.cFileName;
-			if (fname!=String()) {
+			if (fname != String()) {
 
-				String base_file = filename.get_file();
-				if (base_file!=fname && base_file.findn(fname)==0) {
-					WARN_PRINTS("Case mismatch opening file '"+base_file+"', stored as '"+fname+"' in the filesystem. This file will not open when exported to other platforms.");
+				String base_file = path.get_file();
+				if (base_file != fname && base_file.findn(fname) == 0) {
+					WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 				}
 			}
 			FindClose(f);
 		}
 	}
 #endif
+
 	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
-		//print_line("saving instead to "+path);
 	}
 
 	f = _wfopen(path.c_str(), mode_string);
