@@ -656,10 +656,10 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	if (jm.is_null())
 		return false;
 
-	bool match = (axis == jm->axis && ((axis_value < 0) == (jm->axis_value < 0) || jm->axis_value == 0));
+	bool match = (axis == jm->axis && (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0));
 	if (match) {
 		if (p_pressed != NULL)
-			*p_pressed = Math::abs(jm->get_axis_value() >= p_deadzone);
+			*p_pressed = Math::abs(jm->get_axis_value()) >= p_deadzone;
 		if (p_strength != NULL)
 			*p_strength = (*p_pressed) ? Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())) : 0.0f;
 	}
