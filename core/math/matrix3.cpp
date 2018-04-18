@@ -254,7 +254,7 @@ void Basis::set_scale(const Vector3 &p_scale) {
 	set_axis(2, get_axis(2).normalized() * p_scale.z);
 }
 
-Vector3 Basis::get_scale() const {
+Vector3 Basis::get_scale_abs() const {
 
 	return Vector3(
 			Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
@@ -262,7 +262,13 @@ Vector3 Basis::get_scale() const {
 			Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
 }
 
-Vector3 Basis::get_signed_scale() const {
+Vector3 Basis::get_scale_local() const {
+	real_t det_sign = determinant() > 0 ? 1 : -1;
+	return det_sign * Vector3(elements[0].length(), elements[1].length(), elements[2].length());
+}
+
+// get_scale works with get_rotation, use get_scale_abs if you need to enforce positive signature.
+Vector3 Basis::get_scale() const {
 	// FIXME: We are assuming M = R.S (R is rotation and S is scaling), and use polar decomposition to extract R and S.
 	// A polar decomposition is M = O.P, where O is an orthogonal matrix (meaning rotation and reflection) and
 	// P is a positive semi-definite matrix (meaning it contains absolute values of scaling along its diagonal).
@@ -342,6 +348,14 @@ void Basis::rotate(const Vector3 &p_euler) {
 	*this = rotated(p_euler);
 }
 
+Basis Basis::rotated(const Quat &p_quat) const {
+	return Basis(p_quat) * (*this);
+}
+
+void Basis::rotate(const Quat &p_quat) {
+	*this = rotated(p_quat);
+}
+
 // TODO: rename this to get_rotation_euler
 Vector3 Basis::get_rotation() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
@@ -369,6 +383,22 @@ void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
 	}
 
 	m.get_axis_angle(p_axis, p_angle);
+}
+
+void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const {
+	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
+	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
+	// See the comment in get_scale() for further information.
+	Basis m = transposed();
+	m.orthonormalize();
+	real_t det = m.determinant();
+	if (det < 0) {
+		// Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
+		m.scale(Vector3(-1, -1, -1));
+	}
+
+	m.get_axis_angle(p_axis, p_angle);
+	p_angle = -p_angle;
 }
 
 // get_euler_xyz returns a vector containing the Euler angles in the format
@@ -766,4 +796,33 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 	elements[2][0] = p_axis.z * p_axis.x * (1.0 - cosine) - p_axis.y * sine;
 	elements[2][1] = p_axis.y * p_axis.z * (1.0 - cosine) + p_axis.x * sine;
 	elements[2][2] = axis_sq.z + cosine * (1.0 - axis_sq.z);
+}
+
+void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
+	set_diagonal(p_scale);
+	rotate(p_axis, p_phi);
+}
+
+void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
+	set_diagonal(p_scale);
+	rotate(p_euler);
+}
+
+void Basis::set_quat_scale(const Quat &p_quat, const Vector3 &p_scale) {
+	set_diagonal(p_scale);
+	rotate(p_quat);
+}
+
+void Basis::set_diagonal(const Vector3 p_diag) {
+	elements[0][0] = p_diag.x;
+	elements[0][1] = 0;
+	elements[0][2] = 0;
+
+	elements[1][0] = 0;
+	elements[1][1] = p_diag.y;
+	elements[1][2] = 0;
+
+	elements[2][0] = 0;
+	elements[2][1] = 0;
+	elements[2][2] = p_diag.z;
 }
