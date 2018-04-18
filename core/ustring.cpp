@@ -1191,7 +1191,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = n % base;
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -1590,8 +1590,7 @@ String::String(const StrRange &p_range) {
 
 int String::hex_to_int(bool p_with_prefix) const {
 
-	int l = length();
-	if (p_with_prefix && l < 3)
+	if (p_with_prefix && length() < 3)
 		return 0;
 
 	const CharType *s = ptr();
@@ -1600,17 +1599,13 @@ int String::hex_to_int(bool p_with_prefix) const {
 
 	if (sign < 0) {
 		s++;
-		l--;
-		if (p_with_prefix && l < 2)
-			return 0;
 	}
 
 	if (p_with_prefix) {
 		if (s[0] != '0' || s[1] != 'x')
 			return 0;
 		s += 2;
-		l -= 2;
-	};
+	}
 
 	int hex = 0;
 
@@ -1636,8 +1631,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 
 int64_t String::hex_to_int64(bool p_with_prefix) const {
 
-	int l = length();
-	if (p_with_prefix && l < 3)
+	if (p_with_prefix && length() < 3)
 		return 0;
 
 	const CharType *s = ptr();
@@ -1646,17 +1640,13 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 	if (sign < 0) {
 		s++;
-		l--;
-		if (p_with_prefix && l < 2)
-			return 0;
 	}
 
 	if (p_with_prefix) {
 		if (s[0] != '0' || s[1] != 'x')
 			return 0;
 		s += 2;
-		l -= 2;
-	};
+	}
 
 	int64_t hex = 0;
 
@@ -3570,13 +3560,13 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 
 	if (p_with_prefix) {
 
-		if (len < 2)
+		if (len < 3)
 			return false;
 		if (operator[](from) != '0' || operator[](from + 1) != 'x') {
 			return false;
-		};
+		}
 		from += 2;
-	};
+	}
 
 	for (int i = from; i < len; i++) {
 
@@ -3584,7 +3574,7 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
 			continue;
 		return false;
-	};
+	}
 
 	return true;
 };
