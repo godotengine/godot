@@ -1207,7 +1207,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = n % base;
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
