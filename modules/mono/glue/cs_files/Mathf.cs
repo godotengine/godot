@@ -1,5 +1,4 @@
 using System;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -115,7 +114,8 @@ namespace Godot
 
                 return Pow(s, curve);
             }
-            else if (curve < 0f)
+
+            if (curve < 0f)
             {
                 if (s < 0.5f)
                 {
@@ -144,10 +144,8 @@ namespace Godot
             {
                 return x % y;
             }
-            else
-            {
-                return y - (-x % y);
-            }
+
+            return y - -x % y;
         }
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
@@ -177,22 +175,22 @@ namespace Godot
 
         public static int Max(int a, int b)
         {
-            return (a > b) ? a : b;
+            return a > b ? a : b;
         }
 
         public static real_t Max(real_t a, real_t b)
         {
-            return (a > b) ? a : b;
+            return a > b ? a : b;
         }
 
         public static int Min(int a, int b)
         {
-            return (a < b) ? a : b;
+            return a < b ? a : b;
         }
 
         public static real_t Min(real_t a, real_t b)
         {
-            return (a < b) ? a : b;
+            return a < b ? a : b;
         }
 
         public static int NearestPo2(int value)
@@ -227,19 +225,14 @@ namespace Godot
             return (real_t)Math.Round(s);
         }
 
-        public static int RoundToInt(real_t s)
-        {
-            return (int)Math.Round(s);
-        }
-
         public static int Sign(int s)
         {
-            return (s < 0) ? -1 : 1;
+            return s < 0 ? -1 : 1;
         }
 
         public static real_t Sign(real_t s)
         {
-            return (s < 0f) ? -1f : 1f;
+            return s < 0f ? -1f : 1f;
         }
 
         public static real_t Sin(real_t s)
@@ -280,13 +273,13 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int rng = max - min;
-            return min + ((((value - min) % rng) + rng) % rng);
+            return min + ((value - min) % rng + rng) % rng;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t rng = max - min;
-            return min + ((((value - min) % rng) + rng) % rng);
+            return min + ((value - min) % rng + rng) % rng;
         }
     }
 }

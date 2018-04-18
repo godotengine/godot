@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -19,8 +18,7 @@ namespace Godot
             new Vector3(0f, 0f, 1f)
         );
 
-        private static readonly Basis[] orthoBases = new Basis[24]
-        {
+        private static readonly Basis[] orthoBases = {
             new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
             new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
             new Basis(-1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f),
@@ -188,7 +186,7 @@ namespace Godot
 
         public Vector3 GetEuler()
         {
-            Basis m = this.Orthonormalized();
+            Basis m = Orthonormalized();
 
             Vector3 euler;
             euler.z = 0.0f;
@@ -221,7 +219,7 @@ namespace Godot
 
         public int GetOrthogonalIndex()
         {
-            Basis orth = this;
+            var orth = this;
 
             for (int i = 0; i < 3; i++)
             {
@@ -251,10 +249,9 @@ namespace Godot
 
         public Basis Inverse()
         {
-            Basis inv = this;
+            var inv = this;
 
-            real_t[] co = new real_t[3]
-            {
+            real_t[] co = {
                 inv[1, 1] * inv[2, 2] - inv[1, 2] * inv[2, 1],
                 inv[1, 2] * inv[2, 0] - inv[1, 0] * inv[2, 2],
                 inv[1, 0] * inv[2, 1] - inv[1, 1] * inv[2, 0]
@@ -297,12 +294,12 @@ namespace Godot
             Vector3 zAxis = GetAxis(2);
 
             xAxis.Normalize();
-            yAxis = (yAxis - xAxis * (xAxis.Dot(yAxis)));
+            yAxis = yAxis - xAxis * xAxis.Dot(yAxis);
             yAxis.Normalize();
-            zAxis = (zAxis - xAxis * (xAxis.Dot(zAxis)) - yAxis * (yAxis.Dot(zAxis)));
+            zAxis = zAxis - xAxis * xAxis.Dot(zAxis) - yAxis * yAxis.Dot(zAxis);
             zAxis.Normalize();
 
-            return Basis.CreateFromAxes(xAxis, yAxis, zAxis);
+            return CreateFromAxes(xAxis, yAxis, zAxis);
         }
 
         public Basis Rotated(Vector3 axis, real_t phi)
@@ -312,7 +309,7 @@ namespace Godot
 
         public Basis Scaled(Vector3 scale)
         {
-            Basis m = this;
+            var m = this;
 
             m[0, 0] *= scale.x;
             m[0, 1] *= scale.x;
@@ -344,7 +341,7 @@ namespace Godot
 
         public Basis Transposed()
         {
-            Basis tr = this;
+            var tr = this;
 
             real_t temp = this[0, 1];
             this[0, 1] = this[1, 0];
@@ -375,9 +372,9 @@ namespace Godot
         {
             return new Vector3
             (
-                (this[0, 0] * v.x) + (this[1, 0] * v.y) + (this[2, 0] * v.z),
-                (this[0, 1] * v.x) + (this[1, 1] * v.y) + (this[2, 1] * v.z),
-                (this[0, 2] * v.x) + (this[1, 2] * v.y) + (this[2, 2] * v.z)
+                this[0, 0] * v.x + this[1, 0] * v.y + this[2, 0] * v.z,
+                this[0, 1] * v.x + this[1, 1] * v.y + this[2, 1] * v.z,
+                this[0, 2] * v.x + this[1, 2] * v.y + this[2, 2] * v.z
             );
         }
 
@@ -393,34 +390,38 @@ namespace Godot
 					(_y[0] - _x[1]) * inv_s,
 					s * 0.25f
 				);
-			} else if (_x[0] > _y[1] && _x[0] > _z[2]) {
-				real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					s * 0.25f,
-					(_x[1] + _y[0]) * inv_s,
-					(_x[2] + _z[0]) * inv_s,
-					(_z[1] - _y[2]) * inv_s
-				);
-			} else if (_y[1] > _z[2]) {
-				real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_x[1] + _y[0]) * inv_s,
-					s * 0.25f,
-					(_y[2] + _z[1]) * inv_s,
-					(_x[2] - _z[0]) * inv_s
-				);
-			} else {
-				real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
-				real_t inv_s = 1f / s;
-				return new Quat(
-					(_x[2] + _z[0]) * inv_s,
-					(_y[2] + _z[1]) * inv_s,
-					s * 0.25f,
-					(_y[0] - _x[1]) * inv_s
-				);
 			}
+
+		    if (_x[0] > _y[1] && _x[0] > _z[2]) {
+		        real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
+		        real_t inv_s = 1f / s;
+		        return new Quat(
+		            s * 0.25f,
+		            (_x[1] + _y[0]) * inv_s,
+		            (_x[2] + _z[0]) * inv_s,
+		            (_z[1] - _y[2]) * inv_s
+		        );
+		    }
+
+		    if (_y[1] > _z[2]) {
+		        real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
+		        real_t inv_s = 1f / s;
+		        return new Quat(
+		            (_x[1] + _y[0]) * inv_s,
+		            s * 0.25f,
+		            (_y[2] + _z[1]) * inv_s,
+		            (_x[2] - _z[0]) * inv_s
+		        );
+		    } else {
+		        real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
+		        real_t inv_s = 1f / s;
+		        return new Quat(
+		            (_x[2] + _z[0]) * inv_s,
+		            (_y[2] + _z[1]) * inv_s,
+		            s * 0.25f,
+		            (_y[0] - _x[1]) * inv_s
+		        );
+		    }
 		}
 
         public Basis(Quat quat)
@@ -440,33 +441,33 @@ namespace Godot
             real_t yz = quat.y * zs;
             real_t zz = quat.z * zs;
 
-            this._x = new Vector3(1.0f - (yy + zz), xy - wz, xz + wy);
-            this._y = new Vector3(xy + wz, 1.0f - (xx + zz), yz - wx);
-            this._z = new Vector3(xz - wy, yz + wx, 1.0f - (xx + yy));
+            _x = new Vector3(1.0f - (yy + zz), xy - wz, xz + wy);
+            _y = new Vector3(xy + wz, 1.0f - (xx + zz), yz - wx);
+            _z = new Vector3(xz - wy, yz + wx, 1.0f - (xx + yy));
         }
 
         public Basis(Vector3 axis, real_t phi)
         {
-            Vector3 axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
+            var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
 
-            real_t cosine = Mathf.Cos( (real_t)phi);
-            real_t sine = Mathf.Sin( (real_t)phi);
+            real_t cosine = Mathf.Cos( phi);
+            real_t sine = Mathf.Sin( phi);
 
-            this._x = new Vector3
+            _x = new Vector3
             (
                 axis_sq.x + cosine * (1.0f - axis_sq.x),
                 axis.x * axis.y * (1.0f - cosine) - axis.z * sine,
                 axis.z * axis.x * (1.0f - cosine) + axis.y * sine
             );
 
-            this._y = new Vector3
+            _y = new Vector3
             (
                 axis.x * axis.y * (1.0f - cosine) + axis.z * sine,
                 axis_sq.y + cosine * (1.0f - axis_sq.y),
                 axis.y * axis.z * (1.0f - cosine) - axis.x * sine
             );
 
-            this._z = new Vector3
+            _z = new Vector3
             (
                 axis.z * axis.x * (1.0f - cosine) - axis.y * sine,
                 axis.y * axis.z * (1.0f - cosine) + axis.x * sine,
@@ -476,16 +477,16 @@ namespace Godot
 
         public Basis(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
         {
-            this._x = xAxis;
-            this._y = yAxis;
-            this._z = zAxis;
+            _x = xAxis;
+            _y = yAxis;
+            _z = zAxis;
         }
 
         public Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
         {
-            this._x = new Vector3(xx, xy, xz);
-            this._y = new Vector3(yx, yy, yz);
-            this._z = new Vector3(zx, zy, zz);
+            _x = new Vector3(xx, xy, xz);
+            _y = new Vector3(yx, yy, yz);
+            _z = new Vector3(zx, zy, zz);
         }
 
         public static Basis operator *(Basis left, Basis right)
@@ -532,9 +533,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this._x.ToString(),
-                this._y.ToString(),
-                this._z.ToString()
+                _x.ToString(),
+                _y.ToString(),
+                _z.ToString()
             });
         }
 
@@ -542,9 +543,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this._x.ToString(format),
-                this._y.ToString(format),
-                this._z.ToString(format)
+                _x.ToString(format),
+                _y.ToString(format),
+                _z.ToString(format)
             });
         }
     }
