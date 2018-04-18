@@ -96,7 +96,7 @@ void Path2D::_notification(int p_what) {
 #else
 		const float line_width = 2;
 #endif
-		const Color color = Color(0.5, 0.6, 1.0, 0.7);
+		const Color color = Color(1.0, 1.0, 1.0, 1.0);
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
@@ -151,6 +151,7 @@ void Path2D::_bind_methods() {
 Path2D::Path2D() {
 
 	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
+	set_self_modulate(Color(0.5, 0.6, 1.0, 0.7));
 }
 
 /////////////////////////////////////////////////////////////////////////////////
