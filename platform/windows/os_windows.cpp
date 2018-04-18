@@ -162,6 +162,7 @@ void OS_Windows::initialize_core() {
 	maximized = false;
 	minimized = false;
 	borderless = false;
+	ignore_next_mousemove = false;
 
 	ThreadWindows::make_default();
 	SemaphoreWindows::make_default();
@@ -367,6 +368,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
 			if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
 				break;
+			if (ignore_next_mousemove) {
+				ignore_next_mousemove = false;
+				break;
+			}
 			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
@@ -1289,8 +1294,18 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 		center = Point2i(video_mode.width / 2, video_mode.height / 2);
 		POINT pos = { (int)center.x, (int)center.y };
 		ClientToScreen(hWnd, &pos);
-		if (mouse_mode == MOUSE_MODE_CAPTURED)
+
+		if (mouse_mode == MOUSE_MODE_CAPTURED) {
 			SetCursorPos(pos.x, pos.y);
+			// HACK
+			// In this specific situation, moving the cursor like this can cause an extra WM_MOUSEMOVE to happen,
+			// and it produces relative position to jump in MouseMoveEvent.
+			// In practice, this makes FPS cameras jump unwillingly (such as editor fly mode or games with mixed mouse modes).
+			// So, when we set the CAPTURED mode, we can ignore this next event to be sure we don't get a jump.
+			// A proper way would be to refactor the system to use RawInput API in this mode instead of WinProc events.
+			ignore_next_mousemove = true;
+		}
+
 	} else {
 		ReleaseCapture();
 		ClipCursor(NULL);

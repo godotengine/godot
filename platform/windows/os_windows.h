@@ -166,6 +166,7 @@ protected:
 	bool maximized;
 	bool minimized;
 	bool borderless;
+	bool ignore_next_mousemove;
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
