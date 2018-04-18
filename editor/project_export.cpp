@@ -986,6 +986,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	editor_icons = "EditorIcons";
 
 	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", String());
+
+	if (default_filename == "") {
+		default_filename = ProjectSettings::get_singleton()->get("application/config/name");
+	}
 }
 
 ProjectExportDialog::~ProjectExportDialog() {
