@@ -465,7 +465,42 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 	return s;
 }
 
-//////// COMPLETION //////////
+#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+
+struct GDScriptCompletionIdentifier {
+
+	String enumeration;
+	StringName obj_type;
+	Ref<GDScript> script;
+	Variant::Type type;
+	Variant value; //im case there is a value, also return it
+
+	GDScriptCompletionIdentifier() :
+			type(Variant::NIL) {}
+};
+
+static GDScriptCompletionIdentifier _get_type_from_variant(const Variant &p_variant, bool p_allow_gdnative_class = false) {
+
+	GDScriptCompletionIdentifier t;
+	t.type = p_variant.get_type();
+	t.value = p_variant;
+	if (p_variant.get_type() == Variant::OBJECT) {
+		Object *obj = p_variant;
+		if (obj) {
+
+			if (p_allow_gdnative_class && Object::cast_to<GDScriptNativeClass>(obj)) {
+				t.obj_type = Object::cast_to<GDScriptNativeClass>(obj)->get_name();
+				t.value = Variant();
+			} else {
+
+				t.obj_type = obj->get_class();
+			}
+		}
+	}
+	return t;
+}
+
+static GDScriptCompletionIdentifier _get_type_from_pinfo(const PropertyInfo &p_info) {
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
@@ -581,9 +616,11 @@ static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value) {
 static GDScriptCompletionIdentifier _type_from_property(const PropertyInfo &p_property) {
 	GDScriptCompletionIdentifier ci;
 
-	if (p_property.type == Variant::NIL) {
-		// Variant
-		return ci;
+	GDScriptCompletionIdentifier id;
+
+	REF pc = _get_parent_class(context);
+	if (!pc.is_valid()) {
+		return id;
 	}
 
 	if (p_property.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
