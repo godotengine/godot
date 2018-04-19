@@ -35,6 +35,7 @@
 // Needed for socket_helpers on Android at least. UNIXes has it, just include if not windows
 #if !defined(WINDOWS_ENABLED)
 #include <netinet/in.h>
+#include <sys/socket.h>
 #endif
 
 #include "drivers/unix/socket_helpers.h"
@@ -190,9 +191,11 @@ IP_Address LWSPeer::get_connected_host() const {
 	IP_Address ip;
 	int port = 0;
 
-	socklen_t len;
+	socklen_t len = 0;
 	struct sockaddr_storage addr;
+
 	int fd = lws_get_socket_fd(wsi);
+	ERR_FAIL_COND_V(fd == -1, IP_Address());
 
 	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
 	ERR_FAIL_COND_V(ret != 0, IP_Address());
@@ -209,9 +212,11 @@ uint16_t LWSPeer::get_connected_port() const {
 	IP_Address ip;
 	int port = 0;
 
-	socklen_t len;
+	socklen_t len = 0;
 	struct sockaddr_storage addr;
+
 	int fd = lws_get_socket_fd(wsi);
+	ERR_FAIL_COND_V(fd == -1, 0);
 
 	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
 	ERR_FAIL_COND_V(ret != 0, 0);
