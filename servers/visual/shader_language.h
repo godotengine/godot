@@ -425,6 +425,7 @@ public:
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
+			return_type = TYPE_VOID;
 			return_precision = PRECISION_DEFAULT;
 			can_discard = false;
 		}

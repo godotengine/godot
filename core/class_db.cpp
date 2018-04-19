@@ -254,11 +254,13 @@ HashMap<StringName, StringName, StringNameHasher> ClassDB::compat_classes;
 
 ClassDB::ClassInfo::ClassInfo() {
 
+	api = API_NONE;
 	creation_func = NULL;
 	inherits_ptr = NULL;
 	disabled = false;
 	exposed = false;
 }
+
 ClassDB::ClassInfo::~ClassInfo() {
 }
 
