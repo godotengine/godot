@@ -415,7 +415,7 @@ void TextEdit::_click_selection_held() {
 }
 
 void TextEdit::_update_selection_mode_pointer() {
-	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+	Point2 mp = get_local_mouse_position();
 
 	int row, col;
 	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
@@ -430,7 +430,7 @@ void TextEdit::_update_selection_mode_pointer() {
 }
 
 void TextEdit::_update_selection_mode_word() {
-	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+	Point2 mp = get_local_mouse_position();
 
 	int row, col;
 	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
@@ -483,7 +483,7 @@ void TextEdit::_update_selection_mode_word() {
 }
 
 void TextEdit::_update_selection_mode_line() {
-	Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
+	Point2 mp = get_local_mouse_position();
 
 	int row, col;
 	_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
