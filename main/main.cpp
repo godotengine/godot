@@ -1512,7 +1512,7 @@ bool Main::start() {
 			bool snap_controls = GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
-			bool font_oversampling = GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", false);
+			bool font_oversampling = GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
 			sml->set_use_font_oversampling(font_oversampling);
 
 		} else {
@@ -1525,7 +1525,7 @@ bool Main::start() {
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
-			GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", false);
+			GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
 		}
 
 		String local_game_path;
