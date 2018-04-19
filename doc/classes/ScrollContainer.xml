@@ -31,10 +31,12 @@
 	<signals>
 		<signal name="scroll_ended">
 			<description>
+				Emitted whenever scrolling stops.
 			</description>
 		</signal>
 		<signal name="scroll_started">
 			<description>
+				Emitted whenever scrolling is started.
 			</description>
 		</signal>
 	</signals>
