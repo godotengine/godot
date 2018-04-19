@@ -639,7 +639,7 @@ const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 
 void EditorAssetLibrary::_select_author(int p_id) {
 
-	//opemn author window
+	// Open author window
 }
 
 void EditorAssetLibrary::_select_category(int p_id) {
@@ -659,16 +659,6 @@ void EditorAssetLibrary::_select_category(int p_id) {
 void EditorAssetLibrary::_select_asset(int p_id) {
 
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
-
-	/*
-	if (description) {
-		memdelete(description);
-	}
-
-
-	description = memnew( EditorAssetLibraryItemDescription );
-	add_child(description);
-	description->popup_centered_minsize();*/
 }
 
 void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray &p_data, int p_queue_id) {
@@ -774,7 +764,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting PNG file for asset id " + itos(image_queue[p_queue_id].asset_id));
+		WARN_PRINTS("Error getting PNG file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
