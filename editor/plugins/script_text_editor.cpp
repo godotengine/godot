@@ -1007,6 +1007,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 			int next_line = to_line + 1;
 
+			if (to_line >= tx->get_line_count() - 1) {
+				tx->set_line(to_line, tx->get_line(to_line) + "\n");
+			}
+
 			tx->begin_complex_operation();
 			for (int i = from_line; i <= to_line; i++) {
 
