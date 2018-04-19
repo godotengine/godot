@@ -815,7 +815,44 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_CLONE_DOWN: {
 
-			code_editor->code_lines_down();
+			Ref<Script> scr = get_edited_script();
+			if (scr.is_null())
+				return;
+
+			int from_line = tx->cursor_get_line();
+			int to_line = tx->cursor_get_line();
+			int column = tx->cursor_get_column();
+
+			if (tx->is_selection_active()) {
+				from_line = tx->get_selection_from_line();
+				to_line = tx->get_selection_to_line();
+				column = tx->cursor_get_column();
+			}
+			int next_line = to_line + 1;
+
+			if (to_line >= tx->get_line_count() - 1) {
+				tx->set_line(to_line, tx->get_line(to_line) + "\n");
+			}
+
+			tx->begin_complex_operation();
+			for (int i = from_line; i <= to_line; i++) {
+
+				tx->unfold_line(i);
+				if (i >= tx->get_line_count() - 1) {
+					tx->set_line(i, tx->get_line(i) + "\n");
+				}
+				String line_clone = tx->get_line(i);
+				tx->insert_at(line_clone, next_line);
+				next_line++;
+			}
+
+			tx->cursor_set_column(column);
+			if (tx->is_selection_active()) {
+				tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
+			}
+
+			tx->end_complex_operation();
+			tx->update();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 
