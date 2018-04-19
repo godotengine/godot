@@ -2028,6 +2028,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 		function.flow_stack_size = 0;
 		function.pass_stack_size = 0;
 		function.node_count = 0;
+
 		Map<StringName, int> local_var_indices;
 
 		if (function.node < 0) {
