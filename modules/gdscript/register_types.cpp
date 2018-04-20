@@ -32,7 +32,6 @@
 
 #include "editor/gdscript_highlighter.h"
 #include "gdscript.h"
-#include "gdscript_highlighter.h"
 #include "gdscript_tokenizer.h"
 #include "io/file_access_encrypted.h"
 #include "io/resource_loader.h"

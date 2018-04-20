@@ -35,29 +35,13 @@
 
 class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
 private:
-	enum Type {
-		NONE,
-		REGION,
-		NODE_PATH,
-		SYMBOL,
-		NUMBER,
-		FUNCTION,
-		KEYWORD,
-		MEMBER,
-		IDENTIFIER,
-		TYPE,
-	};
-
 	// colours
 	Color font_color;
 	Color symbol_color;
 	Color function_color;
-	Color function_definition_color;
 	Color built_in_type_color;
 	Color number_color;
 	Color member_color;
-	Color node_path_color;
-	Color type_color;
 
 public:
 	static SyntaxHighlighter *create();
