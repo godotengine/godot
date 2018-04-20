@@ -55,6 +55,8 @@
 			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
+				Returns [code]OK[/code] if request is successfully created. (Does not imply that the server has responded), [code]ERR_UNCONFIGURED[/code] if not in the tree, [code]ERR_BUSY[/code] if still processing previous request, [code]ERR_INVALID_PARAMETER[/code] if given string is not a valid URL format, or [code]ERR_CANT_CONNECT[/code] if not using thread and the [HTTPClient] cannot connect to host.
 			</description>
 		</method>
 	</methods>
