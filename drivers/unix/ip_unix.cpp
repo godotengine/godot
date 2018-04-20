@@ -105,7 +105,7 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
-		ERR_PRINT("getaddrinfo failed!");
+		ERR_PRINT("getaddrinfo failed! Cannot resolve hostname.");
 		return IP_Address();
 	};
 
