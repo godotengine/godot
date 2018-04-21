@@ -111,8 +111,6 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		strcpy(debType, "Portability");
 	else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
 		strcpy(debType, "Performance");
-	else if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
-		strcpy(debType, "Other");
 
 	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
 		strcpy(debSev, "High");

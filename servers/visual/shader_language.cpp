@@ -2708,7 +2708,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return NULL;
 				}
 
-				bool index_valid = false;
 				DataType member_type = TYPE_VOID;
 
 				switch (expr->get_datatype()) {
@@ -2727,7 +2726,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC2: member_type = TYPE_BOOL; break;
 							case TYPE_VEC2: member_type = TYPE_FLOAT; break;
@@ -2752,7 +2751,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC3: member_type = TYPE_BOOL; break;
 							case TYPE_VEC3: member_type = TYPE_FLOAT; break;
@@ -2776,7 +2775,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC4: member_type = TYPE_BOOL; break;
 							case TYPE_VEC4: member_type = TYPE_FLOAT; break;
@@ -2789,11 +2788,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error("Object of type '" + get_datatype_name(expr->get_datatype()) + "' can't be indexed");
 						return NULL;
 					}
-				}
-
-				if (!index_valid) {
-					_set_error("Invalid index");
-					return NULL;
 				}
 
 				OperatorNode *op = alloc_node<OperatorNode>();
@@ -3702,7 +3696,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					_set_error("void datatype not allowed here");
 					return ERR_PARSE_ERROR;
 				}
-				if (!uniform && type < TYPE_FLOAT && type > TYPE_VEC4) { // FIXME: always false! should it be || instead?
+
+				if (!uniform && (type < TYPE_FLOAT || type > TYPE_VEC4)) {
 					_set_error("Invalid type for varying, only float,vec2,vec3,vec4 allowed.");
 					return ERR_PARSE_ERROR;
 				}
