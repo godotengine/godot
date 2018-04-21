@@ -4,7 +4,7 @@
 		Raw byte array.
 	</brief_description>
 	<description>
-		Raw byte array. Contains bytes. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference, the reason being it is used for data being sent to servers which shouldn't be modifiable once sent (this may change in the future).
+		Raw byte array. Contains bytes. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
