@@ -176,6 +176,8 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 	int idx = p_idx / 2;
 	int t = p_idx % 2;
 
+	Vector3 ofs;
+
 	if (t == 0) {
 		if (p_cancel) {
 			c->set_point_in(p_idx, p_restore);
