@@ -1028,8 +1028,6 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset, p_value);
 		} break;
-		case PARAM_MAX: {
-		};
 	}
 }
 float ParticlesMaterial::get_param(Parameter p_param) const {
@@ -1082,8 +1080,6 @@ void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_random, p_value);
 		} break;
-		case PARAM_MAX: {
-		};
 	}
 }
 float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
@@ -1160,8 +1156,6 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_texture, p_texture);
 		} break;
-		case PARAM_MAX: {
-		};
 	}
 
 	_queue_shader_change();

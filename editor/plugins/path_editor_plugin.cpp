@@ -167,18 +167,12 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 
 	Vector3 ofs;
 
-	if (p_cancel) {
-
-		return;
-	}
-
 	if (t == 0) {
-
 		if (p_cancel) {
-
 			c->set_point_in(p_idx, p_restore);
 			return;
 		}
+
 		ur->create_action(TTR("Set Curve In Position"));
 		ur->add_do_method(c.ptr(), "set_point_in", idx, c->get_point_in(idx));
 		ur->add_undo_method(c.ptr(), "set_point_in", idx, p_restore);
@@ -186,10 +180,11 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 
 	} else {
 		if (p_cancel) {
-
 			c->set_point_out(idx, p_restore);
+
 			return;
 		}
+
 		ur->create_action(TTR("Set Curve Out Position"));
 		ur->add_do_method(c.ptr(), "set_point_out", idx, c->get_point_out(idx));
 		ur->add_undo_method(c.ptr(), "set_point_out", idx, p_restore);

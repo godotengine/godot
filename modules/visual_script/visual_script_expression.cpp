@@ -455,7 +455,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
+				if (cchar >= '0' && cchar <= '9') {
 					//a number
 
 					String num;
@@ -465,11 +465,6 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 #define READING_EXP 3
 #define READING_DONE 4
 					int reading = READING_INT;
-
-					if (cchar == '-') {
-						num += '-';
-						cchar = GET_CHAR();
-					}
 
 					CharType c = cchar;
 					bool exp_sign = false;
