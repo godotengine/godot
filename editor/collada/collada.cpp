@@ -2266,10 +2266,8 @@ void Collada::_merge_skeletons2(VisualScene *p_vscene) {
 				}
 				node = node->parent;
 			}
-			ERR_CONTINUE(!sk);
 
-			if (!sk)
-				continue; //bleh
+			ERR_CONTINUE(!sk);
 
 			if (!skeleton) {
 				skeleton = sk;
