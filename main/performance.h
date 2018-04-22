@@ -45,6 +45,7 @@ class Performance : public Object {
 
 	float _process_time;
 	float _physics_process_time;
+	float _render_process_time;
 
 public:
 	enum Monitor {
@@ -52,6 +53,7 @@ public:
 		TIME_FPS,
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
+		TIME_RENDER_PROCESS,
 		MEMORY_STATIC,
 		MEMORY_DYNAMIC,
 		MEMORY_STATIC_MAX,
@@ -93,6 +95,7 @@ public:
 
 	void set_process_time(float p_pt);
 	void set_physics_process_time(float p_pt);
+	void set_render_process_time(float p_pt);
 
 	static Performance *get_singleton() { return singleton; }
 

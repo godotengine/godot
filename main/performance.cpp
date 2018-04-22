@@ -44,6 +44,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(TIME_FPS);
 	BIND_ENUM_CONSTANT(TIME_PROCESS);
 	BIND_ENUM_CONSTANT(TIME_PHYSICS_PROCESS);
+	BIND_ENUM_CONSTANT(TIME_RENDER_PROCESS);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC);
 	BIND_ENUM_CONSTANT(MEMORY_DYNAMIC);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC_MAX);
@@ -80,6 +81,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"time/fps",
 		"time/process",
 		"time/physics_process",
+		"time/render_process",
 		"memory/static",
 		"memory/dynamic",
 		"memory/static_max",
@@ -116,6 +118,7 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case TIME_FPS: return Engine::get_singleton()->get_frames_per_second();
 		case TIME_PROCESS: return _process_time;
 		case TIME_PHYSICS_PROCESS: return _physics_process_time;
+		case TIME_RENDER_PROCESS: return _render_process_time;
 		case MEMORY_STATIC: return Memory::get_mem_usage();
 		case MEMORY_DYNAMIC: return MemoryPool::total_memory;
 		case MEMORY_STATIC_MAX: return Memory::get_mem_max_usage();
@@ -162,6 +165,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
@@ -202,9 +206,14 @@ void Performance::set_physics_process_time(float p_pt) {
 	_physics_process_time = p_pt;
 }
 
+void Performance::set_render_process_time(float p_pt) {
+	_render_process_time = p_pt;
+}
+
 Performance::Performance() {
 
 	_process_time = 0;
 	_physics_process_time = 0;
+	_render_process_time = 0;
 	singleton = this;
 }

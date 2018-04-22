@@ -1712,6 +1712,7 @@ bool Main::force_redraw_requested = false;
 //for performance metrics
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
+static uint64_t render_process_max = 0;
 
 bool Main::iteration() {
 
@@ -1735,6 +1736,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
+	uint64_t render_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -1786,7 +1788,7 @@ bool Main::iteration() {
 
 	Engine::get_singleton()->_in_physics = false;
 
-	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
+	uint64_t render_begin = OS::get_singleton()->get_ticks_usec();
 
 	OS::get_singleton()->get_main_loop()->idle(step * time_scale);
 	message_queue->flush();
@@ -1806,6 +1808,11 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+
+	render_process_ticks = OS::get_singleton()->get_ticks_usec() - render_begin;
+	render_process_max = MAX(render_process_ticks, render_process_max);
+
+	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
 	if (AudioServer::get_singleton())
 		AudioServer::get_singleton()->update();
@@ -1841,8 +1848,10 @@ bool Main::iteration() {
 		Engine::get_singleton()->_fps = frames;
 		performance->set_process_time(USEC_TO_SEC(idle_process_max));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
+		performance->set_render_process_time(USEC_TO_SEC(render_process_max));
 		idle_process_max = 0;
 		physics_process_max = 0;
+		render_process_max = 0;
 
 		frame %= 1000000;
 		frames = 0;
