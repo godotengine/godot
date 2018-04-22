@@ -1312,7 +1312,7 @@ bool Main::start() {
 		DocData docsrc;
 		Map<String, String> doc_data_classes;
 		Set<String> checked_paths;
-		print_line("Loading docs..");
+		print_line("Loading docs...");
 
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
 			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
@@ -1330,14 +1330,14 @@ bool Main::start() {
 		checked_paths.insert(index_path);
 		print_line("Loading docs from: " + index_path);
 
-		print_line("Merging docs..");
+		print_line("Merging docs...");
 		doc.merge_from(docsrc);
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
 			DocData::erase_classes(E->get());
 		}
 
-		print_line("Generating new docs..");
+		print_line("Generating new docs...");
 		doc.save_classes(index_path, doc_data_classes);
 
 		return false;

@@ -1021,7 +1021,7 @@ void EditorAudioBuses::_select_layout() {
 void EditorAudioBuses::_save_as_layout() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	file_dialog->set_title(TTR("Save Audio Bus Layout As.."));
+	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
 	new_layout = false;
@@ -1030,7 +1030,7 @@ void EditorAudioBuses::_save_as_layout() {
 void EditorAudioBuses::_new_layout() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	file_dialog->set_title(TTR("Location for New Layout.."));
+	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
 	new_layout = true;

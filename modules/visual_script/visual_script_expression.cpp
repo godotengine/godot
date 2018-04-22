@@ -1141,7 +1141,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression..");
+					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
@@ -1161,7 +1161,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1170,7 +1170,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 

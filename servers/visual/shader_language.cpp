@@ -2960,7 +2960,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression..");
+					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
@@ -2997,7 +2997,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (is_ternary) {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3033,7 +3033,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3042,7 +3042,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3058,7 +3058,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				// can be followed by a unary op in a valid combination,
 				// due to how precedence works, unaries will always disappear first
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 			}
 
 			op->arguments.push_back(expression[next_op - 1].node); //expression goes as left

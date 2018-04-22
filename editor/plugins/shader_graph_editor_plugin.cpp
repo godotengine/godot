@@ -1478,7 +1478,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	case ShaderGraph::NODE_XFORM_CONST: {
 		gn->set_title("XForm");
 		ToolButton *edit = memnew( ToolButton );
-		edit->set_text("edit..");
+		edit->set_text("edit...");
 		edit->connect("pressed",this,"_xform_const_changed",varray(p_id,edit));
 		gn->add_child(edit);
 		gn->set_slot(0,false,0,Color(),true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM]);
@@ -2289,7 +2289,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		le->set_text(graph->input_node_get_name(type,p_id));
 		le->connect("text_entered",this,"_input_name_changed",varray(p_id,le));
 		ToolButton *edit = memnew( ToolButton );
-		edit->set_text("edit..");
+		edit->set_text("edit...");
 		edit->connect("pressed",this,"_xform_input_changed",varray(p_id,edit));
 		gn->add_child(edit);
 		gn->set_slot(1,false,0,Color(),true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM]);
@@ -2310,7 +2310,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		tex->set_mouse_filter(MOUSE_FILTER_PASS);
 		tex->set_texture(graph->texture_input_node_get_value(type,p_id));
 		ToolButton *edit = memnew( ToolButton );
-		edit->set_text("edit..");
+		edit->set_text("edit...");
 		edit->connect("pressed",this,"_tex_edited",varray(p_id,edit));
 		gn->add_child(edit);
 
@@ -2345,7 +2345,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		le->connect("text_entered",this,"_input_name_changed",varray(p_id,le));
 
 		ToolButton *edit = memnew( ToolButton );
-		edit->set_text("edit..");
+		edit->set_text("edit...");
 		edit->connect("pressed",this,"_cube_edited",varray(p_id,edit));
 		gn->add_child(edit);
 

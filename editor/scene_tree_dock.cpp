@@ -379,7 +379,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (scene_tree->get_selected() == edited_scene) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -440,7 +440,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (editor_selection->is_selected(edited_scene)) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -510,7 +510,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (editor_selection->is_selected(edited_scene)) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -571,7 +571,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *scene = editor_data->get_edited_scene_root();
 
 			if (!scene) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
@@ -580,7 +580,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.size() != 1) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation requires a single selected node."));
 				accept->popup_centered_minsize();
 				break;
@@ -589,14 +589,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *tocopy = selection.front()->get();
 
 			if (tocopy == scene) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("Can not perform with the root node."));
 				accept->popup_centered_minsize();
 				break;
 			}
 
 			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_filename() != "") {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on instanced scenes."));
 				accept->popup_centered_minsize();
 				break;
@@ -620,7 +620,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			new_scene_from_dialog->set_current_path(existing);
 
 			new_scene_from_dialog->popup_centered_ratio();
-			new_scene_from_dialog->set_title(TTR("Save New Scene As.."));
+			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -1606,7 +1606,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	if (selection.size() != 1) {
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("This operation requires a single selected node."));
 		accept->popup_centered_minsize();
 		return;
@@ -1624,7 +1624,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		memdelete(copy);
 
 		if (err != OK) {
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
 			accept->popup_centered_minsize();
 			return;
@@ -1636,14 +1636,14 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 		err = ResourceSaver::save(p_file, sdata, flg);
 		if (err != OK) {
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("Error saving scene."));
 			accept->popup_centered_minsize();
 			return;
 		}
 		_replace_with_branch_scene(p_file, base);
 	} else {
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("Error duplicating scene to save it."));
 		accept->popup_centered_minsize();
 		return;

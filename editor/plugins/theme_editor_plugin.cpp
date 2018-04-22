@@ -632,7 +632,7 @@ ThemeEditor::ThemeEditor() {
 	main_vb->add_child(hb_menu);
 
 	theme_menu = memnew(MenuButton);
-	theme_menu->set_text(TTR("Edit theme.."));
+	theme_menu->set_text(TTR("Edit theme..."));
 	theme_menu->set_flat(false);
 	theme_menu->set_tooltip(TTR("Theme editing menu."));
 	theme_menu->get_popup()->add_item(TTR("Add Item"), POPUP_ADD);

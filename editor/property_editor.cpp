@@ -486,7 +486,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -3 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -25 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -7 * EDSCALE);
-				type_button->set_text(TTR("Preset.."));
+				type_button->set_text(TTR("Preset..."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
 				type_button->get_popup()->add_item(TTR("Ease In"), EASING_EASE_IN);
@@ -530,14 +530,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 
 				List<String> names;
-				names.push_back(TTR("File.."));
+				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back(TTR("Dir.."));
+				names.push_back(TTR("Dir..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 			} else if (hint == PROPERTY_HINT_ENUM) {

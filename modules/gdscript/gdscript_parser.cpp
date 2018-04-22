@@ -970,7 +970,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		}
 
 		if (!expr) {
-			ERR_EXPLAIN("GDScriptParser bug, couldn't figure out what expression is..");
+			ERR_EXPLAIN("GDScriptParser bug, couldn't figure out what expression is...");
 			ERR_FAIL_COND_V(!expr, NULL);
 		}
 
@@ -1305,7 +1305,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression..");
+					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
@@ -1324,7 +1324,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		} else if (is_ternary) {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1343,7 +1343,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1380,7 +1380,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1390,7 +1390,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
