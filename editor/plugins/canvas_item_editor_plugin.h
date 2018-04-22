@@ -194,7 +194,8 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE
+		DRAG_KEY_MOVE,
+		DRAG_PAN
 	};
 
 	EditorSelection *editor_selection;

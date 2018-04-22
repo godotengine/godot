@@ -896,7 +896,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
+		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
@@ -908,7 +908,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_UP) {
+		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_UP) {
 			// Scroll or pan up
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
@@ -920,7 +920,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_LEFT) {
+		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_LEFT) {
 			// Pan left
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.x -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
@@ -930,7 +930,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_RIGHT) {
+		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_RIGHT) {
 			// Pan right
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.x += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
@@ -939,28 +939,57 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 				return true;
 			}
 		}
+
+		if (drag_type == DRAG_NONE) {
+			if (b->is_pressed() &&
+					(b->get_button_index() == BUTTON_MIDDLE ||
+							(b->get_button_index() == BUTTON_LEFT && tool == TOOL_PAN) ||
+							(b->get_button_index() == BUTTON_LEFT && !EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
+				// Pan the viewport
+				drag_type = DRAG_PAN;
+			}
+		}
+
+		if (drag_type == DRAG_PAN) {
+			if (!b->is_pressed()) {
+				// Stop panning the viewport (for any mouse button press)
+				drag_type = DRAG_NONE;
+			}
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		if (k->get_scancode() == KEY_SPACE && EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning")) {
+			if (drag_type == DRAG_NONE) {
+				if (k->is_pressed() && !k->is_echo()) {
+					//Pan the viewport
+					drag_type = DRAG_PAN;
+				}
+			} else if (drag_type == DRAG_PAN) {
+				if (!k->is_pressed()) {
+					// Stop panning the viewport (for any mouse button press)
+					drag_type = DRAG_NONE;
+				}
+			}
+		}
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
-		if (drag_type == DRAG_NONE) {
-			if (((m->get_button_mask() & BUTTON_MASK_LEFT) && tool == TOOL_PAN) ||
-					(m->get_button_mask() & BUTTON_MASK_MIDDLE) ||
-					((m->get_button_mask() & BUTTON_MASK_LEFT) && Input::get_singleton()->is_key_pressed(KEY_SPACE)) ||
-					(EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
-				// Pan the viewport
-				Point2i relative;
-				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
-					relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
-				} else {
-					relative = m->get_relative();
-				}
-				view_offset.x -= relative.x / zoom;
-				view_offset.y -= relative.y / zoom;
-				_update_scrollbars();
-				viewport->update();
-				return true;
+		if (drag_type == DRAG_PAN) {
+			// Pan the viewport
+			Point2i relative;
+			if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
+				relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
+			} else {
+				relative = m->get_relative();
 			}
+			view_offset.x -= relative.x / zoom;
+			view_offset.y -= relative.y / zoom;
+			_update_scrollbars();
+			viewport->update();
+			return true;
 		}
 	}
 
@@ -1903,10 +1932,10 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		//printf("Rotate\n");
 	} else if ((accepted = _gui_input_move(p_event))) {
 		//printf("Move\n");
-	} else if ((accepted = _gui_input_select(p_event))) {
-		//printf("Selection\n");
 	} else if ((accepted = _gui_input_zoom_or_pan(p_event))) {
 		//printf("Zoom or pan\n");
+	} else if ((accepted = _gui_input_select(p_event))) {
+		//printf("Selection\n");
 	}
 
 	if (accepted)
@@ -1919,22 +1948,18 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	CursorShape c = CURSOR_ARROW;
 	switch (drag_type) {
 		case DRAG_NONE:
-			if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
-				c = CURSOR_DRAG;
-			} else {
-				switch (tool) {
-					case TOOL_MOVE:
-						c = CURSOR_MOVE;
-						break;
-					case TOOL_EDIT_PIVOT:
-						c = CURSOR_CROSS;
-						break;
-					case TOOL_PAN:
-						c = CURSOR_DRAG;
-						break;
-					default:
-						break;
-				}
+			switch (tool) {
+				case TOOL_MOVE:
+					c = CURSOR_MOVE;
+					break;
+				case TOOL_EDIT_PIVOT:
+					c = CURSOR_CROSS;
+					break;
+				case TOOL_PAN:
+					c = CURSOR_DRAG;
+					break;
+				default:
+					break;
 			}
 			break;
 		case DRAG_LEFT:
@@ -1956,6 +1981,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		case DRAG_ALL:
 			c = CURSOR_MOVE;
 			break;
+		case DRAG_PAN:
+			c = CURSOR_DRAG;
 		default:
 			break;
 	}
