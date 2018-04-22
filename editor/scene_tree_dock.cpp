@@ -1637,9 +1637,9 @@ void SceneTreeDock::_create() {
 					continue;
 				if (E->get().name == "__meta__")
 					continue;
-	                	if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
-                        		newnode->set(E->get().name, n->get(E->get().name));
-		                }
+				if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
+					newnode->set(E->get().name, n->get(E->get().name));
+				}
 			}
 
 			editor->push_item(NULL);
