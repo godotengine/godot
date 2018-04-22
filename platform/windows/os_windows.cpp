@@ -757,7 +757,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						SetCursor(NULL);
 				} else {
 					if (hCursor != NULL) {
-						SetCursor(hCursor);
+						CursorShape c = cursor_shape;
+						cursor_shape = CURSOR_MAX;
+						set_cursor_shape(c);
 						hCursor = NULL;
 					}
 				}
@@ -1348,7 +1350,9 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
 		hCursor = SetCursor(NULL);
 	} else {
-		SetCursor(hCursor);
+		CursorShape c = cursor_shape;
+		cursor_shape = CURSOR_MAX;
+		set_cursor_shape(c);
 	}
 }
 
@@ -1948,6 +1952,11 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
+	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+		cursor_shape = p_shape;
+		return;
+	}
+
 	static const LPCTSTR win_cursors[CURSOR_MAX] = {
 		IDC_ARROW,
 		IDC_IBEAM,
@@ -2012,7 +2021,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		// Finally, create the icon
-		ICONINFO iconinfo = {0};
+		ICONINFO iconinfo = { 0 };
 		iconinfo.fIcon = FALSE;
 		iconinfo.xHotspot = p_hotspot.x;
 		iconinfo.yHotspot = p_hotspot.y;
@@ -2072,7 +2081,7 @@ void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, 
 	SetBkColor(hXorMaskDC, RGB(0, 0, 0));
 	SetTextColor(hXorMaskDC, RGB(255, 255, 255));
 	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hAndMaskDC, 0, 0, SRCCOPY);
-	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0,0, SRCAND);
+	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCAND);
 
 	// Deselect bitmaps from the helper DC
 	SelectObject(hMainDC, hOldMainBitmap);
