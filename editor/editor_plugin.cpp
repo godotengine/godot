@@ -125,7 +125,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		xform.origin.z -= rot_aabb.size.z * 2;
 		RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 		VS::get_singleton()->instance_set_transform(inst, xform);
-		ep.step(TTR("Thumbnail.."), i);
+		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
 		Main::iteration();
 		Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);

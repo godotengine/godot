@@ -94,7 +94,7 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 	while (running < time) {
 
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating..", int(running), true);
+		ep.step("Generating...", int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
@@ -229,7 +229,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		valid_normals.resize(vpc);
 	}
 
-	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image.."));
+	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image..."));
 	ERR_FAIL_COND(valid_positions.size() == 0);
 
 	PoolVector<uint8_t> texdata;
