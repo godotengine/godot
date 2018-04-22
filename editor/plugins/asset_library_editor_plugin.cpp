@@ -407,13 +407,13 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 			switch (cstatus) {
 
 				case HTTPClient::STATUS_RESOLVING: {
-					status->set_text(TTR("Resolving.."));
+					status->set_text(TTR("Resolving..."));
 				} break;
 				case HTTPClient::STATUS_CONNECTING: {
-					status->set_text(TTR("Connecting.."));
+					status->set_text(TTR("Connecting..."));
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
-					status->set_text(TTR("Requesting.."));
+					status->set_text(TTR("Requesting..."));
 				} break;
 				default: {}
 			}
@@ -1382,7 +1382,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
-	support->set_text(TTR("Support.."));
+	support->set_text(TTR("Support..."));
 	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
 	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);

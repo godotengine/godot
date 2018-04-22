@@ -133,7 +133,7 @@ Error AudioDriverRtAudio::init() {
 			break;
 		} catch (RtAudioError &e) {
 			// try with less channels
-			ERR_PRINT("Unable to open audio, retrying with fewer channels..");
+			ERR_PRINT("Unable to open audio, retrying with fewer channels...");
 
 			switch (speaker_mode) {
 				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_MODE_STEREO; break;

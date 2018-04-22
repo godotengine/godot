@@ -425,7 +425,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 		case INPUT_KEY: {
 
-			press_a_key_label->set_text(TTR("Press a Key.."));
+			press_a_key_label->set_text(TTR("Press a Key..."));
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -1732,7 +1732,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(memnew(VSeparator));
 
 	popup_copy_to_feature = memnew(MenuButton);
-	popup_copy_to_feature->set_text(TTR("Override For.."));
+	popup_copy_to_feature->set_text(TTR("Override For..."));
 	popup_copy_to_feature->set_disabled(true);
 	add_prop_bar->add_child(popup_copy_to_feature);
 
@@ -1796,7 +1796,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_child(press_a_key);
 
 	l = memnew(Label);
-	l->set_text(TTR("Press a Key.."));
+	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
@@ -1867,7 +1867,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1891,7 +1891,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1912,7 +1912,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
-		addtr = memnew(Button(TTR("Add..")));
+		addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_option_file_open");
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);

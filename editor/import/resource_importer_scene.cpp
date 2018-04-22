@@ -251,7 +251,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map, p_light_bake_mode);
 		if (!r) {
-			print_line("was erased..");
+			print_line("was erased...");
 			i--; //was erased
 		}
 	}
@@ -1152,7 +1152,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String ext = src_path.get_extension().to_lower();
 
 	EditorProgress progress("import", TTR("Import Scene"), 104);
-	progress.step(TTR("Importing Scene.."), 0);
+	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
 
@@ -1324,7 +1324,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		_make_external_resources(scene, base_path, external_animations, keep_custom_tracks, external_materials, keep_materials, external_meshes, anim_map, mat_map, mesh_map);
 	}
 
-	progress.step(TTR("Running Custom Script.."), 2);
+	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["nodes/custom_script"];
 	Ref<EditorScenePostImport> post_import_script;
@@ -1353,7 +1353,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	progress.step(TTR("Saving.."), 104);
+	progress.step(TTR("Saving..."), 104);
 
 	if (external_scenes) {
 		//save sub-scenes as instances!

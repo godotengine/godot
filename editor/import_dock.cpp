@@ -415,7 +415,7 @@ ImportDock::ImportDock() {
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
-	preset->set_text(TTR("Preset.."));
+	preset->set_text(TTR("Preset..."));
 	preset->get_popup()->connect("index_pressed", this, "_preset_selected");
 	hb->add_child(preset);
 

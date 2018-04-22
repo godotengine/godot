@@ -884,7 +884,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->add_filter("*.tet");
 			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
 			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Save Theme As.."));
+			file_dialog->set_title(TTR("Save Theme As..."));
 		} break;
 		case SEARCH_HELP: {
 
@@ -2696,7 +2696,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As..")), FILE_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
@@ -2725,7 +2725,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu = memnew(MenuButton);
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
-	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
+	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	script_search_menu->hide();

@@ -578,7 +578,7 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 			if (anim_tree->animation_node_get_master_animation(p_node) != "")
 				text = anim_tree->animation_node_get_master_animation(p_node);
 			else if (anim.is_null())
-				text = "load..";
+				text = "load...";
 			else
 				text = anim->get_name();
 
@@ -593,7 +593,7 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 		case AnimationTreePlayer::NODE_TIMESCALE:
 		case AnimationTreePlayer::NODE_TRANSITION: {
 
-			font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, "edit..", font_color_title);
+			font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, "edit...", font_color_title);
 		} break;
 		default: editable = false;
 	}
@@ -1290,7 +1290,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	p->add_item(TTR("TimeSeek Node"), AnimationTreePlayer::NODE_TIMESEEK);
 	p->add_item(TTR("Transition Node"), AnimationTreePlayer::NODE_TRANSITION);
 	p->add_separator();
-	p->add_item(TTR("Import Animations.."), MENU_IMPORT_ANIMATIONS); // wtf
+	p->add_item(TTR("Import Animations..."), MENU_IMPORT_ANIMATIONS); // wtf
 	p->add_separator();
 	p->add_item(TTR("Clear"), MENU_GRAPH_CLEAR);
 
@@ -1399,7 +1399,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	filter_button->set_margin(MARGIN_RIGHT, -10);
 	edit_dialog->add_child(filter_button);
 	filter_button->hide();
-	filter_button->set_text(TTR("Filters.."));
+	filter_button->set_text(TTR("Filters..."));
 	filter_button->connect("pressed", this, "_edit_filters");
 
 	set_clip_contents(true);
