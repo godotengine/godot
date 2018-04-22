@@ -1459,13 +1459,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._int / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._int, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._int, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._int, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._int, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int);
+					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
 					valid = true;
 				}
 			} else if (p_value.type == Variant::REAL) {
@@ -1495,13 +1495,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._real / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._real, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._real, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._real, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._real, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real);
+					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real, v->a);
 					valid = true;
 				}
 			}
@@ -2117,15 +2117,15 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				} else if (*str == "h") {
 					valid = true;
-					v->set_hsv(p_value, v->get_s(), v->get_v());
+					v->set_hsv(p_value, v->get_s(), v->get_v(), v->a);
 					return;
 				} else if (*str == "s") {
 					valid = true;
-					v->set_hsv(v->get_h(), p_value, v->get_v());
+					v->set_hsv(v->get_h(), p_value, v->get_v(), v->a);
 					return;
 				} else if (*str == "v") {
 					valid = true;
-					v->set_hsv(v->get_h(), v->get_s(), p_value);
+					v->set_hsv(v->get_h(), v->get_s(), p_value, v->a);
 					return;
 				} else if (*str == "r8") {
 					valid = true;
