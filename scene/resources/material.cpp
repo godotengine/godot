@@ -554,9 +554,20 @@ void SpatialMaterial::_update_shader() {
 		case BILLBOARD_ENABLED: {
 
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
+
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
+
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)),0.0),WORLD_MATRIX[3]);\n";
+
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,1,0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+			} else {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1,0,0,0),vec4(0,1.0/length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,1,0),vec4(0,0,0,1));\n";
+			}
 		} break;
 		case BILLBOARD_PARTICLES: {
 
@@ -573,8 +584,6 @@ void SpatialMaterial::_update_shader() {
 			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
 			code += "\tUV += vec2(float(particle_frame % particles_anim_h_frames) / float(particles_anim_h_frames),float(particle_frame / particles_anim_h_frames) / float(particles_anim_v_frames));\n";
-			//handle rotation
-			//	code += "\tmat4 rotation = mat4("
 		} break;
 	}
 
@@ -1883,7 +1892,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard1"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_use_alpha_scissor"), "set_flag", "get_flag", FLAG_USE_ALPHA_SCISSOR);
@@ -2053,6 +2063,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_SRGB_VERTEX_COLOR);
 	BIND_ENUM_CONSTANT(FLAG_USE_POINT_SIZE);
 	BIND_ENUM_CONSTANT(FLAG_FIXED_SIZE);
+	BIND_ENUM_CONSTANT(FLAG_BILLBOARD_KEEP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_UV1_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_UV2_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_AO_ON_UV2);
