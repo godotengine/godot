@@ -5241,6 +5241,10 @@ msgid "Transform"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap..."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
 msgstr ""
 
