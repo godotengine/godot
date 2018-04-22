@@ -86,7 +86,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				o = o->_owner;
 			}
 
-			ERR_EXPLAIN("GDScriptCompiler bug..");
+			ERR_EXPLAIN("GDScriptCompiler bug...");
 			ERR_FAIL_V(NULL);
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {

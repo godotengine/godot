@@ -1349,12 +1349,12 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 		folder_options->add_separator();
 		folder_options->add_item(TTR("Copy Path"), FOLDER_COPY_PATH);
 		if (fpath != "res://") {
-			folder_options->add_item(TTR("Rename.."), FOLDER_RENAME);
-			folder_options->add_item(TTR("Move To.."), FOLDER_MOVE);
+			folder_options->add_item(TTR("Rename..."), FOLDER_RENAME);
+			folder_options->add_item(TTR("Move To..."), FOLDER_MOVE);
 			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
 		}
 		folder_options->add_separator();
-		folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
+		folder_options->add_item(TTR("New Folder..."), FOLDER_NEW_FOLDER);
 		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
 	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
@@ -1639,8 +1639,8 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		}
 
 		if (filenames.size() == 1) {
-			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
-			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
+			file_options->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
+			file_options->add_item(TTR("View Owners..."), FILE_OWNERS);
 			file_options->add_separator();
 		}
 
@@ -1653,15 +1653,15 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	if (num_items >= 1) {
 		if (num_items == 1) {
 			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-			file_options->add_item(TTR("Rename.."), FILE_RENAME);
-			file_options->add_item(TTR("Duplicate.."), FILE_DUPLICATE);
+			file_options->add_item(TTR("Rename..."), FILE_RENAME);
+			file_options->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
 		}
-		file_options->add_item(TTR("Move To.."), FILE_MOVE);
+		file_options->add_item(TTR("Move To..."), FILE_MOVE);
 		file_options->add_item(TTR("Delete"), FILE_REMOVE);
 		file_options->add_separator();
 	}
 
-	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
+	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
@@ -1672,7 +1672,7 @@ void FileSystemDock::_rmb_pressed(const Vector2 &p_pos) {
 	file_options->clear();
 	file_options->set_size(Size2(1, 1));
 
-	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
+	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
@@ -1934,7 +1934,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(scanning_vb);
 
 	Label *slabel = memnew(Label);
-	slabel->set_text(TTR("Scanning Files,\nPlease Wait.."));
+	slabel->set_text(TTR("Scanning Files,\nPlease Wait..."));
 	slabel->set_align(Label::ALIGN_CENTER);
 	scanning_vb->add_child(slabel);
 

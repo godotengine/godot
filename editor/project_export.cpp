@@ -207,9 +207,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	TreeItem *patch_add = patches->create_item(patch_root);
 	patch_add->set_metadata(0, patchlist.size());
 	if (patchlist.size() == 0)
-		patch_add->set_text(0, "Add initial export..");
+		patch_add->set_text(0, "Add initial export...");
 	else
-		patch_add->set_text(0, "Add previous patches..");
+		patch_add->set_text(0, "Add previous patches...");
 
 	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
 
@@ -803,7 +803,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(preset_hb);
 
 	add_preset = memnew(MenuButton);
-	add_preset->set_text(TTR("Add.."));
+	add_preset->set_text(TTR("Add..."));
 	add_preset->get_popup()->connect("index_pressed", this, "_add_preset");
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);

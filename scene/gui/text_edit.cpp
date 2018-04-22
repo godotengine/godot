@@ -5689,7 +5689,7 @@ TextEdit::TextEdit() {
 	indent_size = 4;
 	text.set_indent_size(indent_size);
 	text.clear();
-	//text.insert(1,"Mongolia..");
+	//text.insert(1,"Mongolia...");
 	//text.insert(2,"PAIS GENEROSO!!");
 	text.set_color_regions(&color_regions);
 

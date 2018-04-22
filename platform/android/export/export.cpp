@@ -1153,7 +1153,7 @@ public:
 		String package_name = p_preset->get("package/unique_name");
 
 		if (remove_prev) {
-			ep.step("Uninstalling..", 1);
+			ep.step("Uninstalling...", 1);
 
 			print_line("Uninstalling previous version: " + devices[p_device].name);
 
@@ -1232,7 +1232,7 @@ public:
 			}
 		}
 
-		ep.step("Running on Device..", 3);
+		ep.step("Running on Device...", 3);
 		args.clear();
 		args.push_back("-s");
 		args.push_back(devices[p_device].id);
@@ -1490,7 +1490,7 @@ public:
 			ret = unzGoToNextFile(pkg);
 		}
 
-		ep.step("Adding Files..", 1);
+		ep.step("Adding Files...", 1);
 		Error err = OK;
 		Vector<String> cl = cmdline.strip_edges().split(" ");
 		for (int i = 0; i < cl.size(); i++) {
@@ -1624,14 +1624,14 @@ public:
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 
-				ep.step("Signing Debug APK..", 103);
+				ep.step("Signing Debug APK...", 103);
 
 			} else {
 				keystore = release_keystore;
 				password = release_password;
 				user = release_username;
 
-				ep.step("Signing Release APK..", 103);
+				ep.step("Signing Release APK...", 103);
 			}
 
 			if (!FileAccess::exists(keystore)) {
@@ -1663,7 +1663,7 @@ public:
 				return ERR_CANT_CREATE;
 			}
 
-			ep.step("Verifying APK..", 104);
+			ep.step("Verifying APK...", 104);
 
 			args.clear();
 			args.push_back("-verify");
@@ -1683,7 +1683,7 @@ public:
 
 		static const int ZIP_ALIGNMENT = 4;
 
-		ep.step("Aligning APK..", 105);
+		ep.step("Aligning APK...", 105);
 
 		unzFile tmp_unaligned = unzOpen2(unaligned_path.utf8().get_data(), &io);
 		if (!tmp_unaligned) {

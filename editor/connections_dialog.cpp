@@ -319,7 +319,7 @@ ConnectDialog::ConnectDialog() {
 	dstm_hb->add_child(dst_method);
 
 	/*dst_method_list = memnew( MenuButton );
-	dst_method_list->set_text("List..");
+	dst_method_list->set_text("List...");
 	dst_method_list->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	dst_method_list->set_anchor( MARGIN_LEFT, ANCHOR_END );
 	dst_method_list->set_anchor( MARGIN_TOP, ANCHOR_END );
@@ -621,12 +621,12 @@ void ConnectionsDock::_something_selected() {
 	TreeItem *item = tree->get_selected();
 	if (!item) {
 		//no idea how this happened, but disable
-		connect_button->set_text(TTR("Connect.."));
+		connect_button->set_text(TTR("Connect..."));
 		connect_button->set_disabled(true);
 
 	} else if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
 		//a signal - connect
-		connect_button->set_text(TTR("Connect.."));
+		connect_button->set_text(TTR("Connect..."));
 		connect_button->set_disabled(false);
 
 	} else {
