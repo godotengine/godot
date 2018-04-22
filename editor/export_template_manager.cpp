@@ -436,10 +436,6 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	template_list_state->set_text(TTR("Connecting to Mirror..."));
 }
 
-void ExportTemplateManager::_window_template_downloader_closed() {
-	download_templates->cancel_request();
-}
-
 void ExportTemplateManager::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
