@@ -1190,6 +1190,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				}
 
 			} else {
+				glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
+
 				state.canvas_shader.set_custom_shader(0);
 				state.canvas_shader.bind();
 			}
