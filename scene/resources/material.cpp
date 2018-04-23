@@ -552,7 +552,7 @@ void SpatialMaterial::_update_shader() {
 
 			//handle animation
 			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
-			code += "\tint particle_frame = int(INSTANCE_CUSTOM.y * float(particle_total_frames));\n";
+			code += "\tint particle_frame = int(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
 			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
 			code += "\tUV += vec2(float(particle_frame % particles_anim_h_frames) / float(particles_anim_h_frames),float(particle_frame / particles_anim_h_frames) / float(particles_anim_v_frames));\n";
