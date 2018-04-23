@@ -724,7 +724,11 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (mb->get_shift()) {
 
+#ifdef APPLE_STYLE_KEYS
+						if (mb->get_command())
+#else
 						if (mb->get_control())
+#endif
 							tool = TOOL_RECTANGLE_PAINT;
 						else
 							tool = TOOL_LINE_PAINT;
@@ -734,9 +738,11 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						return true;
 					}
-
+#ifdef APPLE_STYLE_KEYS
+					if (mb->get_command()) {
+#else
 					if (mb->get_control()) {
-
+#endif
 						tool = TOOL_PICKING;
 						_pick_tile(over_tile);
 
@@ -940,8 +946,11 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					undo_redo->add_undo_method(node, "set", "tile_data", node->get("tile_data"));
 
 					if (mb->get_shift()) {
-
+#ifdef APPLE_STYLE_KEYS
+						if (mb->get_command())
+#else
 						if (mb->get_control())
+#endif
 							tool = TOOL_RECTANGLE_ERASE;
 						else
 							tool = TOOL_LINE_ERASE;
