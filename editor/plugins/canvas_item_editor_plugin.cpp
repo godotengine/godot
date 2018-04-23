@@ -482,7 +482,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 
 	if (canvas_item && canvas_item->is_visible_in_tree() && (canvas_item->get_owner() != editor->get_edited_scene() || !canvas_item->has_meta("_edit_lock_"))) {
 		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
-		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
+		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
