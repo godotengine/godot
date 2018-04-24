@@ -3130,7 +3130,6 @@ void AnimationKeyEditor::set_animation(const Ref<Animation> &p_anim) {
 
 	timeline_pos = 0;
 	_clear_selection();
-	_update_paths();
 
 	_update_menu();
 	selected_track = -1;
