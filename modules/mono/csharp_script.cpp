@@ -1977,6 +1977,13 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
+	if (!script_class) {
+		ERR_EXPLAIN("Cannot find class " + name + " for script " + get_path());
+		ERR_FAIL_V(NULL);
+	}
+
+	ERR_FAIL_COND_V(!valid, NULL);
+
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
