@@ -1466,14 +1466,6 @@ PoolRealArray Curve3D::get_baked_tilts() const {
 	return baked_tilt_cache;
 }
 
-PoolVector3Array Curve3D::get_baked_up_vectors() const {
-
-	if (baked_cache_dirty)
-		_bake();
-
-	return baked_up_vector_cache;
-}
-
 Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	// Brute force method
 
@@ -1698,7 +1690,6 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("interpolate_baked_up_vector", "offset", "apply_tilt"), &Curve3D::interpolate_baked_up_vector, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
-	ClassDB::bind_method(D_METHOD("get_baked_up_vectors"), &Curve3D::get_baked_up_vectors);
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve3D::get_closest_point);
 	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve3D::get_closest_offset);
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
