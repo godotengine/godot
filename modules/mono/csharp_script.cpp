@@ -2288,7 +2288,9 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 	CRASH_COND(mono_domain_get() == NULL);
 #endif
 
-#else
+#endif
+
+#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && mono_domain_get() == NULL) {
 
 		CRASH_COND(Thread::get_caller_id() == Thread::get_main_id());
@@ -2297,14 +2299,20 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 		// because this may be called by one of the editor's worker threads.
 		// Attach this thread temporarily to reload the script.
 
-		MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
-		CRASH_COND(mono_thread == NULL);
-		script->reload();
-		mono_thread_detach(mono_thread);
+		if (SCRIPTS_DOMAIN) {
+			MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
+			CRASH_COND(mono_thread == NULL);
+			script->reload();
+			mono_thread_detach(mono_thread);
+		}
 
-	} else // just reload it normally
+	} else { // just reload it normally
 #endif
-	script->reload();
+		script->reload();
+
+#ifdef TOOLS_ENABLED
+	}
+#endif
 
 	if (r_error)
 		*r_error = OK;
