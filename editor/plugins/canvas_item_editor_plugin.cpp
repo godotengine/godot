@@ -457,7 +457,7 @@ Rect2 CanvasItemEditor::_get_encompassing_rect(const Node *p_node) {
 	return rect;
 }
 
-void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int limit, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
+void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int p_limit, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	if (!p_node)
 		return;
 	if (Object::cast_to<Viewport>(p_node))
@@ -466,35 +466,71 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
-	Node *scene = editor->get_edited_scene();
-	if (!(p_node != scene && p_node->get_owner() != scene && (!scene->is_editable_instance(p_node) || p_node->has_meta("_edit_lock_")))) {
+	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+
+	if (!locked) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
 			} else {
 				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
 			}
-			if (limit != 0 && r_items.size() >= limit)
+			if (p_limit != 0 && r_items.size() >= p_limit)
 				return;
 		}
-	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && (canvas_item->get_owner() != editor->get_edited_scene() || !canvas_item->has_meta("_edit_lock_"))) {
-		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
-		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
-		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
-			Node2D *node = Object::cast_to<Node2D>(canvas_item);
+		if (canvas_item && canvas_item->is_visible_in_tree()) {
+			Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
+			const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
+			if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
+				Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
-			_SelectResult res;
-			res.item = canvas_item;
-			res.z_index = node ? node->get_z_index() : 0;
-			res.has_z = node;
-			r_items.push_back(res);
+				_SelectResult res;
+				res.item = canvas_item;
+				res.z_index = node ? node->get_z_index() : 0;
+				res.has_z = node;
+				r_items.push_back(res);
+			}
 		}
 	}
 
 	return;
+}
+
+void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, int p_limit) {
+
+	Node *scene = editor->get_edited_scene();
+
+	_find_canvas_items_at_pos(p_pos, scene, r_items, p_limit);
+
+	//Remove invalid results
+	for (int i = 0; i < r_items.size(); i++) {
+		Node *node = r_items[i].item;
+
+		// Make sure the selected node is in the current scene
+		while (node && node != scene && node->get_owner() != scene) {
+			node = node->get_parent();
+		};
+
+		// Replace the node by the group if grouped
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(node);
+		while (node && node != scene) {
+			CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
+			if (canvas_item_tmp && node->has_meta("_edit_group_")) {
+				canvas_item = canvas_item_tmp;
+			}
+			node = node->get_parent();
+		}
+
+		//Remove the item if invalid
+		if (!canvas_item || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
+			r_items.remove(i);
+			i--;
+		} else {
+			r_items[i].item = canvas_item;
+		}
+	}
 }
 
 void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
@@ -1704,17 +1740,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Popup the selection menu list
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
-			Node *scene = editor->get_edited_scene();
-
-			_find_canvas_items_at_pos(click, scene, selection_results);
-			for (int i = 0; i < selection_results.size(); i++) {
-				CanvasItem *item = selection_results[i].item;
-				if (item != scene && item->get_owner() != scene && !scene->is_editable_instance(item->get_owner())) {
-					//invalid result
-					selection_results.remove(i);
-					i--;
-				}
-			}
+			_get_canvas_items_at_pos(click, selection_results);
 
 			if (selection_results.size() == 1) {
 				CanvasItem *item = selection_results[0].item;
@@ -1764,7 +1790,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Find the item to select
 			CanvasItem *canvas_item = NULL;
 			Vector<_SelectResult> selection;
-			_find_canvas_items_at_pos(click, scene, selection, editor_selection->get_selection().empty() ? 1 : 0);
+			_get_canvas_items_at_pos(click, selection, editor_selection->get_selection().empty() ? 1 : 0);
 
 			for (int i = 0; i < selection.size(); i++) {
 				if (editor_selection->is_selected(selection[i].item)) {
@@ -1782,23 +1808,6 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 			if (!selection.empty())
 				canvas_item = selection[0].item;
-
-			// Check if the canvas item is in a group, and select the group instead if it is the case
-			Node *node = canvas_item;
-			while (node && node != scene) {
-				CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
-				if (canvas_item_tmp && node->has_meta("_edit_group_")) {
-					canvas_item = canvas_item_tmp;
-				}
-				node = node->get_parent();
-			}
-
-			// Make sure the selected node is in the current scene
-			node = canvas_item;
-			while (node && ((node != scene && node->get_owner() != scene) || !node->is_class("CanvasItem"))) {
-				node = node->get_parent();
-			};
-			canvas_item = Object::cast_to<CanvasItem>(node);
 
 			if (!canvas_item) {
 				// Start a box selection
@@ -1884,11 +1893,10 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 	if (m.is_valid()) {
 		if (drag_type == DRAG_NONE && tool == TOOL_SELECT) {
 			Point2 click = transform.affine_inverse().xform(m->get_position());
-			Node *scene = editor->get_edited_scene();
 
 			//Checks if the hovered items changed, update the viewport if so
 			Vector<_SelectResult> hovering_results_tmp;
-			_find_canvas_items_at_pos(click, scene, hovering_results_tmp);
+			_get_canvas_items_at_pos(click, hovering_results_tmp);
 			hovering_results_tmp.sort();
 			bool changed = false;
 			if (hovering_results.size() == hovering_results_tmp.size()) {
