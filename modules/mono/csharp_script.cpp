@@ -1954,8 +1954,12 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
-	if (!valid)
-		return NULL;
+	if (!script_class) {
+		ERR_EXPLAIN("Cannot find class " + name + " for script " + get_path());
+		ERR_FAIL_V(NULL);
+	}
+
+	ERR_FAIL_COND_V(!valid, NULL);
 
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
@@ -2045,20 +2049,15 @@ Error CSharpScript::reload(bool p_keep_state) {
 	if (project_assembly) {
 		script_class = project_assembly->get_object_derived_class(name);
 
-		if (!script_class) {
-			ERR_PRINTS("Cannot find class " + name + " for script " + get_path());
-		}
-#ifdef DEBUG_ENABLED
-		else if (OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
-											  script_class->get_name() + " for script " + get_path() + "\n")
-											   .utf8());
-		}
-#endif
-
 		valid = script_class != NULL;
 
 		if (script_class) {
+#ifdef DEBUG_ENABLED
+			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
+											  script_class->get_name() + " for script " + get_path() + "\n")
+											   .utf8());
+#endif
+
 			tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));
 
 			native = GDMonoUtils::get_class_native_base(script_class);
