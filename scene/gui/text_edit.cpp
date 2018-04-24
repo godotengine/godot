@@ -2410,6 +2410,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					cursor_set_line(line);
 					cursor_set_column(column);
 
+#ifdef APPLE_STYLE_KEYS
+				} else if (k->get_command()) {
+					int cursor_current_column = cursor.column;
+					cursor.column = 0;
+					_remove_text(cursor.line, 0, cursor.line, cursor_current_column);
+#endif
 				} else {
 					if (cursor.line > 0 && is_line_hidden(cursor.line - 1))
 						unfold_line(cursor.line - 1);
@@ -2684,7 +2690,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					next_line = line;
 					next_column = column;
-
+#ifdef APPLE_STYLE_KEYS
+				} else if (k->get_command()) {
+					next_column = curline_len;
+					next_line = cursor.line;
+#endif
 				} else {
 					next_column = cursor.column < curline_len ? (cursor.column + 1) : 0;
 				}
