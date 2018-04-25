@@ -3191,8 +3191,8 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		return OK;
 	}
 
-	GDScriptParser parser;
-	parser.parse(p_code, p_base_path, false, "", true);
+	GDScriptParser p;
+	p.parse(p_code, p_base_path, false, "", true);
 
 	if (parser.get_completion_type() == GDScriptParser::COMPLETION_NONE) {
 		return ERR_CANT_RESOLVE;
