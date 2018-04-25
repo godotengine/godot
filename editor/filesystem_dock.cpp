@@ -1237,6 +1237,15 @@ void FileSystemDock::_file_option(int p_option) {
 			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
 			make_dir_dialog_text->grab_focus();
 		} break;
+		case FILE_NEW_SCRIPT: {
+			String tarDir = path;
+			if (tarDir != "res://" && !tarDir.ends_with("/")) {
+				tarDir += "/";
+			}
+
+			make_script_dialog_text->config("Node", tarDir + "new_script.gd");
+			make_script_dialog_text->popup_centered(Size2(300, 300) * EDSCALE);
+		} break;
 		case FILE_COPY_PATH: {
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
@@ -1662,6 +1671,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	}
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
@@ -1673,6 +1683,7 @@ void FileSystemDock::_rmb_pressed(const Vector2 &p_pos) {
 	file_options->set_size(Size2(1, 1));
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
@@ -1987,6 +1998,10 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(make_dir_dialog);
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
 	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
+
+	make_script_dialog_text = memnew(ScriptCreateDialog);
+	make_script_dialog_text->set_title(TTR("Create Script"));
+	add_child(make_script_dialog_text);
 
 	updating_tree = false;
 	initialized = false;
