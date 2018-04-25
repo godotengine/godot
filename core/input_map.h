@@ -55,7 +55,7 @@ private:
 
 	mutable Map<StringName, Action> input_map;
 
-	List<Ref<InputEvent> >::Element *_find_event(Action p_action, const Ref<InputEvent> &p_event, bool *p_pressed = NULL, float *p_strength = NULL) const;
+	List<Ref<InputEvent> >::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = NULL, float *p_strength = NULL) const;
 
 	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
