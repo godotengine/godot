@@ -2636,6 +2636,13 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
+		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+		r_result.class_name = "@GDScript";
+		r_result.class_member = p_symbol;
+		return OK;
+	}
+
 	GDScriptParser p;
 	p.parse(p_code, p_base_path, false, "", true);
 
