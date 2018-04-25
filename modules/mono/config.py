@@ -80,16 +80,12 @@ def configure(env):
 
         if mono_static:
             lib_suffix = Environment()['LIBSUFFIX']
-
-            if env.msvc:
-                mono_static_lib_name = 'libmono-static-sgen'
-            else:
-                mono_static_lib_name = 'libmonosgen-2.0'
+            mono_static_lib_name = 'libmono-static-sgen'
 
             if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
                 raise RuntimeError('Could not find static mono library in: ' + mono_lib_path)
 
-            if env.msvc:
+            if os.getenv('VCINSTALLDIR'):
                 env.Append(LINKFLAGS=mono_static_lib_name + lib_suffix)
 
                 env.Append(LINKFLAGS='Mincore' + lib_suffix)
@@ -97,17 +93,14 @@ def configure(env):
                 env.Append(LINKFLAGS='LIBCMT' + lib_suffix)
                 env.Append(LINKFLAGS='Psapi' + lib_suffix)
             else:
-                env.Append(LINKFLAGS=os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix))
-
-                env.Append(LIBS='psapi')
-                env.Append(LIBS='version')
+                env.Append(LIBS=mono_static_lib_name)
         else:
             mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
 
             if not mono_lib_name:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-            if env.msvc:
+            if os.getenv('VCINSTALLDIR'):
                 env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
             else:
                 env.Append(LIBS=mono_lib_name)
@@ -116,7 +109,10 @@ def configure(env):
 
             mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension='.dll')
 
-        copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
+            if not mono_dll_name:
+                raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
+
+            copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
 
         copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
     else:
