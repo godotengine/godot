@@ -132,9 +132,7 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
-	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
-	CreateDialog *new_resource_dialog;
 
 	class FileOrFolder {
 	public:
