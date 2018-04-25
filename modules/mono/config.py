@@ -59,9 +59,6 @@ def configure(env):
     mono_lib_names = ['mono-2.0-sgen', 'monosgen-2.0']
 
     if env['platform'] == 'windows':
-        if mono_static:
-            raise RuntimeError('mono-static: Not supported on Windows')
-
         if bits == '32':
             if os.getenv('MONO32_PREFIX'):
                 mono_root = os.getenv('MONO32_PREFIX')
@@ -81,24 +78,41 @@ def configure(env):
         env.Append(LIBPATH=mono_lib_path)
         env.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
-        mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
+        if mono_static:
+            lib_suffix = Environment()['LIBSUFFIX']
+            mono_static_lib_name = 'libmono-static-sgen'
 
-        if not mono_lib_name:
-            raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
+            if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
+                raise RuntimeError('Could not find static mono library in: ' + mono_lib_path)
 
-        if os.getenv('VCINSTALLDIR'):
-            env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
+            if os.getenv('VCINSTALLDIR'):
+                env.Append(LINKFLAGS=mono_static_lib_name + lib_suffix)
+
+                env.Append(LINKFLAGS='Mincore' + lib_suffix)
+                env.Append(LINKFLAGS='msvcrt' + lib_suffix)
+                env.Append(LINKFLAGS='LIBCMT' + lib_suffix)
+                env.Append(LINKFLAGS='Psapi' + lib_suffix)
+            else:
+                env.Append(LIBS=mono_static_lib_name)
         else:
-            env.Append(LIBS=mono_lib_name)
+            mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
 
-        mono_bin_path = os.path.join(mono_root, 'bin')
+            if not mono_lib_name:
+                raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-        mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension='.dll')
+            if os.getenv('VCINSTALLDIR'):
+                env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
+            else:
+                env.Append(LIBS=mono_lib_name)
 
-        if not mono_dll_name:
-            raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
+            mono_bin_path = os.path.join(mono_root, 'bin')
 
-        copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
+            mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension='.dll')
+
+            if not mono_dll_name:
+                raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
+
+            copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
 
         copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
     else:
