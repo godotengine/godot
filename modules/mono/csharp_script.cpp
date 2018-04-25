@@ -305,7 +305,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "    public override void _Ready()\n"
 							 "    {\n"
 							 "        // Called every time the node is added to the scene.\n"
-							 "        // Initialization here\n"
+							 "        // Initialization here.\n"
 							 "        \n"
 							 "    }\n"
 							 "\n"
