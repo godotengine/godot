@@ -50,6 +50,7 @@
 #include "dependency_editor.h"
 #include "editor_dir_dialog.h"
 #include "editor_file_system.h"
+#include "script_create_dialog.h"
 
 class EditorNode;
 
@@ -75,6 +76,7 @@ private:
 		FILE_REIMPORT,
 		FILE_INFO,
 		FILE_NEW_FOLDER,
+		FILE_NEW_SCRIPT,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH
 	};
@@ -126,6 +128,7 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ScriptCreateDialog *make_script_dialog_text;
 
 	class FileOrFolder {
 	public:
