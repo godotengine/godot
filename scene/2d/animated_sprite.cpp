@@ -495,13 +495,7 @@ int AnimatedSprite::get_frame() const {
 
 void AnimatedSprite::set_speed_scale(float p_speed_scale) {
 
-	float elapsed = _get_frame_duration() - timeout;
-
 	speed_scale = MAX(p_speed_scale, 0.0f);
-
-	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed
-	_reset_timeout();
-	timeout -= elapsed;
 }
 
 float AnimatedSprite::get_speed_scale() const {
@@ -607,7 +601,16 @@ void AnimatedSprite::_reset_timeout() {
 	if (!playing)
 		return;
 
-	timeout = _get_frame_duration();
+	if (frames.is_valid() && frames->has_animation(animation)) {
+		float speed = frames->get_animation_speed(animation) * speed_scale;
+		if (speed > 0) {
+			timeout = 1.0 / speed;
+		} else {
+			timeout = 0;
+		}
+	} else {
+		timeout = 0;
+	}
 }
 
 void AnimatedSprite::set_animation(const StringName &p_animation) {
