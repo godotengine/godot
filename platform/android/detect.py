@@ -132,9 +132,9 @@ def configure(env):
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
-        if get_platform(env["ndk_platform"]) < 21:
+        if get_platform(ndk_platform) < 21:
             print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than andorid-21; setting ndk_platform=android-21")
-            env["ndk_platform"] = "android-21"
+            ndk_platform = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
         abi_subpath = "aarch64-linux-android"
@@ -187,7 +187,7 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         # For unified headers this define has to be set manually
-        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(env['ndk_platform']))])
+        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(ndk_platform))])
     else:
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
@@ -217,6 +217,7 @@ def configure(env):
             env.Append(CPPFLAGS=['-mfpu=vfpv3-d16'])
 
     elif env["android_arch"] == "arm64v8":
+        can_vectorize = True
         target_opts = ['-target', 'aarch64-none-linux-android']
         env.Append(CPPFLAGS=['-D__ARM_ARCH_8A__'])
         env.Append(CPPFLAGS=['-mfix-cortex-a53-835769'])
