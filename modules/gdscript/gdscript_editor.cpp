@@ -3177,6 +3177,19 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
+	bool isfunction = false;
+
+	if (context._class && context._class->extends_class.size() > 0) {
+		bool success = false;
+		ClassDB::get_integer_constant(context._class->extends_class[0], p_symbol, &success);
+		if (success) {
+			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+			r_result.class_name = context._class->extends_class[0];
+			r_result.class_member = p_symbol;
+			return OK;
+		}
+	}
+
 	bool is_function = false;
 
 	switch (parser.get_completion_type()) {
