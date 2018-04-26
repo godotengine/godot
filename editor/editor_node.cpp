@@ -483,12 +483,12 @@ void EditorNode::_fs_changed() {
 				Error err;
 				if (!preset->is_runnable() && (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip"))) {
 					if (export_defer.path.ends_with(".zip")) {
-						err = platform->save_zip(preset, export_defer.path);
+						err = platform->export_zip(preset, export_defer.debug, export_defer.path);
 					} else if (export_defer.path.ends_with(".pck")) {
-						err = platform->save_pack(preset, export_defer.path);
+						err = platform->export_pack(preset, export_defer.debug, export_defer.path);
 					}
 				} else {
-					err = platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
+					err = platform->export_project(preset, export_defer.debug, export_defer.path);
 				}
 				if (err != OK) {
 					ERR_PRINTS(vformat(TTR("Project export failed with error code %d."), (int)err));
