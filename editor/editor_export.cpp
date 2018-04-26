@@ -911,6 +911,16 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 	return OK;
 }
 
+Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	return save_pack(p_preset, p_path);
+}
+
+Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	return save_zip(p_preset, p_path);
+}
+
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
