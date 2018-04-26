@@ -231,6 +231,8 @@ void CreateDialog::_update_search() {
 	favorite->set_disabled(true);
 
 	help_bit->set_text("");
+	help_full_bit->set_text("");
+
 	/*
 	TreeItem *root = search_options->create_item();
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
@@ -457,6 +459,7 @@ void CreateDialog::_item_selected() {
 		return;
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	help_full_bit->set_text(EditorHelp::get_doc_data()->class_list[name].description);
 
 	get_ok()->set_disabled(false);
 }
@@ -696,7 +699,23 @@ CreateDialog::CreateDialog() {
 	base_type = "Object";
 	preferred_search_result_type = "";
 
+	TabContainer *tbc = memnew(TabContainer);
+	tbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	tbc->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
+	tbc->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
+	vbc->add_child(tbc);
+
+	Tabs *desc_tab = memnew(Tabs);
+	desc_tab->set_name(TTR("Brief Description:"));
 	help_bit = memnew(EditorHelpBit);
-	vbc->add_margin_child(TTR("Description:"), help_bit);
+	desc_tab->add_child(help_bit);
 	help_bit->connect("request_hide", this, "_closed");
+	tbc->add_child(desc_tab);
+
+	Tabs *full_desc_tab = memnew(Tabs);
+	full_desc_tab->set_name(TTR("Description:"));
+	help_full_bit = memnew(EditorHelpBit);
+	full_desc_tab->add_child(help_full_bit);
+	help_full_bit->connect("request_hide", this, "_closed");
+	tbc->add_child(full_desc_tab);
 }
