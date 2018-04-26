@@ -57,6 +57,7 @@ class CreateDialog : public ConfirmationDialog {
 	String base_type;
 	String preferred_search_result_type;
 	EditorHelpBit *help_bit;
+	EditorHelpBit *help_full_bit;
 	List<StringName> type_list;
 
 	void _item_selected();
