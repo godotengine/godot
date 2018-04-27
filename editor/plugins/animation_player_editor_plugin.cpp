@@ -1653,6 +1653,26 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
 	scale->hide();
 
+	add_anim = memnew(ToolButton);
+	ED_SHORTCUT("animation_player_editor/add_animation", TTR("Create new animation in player."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/add_animation"));
+	add_anim->set_tooltip(TTR("Create new animation in player."));
+
+	hb->add_child(add_anim);
+
+	load_anim = memnew(ToolButton);
+	ED_SHORTCUT("animation_player_editor/load_from_disk", TTR("Load animation from disk."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/load_from_disk"));
+	load_anim->set_tooltip(TTR("Load an animation from disk."));
+	hb->add_child(load_anim);
+
+	save_anim = memnew(MenuButton);
+	save_anim->set_tooltip(TTR("Save the current animation."));
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save", TTR("Save")), ANIM_SAVE);
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as", TTR("Save As")), ANIM_SAVE_AS);
+	save_anim->set_focus_mode(Control::FOCUS_NONE);
+	hb->add_child(save_anim);
+
 	accept = memnew(AcceptDialog);
 	add_child(accept);
 	accept->connect("confirmed", this, "_menu_confirm_current");
