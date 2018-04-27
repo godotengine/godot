@@ -1262,6 +1262,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 	String err;
 	bool valid = true;
+	bool use64 = p_preset->get("binary_format/64_bits");
 
 	if (use64 && (!exists_export_template(debug_file_64, &err) || !exists_export_template(release_file_64, &err))) {
 		valid = false;

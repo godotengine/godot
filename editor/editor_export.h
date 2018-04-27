@@ -373,7 +373,6 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 
 	Set<String> extra_features;
 
-	bool use64;
 	int chmod_flags;
 
 public:
