@@ -828,6 +828,7 @@ void AnimationPlayerEditor::_update_player() {
 	save_anim->set_disabled(animlist.size() == 0);
 	tool_anim->set_disabled(player == NULL);
 	onion_skinning->set_disabled(player == NULL);
+	pin->set_disabled(player == NULL);
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
