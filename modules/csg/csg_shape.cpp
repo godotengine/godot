@@ -1491,7 +1491,13 @@ CSGBrush *CSGPolygon::_build_brush() {
 	if (polygon.size() < 3)
 		return NULL;
 
-	Vector<int> triangles = Geometry::triangulate_polygon(polygon);
+	Vector<Point2> final_polygon = polygon;
+
+	if (Triangulate::get_area(final_polygon) > 0) {
+		final_polygon.invert();
+	}
+
+	Vector<int> triangles = Geometry::triangulate_polygon(final_polygon);
 
 	if (triangles.size() < 3)
 		return NULL;
@@ -1535,12 +1541,12 @@ CSGBrush *CSGPolygon::_build_brush() {
 	int face_count;
 
 	switch (mode) {
-		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (polygon.size()) * 2; break;
-		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (polygon.size()) * 2 * spin_sides; break;
+		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;
+		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides; break;
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));
-			face_count = triangles.size() * 2 / 3 + splits * polygon.size() * 2;
+			face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
 		} break;
 	}
 
@@ -1580,7 +1586,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 					for (int j = 0; j < triangles.size(); j += 3) {
 						for (int k = 0; k < 3; k++) {
 							int src[3] = { 0, i == 0 ? 1 : 2, i == 0 ? 2 : 1 };
-							Vector2 p = polygon[triangles[j + src[k]]];
+							Vector2 p = final_polygon[triangles[j + src[k]]];
 							Vector3 v = Vector3(p.x, p.y, 0);
 							if (i == 0) {
 								v.z -= depth;
@@ -1596,15 +1602,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 				}
 
 				//add triangles for depth
-				for (int i = 0; i < polygon.size(); i++) {
+				for (int i = 0; i < final_polygon.size(); i++) {
 
-					int i_n = (i + 1) % polygon.size();
+					int i_n = (i + 1) % final_polygon.size();
 
 					Vector3 v[4] = {
-						Vector3(polygon[i].x, polygon[i].y, -depth),
-						Vector3(polygon[i_n].x, polygon[i_n].y, -depth),
-						Vector3(polygon[i_n].x, polygon[i_n].y, 0),
-						Vector3(polygon[i].x, polygon[i].y, 0),
+						Vector3(final_polygon[i].x, final_polygon[i].y, -depth),
+						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, -depth),
+						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, 0),
+						Vector3(final_polygon[i].x, final_polygon[i].y, 0),
 					};
 
 					Vector2 u[4] = {
@@ -1660,15 +1666,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 					Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
 
 					//add triangles for depth
-					for (int j = 0; j < polygon.size(); j++) {
+					for (int j = 0; j < final_polygon.size(); j++) {
 
-						int j_n = (j + 1) % polygon.size();
+						int j_n = (j + 1) % final_polygon.size();
 
 						Vector3 v[4] = {
-							Vector3(normali.x * polygon[j].x, polygon[j].y, normali.z * polygon[j].x),
-							Vector3(normali.x * polygon[j_n].x, polygon[j_n].y, normali.z * polygon[j_n].x),
-							Vector3(normali_n.x * polygon[j_n].x, polygon[j_n].y, normali_n.z * polygon[j_n].x),
-							Vector3(normali_n.x * polygon[j].x, polygon[j].y, normali_n.z * polygon[j].x),
+							Vector3(normali.x * final_polygon[j].x, final_polygon[j].y, normali.z * final_polygon[j].x),
+							Vector3(normali.x * final_polygon[j_n].x, final_polygon[j_n].y, normali.z * final_polygon[j_n].x),
+							Vector3(normali_n.x * final_polygon[j_n].x, final_polygon[j_n].y, normali_n.z * final_polygon[j_n].x),
+							Vector3(normali_n.x * final_polygon[j].x, final_polygon[j].y, normali_n.z * final_polygon[j].x),
 						};
 
 						Vector2 u[4] = {
@@ -1714,7 +1720,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 2, 1 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = v;
 							}
@@ -1731,7 +1737,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 1, 2 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(normali_n.x * p.x, p.y, normali_n.z * p.x);
 								facesw[face * 3 + k] = v;
 							}
@@ -1793,15 +1799,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 					if (i > 0) {
 						//put triangles where they belong
 						//add triangles for depth
-						for (int j = 0; j < polygon.size(); j++) {
+						for (int j = 0; j < final_polygon.size(); j++) {
 
-							int j_n = (j + 1) % polygon.size();
+							int j_n = (j + 1) % final_polygon.size();
 
 							Vector3 v[4] = {
-								prev_xf.xform(Vector3(polygon[j].x, polygon[j].y, 0)),
-								prev_xf.xform(Vector3(polygon[j_n].x, polygon[j_n].y, 0)),
-								xf.xform(Vector3(polygon[j_n].x, polygon[j_n].y, 0)),
-								xf.xform(Vector3(polygon[j].x, polygon[j].y, 0)),
+								prev_xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
+								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
+								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
+								xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
 							};
 
 							Vector2 u[4] = {
@@ -1848,7 +1854,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 1, 2 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
 							}
@@ -1865,7 +1871,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 2, 1 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
 							}
