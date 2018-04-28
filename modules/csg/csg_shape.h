@@ -1,33 +1,3 @@
-/*************************************************************************/
-/*  csg_shape.h                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-
 #ifndef CSG_SHAPE_H
 #define CSG_SHAPE_H
 
@@ -57,7 +27,6 @@ private:
 	AABB node_aabb;
 
 	bool dirty;
-	float snap;
 
 	bool use_collision;
 	Ref<ConcavePolygonShape> root_collision_shape;
@@ -90,7 +59,7 @@ private:
 
 protected:
 	void _notification(int p_what);
-	virtual CSGBrush *_build_brush() = 0;
+	virtual CSGBrush *_build_brush(AABB *r_aabb) = 0;
 	void _make_dirty();
 
 	static void _bind_methods();
@@ -112,9 +81,6 @@ public:
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
 
-	void set_snap(float p_snap);
-	float get_snap() const;
-
 	bool is_root_shape() const;
 	CSGShape();
 	~CSGShape();
@@ -125,9 +91,16 @@ VARIANT_ENUM_CAST(CSGShape::Operation)
 class CSGCombiner : public CSGShape {
 	GDCLASS(CSGCombiner, CSGShape)
 private:
-	virtual CSGBrush *_build_brush();
+	float snap;
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
+
+protected:
+	static void _bind_methods();
 
 public:
+	void set_snap(float p_snap);
+	float get_snap() const;
+
 	CSGCombiner();
 };
 
@@ -151,7 +124,7 @@ public:
 class CSGMesh : public CSGPrimitive {
 	GDCLASS(CSGMesh, CSGPrimitive)
 
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Ref<Mesh> mesh;
 
@@ -168,7 +141,7 @@ public:
 class CSGSphere : public CSGPrimitive {
 
 	GDCLASS(CSGSphere, CSGPrimitive)
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -201,7 +174,7 @@ public:
 class CSGBox : public CSGPrimitive {
 
 	GDCLASS(CSGBox, CSGPrimitive)
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Ref<Material> material;
 	float width;
@@ -230,7 +203,7 @@ public:
 class CSGCylinder : public CSGPrimitive {
 
 	GDCLASS(CSGCylinder, CSGPrimitive)
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Ref<Material> material;
 	float radius;
@@ -267,7 +240,7 @@ public:
 class CSGTorus : public CSGPrimitive {
 
 	GDCLASS(CSGTorus, CSGPrimitive)
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Ref<Material> material;
 	float inner_radius;
@@ -319,7 +292,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush(AABB *r_aabb);
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;
@@ -334,13 +307,10 @@ private:
 	NodePath path_node;
 	float path_interval;
 	PathRotation path_rotation;
-	bool path_local;
 
 	Node *path_cache;
 
 	bool smooth_faces;
-	bool path_continuous_u;
-	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
@@ -377,15 +347,6 @@ public:
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
-
-	void set_path_local(bool p_enable);
-	bool is_path_local() const;
-
-	void set_path_continuous_u(bool p_enable);
-	bool is_path_continuous_u() const;
-
-	void set_path_joined(bool p_enable);
-	bool is_path_joined() const;
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;

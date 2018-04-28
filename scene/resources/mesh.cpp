@@ -966,21 +966,11 @@ void ArrayMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 	emit_changed();
 }
 
-int ArrayMesh::surface_find_by_name(const String &p_name) const {
-	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].name == p_name) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
 void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
 
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
 
-	surfaces.write[p_idx].name = p_name;
+	surfaces[p_idx].name = p_name;
 	emit_changed();
 }
 
