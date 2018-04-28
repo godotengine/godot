@@ -109,6 +109,7 @@ public:
 	RID texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT); // helper
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT) = 0;
 	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, CubeMapSide p_cube_side = CUBEMAP_LEFT) = 0;
+	virtual void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, CubeMapSide p_cube_side = CUBEMAP_LEFT) = 0;
 	virtual Ref<Image> texture_get_data(RID p_texture, CubeMapSide p_cube_side = CUBEMAP_LEFT) const = 0;
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags) = 0;
 	virtual uint32_t texture_get_flags(RID p_texture) const = 0;

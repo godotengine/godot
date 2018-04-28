@@ -1528,6 +1528,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "format", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("texture_set_data", "texture", "image", "cube_side"), &VisualServer::texture_set_data, DEFVAL(CUBEMAP_LEFT));
+	ClassDB::bind_method(D_METHOD("texture_set_data_partial", "texture", "image", "src_x", "src_y", "src_w", "src_h", "dst_x", "dst_y", "dst_mip", "cube_side"), &VisualServer::texture_set_data_partial, DEFVAL(CUBEMAP_LEFT));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "cube_side"), &VisualServer::texture_get_data, DEFVAL(CUBEMAP_LEFT));
 	ClassDB::bind_method(D_METHOD("texture_set_flags", "texture", "flags"), &VisualServer::texture_set_flags);
 	ClassDB::bind_method(D_METHOD("texture_get_flags", "texture"), &VisualServer::texture_get_flags);
