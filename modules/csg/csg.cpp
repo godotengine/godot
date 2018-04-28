@@ -1216,7 +1216,7 @@ void CSGBrushOperation::MeshMerge::mark_inside_faces() {
 		center /= 3.0;
 
 		Plane plane(points[faces[i].points[0]], points[faces[i].points[1]], points[faces[i].points[2]]);
-		Vector3 target = center + plane.normal * max_distance;
+		Vector3 target = center + plane.normal * max_distance + Vector3(0.0001234, 0.000512, 0.00013423); //reduce chance of edge hits by doing a small increment
 
 		int intersections = _bvh_count_intersections(bvh, max_depth, max_alloc - 1, center, target, i);
 
