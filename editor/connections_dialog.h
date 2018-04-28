@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+@author Juan Linietsky <reduzio@gmail.com>
+*/
+
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
@@ -42,10 +46,7 @@
 #include "scene/gui/tree.h"
 #include "undo_redo.h"
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
+class PopupMenu;
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
@@ -93,6 +94,15 @@ class ConnectionsDock : public VBoxContainer {
 
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
+	enum SignalMenuOption {
+		CONNECT
+	};
+
+	enum SlotMenuOption {
+		EDIT,
+		DISCONNECT
+	};
+
 	Button *connect_button;
 	EditorNode *editor;
 	Node *node;
@@ -100,16 +110,28 @@ class ConnectionsDock : public VBoxContainer {
 	ConfirmationDialog *remove_confirm;
 	ConnectDialog *connect_dialog;
 
+	PopupMenu *signal_menu;
+	PopupMenu *slot_menu;
+
 	void _close();
 	void _connect();
+	void _disconnect( TreeItem *item );
 	void _something_selected();
 	void _something_activated();
+	void _handle_signal_option( int option );
+	void _handle_slot_option( int option );
+	void _rmb_pressed( Vector2 position );
 	UndoRedo *undo_redo;
 
 protected:
 	void _connect_pressed();
 	void _notification(int p_what);
 	static void _bind_methods();
+
+private:
+	bool _is_item_signal( TreeItem *item );
+	void _open_connection_dialog( TreeItem *item );
+
 
 public:
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }

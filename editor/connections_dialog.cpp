@@ -35,6 +35,7 @@
 #include "plugins/script_editor_plugin.h"
 #include "print_string.h"
 #include "scene/gui/label.h"
+#include "scene/gui/popup_menu.h"
 
 class ConnectDialogBinds : public Object {
 
@@ -408,56 +409,62 @@ void ConnectionsDock::_connect() {
 	update_tree();
 }
 
-void ConnectionsDock::_connect_pressed() {
+void ConnectionsDock::_disconnect( TreeItem *item )
+{
+	Connection c = item->get_metadata(0);
+	ERR_FAIL_COND(c.source != node); //shouldn't happen but...bugcheck
 
+	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), c.signal, c.method));
+	undo_redo->add_do_method(node, "disconnect", c.signal, c.target, c.method);
+	undo_redo->add_undo_method(node, "connect", c.signal, c.target, c.method, Vector<Variant>(), c.flags);
+	undo_redo->add_do_method(this, "update_tree");
+	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
+	undo_redo->commit_action();
+
+	c.source->disconnect(c.signal, c.target, c.method);
+	update_tree();
+}
+
+void ConnectionsDock::_open_connection_dialog( TreeItem *item )
+{
+	String signal = item->get_metadata(0).operator Dictionary()["name"];
+	String signalname = signal;
+	String midname = node->get_name();
+	for (int i = 0; i < midname.length(); i++) {
+		CharType c = midname[i];
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
+			//all good
+		} else if (c == ' ') {
+			c = '_';
+		} else {
+			midname.remove(i);
+			i--;
+			continue;
+		}
+
+		midname[i] = c;
+	}
+
+	connect_dialog->edit(node);
+	connect_dialog->popup_centered_ratio();
+	connect_dialog->set_title(TTR("Connecting Signal:") + " " + signalname);
+	connect_dialog->set_dst_method("_on_" + midname + "_" + signal);
+	connect_dialog->set_dst_node(node->get_owner() ? node->get_owner() : node);
+}
+
+void ConnectionsDock::_connect_pressed() {
 	TreeItem *item = tree->get_selected();
 	if (!item) {
-		//no idea how this happened, but disable
 		connect_button->set_disabled(true);
 		return;
 	}
-	if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
-		//a signal - connect
-		String signal = item->get_metadata(0).operator Dictionary()["name"];
-		String signalname = signal;
-		String midname = node->get_name();
-		for (int i = 0; i < midname.length(); i++) {
-			CharType c = midname[i];
-			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
-				//all good
-			} else if (c == ' ') {
-				c = '_';
-			} else {
-				midname.remove(i);
-				i--;
-				continue;
-			}
 
-			midname[i] = c;
-		}
-
-		connect_dialog->edit(node);
-		connect_dialog->popup_centered_ratio();
-		connect_dialog->set_title(TTR("Connecting Signal:") + " " + signalname);
-		connect_dialog->set_dst_method("_on_" + midname + "_" + signal);
-		connect_dialog->set_dst_node(node->get_owner() ? node->get_owner() : node);
-
+	if (_is_item_signal( item )) {
+		_open_connection_dialog( item );
 	} else {
-		//a slot- disconnect
-		Connection c = item->get_metadata(0);
-		ERR_FAIL_COND(c.source != node); //shouldn't happen but...bugcheck
-
-		undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), c.signal, c.method));
-		undo_redo->add_do_method(node, "disconnect", c.signal, c.target, c.method);
-		undo_redo->add_undo_method(node, "connect", c.signal, c.target, c.method, Vector<Variant>(), c.flags);
-		undo_redo->add_do_method(this, "update_tree");
-		undo_redo->add_undo_method(this, "update_tree");
-		undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
-		undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
-		undo_redo->commit_action();
-
-		c.source->disconnect(c.signal, c.target, c.method);
-		update_tree();
+		_disconnect( item );
 	}
 }
 
@@ -611,7 +618,6 @@ void ConnectionsDock::update_tree() {
 }
 
 void ConnectionsDock::set_node(Node *p_node) {
-
 	node = p_node;
 	update_tree();
 }
@@ -624,13 +630,11 @@ void ConnectionsDock::_something_selected() {
 		connect_button->set_text(TTR("Connect..."));
 		connect_button->set_disabled(true);
 
-	} else if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
-		//a signal - connect
+	} else if (_is_item_signal( item )) {
 		connect_button->set_text(TTR("Connect..."));
 		connect_button->set_disabled(false);
 
 	} else {
-		//a slot- disconnect
 		connect_button->set_text(TTR("Disconnect"));
 		connect_button->set_disabled(false);
 	}
@@ -643,31 +647,10 @@ void ConnectionsDock::_something_activated() {
 	if (!item)
 		return;
 
-	if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
-		// a signal - connect
-		String signal = item->get_metadata(0).operator Dictionary()["name"];
-		String midname = node->get_name();
-		for (int i = 0; i < midname.length(); i++) {
-			CharType c = midname[i];
-			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
-				//all good
-			} else if (c == ' ') {
-				c = '_';
-			} else {
-				midname.remove(i);
-				i--;
-				continue;
-			}
-
-			midname[i] = c;
-		}
-
-		connect_dialog->edit(node);
-		connect_dialog->popup_centered_ratio();
-		connect_dialog->set_dst_method("_on_" + midname + "_" + signal);
-		connect_dialog->set_dst_node(node->get_owner() ? node->get_owner() : node);
+	if (_is_item_signal( item )) {
+		_open_connection_dialog( item );
 	} else {
-		// a slot - go to target method
+		//Go to method within script editor, if avaiable.
 		Connection c = item->get_metadata(0);
 		ERR_FAIL_COND(c.source != node); //shouldn't happen but...bugcheck
 
@@ -682,11 +665,65 @@ void ConnectionsDock::_something_activated() {
 	}
 }
 
-void ConnectionsDock::_bind_methods() {
+bool ConnectionsDock::_is_item_signal( TreeItem *item ) {
+	return (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root());
+}
 
+void ConnectionsDock::_handle_signal_option( int option ) {
+	TreeItem *item = tree->get_selected();
+
+	switch( option )
+	{
+			case SignalMenuOption::CONNECT:
+			{
+				_open_connection_dialog(item);
+			} break;
+	}
+}
+
+void ConnectionsDock::_handle_slot_option( int option ) {
+	TreeItem *item = tree->get_selected();
+
+	switch( option )
+	{
+		case SlotMenuOption::EDIT:
+		{
+			//TODO: add edit functionality
+		} break;
+		case SlotMenuOption::DISCONNECT:
+		{
+			_disconnect(item);
+		} break;
+	}
+}
+
+void ConnectionsDock::_rmb_pressed( Vector2 position ) {
+	TreeItem *item = tree->get_selected();
+
+	if( !item )
+		return;
+
+	Vector2 global_position = tree->get_global_position() + position;
+
+	if( _is_item_signal(item) )
+	{
+		signal_menu->set_position( global_position );
+		signal_menu->popup();
+	}
+	else
+	{
+		slot_menu->set_position( global_position );
+		slot_menu->popup();
+	}
+}
+
+void ConnectionsDock::_bind_methods() {
 	ClassDB::bind_method("_connect", &ConnectionsDock::_connect);
 	ClassDB::bind_method("_something_selected", &ConnectionsDock::_something_selected);
 	ClassDB::bind_method("_something_activated", &ConnectionsDock::_something_activated);
+	ClassDB::bind_method("_handle_signal_option", &ConnectionsDock::_handle_signal_option);
+	ClassDB::bind_method("_handle_slot_option", &ConnectionsDock::_handle_slot_option);
+	ClassDB::bind_method("_rmb_pressed", &ConnectionsDock::_rmb_pressed);
 	ClassDB::bind_method("_close", &ConnectionsDock::_close);
 	ClassDB::bind_method("_connect_pressed", &ConnectionsDock::_connect_pressed);
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
@@ -705,6 +742,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	vbc->add_child(tree);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_allow_rmb_select(true);
 
 	connect_button = memnew(Button);
 	connect_button->set_text(TTR("Connect"));
@@ -723,6 +761,17 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	remove_confirm->set_as_toplevel(true);
 	add_child(remove_confirm);
 
+	signal_menu = memnew(PopupMenu);
+	add_child(signal_menu);
+	signal_menu->connect( "id_pressed", this, "_handle_signal_option" );
+	signal_menu->add_item(TTR("Connect"), SignalMenuOption::CONNECT );
+
+	slot_menu = memnew(PopupMenu);
+	add_child(slot_menu);
+	slot_menu->connect( "id_pressed", this, "_handle_slot_option" );
+	slot_menu->add_item(TTR("Edit"), SlotMenuOption::EDIT);
+	slot_menu->add_item(TTR("Disconnect"), SlotMenuOption::DISCONNECT);
+
 	/*
 	node_only->set_anchor( MARGIN_TOP, ANCHOR_END );
 	node_only->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
@@ -736,6 +785,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	connect_dialog->connect("connected", this, "_connect");
 	tree->connect("item_selected", this, "_something_selected");
 	tree->connect("item_activated", this, "_something_activated");
+	tree->connect("item_rmb_selected", this, "_rmb_pressed" );
 
 	add_constant_override("separation", 3 * EDSCALE);
 }
