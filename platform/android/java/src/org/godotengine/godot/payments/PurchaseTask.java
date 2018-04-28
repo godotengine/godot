@@ -70,12 +70,12 @@ abstract public class PurchaseTask {
 
 		Bundle buyIntentBundle;
 		try {
-			buyIntentBundle = mService.getBuyIntent(3, context.getApplicationContext().getPackageName(), sku, "inapp", hash);
+			buyIntentBundle = mService.getBuyIntent(3, context.getApplicationContext().getPackageName(), sku, PaymentsManager.ITEM_TYPE_INAPP, hash);
 		} catch (RemoteException e) {
 			error(e.getMessage());
 			return;
 		}
-		Object rc = buyIntentBundle.get("RESPONSE_CODE");
+		Object rc = buyIntentBundle.get(PaymentsManager.RESPONSE_CODE);
 		int responseCode = 0;
 		if (rc == null) {
 			responseCode = PaymentsManager.BILLING_RESPONSE_RESULT_OK;
@@ -85,16 +85,16 @@ abstract public class PurchaseTask {
 			responseCode = (int)((Long)rc).longValue();
 		}
 
-		if (responseCode == 1 || responseCode == 3 || responseCode == 4) {
+		if (responseCode == PaymentsManager.BILLING_RESPONSE_RESULT_USER_CANCELED || responseCode == PaymentsManager.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE || responseCode == PaymentsManager.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE) {
 			canceled();
 			return;
 		}
-		if (responseCode == 7) {
+		if (responseCode == PaymentsManager.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED) {
 			alreadyOwned();
 			return;
 		}
 
-		PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+		PendingIntent pendingIntent = buyIntentBundle.getParcelable(PaymentsManager.RESPONSE_BUY_INTENT);
 		pc.setConsumableValue("validation_hash", sku, hash);
 		try {
 			context.startIntentSenderForResult(

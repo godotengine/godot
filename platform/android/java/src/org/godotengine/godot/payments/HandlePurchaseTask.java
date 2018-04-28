@@ -59,8 +59,8 @@ abstract public class HandlePurchaseTask {
 		if (resultCode == Activity.RESULT_OK) {
 			PaymentsCache pc = new PaymentsCache(context);
 
-			String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-			String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+			String purchaseData = data.getStringExtra(PaymentsManager.RESPONSE_INAPP_PURCHASE_DATA);
+			String dataSignature = data.getStringExtra(PaymentsManager.RESPONSE_INAPP_SIGNATURE);
 
 			try {
 				JSONObject jo = new JSONObject(purchaseData);
@@ -73,7 +73,7 @@ abstract public class HandlePurchaseTask {
 					return;
 				}
 
-				pc.setConsumableValue("ticket_signautre", productId, dataSignature);
+				pc.setConsumableValue("ticket_signature", productId, dataSignature);
 				pc.setConsumableValue("ticket", productId, purchaseData);
 				pc.setConsumableFlag("block", productId, true);
 				pc.setConsumableValue("token", productId, purchaseToken);

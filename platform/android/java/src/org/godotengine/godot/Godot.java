@@ -388,7 +388,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		result_callback = null;
 
-		mPaymentsManager = PaymentsManager.createManager(this).initService();
+		mPaymentsManager = PaymentsManager.createManager(this);
+
+		mPaymentsManager.initService();
 		godot_initialized = true;
 	}
 
