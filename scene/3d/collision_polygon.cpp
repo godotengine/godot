@@ -173,6 +173,9 @@ String CollisionPolygon::get_configuration_warning() const {
 	return String();
 }
 
+bool CollisionPolygon::_is_editable_3d_polygon() const {
+	return true;
+}
 void CollisionPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon::set_depth);
@@ -183,6 +186,8 @@ void CollisionPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon::is_disabled);
+
+	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon::_is_editable_3d_polygon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
