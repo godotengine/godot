@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  collision_polygon.h                                                  */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_POLYGON_H
-#define COLLISION_POLYGON_H
+#include "register_types.h"
 
-#include "scene/3d/spatial.h"
-#include "scene/resources/shape.h"
+#include "csg_shape.h"
+#include "csg_gizmos.h"
 
-class CollisionObject;
-class CollisionPolygon : public Spatial {
+void register_csg_types() {
 
-	GDCLASS(CollisionPolygon, Spatial);
+#ifndef _3D_DISABLED
 
-protected:
-	float depth;
-	AABB aabb;
-	Vector<Point2> polygon;
+	ClassDB::register_virtual_class<CSGShape>();
+	ClassDB::register_virtual_class<CSGPrimitive>();
+	ClassDB::register_class<CSGMesh>();
+	ClassDB::register_class<CSGSphere>();
+	ClassDB::register_class<CSGBox>();
+	ClassDB::register_class<CSGCylinder>();
+	ClassDB::register_class<CSGTorus>();
+	ClassDB::register_class<CSGPolygon>();
+	ClassDB::register_class<CSGCombiner>();
 
-	uint32_t owner_id;
-	CollisionObject *parent;
+#ifdef TOOLS_ENABLED
+	EditorPlugins::add_by_type<EditorPluginCSG>();
+#endif
+#endif
 
-	bool disabled;
+}
 
-	void _build_polygon();
+void unregister_csg_types() {
 
-	void _update_in_shape_owner(bool p_xform_only = false);
-
-	bool _is_editable_3d_polygon() const;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_depth(float p_depth);
-	float get_depth() const;
-
-	void set_polygon(const Vector<Point2> &p_polygon);
-	Vector<Point2> get_polygon() const;
-
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
-
-	virtual AABB get_item_rect() const;
-
-	String get_configuration_warning() const;
-
-	CollisionPolygon();
-};
-
-#endif // COLLISION_POLYGON_H
+}

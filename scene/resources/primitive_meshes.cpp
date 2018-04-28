@@ -65,6 +65,8 @@ void PrimitiveMesh::_update() const {
 	pending_request = false;
 
 	_clear_triangle_mesh();
+
+	const_cast<PrimitiveMesh *>(this)->emit_changed();
 }
 
 void PrimitiveMesh::_request_update() {
