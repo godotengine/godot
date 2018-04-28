@@ -589,8 +589,6 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 		edge_stack.push_back(es);
 	}
 
-	int limit = p_poly.points.size() * 4;
-
 	//attempt to empty the stack.
 	while (edge_stack.size()) {
 
@@ -611,7 +609,9 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 
 		edge_process[e.edge] = true; //mark as processed
 
-		while (to_point != e.prev_point) {
+		int limit = p_poly.points.size() * 4; //avoid infinite recursion
+
+		while (to_point != e.prev_point && limit) {
 
 			Vector2 segment[2] = { p_poly.points[prev_point].point, p_poly.points[to_point].point };
 
@@ -620,6 +620,9 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 			t2d[0] = (segment[1] - segment[0]).normalized(); //use as Y
 			t2d[1] = Vector2(-t2d[0].y, t2d[0].x); // use as tangent
 			t2d[2] = segment[1]; //origin
+
+			if (t2d.basis_determinant() == 0)
+				break; //abort poly
 
 			t2d.affine_invert();
 
@@ -677,6 +680,8 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 			to_point = next_point;
 			edge_process[next_edge] = true; //mark this edge as processed
 			current_edge = next_edge;
+
+			limit--;
 		}
 
 		//if more than 2 points were added to the polygon, add it to the list of polygons.
@@ -699,7 +704,9 @@ void CSGBrushOperation::_add_poly_outline(const BuildPoly &p_poly, int p_from_po
 	int prev_point = p_from_point;
 	int to_point = p_to_point;
 
-	while (to_point != p_from_point) {
+	int limit = p_poly.points.size() * 4; //avoid infinite recursion
+
+	while (to_point != p_from_point && limit) {
 
 		Vector2 segment[2] = { p_poly.points[prev_point].point, p_poly.points[to_point].point };
 		//again create a transform to compute the angle.
@@ -707,6 +714,10 @@ void CSGBrushOperation::_add_poly_outline(const BuildPoly &p_poly, int p_from_po
 		t2d[0] = (segment[1] - segment[0]).normalized(); //use as Y
 		t2d[1] = Vector2(-t2d[0].y, t2d[0].x); // use as tangent
 		t2d[2] = segment[1]; //origin
+
+		if (t2d.basis_determinant() == 0)
+			break; //abort poly
+
 		t2d.affine_invert();
 
 		float max_angle;
@@ -734,6 +745,8 @@ void CSGBrushOperation::_add_poly_outline(const BuildPoly &p_poly, int p_from_po
 		r_outline.push_back(to_point);
 		prev_point = to_point;
 		to_point = next_point_angle;
+
+		limit--;
 	}
 }
 
