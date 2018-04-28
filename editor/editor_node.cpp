@@ -5858,7 +5858,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ParticlesEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));
-	add_editor_plugin(memnew(CollisionPolygonEditorPlugin(this)));
+	add_editor_plugin(memnew(Polygon3DEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
 	add_editor_plugin(memnew(TileSetEditorPlugin(this)));
 	add_editor_plugin(memnew(TileMapEditorPlugin(this)));

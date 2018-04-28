@@ -44,9 +44,9 @@
 
 class CanvasItemEditor;
 
-class CollisionPolygonEditor : public HBoxContainer {
+class Polygon3DEditor : public HBoxContainer {
 
-	GDCLASS(CollisionPolygonEditor, HBoxContainer);
+	GDCLASS(Polygon3DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -66,7 +66,7 @@ class CollisionPolygonEditor : public HBoxContainer {
 
 	EditorNode *editor;
 	Panel *panel;
-	CollisionPolygon *node;
+	Spatial *node;
 	ImmediateGeometry *imgeom;
 	MeshInstance *pointsm;
 	Ref<ArrayMesh> m;
@@ -85,6 +85,8 @@ class CollisionPolygonEditor : public HBoxContainer {
 	void _polygon_draw();
 	void _menu_option(int p_option);
 
+	float _get_depth();
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
@@ -93,28 +95,28 @@ protected:
 public:
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_collision_polygon);
-	CollisionPolygonEditor(EditorNode *p_editor);
-	~CollisionPolygonEditor();
+	Polygon3DEditor(EditorNode *p_editor);
+	~Polygon3DEditor();
 };
 
-class CollisionPolygonEditorPlugin : public EditorPlugin {
+class Polygon3DEditorPlugin : public EditorPlugin {
 
-	GDCLASS(CollisionPolygonEditorPlugin, EditorPlugin);
+	GDCLASS(Polygon3DEditorPlugin, EditorPlugin);
 
-	CollisionPolygonEditor *collision_polygon_editor;
+	Polygon3DEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
 
-	virtual String get_name() const { return "CollisionPolygon"; }
+	virtual String get_name() const { return "Polygon3DEditor"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	CollisionPolygonEditorPlugin(EditorNode *p_node);
-	~CollisionPolygonEditorPlugin();
+	Polygon3DEditorPlugin(EditorNode *p_node);
+	~Polygon3DEditorPlugin();
 };
 
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

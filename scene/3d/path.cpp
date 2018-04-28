@@ -40,6 +40,9 @@ void Path::_curve_changed() {
 
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		update_gizmo();
+	if (is_inside_tree()) {
+		emit_signal("curve_changed");
+	}
 }
 
 void Path::set_curve(const Ref<Curve3D> &p_curve) {
@@ -68,6 +71,8 @@ void Path::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
+
+	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
 Path::Path() {

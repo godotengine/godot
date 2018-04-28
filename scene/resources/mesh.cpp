@@ -912,6 +912,7 @@ void ArrayMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 	VisualServer::get_singleton()->mesh_surface_set_material(mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
 
 	_change_notify("material");
+	emit_changed();
 }
 
 void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
@@ -919,6 +920,7 @@ void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
 
 	surfaces[p_idx].name = p_name;
+	emit_changed();
 }
 
 String ArrayMesh::surface_get_name(int p_idx) const {
@@ -931,6 +933,7 @@ void ArrayMesh::surface_update_region(int p_surface, int p_offset, const PoolVec
 
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	VS::get_singleton()->mesh_surface_update_region(mesh, p_surface, p_offset, p_data);
+	emit_changed();
 }
 
 void ArrayMesh::surface_set_custom_aabb(int p_idx, const AABB &p_aabb) {
@@ -938,6 +941,7 @@ void ArrayMesh::surface_set_custom_aabb(int p_idx, const AABB &p_aabb) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
 	surfaces[p_idx].aabb = p_aabb;
 	// set custom aabb too?
+	emit_changed();
 }
 
 Ref<Material> ArrayMesh::surface_get_material(int p_idx) const {
@@ -986,6 +990,7 @@ void ArrayMesh::set_custom_aabb(const AABB &p_custom) {
 
 	custom_aabb = p_custom;
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
+	emit_changed();
 }
 
 AABB ArrayMesh::get_custom_aabb() const {
