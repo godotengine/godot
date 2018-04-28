@@ -226,6 +226,9 @@ AABB CSGShape::get_aabb() const {
 PoolVector<Vector3> CSGShape::get_brush_faces() {
 	ERR_FAIL_COND_V(!is_inside_tree(), PoolVector<Vector3>());
 	CSGBrush *b = _get_brush();
+	if (!b) {
+		return PoolVector<Vector3>();
+	}
 
 	PoolVector<Vector3> faces;
 	int fc = b->faces.size();
