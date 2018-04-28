@@ -27,6 +27,7 @@ private:
 	AABB node_aabb;
 
 	bool dirty;
+	float snap;
 
 	bool use_collision;
 	Ref<ConcavePolygonShape> root_collision_shape;
@@ -59,7 +60,7 @@ private:
 
 protected:
 	void _notification(int p_what);
-	virtual CSGBrush *_build_brush(AABB *r_aabb) = 0;
+	virtual CSGBrush *_build_brush() = 0;
 	void _make_dirty();
 
 	static void _bind_methods();
@@ -81,6 +82,9 @@ public:
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
 
+	void set_snap(float p_snap);
+	float get_snap() const;
+
 	bool is_root_shape() const;
 	CSGShape();
 	~CSGShape();
@@ -91,16 +95,9 @@ VARIANT_ENUM_CAST(CSGShape::Operation)
 class CSGCombiner : public CSGShape {
 	GDCLASS(CSGCombiner, CSGShape)
 private:
-	float snap;
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
-
-protected:
-	static void _bind_methods();
+	virtual CSGBrush *_build_brush();
 
 public:
-	void set_snap(float p_snap);
-	float get_snap() const;
-
 	CSGCombiner();
 };
 
@@ -124,7 +121,7 @@ public:
 class CSGMesh : public CSGPrimitive {
 	GDCLASS(CSGMesh, CSGPrimitive)
 
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Ref<Mesh> mesh;
 
@@ -141,7 +138,7 @@ public:
 class CSGSphere : public CSGPrimitive {
 
 	GDCLASS(CSGSphere, CSGPrimitive)
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -174,7 +171,7 @@ public:
 class CSGBox : public CSGPrimitive {
 
 	GDCLASS(CSGBox, CSGPrimitive)
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
 	float width;
@@ -203,7 +200,7 @@ public:
 class CSGCylinder : public CSGPrimitive {
 
 	GDCLASS(CSGCylinder, CSGPrimitive)
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
 	float radius;
@@ -240,7 +237,7 @@ public:
 class CSGTorus : public CSGPrimitive {
 
 	GDCLASS(CSGTorus, CSGPrimitive)
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
 	float inner_radius;
@@ -292,7 +289,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush(AABB *r_aabb);
+	virtual CSGBrush *_build_brush();
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;

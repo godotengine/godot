@@ -34,6 +34,14 @@ bool CSGShape::is_root_shape() const {
 	return !parent;
 }
 
+void CSGShape::set_snap(float p_snap) {
+	snap = p_snap;
+}
+
+float CSGShape::get_snap() const {
+	return snap;
+}
+
 void CSGShape::_make_dirty() {
 
 	if (!is_inside_tree())
@@ -60,7 +68,61 @@ CSGBrush *CSGShape::_get_brush() {
 			memdelete(brush);
 		}
 		brush = NULL;
-		brush = _build_brush(&node_aabb);
+
+		CSGBrush *n = _build_brush();
+
+		for (int i = 0; i < get_child_count(); i++) {
+
+			CSGShape *child = Object::cast_to<CSGShape>(get_child(i));
+			if (!child)
+				continue;
+			if (!child->is_visible_in_tree())
+				continue;
+
+			CSGBrush *n2 = child->_get_brush();
+			if (!n2)
+				continue;
+			if (!n) {
+				n = memnew(CSGBrush);
+
+				n->copy_from(*n2, child->get_transform());
+
+			} else {
+
+				CSGBrush *nn = memnew(CSGBrush);
+				CSGBrush *nn2 = memnew(CSGBrush);
+				nn2->copy_from(*n2, child->get_transform());
+
+				CSGBrushOperation bop;
+
+				switch (child->get_operation()) {
+					case CSGShape::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
+					case CSGShape::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
+					case CSGShape::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
+				}
+				memdelete(n);
+				memdelete(nn2);
+				n = nn;
+			}
+		}
+
+		if (n) {
+			AABB aabb;
+			for (int i = 0; i < n->faces.size(); i++) {
+				for (int j = 0; j < 3; j++) {
+					if (i == 0 && j == 0)
+						aabb.position = n->faces[i].vertices[j];
+					else
+						aabb.expand_to(n->faces[i].vertices[j]);
+				}
+			}
+			node_aabb = aabb;
+		} else {
+			node_aabb = AABB();
+		}
+
+		brush = n;
+
 		dirty = false;
 	}
 
@@ -307,23 +369,6 @@ void CSGShape::_validate_property(PropertyInfo &property) const {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
-	if (is_inside_tree() && property.name.begins_with("operation")) {
-		//hide operation for first node or root
-		if (is_root_shape()) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
-		} else {
-			for (int i = 0; i < get_parent()->get_child_count(); i++) {
-				CSGShape *s = Object::cast_to<CSGShape>(get_parent()->get_child(i));
-				if (!s)
-					continue;
-
-				if (s == this) {
-					property.usage = PROPERTY_USAGE_NOEDITOR;
-				}
-				break;
-			}
-		}
-	}
 }
 
 void CSGShape::_bind_methods() {
@@ -337,8 +382,12 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape::is_using_collision);
 
+	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
+	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
 
 	BIND_CONSTANT(OPERATION_UNION);
 	BIND_CONSTANT(OPERATION_INTERSECTION);
@@ -352,6 +401,7 @@ CSGShape::CSGShape() {
 	parent = NULL;
 	use_collision = false;
 	operation = OPERATION_UNION;
+	snap = 0.001;
 }
 
 CSGShape::~CSGShape() {
@@ -362,79 +412,12 @@ CSGShape::~CSGShape() {
 }
 //////////////////////////////////
 
-CSGBrush *CSGCombiner::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGCombiner::_build_brush() {
 
-	CSGBrush *n = NULL;
-
-	for (int i = 0; i < get_child_count(); i++) {
-
-		CSGShape *child = Object::cast_to<CSGShape>(get_child(i));
-		if (!child)
-			continue;
-		if (!child->is_visible_in_tree())
-			continue;
-
-		CSGBrush *n2 = child->_get_brush();
-		if (!n2)
-			continue;
-		if (!n) {
-			n = memnew(CSGBrush);
-
-			n->copy_from(*n2, child->get_transform());
-
-		} else {
-
-			CSGBrush *nn = memnew(CSGBrush);
-			CSGBrush *nn2 = memnew(CSGBrush);
-			nn2->copy_from(*n2, child->get_transform());
-
-			CSGBrushOperation bop;
-
-			switch (child->get_operation()) {
-				case CSGShape::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
-				case CSGShape::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
-				case CSGShape::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
-			}
-			memdelete(n);
-			memdelete(nn2);
-			n = nn;
-		}
-	}
-
-	if (n) {
-		AABB aabb;
-		for (int i = 0; i < n->faces.size(); i++) {
-			for (int j = 0; j < 3; j++) {
-				if (i == 0 && j == 0)
-					aabb.position = n->faces[i].vertices[j];
-				else
-					aabb.expand_to(n->faces[i].vertices[j]);
-			}
-		}
-		*r_aabb = aabb;
-	} else {
-		*r_aabb = AABB();
-	}
-	return n;
-}
-
-void CSGCombiner::set_snap(float p_snap) {
-	snap = p_snap;
-}
-
-float CSGCombiner::get_snap() const {
-	return snap;
-}
-
-void CSGCombiner::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGCombiner::set_snap);
-	ClassDB::bind_method(D_METHOD("get_snap"), &CSGCombiner::get_snap);
-
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
+	return NULL; //does not build anything
 }
 
 CSGCombiner::CSGCombiner() {
-	snap = 0.001;
 }
 
 /////////////////////
@@ -484,7 +467,7 @@ CSGPrimitive::CSGPrimitive() {
 
 /////////////////////
 
-CSGBrush *CSGMesh::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGMesh::_build_brush() {
 
 	if (!mesh.is_valid())
 		return NULL;
@@ -493,8 +476,6 @@ CSGBrush *CSGMesh::_build_brush(AABB *r_aabb) {
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<Vector2> uvs;
-
-	*r_aabb = AABB();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -665,7 +646,7 @@ Ref<Mesh> CSGMesh::get_mesh() {
 
 ////////////////////////////////
 
-CSGBrush *CSGSphere::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGSphere::_build_brush() {
 
 	// set our bounding box
 
@@ -781,9 +762,6 @@ CSGBrush *CSGSphere::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-radius, -radius, -radius), Vector3(radius * 2, radius * 2, radius * 2));
-	}
 	return brush;
 }
 
@@ -870,7 +848,7 @@ CSGSphere::CSGSphere() {
 
 ///////////////
 
-CSGBrush *CSGBox::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGBox::_build_brush() {
 
 	// set our bounding box
 
@@ -972,9 +950,6 @@ CSGBrush *CSGBox::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-width / 2, -height / 2, -depth / 2), Vector3(width, height, depth));
-	}
 	return brush;
 }
 
@@ -1048,7 +1023,7 @@ CSGBox::CSGBox() {
 
 ///////////////
 
-CSGBrush *CSGCylinder::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGCylinder::_build_brush() {
 
 	// set our bounding box
 
@@ -1181,9 +1156,6 @@ CSGBrush *CSGCylinder::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-radius, -height / 2, -radius), Vector3(radius * 2, height, radius * 2));
-	}
 	return brush;
 }
 
@@ -1286,7 +1258,7 @@ CSGCylinder::CSGCylinder() {
 
 ///////////////
 
-CSGBrush *CSGTorus::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGTorus::_build_brush() {
 
 	// set our bounding box
 
@@ -1409,10 +1381,6 @@ CSGBrush *CSGTorus::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-max_radius, -radius, -max_radius), Vector3(max_radius * 2, radius * 2, max_radius * 2));
-	}
-
 	return brush;
 }
 
@@ -1516,7 +1484,7 @@ CSGTorus::CSGTorus() {
 
 ///////////////
 
-CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGPolygon::_build_brush() {
 
 	// set our bounding box
 
@@ -1928,10 +1896,6 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 	}
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	if (r_aabb) {
-		*r_aabb = aabb;
-	}
 
 	return brush;
 }
