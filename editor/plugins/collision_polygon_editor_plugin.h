@@ -78,6 +78,7 @@ class Polygon3DEditor : public HBoxContainer {
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
 	bool wip_active;
+	bool snap_ignore;
 
 	float prev_depth;
 
