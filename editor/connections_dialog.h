@@ -62,8 +62,11 @@ class ConnectDialog : public ConfirmationDialog {
 	CheckButton *oneshot;
 	CheckButton *make_callback;
 	PropertyEditor *bind_editor;
-	Node *node;
+	Node *source;
+	StringName signal;
 	ConnectDialogBinds *cdbinds;
+	bool bEditMode;
+
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
@@ -78,13 +81,16 @@ public:
 	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	NodePath get_dst_path() const;
 	StringName get_dst_method() const;
+	Node *get_source() const;
+	StringName get_signal() const;
 	bool get_deferred() const;
 	bool get_oneshot() const;
+	bool is_editing() const;
 	Vector<Variant> get_binds() const;
 	void set_dst_method(const StringName &p_method);
 	void set_dst_node(Node *p_node);
 
-	void edit(Node *p_node);
+	void init(Connection c, bool bEdit = false);
 
 	ConnectDialog();
 	~ConnectDialog();
@@ -114,8 +120,10 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *slot_menu;
 
 	void _close();
-	void _connect();
+	void _make_or_edit_connection();
+	void _connect( Connection cToMake );
 	void _disconnect( TreeItem *item );
+	void _edit( TreeItem *item );
 	void _something_selected();
 	void _something_activated();
 	void _handle_signal_option( int option );
@@ -131,7 +139,7 @@ protected:
 private:
 	bool _is_item_signal( TreeItem *item );
 	void _open_connection_dialog( TreeItem *item );
-
+	void _open_connection_dialog( Connection cToEdit );
 
 public:
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
