@@ -1198,7 +1198,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_EXPORT_TILESET: {
 
 			Ref<TileSet> ml;
-			if (FileAccess::exists(p_file)) {
+			if (FileAccess::exists(p_file) && file_export_lib_merge->is_pressed()) {
 				ml = ResourceLoader::load(p_file, "TileSet");
 
 				if (ml.is_null()) {
