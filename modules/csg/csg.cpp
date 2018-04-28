@@ -409,6 +409,9 @@ void CSGBrushOperation::BuildPoly::clip(const CSGBrush *p_brush, int p_face, Mes
 
 	//transform A points to 2D
 
+	if (segment[0].distance_to(segment[1]) < CMP_EPSILON)
+		return; //too small
+
 	_clip_segment(p_brush, p_face, segment, mesh_merge, p_for_B);
 }
 
