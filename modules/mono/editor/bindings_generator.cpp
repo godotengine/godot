@@ -1328,7 +1328,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		const InternalCall *im_icall = match->value();
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
-		im_call += "." + im_icall->name + "(" + icall_params + ");\n";
+		im_call += "." + im_icall->name + "(" + icall_params + ")";
 
 		if (p_imethod.arguments.size())
 			p_output.push_back(cs_in_statements);
@@ -1338,6 +1338,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		} else if (return_type->cs_out.empty()) {
 			p_output.push_back("return " + im_call + ";\n");
 		} else {
+			p_output.push_back(INDENT3);
 			p_output.push_back(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
 			p_output.push_back("\n");
 		}
