@@ -34,6 +34,14 @@ bool CSGShape::is_root_shape() const {
 	return !parent;
 }
 
+void CSGShape::set_snap(float p_snap) {
+	snap = p_snap;
+}
+
+float CSGShape::get_snap() const {
+	return snap;
+}
+
 void CSGShape::_make_dirty() {
 
 	if (!is_inside_tree())
@@ -60,7 +68,61 @@ CSGBrush *CSGShape::_get_brush() {
 			memdelete(brush);
 		}
 		brush = NULL;
-		brush = _build_brush(&node_aabb);
+
+		CSGBrush *n = _build_brush();
+
+		for (int i = 0; i < get_child_count(); i++) {
+
+			CSGShape *child = Object::cast_to<CSGShape>(get_child(i));
+			if (!child)
+				continue;
+			if (!child->is_visible_in_tree())
+				continue;
+
+			CSGBrush *n2 = child->_get_brush();
+			if (!n2)
+				continue;
+			if (!n) {
+				n = memnew(CSGBrush);
+
+				n->copy_from(*n2, child->get_transform());
+
+			} else {
+
+				CSGBrush *nn = memnew(CSGBrush);
+				CSGBrush *nn2 = memnew(CSGBrush);
+				nn2->copy_from(*n2, child->get_transform());
+
+				CSGBrushOperation bop;
+
+				switch (child->get_operation()) {
+					case CSGShape::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
+					case CSGShape::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
+					case CSGShape::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
+				}
+				memdelete(n);
+				memdelete(nn2);
+				n = nn;
+			}
+		}
+
+		if (n) {
+			AABB aabb;
+			for (int i = 0; i < n->faces.size(); i++) {
+				for (int j = 0; j < 3; j++) {
+					if (i == 0 && j == 0)
+						aabb.position = n->faces[i].vertices[j];
+					else
+						aabb.expand_to(n->faces[i].vertices[j]);
+				}
+			}
+			node_aabb = aabb;
+		} else {
+			node_aabb = AABB();
+		}
+
+		brush = n;
+
 		dirty = false;
 	}
 
@@ -307,23 +369,6 @@ void CSGShape::_validate_property(PropertyInfo &property) const {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
-	if (is_inside_tree() && property.name.begins_with("operation")) {
-		//hide operation for first node or root
-		if (is_root_shape()) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
-		} else {
-			for (int i = 0; i < get_parent()->get_child_count(); i++) {
-				CSGShape *s = Object::cast_to<CSGShape>(get_parent()->get_child(i));
-				if (!s)
-					continue;
-
-				if (s == this) {
-					property.usage = PROPERTY_USAGE_NOEDITOR;
-				}
-				break;
-			}
-		}
-	}
 }
 
 void CSGShape::_bind_methods() {
@@ -337,8 +382,12 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape::is_using_collision);
 
+	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
+	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
 
 	BIND_CONSTANT(OPERATION_UNION);
 	BIND_CONSTANT(OPERATION_INTERSECTION);
@@ -352,6 +401,7 @@ CSGShape::CSGShape() {
 	parent = NULL;
 	use_collision = false;
 	operation = OPERATION_UNION;
+	snap = 0.001;
 }
 
 CSGShape::~CSGShape() {
@@ -362,79 +412,12 @@ CSGShape::~CSGShape() {
 }
 //////////////////////////////////
 
-CSGBrush *CSGCombiner::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGCombiner::_build_brush() {
 
-	CSGBrush *n = NULL;
-
-	for (int i = 0; i < get_child_count(); i++) {
-
-		CSGShape *child = Object::cast_to<CSGShape>(get_child(i));
-		if (!child)
-			continue;
-		if (!child->is_visible_in_tree())
-			continue;
-
-		CSGBrush *n2 = child->_get_brush();
-		if (!n2)
-			continue;
-		if (!n) {
-			n = memnew(CSGBrush);
-
-			n->copy_from(*n2, child->get_transform());
-
-		} else {
-
-			CSGBrush *nn = memnew(CSGBrush);
-			CSGBrush *nn2 = memnew(CSGBrush);
-			nn2->copy_from(*n2, child->get_transform());
-
-			CSGBrushOperation bop;
-
-			switch (child->get_operation()) {
-				case CSGShape::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
-				case CSGShape::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
-				case CSGShape::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
-			}
-			memdelete(n);
-			memdelete(nn2);
-			n = nn;
-		}
-	}
-
-	if (n) {
-		AABB aabb;
-		for (int i = 0; i < n->faces.size(); i++) {
-			for (int j = 0; j < 3; j++) {
-				if (i == 0 && j == 0)
-					aabb.position = n->faces[i].vertices[j];
-				else
-					aabb.expand_to(n->faces[i].vertices[j]);
-			}
-		}
-		*r_aabb = aabb;
-	} else {
-		*r_aabb = AABB();
-	}
-	return n;
-}
-
-void CSGCombiner::set_snap(float p_snap) {
-	snap = p_snap;
-}
-
-float CSGCombiner::get_snap() const {
-	return snap;
-}
-
-void CSGCombiner::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGCombiner::set_snap);
-	ClassDB::bind_method(D_METHOD("get_snap"), &CSGCombiner::get_snap);
-
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
+	return NULL; //does not build anything
 }
 
 CSGCombiner::CSGCombiner() {
-	snap = 0.001;
 }
 
 /////////////////////
@@ -484,7 +467,7 @@ CSGPrimitive::CSGPrimitive() {
 
 /////////////////////
 
-CSGBrush *CSGMesh::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGMesh::_build_brush() {
 
 	if (!mesh.is_valid())
 		return NULL;
@@ -493,8 +476,6 @@ CSGBrush *CSGMesh::_build_brush(AABB *r_aabb) {
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<Vector2> uvs;
-
-	*r_aabb = AABB();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -665,7 +646,7 @@ Ref<Mesh> CSGMesh::get_mesh() {
 
 ////////////////////////////////
 
-CSGBrush *CSGSphere::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGSphere::_build_brush() {
 
 	// set our bounding box
 
@@ -781,9 +762,6 @@ CSGBrush *CSGSphere::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-radius, -radius, -radius), Vector3(radius * 2, radius * 2, radius * 2));
-	}
 	return brush;
 }
 
@@ -870,7 +848,7 @@ CSGSphere::CSGSphere() {
 
 ///////////////
 
-CSGBrush *CSGBox::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGBox::_build_brush() {
 
 	// set our bounding box
 
@@ -972,9 +950,6 @@ CSGBrush *CSGBox::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-width / 2, -height / 2, -depth / 2), Vector3(width, height, depth));
-	}
 	return brush;
 }
 
@@ -1048,7 +1023,7 @@ CSGBox::CSGBox() {
 
 ///////////////
 
-CSGBrush *CSGCylinder::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGCylinder::_build_brush() {
 
 	// set our bounding box
 
@@ -1181,9 +1156,6 @@ CSGBrush *CSGCylinder::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-radius, -height / 2, -radius), Vector3(radius * 2, height, radius * 2));
-	}
 	return brush;
 }
 
@@ -1286,7 +1258,7 @@ CSGCylinder::CSGCylinder() {
 
 ///////////////
 
-CSGBrush *CSGTorus::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGTorus::_build_brush() {
 
 	// set our bounding box
 
@@ -1409,10 +1381,6 @@ CSGBrush *CSGTorus::_build_brush(AABB *r_aabb) {
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
-	if (r_aabb) {
-		*r_aabb = AABB(Vector3(-max_radius, -radius, -max_radius), Vector3(max_radius * 2, radius * 2, max_radius * 2));
-	}
-
 	return brush;
 }
 
@@ -1516,14 +1484,20 @@ CSGTorus::CSGTorus() {
 
 ///////////////
 
-CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
+CSGBrush *CSGPolygon::_build_brush() {
 
 	// set our bounding box
 
 	if (polygon.size() < 3)
 		return NULL;
 
-	Vector<int> triangles = Geometry::triangulate_polygon(polygon);
+	Vector<Point2> final_polygon = polygon;
+
+	if (Triangulate::get_area(final_polygon) > 0) {
+		final_polygon.invert();
+	}
+
+	Vector<int> triangles = Geometry::triangulate_polygon(final_polygon);
 
 	if (triangles.size() < 3)
 		return NULL;
@@ -1567,12 +1541,12 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 	int face_count;
 
 	switch (mode) {
-		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (polygon.size()) * 2; break;
-		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (polygon.size()) * 2 * spin_sides; break;
+		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;
+		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides; break;
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));
-			face_count = triangles.size() * 2 / 3 + splits * polygon.size() * 2;
+			face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
 		} break;
 	}
 
@@ -1612,7 +1586,7 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 					for (int j = 0; j < triangles.size(); j += 3) {
 						for (int k = 0; k < 3; k++) {
 							int src[3] = { 0, i == 0 ? 1 : 2, i == 0 ? 2 : 1 };
-							Vector2 p = polygon[triangles[j + src[k]]];
+							Vector2 p = final_polygon[triangles[j + src[k]]];
 							Vector3 v = Vector3(p.x, p.y, 0);
 							if (i == 0) {
 								v.z -= depth;
@@ -1628,15 +1602,15 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 				}
 
 				//add triangles for depth
-				for (int i = 0; i < polygon.size(); i++) {
+				for (int i = 0; i < final_polygon.size(); i++) {
 
-					int i_n = (i + 1) % polygon.size();
+					int i_n = (i + 1) % final_polygon.size();
 
 					Vector3 v[4] = {
-						Vector3(polygon[i].x, polygon[i].y, -depth),
-						Vector3(polygon[i_n].x, polygon[i_n].y, -depth),
-						Vector3(polygon[i_n].x, polygon[i_n].y, 0),
-						Vector3(polygon[i].x, polygon[i].y, 0),
+						Vector3(final_polygon[i].x, final_polygon[i].y, -depth),
+						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, -depth),
+						Vector3(final_polygon[i_n].x, final_polygon[i_n].y, 0),
+						Vector3(final_polygon[i].x, final_polygon[i].y, 0),
 					};
 
 					Vector2 u[4] = {
@@ -1692,15 +1666,15 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 					Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
 
 					//add triangles for depth
-					for (int j = 0; j < polygon.size(); j++) {
+					for (int j = 0; j < final_polygon.size(); j++) {
 
-						int j_n = (j + 1) % polygon.size();
+						int j_n = (j + 1) % final_polygon.size();
 
 						Vector3 v[4] = {
-							Vector3(normali.x * polygon[j].x, polygon[j].y, normali.z * polygon[j].x),
-							Vector3(normali.x * polygon[j_n].x, polygon[j_n].y, normali.z * polygon[j_n].x),
-							Vector3(normali_n.x * polygon[j_n].x, polygon[j_n].y, normali_n.z * polygon[j_n].x),
-							Vector3(normali_n.x * polygon[j].x, polygon[j].y, normali_n.z * polygon[j].x),
+							Vector3(normali.x * final_polygon[j].x, final_polygon[j].y, normali.z * final_polygon[j].x),
+							Vector3(normali.x * final_polygon[j_n].x, final_polygon[j_n].y, normali.z * final_polygon[j_n].x),
+							Vector3(normali_n.x * final_polygon[j_n].x, final_polygon[j_n].y, normali_n.z * final_polygon[j_n].x),
+							Vector3(normali_n.x * final_polygon[j].x, final_polygon[j].y, normali_n.z * final_polygon[j].x),
 						};
 
 						Vector2 u[4] = {
@@ -1746,7 +1720,7 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 2, 1 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = v;
 							}
@@ -1763,7 +1737,7 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 1, 2 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(normali_n.x * p.x, p.y, normali_n.z * p.x);
 								facesw[face * 3 + k] = v;
 							}
@@ -1825,15 +1799,15 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 					if (i > 0) {
 						//put triangles where they belong
 						//add triangles for depth
-						for (int j = 0; j < polygon.size(); j++) {
+						for (int j = 0; j < final_polygon.size(); j++) {
 
-							int j_n = (j + 1) % polygon.size();
+							int j_n = (j + 1) % final_polygon.size();
 
 							Vector3 v[4] = {
-								prev_xf.xform(Vector3(polygon[j].x, polygon[j].y, 0)),
-								prev_xf.xform(Vector3(polygon[j_n].x, polygon[j_n].y, 0)),
-								xf.xform(Vector3(polygon[j_n].x, polygon[j_n].y, 0)),
-								xf.xform(Vector3(polygon[j].x, polygon[j].y, 0)),
+								prev_xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
+								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
+								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
+								xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
 							};
 
 							Vector2 u[4] = {
@@ -1880,7 +1854,7 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 1, 2 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
 							}
@@ -1897,7 +1871,7 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 2, 1 };
-								Vector2 p = polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
 							}
@@ -1928,10 +1902,6 @@ CSGBrush *CSGPolygon::_build_brush(AABB *r_aabb) {
 	}
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
-
-	if (r_aabb) {
-		*r_aabb = aabb;
-	}
 
 	return brush;
 }

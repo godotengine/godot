@@ -131,6 +131,7 @@ private:
 	FileDialog *export_pck_zip;
 	FileDialog *export_project;
 	CheckButton *export_debug;
+	CheckButton *export_pck_zip_debug;
 
 	void _open_export_template_manager();
 

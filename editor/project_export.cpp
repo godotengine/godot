@@ -703,9 +703,9 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 
 	if (p_path.ends_with(".zip")) {
-		platform->save_zip(current, p_path);
+		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
 	} else if (p_path.ends_with(".pck")) {
-		platform->save_pack(current, p_path);
+		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
 	}
 }
 
@@ -980,6 +980,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_debug->set_text(TTR("Export With Debug"));
 	export_debug->set_pressed(true);
 	export_project->get_vbox()->add_child(export_debug);
+
+	export_pck_zip_debug = memnew(CheckButton);
+	export_pck_zip_debug->set_text(TTR("Export With Debug"));
+	export_pck_zip_debug->set_pressed(true);
+	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
 
 	set_hide_on_ok(false);
 

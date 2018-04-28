@@ -33,6 +33,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
+#include "os/input.h"
+#include "os/keyboard.h"
 #include "scene/3d/camera.h"
 #include "spatial_editor_plugin.h"
 
@@ -135,7 +137,9 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 
 		Vector2 cpoint(spoint.x, spoint.y);
 
-		cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+		//DO NOT snap here, it's confusing in 3D for adding points.
+		//Let the snap happen when the point is being moved, instead.
+		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
 		Vector<Vector2> poly = node->call("get_polygon");
 
@@ -154,6 +158,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 						wip.push_back(cpoint);
 						wip_active = true;
 						edited_point_pos = cpoint;
+						snap_ignore = false;
 						_polygon_draw();
 						edited_point = 1;
 						return true;
@@ -168,6 +173,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 
 							wip.push_back(cpoint);
 							edited_point = wip.size();
+							snap_ignore = false;
 							_polygon_draw();
 							return true;
 						}
@@ -228,6 +234,8 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 								edited_point_pos = cpoint;
 								node->call("set_polygon", poly);
 								_polygon_draw();
+								snap_ignore = true;
+
 								return true;
 							}
 						} else {
@@ -255,10 +263,13 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 								edited_point = closest_idx;
 								edited_point_pos = poly[closest_idx];
 								_polygon_draw();
+								snap_ignore = false;
 								return true;
 							}
 						}
 					} else {
+
+						snap_ignore = false;
 
 						if (edited_point != -1) {
 
@@ -315,7 +326,6 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
 
 			Vector2 gpoint = mm->get_position();
@@ -332,7 +342,13 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				snap_ignore = false;
+			}
+
+			if (!snap_ignore) {
+				cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			}
 			edited_point_pos = cpoint;
 
 			_polygon_draw();
@@ -552,6 +568,8 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	m.instance();
 	pointsm->set_mesh(m);
 	pointsm->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+
+	snap_ignore = false;
 }
 
 Polygon3DEditor::~Polygon3DEditor() {

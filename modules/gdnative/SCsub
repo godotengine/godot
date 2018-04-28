@@ -275,8 +275,8 @@ if ARGUMENTS.get('gdnative_wrapper', False):
 
     if gd_wrapper_env['use_lto']:
         if not env.msvc:
-            gd_wrapper_env.Append(CCFLAGS=['--no-lto'])
-            gd_wrapper_env.Append(LINKFLAGS=['--no-lto'])
+            gd_wrapper_env.Append(CCFLAGS=['-fno-lto'])
+            gd_wrapper_env.Append(LINKFLAGS=['-fno-lto'])
         else:
             gd_wrapper_env.Append(CCFLAGS=['/GL-'])
             gd_wrapper_env.Append(LINKFLAGS=['/LTCG:OFF'])
