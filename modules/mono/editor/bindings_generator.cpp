@@ -1328,7 +1328,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		const InternalCall *im_icall = match->value();
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
-		im_call += "." + im_icall->name + "(" + icall_params + ");\n";
+		im_call += "." + im_icall->name + "(" + icall_params + ")";
 
 		if (p_imethod.arguments.size())
 			p_output.push_back(cs_in_statements);
