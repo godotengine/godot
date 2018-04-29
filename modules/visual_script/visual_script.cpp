@@ -121,6 +121,10 @@ Array VisualScriptNode::_get_default_input_values() const {
 	return default_input_values;
 }
 
+String VisualScriptNode::get_text() const {
+	return "";
+}
+
 void VisualScriptNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_visual_script"), &VisualScriptNode::get_visual_script);
