@@ -1,72 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
-   version="1.1"
-   viewBox="0 0 16 16"
-   id="svg4"
-   sodipodi:docname="icon_add_split.svg"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
-  <metadata
-     id="metadata10">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <defs
-     id="defs8" />
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="3066"
-     inkscape:window-height="1689"
-     id="namedview6"
-     showgrid="false"
-     inkscape:zoom="41.7193"
-     inkscape:cx="7.7924561"
-     inkscape:cy="6.0148972"
-     inkscape:window-x="134"
-     inkscape:window-y="55"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg4" />
-  <rect
-     style="fill:#800000"
-     id="rect12"
-     width="1.8456686"
-     height="2.0853658"
-     x="0.62321275"
-     y="6.9394455" />
-  <rect
-     style="fill:#800000"
-     id="rect14"
-     width="1.6299411"
-     height="1.9894869"
-     x="12.488225"
-     y="7.1791425" />
-  <rect
-     style="fill:#e9afaf"
-     id="rect16"
-     width="10.067283"
-     height="0.69512194"
-     x="2.492851"
-     y="7.7304463" />
+<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+<path d="m3 13 10-10" fill="none" stroke="#f5f5f5" stroke-opacity=".39216" stroke-width="2"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m11 9v2h-2v2h2v2h2v-2h2v-2h-2v-2z" fill="#84ffb1"/>
+</g>
+<circle cx="4" cy="12" r="2" fill="none"/>
+<path d="m13 1a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2zm-10 10a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2z" fill="#e0e0e0"/>
 </svg>
