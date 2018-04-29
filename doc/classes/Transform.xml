@@ -99,7 +99,9 @@
 			<argument index="1" name="up" type="Vector3">
 			</argument>
 			<description>
-				Rotate the transform around the up vector to face the target.
+				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.
+				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
+				Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalized">
