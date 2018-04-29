@@ -355,7 +355,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 		ClassInfo *t = classes.getptr(E->get());
 		ERR_FAIL_COND_V(!t, 0);
-		if (t->api != p_api)
+		if (t->api != p_api || !t->exposed)
 			continue;
 		hash = hash_djb2_one_64(t->name.hash(), hash);
 		hash = hash_djb2_one_64(t->inherits.hash(), hash);
