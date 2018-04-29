@@ -43,6 +43,17 @@
 bool GDMonoAssembly::no_search = false;
 Vector<String> GDMonoAssembly::search_dirs;
 
+void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, void *user_data) {
+	// If our search and preload hooks fail to load the assembly themselves, the mono runtime still might.
+	// Just do Assembly.LoadFrom("/Full/Path/On/Disk.dll");
+	// In this case, we wouldn't have the assembly known in GDMono, which causes crashes
+	// if any class inside the assembly is looked up by Godot.
+	// And causing a lookup like that is as easy as throwing an exception defined in it...
+	// No, we can't make the assembly load hooks smart enough because they get passed a MonoAssemblyName* only,
+	// not the disk path passed to say Assembly.LoadFrom().
+	_wrap_mono_assembly(assembly);
+}
+
 MonoAssembly *GDMonoAssembly::assembly_search_hook(MonoAssemblyName *aname, void *user_data) {
 	return GDMonoAssembly::_search_hook(aname, user_data, false);
 }
@@ -137,16 +148,21 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 		}
 	}
 
+	if (no_search)
+		return NULL;
+
+	no_search = true;
+
 	String name = mono_assembly_name_get_name(aname);
 	bool has_extension = name.ends_with(".dll");
 
+	GDMonoAssembly *res = NULL;
 	if (has_extension ? name == "mscorlib.dll" : name == "mscorlib") {
 		GDMonoAssembly **stored_assembly = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
 		if (stored_assembly)
 			return (*stored_assembly)->get_assembly();
 
 		String path;
-		GDMonoAssembly *res = NULL;
 
 		for (int i = 0; i < search_dirs.size(); i++) {
 			const String &search_dir = search_dirs[i];
@@ -167,11 +183,11 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 				}
 			}
 		}
-
-		return res ? res->get_assembly() : NULL;
 	}
 
-	return NULL;
+	no_search = false;
+
+	return res ? res->get_assembly() : NULL;
 }
 
 GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly) {
@@ -191,12 +207,35 @@ GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const 
 	return assembly;
 }
 
+void GDMonoAssembly::_wrap_mono_assembly(MonoAssembly *assembly) {
+	String p_name = mono_assembly_name_get_name(mono_assembly_get_name(assembly));
+	GDMonoAssembly **existingassembly = GDMono::get_singleton()->get_loaded_assembly(p_name);
+
+	if (no_search || existingassembly != NULL) {
+		// Not sure whether the existingassembly check matters
+		// since no_search handles it in most cases?
+		// Can't hurt.
+		return;
+	}
+
+	MonoImage *image = mono_assembly_get_image(assembly);
+	mono_image_addref(image);
+
+	GDMonoAssembly *gdassembly = memnew(GDMonoAssembly(p_name, mono_image_get_filename(image)));
+	gdassembly->assembly = assembly;
+	gdassembly->loaded = true;
+	gdassembly->image = image;
+	MonoDomain *domain = mono_domain_get();
+	GDMono::get_singleton()->add_assembly(domain ? mono_domain_get_id(domain) : 0, gdassembly);
+}
+
 void GDMonoAssembly::initialize() {
 
 	mono_install_assembly_search_hook(&assembly_search_hook, NULL);
 	mono_install_assembly_refonly_search_hook(&assembly_refonly_search_hook, NULL);
 	mono_install_assembly_preload_hook(&assembly_preload_hook, NULL);
 	mono_install_assembly_refonly_preload_hook(&assembly_refonly_preload_hook, NULL);
+	mono_install_assembly_load_hook(&assembly_load_hook, NULL);
 }
 
 Error GDMonoAssembly::load(bool p_refonly) {
