@@ -430,10 +430,9 @@ Ref<SpatialGizmo> Spatial::get_gizmo() const {
 #endif
 }
 
-#ifdef TOOLS_ENABLED
-
 void Spatial::_update_gizmo() {
 
+#ifdef TOOLS_ENABLED
 	if (!is_inside_world())
 		return;
 	data.gizmo_dirty = false;
@@ -445,8 +444,10 @@ void Spatial::_update_gizmo() {
 				data.gizmo->clear();
 		}
 	}
+#endif
 }
 
+#ifdef TOOLS_ENABLED
 void Spatial::set_disable_gizmo(bool p_enabled) {
 
 	data.gizmo_disabled = p_enabled;
@@ -726,9 +727,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("get_world"), &Spatial::get_world);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_update_gizmo"), &Spatial::_update_gizmo);
-#endif
 
 	ClassDB::bind_method(D_METHOD("update_gizmo"), &Spatial::update_gizmo);
 	ClassDB::bind_method(D_METHOD("set_gizmo", "gizmo"), &Spatial::set_gizmo);
@@ -790,9 +789,7 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
-#ifdef TOOLS_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
-#endif
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }
