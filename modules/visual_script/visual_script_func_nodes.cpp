@@ -262,26 +262,6 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptFunctionCall::get_caption() const {
-
-	static const char *cname[5] = {
-		"CallSelf",
-		"CallNode",
-		"CallInstance",
-		"CallBasic",
-		"CallSingleton"
-	};
-
-	String caption = cname[call_mode];
-
-	if (rpc_call_mode) {
-		caption += " (RPC)";
-	}
-
-	return caption;
-}
-
-String VisualScriptFunctionCall::get_text() const {
-
 	if (call_mode == CALL_MODE_SELF)
 		return "  " + String(function) + "()";
 	if (call_mode == CALL_MODE_SINGLETON)
@@ -292,6 +272,14 @@ String VisualScriptFunctionCall::get_text() const {
 		return " [" + String(base_path.simplified()) + "]." + String(function) + "()";
 	else
 		return "  " + base_type + "." + String(function) + "()";
+}
+
+String VisualScriptFunctionCall::get_text() const {
+
+	if (rpc_call_mode) {
+		return "RPC";
+	}
+	return "";
 }
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
@@ -2397,12 +2385,14 @@ PropertyInfo VisualScriptEmitSignal::get_output_value_port_info(int p_idx) const
 	return PropertyInfo();
 }
 
+/*
 String VisualScriptEmitSignal::get_caption() const {
 
 	return "EmitSignal";
 }
+*/
 
-String VisualScriptEmitSignal::get_text() const {
+String VisualScriptEmitSignal::get_caption() const {
 
 	return "emit " + String(name);
 }

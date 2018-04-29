@@ -327,7 +327,6 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
 
 	virtual String get_caption() const;
-	virtual String get_text() const;
 	virtual String get_category() const { return "operators"; }
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
@@ -352,7 +351,6 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
 
 	virtual String get_caption() const;
-	virtual String get_text() const;
 	virtual String get_category() const { return "operators"; }
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
@@ -822,7 +820,6 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
 
 	virtual String get_caption() const;
-	virtual String get_text() const;
 	virtual String get_category() const;
 
 	void set_constructor_type(Variant::Type p_type);
@@ -993,7 +990,6 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
 
 	virtual String get_caption() const;
-	virtual String get_text() const;
 	virtual String get_category() const;
 
 	void set_deconstruct_type(Variant::Type p_type);

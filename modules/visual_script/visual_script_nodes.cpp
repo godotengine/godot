@@ -1291,12 +1291,7 @@ PropertyInfo VisualScriptIndexGet::get_output_value_port_info(int p_idx) const {
 
 String VisualScriptIndexGet::get_caption() const {
 
-	return "IndexGet";
-}
-
-String VisualScriptIndexGet::get_text() const {
-
-	return String("get");
+	return "Get Index";
 }
 
 class VisualScriptNodeInstanceIndexGet : public VisualScriptNodeInstance {
@@ -1371,12 +1366,7 @@ PropertyInfo VisualScriptIndexSet::get_output_value_port_info(int p_idx) const {
 
 String VisualScriptIndexSet::get_caption() const {
 
-	return "IndexSet";
-}
-
-String VisualScriptIndexSet::get_text() const {
-
-	return String("set");
+	return "Set Index";
 }
 
 class VisualScriptNodeInstanceIndexSet : public VisualScriptNodeInstance {
@@ -3032,12 +3022,7 @@ PropertyInfo VisualScriptConstructor::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptConstructor::get_caption() const {
 
-	return "Construct";
-}
-
-String VisualScriptConstructor::get_text() const {
-
-	return "new " + Variant::get_type_name(type) + "()";
+	return "Construct " + Variant::get_type_name(type);
 }
 
 String VisualScriptConstructor::get_category() const {
@@ -3600,12 +3585,7 @@ PropertyInfo VisualScriptDeconstruct::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptDeconstruct::get_caption() const {
 
-	return "Deconstruct";
-}
-
-String VisualScriptDeconstruct::get_text() const {
-
-	return "from " + Variant::get_type_name(type) + ":";
+	return "Deconstruct " + Variant::get_type_name(type);
 }
 
 String VisualScriptDeconstruct::get_category() const {
