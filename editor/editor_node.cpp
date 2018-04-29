@@ -491,7 +491,7 @@ void EditorNode::_fs_changed() {
 					err = platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
 				}
 				if (err != OK) {
-					ERR_PRINTS(vformat(TTR("Project export failed with error code %d."), (int)err));
+					ERR_PRINTS(vformat(TTR("Project export failed with error code %d. Missing template?"), (int)err));
 				}
 			}
 		}
