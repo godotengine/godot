@@ -981,7 +981,7 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 
 void Node::set_name(const String &p_name) {
 
-	String name = p_name.replace(":", "").replace("/", "").replace("@", "");
+	String name = p_name.replace(":", "").replace("/", "").replace("@", "").replace("\"", "").replace(".", "");
 
 	ERR_FAIL_COND(name == "");
 	data.name = name;
