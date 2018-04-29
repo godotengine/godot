@@ -53,19 +53,20 @@ class ConnectDialog : public ConfirmationDialog {
 
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
-	ConfirmationDialog *error;
+	Node *source;
+	StringName signal;
 	LineEdit *dst_path;
 	LineEdit *dst_method;
+	ConnectDialogBinds *cdbinds;
+	bool bEditMode;
+
 	SceneTreeEditor *tree;
+	ConfirmationDialog *error;
+	PropertyEditor *bind_editor;
 	OptionButton *type_list;
 	CheckButton *deferred;
 	CheckButton *oneshot;
 	CheckButton *make_callback;
-	PropertyEditor *bind_editor;
-	Node *source;
-	StringName signal;
-	ConnectDialogBinds *cdbinds;
-	bool bEditMode;
 
 	void ok_pressed();
 	void _cancel_pressed();
@@ -78,17 +79,18 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
-	NodePath get_dst_path() const;
-	StringName get_dst_method() const;
 	Node *get_source() const;
-	StringName get_signal() const;
+	StringName get_signal_name() const;
+	NodePath get_dst_path() const;
+	void set_dst_node(Node *p_node);
+	StringName get_dst_method_name() const;
+	void set_dst_method(const StringName &p_method);
+	Vector<Variant> get_binds() const;
+
+	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	bool get_deferred() const;
 	bool get_oneshot() const;
 	bool is_editing() const;
-	Vector<Variant> get_binds() const;
-	void set_dst_method(const StringName &p_method);
-	void set_dst_node(Node *p_node);
 
 	void init(Connection c, bool bEdit = false);
 
@@ -96,56 +98,61 @@ public:
 	~ConnectDialog();
 };
 
+//========================================
+
 class ConnectionsDock : public VBoxContainer {
 
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
+	//Right-click Pop-up Menu Options.
 	enum SignalMenuOption {
-		CONNECT
+		CONNECT,
+		DISCONNECT_ALL
 	};
 
 	enum SlotMenuOption {
 		EDIT,
+		GO_TO_SCRIPT,
 		DISCONNECT
 	};
 
-	Button *connect_button;
-	EditorNode *editor;
-	Node *node;
+	Node *selectedNode;
 	Tree *tree;
-	ConfirmationDialog *remove_confirm;
-	ConnectDialog *connect_dialog;
+	EditorNode *editor;
 
+	ConfirmationDialog *disconnect_all_dialog;
+	ConnectDialog *connect_dialog;
+	Button *connect_button;
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
-
-	void _close();
-	void _make_or_edit_connection();
-	void _connect( Connection cToMake );
-	void _disconnect( TreeItem *item );
-	void _edit( TreeItem *item );
-	void _something_selected();
-	void _something_activated();
-	void _handle_signal_option( int option );
-	void _handle_slot_option( int option );
-	void _rmb_pressed( Vector2 position );
 	UndoRedo *undo_redo;
+
+	void _make_or_edit_connection();
+	void _connect(Connection cToMake);
+	void _disconnect(TreeItem &item);
+	void _disconnect_all();
+
+	void _tree_item_selected();
+	void _tree_item_activated();
+	bool _is_item_signal(TreeItem &item);
+
+	void _open_connection_dialog(TreeItem &item);
+	void _open_connection_dialog(Connection cToEdit);
+	void _go_to_script(TreeItem &item);
+
+	void _handle_signal_menu_option(int option);
+	void _handle_slot_menu_option(int option);
+	void _rmb_pressed(Vector2 position);
+	void _close();
 
 protected:
 	void _connect_pressed();
 	void _notification(int p_what);
 	static void _bind_methods();
 
-private:
-	bool _is_item_signal( TreeItem *item );
-	void _open_connection_dialog( TreeItem *item );
-	void _open_connection_dialog( Connection cToEdit );
-
 public:
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
-
 	void set_node(Node *p_node);
-	String get_selected_type();
 	void update_tree();
 
 	ConnectionsDock(EditorNode *p_editor = NULL);
