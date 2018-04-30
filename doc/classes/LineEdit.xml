@@ -110,7 +110,10 @@
 			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret">
-			If [code]true[/code] every character is shown as "*".
+			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
+		</member>
+		<member name="secret_character" type="string" setter="set_secret_character" getter="get_secret_character">
+			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
 			String value of the [LineEdit].
