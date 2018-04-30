@@ -588,8 +588,6 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 
-	print_line("MUST RELOAD? " + itos(must_reload));
-
 	if (must_reload) {
 		Ref<PackedScene> pscene;
 		pscene.instance();
