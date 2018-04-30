@@ -471,12 +471,12 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 
 static const char *op_names[] = {
 	//comparison
-	"Equal", //OP_EQUAL,
-	"NotEqual", //OP_NOT_EQUAL,
-	"Less", //OP_LESS,
-	"LessEqual", //OP_LESS_EQUAL,
-	"Greater", //OP_GREATER,
-	"GreaterEq", //OP_GREATER_EQUAL,
+	"Are Equal", //OP_EQUAL,
+	"Are Not Equal", //OP_NOT_EQUAL,
+	"Less Than", //OP_LESS,
+	"Less Than or Equal", //OP_LESS_EQUAL,
+	"Greater Than", //OP_GREATER,
+	"Greater Than or Equal", //OP_GREATER_EQUAL,
 	//mathematic
 	"Add", //OP_ADD,
 	"Subtract", //OP_SUBTRACT,
@@ -2202,7 +2202,7 @@ PropertyInfo VisualScriptSceneTree::get_input_value_port_info(int p_idx) const {
 
 PropertyInfo VisualScriptSceneTree::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::OBJECT, "Scene Tree", PROPERTY_HINT_TYPE_STRING, "SceneTree");
+	return PropertyInfo(Variant::OBJECT, "Scene Tree");
 }
 
 String VisualScriptSceneTree::get_caption() const {

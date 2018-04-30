@@ -2372,16 +2372,9 @@ PropertyInfo VisualScriptEmitSignal::get_output_value_port_info(int p_idx) const
 	return PropertyInfo();
 }
 
-/*
 String VisualScriptEmitSignal::get_caption() const {
 
-	return "EmitSignal";
-}
-*/
-
-String VisualScriptEmitSignal::get_caption() const {
-
-	return "emit " + String(name);
+	return "Emit " + String(name);
 }
 
 void VisualScriptEmitSignal::set_signal(const StringName &p_type) {
