@@ -75,7 +75,7 @@ def find_msbuild_tools_path_reg():
         vswhere = os.getenv('PROGRAMFILES')
     vswhere += r'\Microsoft Visual Studio\Installer\vswhere.exe'
 
-    vswhere_args = ['-latest', '-requires', 'Microsoft.Component.MSBuild']
+    vswhere_args = ['-latest', '-products', '*', '-requires', 'Microsoft.Component.MSBuild']
 
     try:
         lines = subprocess.check_output([vswhere] + vswhere_args).splitlines()
