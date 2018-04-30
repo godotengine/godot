@@ -258,9 +258,13 @@ void main() {
 
 #endif
 
+#ifdef KEEP_3D_LINEAR
+	// leave color as is...
+#else
 	//regular Linear -> SRGB conversion
 	vec3 a = vec3(0.055);
 	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
+#endif
 
 #if defined(USING_GLOW)
 	glow = mix( (vec3(1.0)+a)*pow(glow,vec3(1.0/2.4))-a , 12.92*glow , lessThan(glow,vec3(0.0031308)));
