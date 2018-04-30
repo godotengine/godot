@@ -547,6 +547,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	curve_edit = memnew(ToolButton);
 	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveEdit", "EditorIcons"));
 	curve_edit->set_toggle_mode(true);
+	curve_edit->set_pressed(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
@@ -572,7 +573,6 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	curve_close->set_tooltip(TTR("Close Curve"));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_close);
 
-	curve_edit->set_pressed(true);
 	/*
 	collision_polygon_editor = memnew( PathEditor(p_node) );
 	editor->get_viewport()->add_child(collision_polygon_editor);
