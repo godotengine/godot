@@ -50,6 +50,14 @@ public:
 		ALIGN_FILL
 	};
 
+	enum VAlign {
+
+		VALIGN_TOP,
+		VALIGN_CENTER,
+		VALIGN_BOTTOM,
+		VALIGN_FILL
+	};
+
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,
@@ -64,10 +72,10 @@ public:
 
 private:
 	Align align;
+	VAlign valign;
 
 	bool editable;
 	bool pass;
-	bool text_changed_dirty;
 
 	String undo_text;
 	String text;
@@ -148,6 +156,9 @@ public:
 	void set_align(Align p_align);
 	Align get_align() const;
 
+	void set_valign(VAlign p_align);
+	VAlign get_valign() const;
+
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
@@ -205,6 +216,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(LineEdit::Align);
+VARIANT_ENUM_CAST(LineEdit::VAlign);
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
 #endif
