@@ -1521,6 +1521,18 @@ static void _find_identifiers(GDScriptCompletionContext &context, int p_line, bo
 		result.insert(_type_names[i]);
 	}
 
+	// Keywords that are followed by [return] and may conflict with other predictions
+	static const char *_keywords[5] = {
+		"if", "elif", "else", "for", "do", "while", "break", "continue", "pass",
+		"return", "match", "func", "class", "extends", "is", "onready", "tool",
+		"static", "export", "setget", "const", "var", "enum", "preload", "assert",
+		"yield", "signal", "breakpoint", "rpc", "sync", "master", "slave"
+	};
+
+	for (int i = 0; i < 5; i++) {
+		result.insert(_keywords[i]);
+	}
+
 	//autoload singletons
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
@@ -1805,7 +1817,7 @@ static void _find_type_arguments(GDScriptCompletionContext &context, const GDScr
 
 		} else {
 
-		//regular method
+			//regular method
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 			if (p_argidx < m->get_argument_count()) {
 				PropertyInfo pi = m->get_argument_info(p_argidx);
