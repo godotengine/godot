@@ -382,6 +382,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
 	_initial_set("text_editor/completion/idle_parse_delay", 2);
 	_initial_set("text_editor/tools/create_signal_callbacks", true);
+	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
 	_initial_set("text_editor/files/autosave_interval_secs", 0);
 
 	_initial_set("text_editor/cursor/block_caret", false);
