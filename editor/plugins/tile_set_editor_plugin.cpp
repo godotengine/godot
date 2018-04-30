@@ -126,7 +126,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 				Transform2D shape_transform = sb->shape_owner_get_transform(E->get());
 				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
 
-				shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				shape_transform[2] -= phys_offset - sb->get_transform().xform(shape_transform[2]);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
