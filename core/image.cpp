@@ -1163,36 +1163,6 @@ void Image::shrink_x2() {
 	}
 }
 
-void Image::normalize() {
-
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
-
-	lock();
-
-	for (int y = 0; y < height; y++) {
-
-		for (int x = 0; x < width; x++) {
-
-			Color c = get_pixel(x, y);
-			Vector3 v(c.r * 2.0 - 1.0, c.g * 2.0 - 1.0, c.b * 2.0 - 1.0);
-			v.normalize();
-			c.r = v.x * 0.5 + 0.5;
-			c.g = v.y * 0.5 + 0.5;
-			c.b = v.z * 0.5 + 0.5;
-			set_pixel(x, y, c);
-		}
-	}
-
-	unlock();
-
-	if (used_mipmaps) {
-		generate_mipmaps(true);
-	}
-}
-
 Error Image::generate_mipmaps(bool p_renormalize) {
 
 	if (!_can_modify(format)) {
@@ -1222,11 +1192,22 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		switch (format) {
 
 			case FORMAT_L8:
-			case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_R8: _generate_po2_mipmap<1, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 			case FORMAT_LA8:
-			case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-			case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-			case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RG8: _generate_po2_mipmap<2, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGB8:
+				if (p_renormalize)
+					_generate_po2_mipmap<3, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				else
+					_generate_po2_mipmap<3, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+
+				break;
+			case FORMAT_RGBA8:
+				if (p_renormalize)
+					_generate_po2_mipmap<4, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				else
+					_generate_po2_mipmap<4, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				break;
 			default: {}
 		}
 
