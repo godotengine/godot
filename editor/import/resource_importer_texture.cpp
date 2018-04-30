@@ -295,7 +295,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_VIDEO_RAM: {
 
 			Ref<Image> image = p_image->duplicate();
-			image->generate_mipmaps();
+			image->generate_mipmaps(p_force_normal);
 
 			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
 				image->convert(Image::FORMAT_RGBE9995);
