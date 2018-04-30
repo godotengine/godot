@@ -772,7 +772,7 @@ PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 
 String VisualScriptTypeCast::get_caption() const {
 
-	return "TypeCast";
+	return "Type Cast";
 }
 
 String VisualScriptTypeCast::get_text() const {
