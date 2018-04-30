@@ -234,8 +234,13 @@ vec3 apply_glow(vec3 color, vec3 glow) // apply glow using the selected blending
 		color = max((color + glow) - (color * glow), vec3(0.0));
 	#endif
 
-	#ifdef USE_GLOW_SOFTLIGHT
-		glow = glow * vec3(0.5f) + vec3(0.5f);
+#ifdef KEEP_3D_LINEAR
+	// leave color as is...
+#else
+	//regular Linear -> SRGB conversion
+	vec3 a = vec3(0.055);
+	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
+#endif
 
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
 		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
