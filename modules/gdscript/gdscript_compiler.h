@@ -94,6 +94,9 @@ class GDScriptCompiler {
 
 		HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 		Map<StringName, int> name_map;
+#ifdef TOOLS_ENABLED
+		Vector<StringName> named_globals;
+#endif
 
 		int get_name_map_pos(const StringName &p_identifier) {
 			int ret;

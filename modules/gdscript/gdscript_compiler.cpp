@@ -278,6 +278,18 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				return idx | (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 			}
 
+#ifdef TOOLS_ENABLED
+			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
+
+				int idx = codegen.named_globals.find(identifier);
+				if (idx == -1) {
+					idx = codegen.named_globals.size();
+					codegen.named_globals.push_back(identifier);
+				}
+				return idx | (GDScriptFunction::ADDR_TYPE_NAMED_GLOBAL << GDScriptFunction::ADDR_BITS);
+			}
+#endif
+
 			//not found, error
 
 			_set_error("Identifier not found: " + String(identifier), p_expression);
@@ -1510,6 +1522,18 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_global_names_ptr = NULL;
 		gdfunc->_global_names_count = 0;
 	}
+
+#ifdef TOOLS_ENABLED
+	// Named globals
+	if (codegen.named_globals.size()) {
+		gdfunc->named_globals.resize(codegen.named_globals.size());
+		gdfunc->_named_globals_ptr = gdfunc->named_globals.ptr();
+		for (int i = 0; i < codegen.named_globals.size(); i++) {
+			gdfunc->named_globals[i] = codegen.named_globals[i];
+		}
+		gdfunc->_named_globals_count = gdfunc->named_globals.size();
+	}
+#endif
 
 	if (codegen.opcodes.size()) {
 
