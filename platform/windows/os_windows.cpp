@@ -188,6 +188,10 @@ void OS_Windows::initialize_core() {
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
 
+	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
+	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
+	timeBeginPeriod(1);
+
 	process_map = memnew((Map<ProcessID, ProcessInfo>));
 
 	IP_Unix::make_default();
@@ -1260,6 +1264,8 @@ void OS_Windows::finalize() {
 }
 
 void OS_Windows::finalize_core() {
+
+	timeEndPeriod(1);
 
 	memdelete(process_map);
 
