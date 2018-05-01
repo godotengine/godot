@@ -366,6 +366,8 @@ int Image::get_mipmap_count() const {
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
 
+	uint32_t max_bytes = MAX(read_bytes, write_bytes);
+
 	for (int y = 0; y < p_height; y++) {
 		for (int x = 0; x < p_width; x++) {
 
@@ -379,7 +381,8 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 				rgba[1] = rofs[0];
 				rgba[2] = rofs[0];
 			} else {
-				for (uint32_t i = 0; i < MAX(read_bytes, write_bytes); i++) {
+
+				for (uint32_t i = 0; i < max_bytes; i++) {
 
 					rgba[i] = (i < read_bytes) ? rofs[i] : 0;
 				}

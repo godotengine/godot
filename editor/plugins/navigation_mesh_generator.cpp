@@ -280,26 +280,20 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 		_build_recast_navigation_mesh(p_nav_mesh, &ep, hf, chf, cset, poly_mesh, detail_mesh, vertices, indices);
 
-		if (hf) {
-			rcFreeHeightField(hf);
-			hf = 0;
-		}
-		if (chf) {
-			rcFreeCompactHeightfield(chf);
-			chf = 0;
-		}
-		if (cset) {
-			rcFreeContourSet(cset);
-			cset = 0;
-		}
-		if (poly_mesh) {
-			rcFreePolyMesh(poly_mesh);
-			poly_mesh = 0;
-		}
-		if (detail_mesh) {
-			rcFreePolyMeshDetail(detail_mesh);
-			detail_mesh = 0;
-		}
+		rcFreeHeightField(hf);
+		hf = 0;
+
+		rcFreeCompactHeightfield(chf);
+		chf = 0;
+
+		rcFreeContourSet(cset);
+		cset = 0;
+
+		rcFreePolyMesh(poly_mesh);
+		poly_mesh = 0;
+
+		rcFreePolyMeshDetail(detail_mesh);
+		detail_mesh = 0;
 	}
 	ep.step(TTR("Done!"), 11);
 }
