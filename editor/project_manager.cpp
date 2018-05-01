@@ -250,8 +250,10 @@ private:
 
 	void _create_folder() {
 
-		if (project_name->get_text() == "" || created_folder_path != "")
+		if (project_name->get_text() == "" || created_folder_path != "" || project_name->get_text().ends_with(".") || project_name->get_text().ends_with(" ")) {
+			set_message(TTR("Invalid Project Name."), MESSAGE_WARNING);
 			return;
+		}
 
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
