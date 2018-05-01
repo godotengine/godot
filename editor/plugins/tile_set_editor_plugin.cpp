@@ -149,6 +149,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		p_library->tile_set_light_occluder(id, occluder);
 		p_library->tile_set_occluder_offset(id, -phys_offset);
 		p_library->tile_set_navigation_polygon_offset(id, -phys_offset);
+		p_library->tile_set_z_index(id, mi->get_z_index());
 	}
 }
 
