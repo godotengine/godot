@@ -1311,9 +1311,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-#endif
 	if (ScriptDebugger::get_singleton())
 		GDScriptLanguage::get_singleton()->exit_function();
+#endif
 
 	if (_stack_size) {
 		//free stack
