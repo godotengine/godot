@@ -582,7 +582,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	if (mouse_mode == MOUSE_MODE_CAPTURED)
 		XUngrabPointer(x11_display, CurrentTime);
 	if (mouse_mode != MOUSE_MODE_VISIBLE && p_mode == MOUSE_MODE_VISIBLE)
-		XUndefineCursor(x11_display, x11_window);
+		XDefineCursor(x11_display, x11_window, cursors[current_cursor]);
 	if (p_mode != MOUSE_MODE_VISIBLE && mouse_mode == MOUSE_MODE_VISIBLE) {
 		XDefineCursor(x11_display, x11_window, null_cursor);
 	}
