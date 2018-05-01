@@ -51,6 +51,8 @@ private:
 
 	Ref<Material> material;
 
+	bool flip_normals;
+
 	mutable bool pending_request;
 	void _update() const;
 
@@ -78,6 +80,9 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_flip_normals(const bool p_flip_normals);
+	bool get_flip_normals() const;
 
 	Array get_mesh_arrays() const;
 
