@@ -430,6 +430,9 @@ struct GDScriptCompletionIdentifier {
 	Ref<GDScript> script;
 	Variant::Type type;
 	Variant value; //im case there is a value, also return it
+
+	GDScriptCompletionIdentifier() :
+			type(Variant::NIL) {}
 };
 
 static GDScriptCompletionIdentifier _get_type_from_variant(const Variant &p_variant, bool p_allow_gdnative_class = false) {
@@ -551,9 +554,7 @@ static Ref<Reference> _get_parent_class(GDScriptCompletionContext &context) {
 
 static GDScriptCompletionIdentifier _get_native_class(GDScriptCompletionContext &context) {
 
-	//eeh...
 	GDScriptCompletionIdentifier id;
-	id.type = Variant::NIL;
 
 	REF pc = _get_parent_class(context);
 	if (!pc.is_valid()) {

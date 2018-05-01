@@ -194,8 +194,6 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
-	js.mapping = -1;
-	js.hat_current = 0;
 
 	if (p_connected) {
 
@@ -797,12 +795,12 @@ InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
 	JoyEvent ret;
 	ret.type = -1;
+	ret.index = 0;
 
 	int i = 0;
 	while (buttons[i]) {
 
 		if (p_to == buttons[i]) {
-			//printf("mapping button %s\n", buttons[i]);
 			ret.type = TYPE_BUTTON;
 			ret.index = i;
 			ret.value = 0;

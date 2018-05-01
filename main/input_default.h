@@ -97,7 +97,6 @@ class InputDefault : public Input {
 		int hat_current;
 
 		Joypad() {
-
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
 				last_axis[i] = 0.0f;
@@ -110,6 +109,7 @@ class InputDefault : public Input {
 			last_hat = HAT_MASK_CENTER;
 			filter = 0.01f;
 			mapping = -1;
+			hat_current = 0;
 		}
 	};
 

@@ -628,7 +628,7 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 			if (bone && bone->has_meta("_edit_bone_")) {
 				// Check if we have an IK chain
 				List<Node2D *> bone_ik_list;
-				bool ik_found;
+				bool ik_found = false;
 				bone = Object::cast_to<Node2D>(bone->get_parent());
 				while (bone) {
 					bone_ik_list.push_back(bone);

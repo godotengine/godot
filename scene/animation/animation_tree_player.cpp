@@ -812,8 +812,6 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
-
-		t.skip = false;
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -886,7 +884,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		Track &t = E->get();
 
-		if (t.skip || !t.object)
+		if (!t.object)
 			continue;
 
 		if (t.subpath.size()) { // value track

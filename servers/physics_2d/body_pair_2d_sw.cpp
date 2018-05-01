@@ -62,6 +62,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	contact.local_B = local_B;
 	contact.reused = true;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
 

@@ -122,6 +122,14 @@ class AppxPackager {
 		Vector<BlockHash> hashes;
 		uLong file_crc32;
 		ZPOS64_T zip_offset;
+
+		FileMeta() :
+				lfh_size(0),
+				compressed(false),
+				compressed_size(0),
+				uncompressed_size(0),
+				file_crc32(0),
+				zip_offset(0) {}
 	};
 
 	String progress_task;
