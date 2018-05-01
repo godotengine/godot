@@ -153,9 +153,9 @@ struct _VariantCall {
 		funcdata.func = p_func;
 		funcdata.default_args = p_defaultarg;
 		funcdata._const = p_const;
+		funcdata.returns = p_has_return;
 #ifdef DEBUG_ENABLED
 		funcdata.return_type = p_return;
-		funcdata.returns = p_has_return;
 #endif
 
 		if (p_argtype1.name) {
