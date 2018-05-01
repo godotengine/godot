@@ -2966,7 +2966,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (!scancode_handled && !k->get_command()) { //for German kbds
 
-			if (k->get_unicode() >= 32) {
+			if (k->get_unicode() >= 32 && !(k->get_scancode() == KEY_SPACE && k->get_shift())) {
 
 				if (readonly)
 					return;
