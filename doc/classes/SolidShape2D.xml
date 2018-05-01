@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SolidShape2D" inherits="Node2D" category="Core" version="3.0-stable">
+	<brief_description>
+		A 2D shape.
+	</brief_description>
+	<description>
+		A SolidShape2D is defined by a Shape2D and can be filled with color. Use Node2D's transform to change the size. The shape will be drawn to the screen.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
+			This is the shape that will be drawn. Default value: [code]None[/code].
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color">
+			The shape's fill color. Default value: [code]White[/code].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
