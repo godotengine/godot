@@ -108,6 +108,21 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 #endif
 			return &GDScriptLanguage::get_singleton()->get_global_array()[address];
 		} break;
+#ifdef TOOLS_ENABLED
+		case ADDR_TYPE_NAMED_GLOBAL: {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_INDEX_V(address, _named_globals_count, NULL);
+#endif
+			StringName id = _named_globals_ptr[address];
+
+			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(id)) {
+				return (Variant *)&GDScriptLanguage::get_singleton()->get_named_globals_map()[id];
+			} else {
+				r_error = "Autoload singleton '" + String(id) + "' has been removed.";
+				return NULL;
+			}
+		} break;
+#endif
 		case ADDR_TYPE_NIL: {
 			return &nil;
 		} break;

@@ -1333,6 +1333,15 @@ void GDScriptLanguage::add_global_constant(const StringName &p_variable, const V
 	_add_global(p_variable, p_value);
 }
 
+void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const Variant &p_value) {
+	named_globals[p_name] = p_value;
+}
+
+void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
+	ERR_FAIL_COND(!named_globals.has(p_name));
+	named_globals.erase(p_name);
+}
+
 void GDScriptLanguage::init() {
 
 	//populate global constants
