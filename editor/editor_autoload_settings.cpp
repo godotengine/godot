@@ -336,11 +336,15 @@ void EditorAutoloadSettings::update_autoload() {
 	updating_autoload = true;
 
 	Map<String, AutoLoadInfo> to_remove;
-	List<AutoLoadInfo *> to_add;
+	Map<String, AutoLoadInfo> to_remove_singleton;
+	List<AutoLoadInfo> to_add;
+	List<String> to_add_singleton; // Only for when the node is still the same
 
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
-		to_remove.insert(info.name, info);
+		to_remove.insert(E->get().name, E->get());
+		if (E->get().is_singleton) {
+			to_remove_singleton.insert(E->get().name, E->get());
+		}
 	}
 
 	autoload_cache.clear();
@@ -364,6 +368,11 @@ void EditorAutoloadSettings::update_autoload() {
 		if (name.empty())
 			continue;
 
+		AutoLoadInfo old_info;
+		if (to_remove.has(name)) {
+			old_info = to_remove[name];
+		}
+
 		AutoLoadInfo info;
 		info.is_singleton = path.begins_with("*");
 
@@ -375,30 +384,27 @@ void EditorAutoloadSettings::update_autoload() {
 		info.path = path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
-		bool need_to_add = true;
-		if (to_remove.has(name)) {
-			AutoLoadInfo &old_info = to_remove[name];
+		if (old_info.name == info.name) {
 			if (old_info.path == info.path) {
-				// Still the same resource, check status
-				info.node = old_info.node;
-				if (info.node) {
-					Ref<Script> scr = info.node->get_script();
-					info.in_editor = scr.is_valid() && scr->is_tool();
-					if (info.is_singleton == old_info.is_singleton && info.in_editor == old_info.in_editor) {
-						to_remove.erase(name);
-						need_to_add = false;
+				// Still the same resource, check singleton status
+				to_remove.erase(name);
+				if (info.is_singleton) {
+					if (old_info.is_singleton) {
+						to_remove_singleton.erase(name);
 					} else {
-						info.node = NULL;
+						to_add_singleton.push_back(name);
 					}
 				}
+			} else {
+				// Resource changed
+				to_add.push_back(info);
 			}
+		} else {
+			// New autoload
+			to_add.push_back(info);
 		}
 
 		autoload_cache.push_back(info);
-
-		if (need_to_add) {
-			to_add.push_back(&(autoload_cache.back()->get()));
-		}
 
 		TreeItem *item = tree->create_item(root);
 		item->set_text(0, name);
@@ -410,7 +416,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
-		item->set_checked(2, global);
+		item->set_checked(2, info.is_singleton);
 		item->add_button(3, get_icon("FileList", "EditorIcons"), BUTTON_OPEN);
 		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
 		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
@@ -418,53 +424,70 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_selectable(3, false);
 	}
 
-	// Remove deleted/changed autoloads
-	for (Map<String, AutoLoadInfo>::Element *E = to_remove.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
-		if (info.is_singleton) {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->remove_named_global_constant(info.name);
-			}
-		}
-		if (info.in_editor) {
-			ERR_CONTINUE(!info.node);
-			get_tree()->get_root()->remove_child(info.node);
-		}
-
-		if (info.node) {
-			memdelete(info.node);
-			info.node = NULL;
+	// Remove autoload constants
+	for (Map<String, AutoLoadInfo>::Element *E = to_remove_singleton.front(); E; E = E->next()) {
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptServer::get_language(i)->remove_named_global_constant(E->get().name);
 		}
 	}
 
-	// Load new/changed autoloads
+	// Remove obsolete nodes from the tree
+	for (Map<String, AutoLoadInfo>::Element *E = to_remove.front(); E; E = E->next()) {
+		AutoLoadInfo &info = E->get();
+		Node *al = get_node("/root/" + info.name);
+		ERR_CONTINUE(!al);
+		get_tree()->get_root()->remove_child(al);
+		memdelete(al);
+	}
+
+	// Register new singletons already in the tree
+	for (List<String>::Element *E = to_add_singleton.front(); E; E = E->next()) {
+		Node *al = get_node("/root/" + E->get());
+		ERR_CONTINUE(!al);
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptServer::get_language(i)->add_named_global_constant(E->get(), al);
+		}
+	}
+
+	// Add new nodes to the tree
 	List<Node *> nodes_to_add;
-	for (List<AutoLoadInfo *>::Element *E = to_add.front(); E; E = E->next()) {
-		AutoLoadInfo *info = E->get();
+	for (List<AutoLoadInfo>::Element *E = to_add.front(); E; E = E->next()) {
+		AutoLoadInfo &info = E->get();
 
-		info->node = _create_autoload(info->path);
+		RES res = ResourceLoader::load(info.path);
+		ERR_EXPLAIN("Can't autoload: " + info.path);
+		ERR_CONTINUE(res.is_null());
+		Node *n = NULL;
+		if (res->is_class("PackedScene")) {
+			Ref<PackedScene> ps = res;
+			n = ps->instance();
+		} else if (res->is_class("Script")) {
+			Ref<Script> s = res;
+			StringName ibt = s->get_instance_base_type();
+			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+			ERR_EXPLAIN("Script does not inherit a Node: " + info.path);
+			ERR_CONTINUE(!valid_type);
 
-		ERR_CONTINUE(!info->node);
-		info->node->set_name(info->name);
+			Object *obj = ClassDB::instance(ibt);
 
-		Ref<Script> scr = info->node->get_script();
-		info->in_editor = scr.is_valid() && scr->is_tool();
+			ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+			ERR_CONTINUE(obj == NULL);
 
-		if (info->in_editor) {
-			//defer so references are all valid on _ready()
-			nodes_to_add.push_back(info->node);
+			n = Object::cast_to<Node>(obj);
+			n->set_script(s.get_ref_ptr());
 		}
 
-		if (info->is_singleton) {
+		ERR_EXPLAIN("Path in autoload not a node or script: " + info.path);
+		ERR_CONTINUE(!n);
+		n->set_name(info.name);
+
+		//defer so references are all valid on _ready()
+		nodes_to_add.push_back(n);
+
+		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info->name, info->node);
+				ScriptServer::get_language(i)->add_named_global_constant(info.name, n);
 			}
-		}
-
-		if (!info->in_editor && !info->is_singleton) {
-			// No reason to keep this node
-			memdelete(info->node);
-			info->node = NULL;
 		}
 	}
 
@@ -743,37 +766,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.path = path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
-		if (info.is_singleton) {
-			// Make sure name references work before parsing scripts
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info.name, Variant());
-			}
-		}
-
 		autoload_cache.push_back(info);
-	}
-
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
-
-		info.node = _create_autoload(info.path);
-
-		if (info.node) {
-			Ref<Script> scr = info.node->get_script();
-			info.in_editor = scr.is_valid() && scr->is_tool();
-			info.node->set_name(info.name);
-		}
-
-		if (info.is_singleton) {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info.name, info.node);
-			}
-		}
-
-		if (!info.is_singleton && !info.in_editor) {
-			memdelete(info.node);
-			info.node = NULL;
-		}
 	}
 
 	autoload_changed = "autoload_changed";

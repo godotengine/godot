@@ -191,6 +191,14 @@ public:
 		ADDR_TYPE_NIL = 9
 	};
 
+	enum RPCMode {
+		RPC_DISABLED,
+		RPC_ENABLED,
+		RPC_SYNC,
+		RPC_SYNC_MASTER,
+		RPC_SYNC_SLAVE
+	};
+
 	struct StackDebug {
 
 		int line;
