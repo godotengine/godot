@@ -2163,13 +2163,33 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 	if (p_cursor.is_valid()) {
 		Ref<ImageTexture> texture = p_cursor;
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Size2 texture_size;
+		Rect2 atlas_rect;
+
+		if (!texture.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.pos.x = atlas_texture->get_region().pos.x;
+			atlas_rect.pos.y = atlas_texture->get_region().pos.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+
 		Image image = texture->get_data();
 
-		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
-
 		// Create the cursor structure
-		XcursorImage *cursor_image = XcursorImageCreate(texture->get_width(), texture->get_height());
-		XcursorUInt image_size = texture->get_width() * texture->get_height();
+		XcursorImage *cursor_image = XcursorImageCreate(texture_size.width, texture_size.height);
+		XcursorUInt image_size = texture_size.width * texture_size.height;
 		XcursorDim size = sizeof(XcursorPixel) * image_size;
 
 		cursor_image->version = 1;
@@ -2181,8 +2201,13 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		cursor_image->pixels = (XcursorPixel *)malloc(size);
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture->get_width());
-			int column_index = index % texture->get_width();
+			int row_index = floor(index / texture_size.width) + atlas_rect.pos.y;
+			int column_index = (index % int(texture_size.width)) + atlas_rect.pos.x;
+
+			if (atlas_texture.is_valid()) {
+				column_index = MIN(column_index, atlas_rect.size.width - 1);
+				row_index = MIN(row_index, atlas_rect.size.height - 1);
+			}
 
 			*(cursor_image->pixels + index) = image.get_pixel(column_index, row_index).to_ARGB32();
 		}

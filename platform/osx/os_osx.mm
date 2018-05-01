@@ -1202,38 +1202,68 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<ImageTexture> texture = p_cursor;
-		Image image = texture->get_data();
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Size2 texture_size;
+		Rect2 atlas_rect;
 
-		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
+		if (!texture.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.pos.x = atlas_texture->get_region().pos.x;
+			atlas_rect.pos.y = atlas_texture->get_region().pos.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+
+		Image image = texture->get_data();
 
 		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:NULL
-							  pixelsWide:image.get_width()
-							  pixelsHigh:image.get_height()
+							  pixelsWide:int(texture_size.width)
+							  pixelsHigh:int(texture_size.height)
 						   bitsPerSample:8
 						 samplesPerPixel:4
 								hasAlpha:YES
 								isPlanar:NO
 						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:image.get_width() * 4
+							 bytesPerRow:int(texture_size.width) * 4
 							bitsPerPixel:32] autorelease];
 		ERR_FAIL_COND(imgrep == nil);
 		uint8_t *pixels = [imgrep bitmapData];
 
-		int len = image.get_width() * image.get_height();
+		int len = int(texture_size.width * texture_size.height);
 		DVector<uint8_t> data = image.get_data();
 		DVector<uint8_t>::Read r = data.read();
 
 		/* Premultiply the alpha channel */
 		for (int i = 0; i < len; i++) {
-			uint8_t alpha = r[i * 4 + 3];
-			pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-			pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-			pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+			int row_index = floor(i / texture_size.width) + atlas_rect.pos.y;
+			int column_index = (i % int(texture_size.width)) + atlas_rect.pos.x;
+
+			if (atlas_texture.is_valid()) {
+				column_index = MIN(column_index, atlas_rect.size.width - 1);
+				row_index = MIN(row_index, atlas_rect.size.height - 1);
+			}
+
+			uint32_t color = image.get_pixel(column_index, row_index).to_ARGB32();
+
+			uint8_t alpha = (color >> 24) & 0xFF;
+			pixels[i * 4 + 0] = ((color >> 16)  & 0xFF) * alpha / 255;
+			pixels[i * 4 + 1] = ((color >> 8) & 0xFF) * alpha / 255;
+			pixels[i * 4 + 2] = ((color) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 3] = alpha;
 		}
 
-		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(image.get_width(), image.get_height())] autorelease];
+		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(texture_size.width, texture_size.height)] autorelease];
 		[nsimage addRepresentation:imgrep];
 
 		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
