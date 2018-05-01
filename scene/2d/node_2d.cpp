@@ -451,7 +451,7 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation", PROPERTY_HINT_NONE, "", 0), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation_degrees", PROPERTY_HINT_NONE, "", 0), "set_global_rotation_degrees", "get_global_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_scale", PROPERTY_HINT_NONE, "", 0), "set_global_scale", "get_global_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", 0), "set_global_scale", "get_global_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 
 	ADD_GROUP("Z Index", "");
