@@ -758,8 +758,11 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &StyleBoxFlat::set_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &StyleBoxFlat::get_bg_color);
 
-	ClassDB::bind_method(D_METHOD("set_border_color", "color"), &StyleBoxFlat::set_border_color_all);
-	ClassDB::bind_method(D_METHOD("get_border_color"), &StyleBoxFlat::get_border_color_all);
+	ClassDB::bind_method(D_METHOD("set_border_color_all", "color"), &StyleBoxFlat::set_border_color_all);
+	ClassDB::bind_method(D_METHOD("get_border_color_all"), &StyleBoxFlat::get_border_color_all);
+
+	ClassDB::bind_method(D_METHOD("set_border_color", "margin", "color"), &StyleBoxFlat::set_border_color);
+	ClassDB::bind_method(D_METHOD("get_border_color", "margin"), &StyleBoxFlat::get_border_color);
 
 	ClassDB::bind_method(D_METHOD("set_border_width_all", "width"), &StyleBoxFlat::set_border_width_all);
 	ClassDB::bind_method(D_METHOD("get_border_width_min"), &StyleBoxFlat::get_border_width_min);
@@ -810,7 +813,10 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_bottom", PROPERTY_HINT_RANGE, "0,1024,1"), "set_border_width", "get_border_width", MARGIN_BOTTOM);
 
 	ADD_GROUP("Border", "border_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "border_color"), "set_border_color", "get_border_color");
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_color_left"), "set_border_color", "get_border_color", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_color_top"), "set_border_color", "get_border_color", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_color_right"), "set_border_color", "get_border_color", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_color_bottom"), "set_border_color", "get_border_color", MARGIN_BOTTOM);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 
