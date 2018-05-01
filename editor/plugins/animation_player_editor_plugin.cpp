@@ -459,6 +459,12 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	Ref<Animation> anim = player->get_animation(current);
 
 	undo_redo->create_action(TTR("Remove Animation"));
+	if (player->get_autoplay() == current) {
+		undo_redo->add_do_method(player, "set_autoplay", "");
+		undo_redo->add_undo_method(player, "set_autoplay", current);
+		// Avoid having the autoplay icon linger around if there is only one animation in the player
+		undo_redo->add_do_method(this, "_animation_player_changed", player);
+	}
 	undo_redo->add_do_method(player, "remove_animation", current);
 	undo_redo->add_undo_method(player, "add_animation", current, anim);
 	undo_redo->add_do_method(this, "_animation_player_changed", player);
@@ -822,6 +828,7 @@ void AnimationPlayerEditor::_update_player() {
 	save_anim->set_disabled(animlist.size() == 0);
 	tool_anim->set_disabled(player == NULL);
 	onion_skinning->set_disabled(player == NULL);
+	pin->set_disabled(player == NULL);
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
