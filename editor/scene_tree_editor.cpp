@@ -204,14 +204,14 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	} else if (marked.has(p_node)) {
 
 		item->set_selectable(0, marked_selectable);
-		item->set_custom_color(0, get_color("error_color", "Editor"));
+		item->set_custom_color(0, get_color("success_color", "Editor"));
 	} else if (!marked_selectable && !marked_children_selectable) {
 
 		Node *node = p_node;
 		while (node) {
 			if (marked.has(node)) {
 				item->set_selectable(0, false);
-				item->set_custom_color(0, get_color("error_color", "Editor"));
+				item->set_custom_color(0, get_color("success_color", "Editor"));
 				break;
 			}
 			node = node->get_parent();
