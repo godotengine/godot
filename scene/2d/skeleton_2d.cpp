@@ -12,6 +12,8 @@ void Bone2D::_notification(int p_what) {
 				break;
 			if (!Object::cast_to<Bone2D>(parent))
 				break; //skeletons must be chained to Bone2Ds.
+
+			parent = parent->get_parent();
 		}
 
 		if (skeleton) {
