@@ -4886,7 +4886,7 @@ EditorNode::EditorNode() {
 
 		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
-			id->set_emulate_touch(false); //just disable just in case
+			id->set_emulate_touch_from_mouse(false); //just disable just in case
 		}
 		id->set_custom_mouse_cursor(RES());
 	}
