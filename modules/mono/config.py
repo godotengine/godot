@@ -85,7 +85,7 @@ def configure(env):
             if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
                 raise RuntimeError('Could not find static mono library in: ' + mono_lib_path)
 
-            if os.getenv('VCINSTALLDIR'):
+            if env.msvc:
                 env.Append(LINKFLAGS=mono_static_lib_name + lib_suffix)
 
                 env.Append(LINKFLAGS='Mincore' + lib_suffix)
@@ -100,7 +100,7 @@ def configure(env):
             if not mono_lib_name:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-            if os.getenv('VCINSTALLDIR'):
+            if env.msvc:
                 env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
             else:
                 env.Append(LIBS=mono_lib_name)
