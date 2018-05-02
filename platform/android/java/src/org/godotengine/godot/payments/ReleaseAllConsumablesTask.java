@@ -57,7 +57,7 @@ abstract public class ReleaseAllConsumablesTask {
 
 	public void consumeItAll() {
 		try {
-			Bundle bundle = mService.getPurchases(3, context.getPackageName(), "inapp", null);
+			Bundle bundle = mService.getPurchases(3, context.getPackageName(), PaymentsManager.ITEM_TYPE_INAPP, null);
 
 			// TODO:
 			// Check if this loop is useful and remove it if not
@@ -67,8 +67,8 @@ abstract public class ReleaseAllConsumablesTask {
 
 			if (bundle.getInt("RESPONSE_CODE") == 0) {
 
-				final ArrayList<String> myPurchases = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
-				final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
+				final ArrayList<String> myPurchases = bundle.getStringArrayList(PaymentsManager.RESPONSE_INAPP_PURCHASE_DATA_LIST);
+				final ArrayList<String> mySignatures = bundle.getStringArrayList(PaymentsManager.RESPONSE_INAPP_SIGNATURE_LIST);
 
 				if (myPurchases == null || myPurchases.size() == 0) {
 					notRequired();
