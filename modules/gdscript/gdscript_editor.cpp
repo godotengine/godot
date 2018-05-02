@@ -1522,6 +1522,13 @@ static void _find_identifiers(GDScriptCompletionContext &context, int p_line, bo
 		result.insert(_type_names[i]);
 	}
 
+	List<String> reserved_words;
+	GDScriptLanguage::get_singleton()->get_reserved_words(&reserved_words);
+
+	for (List<String>::Element *E = reserved_words.front(); E; E = E->next()) {
+		result.insert(E->get());
+	}
+
 	//autoload singletons
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
