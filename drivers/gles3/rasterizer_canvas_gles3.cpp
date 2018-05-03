@@ -160,6 +160,7 @@ void RasterizerCanvasGLES3::canvas_begin() {
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF13, false);
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_DISTANCE_FIELD, false);
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_NINEPATCH, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, false);
 
 	state.canvas_shader.set_custom_shader(0);
 	state.canvas_shader.bind();
@@ -180,6 +181,7 @@ void RasterizerCanvasGLES3::canvas_begin() {
 	glBindVertexArray(data.canvas_quad_array);
 	state.using_texture_rect = true;
 	state.using_ninepatch = false;
+	state.using_skeleton = false;
 }
 
 void RasterizerCanvasGLES3::canvas_end() {
@@ -284,6 +286,9 @@ void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepat
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
+	if (state.using_skeleton) {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TO_OBJECT_LOCAL_MATRIX, state.skeleton_transform);
+	}
 	if (storage->frame.current_rt) {
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
 	} else {
@@ -293,7 +298,7 @@ void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepat
 	state.using_ninepatch = p_ninepatch;
 }
 
-void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const int *p_bones, const float *p_weights) {
 
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
@@ -333,6 +338,23 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
 
+	if (p_bones && p_weights) {
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(int) * 4 * p_vertex_count, p_bones);
+		glEnableVertexAttribArray(VS::ARRAY_BONES);
+		glVertexAttribPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, false, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(int) * 4 * p_vertex_count;
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(float) * 4 * p_vertex_count, p_weights);
+		glEnableVertexAttribArray(VS::ARRAY_WEIGHTS);
+		glVertexAttribPointer(VS::ARRAY_WEIGHTS, 4, GL_FLOAT, false, sizeof(float) * 4, ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(float) * 4 * p_vertex_count;
+
+	} else if (state.using_skeleton) {
+		glVertexAttribI4ui(VS::ARRAY_BONES, 0, 0, 0, 0);
+		glVertexAttrib4f(VS::ARRAY_WEIGHTS, 0, 0, 0, 0);
+	}
+
 	//bind the indices buffer.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
@@ -341,6 +363,12 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
 
 	storage->frame.canvas_draw_commands++;
+
+	if (p_bones && p_weights) {
+		//not used so often, so disable when used
+		glDisableVertexAttribArray(VS::ARRAY_BONES);
+		glDisableVertexAttribArray(VS::ARRAY_WEIGHTS);
+	}
 
 	glBindVertexArray(0);
 }
@@ -735,7 +763,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
-				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+
+				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1, polygon->bones.ptr(), polygon->weights.ptr());
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
@@ -921,7 +950,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				}
 
 				_bind_canvas_texture(RID(), RID());
-				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true);
+				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true, NULL, NULL);
 
 				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
 				//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
@@ -1068,6 +1097,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 	RID canvas_last_material;
 
 	bool prev_distance_field = false;
+	bool prev_use_skeleton = false;
 
 	while (p_item_list) {
 
@@ -1103,6 +1133,35 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				_copy_texscreen(Rect2());
 			} else {
 				_copy_texscreen(ci->copy_back_buffer->rect);
+			}
+		}
+
+		RasterizerStorageGLES3::Skeleton *skeleton = NULL;
+
+		{
+			//skeleton handling
+			if (ci->skeleton.is_valid()) {
+				skeleton = storage->skeleton_owner.getornull(ci->skeleton);
+				if (!skeleton->use_2d) {
+					skeleton = NULL;
+				} else {
+					state.skeleton_transform = ci->final_transform.affine_inverse() * (p_transform * skeleton->base_transform_2d);
+				}
+			}
+
+			bool use_skeleton = skeleton != NULL;
+			if (prev_use_skeleton != use_skeleton) {
+				rebind_shader = true;
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, use_skeleton);
+				prev_use_skeleton = use_skeleton;
+			}
+
+			if (skeleton) {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+				glBindTexture(GL_TEXTURE_2D, skeleton->texture);
+				state.using_skeleton = true;
+			} else {
+				state.using_skeleton = false;
 			}
 		}
 
