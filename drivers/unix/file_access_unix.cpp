@@ -184,7 +184,7 @@ size_t FileAccessUnix::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	int pos = ftell(f);
+	long pos = ftell(f);
 	if (pos < 0) {
 		check_errors();
 		ERR_FAIL_V(0);
@@ -196,10 +196,10 @@ size_t FileAccessUnix::get_len() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	int pos = ftell(f);
+	long pos = ftell(f);
 	ERR_FAIL_COND_V(pos < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, 0, SEEK_END), 0);
-	int size = ftell(f);
+	long size = ftell(f);
 	ERR_FAIL_COND_V(size < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, pos, SEEK_SET), 0);
 
