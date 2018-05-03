@@ -1401,6 +1401,10 @@ msgstr "Curăță Afișarea"
 msgid "Project export failed with error code %d."
 msgstr "Exportul de proiect nu a reuşit cu un cod de eroare %d."
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Eroare la salvarea resursei!"
@@ -3710,6 +3714,14 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Centrează Selecția"
 
@@ -4001,6 +4013,10 @@ msgstr "Mesh-ul nu are o suprafață din care să se poată creea contururi!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr "Mesh-ul primitiv nu este de tipul PRIMITIVE_TRIANGLES!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -6152,8 +6168,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp

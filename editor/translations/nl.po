@@ -1415,7 +1415,7 @@ msgstr "Maak Uitvoer Leeg"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "Project exporteren faalt door foutcode %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3736,12 +3736,14 @@ msgid "Show Guides"
 msgstr "Toon hulplijnen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Origin"
-msgstr "Toon Oorsprongspunt"
+msgstr "Raster Weergeven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Viewport"
-msgstr "Toon Aanzicht Portaal"
+msgstr "Toon helpers"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4041,7 +4043,7 @@ msgstr "Mesh heeft geen oppervlakte om omlijning van te maken!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Mesh grondtype is niet PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5725,6 +5727,10 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Has"
 msgstr "Had"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6215,8 +6221,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -8267,6 +8273,10 @@ msgstr "Fout bij het laden van lettertype."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
+
+#, fuzzy
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Kan niet verbinden met host:"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

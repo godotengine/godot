@@ -3609,6 +3609,14 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -6050,8 +6058,8 @@ msgstr "כפתור עכבר"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6193,10 +6201,6 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "מחיקת פריט"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7236,6 +7240,10 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
 msgstr "בחירת מרחק:"
+
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."

@@ -1414,7 +1414,7 @@ msgstr "Wyczyść dane wyjściowe"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "Eksport projektu nie powiódł się, kod błędu to %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3729,12 +3729,14 @@ msgid "Show Guides"
 msgstr "Pokaż prowadnice"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Origin"
 msgstr "Pokaż pozycję początkową"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Viewport"
-msgstr "Pokaż widok"
+msgstr "1 widok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -6252,13 +6254,10 @@ msgid "Mouse Button"
 msgstr "Przycisk myszy"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
-"Niepoprawna nazwa akcji. Nazwa nie może być pusta ani zawierać znaki takie "
-"jak: '/', ':', '=', '\\' lub '\"'"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7475,7 +7474,7 @@ msgstr "Wybierz odległość:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr "Nazwa klasy nie może być słowem zastrzeżonym"
+msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -8291,6 +8290,12 @@ msgstr "Błąd ładowania fonta."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "Nieprawidłowa akcja (wszystko oprócz '/' lub ':')."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Nie może zawierać '/ 'lub':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

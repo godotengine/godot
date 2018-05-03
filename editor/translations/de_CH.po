@@ -3668,6 +3668,14 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -6151,8 +6159,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -8146,6 +8154,10 @@ msgstr ""
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Verbindung zu Node:"
 
 #, fuzzy
 #~ msgid "Can't write file."

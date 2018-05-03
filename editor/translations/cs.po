@@ -3662,10 +3662,16 @@ msgstr "Zobrazit počátek"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Show Origin"
+msgstr "Zobrazit mřížku"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Viewport"
 msgstr "Zobrazit pomocné"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Center Selection"
 msgstr "Vycentrovat výběr"
 
@@ -6122,10 +6128,9 @@ msgid "Mouse Button"
 msgstr "Tlačítko myši"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 "Neplatné jméno akce. Nesmí být prázdné nebo obsahovat '/', ':', '=', '\\' "
 "nebo '\"'"
@@ -8131,6 +8136,9 @@ msgstr "Chyba nahrávání fontu."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Neplatná velikost fontu."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Nesmí obsaovat '/' nebo ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

@@ -1403,6 +1403,10 @@ msgstr "Tyhjennä tuloste"
 msgid "Project export failed with error code %d."
 msgstr "Projektin vienti epäonnistui virhekoodilla %d."
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Virhe tallennettaessa resurssia!"
@@ -3702,12 +3706,14 @@ msgid "Show Guides"
 msgstr "Näytä apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Origin"
 msgstr "Näytä origo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Viewport"
-msgstr "Näytä näyttöikkuna"
+msgstr "1 näyttöruutu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4001,6 +4007,10 @@ msgstr "Meshillä ei ole pintaa, josta ääriviivat voitaisiin luoda!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr "Meshin primitiivityyppi ei ole PRIMITIVE_TRIANGLES!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5671,12 +5681,14 @@ msgid "Checked Item"
 msgstr "Valittu"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Radio Item"
-msgstr "Valintapainike"
+msgstr "Lisää"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Checked Radio Item"
-msgstr "Valittu valintapainike"
+msgstr "Valittu"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -6178,11 +6190,9 @@ msgstr "Hiiren painike"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
-"Virheellinen toiminnon nimi. Se ei voi olla tyhjä eikä voi sisältää merkkejä "
-"'/', ':', '=', '\\' tai '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6322,7 +6332,7 @@ msgstr "Asetus '%s' on sisäinen, eikä sitä voi poistaa."
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
-msgstr "Poista kohde"
+msgstr "Poista syöte"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7396,6 +7406,10 @@ msgstr "Poimintaetäisyys:"
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "Luodaan ratkaisua..."
@@ -8128,6 +8142,10 @@ msgid "WorldEnvironment needs an Environment resource."
 msgstr "WorldEnvironment tarvitsee Environment resurssin."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
@@ -8142,6 +8160,12 @@ msgstr ""
 "Tämä WorldEnvironment jätetään huomioimatta. Lisää joko Camera (3D-"
 "skeneille) tai aseta tälle ympäristölle Background Mode asetukseksi Canvas "
 "(2D-skeneille)."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8238,6 +8262,13 @@ msgstr "Virhe fontin latauksessa."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Virheellinen fonttikoko."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "Virheellinen tapahtuma (muut käy, paitsi '/' tai ':')."
+
+#, fuzzy
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Yhdistä Nodeen:"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

@@ -1406,6 +1406,10 @@ msgstr "Nullstill resultat"
 msgid "Project export failed with error code %d."
 msgstr "Eksport av prosjektet mislyktes med feilkode %d."
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Feil ved lagring av ressurs!"
@@ -6230,8 +6234,8 @@ msgstr "Museknapp"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
