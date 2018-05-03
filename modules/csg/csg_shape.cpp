@@ -157,7 +157,7 @@ void CSGShape::_update_shape() {
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
 				Vector3 add;
-				if (vec_map.lookup(v, &add)) {
+				if (vec_map.lookup(v, add)) {
 					add += p.normal;
 				} else {
 					add = p.normal;
@@ -233,7 +233,7 @@ void CSGShape::_update_shape() {
 
 				Vector3 normal = p.normal;
 
-				if (n->faces[i].smooth && vec_map.lookup(v, &normal)) {
+				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
 					normal.normalize();
 				}
 
