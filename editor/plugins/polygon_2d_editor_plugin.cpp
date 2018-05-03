@@ -314,6 +314,9 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			undo_redo->commit_action();
 
 		} break;
+		case UVEDIT_GRID_SETTINGS: {
+			grid_settings->popup_centered_minsize();
+		} break;
 		default: {
 			AbstractPolygon2DEditor::_menu_option(p_option);
 		} break;
@@ -809,6 +812,8 @@ void Polygon2DEditor::_uv_draw() {
 	if (base_tex.is_null())
 		return;
 
+	String warning;
+
 	Transform2D mtx;
 	mtx.elements[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
@@ -911,6 +916,50 @@ void Polygon2DEditor::_uv_draw() {
 
 	if (uv_mode == UV_MODE_PAINT_WEIGHT || uv_mode == UV_MODE_CLEAR_WEIGHT) {
 
+		NodePath bone_path;
+		for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
+			CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
+			if (c && c->is_pressed()) {
+				bone_path = node->get_bone_path(i);
+				break;
+			}
+		}
+
+		//draw skeleton
+		NodePath skeleton_path = node->get_skeleton();
+		if (node->has_node(skeleton_path)) {
+			Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node(skeleton_path));
+			if (skeleton) {
+				for (int i = 0; i < skeleton->get_bone_count(); i++) {
+
+					Bone2D *bone = skeleton->get_bone(i);
+					if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0))
+						continue; //not set
+
+					bool current = bone_path == skeleton->get_path_to(bone);
+
+					for (int j = 0; j < bone->get_child_count(); j++) {
+
+						Node2D *n = Object::cast_to<Node2D>(bone->get_child(j));
+						if (!n)
+							continue;
+
+						bool edit_bone = n->has_meta("_edit_bone_") && n->get_meta("_edit_bone_");
+						if (edit_bone) {
+
+							Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+							Transform2D endpoint_xform = bone_xform * n->get_transform();
+
+							Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
+							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
+						}
+					}
+				}
+			}
+		}
+
+		//draw paint circle
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 
@@ -1075,6 +1124,8 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_menu->get_popup()->add_item(TTR("UV->Polygon"), UVEDIT_UV_TO_POLYGON);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
+	uv_menu->get_popup()->add_separator();
+	uv_menu->get_popup()->add_item(TTR("Grid Settings"), UVEDIT_GRID_SETTINGS);
 	uv_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	uv_mode_hb->add_child(memnew(VSeparator));
@@ -1097,8 +1148,11 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	b_snap_grid->set_tooltip(TTR("Show Grid"));
 	b_snap_grid->connect("toggled", this, "_set_show_grid");
 
-	uv_mode_hb->add_child(memnew(VSeparator));
-	uv_mode_hb->add_child(memnew(Label(TTR("Grid Offset:"))));
+	grid_settings = memnew(AcceptDialog);
+	grid_settings->set_title(TTR("Configure Grid:"));
+	add_child(grid_settings);
+	VBoxContainer *grid_settings_vb = memnew(VBoxContainer);
+	grid_settings->add_child(grid_settings_vb);
 
 	SpinBox *sb_off_x = memnew(SpinBox);
 	sb_off_x->set_min(-256);
@@ -1107,7 +1161,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
-	uv_mode_hb->add_child(sb_off_x);
+	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
 
 	SpinBox *sb_off_y = memnew(SpinBox);
 	sb_off_y->set_min(-256);
@@ -1116,10 +1170,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect("value_changed", this, "_set_snap_off_y");
-	uv_mode_hb->add_child(sb_off_y);
-
-	uv_mode_hb->add_child(memnew(VSeparator));
-	uv_mode_hb->add_child(memnew(Label(TTR("Grid Step:"))));
+	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
 
 	SpinBox *sb_step_x = memnew(SpinBox);
 	sb_step_x->set_min(-256);
@@ -1128,7 +1179,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
-	uv_mode_hb->add_child(sb_step_x);
+	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
 
 	SpinBox *sb_step_y = memnew(SpinBox);
 	sb_step_y->set_min(-256);
@@ -1137,7 +1188,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
-	uv_mode_hb->add_child(sb_step_y);
+	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 	uv_icon_zoom = memnew(TextureRect);
@@ -1150,7 +1201,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
 
 	uv_mode_hb->add_child(uv_zoom);
-	uv_zoom->set_custom_minimum_size(Size2(200, 0));
+	uv_zoom->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
 	uv_zoom_value = memnew(SpinBox);
 	uv_zoom->share(uv_zoom_value);
 	uv_zoom_value->set_custom_minimum_size(Size2(50, 0));
@@ -1166,7 +1217,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->hide();
-	sync_bones = memnew(Button(TTR("Sync Bones")));
+	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
 	uv_main_hb->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);
