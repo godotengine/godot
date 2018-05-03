@@ -111,7 +111,7 @@ void SceneTreeDock::instance(const String &p_file) {
 	Node *parent = scene_tree->get_selected();
 
 	if (!parent) {
-		parent = edited_scene;
+		Node *parent = edited_scene;
 	};
 
 	if (!edited_scene) {
