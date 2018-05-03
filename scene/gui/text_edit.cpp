@@ -4978,6 +4978,11 @@ void TextEdit::set_indent_size(const int p_size) {
 	update();
 }
 
+int TextEdit::get_indent_size() {
+
+	return indent_size;
+}
+
 void TextEdit::set_draw_tabs(bool p_draw) {
 
 	draw_tabs = p_draw;
