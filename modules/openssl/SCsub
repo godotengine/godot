@@ -671,7 +671,7 @@ if (env['builtin_openssl'] != 'no'):
     # Workaround for compilation error with GCC/Clang when -Werror is too greedy (GH-4517)
     import os
     import methods
-    if not (os.name == "nt" and os.getenv("VSINSTALLDIR") != None):  # not Windows and not MSVC
+    if not (os.name == "nt" and os.getenv("VCINSTALLDIR") != None):  # not Windows and not MSVC
         env_openssl.Append(CFLAGS=["-Wno-error=implicit-function-declaration"])
 
 
