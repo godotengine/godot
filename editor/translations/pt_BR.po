@@ -1414,6 +1414,10 @@ msgstr "Limpar"
 msgid "Clear Output"
 msgstr "Limpar Saída"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Erro ao salvar Recurso!"
@@ -3722,6 +3726,16 @@ msgid "Show Guides"
 msgstr "Mostrar guias"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Ver Origem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 Viewport"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Centralizar Seleção"
 
@@ -4009,6 +4023,10 @@ msgstr "Falta uma Malha na MeshInstance!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Malha não tem superfície para criar contornos dela!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5682,6 +5700,16 @@ msgid "Checked Item"
 msgstr "Item Checado"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Adicionar Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "Item Checado"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Tem"
 
@@ -6183,8 +6211,10 @@ msgid "Mouse Button"
 msgstr "Botão do Mous"
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6325,10 +6355,6 @@ msgstr "Configuração '%s' é interna e não pode ser excluída."
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "Excluir Item"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "Não pode conter '/' ou ':'"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7387,6 +7413,10 @@ msgstr "Configurações do GridMap"
 msgid "Pick Distance:"
 msgstr "Escolha uma Distância:"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "Gerando solução..."
@@ -8098,11 +8128,21 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr "A propriedade Caminho deve apontar para um nó Spatial para funcionar."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "É permitido apenas um nó WorldEnvironment por cena (ou conjunto de cenas "
 "instanciadas)."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8199,6 +8239,12 @@ msgstr "Erro ao carregar fonte."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Não pode conter '/' ou ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
