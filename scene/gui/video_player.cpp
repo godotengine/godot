@@ -186,32 +186,58 @@ void VideoPlayer::_notification(int p_notification) {
 			if (texture->get_width() == 0)
 				return;
 
-			Size2 s = expand ? get_size() : texture->get_size();
-			draw_texture_rect(texture, Rect2(Point2(), s), false);
+			switch (stretch_mode) {
+				case STRETCH_SCALE: {
+					draw_texture_rect(texture, Rect2(Point2(), get_size()), false);
+				} break;
+				case STRETCH_TILE: {
+					draw_texture_rect(texture, Rect2(Point2(), get_size()), true);
+				} break;
+				case STRETCH_KEEP: {
+					draw_texture_rect(texture, Rect2(Point2(), texture->get_size()), false);
+
+				} break;
+				case STRETCH_KEEP_CENTERED: {
+
+					Vector2 ofs = (get_size() - texture->get_size()) / 2;
+					draw_texture_rect(texture, Rect2(ofs, texture->get_size()), false);
+				} break;
+				case STRETCH_KEEP_ASPECT_CENTERED:
+				case STRETCH_KEEP_ASPECT: {
+
+					Size2 size = get_size();
+					int tex_width = texture->get_width() * size.height / texture->get_height();
+					int tex_height = size.height;
+
+					if (tex_width > size.width) {
+						tex_width = size.width;
+						tex_height = texture->get_height() * tex_width / texture->get_width();
+					}
+
+					int ofs_x = 0;
+					int ofs_y = 0;
+
+					if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
+						ofs_x += (size.width - tex_width) / 2;
+						ofs_y += (size.height - tex_height) / 2;
+					}
+
+					draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
+				} break;
+				case STRETCH_KEEP_ASPECT_COVERED: {
+					Size2 size = get_size();
+					Size2 tex_size = texture->get_size();
+					Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
+					float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
+					Size2 scaledTexSize = tex_size * scale;
+					Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
+					draw_texture_rect_region(texture, Rect2(Point2(), size), Rect2(ofs, size / scale));
+				} break;
+			}
 
 		} break;
 	};
 };
-
-Size2 VideoPlayer::get_minimum_size() const {
-
-	if (!expand && !texture.is_null())
-		return texture->get_size();
-	else
-		return Size2();
-}
-
-void VideoPlayer::set_expand(bool p_expand) {
-
-	expand = p_expand;
-	update();
-	minimum_size_changed();
-}
-
-bool VideoPlayer::has_expand() const {
-
-	return expand;
-}
 
 void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
@@ -411,6 +437,17 @@ StringName VideoPlayer::get_bus() const {
 	return "Master";
 }
 
+void VideoPlayer::set_stretch_mode(StretchMode p_mode) {
+
+	stretch_mode = p_mode;
+	update();
+}
+
+VideoPlayer::StretchMode VideoPlayer::get_stretch_mode() const {
+
+	return stretch_mode;
+}
+
 void VideoPlayer::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "bus") {
@@ -457,9 +494,6 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enabled"), &VideoPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("has_autoplay"), &VideoPlayer::has_autoplay);
 
-	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &VideoPlayer::set_expand);
-	ClassDB::bind_method(D_METHOD("has_expand"), &VideoPlayer::has_expand);
-
 	ClassDB::bind_method(D_METHOD("set_buffering_msec", "msec"), &VideoPlayer::set_buffering_msec);
 	ClassDB::bind_method(D_METHOD("get_buffering_msec"), &VideoPlayer::get_buffering_msec);
 
@@ -467,6 +501,9 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus"), &VideoPlayer::get_bus);
 
 	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoPlayer::get_video_texture);
+
+	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &VideoPlayer::set_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &VideoPlayer::get_stretch_mode);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -477,11 +514,20 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
+
+	BIND_ENUM_CONSTANT(STRETCH_SCALE);
+	BIND_ENUM_CONSTANT(STRETCH_TILE);
+	BIND_ENUM_CONSTANT(STRETCH_KEEP);
+	BIND_ENUM_CONSTANT(STRETCH_KEEP_CENTERED);
+	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT);
+	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_CENTERED);
+	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
 VideoPlayer::VideoPlayer() {
@@ -490,12 +536,12 @@ VideoPlayer::VideoPlayer() {
 	loops = false;
 	paused = false;
 	autoplay = false;
-	expand = true;
 
 	audio_track = 0;
 	bus_index = 0;
 
 	buffering_ms = 500;
+	stretch_mode = STRETCH_SCALE;
 
 	//	internal_stream.player=this;
 	//	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
