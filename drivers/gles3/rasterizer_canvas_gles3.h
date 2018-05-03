@@ -86,7 +86,6 @@ public:
 		Transform2D final_transform;
 		bool using_skeleton;
 		Transform2D skeleton_transform;
-		Transform2D skeleton_transform_inverse;
 
 	} state;
 

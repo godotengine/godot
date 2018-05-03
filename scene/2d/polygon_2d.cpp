@@ -37,12 +37,6 @@ Dictionary Polygon2D::_edit_get_state() const {
 	return state;
 }
 
-Dictionary Polygon2D::_edit_get_state() const {
-	Dictionary state = Node2D::_edit_get_state();
-	state["offset"] = offset;
-	return state;
-}
-
 void Polygon2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 	set_offset(p_state["offset"]);
@@ -262,6 +256,70 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
+			if (!invert && bone_weights.size()) {
+				//a skeleton is set! fill indices and weights
+				int vc = points.size();
+				bones.resize(vc * 4);
+				weights.resize(vc * 4);
+
+				int *bonesw = bones.ptrw();
+				float *weightsw = weights.ptrw();
+
+				for (int i = 0; i < vc * 4; i++) {
+					bonesw[i] = 0;
+					weightsw[i] = 0;
+				}
+
+				for (int i = 0; i < bone_weights.size(); i++) {
+					if (bone_weights[i].weights.size() != points.size()) {
+						continue; //different number of vertices, sorry not using.
+					}
+					if (!skeleton_node->has_node(bone_weights[i].path)) {
+						continue; //node does not exist
+					}
+					Bone2D *bone = Object::cast_to<Bone2D>(skeleton_node->get_node(bone_weights[i].path));
+					if (!bone) {
+						continue;
+					}
+
+					int bone_index = bone->get_index_in_skeleton();
+					PoolVector<float>::Read r = bone_weights[i].weights.read();
+					for (int j = 0; j < vc; j++) {
+						if (r[j] == 0.0)
+							continue; //weight is unpainted, skip
+						//find an index with a weight
+						for (int k = 0; k < 4; k++) {
+							if (weightsw[j * 4 + k] < r[j]) {
+								//this is less than this weight, insert weight!
+								for (int l = 3; l > k; l--) {
+									weightsw[j * 4 + l] = weightsw[j * 4 + l - 1];
+									bonesw[j * 4 + l] = bonesw[j * 4 + l - 1];
+								}
+								weightsw[j * 4 + k] = r[j];
+								bonesw[j * 4 + k] = bone_index;
+								break;
+							}
+						}
+					}
+				}
+
+				//normalize the weights
+				for (int i = 0; i < vc; i++) {
+					float tw = 0;
+					for (int j = 0; j < 4; j++) {
+						tw += weightsw[i * 4 + j];
+					}
+					if (tw == 0)
+						continue; //unpainted, do nothing
+
+					//normalize
+					for (int j = 0; j < 4; j++) {
+						weightsw[i * 4 + j] /= tw;
+						//						print_line("point " + itos(i) + " idx " + itos(j) + " index: " + itos(bonesw[i * 4 + j]) + " weight: " + rtos(weightsw[i * 4 + j]));
+					}
+				}
+			}
+
 			Vector<Color> colors;
 			int color_len = vertex_colors.size();
 			colors.resize(len);
@@ -279,7 +337,8 @@ void Polygon2D::_notification(int p_what) {
 			//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
 
 			if (invert || splits.size() == 0) {
-				VS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
+				Vector<int> indices = Geometry::triangulate_polygon(points);
+				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
 			} else {
 				//use splits
 				Vector<int> loop;
@@ -350,7 +409,7 @@ void Polygon2D::_notification(int p_what) {
 
 				//print_line("loops: " + itos(loops.size()) + " indices: " + itos(indices.size()));
 
-				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
+				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
 			}
 
 		} break;
@@ -570,9 +629,12 @@ void Polygon2D::_set_bones(const Array &p_bones) {
 }
 
 void Polygon2D::set_skeleton(const NodePath &p_skeleton) {
+	if (skeleton == p_skeleton)
+		return;
 	skeleton = p_skeleton;
 	update();
 }
+
 NodePath Polygon2D::get_skeleton() const {
 	return skeleton;
 }

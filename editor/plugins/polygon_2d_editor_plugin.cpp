@@ -916,6 +916,50 @@ void Polygon2DEditor::_uv_draw() {
 
 	if (uv_mode == UV_MODE_PAINT_WEIGHT || uv_mode == UV_MODE_CLEAR_WEIGHT) {
 
+		NodePath bone_path;
+		for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
+			CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
+			if (c && c->is_pressed()) {
+				bone_path = node->get_bone_path(i);
+				break;
+			}
+		}
+
+		//draw skeleton
+		NodePath skeleton_path = node->get_skeleton();
+		if (node->has_node(skeleton_path)) {
+			Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node(skeleton_path));
+			if (skeleton) {
+				for (int i = 0; i < skeleton->get_bone_count(); i++) {
+
+					Bone2D *bone = skeleton->get_bone(i);
+					if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0))
+						continue; //not set
+
+					bool current = bone_path == skeleton->get_path_to(bone);
+
+					for (int j = 0; j < bone->get_child_count(); j++) {
+
+						Node2D *n = Object::cast_to<Node2D>(bone->get_child(j));
+						if (!n)
+							continue;
+
+						bool edit_bone = n->has_meta("_edit_bone_") && n->get_meta("_edit_bone_");
+						if (edit_bone) {
+
+							Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+							Transform2D endpoint_xform = bone_xform * n->get_transform();
+
+							Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
+							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
+						}
+					}
+				}
+			}
+		}
+
+		//draw paint circle
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 
@@ -1174,7 +1218,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->hide();
-	sync_bones = memnew(Button(TTR("Sync Bones")));
+	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
 	uv_main_hb->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);

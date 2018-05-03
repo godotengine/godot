@@ -92,6 +92,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int bone_painting_bone;
 	PoolVector<float> prev_weights;
 	Vector2 bone_paint_pos;
+	AcceptDialog *grid_settings;
 
 	void _sync_bones();
 	void _update_bone_list();
