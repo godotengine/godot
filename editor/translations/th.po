@@ -6114,8 +6114,8 @@ msgstr "ปุ่มเมาส์"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -8076,6 +8076,12 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "ใช้ชื่อนี้ไม่ได้ (มี '/' หรือ ':')"
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "ต้องไม่มี '/' หรือ ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

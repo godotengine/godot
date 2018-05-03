@@ -6447,8 +6447,8 @@ msgstr "মাউসের বোতাম"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -8546,6 +8546,13 @@ msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়ে�
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "অকার্যকর অ্যাকশন ('/' বা ':' ছাড়া কিছুই যাবে না)।"
+
+#, fuzzy
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "নোডের সাথে সংযুক্ত করুন:"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
