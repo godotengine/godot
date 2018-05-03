@@ -1395,7 +1395,7 @@ msgstr "Kimenet Törlése"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "Projekt export nem sikerült, hibakód %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3717,6 +3717,16 @@ msgid "Show Guides"
 msgstr "Vezetővonalak Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Rács Megjelenítése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "Segítők Megjelenítése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Kijelölés Középre"
 
@@ -4005,6 +4015,10 @@ msgstr "MeshInstance-nak nincs Mesh-e!"
 msgid "Mesh has not surface to create outlines from!"
 msgstr ""
 "A Mesh-nek nincsenek felszínei, ami alapján körvonalakat lehetni készíteni!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5669,8 +5683,9 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Radio Item"
-msgstr "Rádió Elem"
+msgstr "Elem Hozzáadása"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Radio Item"
@@ -6153,8 +6168,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
