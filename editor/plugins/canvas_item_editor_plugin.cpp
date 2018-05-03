@@ -467,32 +467,28 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
-	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
-
-	if (!locked) {
-		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
-			} else {
-				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
-			}
-			if (p_limit != 0 && r_items.size() >= p_limit)
-				return;
+	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
+		if (canvas_item && !canvas_item->is_set_as_toplevel()) {
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+		} else {
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
 		}
+		if (p_limit != 0 && r_items.size() >= p_limit)
+			return;
+	}
 
-		if (canvas_item && canvas_item->is_visible_in_tree()) {
-			Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
-			const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
-			if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
-				Node2D *node = Object::cast_to<Node2D>(canvas_item);
+	if (canvas_item && canvas_item->is_visible_in_tree()) {
+		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
+		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
+		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
+			Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
-				_SelectResult res;
-				res.item = canvas_item;
-				res.z_index = node ? node->get_z_index() : 0;
-				res.has_z = node;
-				r_items.push_back(res);
-			}
+			_SelectResult res;
+			res.item = canvas_item;
+			res.z_index = node ? node->get_z_index() : 0;
+			res.has_z = node;
+			r_items.push_back(res);
 		}
 	}
 
@@ -509,14 +505,14 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 	for (int i = 0; i < r_items.size(); i++) {
 		Node *node = r_items[i].item;
 
-		// Make sure the selected node is in the current scene
-		while (node && node != scene && node->get_owner() != scene) {
+		// Make sure the selected node is in the current scene, or editable
+		while (node && node != get_tree()->get_edited_scene_root() && node->get_owner() != scene && !scene->is_editable_instance(node->get_owner())) {
 			node = node->get_parent();
 		};
 
 		// Replace the node by the group if grouped
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(node);
-		while (node && node != scene) {
+		while (node && node != scene->get_parent()) {
 			CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
 			if (canvas_item_tmp && node->has_meta("_edit_group_")) {
 				canvas_item = canvas_item_tmp;
@@ -525,7 +521,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 		}
 
 		//Remove the item if invalid
-		if (!canvas_item || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
+		if (!canvas_item || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || (canvas_item->has_meta("_edit_lock_") && canvas_item->get_meta("_edit_lock_"))) {
 			r_items.remove(i);
 			i--;
 		} else {
@@ -541,13 +537,13 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		return;
 
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	Node *scene = editor->get_edited_scene();
 
-	bool inherited = p_node != get_tree()->get_edited_scene_root() && p_node->get_filename() != "";
-	bool editable = !inherited || EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
+	bool editable = p_node == scene || p_node->get_owner() == scene || scene->is_editable_instance(p_node->get_owner());
 	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
 	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
 
-	if (!lock_children && !locked && editable) {
+	if (!lock_children || !editable) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
 				_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
@@ -558,7 +554,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		}
 	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && !canvas_item->has_meta("_edit_lock_")) {
+	if (canvas_item && canvas_item->is_visible_in_tree() && !locked && editable) {
 		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
 
 		if (canvas_item->_edit_use_rect()) {
@@ -2679,7 +2675,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	ERR_FAIL_COND(!p_node);
 
 	Node *scene = editor->get_edited_scene();
-	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node))
+	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
 		return;
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	if (canvas_item && !canvas_item->is_visible())
