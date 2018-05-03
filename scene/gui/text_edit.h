@@ -557,6 +557,7 @@ public:
 	void set_indent_using_spaces(const bool p_use_spaces);
 	bool is_indent_using_spaces() const;
 	void set_indent_size(const int p_size);
+	int get_indent_size();
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
 	void set_override_selected_font_color(bool p_override_selected_font_color);
