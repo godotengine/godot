@@ -3440,6 +3440,22 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 
 					tokenizer->advance();
+
+					String hint_prefix = "";
+					bool is_arrayed = false;
+
+					while (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE &&
+							tokenizer->get_token_type() == Variant::ARRAY &&
+							tokenizer->get_token(1) == GDScriptTokenizer::TK_COMMA) {
+						tokenizer->advance(); // Array
+						tokenizer->advance(); // Comma
+						if (is_arrayed) {
+							hint_prefix += itos(Variant::ARRAY) + ":";
+						} else {
+							is_arrayed = true;
+						}
+					}
+
 					if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 
 						Variant::Type type = tokenizer->get_token_type();
@@ -3454,28 +3470,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						current_export.type = type;
 						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 						tokenizer->advance();
-
-						String hint_prefix = "";
-
-						if (type == Variant::ARRAY && tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-							tokenizer->advance();
-
-							while (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
-								type = tokenizer->get_token_type();
-
-								tokenizer->advance();
-
-								if (type == Variant::ARRAY) {
-									hint_prefix += itos(Variant::ARRAY) + ":";
-									if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-										tokenizer->advance();
-									}
-								} else {
-									hint_prefix += itos(type);
-									break;
-								}
-							}
-						}
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 							// hint expected next!
@@ -3830,13 +3824,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								} break;
 							}
 						}
-						if (current_export.type == Variant::ARRAY && !hint_prefix.empty()) {
-							if (current_export.hint) {
-								hint_prefix += "/" + itos(current_export.hint);
-							}
-							current_export.hint_string = hint_prefix + ":" + current_export.hint_string;
-							current_export.hint = PROPERTY_HINT_NONE;
-						}
 
 					} else {
 
@@ -3921,6 +3908,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						current_export = PropertyInfo();
 						_set_error("Expected ')' or ',' after export hint.");
 						return;
+					}
+
+					if (is_arrayed) {
+						hint_prefix += itos(current_export.type);
+						if (current_export.hint) {
+							hint_prefix += "/" + itos(current_export.hint);
+						}
+						current_export.hint_string = hint_prefix + ":" + current_export.hint_string;
+						current_export.hint = PROPERTY_HINT_TYPE_STRING;
+						current_export.type = Variant::ARRAY;
 					}
 
 					tokenizer->advance();
@@ -4090,7 +4087,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else*/ {
+						} else*/
+						{
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 
