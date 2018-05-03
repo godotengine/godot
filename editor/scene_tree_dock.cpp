@@ -107,7 +107,12 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 void SceneTreeDock::instance(const String &p_file) {
 
 	Node *parent = scene_tree->get_selected();
-	if (!parent || !edited_scene) {
+
+	if (!parent) {
+		Node *parent = edited_scene;
+	};
+
+	if (!edited_scene) {
 
 		current_option = -1;
 		accept->get_ok()->set_text(TTR("OK :("));
