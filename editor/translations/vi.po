@@ -7138,8 +7138,8 @@ msgid "Previous Floor"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Floor"
-msgstr ""
+msgid "Floor:"
+msgstr "Tầng:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"

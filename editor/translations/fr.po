@@ -2,6 +2,7 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
+#
 # Antoine Carrier <ac.g392@gmail.com>, 2017-2018.
 # ARocherVj <a.rocher.vj@gmail.com>, 2017.
 # Arthur Templé <tuturtemple@gmail.com>, 2018.
@@ -12,8 +13,10 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2018.
+# John Bernier <john.bp@unknit.net>, 2018.
 # Kanabenki <lucien.menassol@gmail.com>, 2017.
-# keltwookie <keltwookie@protonmail.com>, 2017.
+# keltwookie <keltwookie@protonmail.com>, 2017-2018.
+# LL <lu.lecocq@free.fr>, 2018.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
 # Marc <marc.gilleron@gmail.com>, 2016-2017.
 # Marc-Andre Belisle <belisle.ma@gmail.com>, 2018.
@@ -22,8 +25,7 @@
 # Nicolas <flaithotw@gmail.com>, 2017.
 # Nicolas Lehuen <nicolas@lehuen.com>, 2016.
 # Nobelix <noe.le.cam@laposte.net>, 2017.
-# Nocta Senestra <nocta@net-c.com>, 2018.
-# Omicron <omicron666.dev@gmail.com>, 2016, 2018.
+# Omicron <tritonic.dev@gmail.com>, 2016, 2018.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
 # Philippe Gervaise <blah@malvese.org>, 2018.
 # Przemyslaw Gasinski <gasinski.przemek@protonmail.ch>, 2017.
@@ -37,12 +39,13 @@
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
 # Xananax <xananax@yelostudio.com>, 2017-2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-24 02:36+0000\n"
-"Last-Translator: Cindy Dallaire <c.dallaire93@gmail.com>\n"
+"PO-Revision-Date: 2018-05-02 21:48+0000\n"
+"Last-Translator: Omicron <omicron666.dev@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -50,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -866,11 +869,11 @@ msgstr "Modifier le volume du bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "Activer/désactiver le mode solo du bus audio"
+msgstr "Activer/désactiver le mode solo pour le bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "Activer/désactiver le mode muet du bus audio"
+msgstr "Activer/désactiver le mode muet pour le bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
@@ -1374,8 +1377,8 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Pas de tutoriels disponibles pour cette classe, vous pouvez [color=$color]"
-"[url=$url]en contribuer un[/url][/color] ou [color=$color][url=$url2]en "
+"Il n'y a pas de tutoriels disponibles pour cette classe, vous pouvez [color="
+"$color][url=$url]en créer un[/url][/color] ou [color=$color][url=$url2]en "
 "demander un[/url][/color]."
 
 #: editor/editor_help.cpp
@@ -1724,7 +1727,7 @@ msgstr "Exporter une bibliothèque de maillages"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Cette opération ne peut être réalisée sans nœud racine."
+msgstr "Cette opération ne peut être réalisée sans noeud parent."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -4234,7 +4237,7 @@ msgstr "Calcul de la taille de la grille..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
-msgstr "Création de la heightmap…"
+msgstr "Création du champ de hauteur…"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
@@ -4749,7 +4752,7 @@ msgstr "Lancer"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr "Afficher/Cacher le panneau des scripts"
+msgstr "Afficher/Cacher la panneau des scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -5589,7 +5592,7 @@ msgstr "Insérer vide (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (Before)"
-msgstr "Déplacer avant"
+msgstr "Déplacer (Avant)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
@@ -5896,24 +5899,24 @@ msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings."
 msgstr ""
-"Sélectionner une sous-tuile à utiliser comme icône, celle-ci sera aussi "
-"utilisée pour les liaisons de tuiles automatiques invalides."
+"Sélectionne une ressource à utiliser comme icône, celle-ci sera aussi "
+"utilisée sur les liaisons autotile invalides."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
 "RMB: set bit off."
 msgstr ""
-"Clic-gauche : Activer\n"
-"Clic-droit : Désactiver"
+"Clic gauche : Activer\n"
+"Clic droit : Désactiver"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select current edited sub-tile."
-msgstr "Sélectionner la sous-tuile en cours d'édition."
+msgstr "Enregistrer la ressource en cours de modification."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select sub-tile to change its priority."
-msgstr "Sélectionner une sous-tuile pour changer sa priorité."
+msgstr "Sélectionner une sous-case pour changer sa priorité."
 
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -6027,15 +6030,11 @@ msgstr "Veuillez choisir un fichier 'project.godot'."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr "Veuillez choisir un fichier 'project.godot'."
+msgstr "Veuillez choisir un dossier vide."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Projet importé"
-
-#: editor/project_manager.cpp
-msgid "Invalid Project Name."
-msgstr "Nom du Projet Invalide."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6054,12 +6053,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Chemin de projet non valide (avez-vous changé quelque chose ?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"Impossible de modifier le fichier project.godot dans le chemin du projet."
+"Impossible de charger le fichier project.godot dans le chemin du projet "
+"(erreur %d). Le fichier est manquant ou corrompu."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7335,25 +7334,22 @@ msgid "Object can't provide a length."
 msgstr "L'objet ne peut fournir une longueur."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Onglet suivant"
+msgstr "Plan suivant"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Onglet precedent"
+msgstr "Plan précédent"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Onglet :"
+msgstr "Plan :"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
 msgstr "Étage suivant"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
 msgstr "Onglet précédent"
 
@@ -7490,7 +7486,6 @@ msgid "About C# support"
 msgstr "À propos du support C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
 msgstr "Créer la solution C#"
 
@@ -7509,10 +7504,6 @@ msgstr "Avertissements"
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Fin de la trace d'appel (stack trace) intrinsèque"
-
-#: modules/mono/mono_gd/gd_mono_utils.cpp
-msgid "End of inner exception stack trace"
-msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -8073,14 +8064,13 @@ msgstr "ARVROrigin requiert un nœud enfant ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Temps restant: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Plotting Meshes: "
 msgstr "Tracer les maillages : "
 
