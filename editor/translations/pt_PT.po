@@ -17,15 +17,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-24 23:41+0000\n"
-"Last-Translator: Paulo Caldeira <paucal@gmail.com>\n"
+"PO-Revision-Date: 2018-04-25 09:40+0000\n"
+"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -830,31 +830,31 @@ msgstr "Adicionar Efeito"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "Mudar Barramento de Áudio"
+msgstr "Renomear o barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "Alterar Volume do canal áudio"
+msgstr "Alterar Volume do  barramento de  áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "Alternar solo do canal de áudio"
+msgstr "Alternar solo do barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "Alternar silêncio do canal áudio"
+msgstr "Alternar silêncio do barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "Alternar efeitos bypass do canal de áudio"
+msgstr "Alternar efeitos bypass do barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Selecionar envio do canal áudio"
+msgstr "Selecionar envio do barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr "Adicionar Efeito de Barramento de Áudio"
+msgstr "Adicionar Efeito de barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
@@ -866,7 +866,7 @@ msgstr "Apagar Efeito de Barramento"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr "Canal áudio, arrastar e largar para reorganizar."
+msgstr "Barramento de áudio, arrastar e largar para reorganizar."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -903,7 +903,7 @@ msgstr "Áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "Adicionar Barramento de Áudio"
+msgstr "Adicionar barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
@@ -911,23 +911,23 @@ msgstr "O barramento principal não pode ser removido!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "Apagar Barramento de Áudio"
+msgstr "Apagar barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "Barramento de Áudio Duplicado"
+msgstr "Duplicar barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr "Restabelecer Volume do Barramento"
+msgstr "Restabelecer volume do barramento"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "Mover Barramento de Áudio"
+msgstr "Mover barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
-msgstr "Guardar Modelo de Barramento de Áudio Como.."
+msgstr "Guardar Modelo do barramento de áudio como.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout.."
@@ -935,7 +935,7 @@ msgstr "Localização para o Novo Modelo.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Abrir Modelo de Barramento de Áudio"
+msgstr "Abrir Modelo de barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
@@ -969,7 +969,7 @@ msgstr "Guardar Como"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "Guardar este Modelo de Barramento para um Ficheiro."
+msgstr "Guardar este Modelo de Barramento para um ficheiro."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -5983,8 +5983,8 @@ msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"Não foi possível carregar o project.godot no caminho do projeto. Poderá "
-"estar em falta ou corrompido."
+"Não foi possível carregar o project.godot no caminho do projeto (erro %d). "
+"Poderá estar em falta ou corrompido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7027,7 +7027,7 @@ msgstr "Erros:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace (if applicable):"
-msgstr "Rastreamento de pilha (se aplicável):"
+msgstr "Stack Trace (se aplicável):"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -7059,7 +7059,7 @@ msgstr "Memória Vídeo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Caminho de recurso"
+msgstr "Caminho do recurso"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -7075,7 +7075,7 @@ msgstr "Uso"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr "Misc"
+msgstr "Diversos"
 
 #: editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -7416,7 +7416,7 @@ msgstr "Avisos"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Fim do stack trace de exceção interna"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7448,12 +7448,11 @@ msgstr "O Nó retornou uma sequência de saída (output) incorreta: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr ""
-"A sequência foi encontrada mas não o Nó na pilha (stack), faça report de bug!"
+msgstr "Foi encontrada o bit da sequência mas não o Nó na pilha, relate o bug!"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr "Stack overflow com a profundidade da pilha (stack): "
+msgstr "Pilha cheia com a profundidade da pilha: "
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Signal Arguments"

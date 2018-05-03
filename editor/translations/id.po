@@ -11,21 +11,22 @@
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017.
 # Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018.
+# Tito <ijavadroid@gmail.com>, 2018.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-03-02 01:38+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2018-04-18 16:38+0000\n"
+"Last-Translator: Tito <ijavadroid@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1089,9 +1090,8 @@ msgid "[unsaved]"
 msgstr "[belum disimpan]"
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first"
-msgstr "Pilih direktori kerja terlebih dahulu"
+msgstr "Slahkan pilih direktori kerja terlebih dahulu"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -3159,7 +3159,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Selanjutnya (Antrian Otomatis):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
@@ -3182,7 +3182,7 @@ msgstr "Sunting Filter"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Skala:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -3202,11 +3202,11 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Mulai Ulang Otomatis:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Mulai Ulang:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Random Restart (s):"
@@ -3214,7 +3214,7 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Mulai!"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -3303,7 +3303,7 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr ""
+msgstr "Impor Animasi.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #, fuzzy
@@ -3312,12 +3312,11 @@ msgstr "Sunting Filter Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters.."
-msgstr ""
+msgstr "Penyaring.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Animasi"
+msgstr "PohonAnimasi"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"

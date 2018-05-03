@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-27 22:19+0000\n"
+"PO-Revision-Date: 2018-03-05 16:04+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -7444,7 +7444,7 @@ msgstr "Προειδοποιήσεις"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Τέλος ιχνηλάτησης στοίβας εσωτερικής εξαίρεσης"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

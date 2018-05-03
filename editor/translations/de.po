@@ -15,10 +15,12 @@
 # hyperglow <greensoma@web.de>, 2016.
 # Jan Groß <jan@grossit.de>, 2016.
 # Kim <github@aggsol.de>, 2017.
+# Neicul <neicul@gmx.de>, 2018.
 # Oliver Ruehl <oliver@ruehldesign.co>, 2016-2017.
 # Paul-Vincent Roll <paviro@me.com>, 2016.
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
 # No need for a name <endoplasmatik@gmx.net>, 2016.
+# Sönke <me@eknoes.de>, 2018.
 # So Wieso <sowieso@dukun.de>, 2016-2018.
 # Tim Schellenberg <smwleod@gmail.com>, 2017.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016-2018.
@@ -28,8 +30,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-12 08:36+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2018-04-18 15:38+0000\n"
+"Last-Translator: Neicul <neicul@gmx.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -37,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -344,7 +346,7 @@ msgstr "Skalierungsverhältnis:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "Node dessen Funktionen aufgerufen werden sollen auswählen."
+msgstr "Funktionen in welcher Node aufrufen?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -1622,7 +1624,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Es ist keine Hauptszene wurde jemals bestimmt, soll eine ausgewählt werden?\n"
+"Es wurde noch keine Hauptszene bestimmt, soll eine ausgewählt werden?\n"
 "Dies kann später in den Projekteinstellungen unter der Kategorie ‚Anwendung‘ "
 "geändert werden."
 
@@ -3479,8 +3481,8 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Erstellung der Lightmap-Bilder fehlgeschlagen. Ist der Speicherpfad "
-"beschreibbar?"
+"Erstellung der Lightmap-Bilder fehlgeschlagen. Stellen Sie sicher, dass der "
+"Speicherpfad beschreibbar ist."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -6015,11 +6017,12 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "project.godot des Projektpfads konnte nicht bearbeitet werden."
+msgstr ""
+"Konnte project.godot im Projektpfad nicht laden (Fehler %d). Sie könnte "
+"fehlen oder beschädigt worden sein."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7293,18 +7296,16 @@ msgid "Object can't provide a length."
 msgstr "Objekt kann keine Länge vorweisen."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Nächster Tab"
+msgstr "Nächste Ebene"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Vorheriger Tab"
+msgstr "Vorherige Ebene"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Ebene:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7440,7 +7441,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "Über die C#-Unterstützung"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7460,7 +7461,7 @@ msgstr "Warnungen"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Ende des inneren Exception-Stack-Traces"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7646,7 +7647,7 @@ msgstr "Sequenz"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "Schalter"
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
@@ -7654,7 +7655,7 @@ msgstr "Iterator"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr "Während"
+msgstr "While"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
@@ -8027,11 +8028,11 @@ msgstr "ARVROrigin benötigt ein ARVRCamera-Unterobjekt"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Verbleibende Zeit: %d:%20d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

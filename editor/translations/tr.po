@@ -9,6 +9,7 @@
 # Enescan Yerlikaya <enescanyerlikaya@gmail.com>, 2017.
 # Fatih Mert Doğancan <fatihmertdogancan@hotmail.com>, 2017.
 # hubbyist <hub@legrud.net>, 2017.
+# H.Hüseyin CİHANGİR <hashusfb@gmail.com>, 2018.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
 # razah <icnikerazah@gmail.com>, 2017-2018.
@@ -18,15 +19,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 23:40+0000\n"
-"Last-Translator: razah <icnikerazah@gmail.com>\n"
+"PO-Revision-Date: 2018-04-19 12:41+0000\n"
+"Last-Translator: H.Hüseyin CİHANGİR <hashusfb@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1961,8 +1962,9 @@ msgid "Debug"
 msgstr "Hata Ayıklama"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Deploy with Remote Debug"
-msgstr "Uzaktan Hata Ayıklama ile Dağıt"
+msgstr "Uzaktan Hata Ayıklama ile Aç"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2017,7 +2019,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Sahne Değişikliklerini Eşzamanla"
+msgstr "Sahne Değişikliklerini Eş Zamanla"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2033,7 +2035,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr "Betik Değişikliklerini Eşzamanla"
+msgstr "Betik Değişikliklerini Eş Zamanla"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -5277,7 +5279,7 @@ msgstr "Ölçek Biçimi (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "Yerel Koordlar"
+msgstr "Yerel Kordinatlar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -5975,11 +5977,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "proje yolundaki proje.godot düzenlenemedi."
+msgstr ""
+"Proje yolundaki proje.godot düzenlenemedi.Eksik veya bozulmuş olabilir."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -6442,7 +6444,7 @@ msgstr "Yereller:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "KendindenYükle"
+msgstr "Otomatik Yükle"
 
 #: editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -7050,7 +7052,7 @@ msgstr "Toplam:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video Mem"
-msgstr "İzleti Belleği"
+msgstr "Görüntü Belleği"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -7070,7 +7072,7 @@ msgstr "Kullanım"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr "Türlü"
+msgstr "Çeşitli"
 
 #: editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -7244,18 +7246,16 @@ msgid "Object can't provide a length."
 msgstr "Nesne bir uzunluk sağlayamaz."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
 msgstr "Sonraki sekme"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
 msgstr "Önceki sekme"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Sekme:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7390,8 +7390,9 @@ msgid "Mono"
 msgstr "Tekli"
 
 #: modules/mono/editor/godotsharp_editor.cpp
+#, fuzzy
 msgid "About C# support"
-msgstr ""
+msgstr "C# hakkında destek"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7595,7 +7596,7 @@ msgstr "Dizi"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "Değiştir"
+msgstr "Anahtar"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
@@ -7967,8 +7968,9 @@ msgid "%d%%"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
+#, fuzzy
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Kalan Zaman:%d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

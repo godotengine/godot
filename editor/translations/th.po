@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-25 04:41+0000\n"
+"PO-Revision-Date: 2018-03-10 03:46+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -7328,7 +7328,7 @@ msgstr "คำเตือน"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "สิ้นสุดสแตคข้อผิดพลาดภายใน"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
