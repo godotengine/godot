@@ -744,7 +744,7 @@ ThemeEditor::ThemeEditor() {
 	item = test_tree->create_item(test_tree->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	item->set_editable(0, true);
-	item->set_text(0, "check");
+	item->set_text(0, "Check");
 	item = test_tree->create_item(test_tree->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
@@ -753,7 +753,7 @@ ThemeEditor::ThemeEditor() {
 	item = test_tree->create_item(test_tree->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
-	item->set_text(0, TTR("Have,Many,Several,Options!"));
+	item->set_text(0, TTR("Has,Many,Options"));
 	item->set_range(0, 2);
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
@@ -783,58 +783,6 @@ ThemeEditor::ThemeEditor() {
 	tc->add_child(tcc);
 
 	main_hb->add_constant_override("separation", 20 * EDSCALE);
-
-	/*
-	test_h_scroll = memnew( HScrollBar );
-	test_h_scroll->set_position( Point2( 25, 225 ) );
-	test_h_scroll->set_size( Point2( 150, 5 ) );
-	panel->add_child(test_h_scroll);
-
-	line_edit = memnew( LineEdit );
-	line_edit->set_position( Point2( 25, 275 ) );
-	line_edit->set_size( Point2( 150, 5 ) );
-	line_edit->set_text("Line Edit");
-	panel->add_child(line_edit);
-
-	test_v_scroll = memnew( VScrollBar );
-	test_v_scroll->set_position( Point2( 200, 25 ) );
-	test_v_scroll->set_size( Point2( 5, 150 ) );
-	panel->add_child(test_v_scroll);
-
-	test_tree = memnew(Tree);
-	test_tree->set_position( Point2( 300, 25 ) );
-	test_tree->set_size( Point2( 200, 200 ) );
-	panel->add_child(test_tree);
-
-
-	TreeItem *item = test_tree->create_item();
-	item->set_editable(0,true);
-	item->set_text(0,"root");
-	item = test_tree->create_item( test_tree->get_root() );
-	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	item->set_editable(0,true);
-	item->set_text(0,"check");
-	item = test_tree->create_item( test_tree->get_root() );
-	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-	item->set_editable(0,true);
-	item->set_range_config(0,0,20,0.1);
-	item->set_range(0,2);
-	item = test_tree->create_item( test_tree->get_root() );
-	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-	item->set_editable(0,true);
-	item->set_text(0,"Have,Many,Several,Options!"));
-	item->set_range(0,2);
-
-	Button *fd_button= memnew( Button );
-	fd_button->set_position(Point2(300,275));
-	fd_button->set_text("Open File Dialog");
-	panel->add_child(fd_button);
-
-	test_file_dialog = memnew( EditorFileDialog );
-	panel->add_child(test_file_dialog);
-
-	fd_button->connect("pressed", this,"_open_file_dialog");
-*/
 
 	add_del_dialog = memnew(ConfirmationDialog);
 	add_del_dialog->hide();
