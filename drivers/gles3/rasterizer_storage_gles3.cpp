@@ -4496,6 +4496,15 @@ Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleto
 	return ret;
 }
 
+void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	skeleton->base_transform_2d = p_base_transform;
+}
+
 void RasterizerStorageGLES3::update_dirty_skeletons() {
 
 	glActiveTexture(GL_TEXTURE0);

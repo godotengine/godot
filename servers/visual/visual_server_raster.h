@@ -285,6 +285,7 @@ public:
 	BIND2RC(Transform, skeleton_bone_get_transform, RID, int)
 	BIND3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	BIND2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
+	BIND2(skeleton_set_base_transform_2d, RID, const Transform2D &)
 
 	/* Light API */
 
@@ -580,7 +581,7 @@ public:
 	BIND11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
 	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
+	BIND10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
 	BIND4(canvas_item_add_mesh, RID, const RID &, RID, RID)
 	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)

@@ -270,7 +270,8 @@ void Line2D::_draw() {
 			lb.indices,
 			lb.vertices,
 			lb.colors,
-			lb.uvs,
+			lb.uvs, Vector<int>(), Vector<float>(),
+
 			texture_rid);
 
 	// DEBUG
