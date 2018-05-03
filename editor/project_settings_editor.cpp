@@ -160,7 +160,7 @@ void ProjectSettingsEditor::_action_edited() {
 		ti->set_text(0, old_name);
 		add_at = "input/" + old_name;
 
-		message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\', or '\"'."));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
