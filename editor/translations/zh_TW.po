@@ -14,15 +14,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-15 16:35+0000\n"
-"Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
+"PO-Revision-Date: 2018-04-24 09:35+0000\n"
+"Last-Translator: Qing <icinriiq@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -49,8 +49,9 @@ msgid "Anim Change Keyframe Value"
 msgstr "動畫更改關鍵幀數值"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Call"
-msgstr "動畫更改呼叫"
+msgstr "動畫改變呼叫"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
