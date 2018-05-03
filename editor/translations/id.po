@@ -1403,6 +1403,10 @@ msgstr "Bersihkan"
 msgid "Clear Output"
 msgstr "Bersihkan Luaran"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Error menyimpan resource!"
@@ -3737,6 +3741,14 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6246,8 +6258,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'."
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -8323,6 +8335,10 @@ msgstr "Error memuat font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ukuran font tidak sah."
+
+#, fuzzy
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Sambungkan Ke Node:"
 
 #, fuzzy
 #~ msgid ""
