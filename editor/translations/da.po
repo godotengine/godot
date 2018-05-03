@@ -3,22 +3,24 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Dankse Memes <purplelops@gmail.com>, 2018.
 # David Lamhauge <davidlamhauge@gmail.com>, 2016.
+# Esben Damkjær Sørensen <esben@damkjaergaard.com>, 2018.
 # Kim Nielsen <kimmowich@stofanet.dk>, 2017.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-20 15:42+0000\n"
-"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
+"PO-Revision-Date: 2018-04-22 07:35+0000\n"
+"Last-Translator: Dankse Memes <purplelops@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -29,9 +31,8 @@ msgid "All Selection"
 msgstr "All selection"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Skift Værdi"
+msgstr "Anim Skift Keyframetid"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -42,9 +43,8 @@ msgid "Anim Change Transform"
 msgstr "Anim Skift Transformering"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Skift Værdi"
+msgstr "Anim Skift Keyframeværdi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -497,9 +497,8 @@ msgid "Connecting Signal:"
 msgstr "Forbindelses Signal:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Forbind '%s' til '%s'"
+msgstr "Afbryd '%s' fra '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -515,9 +514,8 @@ msgid "Signals"
 msgstr "Signaler"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "Skift Base Type"
+msgstr "Skift %s Type"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -525,9 +523,8 @@ msgid "Change"
 msgstr "Skift"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "Opret Nyt"
+msgstr "Opret Ny %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -639,7 +636,7 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #, fuzzy
 msgid "Cannot remove:"
-msgstr "Kan ikke fjerne:\n"
+msgstr "Kan ikke fjerne:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -722,9 +719,8 @@ msgid "Lead Developer"
 msgstr "Ledende Udvikler"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "Projektleder"
+msgstr "Projektleder "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -817,9 +813,8 @@ msgid "Install"
 msgstr "Installér"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Installer"
-msgstr "Pakke Installatør"
+msgstr "Pakkeinstallatør"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -901,7 +896,7 @@ msgstr "Slet Effect"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Lyd"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1083,11 +1078,11 @@ msgstr "Opdatere scene.."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
-msgstr ""
+msgstr "[tom]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[ikke gemt]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1127,18 +1122,16 @@ msgid "Packing"
 msgstr "Pakker"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Skabelon fil ikke fundet:\n"
+msgstr "Skabelonfil ikke fundet:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "Filen Eksisterer, Overskrives?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Opret mappe"
+msgstr "Vælg nurværende mappe"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1244,9 +1237,8 @@ msgid "File:"
 msgstr "Fil:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Must use a valid extension."
-msgstr "Skal bruge en gyldig extension."
+msgstr "Du skal bruge en gyldig udvidelse."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1345,7 +1337,7 @@ msgstr "Beskrivelse"
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Online Tutorials:"
-msgstr "Online Dokumentation"
+msgstr "Online Dokumentation:"
 
 #: editor/editor_help.cpp
 #, fuzzy

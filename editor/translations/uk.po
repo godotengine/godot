@@ -4,16 +4,17 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018.
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
+# Максим Якимчук <xpinovo@gmail.com>, 2018.
 # Марс Ямбар <mjambarmeta@gmail.com>, 2017-2018.
 # Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
-# Yuri Chornoivan <yurchor@ukr.net>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-02-22 18:08+0000\n"
+"PO-Revision-Date: 2018-04-20 18:42+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -300,11 +301,11 @@ msgstr "Максимальна лінійна похибка:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Макс. Кутові похибки:"
+msgstr "Макс. кутова похибка:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Максимальний оптимізований кут:"
+msgstr "Макс. оптимізований кут:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
@@ -1961,7 +1962,7 @@ msgstr "Вийти в список проектів"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "Налагодження"
+msgstr "Діагностика"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2103,7 +2104,7 @@ msgstr "Спільнота"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "Про"
+msgstr "Про програму"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3394,7 +3395,7 @@ msgstr "Все"
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr "Плагіни"
+msgstr "Плаґіни"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -6539,7 +6540,7 @@ msgstr "[Порожньо]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr "Встановити"
+msgstr "Множина"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -7422,7 +7423,7 @@ msgstr "Попередження"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Кінець трасування стека для внутрішнього виключення"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

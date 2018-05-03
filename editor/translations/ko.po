@@ -3,18 +3,19 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
 # Ch <ccwpc@hanmail.net>, 2017.
 # paijai 송 (fivejobi) <xotjq237@gmail.com>, 2018.
+# Sun Kim <perplexingsun@gmail.com>, 2018.
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
+# 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-24 08:39+0000\n"
-"Last-Translator: TheRedPlanet <junmo.moon8@gmail.com>\n"
+"PO-Revision-Date: 2018-04-18 15:39+0000\n"
+"Last-Translator: Sun Kim <perplexingsun@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -37,9 +38,8 @@ msgid "Anim Change Keyframe Time"
 msgstr "애니메이션 키프레임 시간 변경"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "애니메이션 교체 트랜지션"
+msgstr "애니메이션 트랜지션 변경"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -164,7 +164,6 @@ msgid "Constant"
 msgstr "비선형"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "In"
 msgstr "In"
 
@@ -897,7 +896,7 @@ msgstr "이펙트 삭제"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "음성"
+msgstr "오디오"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -4609,7 +4608,7 @@ msgstr "파일"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New"
-msgstr "새로운"
+msgstr "새 파일"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5861,7 +5860,7 @@ msgstr "프로젝트의 모든 리소스 내보내기"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
-msgstr "선택된 리소스 내보내기 (종속된 리소스 포함)"
+msgstr "선택된 씬 내보내기 (종속된 리소스 포함)"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
@@ -6801,15 +6800,15 @@ msgid ""
 "Click to unlock"
 msgstr ""
 "노드가 잠겨있습니다.\n"
-"클릭해서 잠금해제 하십시오"
+"클릭하면 잠금 해제됩니다"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Children are not selectable.\n"
 "Click to make selectable"
 msgstr ""
-"자식들을 선택 할 수 없습니다.\n"
-"클릭해서 선택 할 수 있게 하십시오"
+"자식들을 선택할 수 없습니다.\n"
+"클릭하면 선택할 수 있게 됩니다"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
@@ -7386,7 +7385,7 @@ msgstr "경고"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "내부 예외 스택 추적의 끝"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7418,7 +7417,8 @@ msgstr "유효하지 않은 시퀀스 출력을 반환한 노드: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr "시퀀스 비트를 발견했지만 스택안의 노드에는 없습니다, 버그를 기록!"
+msgstr ""
+"시퀀스 비트를 발견했지만 스택안의 노드에는 없습니다, 버그를 제보하세요!"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "

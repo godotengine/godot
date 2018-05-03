@@ -12,20 +12,20 @@
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # NoahDigital <taku_58@hotmail.com>, 2017.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
-# Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017.
+# Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-06 13:19+0000\n"
-"Last-Translator: NoahDigital <taku_58@hotmail.com>\n"
+"PO-Revision-Date: 2018-04-02 08:38+0000\n"
+"Last-Translator: Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -468,7 +468,6 @@ msgstr "追加"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Remove"
 msgstr "削除"
 
@@ -6838,6 +6837,8 @@ msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
+"あなたは現在どのプロジェクトも持っていません。\n"
+"アセットライブラリで公式のサンプルプロジェクトを探しましょうか？"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy

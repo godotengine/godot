@@ -8,6 +8,7 @@
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
 # aelspire <aelspire@gmail.com>, 2017.
 # Daniel Lewan <vision360.daniel@gmail.com>, 2016-2018.
+# Dariusz Król <rexioweb@gmail.com>, 2018.
 # heya10 <igor.gielzak@gmail.com>, 2017.
 # holistyczny interlokutor <jakubowesmieci@gmail.com>, 2017.
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
@@ -26,8 +27,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-22 08:08+0000\n"
-"Last-Translator: Maksymilian Świąć <maksymilian.swiac@gmail.com>\n"
+"PO-Revision-Date: 2018-04-23 15:40+0000\n"
+"Last-Translator: Dariusz Król <rexioweb@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -242,7 +243,7 @@ msgstr "Zmień pętlę animacji"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Utwórz klucz dla wpisanej wartości"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
