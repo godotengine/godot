@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-27 02:34+0000\n"
+"PO-Revision-Date: 2018-03-10 03:34+0000\n"
 "Last-Translator: Roger Blanco Ribera <roger.blancoribera@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -6137,7 +6137,7 @@ msgid ""
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
 "Encara no teniu cap projecte.\n"
-"Voleu explorar els projectes oficials d'exemple a la llibreria activa?"
+"Voleu explorar els projectes d'exemple oficials a la Biblioteca d'Actius?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7412,7 +7412,7 @@ msgstr "Avisos"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Final de la traça de la pila d'excepció interna"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
