@@ -6,14 +6,14 @@
 # Dankse Memes <purplelops@gmail.com>, 2018.
 # David Lamhauge <davidlamhauge@gmail.com>, 2016.
 # Esben Damkjær Sørensen <esben@damkjaergaard.com>, 2018.
-# Kim Nielsen <kimmowich@stofanet.dk>, 2017, 2018.
+# Kim Nielsen <kimmowich@stofanet.dk>, 2017.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-17 19:35+0000\n"
-"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
+"PO-Revision-Date: 2018-04-22 07:35+0000\n"
+"Last-Translator: Dankse Memes <purplelops@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -1335,7 +1335,7 @@ msgstr "Beskrivelse"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
-msgstr "Online Undervisning:"
+msgstr "Online Dokumentation:"
 
 #: editor/editor_help.cpp
 msgid ""
