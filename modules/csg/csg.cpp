@@ -1255,7 +1255,7 @@ void CSGBrushOperation::MeshMerge::add_face(const Vector3 &p_a, const Vector3 &p
 		vk.z = int((double(src_points[i].z) + double(vertex_snap) * 0.31234) / double(vertex_snap));
 
 		int res;
-		if (snap_cache.lookup(vk, &res)) {
+		if (snap_cache.lookup(vk, res)) {
 			indices[i] = res;
 		} else {
 			indices[i] = points.size();

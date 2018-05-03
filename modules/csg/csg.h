@@ -108,7 +108,7 @@ struct CSGBrushOperation {
 			}
 		};
 
-		OAHashMap<VertexKey, int, 64, VertexKeyHash> snap_cache;
+		OAHashMap<VertexKey, int, VertexKeyHash> snap_cache;
 
 		Vector<Vector3> points;
 
