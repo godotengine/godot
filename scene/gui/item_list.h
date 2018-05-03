@@ -128,13 +128,13 @@ public:
 	void add_icon_item(const Ref<Texture> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);
-	String get_item_text(int p_idx) const;
+	String get_item_text(int p_idx = -1) const;
 
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
-	Ref<Texture> get_item_icon(int p_idx) const;
+	Ref<Texture> get_item_icon(int p_idx = -1) const;
 
 	void set_item_icon_region(int p_idx, const Rect2 &p_region);
-	Rect2 get_item_icon_region(int p_idx) const;
+	Rect2 get_item_icon_region(int p_idx = -1) const;
 
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	Color get_item_icon_modulate(int p_idx) const;
@@ -146,29 +146,30 @@ public:
 	bool is_item_disabled(int p_idx) const;
 
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
-	Variant get_item_metadata(int p_idx) const;
+	Variant get_item_metadata(int p_idx = -1) const;
 
 	void set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon);
-	Ref<Texture> get_item_tag_icon(int p_idx) const;
+	Ref<Texture> get_item_tag_icon(int p_idx = -1) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
-	bool is_item_tooltip_enabled(int p_idx) const;
+	bool is_item_tooltip_enabled(int p_idx = -1) const;
 
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
-	String get_item_tooltip(int p_idx) const;
+	String get_item_tooltip(int p_idx = -1) const;
 
 	void set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color);
-	Color get_item_custom_bg_color(int p_idx) const;
+	Color get_item_custom_bg_color(int p_idx = -1) const;
 
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
-	Color get_item_custom_fg_color(int p_idx) const;
+	Color get_item_custom_fg_color(int p_idx = -1) const;
 
-	void select(int p_idx, bool p_single = true);
+	void select(int p_idx = -1, bool p_single = true);
 	void unselect(int p_idx);
 	void unselect_all();
 	bool is_selected(int p_idx) const;
-	Vector<int> get_selected_items();
-	bool is_anything_selected();
+	Vector<int> get_selected_items() const;
+	int get_selected_item() const;
+	bool is_anything_selected() const;
 
 	void set_current(int p_current);
 	int get_current() const;
@@ -176,7 +177,7 @@ public:
 	void move_item(int p_from_idx, int p_to_idx);
 
 	int get_item_count() const;
-	void remove_item(int p_idx);
+	void remove_item(int p_idx = -1);
 
 	void clear();
 

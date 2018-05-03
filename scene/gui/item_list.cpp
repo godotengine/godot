@@ -79,7 +79,11 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 
 String ItemList::get_item_text(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), String());
+
 	return items[p_idx].text;
 }
 
@@ -89,7 +93,12 @@ void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
 }
 
 bool ItemList::is_item_tooltip_enabled(int p_idx) const {
+
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+
 	return items[p_idx].tooltip_enabled;
 }
 
@@ -104,7 +113,11 @@ void ItemList::set_item_tooltip(int p_idx, const String &p_tooltip) {
 
 String ItemList::get_item_tooltip(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), String());
+
 	return items[p_idx].tooltip;
 }
 
@@ -119,6 +132,9 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 
 Ref<Texture> ItemList::get_item_icon(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
 
 	return items[p_idx].icon;
@@ -135,6 +151,9 @@ void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
 
 Rect2 ItemList::get_item_icon_region(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	return items[p_idx].icon_region;
@@ -164,6 +183,9 @@ void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_colo
 
 Color ItemList::get_item_custom_bg_color(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
 
 	return items[p_idx].custom_bg;
@@ -193,6 +215,9 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 }
 Ref<Texture> ItemList::get_item_tag_icon(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
 
 	return items[p_idx].tag_icon;
@@ -236,11 +261,18 @@ void ItemList::set_item_metadata(int p_idx, const Variant &p_metadata) {
 
 Variant ItemList::get_item_metadata(int p_idx) const {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Variant());
+
 	return items[p_idx].metadata;
 }
 void ItemList::select(int p_idx, bool p_single) {
 
+	if (p_idx == -1) {
+		p_idx = get_item_count() - 1;
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (p_single || select_mode == SELECT_SINGLE) {
@@ -265,6 +297,9 @@ void ItemList::select(int p_idx, bool p_single) {
 }
 void ItemList::unselect(int p_idx) {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (select_mode != SELECT_MULTI) {
@@ -335,6 +370,9 @@ int ItemList::get_item_count() const {
 }
 void ItemList::remove_item(int p_idx) {
 
+	if (p_idx == -1) {
+		p_idx = get_selected_item();
+	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.remove(p_idx);
@@ -1315,7 +1353,7 @@ real_t ItemList::get_icon_scale() const {
 	return icon_scale;
 }
 
-Vector<int> ItemList::get_selected_items() {
+Vector<int> ItemList::get_selected_items() const {
 	Vector<int> selected;
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
@@ -1328,7 +1366,18 @@ Vector<int> ItemList::get_selected_items() {
 	return selected;
 }
 
-bool ItemList::is_anything_selected() {
+int ItemList::get_selected_item() const {
+	if (is_anything_selected()) {
+		if (select_mode == SELECT_SINGLE) {
+			return current;
+		} else {
+			return get_selected_items()[0];
+		}
+	}
+	return -1;
+}
+
+bool ItemList::is_anything_selected() const {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected)
 			return true;
@@ -1398,13 +1447,13 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &ItemList::set_item_text);
-	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &ItemList::get_item_text);
+	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &ItemList::get_item_text, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &ItemList::set_item_icon);
-	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_region", "idx", "rect"), &ItemList::set_item_icon_region);
-	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region);
+	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "idx", "modulate"), &ItemList::set_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "idx"), &ItemList::get_item_icon_modulate);
@@ -1416,19 +1465,19 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &ItemList::is_item_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &ItemList::set_item_metadata);
-	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &ItemList::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &ItemList::get_item_metadata, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color", "idx", "custom_bg_color"), &ItemList::set_item_custom_bg_color);
-	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color", "idx"), &ItemList::get_item_custom_bg_color);
+	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color", "idx"), &ItemList::get_item_custom_bg_color, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled", "idx", "enable"), &ItemList::set_item_tooltip_enabled);
-	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled);
+	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &ItemList::set_item_tooltip);
-	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip, DEFVAL(-1));
 
-	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect);
+	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(-1), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("unselect_all"), &ItemList::unselect_all);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
@@ -1437,7 +1486,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_item", "from_idx", "to_idx"), &ItemList::move_item);
 
 	ClassDB::bind_method(D_METHOD("get_item_count"), &ItemList::get_item_count);
-	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &ItemList::remove_item);
+	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &ItemList::remove_item, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("clear"), &ItemList::clear);
 	ClassDB::bind_method(D_METHOD("sort_items_by_text"), &ItemList::sort_items_by_text);
