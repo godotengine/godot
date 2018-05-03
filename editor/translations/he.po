@@ -11,8 +11,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-22 12:37+0000\n"
-"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"PO-Revision-Date: 2018-04-18 16:38+0000\n"
+"Last-Translator: Daniel <lorddaniel09@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4668,7 +4668,7 @@ msgstr "שמירה מחדש"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "מנפה שגיאות"
+msgstr "ניפוי שגיאות"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -5401,7 +5401,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations"
-msgstr "הנפשות"
+msgstr "אנימציות"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6079,7 +6079,7 @@ msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key..."
+msgid "Press a Key.."
 msgstr "נא ללחוץ על מקש…"
 
 #: editor/project_settings_editor.cpp
@@ -6193,6 +6193,10 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "מחיקת פריט"
+
+#: editor/project_settings_editor.cpp
+msgid "Can't contain '/' or ':'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7118,14 +7122,12 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "הלשונית הבאה"
+msgstr "המישור הבא"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "הלשונית הקודמת"
+msgstr "המישור הקודם"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
@@ -7796,7 +7798,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(זמן שנותר: %d:%02d שנ׳)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

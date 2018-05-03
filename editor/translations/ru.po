@@ -16,13 +16,14 @@
 # pitchblack <pitchblack@mail.ru>, 2017.
 # Sergey <maligin.serega2010@yandex.ru>, 2018.
 # Sergey Agarkov <zorgsoft@gmail.com>, 2017.
-# teriva <spirin.cos@yandex.ru>, 2018.
+# Аркадий Авас <savvot@gmail.com>, 2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-23 20:40+0000\n"
-"Last-Translator: ijet <my-ijet@mail.ru>\n"
+"PO-Revision-Date: 2018-04-27 16:39+0000\n"
+"Last-Translator: Chaosus89 <chaosus89@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2359,7 +2360,7 @@ msgstr "Включительно"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr ""
+msgstr "Self"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -5553,7 +5554,7 @@ msgstr "Переместить (после)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
-msgstr "Спрайт кадры"
+msgstr "SpriteFrames"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5561,7 +5562,7 @@ msgstr "Предпросмотр StyleBox:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox"
-msgstr ""
+msgstr "StyleBox"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -7452,7 +7453,7 @@ msgstr "Предупреждения"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Конец трассировки внутреннего стека исключений"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -8009,10 +8010,9 @@ msgstr "ARVROrigin требует дочерний узел ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "(Time Left: %d:%02d s)"
 msgstr "(Осталось: %d:%02d сек)"
 

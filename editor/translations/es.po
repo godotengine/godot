@@ -13,6 +13,7 @@
 # Dharkael <izhe@hotmail.es>, 2017.
 # Diego López <diegodario21@gmail.com>, 2017.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
@@ -24,13 +25,14 @@
 # Sebastian Silva <sebastian@fuentelibre.org>, 2016.
 # Swyter <swyterzone@gmail.com>, 2016-2017.
 # Vazquinhos <vazquinhos@gmail.com>, 2018.
+# Yovani Damián <blackblex@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-03-03 09:49+0000\n"
-"Last-Translator: David Arranz <davarrcal@hotmail.com>\n"
+"PO-Revision-Date: 2018-05-03 02:11+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -38,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -232,19 +234,19 @@ msgstr "Insertar Pista y Clave de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Insertar Clave de Animación"
+msgstr "Insertar clave de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Cambiar Duración de Animación"
+msgstr "Cambiar duración de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr "Cambiar Bucle de Animación"
+msgstr "Cambiar bucle de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr "Crear Clave de Valor Tipado para Animación"
+msgstr "Crear clave de valor tipado para Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
@@ -264,7 +266,7 @@ msgstr "Zoom de Animación."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Duración (segs.):"
+msgstr "Duración (seg):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -346,7 +348,7 @@ msgstr "Relación de Escala:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "¿Desde que Nodo quieres realizar Llamadas a Funciones?"
+msgstr "¿Desde que nodo quieres realizar llamadas a funciones?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -847,11 +849,11 @@ msgstr "Añadir Efecto"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "Renombrar bus de audio"
+msgstr "Renombrar Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "Cambiar volumen del bus de audio"
+msgstr "Cambiar Volumen de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -867,7 +869,7 @@ msgstr "Alternar puenteado de efectos en Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Seleccionar envío a bus de audio"
+msgstr "Seleccionar Envío de Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -895,7 +897,7 @@ msgstr "Silenciar"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Puentear"
+msgstr "Bypass"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1977,7 +1979,7 @@ msgstr "Ejecutar Script"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
-msgstr "Exportar"
+msgstr "Export"
 
 #: editor/editor_node.cpp
 msgid "Tools"
@@ -3082,7 +3084,7 @@ msgstr "Autoreproducir al Cargar"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
-msgstr "Editar tiempos de mezcla de selección"
+msgstr "Editar tiempos de mezcla con otras animaciones"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -4835,7 +4837,7 @@ msgstr "Minúscula"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr "Poner en mayúsculas"
+msgstr "Letra Capital"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6778,7 +6780,7 @@ msgstr "Cambiar Tipo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
-msgstr "Adjuntar script"
+msgstr "Añadir Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
@@ -6818,7 +6820,7 @@ msgstr "Filtrar nodos"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "Adjuntar un script nuevo o existente al nodo seleccionado."
+msgstr "Añadir un script nuevo o existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
@@ -7019,7 +7021,7 @@ msgstr "Script integrado"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "Adjuntar script de nodo"
+msgstr "Añadir script de nodo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -7123,7 +7125,7 @@ msgstr "Tipo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Format"
-msgstr "Formato"
+msgstr "Format"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
@@ -7255,7 +7257,7 @@ msgstr "Bibliotecas: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "\"GDNative\""
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7477,7 +7479,7 @@ msgstr "Advertencias"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Fin del reporte de la pila de excepciones"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7663,7 +7665,7 @@ msgstr "Secuencia"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "Interruptor"
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
@@ -7679,7 +7681,7 @@ msgstr "Devuelve (\"Return\")"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr "Llamada (\"Call\")"
+msgstr "Call"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"

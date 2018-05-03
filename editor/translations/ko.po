@@ -2,19 +2,20 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
+#
 # Ch <ccwpc@hanmail.net>, 2017.
 # paijai 송 (fivejobi) <xotjq237@gmail.com>, 2018.
-# pgyage3263 <pgyage3263@naver.com>, 2018.
 # Sun Kim <perplexingsun@gmail.com>, 2018.
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
+# 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-02-24 08:39+0000\n"
-"Last-Translator: TheRedPlanet <junmo.moon8@gmail.com>\n"
+"PO-Revision-Date: 2018-04-18 15:39+0000\n"
+"Last-Translator: Sun Kim <perplexingsun@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -37,9 +38,8 @@ msgid "Anim Change Keyframe Time"
 msgstr "애니메이션 키프레임 시간 변경"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "애니메이션 교체 트랜지션"
+msgstr "애니메이션 트랜지션 변경"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -164,7 +164,6 @@ msgid "Constant"
 msgstr "비선형"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "In"
 msgstr "In"
 
@@ -7415,7 +7414,7 @@ msgstr "경고"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "내부 예외 스택 추적의 끝"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

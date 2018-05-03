@@ -2,15 +2,14 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-# Calin Sopterean <csopterean@gmail.com>, 2018.
+#
 # Filip <filipanton@tutanota.com>, 2018.
-# Nitroretro <nitroretro@protonmail.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-20 20:43+0000\n"
-"Last-Translator: Calin Sopterean <csopterean@gmail.com>\n"
+"PO-Revision-Date: 2018-05-02 18:03+0000\n"
+"Last-Translator: Filip <filipanton@tutanota.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -18,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -256,7 +255,7 @@ msgstr "Pas (s):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr "Pas de Cursor Snap (în secunde)."
+msgstr "Pas Bruscare Cursor (în secunde)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
@@ -498,8 +497,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Deconectați '%s' de la '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect..."
-msgstr "Conectați..."
+msgid "Connect.."
+msgstr "Conectați.."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -549,7 +548,7 @@ msgstr "Potriviri:"
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr "Descriere:"
+msgstr "Descripție:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -793,7 +792,7 @@ msgstr "Eroare la deschiderea fişierului pachet, nu este în format zip."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "Decomprimare Asset-uri"
+msgstr "Decompresez Active"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
@@ -892,7 +891,7 @@ msgstr "Ștergeți Efectul"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Sunet"
+msgstr "Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -919,16 +918,16 @@ msgid "Move Audio Bus"
 msgstr "Mutați Pista Audio"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As..."
-msgstr "Salvați Schema Pistei Audio Ca..."
+msgid "Save Audio Bus Layout As.."
+msgstr "Salvați Pista Audio Șablon Ca.."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout..."
-msgstr "Locație pentru Noua Schemă..."
+msgid "Location for New Layout.."
+msgstr "Locație pentru Noul Șablon..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Deschide Schema Pistei Audio"
+msgstr "Deschideți Șablon Pistă Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
@@ -936,7 +935,7 @@ msgstr "Nu există nici un fişier 'res://default_bus_layout.tres'."
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Fişier nevalid, nu este o schemă de pistă audio."
+msgstr "Fişier nevalid, nu un șablon de pistă audio."
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -944,7 +943,7 @@ msgstr "Adaugați Pistă Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "Creaţi o Schemă nouă de Pistă Audio."
+msgstr "Creaţi un Șablon nou Pistă Audio."
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
@@ -953,7 +952,7 @@ msgstr "Încărcați"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "Încărcaţi o Schemă de Pistă Audio existentă."
+msgstr "Încărcaţi un Șablon de Pistă Audio existent."
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -962,7 +961,7 @@ msgstr "Salvați Ca"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "Salvaţi acestă Schemă de Pistă Audio într-un fişier."
+msgstr "Salvaţi acest Șablon Pistă Audio într-un fişier."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -970,7 +969,7 @@ msgstr "Încărcați Implicit"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Încarcă Schema de Pistă Audio implicită."
+msgstr "Încărcat Șablonul Pistă Audio implicit."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1064,12 +1063,12 @@ msgid "Updating Scene"
 msgstr "Scena se Actualizează"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes..."
+msgid "Storing local changes.."
 msgstr "Modificările locale se stochează..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene..."
-msgstr "Scena se Actualizează..."
+msgid "Updating scene.."
+msgstr "Scena se Actualizează.."
 
 #: editor/editor_data.cpp
 msgid "[empty]"

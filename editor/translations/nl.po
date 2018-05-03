@@ -14,7 +14,6 @@
 # Jorn Theunissen <jorn-theunissen@hotmail.com>, 2018.
 # Maikel <maikel_martens_1@hotmail.com>, 2017.
 # millenniumproof <millenniumproof@gmail.com>, 2018.
-# nee <lespam@protonmail.com>, 2018.
 # Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017-2018.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
@@ -26,15 +25,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-17 19:35+0000\n"
-"Last-Translator: Pieter-Jan Briers <pieterjan.briers@gmail.com>\n"
+"PO-Revision-Date: 2018-04-06 15:35+0000\n"
+"Last-Translator: millenniumproof <millenniumproof@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.19\n"
+"X-Generator: Weblate 2.20\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4226,7 +4225,7 @@ msgstr "Hoogteveld aan het creëeren..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
-msgstr "Markeer loopbare driehoeken..."
+msgstr "Markeer loopbare driehoeken.."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
@@ -4234,9 +4233,8 @@ msgid "Constructing compact heightfield..."
 msgstr "Compact hoogteveld aan het bouwen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Eroding walkable area..."
-msgstr "Wandelbaar gebied eroderen..."
+msgstr "Wandelbaar gebied aan het eroderen..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -4601,22 +4599,6 @@ msgid "Type:"
 msgstr "Type:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Laad Bron"
@@ -4661,8 +4643,8 @@ msgid "Import Theme"
 msgstr "Importeer Thema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As..."
-msgstr "Thema Opslaan Als..."
+msgid "Save Theme As.."
+msgstr "Thema Opslaan Als.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4758,8 +4740,8 @@ msgstr "Schakel Scripten Paneel"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find..."
-msgstr "Vind..."
+msgid "Find.."
+msgstr "Vind.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4900,10 +4882,9 @@ msgstr "Rechts Inspringen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr ""
+msgstr "Commentaar Aan/Uit"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Vouw/Ontvouw Regel"
 
@@ -4918,10 +4899,6 @@ msgstr "Ontvouw Alle Regels"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Kloon Omlaag"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4973,16 +4950,16 @@ msgid "Find Previous"
 msgstr "Vind Vorige"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace..."
-msgstr "Vervang..."
+msgid "Replace.."
+msgstr "Vervang.."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function..."
-msgstr "Ga Naar Functie..."
+msgid "Goto Function.."
+msgstr "Ga Naar Functie.."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line..."
-msgstr "Ga Naar Regel..."
+msgid "Goto Line.."
+msgstr "Ga Naar Regel.."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"

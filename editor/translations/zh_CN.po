@@ -26,13 +26,13 @@
 # Youmu <konpaku.w@gmail.com>, 2017.
 # yuetian <18829280955@163.com>, 2018.
 # Zae Chao <zae.vito@live.com>, 2018.
-# zwj36028 <23732399@qq.com>, 2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-02-03 05:35+0000\n"
-"Last-Translator: 360119124 <360119124@qq.com>\n"
+"PO-Revision-Date: 2018-05-03 08:59+0000\n"
+"Last-Translator: Geequlim <geequlim@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -40,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2413,7 +2413,7 @@ msgid "(Current)"
 msgstr "(当前)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait..."
+msgid "Retrieving mirrors, please wait.."
 msgstr "检索镜像，请等待..."
 
 #: editor/export_template_manager.cpp
@@ -2490,7 +2490,7 @@ msgstr "请求链接错误: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror.."
-msgstr "正在连接镜像……"
+msgstr "正在连接镜像网站。。"
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2520,7 +2520,7 @@ msgstr "已连接"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting.."
-msgstr "正在请求……"
+msgstr "正在请求。。"
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2749,11 +2749,11 @@ msgstr "导入独立的物体和动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "与独立的材质和动画一同导入"
+msgstr "导入独立的材质和动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "与独立的物体、材质和动画一同导入"
+msgstr "导入独立的物体、材质和动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -3662,7 +3662,7 @@ msgstr "显示标尺"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "显示标尺 "
+msgstr "显示引导"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5941,11 +5941,11 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径非法（被外部修改？）。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
-msgstr "无法在项目目录下编辑project.godot文件。"
+msgstr ""
+"无法在项目路径中加载 project.godot 文件（错误 %d）。该文件可能缺失或已损坏。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
@@ -7198,18 +7198,16 @@ msgid "Object can't provide a length."
 msgstr "对象无法提供长度。"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "下一项"
+msgstr "下一个平面"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "上一个目录"
+msgstr "上一个平面"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "平面："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -7349,7 +7347,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "关于C#支持"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7369,7 +7367,7 @@ msgstr "警告"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "内部异常堆栈追朔结束"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7889,11 +7887,11 @@ msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "（剩余时间：%d:%02d 秒）"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

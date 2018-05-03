@@ -2,6 +2,7 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
+#
 # Allan Nordhøy <epost@anotheragency.no>, 2017-2018.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # Elias <eliasnykrem@gmail.com>, 2018.
@@ -14,15 +15,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-22 08:31+0000\n"
-"Last-Translator: Frank T. Rambol <frank@d-fect.com>\n"
+"PO-Revision-Date: 2018-03-22 03:38+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4615,22 +4616,6 @@ msgid "Type:"
 msgstr "Type:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_editor.cpp
-msgid "Instance:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-msgid "Type:"
-msgstr ""
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Last Ressurs"
@@ -4915,7 +4900,7 @@ msgstr "Innrykk Høyre"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr ""
+msgstr "Veksle kommentar"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -4933,10 +4918,6 @@ msgstr "Brett ut alle linjer"
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
 msgstr "Klon nedover"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Clone Down"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -5789,7 +5770,7 @@ msgstr "Fane 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "Fane 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -6095,7 +6076,7 @@ msgstr "De følgende filene feilet ekstrahering fra pakke:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
-msgstr ""
+msgstr "Endre Navn på Prosjekt"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"

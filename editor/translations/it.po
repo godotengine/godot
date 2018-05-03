@@ -20,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-18 16:39+0000\n"
-"Last-Translator: Alessio Corridori <alessiocorridori@hotmail.com>\n"
+"PO-Revision-Date: 2018-05-02 10:38+0000\n"
+"Last-Translator: Samuele Zolfanelli <samdazel@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1416,10 +1416,6 @@ msgstr "Rimuovi"
 msgid "Clear Output"
 msgstr "Pulisci output"
 
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Errore salvando la Risorsa!"
@@ -2744,8 +2740,8 @@ msgid "View Owners..."
 msgstr "Vedi Proprietari..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate..."
-msgstr "Duplica..."
+msgid "Duplicate.."
+msgstr "Duplica.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
