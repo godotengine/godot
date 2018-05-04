@@ -105,8 +105,6 @@ name is available.
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Roberto F. Arroyo (robfram)
-    romulox-x
-    rraallvv
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
     SaracenOne
@@ -121,7 +119,6 @@ name is available.
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
-    yg2f (SuperUserNameMan)
     Yuri Roubinski (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
@@ -131,7 +128,6 @@ name is available.
     m4nu3lf
     marynate
     mrezai
-    robfram
     romulox-x
     rraallvv
     sersoong
