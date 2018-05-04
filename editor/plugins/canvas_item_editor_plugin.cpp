@@ -2604,6 +2604,7 @@ void CanvasItemEditor::_draw_bones() {
 		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
 		Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
+		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
 		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
@@ -2623,6 +2624,31 @@ void CanvasItemEditor::_draw_bones() {
 			if (!from_node->is_visible_in_tree())
 				continue;
 
+			Vector2 from = transform.xform(pn2d->get_global_position());
+			Vector2 to = transform.xform(n2d->get_global_position());
+
+			E->get().from = from;
+			E->get().to = to;
+
+			Vector2 rel = to - from;
+			Vector2 relt = rel.tangent().normalized() * bone_width;
+			Vector2 reln = rel.normalized();
+			Vector2 reltn = relt.normalized();
+
+			Vector<Vector2> bone_shape;
+			bone_shape.push_back(from);
+			bone_shape.push_back(from + rel * 0.2 + relt);
+			bone_shape.push_back(to);
+			bone_shape.push_back(from + rel * 0.2 - relt);
+
+			Vector<Vector2> bone_shape_outline;
+			bone_shape_outline.push_back(from + (-reln - reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + (-reln + reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + rel * 0.2 + relt + reltn * bone_outline_size);
+			bone_shape_outline.push_back(to + (reln + reltn) * bone_outline_size);
+			bone_shape_outline.push_back(to + (reln - reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + rel * 0.2 - relt - reltn * bone_outline_size);
+
 			Vector<Color> colors;
 			if (from_node->has_meta("_edit_ik_")) {
 				colors.push_back(bone_ik_color);
@@ -2637,8 +2663,7 @@ void CanvasItemEditor::_draw_bones() {
 			}
 
 			Vector<Color> outline_colors;
-
-			if (editor_selection->is_selected(from_node)) {
+			if (editor_selection->is_selected(pi)) {
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
@@ -2656,65 +2681,6 @@ void CanvasItemEditor::_draw_bones() {
 
 			VisualServer::get_singleton()->canvas_item_add_polygon(ci, bone_shape_outline, outline_colors);
 			VisualServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
-		}
-	}
-}
-
-void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	ERR_FAIL_COND(!p_node);
-
-	Node *scene = editor->get_edited_scene();
-	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
-		return;
-	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	if (canvas_item && !canvas_item->is_visible())
-		return;
-
-	Transform2D parent_xform = p_parent_xform;
-	Transform2D canvas_xform = p_canvas_xform;
-
-	if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-		parent_xform = parent_xform * canvas_item->get_transform();
-	} else {
-		CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-		parent_xform = Transform2D();
-		canvas_xform = cl ? cl->get_transform() : p_canvas_xform;
-	}
-
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
-	}
-
-	if (canvas_item && !canvas_item->_edit_use_rect() && !editor_selection->is_selected(canvas_item)) {
-		Transform2D xform = transform * canvas_xform * parent_xform;
-
-		// Draw the node's position
-		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
-		Transform2D transform = Transform2D(xform.get_rotation(), xform.get_origin());
-		viewport->draw_set_transform_matrix(transform);
-		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
-		viewport->draw_set_transform_matrix(Transform2D());
-	}
-}
-
-void CanvasItemEditor::_draw_hover() {
-	List<Rect2> previous_rects;
-
-	for (int i = 0; i < hovering_results.size(); i++) {
-
-		Ref<Texture> node_icon = hovering_results[i].icon;
-		String node_name = hovering_results[i].name;
-
-		Ref<Font> font = get_font("font", "Label");
-		Size2 node_name_size = font->get_string_size(node_name);
-		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
-
-		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
-		// Rectify the position to avoid overlaping items
-		for (List<Rect2>::Element *E = previous_rects.front(); E; E = E->next()) {
-			if (E->get().intersects(Rect2(pos, item_size))) {
-				pos.y = E->get().get_position().y - item_size.y;
-			}
 		}
 
 		previous_rects.push_back(Rect2(pos, item_size));
