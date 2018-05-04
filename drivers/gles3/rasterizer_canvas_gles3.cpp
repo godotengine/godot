@@ -287,7 +287,8 @@ void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepat
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
 	if (state.using_skeleton) {
-		state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TO_OBJECT_LOCAL_MATRIX, state.skeleton_transform);
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
 	}
 	if (storage->frame.current_rt) {
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
@@ -306,11 +307,17 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	uint32_t buffer_ofs = 0;
 
 	//vertex
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
 	glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), ((uint8_t *)0) + buffer_ofs);
 	buffer_ofs += sizeof(Vector2) * p_vertex_count;
 	//color
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
 
 	if (p_singlecolor) {
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
@@ -327,6 +334,10 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 		buffer_ofs += sizeof(Color) * p_vertex_count;
 	}
 
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
 	if (p_uvs) {
 
 		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
@@ -338,11 +349,16 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
 
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
 	if (p_bones && p_weights) {
 
 		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(int) * 4 * p_vertex_count, p_bones);
 		glEnableVertexAttribArray(VS::ARRAY_BONES);
-		glVertexAttribPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, false, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
+		//glVertexAttribPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, false, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
+		glVertexAttribIPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
 		buffer_ofs += sizeof(int) * 4 * p_vertex_count;
 
 		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(float) * 4 * p_vertex_count, p_weights);
@@ -354,6 +370,10 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 		glVertexAttribI4ui(VS::ARRAY_BONES, 0, 0, 0, 0);
 		glVertexAttrib4f(VS::ARRAY_WEIGHTS, 0, 0, 0, 0);
 	}
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
 
 	//bind the indices buffer.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
@@ -1145,7 +1165,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				if (!skeleton->use_2d) {
 					skeleton = NULL;
 				} else {
-					state.skeleton_transform = ci->final_transform.affine_inverse() * (p_transform * skeleton->base_transform_2d);
+					state.skeleton_transform = p_transform * skeleton->base_transform_2d;
+					state.skeleton_transform_inverse = state.skeleton_transform.affine_inverse();
 				}
 			}
 
