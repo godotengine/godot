@@ -219,6 +219,11 @@ namespace Godot
             return 2.0f * n * Dot(n) - this;
         }
 
+        public Vector3 Round()
+        {
+            return new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
+        }
+
         public Vector3 Rotated(Vector3 axis, real_t phi)
         {
             return new Basis(axis, phi).Xform(this);
