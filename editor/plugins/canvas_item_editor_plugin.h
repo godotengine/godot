@@ -447,6 +447,11 @@ class CanvasItemEditor : public VBoxContainer {
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
 
+	bool bone_list_dirty;
+	void _queue_update_bone_list();
+	void _update_bone_list();
+	void _tree_changed(Node *);
+
 	friend class CanvasItemEditorPlugin;
 
 protected:
