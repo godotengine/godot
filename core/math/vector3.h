@@ -103,6 +103,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 floor() const;
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
+	_FORCE_INLINE_ Vector3 round() const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_b) const;
@@ -202,6 +203,11 @@ Vector3 Vector3::floor() const {
 Vector3 Vector3::ceil() const {
 
 	return Vector3(Math::ceil(x), Math::ceil(y), Math::ceil(z));
+}
+
+Vector3 Vector3::round() const {
+
+	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
 Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
