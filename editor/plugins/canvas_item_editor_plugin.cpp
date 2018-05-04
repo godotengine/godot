@@ -2606,26 +2606,27 @@ void CanvasItemEditor::_draw_bones() {
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
 		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
-		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
 			E->get().from = Vector2();
 			E->get().to = Vector2();
 
-			Node2D *n2d = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key()));
-			if (!n2d)
-				continue;
-
-			Vector<Vector2> bone_shape;
-			Vector<Vector2> bone_shape_outline;
-			if (!_get_bone_shape(&bone_shape, &bone_shape_outline, E))
-				continue;
-
 			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
-			if (!from_node->is_visible_in_tree())
+			Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
+
+			if (!from_node)
 				continue;
 
-			Vector2 from = transform.xform(pn2d->get_global_position());
-			Vector2 to = transform.xform(n2d->get_global_position());
+			if (!to_node && E->get().length == 0)
+				continue;
+
+			Vector2 from = transform.xform(from_node->get_global_position());
+			Vector2 to;
+
+			if (to_node)
+				to = transform.xform(to_node->get_global_position());
+			else
+				to = transform.xform(from_node->get_global_transform().xform(Vector2(E->get().length, 0)));
 
 			E->get().from = from;
 			E->get().to = to;
@@ -2651,6 +2652,7 @@ void CanvasItemEditor::_draw_bones() {
 
 			Vector<Color> colors;
 			if (from_node->has_meta("_edit_ik_")) {
+
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
@@ -2663,7 +2665,8 @@ void CanvasItemEditor::_draw_bones() {
 			}
 
 			Vector<Color> outline_colors;
-			if (editor_selection->is_selected(pi)) {
+
+			if (editor_selection->is_selected(from_node)) {
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
@@ -2823,22 +2826,61 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 		}
 	}
 
-	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-	Node *scene = editor->get_edited_scene();
-	if (!canvas_item || !canvas_item->is_visible() || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
+	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
+	if (!c)
 		return false;
-	}
 
-	Node *parent = canvas_item->get_parent();
+	CanvasItem *p = c->get_parent_item();
+	if (!p)
+		return false;
 
-			ObjectID id = c->get_instance_id();
-			if (!bone_list.has(id)) {
-				BoneList bone;
-				bone_list[id] = bone;
+	if (!p->is_visible())
+		return false;
+
+	if (Object::cast_to<Bone2D>(c)) {
+
+		if (Object::cast_to<Bone2D>(p)) {
+			BoneKey bk;
+			bk.from = p->get_instance_id();
+			bk.to = c->get_instance_id();
+			if (!bone_list.has(bk)) {
+				BoneList b;
+				b.length = 0;
+				bone_list[bk] = b;
 			}
 
 			bone_list[bk].last_pass = bone_last_frame;
 		}
+
+		if (!has_child_bones) {
+			BoneKey bk;
+			bk.from = c->get_instance_id();
+			bk.to = 0;
+			if (!bone_list.has(bk)) {
+				BoneList b;
+				b.length = 0;
+				bone_list[bk] = b;
+			}
+			bone_list[bk].last_pass = bone_last_frame;
+		}
+
+		return true;
+	}
+	if (c->has_meta("_edit_bone_")) {
+
+		BoneKey bk;
+		bk.from = c->get_parent()->get_instance_id();
+		bk.to = c->get_instance_id();
+		if (!bone_list.has(bk)) {
+			BoneList b;
+			b.length = 0;
+			bone_list[bk] = b;
+		}
+		bone_list[bk].last_pass = bone_last_frame;
+	}
+
+	return false;
+}
 
 void CanvasItemEditor::_draw_viewport() {
 	// Update the transform
@@ -2964,10 +3006,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		// Show / Hide the layout button
 		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
 
-		// Show / Hide the layout button
-		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
+		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
-			Object *b = ObjectDB::get_instance(E->key());
+			Object *b = ObjectDB::get_instance(E->key().from);
 			if (!b) {
 
 				viewport->update();
@@ -3133,8 +3174,8 @@ void CanvasItemEditor::_update_scrollbars() {
 		_build_bones_list(editor->get_edited_scene());
 	}
 
-	List<Map<ObjectID, BoneList>::Element *> bone_to_erase;
-	for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+	List<Map<BoneKey, BoneList>::Element *> bone_to_erase;
+	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 		if (E->get().last_pass != bone_last_frame) {
 			bone_to_erase.push_back(E);
 		}
