@@ -97,6 +97,11 @@ namespace Godot
             return -Reflect(n);
         }
 
+        public Vector2 Ceil()
+        {
+            return new Vector2(Mathf.Ceil(x), Mathf.Ceil(y));
+        }
+
         public Vector2 Clamped(real_t length)
         {
             var v = this;
@@ -188,6 +193,11 @@ namespace Godot
         {
             real_t rads = Angle() + phi;
             return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
+        }
+
+        public Vector2 Round()
+        {
+            return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
         public void Set(real_t x, real_t y)
