@@ -11,6 +11,7 @@ class Bone2D : public Node2D {
 	Bone2D *parent_bone;
 	Skeleton2D *skeleton;
 	Transform2D rest;
+	float default_length;
 
 friend class Skeleton2D;
 	int skeleton_index;
@@ -26,6 +27,9 @@ public:
 	Transform2D get_skeleton_rest() const;
 
 	String get_configuration_warning() const;
+
+	void set_default_length(float p_length);
+	float get_default_length() const;
 
 	int get_index_in_skeleton() const;
 
