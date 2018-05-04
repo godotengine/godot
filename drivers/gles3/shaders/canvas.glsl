@@ -58,7 +58,8 @@ out highp vec2 pixel_size_interp;
 
 #ifdef USE_SKELETON
 uniform mediump sampler2D skeleton_texture; // texunit:-1
-uniform mat4 skeleton_to_object_local_matrix;
+uniform highp mat4 skeleton_transform;
+uniform highp mat4 skeleton_transform_inverse;
 #endif
 
 #ifdef USE_LIGHTING
@@ -156,6 +157,36 @@ void main() {
 
 #endif
 
+
+#define extra_matrix extra_matrix2
+
+{
+
+VERTEX_SHADER_CODE
+
+}
+
+
+#ifdef USE_NINEPATCH
+
+	pixel_size_interp=abs(dst_rect.zw) * vertex;
+#endif
+
+#if !defined(SKIP_TRANSFORM_USED)
+	outvec = extra_matrix * outvec;
+	outvec = modelview_matrix * outvec;
+#endif
+
+#undef extra_matrix
+
+	color_interp = color;
+
+#ifdef USE_PIXEL_SNAP
+
+	outvec.xy=floor(outvec+0.5).xy;
+#endif
+
+
 #ifdef USE_SKELETON
 
 	if (bone_weights!=vec4(0.0)){ //must be a valid bone
@@ -192,41 +223,12 @@ void main() {
 					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
 				) * bone_weights.w;
 
-		mat4 bone_matrix = /*skeleton_to_object_local_matrix */ transpose(mat4(m[0],m[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0)));
+		mat4 bone_matrix = skeleton_transform * transpose(mat4(m[0],m[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))) * skeleton_transform_inverse;
 
 		outvec = bone_matrix * outvec;
 	}
 
 #endif
-
-#define extra_matrix extra_matrix2
-
-{
-
-VERTEX_SHADER_CODE
-
-}
-
-
-#ifdef USE_NINEPATCH
-
-	pixel_size_interp=abs(dst_rect.zw) * vertex;
-#endif
-
-#if !defined(SKIP_TRANSFORM_USED)
-	outvec = extra_matrix * outvec;
-	outvec = modelview_matrix * outvec;
-#endif
-
-#undef extra_matrix
-
-	color_interp = color;
-
-#ifdef USE_PIXEL_SNAP
-
-	outvec.xy=floor(outvec+0.5).xy;
-#endif
-
 
 	gl_Position = projection_matrix * outvec;
 
