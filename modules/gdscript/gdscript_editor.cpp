@@ -61,7 +61,7 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "# var b = \"textvar\"\n\n" +
 					   "func _ready():\n" +
 					   "%TS%# Called when the node is added to the scene for the first time.\n" +
-					   "%TS%# Initialization here\n" +
+					   "%TS%# Initialization here.\n" +
 					   "%TS%pass\n\n" +
 					   "#func _process(delta):\n" +
 					   "#%TS%# Called every frame. Delta is time since last frame.\n" +
