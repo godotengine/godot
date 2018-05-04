@@ -264,12 +264,26 @@ class CanvasItemEditor : public VBoxContainer {
 	struct BoneList {
 
 		Transform2D xform;
+		float length;
+		uint64_t last_pass;
 		Vector2 from;
 		Vector2 to;
-		uint64_t last_pass;
 	};
+
 	uint64_t bone_last_frame;
-	Map<ObjectID, BoneList> bone_list;
+
+	struct BoneKey {
+		ObjectID from;
+		ObjectID to;
+		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
+			if (from == p_key.from)
+				return to < p_key.to;
+			else
+				return from < p_key.from;
+		}
+	};
+
+	Map<BoneKey, BoneList> bone_list;
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -366,7 +380,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _selection_menu_hide();
 
 	UndoRedo *undo_redo;
-	void _build_bones_list(Node *p_node);
+	bool _build_bones_list(Node *p_node);
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retreive_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);

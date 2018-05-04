@@ -56,7 +56,11 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
 	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
 
+	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
+	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"rest"),"set_rest","get_rest");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"default_length",PROPERTY_HINT_RANGE,"1,1024,1"),"set_default_length","get_default_length");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
@@ -82,6 +86,16 @@ Transform2D Bone2D::get_skeleton_rest() const {
 
 void Bone2D::apply_rest() {
 	set_transform(rest);
+}
+
+void Bone2D::set_default_length(float p_length) {
+
+	default_length=p_length;
+
+}
+
+float Bone2D::get_default_length() const {
+	return default_length;
 }
 
 int Bone2D::get_index_in_skeleton() const {
@@ -118,6 +132,7 @@ Bone2D::Bone2D() {
 	skeleton = NULL;
 	parent_bone = NULL;
 	skeleton_index=-1;
+	default_length=16;
 	set_notify_local_transform(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for(int i=0;i<3;i++) {

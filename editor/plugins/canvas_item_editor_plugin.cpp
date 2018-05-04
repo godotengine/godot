@@ -44,6 +44,7 @@
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/screen_button.h"
+#include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
@@ -2590,27 +2591,27 @@ void CanvasItemEditor::_draw_bones() {
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
 		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
-		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
 			E->get().from = Vector2();
 			E->get().to = Vector2();
 
-			Node2D *n2d = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key()));
-			if (!n2d)
+			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+			Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
+
+			if (!from_node)
 				continue;
 
-			if (!n2d->get_parent())
+			if (!to_node && E->get().length == 0)
 				continue;
 
-			CanvasItem *pi = n2d->get_parent_item();
+			Vector2 from = transform.xform(from_node->get_global_position());
+			Vector2 to;
 
-			Node2D *pn2d = Object::cast_to<Node2D>(n2d->get_parent());
-
-			if (!pn2d)
-				continue;
-
-			Vector2 from = transform.xform(pn2d->get_global_position());
-			Vector2 to = transform.xform(n2d->get_global_position());
+			if (to_node)
+				to = transform.xform(to_node->get_global_position());
+			else
+				to = transform.xform(from_node->get_global_transform().xform(Vector2(E->get().length, 0)));
 
 			E->get().from = from;
 			E->get().to = to;
@@ -2635,7 +2636,7 @@ void CanvasItemEditor::_draw_bones() {
 			bone_shape_outline.push_back(from + rel * 0.2 - relt - reltn * bone_outline_size);
 
 			Vector<Color> colors;
-			if (pi->has_meta("_edit_ik_")) {
+			if (from_node->has_meta("_edit_ik_")) {
 
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
@@ -2649,7 +2650,8 @@ void CanvasItemEditor::_draw_bones() {
 			}
 
 			Vector<Color> outline_colors;
-			if (editor_selection->is_selected(pi)) {
+
+			if (editor_selection->is_selected(from_node)) {
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
 				outline_colors.push_back(bone_selected_color);
@@ -2790,26 +2792,71 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 	}
 }
 
-void CanvasItemEditor::_build_bones_list(Node *p_node) {
-	ERR_FAIL_COND(!p_node);
+bool CanvasItemEditor::_build_bones_list(Node *p_node) {
+	ERR_FAIL_COND_V(!p_node, false);
+
+	bool has_child_bones = false;
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_build_bones_list(p_node->get_child(i));
+		if (_build_bones_list(p_node->get_child(i))) {
+			has_child_bones = true;
+		}
 	}
 
 	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
-	if (c && c->is_visible_in_tree()) {
-		if (c->has_meta("_edit_bone_")) {
+	if (!c)
+		return false;
 
-			ObjectID id = c->get_instance_id();
-			if (!bone_list.has(id)) {
-				BoneList bone;
-				bone_list[id] = bone;
+	CanvasItem *p = c->get_parent_item();
+	if (!p)
+		return false;
+
+	if (!p->is_visible())
+		return false;
+
+	if (Object::cast_to<Bone2D>(c)) {
+
+		if (Object::cast_to<Bone2D>(p)) {
+			BoneKey bk;
+			bk.from = p->get_instance_id();
+			bk.to = c->get_instance_id();
+			if (!bone_list.has(bk)) {
+				BoneList b;
+				b.length = 0;
+				bone_list[bk] = b;
 			}
 
-			bone_list[id].last_pass = bone_last_frame;
+			bone_list[bk].last_pass = bone_last_frame;
 		}
+
+		if (!has_child_bones) {
+			BoneKey bk;
+			bk.from = c->get_instance_id();
+			bk.to = 0;
+			if (!bone_list.has(bk)) {
+				BoneList b;
+				b.length = 0;
+				bone_list[bk] = b;
+			}
+			bone_list[bk].last_pass = bone_last_frame;
+		}
+
+		return true;
 	}
+	if (c->has_meta("_edit_bone_")) {
+
+		BoneKey bk;
+		bk.from = c->get_parent()->get_instance_id();
+		bk.to = c->get_instance_id();
+		if (!bone_list.has(bk)) {
+			BoneList b;
+			b.length = 0;
+			bone_list[bk] = b;
+		}
+		bone_list[bk].last_pass = bone_last_frame;
+	}
+
+	return false;
 }
 
 void CanvasItemEditor::_draw_viewport() {
@@ -2936,9 +2983,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		// Show / Hide the layout button
 		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
 
-		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
-			Object *b = ObjectDB::get_instance(E->key());
+			Object *b = ObjectDB::get_instance(E->key().from);
 			if (!b) {
 
 				viewport->update();
@@ -2950,9 +2997,18 @@ void CanvasItemEditor::_notification(int p_what) {
 				continue;
 			}
 
-			if (b2->get_global_transform() != E->get().xform) {
+			Transform2D global_xform = b2->get_global_transform();
 
-				E->get().xform = b2->get_global_transform();
+			if (global_xform != E->get().xform) {
+
+				E->get().xform = global_xform;
+				viewport->update();
+			}
+
+			Bone2D *bone = Object::cast_to<Bone2D>(b);
+			if (bone && bone->get_default_length() != E->get().length) {
+
+				E->get().length = bone->get_default_length();
 				viewport->update();
 			}
 		}
@@ -3088,8 +3144,8 @@ void CanvasItemEditor::_update_scrollbars() {
 		_build_bones_list(editor->get_edited_scene());
 	}
 
-	List<Map<ObjectID, BoneList>::Element *> bone_to_erase;
-	for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+	List<Map<BoneKey, BoneList>::Element *> bone_to_erase;
+	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 		if (E->get().last_pass != bone_last_frame) {
 			bone_to_erase.push_back(E);
 		}
@@ -4248,13 +4304,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	p = skeleton_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
-	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_show_bones", TTR("Show Bones")), SKELETON_SHOW_BONES);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Custom Bone(s) from Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Custom Bones")), SKELETON_CLEAR_BONES);
 	p->connect("id_pressed", this, "_popup_callback");
 
 	hb->add_child(memnew(VSeparator));
