@@ -84,10 +84,10 @@
 		<method name="cross">
 			<return type="float">
 			</return>
-			<argument index="0" name="b" type="Vector2">
+			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2-dimensional analog of the cross product with [code]b[/code].
+				Returns the 2-dimensional analog of the cross product with the given Vector2.
 			</description>
 		</method>
 		<method name="cubic_interpolate">

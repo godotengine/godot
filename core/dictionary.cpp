@@ -211,7 +211,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	return NULL;
 }
 
-Dictionary Dictionary::duplicate() const {
+Dictionary Dictionary::duplicate(bool p_deep) const {
 
 	Dictionary n;
 
@@ -219,7 +219,7 @@ Dictionary Dictionary::duplicate() const {
 	get_key_list(&keys);
 
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		n[E->get()] = operator[](E->get());
+		n[E->get()] = p_deep ? operator[](E->get()).duplicate(p_deep) : operator[](E->get());
 	}
 
 	return n;

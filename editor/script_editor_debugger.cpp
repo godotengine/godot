@@ -710,25 +710,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error_list->set_item_metadata(error_list->get_item_count() - 1, stack);
 
 		error_count++;
-		/*
-		int count = p_data[1];
-
-		Array cstack;
-
-		OutputError oe = errors.front()->get();
-
-		packet_peer_stream->put_var(oe.hr);
-		packet_peer_stream->put_var(oe.min);
-		packet_peer_stream->put_var(oe.sec);
-		packet_peer_stream->put_var(oe.msec);
-		packet_peer_stream->put_var(oe.source_func);
-		packet_peer_stream->put_var(oe.source_file);
-		packet_peer_stream->put_var(oe.source_line);
-		packet_peer_stream->put_var(oe.error);
-		packet_peer_stream->put_var(oe.error_descr);
-		packet_peer_stream->put_var(oe.warning);
-		packet_peer_stream->put_var(oe.callstack);
-		*/
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
@@ -755,6 +736,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorProfiler::Metric::Category::Item item;
 			item.calls = 1;
 			item.line = 0;
+
 			item.name = "Physics Time";
 			item.total = metric.physics_time;
 			item.self = item.total;
@@ -792,8 +774,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			for (int i = 0; i < values.size(); i += 2) {
 
 				EditorProfiler::Metric::Category::Item item;
-				item.name = values[i];
 				item.calls = 1;
+				item.line = 0;
+				item.name = values[i];
 				item.self = values[i + 1];
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;

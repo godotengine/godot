@@ -150,9 +150,9 @@ public:
 	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch();
 
-	void remove_all_overlapping_instantly();
+	void clear_overlaps(bool p_notify);
 	// Dispatch the callbacks and removes from overlapping list
-	void remove_overlapping_instantly(CollisionObjectBullet *p_object, bool p_notify);
+	void remove_overlap(CollisionObjectBullet *p_object, bool p_notify);
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}

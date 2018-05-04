@@ -89,7 +89,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ### Hack Regular
 
 - Upstream: https://github.com/source-foundry/Hack
-- Version: 3.000
+- Version: 3.003
 - License: MIT + Bitstream Vera License
 
 ### DroidSans*.ttf
@@ -241,14 +241,14 @@ File extracted from upstream source:
 - Everything in `lib/` except `minilex.c`, `http2/`, `event-libs/`.
   - From `misc/` exclude `lws-genhash.c`, `lws-ring.c`, `romfs.{c,h}`, `smtp.c`.
   - From `plat/` exclude `lws-plat-{esp*,optee}.c`.
-  - From `server/` exclude `access-log.c`, `cgi.c`, `daemonize.c`, `lws-spa.c`, 
+  - From `server/` exclude `access-log.c`, `cgi.c`, `daemonize.c`, `lws-spa.c`,
 `peer-limits.c`, `rewrite.c`
 - Also copy `win32helpers/` from `win32port/`
 - `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX and FreeBSD (missing `malloc.h`).
   The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
 - You might need to apply the patch in `thirdparty/lws/mbedtls_verify.diff` (port of PR 1215) to future `2.4.x` releases if it does not get cherry picked.
 
-Important: `lws_config.h` and `lws_config_private.h` contains custom 
+Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
 
 ## mbedTLS

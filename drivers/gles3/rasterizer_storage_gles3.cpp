@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
+#include "engine.h"
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
@@ -1911,7 +1912,7 @@ void RasterizerStorageGLES3::material_set_param(RID p_material, const StringName
 Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringName &p_param) const {
 
 	const Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, RID());
+	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->params.has(p_param))
 		return material->params[p_param];
@@ -4495,6 +4496,15 @@ Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleto
 	return ret;
 }
 
+void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	skeleton->base_transform_2d = p_base_transform;
+}
+
 void RasterizerStorageGLES3::update_dirty_skeletons() {
 
 	glActiveTexture(GL_TEXTURE0);
@@ -5855,6 +5865,8 @@ void RasterizerStorageGLES3::update_particles() {
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EMITTING, particles->emitting);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::RANDOMNESS, particles->randomness);
 
+		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
+
 		if (particles->clear && particles->pre_process_time > 0.0) {
 
 			float frame_time;
@@ -5872,7 +5884,15 @@ void RasterizerStorageGLES3::update_particles() {
 		}
 
 		if (particles->fixed_fps > 0) {
-			float frame_time = 1.0 / particles->fixed_fps;
+			float frame_time;
+			float decr;
+			if (zero_time_scale) {
+				frame_time = 0.0;
+				decr = 1.0 / particles->fixed_fps;
+			} else {
+				frame_time = 1.0 / particles->fixed_fps;
+				decr = frame_time;
+			}
 			float delta = frame.delta;
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
@@ -5883,13 +5903,16 @@ void RasterizerStorageGLES3::update_particles() {
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);
-				todo -= frame_time;
+				todo -= decr;
 			}
 
 			particles->frame_remainder = todo;
 
 		} else {
-			_particles_process(particles, frame.delta);
+			if (zero_time_scale)
+				_particles_process(particles, 0.0);
+			else
+				_particles_process(particles, frame.delta);
 		}
 
 		particle_update_list.remove(particle_update_list.first());

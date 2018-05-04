@@ -374,12 +374,10 @@ class VisualScriptInstance : public ScriptInstance {
 		int node;
 		int max_stack;
 		int trash_pos;
-		int return_pos;
 		int flow_stack_size;
 		int pass_stack_size;
 		int node_count;
 		int argument_count;
-		bool valid;
 	};
 
 	Map<StringName, Function> functions;

@@ -33,10 +33,12 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
+#include "os/input.h"
+#include "os/keyboard.h"
 #include "scene/3d/camera.h"
 #include "spatial_editor_plugin.h"
 
-void CollisionPolygonEditor::_notification(int p_what) {
+void Polygon3DEditor::_notification(int p_what) {
 
 	switch (p_what) {
 
@@ -53,15 +55,15 @@ void CollisionPolygonEditor::_notification(int p_what) {
 				return;
 			}
 
-			if (node->get_depth() != prev_depth) {
+			if (_get_depth() != prev_depth) {
 				_polygon_draw();
-				prev_depth = node->get_depth();
+				prev_depth = _get_depth();
 			}
 
 		} break;
 	}
 }
-void CollisionPolygonEditor::_node_removed(Node *p_node) {
+void Polygon3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
 		node = NULL;
@@ -72,7 +74,7 @@ void CollisionPolygonEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void CollisionPolygonEditor::_menu_option(int p_option) {
+void Polygon3DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 
@@ -91,10 +93,10 @@ void CollisionPolygonEditor::_menu_option(int p_option) {
 	}
 }
 
-void CollisionPolygonEditor::_wip_close() {
+void Polygon3DEditor::_wip_close() {
 
 	undo_redo->create_action(TTR("Create Poly3D"));
-	undo_redo->add_undo_method(node, "set_polygon", node->get_polygon());
+	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
 	undo_redo->add_do_method(node, "set_polygon", wip);
 	undo_redo->add_do_method(this, "_polygon_draw");
 	undo_redo->add_undo_method(this, "_polygon_draw");
@@ -107,14 +109,14 @@ void CollisionPolygonEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
 
 	if (!node)
 		return false;
 
 	Transform gt = node->get_global_transform();
 	Transform gi = gt.affine_inverse();
-	float depth = node->get_depth() * 0.5;
+	float depth = _get_depth() * 0.5;
 	Vector3 n = gt.basis.get_axis(2).normalized();
 	Plane p(gt.origin + n * depth, n);
 
@@ -135,9 +137,11 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 
 		Vector2 cpoint(spoint.x, spoint.y);
 
-		cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+		//DO NOT snap here, it's confusing in 3D for adding points.
+		//Let the snap happen when the point is being moved, instead.
+		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
-		Vector<Vector2> poly = node->get_polygon();
+		Vector<Vector2> poly = node->call("get_polygon");
 
 		//first check if a point is to be added (segment split)
 		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
@@ -154,6 +158,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 						wip.push_back(cpoint);
 						wip_active = true;
 						edited_point_pos = cpoint;
+						snap_ignore = false;
 						_polygon_draw();
 						edited_point = 1;
 						return true;
@@ -168,6 +173,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 
 							wip.push_back(cpoint);
 							edited_point = wip.size();
+							snap_ignore = false;
 							_polygon_draw();
 							return true;
 						}
@@ -226,8 +232,10 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 								poly.insert(closest_idx + 1, cpoint);
 								edited_point = closest_idx + 1;
 								edited_point_pos = cpoint;
-								node->set_polygon(poly);
+								node->call("set_polygon", poly);
 								_polygon_draw();
+								snap_ignore = true;
+
 								return true;
 							}
 						} else {
@@ -255,10 +263,13 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 								edited_point = closest_idx;
 								edited_point_pos = poly[closest_idx];
 								_polygon_draw();
+								snap_ignore = false;
 								return true;
 							}
 						}
 					} else {
+
+						snap_ignore = false;
 
 						if (edited_point != -1) {
 
@@ -315,7 +326,6 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
 
 			Vector2 gpoint = mm->get_position();
@@ -332,7 +342,13 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				snap_ignore = false;
+			}
+
+			if (!snap_ignore) {
+				cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			}
 			edited_point_pos = cpoint;
 
 			_polygon_draw();
@@ -341,7 +357,16 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera *p_camera, const R
 
 	return false;
 }
-void CollisionPolygonEditor::_polygon_draw() {
+
+float Polygon3DEditor::_get_depth() {
+
+	if (bool(node->call("_has_editable_3d_polygon_no_depth")))
+		return 0;
+
+	return float(node->call("get_depth"));
+}
+
+void Polygon3DEditor::_polygon_draw() {
 
 	if (!node)
 		return;
@@ -351,9 +376,9 @@ void CollisionPolygonEditor::_polygon_draw() {
 	if (wip_active)
 		poly = wip;
 	else
-		poly = node->get_polygon();
+		poly = node->call("get_polygon");
 
-	float depth = node->get_depth() * 0.5;
+	float depth = _get_depth() * 0.5;
 
 	imgeom->clear();
 	imgeom->set_material_override(line_material);
@@ -464,13 +489,13 @@ void CollisionPolygonEditor::_polygon_draw() {
 	m->surface_set_material(0, handle_material);
 }
 
-void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
+void Polygon3DEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = Object::cast_to<CollisionPolygon>(p_collision_polygon);
+		node = Object::cast_to<Spatial>(p_collision_polygon);
 		//Enable the pencil tool if the polygon is empty
-		if (node->get_polygon().size() == 0) {
+		if (Vector<Vector2>(node->call("get_polygon")).size() == 0) {
 			_menu_option(MODE_CREATE);
 		}
 		wip.clear();
@@ -491,14 +516,14 @@ void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
 	}
 }
 
-void CollisionPolygonEditor::_bind_methods() {
+void Polygon3DEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_menu_option"), &CollisionPolygonEditor::_menu_option);
-	ClassDB::bind_method(D_METHOD("_polygon_draw"), &CollisionPolygonEditor::_polygon_draw);
-	ClassDB::bind_method(D_METHOD("_node_removed"), &CollisionPolygonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_menu_option"), &Polygon3DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_polygon_draw"), &Polygon3DEditor::_polygon_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"), &Polygon3DEditor::_node_removed);
 }
 
-CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
+Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	node = NULL;
 	editor = p_editor;
@@ -543,24 +568,26 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	m.instance();
 	pointsm->set_mesh(m);
 	pointsm->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+
+	snap_ignore = false;
 }
 
-CollisionPolygonEditor::~CollisionPolygonEditor() {
+Polygon3DEditor::~Polygon3DEditor() {
 
 	memdelete(imgeom);
 }
 
-void CollisionPolygonEditorPlugin::edit(Object *p_object) {
+void Polygon3DEditorPlugin::edit(Object *p_object) {
 
 	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
-bool CollisionPolygonEditorPlugin::handles(Object *p_object) const {
+bool Polygon3DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("CollisionPolygon");
+	return Object::cast_to<Spatial>(p_object) && bool(p_object->call("_is_editable_3d_polygon"));
 }
 
-void CollisionPolygonEditorPlugin::make_visible(bool p_visible) {
+void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		collision_polygon_editor->show();
@@ -571,14 +598,14 @@ void CollisionPolygonEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-CollisionPolygonEditorPlugin::CollisionPolygonEditorPlugin(EditorNode *p_node) {
+Polygon3DEditorPlugin::Polygon3DEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	collision_polygon_editor = memnew(CollisionPolygonEditor(p_node));
+	collision_polygon_editor = memnew(Polygon3DEditor(p_node));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
 
 	collision_polygon_editor->hide();
 }
 
-CollisionPolygonEditorPlugin::~CollisionPolygonEditorPlugin() {
+Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {
 }

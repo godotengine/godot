@@ -1151,7 +1151,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = n % base;
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -1550,8 +1550,7 @@ String::String(const StrRange &p_range) {
 
 int String::hex_to_int(bool p_with_prefix) const {
 
-	int l = length();
-	if (p_with_prefix && l < 3)
+	if (p_with_prefix && length() < 3)
 		return 0;
 
 	const CharType *s = ptr();
@@ -1560,17 +1559,13 @@ int String::hex_to_int(bool p_with_prefix) const {
 
 	if (sign < 0) {
 		s++;
-		l--;
-		if (p_with_prefix && l < 2)
-			return 0;
 	}
 
 	if (p_with_prefix) {
 		if (s[0] != '0' || s[1] != 'x')
 			return 0;
 		s += 2;
-		l -= 2;
-	};
+	}
 
 	int hex = 0;
 
@@ -1596,8 +1591,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 
 int64_t String::hex_to_int64(bool p_with_prefix) const {
 
-	int l = length();
-	if (p_with_prefix && l < 3)
+	if (p_with_prefix && length() < 3)
 		return 0;
 
 	const CharType *s = ptr();
@@ -1606,17 +1600,13 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 	if (sign < 0) {
 		s++;
-		l--;
-		if (p_with_prefix && l < 2)
-			return 0;
 	}
 
 	if (p_with_prefix) {
 		if (s[0] != '0' || s[1] != 'x')
 			return 0;
 		s += 2;
-		l -= 2;
-	};
+	}
 
 	int64_t hex = 0;
 
@@ -2997,6 +2987,40 @@ String String::strip_escapes() const {
 	return substr(beg, end - beg);
 }
 
+String String::lstrip(const Vector<CharType> &p_chars) const {
+
+	int len = length();
+	int beg;
+
+	for (beg = 0; beg < len; beg++) {
+
+		if (p_chars.find(operator[](beg)) == -1)
+			break;
+	}
+
+	if (beg == 0)
+		return *this;
+
+	return substr(beg, len - beg);
+}
+
+String String::rstrip(const Vector<CharType> &p_chars) const {
+
+	int len = length();
+	int end;
+
+	for (end = len - 1; end >= 0; end--) {
+
+		if (p_chars.find(operator[](end)) == -1)
+			break;
+	}
+
+	if (end == len - 1)
+		return *this;
+
+	return substr(0, end + 1);
+}
+
 String String::simplify_path() const {
 
 	String s = *this;
@@ -3165,7 +3189,7 @@ String String::word_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
-String String::percent_encode() const {
+String String::http_escape() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
@@ -3189,7 +3213,7 @@ String String::percent_encode() const {
 	return res;
 }
 
-String String::percent_decode() const {
+String String::http_unescape() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
 		if (ord_at(i) == '%' && i + 2 < length()) {
@@ -3448,6 +3472,24 @@ String String::pad_zeros(int p_digits) const {
 	return s;
 }
 
+String String::trim_prefix(const String &p_prefix) const {
+
+	String s = *this;
+	if (s.begins_with(p_prefix)) {
+		return s.substr(p_prefix.length(), s.length() - p_prefix.length());
+	}
+	return s;
+}
+
+String String::trim_suffix(const String &p_suffix) const {
+
+	String s = *this;
+	if (s.ends_with(p_suffix)) {
+		return s.substr(0, s.length() - p_suffix.length());
+	}
+	return s;
+}
+
 bool String::is_valid_integer() const {
 
 	int len = length();
@@ -3478,13 +3520,13 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 
 	if (p_with_prefix) {
 
-		if (len < 2)
+		if (len < 3)
 			return false;
 		if (operator[](from) != '0' || operator[](from + 1) != 'x') {
 			return false;
-		};
+		}
 		from += 2;
-	};
+	}
 
 	for (int i = from; i < len; i++) {
 
@@ -3492,7 +3534,7 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
 			continue;
 		return false;
-	};
+	}
 
 	return true;
 };
@@ -3713,8 +3755,8 @@ String String::get_file() const {
 String String::get_extension() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
-		return *this;
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
+		return "";
 
 	return substr(pos + 1, length());
 }
@@ -3727,10 +3769,72 @@ String String::plus_file(const String &p_file) const {
 	return *this + "/" + p_file;
 }
 
+String String::percent_encode() const {
+
+	CharString cs = utf8();
+	String encoded;
+	for (int i = 0; i < cs.length(); i++) {
+		uint8_t c = cs[i];
+		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '~' || c == '.') {
+
+			char p[2] = { (char)c, 0 };
+			encoded += p;
+		} else {
+			char p[4] = { '%', 0, 0, 0 };
+			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+			p[1] = hex[c >> 4];
+			p[2] = hex[c & 0xF];
+			encoded += p;
+		}
+	}
+
+	return encoded;
+}
+String String::percent_decode() const {
+
+	CharString pe;
+
+	CharString cs = utf8();
+	for (int i = 0; i < cs.length(); i++) {
+
+		uint8_t c = cs[i];
+		if (c == '%' && i < length() - 2) {
+
+			uint8_t a = LOWERCASE(cs[i + 1]);
+			uint8_t b = LOWERCASE(cs[i + 2]);
+
+			c = 0;
+			if (a >= '0' && a <= '9')
+				c = (a - '0') << 4;
+			else if (a >= 'a' && a <= 'f')
+				c = (a - 'a' + 10) << 4;
+			else
+				continue;
+
+			uint8_t d = 0;
+
+			if (b >= '0' && b <= '9')
+				d = (b - '0');
+			else if (b >= 'a' && b <= 'f')
+				d = (b - 'a' + 10);
+			else
+				continue;
+			c += d;
+			i += 2;
+		}
+		pe.push_back(c);
+	}
+
+	pe.push_back(0);
+
+	return String::utf8(pe.ptr());
+}
+
 String String::get_basename() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
 		return *this;
 
 	return substr(0, pos);

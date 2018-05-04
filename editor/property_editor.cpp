@@ -285,6 +285,11 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					Object *obj = ClassDB::instance(intype);
+
+					if (!obj) {
+						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+					}
+
 					ERR_BREAK(!obj);
 					Resource *res = Object::cast_to<Resource>(obj);
 					ERR_BREAK(!res);
@@ -481,7 +486,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -3 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -25 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -7 * EDSCALE);
-				type_button->set_text(TTR("Preset.."));
+				type_button->set_text(TTR("Preset..."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
 				type_button->get_popup()->add_item(TTR("Ease In"), EASING_EASE_IN);
@@ -525,14 +530,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 
 				List<String> names;
-				names.push_back(TTR("File.."));
+				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back(TTR("Dir.."));
+				names.push_back(TTR("Dir..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 			} else if (hint == PROPERTY_HINT_ENUM) {
@@ -877,6 +882,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			} else if (hint_text != "") {
 				int idx = 0;
 
+				Vector<EditorData::CustomType> custom_resources;
+
+				if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
+					custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+				}
+
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 
 					String base = hint_text.get_slice(",", i);
@@ -885,6 +896,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					valid_inheritors.insert(base);
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
+
+					for (int i = 0; i < custom_resources.size(); i++) {
+						inheritors.push_back(custom_resources[i].name);
+					}
+
 					List<StringName>::Element *E = inheritors.front();
 					while (E) {
 						valid_inheritors.insert(E->get());
@@ -893,14 +909,34 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 					for (Set<String>::Element *E = valid_inheritors.front(); E; E = E->next()) {
 						String t = E->get();
-						if (!ClassDB::can_instance(t))
+
+						bool is_custom_resource = false;
+						Ref<Texture> icon;
+						if (!custom_resources.empty()) {
+							for (int i = 0; i < custom_resources.size(); i++) {
+								if (custom_resources[i].name == t) {
+									is_custom_resource = true;
+									if (custom_resources[i].icon.is_valid())
+										icon = custom_resources[i].icon;
+									break;
+								}
+							}
+						}
+
+						if (!is_custom_resource && !ClassDB::can_instance(t))
 							continue;
+
 						inheritors_array.push_back(t);
 
 						int id = TYPE_BASE_ID + idx;
-						if (has_icon(t, "EditorIcons")) {
 
-							menu->add_icon_item(get_icon(t, "EditorIcons"), vformat(TTR("New %s"), t), id);
+						if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
+							icon = get_icon(t, "EditorIcons");
+						}
+
+						if (icon.is_valid()) {
+
+							menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 						} else {
 
 							menu->add_item(vformat(TTR("New %s"), t), id);
@@ -1093,6 +1129,10 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		String intype = inheritors_array[p_idx];
 
 		Object *obj = ClassDB::instance(intype);
+
+		if (!obj) {
+			obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+		}
 
 		ERR_FAIL_COND(!obj);
 
@@ -1291,6 +1331,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 
 					Object *obj = ClassDB::instance(intype);
+
+					if (!obj) {
+						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+					}
+
 					ERR_BREAK(!obj);
 					Resource *res = Object::cast_to<Resource>(obj);
 					ERR_BREAK(!res);
@@ -3228,22 +3273,34 @@ void PropertyEditor::update_tree() {
 				while (hint.begins_with(itos(Variant::ARRAY) + ":")) {
 					type_name += "<Array";
 					type_name_suffix += ">";
-					hint = hint.substr(2, hint.size() - 2);
+					hint = hint.right(2);
 				}
 				if (hint.find(":") >= 0) {
-					hint = hint.substr(0, hint.find(":"));
+					int colon_pos = hint.find(":");
+					String hint_string = hint.right(colon_pos + 1);
+					hint = hint.left(colon_pos);
+
+					PropertyHint property_hint = PROPERTY_HINT_NONE;
+
 					if (hint.find("/") >= 0) {
-						hint = hint.substr(0, hint.find("/"));
+						int slash_pos = hint.find("/");
+						property_hint = PropertyHint(hint.right(slash_pos + 1).to_int());
+						hint = hint.left(slash_pos);
 					}
-					type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+
+					if (property_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+						type_name += "<" + hint_string;
+					} else {
+						type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+					}
 					type_name_suffix += ">";
 				}
 				type_name += type_name_suffix;
 
 				if (v.is_array())
-					item->set_text(1, type_name + "[" + itos(v.call("size")) + "]");
+					item->set_text(1, type_name + "(" + itos(v.call("size")) + ")");
 				else
-					item->set_text(1, type_name + "[]");
+					item->set_text(1, type_name + "()");
 
 				if (show_type_icons)
 					item->set_icon(0, get_icon("PoolByteArray", "EditorIcons"));
@@ -3939,7 +3996,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 		if (_might_be_in_instance() && _get_instanced_node_original_property(prop, vorig)) {
 
-			_edit_set(prop, vorig);
+			_edit_set(prop, vorig.duplicate(true)); // Set, making sure to duplicate arrays properly
 			return;
 		}
 

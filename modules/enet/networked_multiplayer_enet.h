@@ -115,10 +115,15 @@ public:
 
 	virtual int get_packet_peer() const;
 
+	virtual IP_Address get_peer_address(int p_peer_id) const;
+	virtual int get_peer_port(int p_peer_id) const;
+
 	Error create_server(int p_port, int p_max_clients = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
-	Error create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
+	Error create_client(const String &p_address, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 
 	void close_connection();
+
+	void disconnect_peer(int p_peer, bool now = false);
 
 	virtual void poll();
 

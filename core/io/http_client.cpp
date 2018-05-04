@@ -618,14 +618,14 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
 	Array keys = p_dict.keys();
 	for (int i = 0; i < keys.size(); ++i) {
-		String encoded_key = String(keys[i]).percent_encode();
+		String encoded_key = String(keys[i]).http_escape();
 		Variant value = p_dict[keys[i]];
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values
 				Array values = value;
 				for (int j = 0; j < values.size(); ++j) {
-					query += "&" + encoded_key + "=" + String(values[j]).percent_encode();
+					query += "&" + encoded_key + "=" + String(values[j]).http_escape();
 				}
 				break;
 			}
@@ -636,7 +636,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 			}
 			default: {
 				// Add the key-value pair
-				query += "&" + encoded_key + "=" + String(value).percent_encode();
+				query += "&" + encoded_key + "=" + String(value).http_escape();
 			}
 		}
 	}

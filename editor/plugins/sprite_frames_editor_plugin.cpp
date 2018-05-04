@@ -45,6 +45,12 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_icon("Load", "EditorIcons"));
+		copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+		paste->set_icon(get_icon("ActionPaste", "EditorIcons"));
+		empty->set_icon(get_icon("InsertBefore", "EditorIcons"));
+		empty2->set_icon(get_icon("InsertAfter", "EditorIcons"));
+		move_up->set_icon(get_icon("MoveLeft", "EditorIcons"));
+		move_down->set_icon(get_icon("MoveRight", "EditorIcons"));
 		_delete->set_icon(get_icon("Remove", "EditorIcons"));
 		new_anim->set_icon(get_icon("New", "EditorIcons"));
 		remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
@@ -736,27 +742,35 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc->add_child(load);
 
 	copy = memnew(Button);
-	copy->set_text(TTR("Copy"));
+	copy->set_flat(true);
+	copy->set_tooltip(TTR("Copy"));
 	hbc->add_child(copy);
 
 	paste = memnew(Button);
-	paste->set_text(TTR("Paste"));
+	paste->set_flat(true);
+	paste->set_tooltip(TTR("Paste"));
 	hbc->add_child(paste);
 
 	empty = memnew(Button);
-	empty->set_text(TTR("Insert Empty (Before)"));
+	empty->set_flat(true);
+	empty->set_tooltip(TTR("Insert Empty (Before)"));
 	hbc->add_child(empty);
 
 	empty2 = memnew(Button);
-	empty2->set_text(TTR("Insert Empty (After)"));
+	empty2->set_flat(true);
+	empty2->set_tooltip(TTR("Insert Empty (After)"));
 	hbc->add_child(empty2);
 
+	hbc->add_spacer(false);
+
 	move_up = memnew(Button);
-	move_up->set_text(TTR("Move (Before)"));
+	move_up->set_flat(true);
+	move_up->set_tooltip(TTR("Move (Before)"));
 	hbc->add_child(move_up);
 
 	move_down = memnew(Button);
-	move_down->set_text(TTR("Move (After)"));
+	move_down->set_flat(true);
+	move_down->set_tooltip(TTR("Move (After)"));
 	hbc->add_child(move_down);
 
 	_delete = memnew(Button);

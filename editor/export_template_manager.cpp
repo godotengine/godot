@@ -128,7 +128,7 @@ void ExportTemplateManager::_download_template(const String &p_version) {
 		memdelete(template_list->get_child(0));
 	}
 	template_downloader->popup_centered_minsize();
-	template_list_state->set_text(TTR("Retrieving mirrors, please wait.."));
+	template_list_state->set_text(TTR("Retrieving mirrors, please wait..."));
 	template_download_progress->set_max(100);
 	template_download_progress->set_value(0);
 	request_mirror->request("https://godotengine.org/mirrorlist/" + p_version + ".json");
@@ -433,7 +433,7 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	template_download_progress->set_max(100);
 	template_download_progress->set_value(0);
 	template_download_progress->show();
-	template_list_state->set_text(TTR("Connecting to Mirror.."));
+	template_list_state->set_text(TTR("Connecting to Mirror..."));
 }
 
 void ExportTemplateManager::_notification(int p_what) {
@@ -459,13 +459,13 @@ void ExportTemplateManager::_notification(int p_what) {
 				status = TTR("Can't Resolve");
 				errored = true;
 				break;
-			case HTTPClient::STATUS_CONNECTING: status = TTR("Connecting.."); break;
+			case HTTPClient::STATUS_CONNECTING: status = TTR("Connecting..."); break;
 			case HTTPClient::STATUS_CANT_CONNECT:
 				status = TTR("Can't Connect");
 				errored = true;
 				break;
 			case HTTPClient::STATUS_CONNECTED: status = TTR("Connected"); break;
-			case HTTPClient::STATUS_REQUESTING: status = TTR("Requesting.."); break;
+			case HTTPClient::STATUS_REQUESTING: status = TTR("Requesting..."); break;
 			case HTTPClient::STATUS_BODY:
 				status = TTR("Downloading");
 				if (download_templates->get_body_size() > 0) {

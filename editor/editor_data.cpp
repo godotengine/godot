@@ -452,6 +452,31 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
+Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+
+	if (get_custom_types().has(p_inherits)) {
+
+		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
+			if (get_custom_types()[p_inherits][i].name == p_type) {
+				Ref<Texture> icon = get_custom_types()[p_inherits][i].icon;
+				Ref<Script> script = get_custom_types()[p_inherits][i].script;
+
+				Object *ob = ClassDB::instance(p_inherits);
+				ERR_FAIL_COND_V(!ob, NULL);
+				if (ob->is_class("Node")) {
+					ob->call("set_name", p_type);
+				}
+				ob->set_script(script.get_ref_ptr());
+				if (icon.is_valid())
+					ob->set_meta("_editor_icon", icon);
+				return ob;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 void EditorData::remove_custom_type(const String &p_type) {
 
 	for (Map<String, Vector<CustomType> >::Element *E = custom_types.front(); E; E = E->next()) {
@@ -563,18 +588,16 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 
-	print_line("MUST RELOAD? " + itos(must_reload));
-
 	if (must_reload) {
 		Ref<PackedScene> pscene;
 		pscene.instance();
 
 		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
-		ep.step(TTR("Storing local changes.."), 0);
+		ep.step(TTR("Storing local changes..."), 0);
 		//pack first, so it stores diffs to previous version of saved scene
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
-		ep.step(TTR("Updating scene.."), 1);
+		ep.step(TTR("Updating scene..."), 1);
 		Node *new_scene = pscene->instance(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene, false);
 

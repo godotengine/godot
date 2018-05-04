@@ -440,7 +440,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		file->set_current_path(existing);
 	}
 	file->popup_centered_ratio();
-	file->set_title(TTR("Save Resource As.."));
+	file->set_title(TTR("Save Resource As..."));
 	current_option = RESOURCE_SAVE;
 }
 
@@ -459,6 +459,12 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	Ref<Animation> anim = player->get_animation(current);
 
 	undo_redo->create_action(TTR("Remove Animation"));
+	if (player->get_autoplay() == current) {
+		undo_redo->add_do_method(player, "set_autoplay", "");
+		undo_redo->add_undo_method(player, "set_autoplay", current);
+		// Avoid having the autoplay icon linger around if there is only one animation in the player
+		undo_redo->add_do_method(this, "_animation_player_changed", player);
+	}
 	undo_redo->add_do_method(player, "remove_animation", current);
 	undo_redo->add_undo_method(player, "add_animation", current, anim);
 	undo_redo->add_do_method(this, "_animation_player_changed", player);
@@ -491,7 +497,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	String new_name = name->get_text();
 	if (new_name == "" || new_name.find(":") != -1 || new_name.find("/") != -1) {
-		error_dialog->set_text(TTR("ERROR: Invalid animation name!"));
+		error_dialog->set_text(TTR("Invalid animation name!"));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -502,7 +508,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	}
 
 	if (player->has_animation(new_name)) {
-		error_dialog->set_text(TTR("ERROR: Animation name already exists!"));
+		error_dialog->set_text(TTR("Animation name already exists!"));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -811,6 +817,8 @@ void AnimationPlayerEditor::_update_player() {
 	play_bw->set_disabled(animlist.size() == 0);
 	play_bw_from->set_disabled(animlist.size() == 0);
 	play_from->set_disabled(animlist.size() == 0);
+	frame->set_editable(animlist.size() != 0);
+	animation->set_disabled(animlist.size() == 0);
 	autoplay->set_disabled(animlist.size() == 0);
 	duplicate_anim->set_disabled(animlist.size() == 0);
 	rename_anim->set_disabled(animlist.size() == 0);
@@ -820,6 +828,7 @@ void AnimationPlayerEditor::_update_player() {
 	save_anim->set_disabled(animlist.size() == 0);
 	tool_anim->set_disabled(player == NULL);
 	onion_skinning->set_disabled(player == NULL);
+	pin->set_disabled(player == NULL);
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
@@ -1088,7 +1097,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_COPY_ANIM: {
 
 			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("ERROR: No animation to copy!"));
+				error_dialog->set_text(TTR("No animation to copy!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -1103,7 +1112,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			Ref<Animation> anim = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim.is_valid()) {
-				error_dialog->set_text(TTR("ERROR: No animation resource on clipboard!"));
+				error_dialog->set_text(TTR("No animation resource on clipboard!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -1134,7 +1143,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_EDIT_RESOURCE: {
 
 			if (!animation->get_item_count()) {
-				error_dialog->set_text(TTR("ERROR: No animation to edit!"));
+				error_dialog->set_text(TTR("No animation to edit!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -1611,7 +1620,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	hb->add_child(load_anim);
 
 	save_anim = memnew(MenuButton);
-	save_anim->set_tooltip(TTR("Save the current animation"));
+	save_anim->set_tooltip(TTR("Save the current animation."));
 	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save", TTR("Save")), ANIM_SAVE);
 	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as", TTR("Save As")), ANIM_SAVE_AS);
 	save_anim->set_focus_mode(Control::FOCUS_NONE);
@@ -1691,6 +1700,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	pin = memnew(ToolButton);
 	pin->set_toggle_mode(true);
+	pin->set_tooltip(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
 
 	resource_edit_anim = memnew(Button);
@@ -1718,7 +1728,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	error_dialog = memnew(ConfirmationDialog);
 	error_dialog->get_ok()->set_text(TTR("Close"));
-	error_dialog->set_text(TTR("Error!"));
+	error_dialog->set_title(TTR("Error!"));
 	add_child(error_dialog);
 
 	name_dialog->connect("confirmed", this, "_animation_name_edited");

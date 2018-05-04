@@ -116,7 +116,7 @@ public:
 
 	void index();
 	void deindex();
-	void generate_normals();
+	void generate_normals(bool p_flip = false);
 	void generate_tangents();
 
 	void add_to_format(int p_flags) { format |= p_flags; }

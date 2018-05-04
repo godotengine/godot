@@ -248,14 +248,14 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 		if (imethod.is_virtual)
 			continue;
 
-		const TypeInterface *return_type = _get_type_by_name_or_placeholder(imethod.return_type);
+		const TypeInterface *return_type = _get_type_or_placeholder(imethod.return_type);
 
 		String im_sig;
 		String im_unique_sig;
 
 		if (p_itype.is_object_type) {
 			im_sig += "IntPtr " CS_PARAM_METHODBIND ", ";
-			im_unique_sig += imethod.return_type.operator String() + ",IntPtr,IntPtr";
+			im_unique_sig += imethod.return_type.cname.operator String() + ",IntPtr,IntPtr";
 		}
 
 		im_sig += "IntPtr " CS_PARAM_INSTANCE;
@@ -263,7 +263,7 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 		// Get arguments information
 		int i = 0;
 		for (const List<ArgumentInterface>::Element *F = imethod.arguments.front(); F; F = F->next()) {
-			const TypeInterface *arg_type = _get_type_by_name_or_placeholder(F->get().type);
+			const TypeInterface *arg_type = _get_type_or_placeholder(F->get().type);
 
 			im_sig += ", ";
 			im_sig += arg_type->im_type_in;
@@ -730,7 +730,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 
 	output.push_back(INDENT1 "public ");
-	bool is_abstract = !ClassDB::can_instance(itype.name) && ClassDB::is_class_enabled(itype.name); // can_instance returns true if there's a constructor and the class is not 'disabled'
+	bool is_abstract = itype.is_object_type && !ClassDB::can_instance(itype.name) && ClassDB::is_class_enabled(itype.name); // can_instance returns true if there's a constructor and the class is not 'disabled'
 	output.push_back(itype.is_singleton ? "static class " : (is_abstract ? "abstract class " : "class "));
 	output.push_back(itype.proxy_name);
 
@@ -1069,12 +1069,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	if (getter && setter) {
-		ERR_FAIL_COND_V(getter->return_type != setter->arguments.back()->get().type, ERR_BUG);
+		ERR_FAIL_COND_V(getter->return_type.cname != setter->arguments.back()->get().type.cname, ERR_BUG);
 	}
 
-	StringName proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
+	const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
-	const TypeInterface *prop_itype = _get_type_by_name_or_null(proptype_name);
+	const TypeInterface *prop_itype = _get_type_or_null(proptype_name);
 	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
 
 	String prop_proxy_name = escape_csharp_keyword(snake_to_pascal_case(p_iprop.cname));
@@ -1122,9 +1122,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.push_back(getter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = getter->arguments.front()->get();
-			if (idx_arg.type != name_cache.type_int) {
+			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
-				const TypeInterface *idx_arg_type = _get_type_by_name_or_null(idx_arg.type);
+				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == NULL);
 				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
 			} else {
@@ -1139,9 +1139,9 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.push_back(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = setter->arguments.front()->get();
-			if (idx_arg.type != name_cache.type_int) {
+			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
-				const TypeInterface *idx_arg_type = _get_type_by_name_or_null(idx_arg.type);
+				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == NULL);
 				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
 			} else {
@@ -1158,7 +1158,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output) {
 
-	const TypeInterface *return_type = _get_type_by_name_or_placeholder(p_imethod.return_type);
+	const TypeInterface *return_type = _get_type_or_placeholder(p_imethod.return_type);
 
 	String method_bind_field = "method_bind_" + itos(p_method_bind_count);
 
@@ -1175,7 +1175,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Retrieve information from the arguments
 	for (const List<ArgumentInterface>::Element *F = p_imethod.arguments.front(); F; F = F->next()) {
 		const ArgumentInterface &iarg = F->get();
-		const TypeInterface *arg_type = _get_type_by_name_or_placeholder(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_placeholder(iarg.type);
 
 		// Add the current arguments to the signature
 		// If the argument has a default value which is not a constant, we will make it Nullable
@@ -1328,21 +1328,19 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		const InternalCall *im_icall = match->value();
 
 		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
-		im_call += "." + im_icall->name + "(" + icall_params + ");\n";
+		im_call += "." + im_icall->name + "(" + icall_params + ")";
 
 		if (p_imethod.arguments.size())
 			p_output.push_back(cs_in_statements);
 
 		if (return_type->cname == name_cache.type_void) {
-			p_output.push_back(im_call);
+			p_output.push_back(im_call + ";\n");
 		} else if (return_type->cs_out.empty()) {
-			p_output.push_back("return " + im_call);
+			p_output.push_back("return " + im_call + ";\n");
 		} else {
-			p_output.push_back(return_type->im_type_out);
-			p_output.push_back(" " LOCAL_RET " = ");
-			p_output.push_back(im_call);
 			p_output.push_back(INDENT3);
-			p_output.push_back(sformat(return_type->cs_out, LOCAL_RET) + "\n");
+			p_output.push_back(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
+			p_output.push_back("\n");
 		}
 
 		p_output.push_back(CLOSE_BLOCK_L2);
@@ -1540,9 +1538,9 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 	if (p_imethod.is_virtual)
 		return OK; // Ignore
 
-	bool ret_void = p_imethod.return_type == name_cache.type_void;
+	bool ret_void = p_imethod.return_type.cname == name_cache.type_void;
 
-	const TypeInterface *return_type = _get_type_by_name_or_placeholder(p_imethod.return_type);
+	const TypeInterface *return_type = _get_type_or_placeholder(p_imethod.return_type);
 
 	String argc_str = itos(p_imethod.arguments.size());
 
@@ -1554,7 +1552,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 	int i = 0;
 	for (const List<ArgumentInterface>::Element *F = p_imethod.arguments.front(); F; F = F->next()) {
 		const ArgumentInterface &iarg = F->get();
-		const TypeInterface *arg_type = _get_type_by_name_or_placeholder(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_placeholder(iarg.type);
 
 		String c_param_name = "arg" + itos(i + 1);
 
@@ -1695,42 +1693,49 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 	return OK;
 }
 
-const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_null(const StringName &p_cname) {
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(const TypeReference &p_typeref) {
 
-	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_cname);
+	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_typeref.cname);
 
 	if (builtin_type_match)
 		return &builtin_type_match->get();
 
-	const OrderedHashMap<StringName, TypeInterface>::Element obj_type_match = obj_types.find(p_cname);
+	const OrderedHashMap<StringName, TypeInterface>::Element obj_type_match = obj_types.find(p_typeref.cname);
 
 	if (obj_type_match)
 		return &obj_type_match.get();
 
-	const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(p_cname);
+	if (p_typeref.is_enum) {
+		const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(p_typeref.cname);
 
-	if (enum_match)
-		return &enum_match->get();
+		if (enum_match)
+			return &enum_match->get();
+
+		// Enum not found. Most likely because none of its constants were bound, so it's empty. That's fine. Use int instead.
+		const Map<StringName, TypeInterface>::Element *int_match = builtin_types.find(name_cache.type_int);
+		ERR_FAIL_NULL_V(int_match, NULL);
+		return &int_match->get();
+	}
 
 	return NULL;
 }
 
-const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_by_name_or_placeholder(const StringName &p_cname) {
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placeholder(const TypeReference &p_typeref) {
 
-	const TypeInterface *found = _get_type_by_name_or_null(p_cname);
+	const TypeInterface *found = _get_type_or_null(p_typeref);
 
 	if (found)
 		return found;
 
-	ERR_PRINTS(String() + "Type not found. Creating placeholder: " + p_cname.operator String());
+	ERR_PRINTS(String() + "Type not found. Creating placeholder: " + p_typeref.cname.operator String());
 
-	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_cname);
+	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_typeref.cname);
 
 	if (match)
 		return &match->get();
 
 	TypeInterface placeholder;
-	TypeInterface::create_placeholder_type(placeholder, p_cname);
+	TypeInterface::create_placeholder_type(placeholder, p_typeref.cname);
 
 	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
 }
@@ -1874,7 +1879,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					// The method Object.free is registered as a virtual method, but without the virtual flag.
 					// This is because this method is not supposed to be overridden, but called.
 					// We assume the return type is void.
-					imethod.return_type = name_cache.type_void;
+					imethod.return_type.cname = name_cache.type_void;
 
 					// Actually, more methods like this may be added in the future,
 					// which could actually will return something different.
@@ -1889,21 +1894,22 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				} else {
 					ERR_PRINTS("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
 				}
-			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) { // TODO redundant?
-				imethod.return_type = return_info.class_name;
+			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				imethod.return_type.cname = return_info.class_name;
+				imethod.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
-				imethod.return_type = return_info.class_name;
+				imethod.return_type.cname = return_info.class_name;
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-				imethod.return_type = return_info.hint_string;
+				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-				imethod.return_type = name_cache.type_Variant;
+				imethod.return_type.cname = name_cache.type_Variant;
 			} else if (return_info.type == Variant::NIL) {
-				imethod.return_type = name_cache.type_void;
+				imethod.return_type.cname = name_cache.type_void;
 			} else {
-				imethod.return_type = Variant::get_type_name(return_info.type);
+				imethod.return_type.cname = Variant::get_type_name(return_info.type);
 			}
 
-			if (!itype.requires_collections && imethod.return_type == name_cache.type_Dictionary)
+			if (!itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary)
 				itype.requires_collections = true;
 
 			for (int i = 0; i < argc; i++) {
@@ -1912,21 +1918,22 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = arginfo.name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) { // TODO redundant?
-					iarg.type = arginfo.class_name;
+				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+					iarg.type.cname = arginfo.class_name;
+					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
-					iarg.type = arginfo.class_name;
+					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					iarg.type = arginfo.hint_string;
+					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
-					iarg.type = name_cache.type_Variant;
+					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type = Variant::get_type_name(arginfo.type);
+					iarg.type.cname = Variant::get_type_name(arginfo.type);
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (!itype.requires_collections && iarg.type == name_cache.type_Dictionary)
+				if (!itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary)
 					itype.requires_collections = true;
 
 				if (m && m->has_default_argument(i)) {
@@ -1938,7 +1945,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			if (imethod.is_vararg) {
 				ArgumentInterface ivararg;
-				ivararg.type = name_cache.type_VarArg;
+				ivararg.type.cname = name_cache.type_VarArg;
 				ivararg.name = "@args";
 				imethod.add_argument(ivararg);
 			}
@@ -2023,17 +2030,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			itype.enums.push_back(ienum);
 
 			TypeInterface enum_itype;
+			enum_itype.is_enum = true;
 			enum_itype.name = itype.name + "." + String(*k);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
-			enum_itype.c_arg_in = "&%s";
-			enum_itype.c_type = "int";
-			enum_itype.c_type_in = "int";
-			enum_itype.c_type_out = "int";
-			enum_itype.cs_type = enum_itype.proxy_name;
-			enum_itype.im_type_in = enum_itype.proxy_name;
-			enum_itype.im_type_out = enum_itype.proxy_name;
-			enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[enum_itype.proxy_name];
+			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 		}
 
@@ -2068,7 +2069,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 
 	switch (p_val.get_type()) {
 		case Variant::NIL:
-			if (ClassDB::class_exists(r_iarg.type)) {
+			if (ClassDB::class_exists(r_iarg.type.cname)) {
 				// Object type
 				r_iarg.default_argument = "null";
 			} else {
@@ -2081,7 +2082,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.default_argument = bool(p_val) ? "true" : "false";
 			break;
 		case Variant::INT:
-			if (r_iarg.type != name_cache.type_int) {
+			if (r_iarg.type.cname != name_cache.type_int) {
 				r_iarg.default_argument = "(%s)" + r_iarg.default_argument;
 			}
 			break;
@@ -2142,7 +2143,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 		default: {}
 	}
 
-	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type == name_cache.type_Variant && r_iarg.default_argument != "null")
+	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "null")
 		r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 }
 
@@ -2161,7 +2162,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_arg_in = "&%s_in";                                                                    \
 		itype.c_type_in = m_type_in;                                                                  \
 		itype.cs_in = "ref %s";                                                                       \
-		itype.cs_out = "return (" #m_type ")%0;";                                                     \
+		itype.cs_out = "return (%1)%0;";                                                              \
 		itype.im_type_out = "object";                                                                 \
 		builtin_types.insert(itype.cname, itype);                                                     \
 	}
@@ -2256,7 +2257,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in = "NodePath." CS_SMETHOD_GETINSTANCE "(%0)";
-	itype.cs_out = "return new NodePath(%0);";
+	itype.cs_out = "return new %1(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	_populate_builtin_type(itype, Variant::NODE_PATH);
@@ -2279,7 +2280,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in = "RID." CS_SMETHOD_GETINSTANCE "(%0)";
-	itype.cs_out = "return new RID(%0);";
+	itype.cs_out = "return new %1(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	_populate_builtin_type(itype, Variant::_RID);
@@ -2408,11 +2409,11 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 			iarg.name = pi.name;
 
 			if (pi.type == Variant::NIL)
-				iarg.type = name_cache.type_Variant;
+				iarg.type.cname = name_cache.type_Variant;
 			else
-				iarg.type = Variant::get_type_name(pi.type);
+				iarg.type.cname = Variant::get_type_name(pi.type);
 
-			if (!r_itype.requires_collections && iarg.type == name_cache.type_Dictionary)
+			if (!r_itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary)
 				r_itype.requires_collections = true;
 
 			if ((mi.default_arguments.size() - mi.arguments.size() + i) >= 0)
@@ -2423,12 +2424,12 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 
 		if (mi.return_val.type == Variant::NIL) {
 			if (mi.return_val.name != "")
-				imethod.return_type = name_cache.type_Variant;
+				imethod.return_type.cname = name_cache.type_Variant;
 		} else {
-			imethod.return_type = Variant::get_type_name(mi.return_val.type);
+			imethod.return_type.cname = Variant::get_type_name(mi.return_val.type);
 		}
 
-		if (!r_itype.requires_collections && imethod.return_type == name_cache.type_Dictionary)
+		if (!r_itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary)
 			r_itype.requires_collections = true;
 
 		if (r_itype.class_doc) {
@@ -2494,13 +2495,11 @@ void BindingsGenerator::_populate_global_constants() {
 			EnumInterface &ienum = E->get();
 
 			TypeInterface enum_itype;
-			enum_itype = TypeInterface::create_value_type(ienum.cname);
-			enum_itype.c_arg_in = "&%s";
-			enum_itype.c_type = "int";
-			enum_itype.c_type_in = "int";
-			enum_itype.c_type_out = "int";
-			enum_itype.im_type_in = enum_itype.name;
-			enum_itype.im_type_out = enum_itype.name;
+			enum_itype.is_enum = true;
+			enum_itype.name = ienum.cname.operator String();
+			enum_itype.cname = ienum.cname;
+			enum_itype.proxy_name = enum_itype.name;
+			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
 			ienum.prefix = _determine_enum_prefix(ienum);
@@ -2521,15 +2520,13 @@ void BindingsGenerator::_populate_global_constants() {
 	hardcoded_enums.push_back("Vector3.Axis");
 	for (List<StringName>::Element *E = hardcoded_enums.front(); E; E = E->next()) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we are assuming core types do not begin with underscore
+		// Here, we assume core types do not begin with underscore
 		TypeInterface enum_itype;
-		enum_itype = TypeInterface::create_value_type(E->get());
-		enum_itype.c_arg_in = "&%s";
-		enum_itype.c_type = "int";
-		enum_itype.c_type_in = "int";
-		enum_itype.c_type_out = "int";
-		enum_itype.im_type_in = enum_itype.name;
-		enum_itype.im_type_out = enum_itype.name;
+		enum_itype.is_enum = true;
+		enum_itype.name = E->get().operator String();
+		enum_itype.cname = E->get();
+		enum_itype.proxy_name = enum_itype.name;
+		TypeInterface::postsetup_enum_type(enum_itype);
 		enum_types.insert(enum_itype.cname, enum_itype);
 	}
 }

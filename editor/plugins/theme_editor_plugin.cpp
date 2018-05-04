@@ -632,7 +632,7 @@ ThemeEditor::ThemeEditor() {
 	main_vb->add_child(hb_menu);
 
 	theme_menu = memnew(MenuButton);
-	theme_menu->set_text(TTR("Edit theme.."));
+	theme_menu->set_text(TTR("Edit theme..."));
 	theme_menu->set_flat(false);
 	theme_menu->set_tooltip(TTR("Theme editing menu."));
 	theme_menu->get_popup()->add_item(TTR("Add Item"), POPUP_ADD);
@@ -691,11 +691,11 @@ ThemeEditor::ThemeEditor() {
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
 	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
-	test_menu_button->get_popup()->set_item_checked(2, true);
+	test_menu_button->get_popup()->set_item_checked(3, true);
 	test_menu_button->get_popup()->add_separator();
-	test_menu_button->get_popup()->add_check_item(TTR("Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
-	test_menu_button->get_popup()->set_item_checked(5, true);
+	test_menu_button->get_popup()->set_item_checked(6, true);
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);

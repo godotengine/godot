@@ -58,47 +58,19 @@ void Node2D::_edit_set_state(const Dictionary &p_state) {
 }
 
 void Node2D::_edit_set_position(const Point2 &p_position) {
-	pos = p_position;
-	_update_transform();
-	_change_notify("position");
+	set_position(p_position);
 }
 
 Point2 Node2D::_edit_get_position() const {
 	return pos;
 }
 
-void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
-	Rect2 r = _edit_get_rect();
-
-	Vector2 zero_offset;
-	if (r.size.x != 0)
-		zero_offset.x = -r.position.x / r.size.x;
-	if (r.size.y != 0)
-		zero_offset.y = -r.position.y / r.size.y;
-
-	Size2 new_scale(1, 1);
-
-	if (r.size.x != 0)
-		new_scale.x = p_edit_rect.size.x / r.size.x;
-	if (r.size.y != 0)
-		new_scale.y = p_edit_rect.size.y / r.size.y;
-
-	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset; //p_edit_rect.pos - r.pos;
-
-	Transform2D postxf;
-	postxf.set_rotation_and_scale(angle, _scale);
-	new_pos = postxf.xform(new_pos);
-
-	pos += new_pos;
-	_scale *= new_scale;
-
-	_update_transform();
-	_change_notify("scale");
-	_change_notify("position");
+void Node2D::_edit_set_scale(const Size2 &p_scale) {
+	set_scale(p_scale);
 }
 
-bool Node2D::_edit_use_rect() const {
-	return true;
+Size2 Node2D::_edit_get_scale() const {
+	return _scale;
 }
 
 void Node2D::_edit_set_rotation(float p_rotation) {
@@ -114,6 +86,38 @@ float Node2D::_edit_get_rotation() const {
 
 bool Node2D::_edit_use_rotation() const {
 	return true;
+}
+
+void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
+	ERR_FAIL_COND(!_edit_use_rect());
+
+	Rect2 r = _edit_get_rect();
+
+	Vector2 zero_offset;
+	if (r.size.x != 0)
+		zero_offset.x = -r.position.x / r.size.x;
+	if (r.size.y != 0)
+		zero_offset.y = -r.position.y / r.size.y;
+
+	Size2 new_scale(1, 1);
+
+	if (r.size.x != 0)
+		new_scale.x = p_edit_rect.size.x / r.size.x;
+	if (r.size.y != 0)
+		new_scale.y = p_edit_rect.size.y / r.size.y;
+
+	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset;
+
+	Transform2D postxf;
+	postxf.set_rotation_and_scale(angle, _scale);
+	new_pos = postxf.xform(new_pos);
+
+	pos += new_pos;
+	_scale *= new_scale;
+
+	_update_transform();
+	_change_notify("scale");
+	_change_notify("position");
 }
 
 void Node2D::_update_xform_values() {
@@ -444,10 +448,10 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", 0), "set_transform", "get_transform");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation", PROPERTY_HINT_NONE, "", 0), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation_degrees", PROPERTY_HINT_NONE, "", 0), "set_global_rotation_degrees", "get_global_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_scale", PROPERTY_HINT_NONE, "", 0), "set_global_scale", "get_global_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", 0), "set_global_scale", "get_global_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 
 	ADD_GROUP("Z Index", "");

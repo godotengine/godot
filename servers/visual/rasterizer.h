@@ -325,6 +325,7 @@ public:
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
+	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
 	/* Light API */
 
@@ -735,6 +736,8 @@ public:
 			Vector<Point2> points;
 			Vector<Point2> uvs;
 			Vector<Color> colors;
+			Vector<int> bones;
+			Vector<float> weights;
 			RID texture;
 			RID normal_map;
 			int count;
@@ -812,6 +815,8 @@ public:
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		RID material;
+		RID skeleton;
+
 		Item *next;
 
 		struct CopyBackBuffer {

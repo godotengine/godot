@@ -119,6 +119,8 @@ typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Script> &p_script);
 
 class EditorScriptCodeCompletionCache;
+class FindInFilesDialog;
+class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
 
@@ -217,6 +219,10 @@ class ScriptEditor : public PanelContainer {
 	ToolButton *script_back;
 	ToolButton *script_forward;
 
+	FindInFilesDialog *find_in_files_dialog;
+	FindInFilesPanel *find_in_files;
+	Button *find_in_files_button;
+
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
 		SYNTAX_HIGHLIGHTER_FUNC_MAX = 32
@@ -304,6 +310,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 
+	ScriptEditorBase *_get_current_editor() const;
+
 	void _save_layout();
 	void _editor_settings_changed();
 	void _autosave_scripts();
@@ -358,6 +366,11 @@ class ScriptEditor : public PanelContainer {
 
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
+
+	void _on_find_in_files_requested(String text);
+	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
+	void _start_find_in_files(bool with_replace);
+	void _on_find_in_files_modified_files(PoolStringArray paths);
 
 	static void _open_script_request(const String &p_path);
 

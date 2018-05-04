@@ -106,7 +106,7 @@ private:
 		};
 	};
 
-	MouseList mouse_list;
+	MouseList touch_list;
 
 	Vector3 last_accel;
 
@@ -127,8 +127,8 @@ public:
 
 	uint8_t get_orientations() const;
 
-	void mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick, bool p_use_as_mouse);
-	void mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, bool p_use_as_mouse);
+	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
+	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y);
 	void touches_cancelled();
 	void key(uint32_t p_key, bool p_pressed);
 	void set_virtual_keyboard_height(int p_height);
@@ -177,6 +177,7 @@ public:
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual Size2 get_window_size() const;
+	virtual Rect2 get_window_safe_area() const;
 
 	virtual bool has_touchscreen_ui_hint() const;
 

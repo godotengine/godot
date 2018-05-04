@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Navigation" inherits="Spatial" category="Core" version="3.1">
 	<brief_description>
-		A collection of [code]NavigationMesh[/code] resources and methods used for pathfinding.
+		Mesh-based navigation and pathfinding node.
 	</brief_description>
 	<description>
-		The Navigation node is used for basic or advanced navigation. By default it will automatically collect all child [code]NavigationMesh[/code] resources, but they can also be added on the fly through scripting. It can be used for generating a simple path between two points or it can be used to ensure that a navigation agent is angled perfectly to the terrain it is navigating.
+		Provides navigation and pathfinding within a collection of [NavigationMesh]es. By default these will be automatically collected from child [NavigationMeshInstance] nodes, but they can also be added on the fly with [method navmesh_add]. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the closest navigation point to the point passed.
+				Returns the navigation point closest to the point given. Points are in local coordinate space.
 			</description>
 		</method>
 		<method name="get_closest_point_normal">
@@ -26,7 +26,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the surface normal of the navigation mesh at the point passed. For instance, if the point passed was at a 45 degree slope it would return something like (0.5,0.5,0). This is useful for rotating a navigation agent in accordance with the [code]NavigationMesh[/code].
+				Returns the surface normal at the navigation point closest to the point given. Useful for rotating a navigation agent according to the navigation mesh it moves on.
 			</description>
 		</method>
 		<method name="get_closest_point_owner">
@@ -35,7 +35,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the nearest [code]NavigationMeshInstance[/code] to the point passed.
+				Returns the owner of the [NavigationMesh] which contains the navigation point closest to the point given. This is usually a [NavigtionMeshInstance]. For meshes added via [method navmesh_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">
@@ -48,7 +48,7 @@
 			<argument index="2" name="use_collision" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the nearest point to the line segment passed. The third optional parameter takes collisions into account.
+				Returns the navigation point closest to the given line segment. When enabling [code]use_collision[/code], only considers intersection points between segment and navigation meshes. If multiple intersection points are found, the one closest to the segment start point is returned.
 			</description>
 		</method>
 		<method name="get_simple_path">
@@ -61,7 +61,7 @@
 			<argument index="2" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Returns a path of points as a [code]PoolVector3Array[/code]. If [code]optimize[/code] is false the [code]NavigationMesh[/code] agent properties will be taken into account, otherwise it will return the nearest path and ignore agent radius, height, etc.
+				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the agent properties associated with each [NavigationMesh] (raidus, height, etc.) are considered in the path calculation, otherwise they are ignored.
 			</description>
 		</method>
 		<method name="navmesh_add">
@@ -74,7 +74,7 @@
 			<argument index="2" name="owner" type="Object" default="null">
 			</argument>
 			<description>
-				Adds a [code]NavigationMesh[/code] to the list of NavigationMesh's in this node. Returns an id. Its position, rotation and scale are associated with the [code]Transform[/code] passed. The [code]Node[/code] (or [code]Object[/code]) that owns this node is an optional parameter.
+				Adds a [NavigationMesh]. Returns an ID for use with [method navmesh_remove] or [method navmesh_set_transform]. If given, a [Transform2D] is applied to the polygon. The optional [code]owner[/code] is used as return value for [method get_closest_point_owner].
 			</description>
 		</method>
 		<method name="navmesh_remove">
@@ -83,7 +83,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Removes a [code]NavigationMesh[/code] from the list of NavigationMesh's in this node.
+				Removes the [NavigationMesh] with the given ID.
 			</description>
 		</method>
 		<method name="navmesh_set_transform">
@@ -94,13 +94,13 @@
 			<argument index="1" name="xform" type="Transform">
 			</argument>
 			<description>
-				Associates a [code]NavigationMesh[/code]'s id with a [code]Transform[/code]. Its position, rotation and scale are based on the [code]Transform[/code] passed.
+				Sets the transform applied to the [NavigationMesh] with the given ID.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector">
-			Defines which direction is up. The default defines 0,1,0 as up which is the world up direction. To make this a ceiling use 0,-1,0 to define down as up.
+			Defines which direction is up. By default this is [code](0, 1, 0)[/code], which is the world up direction.
 		</member>
 	</members>
 	<constants>

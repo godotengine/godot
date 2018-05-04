@@ -14,8 +14,10 @@
 		<method name="clear_current">
 			<return type="void">
 			</return>
+			<argument index="0" name="enable_next" type="bool" default="true">
+			</argument>
 			<description>
-				If this is the current Camera, remove it from being current. If it is inside the node tree, request to make the next Camera current, if any.
+				If this is the current Camera, remove it from being current. If [code]enable_next[/code] is true, request to make the next Camera current, if any.
 			</description>
 		</method>
 		<method name="get_camera_transform" qualifiers="const">

@@ -42,6 +42,7 @@
 #include "io/config_file.h"
 #include "io/http_client.h"
 #include "io/marshalls.h"
+#include "io/multiplayer_api.h"
 #include "io/networked_multiplayer_peer.h"
 #include "io/packet_peer.h"
 #include "io/packet_peer_udp.h"
@@ -145,6 +146,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
 	ClassDB::register_virtual_class<NetworkedMultiplayerPeer>();
+	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	//ClassDB::register_type<OptimizedSaver>();
 	ClassDB::register_class<Translation>();

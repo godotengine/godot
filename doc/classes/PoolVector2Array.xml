@@ -4,7 +4,7 @@
 		An Array of Vector2.
 	</brief_description>
 	<description>
-		An Array specifically designed to hold Vector2.
+		An Array specifically designed to hold Vector2. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>

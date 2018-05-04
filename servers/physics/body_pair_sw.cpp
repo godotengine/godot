@@ -78,6 +78,7 @@ void BodyPairSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
 	real_t contact_recycle_radius = space->get_contact_recycle_radius();

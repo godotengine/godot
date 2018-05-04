@@ -53,6 +53,8 @@ protected:
 
 	void _update_in_shape_owner(bool p_xform_only = false);
 
+	bool _is_editable_3d_polygon() const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

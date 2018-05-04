@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "networked_multiplayer_enet.h"
+#include "io/ip.h"
 #include "io/marshalls.h"
 #include "os/os.h"
 
@@ -92,31 +93,41 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
+Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 
 	host = enet_host_create(NULL /* create a client host */,
 			1 /* only allow 1 outgoing connection */,
 			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-			p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
-			p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+			p_in_bandwidth /* limit incoming bandwith if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
 	_setup_compressor();
 
+	IP_Address ip;
+	if (p_address.is_valid_ip_address()) {
+		ip = p_address;
+	} else {
+#ifdef GODOT_ENET
+		ip = IP::get_singleton()->resolve_hostname(p_address);
+#else
+		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
+#endif
+
+		ERR_FAIL_COND_V(!ip.is_valid(), ERR_CANT_RESOLVE);
+	}
+
 	ENetAddress address;
 #ifdef GODOT_ENET
-	enet_address_set_ip(&address, p_ip.get_ipv6(), 16);
+	enet_address_set_ip(&address, ip.get_ipv6(), 16);
 #else
-	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
-	address.host = *(uint32_t *)p_ip.get_ipv4();
+	ERR_FAIL_COND_V(!ip.is_ipv4(), ERR_INVALID_PARAMETER);
+	address.host = *(uint32_t *)ip.get_ipv4();
 #endif
 	address.port = p_port;
-
-	//enet_address_set_host (& address, "localhost");
-	//address.port = p_port;
 
 	unique_id = _gen_unique_id();
 
@@ -128,7 +139,7 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port
 		ERR_FAIL_COND_V(!peer, ERR_CANT_CREATE);
 	}
 
-	//technically safe to ignore the peer or anything else.
+	// Technically safe to ignore the peer or anything else.
 
 	connection_status = CONNECTION_CONNECTING;
 	active = true;
@@ -148,13 +159,13 @@ void NetworkedMultiplayerENet::poll() {
 	/* Wait up to 1000 milliseconds for an event. */
 	while (true) {
 
-		if (!host || !active) //might have been disconnected while emitting a notification
+		if (!host || !active) // Might have been disconnected while emitting a notification
 			return;
 
 		int ret = enet_host_service(host, &event, 1);
 
 		if (ret < 0) {
-			//error, do something?
+			// Error, do something?
 			break;
 		} else if (ret == 0) {
 			break;
@@ -172,7 +183,7 @@ void NetworkedMultiplayerENet::poll() {
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
-				if (*new_id == 0) { //data zero is sent by server (enet won't let you configure this). Server is always 1
+				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1
 					*new_id = 1;
 				}
 
@@ -180,22 +191,22 @@ void NetworkedMultiplayerENet::poll() {
 
 				peer_map[*new_id] = event.peer;
 
-				connection_status = CONNECTION_CONNECTED; //if connecting, this means it connected t something!
+				connection_status = CONNECTION_CONNECTED; // If connecting, this means it connected to something!
 
 				emit_signal("peer_connected", *new_id);
 
 				if (server) {
-					//someone connected, let it know of all the peers available
+					// Someone connected, notify all the peers available
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
 						if (E->key() == *new_id)
 							continue;
-						//send existing peers to new peer
+						// Send existing peers to new peer
 						ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
 						encode_uint32(E->key(), &packet->data[4]);
 						enet_peer_send(event.peer, SYSCH_CONFIG, packet);
-						//send the new peer to existing peers
+						// Send the new peer to existing peers
 						packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
 						encode_uint32(*new_id, &packet->data[4]);
@@ -220,12 +231,12 @@ void NetworkedMultiplayerENet::poll() {
 				} else {
 
 					if (server) {
-						//someone disconnected, let it know to everyone else
+						// Someone disconnected, notify everyone else
 						for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
 							if (E->key() == *id)
 								continue;
-							//send the new peer to existing peers
+
 							ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 							encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
 							encode_uint32(*id, &packet->data[4]);
@@ -246,7 +257,7 @@ void NetworkedMultiplayerENet::poll() {
 			case ENET_EVENT_TYPE_RECEIVE: {
 
 				if (event.channelID == SYSCH_CONFIG) {
-					//some config message
+					// Some config message
 					ERR_CONTINUE(event.packet->dataLength < 8);
 
 					// Only server can send config messages
@@ -292,13 +303,13 @@ void NetworkedMultiplayerENet::poll() {
 						packet.from = *id;
 
 						if (target == 0) {
-							//re-send the everyone but sender :|
+							// Re-send to everyone but sender :|
 
 							incoming_packets.push_back(packet);
-							//and make copies for sending
+							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
-								if (uint32_t(E->key()) == source) //do not resend to self
+								if (uint32_t(E->key()) == source) // Do not resend to self
 									continue;
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
@@ -307,12 +318,12 @@ void NetworkedMultiplayerENet::poll() {
 							}
 
 						} else if (target < 0) {
-							//to all but one
+							// To all but one
 
-							//and make copies for sending
+							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
-								if (uint32_t(E->key()) == source || E->key() == -target) //do not resend to self, also do not send to excluded
+								if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
 									continue;
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
@@ -321,18 +332,18 @@ void NetworkedMultiplayerENet::poll() {
 							}
 
 							if (-target != 1) {
-								//server is not excluded
+								// Server is not excluded
 								incoming_packets.push_back(packet);
 							} else {
-								//server is excluded, erase packet
+								// Server is excluded, erase packet
 								enet_packet_destroy(packet.packet);
 							}
 
 						} else if (target == 1) {
-							//to myself and only myself
+							// To myself and only myself
 							incoming_packets.push_back(packet);
 						} else {
-							//to someone else, specifically
+							// To someone else, specifically
 							ERR_CONTINUE(!peer_map.has(target));
 							enet_peer_send(peer_map[target], event.channelID, packet.packet);
 						}
@@ -341,14 +352,14 @@ void NetworkedMultiplayerENet::poll() {
 						incoming_packets.push_back(packet);
 					}
 
-					//destroy packet later..
+					// Destroy packet later..
 				} else {
 					ERR_CONTINUE(true);
 				}
 
 			} break;
 			case ENET_EVENT_TYPE_NONE: {
-				//do nothing
+				// Do nothing
 			} break;
 		}
 	}
@@ -377,14 +388,44 @@ void NetworkedMultiplayerENet::close_connection() {
 
 	if (peers_disconnected) {
 		enet_host_flush(host);
-		OS::get_singleton()->delay_usec(100); //wait 100ms for disconnection packets to send
+		OS::get_singleton()->delay_usec(100); // Wait 100ms for disconnection packets to send
 	}
 
 	enet_host_destroy(host);
 	active = false;
 	incoming_packets.clear();
-	unique_id = 1; //server is 1
+	unique_id = 1; // Server is 1
 	connection_status = CONNECTION_DISCONNECTED;
+}
+
+void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
+
+	ERR_FAIL_COND(!active);
+	ERR_FAIL_COND(!is_server());
+	ERR_FAIL_COND(!peer_map.has(p_peer))
+
+	if (now) {
+		enet_peer_disconnect_now(peer_map[p_peer], 0);
+
+		// enet_peer_disconnect_now doesn't generate ENET_EVENT_TYPE_DISCONNECT,
+		// notify everyone else, send disconnect signal & remove from peer_map like in poll()
+
+		for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
+
+			if (E->key() == p_peer)
+				continue;
+
+			ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+			encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
+			encode_uint32(p_peer, &packet->data[4]);
+			enet_peer_send(E->get(), SYSCH_CONFIG, packet);
+		}
+
+		emit_signal("peer_disconnected", p_peer);
+		peer_map.erase(p_peer);
+	} else {
+		enet_peer_disconnect_later(peer_map[p_peer], 0);
+	}
 }
 
 int NetworkedMultiplayerENet::get_available_packet_count() const {
@@ -440,9 +481,9 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	}
 
 	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 12, packet_flags);
-	encode_uint32(unique_id, &packet->data[0]); //source ID
-	encode_uint32(target_peer, &packet->data[4]); //dest ID
-	encode_uint32(packet_flags, &packet->data[8]); //dest ID
+	encode_uint32(unique_id, &packet->data[0]); // Source ID
+	encode_uint32(target_peer, &packet->data[4]); // Dest ID
+	encode_uint32(packet_flags, &packet->data[8]); // Dest ID
 	copymem(&packet->data[12], p_buffer, p_buffer_size);
 
 	if (server) {
@@ -450,14 +491,14 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 		if (target_peer == 0) {
 			enet_host_broadcast(host, channel, packet);
 		} else if (target_peer < 0) {
-			//send to all but one
-			//and make copies for sending
+			// Send to all but one
+			// and make copies for sending
 
 			int exclude = -target_peer;
 
 			for (Map<int, ENetPeer *>::Element *F = peer_map.front(); F; F = F->next()) {
 
-				if (F->key() == exclude) // exclude packet
+				if (F->key() == exclude) // Exclude packet
 					continue;
 
 				ENetPacket *packet2 = enet_packet_create(packet->data, packet->dataLength, packet_flags);
@@ -465,14 +506,14 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 				enet_peer_send(F->get(), channel, packet2);
 			}
 
-			enet_packet_destroy(packet); //original packet no longer needed
+			enet_packet_destroy(packet); // Original packet no longer needed
 		} else {
 			enet_peer_send(E->get(), channel, packet);
 		}
 	} else {
 
 		ERR_FAIL_COND_V(!peer_map.has(1), ERR_BUG);
-		enet_peer_send(peer_map[1], channel, packet); //send to server for broadcast..
+		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast..
 	}
 
 	enet_host_flush(host);
@@ -482,7 +523,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 
 int NetworkedMultiplayerENet::get_max_packet_size() const {
 
-	return 1 << 24; //anything is good
+	return 1 << 24; // Anything is good
 }
 
 void NetworkedMultiplayerENet::_pop_current_packet() {
@@ -511,16 +552,12 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
 		hash = hash_djb2_one_32(
 				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
-		/*
 		hash = hash_djb2_one_32(
-					(uint32_t)OS::get_singleton()->get_unique_id().hash64(), hash );
-		*/
+				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
 		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); //rely on aslr stack
+				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
 
-		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negatie id is used for exclusion
+		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
 	}
 
 	return hash;
@@ -596,7 +633,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		return 0;
 
 	if (ret > int(outLimit))
-		return 0; //do not bother
+		return 0; // Do not bother
 
 	copymem(outData, enet->dst_compressor_mem.ptr(), ret);
 
@@ -651,17 +688,48 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 
 void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 
-	//do none
+	// Nothing to do
+}
+
+IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), IP_Address());
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, IP_Address());
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, IP_Address());
+
+	IP_Address out;
+#ifdef GODOT_ENET
+	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#else
+	out.set_ipv4((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#endif
+
+	return out;
+}
+
+int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), 0);
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, 0);
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, 0);
+#ifdef GODOT_ENET
+	return peer_map[p_peer_id]->address.port;
+#else
+	return peer_map[p_peer_id]->address.port;
+#endif
 }
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "ip", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection"), &NetworkedMultiplayerENet::close_connection);
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("get_peer_address"), &NetworkedMultiplayerENet::get_peer_address);
+	ClassDB::bind_method(D_METHOD("get_peer_port"), &NetworkedMultiplayerENet::get_peer_port);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 
@@ -696,7 +764,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 	close_connection();
 }
 
-// sets IP for ENet to bind when using create_server
+// Sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
 	ERR_FAIL_COND(!p_ip.is_valid() && !p_ip.is_wildcard());

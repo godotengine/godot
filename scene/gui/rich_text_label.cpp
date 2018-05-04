@@ -867,9 +867,9 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 							// Erase previous selection.
 							if (selection.active) {
 								selection.from = NULL;
-								selection.from_char = NULL;
+								selection.from_char = '\0';
 								selection.to = NULL;
-								selection.to_char = NULL;
+								selection.to_char = '\0';
 								selection.active = false;
 
 								update();

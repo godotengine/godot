@@ -36,6 +36,13 @@
 				Find an interface by its name. Say that you're making a game that uses specific capabilities of an AR/VR platform you can find the interface for that platform by name and initialize it.
 			</description>
 		</method>
+		<method name="get_hmd_transform">
+			<return type="Transform">
+			</return>
+			<description>
+				Returns the primary interface's transformation.
+			</description>
+		</method>
 		<method name="get_interface" qualifiers="const">
 			<return type="ARVRInterface">
 			</return>
@@ -57,6 +64,24 @@
 			</return>
 			<description>
 				Returns a list of available interfaces with both id and name of the interface.
+			</description>
+		</method>
+		<method name="get_last_commit_usec">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_last_frame_usec">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_last_process_usec">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
@@ -82,17 +107,10 @@
 				Get the number of trackers currently registered.
 			</description>
 		</method>
-		<method name="set_primary_interface">
-			<return type="void">
-			</return>
-			<argument index="0" name="interface" type="ARVRInterface">
-			</argument>
-			<description>
-				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.
-			</description>
-		</method>
 	</methods>
 	<members>
+		<member name="primary_interface" type="ARVRInterface" setter="set_primary_interface" getter="get_primary_interface">
+		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">
 			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 meter in the real world.
 		</member>

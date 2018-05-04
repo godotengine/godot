@@ -6,6 +6,7 @@
 # Addiel Lucena Perez <addiell2017@gmail.com>, 2017.
 # Aleix Sanchis <aleixsanchis@hotmail.com>, 2017.
 # Alejandro Alvarez <eliluminado00@gmail.com>, 2017.
+# Avocado <avocadosan42@gmail.com>, 2018.
 # BLaDoM GUY <simplybladom@gmail.com>, 2017.
 # Carlos López <genetita@gmail.com>, 2016.
 # David Arranz <davarrcal@hotmail.com>, 2018.
@@ -13,6 +14,7 @@
 # Dharkael <izhe@hotmail.es>, 2017.
 # Diego López <diegodario21@gmail.com>, 2017.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
@@ -24,13 +26,14 @@
 # Sebastian Silva <sebastian@fuentelibre.org>, 2016.
 # Swyter <swyterzone@gmail.com>, 2016-2017.
 # Vazquinhos <vazquinhos@gmail.com>, 2018.
+# Yovani Damián <blackblex@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-03-03 09:49+0000\n"
-"Last-Translator: David Arranz <davarrcal@hotmail.com>\n"
+"PO-Revision-Date: 2018-05-03 02:11+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -38,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -46,7 +49,7 @@ msgstr "Desactivado"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Toda la selección"
+msgstr "Toda la Selección"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -224,31 +227,31 @@ msgstr "Crear"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Crear e insertar animación"
+msgstr "Crear e Insertar Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Insertar pista y clave de animación"
+msgstr "Insertar Pista y Clave de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Insertar clave de animación"
+msgstr "Insertar clave de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Cambiar duración de animación"
+msgstr "Cambiar duración de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr "Cambiar repeticiones de animación"
+msgstr "Cambiar bucle de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr "Crear clave de valor de tipo para animación"
+msgstr "Crear clave de valor tipado para Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr "Insertar animación"
+msgstr "Insertar Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
@@ -256,7 +259,7 @@ msgstr "Escalar Claves de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "Añadir «call track» de Animación"
+msgstr "Añadir Call Track de Animación"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -264,11 +267,11 @@ msgstr "Zoom de Animación."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Duración (s):"
+msgstr "Duración (seg):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr "Duración de Animación (en segundos)."
+msgstr "Duración de la Animación (en segundos)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
@@ -346,7 +349,7 @@ msgstr "Relación de Escalado:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "¿En qué nodo quieres llamar funciones?"
+msgstr "¿Desde que nodo quieres realizar llamadas a funciones?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -847,15 +850,15 @@ msgstr "Añadir Efecto"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "Renombrar bus de audio"
+msgstr "Renombrar Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "Cambiar volumen del bus de audio"
+msgstr "Cambiar Volumen de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "Alternar Audio Bus Solo"
+msgstr "Act./Desact. Solo de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
@@ -867,7 +870,7 @@ msgstr "Alternar puenteado de efectos en Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Seleccionar envío a bus de audio"
+msgstr "Seleccionar Envío de Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -879,7 +882,7 @@ msgstr "Mover Efecto de Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "Borrar Efecto de Bus"
+msgstr "Eliminar Efecto de Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
@@ -895,7 +898,7 @@ msgstr "Silenciar"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Puentear"
+msgstr "Bypass"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1036,7 +1039,7 @@ msgstr "No está en la ruta de recursos."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "Añadir «AutoLoad»"
+msgstr "Añadir AutoLoad"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1421,6 +1424,10 @@ msgstr "Borrar todo"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "Borrar salida"
+
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1977,7 +1984,7 @@ msgstr "Ejecutar script"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
-msgstr "Exportar"
+msgstr "Export"
 
 #: editor/editor_node.cpp
 msgid "Tools"
@@ -3082,7 +3089,7 @@ msgstr "Autoreproducir al cargar"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
-msgstr "Editar tiempos de mezcla de selección"
+msgstr "Editar tiempos de mezcla con otras animaciones"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -3740,6 +3747,16 @@ msgid "Show Guides"
 msgstr "Mostrar guías"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Ver origen"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 visor"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Centrar selección"
 
@@ -4029,6 +4046,10 @@ msgstr "¡MeshInstance no tiene malla!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "¡La malla no tiene superficie de la que crear contornos!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4835,7 +4856,7 @@ msgstr "Minúscula"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr "Convertir en Mayúsculas"
+msgstr "Letra Capital"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -5702,6 +5723,16 @@ msgid "Checked Item"
 msgstr "Casilla de verificación activa"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Añadir elemento"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "Casilla de verificación activa"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Tiene"
 
@@ -6203,8 +6234,10 @@ msgid "Mouse Button"
 msgstr "Botón del ratón"
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "La acción no es correcta (no puedes utilizar «/» o «:»)."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6345,10 +6378,6 @@ msgstr "El ajuste '%s' es interno y no puede ser eliminado."
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "Eliminar elemento"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "No puede contener '/' o ':'"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -6730,7 +6759,7 @@ msgid ""
 "satisfied."
 msgstr ""
 "No se pudo guardar la escena nueva. Es posible que no se hayan podido "
-"satisfacer las dependencias (instancias)."
+"resolver las dependencias (instancias)."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
@@ -6766,7 +6795,7 @@ msgstr "Cambiar tipo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
-msgstr "Adjuntar script"
+msgstr "Añadir Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
@@ -6806,7 +6835,7 @@ msgstr "Filtrar nodos"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "Adjuntar un script nuevo o existente al nodo seleccionado."
+msgstr "Añadir un script nuevo o existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
@@ -6987,7 +7016,7 @@ msgstr "Cargar archivo de script existente"
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
-msgstr "Idioma"
+msgstr "Lenguaje"
 
 #: editor/script_create_dialog.cpp
 msgid "Inherits"
@@ -7007,7 +7036,7 @@ msgstr "Script integrado"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "Adjuntar script de nodo"
+msgstr "Añadir script de nodo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -7051,11 +7080,11 @@ msgstr "Error de copia"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
-msgstr "Inspeccionar instancia anterior"
+msgstr "Inspeccionar Instancia Anterior"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Next Instance"
-msgstr "Inspeccionar instancia siguiente"
+msgstr "Inspeccionar Instancia Siguiente"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
@@ -7111,7 +7140,7 @@ msgstr "Tipo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Format"
-msgstr "Formato"
+msgstr "Format"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
@@ -7243,7 +7272,7 @@ msgstr "Bibliotecas: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "\"GDNative\""
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7415,6 +7444,10 @@ msgstr "Ajustes del GridMap"
 msgid "Pick Distance:"
 msgstr "Seleccionar distancia:"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "Generando solución..."
@@ -7465,7 +7498,7 @@ msgstr "Advertencias"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Fin del reporte de la pila de excepciones"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7651,7 +7684,7 @@ msgstr "Secuencia"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "Interruptor"
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
@@ -7667,7 +7700,7 @@ msgstr "Devuelve (\"Return\")"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr "Llamada (\"Call\")"
+msgstr "Call"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
@@ -8132,11 +8165,21 @@ msgstr ""
 "La propiedad Path debe apuntar a un nodo Spatial válido para funcionar."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "Solo se permite un WorldEnvironment por escena (o conjunto de escenas "
 "instanciadas)."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8233,6 +8276,12 @@ msgstr "Error al cargar la tipografía."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía incorrecto."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "La acción no es correcta (no puedes utilizar «/» o «:»)."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "No puede contener '/' o ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

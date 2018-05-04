@@ -634,7 +634,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 
 	if (showCursor) {
-		XUndefineCursor(x11_display, x11_window); // show cursor
+		XDefineCursor(x11_display, x11_window, cursors[current_cursor]); // show cursor
 	} else {
 		XDefineCursor(x11_display, x11_window, null_cursor); // hide cursor
 	}
@@ -1690,6 +1690,11 @@ void OS_X11::process_xevents() {
 							if (touch.state.has(index)) // Defensive
 								break;
 							touch.state[index] = pos;
+							if (touch.state.size() == 1) {
+								// X11 may send a motion event when a touch gesture begins, that would result
+								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
+								touch.mouse_pos_to_filter = pos;
+							}
 							input->parse_input_event(st);
 						} else {
 							if (!touch.state.has(index)) // Defensive
@@ -1895,6 +1900,18 @@ void OS_X11::process_xevents() {
 				// A little hack is in order
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
+
+				// Avoidance of spurious mouse motion (see handling of touch)
+				bool filter = false;
+				// Adding some tolerance to match better Point2i to Vector2
+				if (touch.state.size() && Vector2(pos).distance_squared_to(touch.mouse_pos_to_filter) < 2) {
+					filter = true;
+				}
+				// Invalidate to avoid filtering a possible legitimate similar event coming later
+				touch.mouse_pos_to_filter = Vector2(1e10, 1e10);
+				if (filter) {
+					break;
+				}
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 

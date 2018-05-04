@@ -333,7 +333,7 @@
 	</methods>
 	<signals>
 		<signal name="joy_connection_changed">
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="device" type="int">
 			</argument>
 			<argument index="1" name="connected" type="bool">
 			</argument>

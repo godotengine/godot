@@ -81,8 +81,12 @@ public:
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
 
+	void rotate(const Quat &p_quat);
+	Basis rotated(const Quat &p_quat) const;
+
 	Vector3 get_rotation() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
+	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
@@ -108,7 +112,12 @@ public:
 
 	void set_scale(const Vector3 &p_scale);
 	Vector3 get_scale() const;
-	Vector3 get_signed_scale() const;
+	Vector3 get_scale_abs() const;
+	Vector3 get_scale_local() const;
+
+	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
+	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
+	void set_quat_scale(const Quat &p_quat, const Vector3 &p_scale);
 
 	// transposed dot products
 	_FORCE_INLINE_ real_t tdotx(const Vector3 &v) const {
@@ -139,6 +148,8 @@ public:
 
 	int get_orthogonal_index() const;
 	void set_orthogonal_index(int p_index);
+
+	void set_diagonal(const Vector3 p_diag);
 
 	bool is_orthogonal() const;
 	bool is_diagonal() const;
@@ -219,6 +230,8 @@ public:
 	Basis(const Quat &p_quat) { set_quat(p_quat); };
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
+	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
+	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;

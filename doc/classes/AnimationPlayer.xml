@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html
-	http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
+		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -103,6 +103,13 @@
 				Get the blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
+		<method name="get_playing_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the actual playing speed of current animation or 0 if not playing. This speed is the [code]playback_speed[/code] property multiplied by [code]custom_speed[/code] argument specified when calling the [code]play[/code] method.
+			</description>
+		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -131,8 +138,7 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the
-				animation backwards.
+				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
 			</description>
 		</method>
 		<method name="play_backwards">

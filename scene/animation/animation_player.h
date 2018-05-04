@@ -293,6 +293,7 @@ public:
 
 	void set_speed_scale(float p_speed);
 	float get_speed_scale() const;
+	float get_playing_speed() const;
 
 	void set_autoplay(const String &p_name);
 	String get_autoplay() const;

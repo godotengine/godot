@@ -106,7 +106,11 @@ void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 	if (texture == p_texture)
 		return;
 	texture = p_texture;
-	region_rect = Rect2(Point2(), texture->get_size());
+	if (p_texture.is_null()) {
+		region_rect = Rect2(0, 0, 0, 0);
+	} else {
+		region_rect = Rect2(Point2(), texture->get_size());
+	}
 	emit_signal("texture_changed");
 	emit_changed();
 	_change_notify("texture");

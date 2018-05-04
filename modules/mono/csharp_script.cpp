@@ -1954,8 +1954,12 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
-	if (!valid)
-		return NULL;
+	if (!script_class) {
+		ERR_EXPLAIN("Cannot find class " + name + " for script " + get_path());
+		ERR_FAIL_V(NULL);
+	}
+
+	ERR_FAIL_COND_V(!valid, NULL);
 
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
@@ -2045,20 +2049,15 @@ Error CSharpScript::reload(bool p_keep_state) {
 	if (project_assembly) {
 		script_class = project_assembly->get_object_derived_class(name);
 
-		if (!script_class) {
-			ERR_PRINTS("Cannot find class " + name + " for script " + get_path());
-		}
-#ifdef DEBUG_ENABLED
-		else if (OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
-											  script_class->get_name() + " for script " + get_path() + "\n")
-											   .utf8());
-		}
-#endif
-
 		valid = script_class != NULL;
 
 		if (script_class) {
+#ifdef DEBUG_ENABLED
+			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
+											  script_class->get_name() + " for script " + get_path() + "\n")
+											   .utf8());
+#endif
+
 			tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));
 
 			native = GDMonoUtils::get_class_native_base(script_class);
@@ -2288,7 +2287,9 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 	CRASH_COND(mono_domain_get() == NULL);
 #endif
 
-#else
+#endif
+
+#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && mono_domain_get() == NULL) {
 
 		CRASH_COND(Thread::get_caller_id() == Thread::get_main_id());
@@ -2297,14 +2298,20 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 		// because this may be called by one of the editor's worker threads.
 		// Attach this thread temporarily to reload the script.
 
-		MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
-		CRASH_COND(mono_thread == NULL);
-		script->reload();
-		mono_thread_detach(mono_thread);
+		if (SCRIPTS_DOMAIN) {
+			MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
+			CRASH_COND(mono_thread == NULL);
+			script->reload();
+			mono_thread_detach(mono_thread);
+		}
 
-	} else // just reload it normally
+	} else { // just reload it normally
 #endif
-	script->reload();
+		script->reload();
+
+#ifdef TOOLS_ENABLED
+	}
+#endif
 
 	if (r_error)
 		*r_error = OK;

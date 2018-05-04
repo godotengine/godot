@@ -264,8 +264,9 @@ NodePath NodePath::get_as_property_path() const {
 		Vector<StringName> new_path = data->subpath;
 
 		String initial_subname = data->path[0];
+
 		for (size_t i = 1; i < data->path.size(); i++) {
-			initial_subname += i == 0 ? data->path[i].operator String() : "/" + data->path[i];
+			initial_subname += "/" + data->path[i];
 		}
 		new_path.insert(0, initial_subname);
 

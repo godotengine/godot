@@ -1,13 +1,11 @@
-using System;
-using System.Runtime.InteropServices;
-
 // file: core/math/math_2d.h
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/math/math_2d.cpp
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
-
+using System;
+using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -101,8 +99,8 @@ namespace Godot
 
         public Vector2 Clamped(real_t length)
         {
-            Vector2 v = this;
-            real_t l = this.Length();
+            var v = this;
+            real_t l = Length();
 
             if (l > 0 && length < l)
             {
@@ -115,15 +113,15 @@ namespace Godot
 
         public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t t)
         {
-            Vector2 p0 = preA;
-            Vector2 p1 = this;
-            Vector2 p2 = b;
-            Vector2 p3 = postB;
+            var p0 = preA;
+            var p1 = this;
+            var p2 = b;
+            var p3 = postB;
 
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
-            return 0.5f * ((p1 * 2.0f) +
+            return 0.5f * (p1 * 2.0f +
                                 (-p0 + p2) * t +
                                 (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
                                 (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
@@ -166,17 +164,17 @@ namespace Godot
 
         public Vector2 LinearInterpolate(Vector2 b, real_t t)
         {
-            Vector2 res = this;
+            var res = this;
 
-            res.x += (t * (b.x - x));
-            res.y += (t * (b.y - y));
+            res.x += t * (b.x - x);
+            res.y += t * (b.y - y);
 
             return res;
         }
 
         public Vector2 Normalized()
         {
-            Vector2 result = this;
+            var result = this;
             result.Normalize();
             return result;
         }
@@ -199,8 +197,8 @@ namespace Godot
         }
         public void Set(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public Vector2 Slide(Vector2 n)
@@ -244,8 +242,8 @@ namespace Godot
         }
         public Vector2(Vector2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            x = v.x;
+            y = v.y;
         }
 
         public static Vector2 operator +(Vector2 left, Vector2 right)
@@ -320,10 +318,8 @@ namespace Godot
             {
                 return left.y < right.y;
             }
-            else
-            {
-                return left.x < right.x;
-            }
+
+            return left.x < right.x;
         }
 
         public static bool operator >(Vector2 left, Vector2 right)
@@ -332,10 +328,8 @@ namespace Godot
             {
                 return left.y > right.y;
             }
-            else
-            {
-                return left.x > right.x;
-            }
+
+            return left.x > right.x;
         }
 
         public static bool operator <=(Vector2 left, Vector2 right)
@@ -344,10 +338,8 @@ namespace Godot
             {
                 return left.y <= right.y;
             }
-            else
-            {
-                return left.x <= right.x;
-            }
+
+            return left.x <= right.x;
         }
 
         public static bool operator >=(Vector2 left, Vector2 right)
@@ -356,10 +348,8 @@ namespace Godot
             {
                 return left.y >= right.y;
             }
-            else
-            {
-                return left.x >= right.x;
-            }
+
+            return left.x >= right.x;
         }
 
         public override bool Equals(object obj)
@@ -386,8 +376,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.x.ToString(),
-                this.y.ToString()
+                x.ToString(),
+                y.ToString()
             });
         }
 
@@ -395,8 +385,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.x.ToString(format),
-                this.y.ToString(format)
+                x.ToString(format),
+                y.ToString(format)
             });
         }
     }

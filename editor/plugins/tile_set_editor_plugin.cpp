@@ -149,6 +149,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		p_library->tile_set_light_occluder(id, occluder);
 		p_library->tile_set_occluder_offset(id, -phys_offset);
 		p_library->tile_set_navigation_polygon_offset(id, -phys_offset);
+		p_library->tile_set_z_index(id, mi->get_z_index());
 	}
 }
 
@@ -278,10 +279,11 @@ void TileSetEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 	} else if (p_prop == StringName("name")) {
 		update_tile_list_icon();
-	} else if (p_prop == StringName("texture") || p_prop == StringName("tile_mode")) {
+	} else if (p_prop == StringName("texture") || p_prop == StringName("modulate") || p_prop == StringName("tile_mode")) {
 		_on_tile_list_selected(get_current_tile());
 		workspace->update();
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
+		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE)
 			property_editor->show();
@@ -578,6 +580,7 @@ void TileSetEditor::_on_tile_list_selected(int p_index) {
 	if (get_current_tile() >= 0) {
 		current_item_index = p_index;
 		preview->set_texture(tileset->tile_get_texture(get_current_tile()));
+		preview->set_modulate(tileset->tile_get_modulate(get_current_tile()));
 		preview->set_region_rect(tileset->tile_get_region(get_current_tile()));
 		workspace->set_custom_minimum_size(tileset->tile_get_region(get_current_tile()).size);
 		update_workspace_tile_mode();
@@ -803,7 +806,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							Vector2 coord((int)(mb->get_position().x / (spacing + size.x)), (int)(mb->get_position().y / (spacing + size.y)));
 							Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 							pos = mb->get_position() - pos;
-							uint16_t bit;
+							uint16_t bit = 0;
 							if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 								if (pos.x < size.x / 2) {
 									if (pos.y < size.y / 2) {
@@ -866,7 +869,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						Vector2 coord((int)(mm->get_position().x / (spacing + size.x)), (int)(mm->get_position().y / (spacing + size.y)));
 						Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 						pos = mm->get_position() - pos;
-						uint16_t bit;
+						uint16_t bit = 0;
 						if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 							if (pos.x < size.x / 2) {
 								if (pos.y < size.y / 2) {
@@ -1144,7 +1147,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				case EDITMODE_COLLISION: {
 					if (!edited_collision_shape.is_null()) {
 						Vector<TileSet::ShapeData> sd = tileset->tile_get_shapes(get_current_tile());
-						int index;
+						int index = -1;
 						for (int i = 0; i < sd.size(); i++) {
 							if (sd[i].shape == edited_collision_shape) {
 								index = i;
@@ -1736,6 +1739,7 @@ void TileSetEditor::update_tile_list() {
 			region.position += pos;
 		}
 		tile_list->set_item_icon_region(tile_list->get_item_count() - 1, region);
+		tile_list->set_item_icon_modulate(tile_list->get_item_count() - 1, tileset->tile_get_modulate(E->get()));
 	}
 	if (tile_list->get_item_count() > 0 && selected_tile < tile_list->get_item_count()) {
 		tile_list->select(selected_tile);
@@ -1763,6 +1767,7 @@ void TileSetEditor::update_tile_list_icon() {
 		tile_list->set_item_metadata(current_idx, E->get());
 		tile_list->set_item_icon(current_idx, tileset->tile_get_texture(E->get()));
 		tile_list->set_item_icon_region(current_idx, region);
+		tile_list->set_item_icon_modulate(current_idx, tileset->tile_get_modulate(E->get()));
 		tile_list->set_item_text(current_idx, tileset->tile_get_name(E->get()));
 		current_idx += 1;
 	}
