@@ -1077,61 +1077,29 @@ Error Image::generate_mipmaps() {
 
 	PoolVector<uint8_t>::Write wp = data.write();
 
-	if (next_power_of_2(width) == uint32_t(width) && next_power_of_2(height) == uint32_t(height)) {
-		//use fast code for powers of 2
-		int prev_ofs = 0;
-		int prev_h = height;
-		int prev_w = width;
+	int prev_ofs = 0;
+	int prev_h = height;
+	int prev_w = width;
 
-		for (int i = 1; i < mmcount; i++) {
+	for (int i = 1; i < mmcount; i++) {
 
-			int ofs, w, h;
-			_get_mipmap_offset_and_size(i, ofs, w, h);
+		int ofs, w, h;
+		_get_mipmap_offset_and_size(i, ofs, w, h);
 
-			switch (format) {
+		switch (format) {
 
-				case FORMAT_L8:
-				case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_LA8:
-				case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-				default: {}
-			}
-
-			prev_ofs = ofs;
-			prev_w = w;
-			prev_h = h;
+			case FORMAT_L8:
+			case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_LA8:
+			case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			default: {}
 		}
 
-	} else {
-		//use slow code..
-
-		//use bilinear filtered code for non powers of 2
-		int prev_ofs = 0;
-		int prev_h = height;
-		int prev_w = width;
-
-		for (int i = 1; i < mmcount; i++) {
-
-			int ofs, w, h;
-			_get_mipmap_offset_and_size(i, ofs, w, h);
-
-			switch (format) {
-
-				case FORMAT_L8:
-				case FORMAT_R8: _scale_bilinear<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_LA8:
-				case FORMAT_RG8: _scale_bilinear<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_RGB8: _scale_bilinear<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				case FORMAT_RGBA8: _scale_bilinear<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-				default: {}
-			}
-
-			prev_ofs = ofs;
-			prev_w = w;
-			prev_h = h;
-		}
+		prev_ofs = ofs;
+		prev_w = w;
+		prev_h = h;
 	}
 
 	mipmaps = true;
@@ -2271,6 +2239,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
+	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
@@ -2377,6 +2346,47 @@ void Image::normalmap_to_xy() {
 	}
 
 	convert(Image::FORMAT_LA8);
+}
+
+void Image::bumpmap_to_normalmap(float bump_scale) {
+	ERR_FAIL_COND(!_can_modify(format));
+	convert(Image::FORMAT_RF);
+
+	PoolVector<uint8_t> result_image; //rgba output
+	result_image.resize(width * height * 4);
+
+	{
+		PoolVector<uint8_t>::Read rp = data.read();
+		PoolVector<uint8_t>::Write wp = result_image.write();
+
+		unsigned char *write_ptr = wp.ptr();
+		float *read_ptr = (float *)rp.ptr();
+
+		for (int ty = 0; ty < height; ty++) {
+			int py = ty + 1;
+			if (py >= height) py -= height;
+
+			for (int tx = 0; tx < width; tx++) {
+				int px = tx + 1;
+				if (px >= width) px -= width;
+				float here = read_ptr[ty * width + tx];
+				float to_right = read_ptr[ty * width + px];
+				float above = read_ptr[py * width + tx];
+				Vector3 up = Vector3(0, 1, (here - above) * bump_scale);
+				Vector3 across = Vector3(1, 0, (to_right - here) * bump_scale);
+
+				Vector3 normal = across.cross(up);
+				normal.normalize();
+
+				write_ptr[((ty * width + tx) << 2) + 0] = (127.5 + normal.x * 127.5);
+				write_ptr[((ty * width + tx) << 2) + 1] = (127.5 + normal.y * 127.5);
+				write_ptr[((ty * width + tx) << 2) + 2] = (127.5 + normal.z * 127.5);
+				write_ptr[((ty * width + tx) << 2) + 3] = 255;
+			}
+		}
+	}
+	format = FORMAT_RGBA8;
+	data = result_image;
 }
 
 void Image::srgb_to_linear() {

@@ -72,6 +72,12 @@
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 		</member>
 	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

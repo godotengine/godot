@@ -1333,13 +1333,23 @@ static void _find_identifiers_in_block(GDScriptCompletionContext &context, int p
 
 	for (int i = 0; i < context.block->statements.size(); i++) {
 
-		if (context.block->statements[i]->line > p_line)
+		GDScriptParser::Node *statement = context.block->statements[i];
+		if (statement->line > p_line)
 			continue;
 
-		if (context.block->statements[i]->type == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
+		GDScriptParser::BlockNode::Type statementType = statement->type;
+		if (statementType == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
 
-			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(context.block->statements[i]);
+			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(statement);
 			result.insert(lv->name.operator String());
+		} else if (statementType == GDScriptParser::BlockNode::TYPE_CONTROL_FLOW) {
+
+			const GDScriptParser::ControlFlowNode *cf = static_cast<const GDScriptParser::ControlFlowNode *>(statement);
+			if (cf->cf_type == GDScriptParser::ControlFlowNode::CF_FOR) {
+
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(cf->arguments[0]);
+				result.insert(id->name.operator String());
+			}
 		}
 	}
 }

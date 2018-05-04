@@ -602,6 +602,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
+			int cached_text_width = text.empty() ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -615,15 +616,15 @@ void LineEdit::_notification(int p_what) {
 					if (window_pos != 0)
 						x_ofs = style->get_offset().x;
 					else
-						x_ofs = int(size.width - (cached_width)) / 2;
+						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - (cached_text_width)) / 2);
 				} break;
 				case ALIGN_RIGHT: {
 
-					x_ofs = int(size.width - style->get_offset().x - (cached_width));
+					x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_text_width)));
 				} break;
 			}
 
-			int ofs_max = width - style->get_minimum_size().width;
+			int ofs_max = width - style->get_margin(MARGIN_RIGHT);
 			int char_ofs = window_pos;
 
 			int y_area = height - style->get_minimum_size().height;
@@ -881,7 +882,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		} break;
 		case ALIGN_RIGHT: {
 
-			pixel_ofs = int(size.width - style->get_offset().x - (cached_width));
+			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
 		} break;
 	}
 
@@ -1014,6 +1015,15 @@ String LineEdit::get_text() const {
 void LineEdit::set_placeholder(String p_text) {
 
 	placeholder = tr(p_text);
+	if ((max_length <= 0) || (placeholder.length() <= max_length)) {
+		Ref<Font> font = get_font("font");
+		cached_placeholder_width = 0;
+		if (font != NULL) {
+			for (int i = 0; i < placeholder.length(); i++) {
+				cached_placeholder_width += font->get_char_size(placeholder[i]).width;
+			}
+		}
+	}
 	update();
 }
 
@@ -1127,6 +1137,7 @@ void LineEdit::clear_internal() {
 
 	_clear_undo_stack();
 	cached_width = 0;
+	cached_placeholder_width = 0;
 	cursor_pos = 0;
 	window_pos = 0;
 	undo_text = "";
@@ -1468,6 +1479,7 @@ LineEdit::LineEdit() {
 	_create_undo_state();
 	align = ALIGN_LEFT;
 	cached_width = 0;
+	cached_placeholder_width = 0;
 	cursor_pos = 0;
 	window_pos = 0;
 	window_has_focus = true;
@@ -1493,15 +1505,15 @@ LineEdit::LineEdit() {
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->add_item(TTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(TTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	menu->add_item(TTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+	menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
 	menu->add_separator();
-	menu->add_item(TTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
-	menu->add_item(TTR("Clear"), MENU_CLEAR);
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+	menu->add_item(RTR("Clear"), MENU_CLEAR);
 	menu->add_separator();
-	menu->add_item(TTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
-	menu->add_item(TTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
+	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
+	menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 	expand_to_text_length = false;
 }

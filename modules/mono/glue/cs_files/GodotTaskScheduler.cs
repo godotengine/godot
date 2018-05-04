@@ -36,7 +36,7 @@ namespace Godot
 				TryDequeue(task);
 			}
 
-			return base.TryExecuteTask(task);
+			return TryExecuteTask(task);
 		}
 
 		protected sealed override bool TryDequeue(Task task)

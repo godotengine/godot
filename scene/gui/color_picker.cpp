@@ -660,6 +660,11 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 	emit_signal("color_changed", p_color);
 }
 
+void ColorPickerButton::_modal_closed() {
+
+	emit_signal("popup_closed");
+}
+
 void ColorPickerButton::pressed() {
 
 	popup->set_position(get_global_position() - picker->get_combined_minimum_size());
@@ -722,8 +727,10 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("_color_changed"), &ColorPickerButton::_color_changed);
+	ClassDB::bind_method(D_METHOD("_modal_closed"), &ColorPickerButton::_modal_closed);
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("popup_closed"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }
@@ -735,5 +742,7 @@ ColorPickerButton::ColorPickerButton() {
 	popup->add_child(picker);
 
 	picker->connect("color_changed", this, "_color_changed");
+	popup->connect("modal_closed", this, "_modal_closed");
+
 	add_child(popup);
 }

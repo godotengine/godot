@@ -67,6 +67,7 @@ class StringName {
 		_Data() {
 			cname = NULL;
 			next = prev = NULL;
+			idx = 0;
 			hash = 0;
 		}
 	};

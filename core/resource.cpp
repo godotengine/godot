@@ -226,7 +226,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
-		Variant p = get(E->get().name);
+		Variant p = get(E->get().name).duplicate(true);
 		if (p.get_type() == Variant::OBJECT && p_subresources) {
 
 			RES sr = p;

@@ -35,8 +35,8 @@
 #include "variant.h"
 #include "vector.h"
 
-struct ArrayPrivate {
-
+class ArrayPrivate {
+public:
 	SafeRefCount refcount;
 	Vector<Variant> array;
 };
@@ -211,13 +211,13 @@ const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
 
-Array Array::duplicate() const {
+Array Array::duplicate(bool p_deep) const {
 
 	Array new_arr;
 	int element_count = size();
 	new_arr.resize(element_count);
 	for (int i = 0; i < element_count; i++) {
-		new_arr[i] = get(i);
+		new_arr[i] = p_deep ? get(i).duplicate(p_deep) : get(i);
 	}
 
 	return new_arr;

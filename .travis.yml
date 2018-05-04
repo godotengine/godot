@@ -8,7 +8,8 @@ env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
-    - OPTIONS="verbose=yes progress=no openmp=no gdnative_wrapper=yes"
+    - OPTIONS="verbose=yes progress=no gdnative_wrapper=yes"
+    - secure: AnjB84ZZYDxDQdWwsT9PJrD5tEnwcauzvVeSG+us2GxgfyJ2HFArkZ/IjlvbsfYIiiHghJ2Ssy9yPtUT921BtNNHoWuN/8YQziGrlwiSfLGmS/n8GFH22OYwzDSa7UC7ODts5La2I4+JzrdtF933TwE+4QzH4E3GyaKbznh402E=
 
 cache:
   directories:
@@ -18,7 +19,7 @@ matrix:
   include:
     - env: STATIC_CHECKS=yes
       os: linux
-      compiler: clang
+      compiler: gcc
     - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools"
       os: linux
       compiler: gcc
@@ -31,12 +32,14 @@ matrix:
     - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-gcc
       os: linux
       compiler: gcc
-    #- env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
-    #  os: osx
-    #  compiler: clang
-    #- env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
-    #  os: osx
-    #  compiler: clang
+    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
+      os: osx
+      osx_image: xcode9.3
+      compiler: clang
+    - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+      os: osx
+      osx_image: xcode9.3
+      compiler: clang
 
 addons:
   apt:
@@ -68,6 +71,25 @@ addons:
 
       # For style checks.
       - clang-format-5.0
+
+  coverity_scan:
+    project:
+      name: "godotengine/godot"
+      description: "Godot Engine Coverity scans"
+    notification_email: coverity@godotengine.org
+    build_command_prepend: ""
+    build_command: "scons p=x11 -j2 $OPTIONS"
+    branch_pattern: coverity_scan
+
+before_install:
+  - if [ "$STATIC_CHECKS" = "yes" ]; then
+      unset SCONS_CACHE;
+    else
+      if [ "$TRAVIS_BRANCH" = "coverity_scan" ]; then
+        echo "This job runs in the Coverity Scan branch and is not the STATIC_CHECKS job meant for it, so aborting with exit code 0.";
+        travis_terminate 0;
+      fi;
+    fi
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then

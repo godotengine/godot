@@ -1,13 +1,11 @@
-using System;
-using System.Runtime.InteropServices;
-
 // file: core/math/vector3.h
 // commit: bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
 // file: core/math/vector3.cpp
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
-
+using System;
+using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -67,7 +65,7 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = this.Length();
+            real_t length = Length();
 
             if (length == 0f)
             {
@@ -105,24 +103,24 @@ namespace Godot
         {
             return new Vector3
             (
-                (y * b.z) - (z * b.y),
-                (z * b.x) - (x * b.z),
-                (x * b.y) - (y * b.x)
+                y * b.z - z * b.y,
+                z * b.x - x * b.z,
+                x * b.y - y * b.x
             );
         }
 
         public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, real_t t)
         {
-            Vector3 p0 = preA;
-            Vector3 p1 = this;
-            Vector3 p2 = b;
-            Vector3 p3 = postB;
+            var p0 = preA;
+            var p1 = this;
+            var p2 = b;
+            var p3 = postB;
 
             real_t t2 = t * t;
             real_t t3 = t2 * t;
 
             return 0.5f * (
-                        (p1 * 2.0f) + (-p0 + p2) * t +
+                        p1 * 2.0f + (-p0 + p2) * t +
                         (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
                         (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
                     );
@@ -180,9 +178,9 @@ namespace Godot
         {
             return new Vector3
             (
-                x + (t * (b.x - x)),
-                y + (t * (b.y - y)),
-                z + (t * (b.z - z))
+                x + t * (b.x - x),
+                y + t * (b.y - y),
+                z + t * (b.z - z)
             );
         }
 
@@ -198,7 +196,7 @@ namespace Godot
 
         public Vector3 Normalized()
         {
-            Vector3 v = this;
+            var v = this;
             v.Normalize();
             return v;
         }
@@ -234,9 +232,9 @@ namespace Godot
         }
         public void Set(Vector3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public Vector3 Slide(Vector3 n)
@@ -294,9 +292,9 @@ namespace Godot
         }
         public Vector3(Vector3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public static Vector3 operator +(Vector3 left, Vector3 right)
@@ -379,8 +377,7 @@ namespace Godot
             {
                 if (left.y == right.y)
                     return left.z < right.z;
-                else
-                    return left.y < right.y;
+                return left.y < right.y;
             }
 
             return left.x < right.x;
@@ -392,8 +389,7 @@ namespace Godot
             {
                 if (left.y == right.y)
                     return left.z > right.z;
-                else
-                    return left.y > right.y;
+                return left.y > right.y;
             }
 
             return left.x > right.x;
@@ -405,8 +401,7 @@ namespace Godot
             {
                 if (left.y == right.y)
                     return left.z <= right.z;
-                else
-                    return left.y < right.y;
+                return left.y < right.y;
             }
 
             return left.x < right.x;
@@ -418,8 +413,7 @@ namespace Godot
             {
                 if (left.y == right.y)
                     return left.z >= right.z;
-                else
-                    return left.y > right.y;
+                return left.y > right.y;
             }
 
             return left.x > right.x;
@@ -449,9 +443,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(),
-                this.y.ToString(),
-                this.z.ToString()
+                x.ToString(),
+                y.ToString(),
+                z.ToString()
             });
         }
 
@@ -459,9 +453,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(format),
-                this.y.ToString(format),
-                this.z.ToString(format)
+                x.ToString(format),
+                y.ToString(format),
+                z.ToString(format)
             });
         }
     }

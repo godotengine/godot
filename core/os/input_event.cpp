@@ -41,11 +41,6 @@ int InputEvent::get_device() const {
 	return device;
 }
 
-bool InputEvent::is_pressed() const {
-
-	return false;
-}
-
 bool InputEvent::is_action(const StringName &p_action) const {
 
 	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
@@ -53,11 +48,29 @@ bool InputEvent::is_action(const StringName &p_action) const {
 
 bool InputEvent::is_action_pressed(const StringName &p_action) const {
 
-	return (is_pressed() && !is_echo() && is_action(p_action));
+	bool pressed;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed);
+	return valid && pressed && !is_echo();
 }
+
 bool InputEvent::is_action_released(const StringName &p_action) const {
 
-	return (!is_pressed() && is_action(p_action));
+	bool pressed;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed);
+	return valid && !pressed;
+}
+
+float InputEvent::get_action_strength(const StringName &p_action) const {
+
+	bool pressed;
+	float strength;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed, &strength);
+	return valid ? strength : 0.0f;
+}
+
+bool InputEvent::is_pressed() const {
+
+	return false;
 }
 
 bool InputEvent::is_echo() const {
@@ -75,7 +88,7 @@ String InputEvent::as_text() const {
 	return String();
 }
 
-bool InputEvent::action_match(const Ref<InputEvent> &p_event) const {
+bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
 	return false;
 }
@@ -95,15 +108,16 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
-	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
+	ClassDB::bind_method(D_METHOD("get_action_strength", "action"), &InputEvent::get_action_strength);
+
+	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
 
-	ClassDB::bind_method(D_METHOD("action_match", "event"), &InputEvent::action_match);
 	ClassDB::bind_method(D_METHOD("shortcut_match", "event"), &InputEvent::shortcut_match);
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
@@ -281,7 +295,7 @@ String InputEventKey::as_text() const {
 	return kc;
 }
 
-bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
+bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null())
@@ -290,7 +304,14 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
 	uint32_t code = get_scancode_with_modifiers();
 	uint32_t event_code = key->get_scancode_with_modifiers();
 
-	return get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	bool match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = key->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+	}
+	return match;
 }
 
 bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
@@ -446,13 +467,21 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	return mb;
 }
 
-bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event) const {
+bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_null())
 		return false;
 
-	return mb->button_index == button_index;
+	bool match = mb->button_index == button_index;
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = mb->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+	}
+
+	return match;
 }
 
 String InputEventMouseButton::as_text() const {
@@ -610,6 +639,7 @@ void InputEventJoypadMotion::set_axis_value(float p_value) {
 
 	axis_value = p_value;
 }
+
 float InputEventJoypadMotion::get_axis_value() const {
 
 	return axis_value;
@@ -617,16 +647,23 @@ float InputEventJoypadMotion::get_axis_value() const {
 
 bool InputEventJoypadMotion::is_pressed() const {
 
-	return Math::abs(axis_value) > 0.5f;
+	return Math::abs(axis_value) >= 0.5f;
 }
 
-bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event) const {
+bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null())
 		return false;
 
-	return (axis == jm->axis && ((axis_value < 0) == (jm->axis_value < 0) || jm->axis_value == 0));
+	bool match = (axis == jm->axis && (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0));
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = Math::abs(jm->get_axis_value()) >= p_deadzone;
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())) : 0.0f;
+	}
+	return match;
 }
 
 String InputEventJoypadMotion::as_text() const {
@@ -681,13 +718,21 @@ float InputEventJoypadButton::get_pressure() const {
 	return pressure;
 }
 
-bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event) const {
+bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 
 	Ref<InputEventJoypadButton> jb = p_event;
 	if (jb.is_null())
 		return false;
 
-	return button_index == jb->button_index;
+	bool match = button_index == jb->button_index;
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = jb->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+	}
+
+	return match;
 }
 
 String InputEventJoypadButton::as_text() const {

@@ -55,6 +55,7 @@ class InputDefault : public Input {
 		uint64_t physics_frame;
 		uint64_t idle_frame;
 		bool pressed;
+		float strength;
 	};
 
 	Map<StringName, Action> action_state;
@@ -115,7 +116,7 @@ class InputDefault : public Input {
 	SpeedTrack mouse_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
-	RES custom_cursor;
+	CursorShape default_shape = CURSOR_ARROW;
 
 public:
 	enum HatMask {
@@ -182,6 +183,7 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
+	virtual float get_action_strength(const StringName &p_action) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
@@ -226,6 +228,8 @@ public:
 	void set_emulate_touch(bool p_emulate);
 	virtual bool is_emulating_touchscreen() const;
 
+	virtual CursorShape get_default_cursor_shape();
+	virtual void set_default_cursor_shape(CursorShape p_shape);
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 	virtual void set_mouse_in_window(bool p_in_window);
 

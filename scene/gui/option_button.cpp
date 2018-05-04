@@ -112,7 +112,7 @@ void OptionButton::pressed() {
 
 void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID) {
 
-	popup->add_icon_check_item(p_icon, p_label, p_ID);
+	popup->add_icon_radio_check_item(p_icon, p_label, p_ID);
 	if (popup->get_item_count() == 1)
 		select(0);
 }

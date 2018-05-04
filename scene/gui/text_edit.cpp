@@ -145,7 +145,6 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 
 	text[p_line].region_info.clear();
 
-	int ending_color_region = -1;
 	for (int i = 0; i < len; i++) {
 
 		if (!_is_symbol(str[i]))
@@ -186,11 +185,6 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text[p_line].region_info[i] = cri;
 				i += lr - 1;
 
-				if (ending_color_region == -1 && !cr.line_only) {
-					ending_color_region = j;
-				} else if (ending_color_region == j) {
-					ending_color_region = -1;
-				}
 				break;
 			}
 
@@ -219,15 +213,10 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 				text[p_line].region_info[i] = cri;
 				i += lr - 1;
 
-				if (ending_color_region == j) {
-					ending_color_region = -1;
-				}
-
 				break;
 			}
 		}
 	}
-	text[p_line].ending_color_region = ending_color_region;
 }
 
 const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) const {
@@ -550,7 +539,7 @@ void TextEdit::_notification(int p_what) {
 			draw_caret = false;
 			update();
 		} break;
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (scrolling && v_scroll->get_value() != target_v_scroll) {
 				double target_y = target_v_scroll - v_scroll->get_value();
 				double dist = sqrt(target_y * target_y);
@@ -559,17 +548,16 @@ void TextEdit::_notification(int p_what) {
 				if (Math::abs(vel) >= dist) {
 					v_scroll->set_value(target_v_scroll);
 					scrolling = false;
-					set_physics_process(false);
+					set_physics_process_internal(false);
 				} else {
 					v_scroll->set_value(v_scroll->get_value() + vel);
 				}
 			} else {
 				scrolling = false;
-				set_physics_process(false);
+				set_physics_process_internal(false);
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
 				draw_caret = false;
 			}
@@ -3039,7 +3027,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process(true);
+			set_physics_process_internal(true);
 		}
 	} else {
 		v_scroll->set_value(target_v_scroll);
@@ -3072,7 +3060,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process(true);
+			set_physics_process_internal(true);
 		}
 	} else {
 		v_scroll->set_value(target_v_scroll);
@@ -3196,6 +3184,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
 		text_changed_dirty = true;
 	}
+	_line_edited_from(p_line);
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -3246,6 +3235,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
 		text_changed_dirty = true;
 	}
+	_line_edited_from(p_from_line);
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
@@ -3366,6 +3356,13 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 	cursor_set_column(new_column);
 
 	update();
+}
+
+void TextEdit::_line_edited_from(int p_line) {
+	int cache_size = color_region_cache.size();
+	for (int i = p_line; i < cache_size; i++) {
+		color_region_cache.erase(i);
+	}
 }
 
 int TextEdit::get_char_count() {
@@ -4009,15 +4006,52 @@ void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter)
 	update();
 }
 
-int TextEdit::_get_line_ending_color_region(int p_line) const {
-	if (p_line < 0 || p_line > text.size() - 1) {
-		return -1;
+int TextEdit::_is_line_in_region(int p_line) {
+
+	// do we have in cache?
+	if (color_region_cache.has(p_line)) {
+		return color_region_cache[p_line];
 	}
-	return text.get_line_ending_color_region(p_line);
+
+	// if not find the closest line we have
+	int previous_line = p_line - 1;
+	for (previous_line; previous_line > -1; previous_line--) {
+		if (color_region_cache.has(p_line)) {
+			break;
+		}
+	}
+
+	// calculate up to line we need and update the cache along the way.
+	int in_region = color_region_cache[previous_line];
+	if (previous_line == -1) {
+		in_region = -1;
+	}
+	for (int i = previous_line; i < p_line; i++) {
+		const Map<int, Text::ColorRegionInfo> &cri_map = _get_line_color_region_info(i);
+		for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
+			const Text::ColorRegionInfo &cri = E->get();
+			if (in_region == -1) {
+				if (!cri.end) {
+					in_region = cri.region;
+				}
+			} else if (in_region == cri.region && !_get_color_region(cri.region).line_only) {
+				if (cri.end || _get_color_region(cri.region).eq) {
+					in_region = -1;
+				}
+			}
+		}
+
+		if (in_region >= 0 && _get_color_region(in_region).line_only) {
+			in_region = -1;
+		}
+
+		color_region_cache[i + 1] = in_region;
+	}
+	return in_region;
 }
 
 TextEdit::ColorRegion TextEdit::_get_color_region(int p_region) const {
-	if (p_region < 0 || p_region > color_regions.size()) {
+	if (p_region < 0 || p_region >= color_regions.size()) {
 		return ColorRegion();
 	}
 	return color_regions[p_region];
@@ -4034,6 +4068,7 @@ void TextEdit::clear_colors() {
 
 	keywords.clear();
 	color_regions.clear();
+	color_region_cache.clear();
 	text.clear_caches();
 }
 
@@ -5654,7 +5689,7 @@ TextEdit::TextEdit() {
 	indent_size = 4;
 	text.set_indent_size(indent_size);
 	text.clear();
-	//text.insert(1,"Mongolia..");
+	//text.insert(1,"Mongolia...");
 	//text.insert(2,"PAIS GENEROSO!!");
 	text.set_color_regions(&color_regions);
 
@@ -5744,14 +5779,14 @@ TextEdit::TextEdit() {
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->add_item(TTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(TTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	menu->add_item(TTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+	menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
 	menu->add_separator();
-	menu->add_item(TTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
-	menu->add_item(TTR("Clear"), MENU_CLEAR);
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+	menu->add_item(RTR("Clear"), MENU_CLEAR);
 	menu->add_separator();
-	menu->add_item(TTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
+	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 }
 
@@ -5777,24 +5812,8 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 	Color keyword_color;
 	Color color;
 
-	int in_region = -1;
+	int in_region = _is_line_in_region(p_line);
 	int deregion = 0;
-	for (int i = 0; i < p_line; i++) {
-		int ending_color_region = text.get_line_ending_color_region(i);
-		if (in_region == -1) {
-			in_region = ending_color_region;
-		} else if (in_region == ending_color_region) {
-			in_region = -1;
-		} else {
-			const Map<int, TextEdit::Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
-			for (const Map<int, TextEdit::Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-				const TextEdit::Text::ColorRegionInfo &cri = E->get();
-				if (cri.region == in_region) {
-					in_region = -1;
-				}
-			}
-		}
-	}
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text.get_color_region_info(p_line);
 	const String &str = text[p_line];

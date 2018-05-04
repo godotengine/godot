@@ -88,7 +88,7 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 
-	Array duplicate() const;
+	Array duplicate(bool p_deep = false) const;
 
 	Array(const Array &p_from);
 	Array();

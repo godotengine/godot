@@ -245,6 +245,14 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 
 ///////////////////////////////////////////////////////////////////
 
+bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (_edit_use_rect()) {
+		return _edit_get_rect().has_point(p_point);
+	} else {
+		return p_point.length() < p_tolerance;
+	}
+}
+
 bool CanvasItem::is_visible_in_tree() const {
 
 	if (!is_inside_tree())
@@ -263,7 +271,8 @@ bool CanvasItem::is_visible_in_tree() const {
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
-	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	if (!first_draw)
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible)
 		update(); //todo optimize
@@ -412,7 +421,7 @@ void CanvasItem::_enter_canvas() {
 
 		RID canvas;
 		if (canvas_layer)
-			canvas = canvas_layer->get_world_2d()->get_canvas();
+			canvas = canvas_layer->get_canvas();
 		else
 			canvas = get_viewport()->find_world_2d()->get_canvas();
 
@@ -860,7 +869,7 @@ RID CanvasItem::get_canvas() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 
 	if (canvas_layer)
-		return canvas_layer->get_world_2d()->get_canvas();
+		return canvas_layer->get_canvas();
 	else
 		return get_viewport()->find_world_2d()->get_canvas();
 }
@@ -881,9 +890,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 	CanvasItem *tl = get_toplevel();
 
-	if (tl->canvas_layer) {
-		return tl->canvas_layer->get_world_2d();
-	} else if (tl->get_viewport()) {
+	if (tl->get_viewport()) {
 		return tl->get_viewport()->find_world_2d();
 	} else {
 		return Ref<World2D>();
@@ -982,7 +989,8 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_edit_set_position", "position"), &CanvasItem::_edit_set_position);
 	ClassDB::bind_method(D_METHOD("_edit_get_position"), &CanvasItem::_edit_get_position);
-	ClassDB::bind_method(D_METHOD("_edit_use_position"), &CanvasItem::_edit_use_position);
+	ClassDB::bind_method(D_METHOD("_edit_set_scale", "scale"), &CanvasItem::_edit_set_scale);
+	ClassDB::bind_method(D_METHOD("_edit_get_scale"), &CanvasItem::_edit_get_scale);
 	ClassDB::bind_method(D_METHOD("_edit_set_rect", "rect"), &CanvasItem::_edit_set_rect);
 	ClassDB::bind_method(D_METHOD("_edit_get_rect"), &CanvasItem::_edit_get_rect);
 	ClassDB::bind_method(D_METHOD("_edit_use_rect"), &CanvasItem::_edit_use_rect);

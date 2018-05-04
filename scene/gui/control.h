@@ -60,7 +60,8 @@ public:
 
 	enum GrowDirection {
 		GROW_DIRECTION_BEGIN,
-		GROW_DIRECTION_END
+		GROW_DIRECTION_END,
+		GROW_DIRECTION_BOTH
 	};
 
 	enum FocusMode {
@@ -271,6 +272,8 @@ public:
 		NOTIFICATION_FOCUS_EXIT = 44,
 		NOTIFICATION_THEME_CHANGED = 45,
 		NOTIFICATION_MODAL_CLOSE = 46,
+		NOTIFICATION_SCROLL_BEGIN = 47,
+		NOTIFICATION_SCROLL_END = 48,
 
 	};
 
@@ -279,6 +282,9 @@ public:
 
 	virtual void _edit_set_position(const Point2 &p_position);
 	virtual Point2 _edit_get_position() const;
+
+	virtual void _edit_set_scale(const Size2 &p_scale);
+	virtual Size2 _edit_get_scale() const;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
 	virtual Rect2 _edit_get_rect() const;

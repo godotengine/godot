@@ -102,6 +102,21 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_tool_menu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="handler" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="String">
+			</argument>
+			<argument index="3" name="ud" type="Variant" default="null">
+			</argument>
+			<description>
+				Adds a custom menu to 'Project > Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+			</description>
+		</method>
 		<method name="add_tool_submenu_item">
 			<return type="void">
 			</return>
@@ -345,6 +360,15 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="remove_tool_menu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Removes a menu [code]name[/code] from 'Project > Tools'.
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">

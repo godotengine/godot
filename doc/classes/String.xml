@@ -490,6 +490,15 @@
 				Returns the string's amount of characters.
 			</description>
 		</method>
+		<method name="lstrip">
+			<return type="String">
+			</return>
+			<argument index="0" name="chars" type="String">
+			</argument>
+			<description>
+				Returns a copy of the string with characters removed from the left.
+			</description>
+		</method>
 		<method name="match">
 			<return type="bool">
 			</return>
@@ -634,6 +643,15 @@
 				Returns the right side of the string from a given position.
 			</description>
 		</method>
+		<method name="rstrip">
+			<return type="String">
+			</return>
+			<argument index="0" name="chars" type="String">
+			</argument>
+			<description>
+				Returns a copy of the string with characters removed from the right.
+			</description>
+		</method>
 		<method name="sha256_buffer">
 			<return type="PoolByteArray">
 			</return>
@@ -743,6 +761,24 @@
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+			</description>
+		</method>
+		<method name="trim_prefix">
+			<return type="String">
+			</return>
+			<argument index="0" name="prefix" type="String">
+			</argument>
+			<description>
+				Removes a given string from the start if it starts with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="trim_suffix">
+			<return type="String">
+			</return>
+			<argument index="0" name="suffix" type="String">
+			</argument>
+			<description>
+				Removes a given string from the end if it ends with it or leaves the string unchanged.
 			</description>
 		</method>
 		<method name="xml_escape">

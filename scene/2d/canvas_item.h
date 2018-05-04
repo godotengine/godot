@@ -220,30 +220,46 @@ public:
 
 	/* EDITOR */
 
+	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state){};
 	virtual Dictionary _edit_get_state() const { return Dictionary(); };
 
-	// Used to move/select the node
-	virtual void _edit_set_position(const Point2 &p_position){};
-	virtual Point2 _edit_get_position() const { return Point2(); };
-	virtual bool _edit_use_position() const { return false; };
+	// Used to move the node
+	virtual void _edit_set_position(const Point2 &p_position) = 0;
+	virtual Point2 _edit_get_position() const = 0;
 
-	// Used to resize/move/select the node
+	// Used to scale the node
+	virtual void _edit_set_scale(const Size2 &p_scale) = 0;
+	virtual Size2 _edit_get_scale() const = 0;
+
+	// Used to resize/move the node
 	virtual void _edit_set_rect(const Rect2 &p_rect){};
-	virtual Rect2 _edit_get_rect() const { return Rect2(-32, -32, 64, 64); };
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return _edit_get_rect().has_point(p_point); }
-	Rect2 _edit_get_item_and_children_rect() const;
+	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
 	virtual bool _edit_use_rect() const { return false; };
 
+	Rect2 _edit_get_item_and_children_rect() const;
+
+	// used to select the node
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	// Used to rotate the node
-	virtual void _edit_set_rotation(float p_rotation){};
-	virtual float _edit_get_rotation() const { return 0.0; };
-	virtual bool _edit_use_rotation() const { return false; };
+	virtual void
+	_edit_set_rotation(float p_rotation){};
+	virtual float _edit_get_rotation() const {
+		return 0.0;
+	};
+	virtual bool _edit_use_rotation() const {
+		return false;
+	};
 
 	// Used to set a pivot
 	virtual void _edit_set_pivot(const Point2 &p_pivot){};
-	virtual Point2 _edit_get_pivot() const { return Point2(); };
-	virtual bool _edit_use_pivot() const { return false; };
+	virtual Point2 _edit_get_pivot() const {
+		return Point2();
+	};
+	virtual bool _edit_use_pivot() const {
+		return false;
+	};
 
 	virtual Size2 _edit_get_minimum_size() const;
 
@@ -308,7 +324,9 @@ public:
 	virtual Transform2D get_global_transform_with_canvas() const;
 
 	CanvasItem *get_toplevel() const;
-	_FORCE_INLINE_ RID get_canvas_item() const { return canvas_item; }
+	_FORCE_INLINE_ RID get_canvas_item() const {
+		return canvas_item;
+	}
 
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;

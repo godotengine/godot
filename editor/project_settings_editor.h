@@ -80,9 +80,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ConfirmationDialog *press_a_key;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
-	SpinBox *device_id;
+	OptionButton *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
+	SpinBox *device_special_value;
+	Label *device_special_value_label;
 	MenuButton *popup_copy_to_feature;
 
 	LineEdit *action_name;
@@ -169,6 +171,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	int _get_current_device();
+	void _set_current_device(int i_device);
+	String _get_device_string(int i_device);
 
 public:
 	void add_translation(const String &p_translation);

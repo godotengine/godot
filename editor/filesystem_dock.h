@@ -176,12 +176,13 @@ private:
 	void _file_selected();
 	void _dir_selected();
 
-	void _get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files) const;
+	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
 	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
-	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) const;
+	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames) const;
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
+	void _update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const;
 
 	void _make_dir_confirm();
 	void _rename_operation_confirm();

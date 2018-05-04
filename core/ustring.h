@@ -137,6 +137,8 @@ public:
 	String insert(int p_at_pos, const String &p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String trim_prefix(const String &p_prefix) const;
+	String trim_suffix(const String &p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
 	String sprintf(const Array &values, bool *error) const;
@@ -188,6 +190,8 @@ public:
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
+	String lstrip(const Vector<CharType> &p_chars) const;
+	String rstrip(const Vector<CharType> &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
 	String plus_file(const String &p_file) const;
@@ -226,13 +230,16 @@ public:
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
-	String percent_encode() const;
-	String percent_decode() const;
+	String http_escape() const;
+	String http_unescape() const;
 	String c_escape() const;
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
 	String word_wrap(int p_chars_per_line) const;
+
+	String percent_encode() const;
+	String percent_decode() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;

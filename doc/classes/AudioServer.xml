@@ -126,6 +126,18 @@
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
+		<method name="get_device">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_device_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float">
 			</return>
@@ -311,6 +323,14 @@
 			</argument>
 			<description>
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
+			</description>
+		</method>
+		<method name="set_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="swap_bus_effects">

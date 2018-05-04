@@ -693,7 +693,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		file->set_current_path(existing);
 	}
 	file->popup_centered_ratio();
-	file->set_title(TTR("Save Resource As.."));
+	file->set_title(TTR("Save Resource As..."));
 }
 
 void EditorNode::_menu_option(int p_option) {
@@ -711,7 +711,7 @@ void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 	if (p_error) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 
 		switch (p_error) {
 
@@ -738,7 +738,7 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 	if (p_error) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 
 		switch (p_error) {
 
@@ -1026,7 +1026,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	if (!scene) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("This operation can't be done without a tree root."));
 		accept->popup_centered_minsize();
 		return;
@@ -1057,7 +1057,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	if (err != OK) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
 		accept->popup_centered_minsize();
 		return;
@@ -1068,7 +1068,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	Node *dummy_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!dummy_scene) {
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
 		accept->popup_centered_minsize();
 		return;
@@ -1208,7 +1208,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				if (ml.is_null()) {
 					current_option = -1;
-					accept->get_ok()->set_text(TTR("I see.."));
+					accept->get_ok()->set_text(TTR("I see..."));
 					accept->set_text(TTR("Can't load MeshLibrary for merging!"));
 					accept->popup_centered_minsize();
 					return;
@@ -1225,7 +1225,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("Error saving MeshLibrary!"));
 				accept->popup_centered_minsize();
 				return;
@@ -1234,33 +1234,29 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		case FILE_EXPORT_TILESET: {
 
-			Ref<TileSet> ml;
-			if (FileAccess::exists(p_file)) {
-				ml = ResourceLoader::load(p_file, "TileSet");
+			Ref<TileSet> tileset;
+			if (FileAccess::exists(p_file) && file_export_lib_merge->is_pressed()) {
+				tileset = ResourceLoader::load(p_file, "TileSet");
 
-				if (ml.is_null()) {
-					if (file_export_lib_merge->is_pressed()) {
-						current_option = -1;
-						accept->get_ok()->set_text(TTR("I see.."));
-						accept->set_text(TTR("Can't load TileSet for merging!"));
-						accept->popup_centered_minsize();
-						return;
-					}
-				} else if (!file_export_lib_merge->is_pressed()) {
-					ml->clear();
+				if (tileset.is_null()) {
+					current_option = -1;
+					accept->get_ok()->set_text(TTR("I see..."));
+					accept->set_text(TTR("Can't load TileSet for merging!"));
+					accept->popup_centered_minsize();
+					return;
 				}
 
 			} else {
-				ml = Ref<TileSet>(memnew(TileSet));
+				tileset = Ref<TileSet>(memnew(TileSet));
 			}
 
-			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
+			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), tileset, true);
 
-			Error err = ResourceSaver::save(p_file, ml);
+			Error err = ResourceSaver::save(p_file, tileset);
 			if (err) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("Error saving TileSet!"));
 				accept->popup_centered_minsize();
 				return;
@@ -1750,7 +1746,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 		if (!scene) {
 			current_option = -1;
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("There is no defined scene to run."));
 			accept->popup_centered_minsize();
 			return;
@@ -1807,7 +1803,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 				if (scene->get_filename() == "") {
 
 					current_option = -1;
-					accept->get_ok()->set_text(TTR("I see.."));
+					accept->get_ok()->set_text(TTR("I see..."));
 					accept->set_text(TTR("Current scene was never saved, please save it prior to running."));
 					accept->popup_centered_minsize();
 					return;
@@ -1841,7 +1837,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	if (error != OK) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("Could not start subprocess!"));
 		accept->popup_centered_minsize();
 		return;
@@ -1901,13 +1897,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_QUICK_OPEN_SCENE: {
 
 			quick_open->popup("PackedScene", true);
-			quick_open->set_title(TTR("Quick Open Scene.."));
+			quick_open->set_title(TTR("Quick Open Scene..."));
 
 		} break;
 		case FILE_QUICK_OPEN_SCRIPT: {
 
 			quick_open->popup("Script", true);
-			quick_open->set_title(TTR("Quick Open Script.."));
+			quick_open->set_title(TTR("Quick Open Script..."));
 
 		} break;
 		case FILE_OPEN_PREV: {
@@ -1962,7 +1958,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!scene) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -1997,7 +1993,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file->set_current_path(existing);
 			}
 			file->popup_centered_ratio();
-			file->set_title(TTR("Save Scene As.."));
+			file->set_title(TTR("Save Scene As..."));
 
 		} break;
 
@@ -2028,7 +2024,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!editor_data.get_edited_scene_root()) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
@@ -2051,7 +2047,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			//Make sure that the scene has a root before trying to convert to tileset
 			if (!editor_data.get_edited_scene_root()) {
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a root node."));
 				accept->popup_centered_minsize();
 				break;
@@ -2079,7 +2075,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!editor_data.get_edited_scene_root()) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a selected node."));
 				accept->popup_centered_minsize();
 				break;
@@ -2302,7 +2298,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (run_custom_filename.empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
 				_menu_option_confirm(RUN_STOP, true);
 				quick_run->popup("PackedScene", true);
-				quick_run->set_title(TTR("Quick Run Scene.."));
+				quick_run->set_title(TTR("Quick Run Scene..."));
 				play_custom_scene_button->set_pressed(false);
 			} else {
 				String last_custom_scene = run_custom_filename;
@@ -2481,7 +2477,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", true);
 
 			current_option = -1;
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."));
 			accept->popup_centered_minsize();
 		} break;
@@ -3896,6 +3892,53 @@ void EditorNode::_update_dock_slots_visibility() {
 	}
 }
 
+void EditorNode::_dock_tab_changed(int p_tab) {
+
+	// update visibility but dont set current tab
+	VSplitContainer *splits[DOCK_SLOT_MAX / 2] = {
+		left_l_vsplit,
+		left_r_vsplit,
+		right_l_vsplit,
+		right_r_vsplit,
+	};
+
+	if (!docks_visible) {
+
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+			dock_slot[i]->hide();
+		}
+
+		for (int i = 0; i < DOCK_SLOT_MAX / 2; i++) {
+			splits[i]->hide();
+		}
+
+		right_hsplit->hide();
+		bottom_panel->hide();
+	} else {
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+
+			if (dock_slot[i]->get_tab_count())
+				dock_slot[i]->show();
+			else
+				dock_slot[i]->hide();
+		}
+
+		for (int i = 0; i < DOCK_SLOT_MAX / 2; i++) {
+			bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
+			if (in_use)
+				splits[i]->show();
+			else
+				splits[i]->hide();
+		}
+		bottom_panel->show();
+
+		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+			right_hsplit->show();
+		else
+			right_hsplit->hide();
+	}
+}
+
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
 
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
@@ -4766,6 +4809,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_dock_popup_exit", &EditorNode::_dock_popup_exit);
 	ClassDB::bind_method("_dock_move_left", &EditorNode::_dock_move_left);
 	ClassDB::bind_method("_dock_move_right", &EditorNode::_dock_move_right);
+	ClassDB::bind_method("_dock_tab_changed", &EditorNode::_dock_tab_changed);
 
 	ClassDB::bind_method("_layout_menu_option", &EditorNode::_layout_menu_option);
 
@@ -5125,6 +5169,9 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
 		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
+		dock_slot[i]->set_drag_to_rearrange_enabled(true);
+		dock_slot[i]->set_tabs_rearrange_group(1);
+		dock_slot[i]->connect("tab_changed", this, "_dock_tab_changed");
 	}
 
 	dock_drag_timer = memnew(Timer);
@@ -5162,6 +5209,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
@@ -5271,32 +5319,32 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
-	ED_SHORTCUT("editor/filter_files", TTR("Filter Files.."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_P);
+	ED_SHORTCUT("editor/filter_files", TTR("Filter Files..."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_P);
 	PopupMenu *p;
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 	p = file_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene")), FILE_NEW_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene..")), FILE_NEW_INHERITED_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene.."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene...")), FILE_NEW_INHERITED_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/save_scene", TTR("Save Scene"), KEY_MASK_CMD + KEY_S), FILE_SAVE_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/save_scene_as", TTR("Save Scene As.."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_S), FILE_SAVE_AS_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/save_scene_as", TTR("Save Scene As..."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_S), FILE_SAVE_AS_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/save_all_scenes", TTR("Save all Scenes"), KEY_MASK_ALT + KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_S), FILE_SAVE_ALL_SCENES);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_SHIFT + KEY_MASK_CTRL + KEY_W), FILE_CLOSE);
 	p->add_separator();
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene", TTR("Quick Open Scene.."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script", TTR("Quick Open Script.."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCRIPT);
+	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene", TTR("Quick Open Scene..."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script", TTR("Quick Open Script..."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCRIPT);
 	p->add_separator();
 	PopupMenu *pm_export = memnew(PopupMenu);
 	pm_export->set_name("Export");
 	p->add_child(pm_export);
-	p->add_submenu_item(TTR("Convert To.."), "Export");
-	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary..")), FILE_EXPORT_MESH_LIBRARY);
-	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_TileSet", TTR("TileSet..")), FILE_EXPORT_TILESET);
+	p->add_submenu_item(TTR("Convert To..."), "Export");
+	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary...")), FILE_EXPORT_MESH_LIBRARY);
+	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_TileSet", TTR("TileSet...")), FILE_EXPORT_TILESET);
 	pm_export->connect("id_pressed", this, "_menu_option");
 
 	p->add_separator();
@@ -5535,7 +5583,7 @@ EditorNode::EditorNode() {
 	resource_save_button->set_icon(gui_base->get_icon("Save", "EditorIcons"));
 	prop_editor_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
-	resource_save_button->get_popup()->add_item(TTR("Save As.."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
 	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
 	resource_save_button->set_disabled(true);

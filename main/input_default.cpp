@@ -127,6 +127,14 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	}
 }
 
+float InputDefault::get_action_strength(const StringName &p_action) const {
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E)
+		return 0.0f;
+
+	return E->get().strength;
+}
+
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 
 	_THREAD_SAFE_METHOD_
@@ -330,16 +338,18 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (!p_event->is_echo()) {
-		for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
+	for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
+		if (InputMap::get_singleton()->event_is_action(p_event, E->key())) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event, E->key()) && is_action_pressed(E->key()) != p_event->is_pressed()) {
+			// Save the action's state
+			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
-				action.pressed = p_event->is_pressed();
+				action.pressed = p_event->is_action_pressed(E->key());
 				action_state[E->key()] = action;
 			}
+			action_state[E->key()].strength = p_event->get_action_strength(E->key());
 		}
 	}
 
@@ -413,10 +423,6 @@ void InputDefault::set_mouse_position(const Point2 &p_posf) {
 
 	mouse_speed_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
-	if (custom_cursor.is_valid()) {
-		//removed, please insist that we implement hardware cursors
-		//		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
-	}
 }
 
 Point2 InputDefault::get_mouse_position() const {
@@ -499,14 +505,18 @@ bool InputDefault::is_emulating_touchscreen() const {
 	return emulate_touch;
 }
 
+Input::CursorShape InputDefault::get_default_cursor_shape() {
+	return default_shape;
+}
+
+void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+	default_shape = p_shape;
+	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
+}
+
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
-
-	if (custom_cursor == p_cursor)
-		return;
-
-	custom_cursor = p_cursor;
 
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }

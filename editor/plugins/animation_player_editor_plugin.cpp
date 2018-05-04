@@ -440,7 +440,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		file->set_current_path(existing);
 	}
 	file->popup_centered_ratio();
-	file->set_title(TTR("Save Resource As.."));
+	file->set_title(TTR("Save Resource As..."));
 	current_option = RESOURCE_SAVE;
 }
 

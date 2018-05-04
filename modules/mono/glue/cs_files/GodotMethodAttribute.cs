@@ -2,7 +2,7 @@ using System;
 
 namespace Godot
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method)]
     internal class GodotMethodAttribute : Attribute
     {
         private string methodName;

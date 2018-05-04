@@ -773,6 +773,10 @@
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
 		</constant>
+		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
+		</constant>
+		<constant name="NOTIFICATION_SCROLL_END" value="48">
+		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
 		</constant>
@@ -907,6 +911,8 @@
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 		</constant>
 		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
+		</constant>
+		<constant name="GROW_DIRECTION_BOTH" value="2" enum="GrowDirection">
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].

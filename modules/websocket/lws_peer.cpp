@@ -32,6 +32,13 @@
 #include "lws_peer.h"
 #include "core/io/ip.h"
 
+// Needed for socket_helpers on Android at least. UNIXes has it, just include if not windows
+#if !defined(WINDOWS_ENABLED)
+#include <netinet/in.h>
+#endif
+
+#include "drivers/unix/socket_helpers.h"
+
 void LWSPeer::set_wsi(struct lws *p_wsi) {
 	wsi = p_wsi;
 };
@@ -178,12 +185,40 @@ void LWSPeer::close() {
 
 IP_Address LWSPeer::get_connected_host() const {
 
-	return IP_Address();
+	ERR_FAIL_COND_V(!is_connected_to_host(), IP_Address());
+
+	IP_Address ip;
+	int port = 0;
+
+	socklen_t len;
+	struct sockaddr_storage addr;
+	int fd = lws_get_socket_fd(wsi);
+
+	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
+	ERR_FAIL_COND_V(ret != 0, IP_Address());
+
+	_set_ip_addr_port(ip, port, &addr);
+
+	return ip;
 };
 
 uint16_t LWSPeer::get_connected_port() const {
 
-	return 1025;
+	ERR_FAIL_COND_V(!is_connected_to_host(), 0);
+
+	IP_Address ip;
+	int port = 0;
+
+	socklen_t len;
+	struct sockaddr_storage addr;
+	int fd = lws_get_socket_fd(wsi);
+
+	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
+	ERR_FAIL_COND_V(ret != 0, 0);
+
+	_set_ip_addr_port(ip, port, &addr);
+
+	return port;
 };
 
 LWSPeer::LWSPeer() {

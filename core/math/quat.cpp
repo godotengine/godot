@@ -89,7 +89,7 @@ void Quat::set_euler_yxz(const Vector3 &p_euler) {
 
 	set(sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3,
 			sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3,
-			-sin_a1 * sin_a2 * cos_a3 + cos_a1 * sin_a2 * sin_a3,
+			-sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3,
 			sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
 }
 

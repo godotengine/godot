@@ -347,6 +347,7 @@ void TileSet::tile_set_modulate(int p_id, const Color &p_modulate) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].modulate = p_modulate;
 	emit_changed();
+	_change_notify("modulate");
 }
 
 Color TileSet::tile_get_modulate(int p_id) const {
@@ -918,6 +919,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);
 	ClassDB::bind_method(D_METHOD("tile_get_shapes", "id"), &TileSet::_tile_get_shapes);
+	ClassDB::bind_method(D_METHOD("tile_set_tile_mode", "id", "tilemode"), &TileSet::tile_set_tile_mode);
+	ClassDB::bind_method(D_METHOD("tile_get_tile_mode", "id"), &TileSet::tile_get_tile_mode);
 	ClassDB::bind_method(D_METHOD("tile_set_navigation_polygon", "id", "navigation_polygon"), &TileSet::tile_set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("tile_get_navigation_polygon", "id"), &TileSet::tile_get_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("tile_set_navigation_polygon_offset", "id", "navigation_polygon_offset"), &TileSet::tile_set_navigation_polygon_offset);
@@ -947,6 +950,10 @@ void TileSet::_bind_methods() {
 	BIND_ENUM_CONSTANT(BIND_BOTTOMLEFT);
 	BIND_ENUM_CONSTANT(BIND_BOTTOM);
 	BIND_ENUM_CONSTANT(BIND_BOTTOMRIGHT);
+
+	BIND_ENUM_CONSTANT(SINGLE_TILE);
+	BIND_ENUM_CONSTANT(AUTO_TILE);
+	BIND_ENUM_CONSTANT(ANIMATED_TILE);
 }
 
 TileSet::TileSet() {
