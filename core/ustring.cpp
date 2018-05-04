@@ -3755,8 +3755,8 @@ String String::get_file() const {
 String String::get_extension() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
-		return *this;
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
+		return "";
 
 	return substr(pos + 1, length());
 }
@@ -3834,7 +3834,7 @@ String String::percent_decode() const {
 String String::get_basename() const {
 
 	int pos = find_last(".");
-	if (pos < 0)
+	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
 		return *this;
 
 	return substr(0, pos);

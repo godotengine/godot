@@ -72,6 +72,7 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	String secret_character;
 	float placeholder_alpha;
 	String ime_text;
 	Point2 ime_selection;
@@ -134,9 +135,7 @@ private:
 	void clear_internal();
 	void changed_internal();
 
-#ifdef TOOLS_ENABLED
 	void _editor_settings_changed();
-#endif
 
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
@@ -193,6 +192,9 @@ public:
 
 	void set_secret(bool p_secret);
 	bool is_secret() const;
+
+	void set_secret_character(const String &p_string);
+	String get_secret_character() const;
 
 	virtual Size2 get_minimum_size() const;
 

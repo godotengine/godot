@@ -366,6 +366,8 @@ int Image::get_mipmap_count() const {
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
 
+	uint32_t max_bytes = MAX(read_bytes, write_bytes);
+
 	for (int y = 0; y < p_height; y++) {
 		for (int x = 0; x < p_width; x++) {
 
@@ -379,7 +381,8 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 				rgba[1] = rofs[0];
 				rgba[2] = rofs[0];
 			} else {
-				for (uint32_t i = 0; i < MAX(read_bytes, write_bytes); i++) {
+
+				for (uint32_t i = 0; i < max_bytes; i++) {
 
 					rgba[i] = (i < read_bytes) ? rofs[i] : 0;
 				}
@@ -937,7 +940,7 @@ bool Image::_can_modify(Format p_format) const {
 	return p_format <= FORMAT_RGBE9995;
 }
 
-template <int CC>
+template <int CC, bool renormalize>
 static void _generate_po2_mipmap(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height) {
 
 	//fast power of 2 mipmap generation
@@ -961,6 +964,19 @@ static void _generate_po2_mipmap(const uint8_t *p_src, uint8_t *p_dst, uint32_t 
 				val += rdown_ptr[j];
 				val += rdown_ptr[j + CC];
 				dst_ptr[j] = val >> 2;
+			}
+
+			if (renormalize) {
+				Vector3 n(dst_ptr[0] / 255.0, dst_ptr[1] / 255.0, dst_ptr[2] / 255.0);
+				n *= 2.0;
+				n -= Vector3(1, 1, 1);
+				n.normalize();
+				n += Vector3(1, 1, 1);
+				n *= 0.5;
+				n *= 255;
+				dst_ptr[0] = CLAMP(int(n.x), 0, 255);
+				dst_ptr[1] = CLAMP(int(n.y), 0, 255);
+				dst_ptr[2] = CLAMP(int(n.z), 0, 255);
 			}
 
 			dst_ptr += CC;
@@ -1045,11 +1061,11 @@ void Image::shrink_x2() {
 			switch (format) {
 
 				case FORMAT_L8:
-				case FORMAT_R8: _generate_po2_mipmap<1>(r.ptr(), w.ptr(), width, height); break;
-				case FORMAT_LA8: _generate_po2_mipmap<2>(r.ptr(), w.ptr(), width, height); break;
-				case FORMAT_RG8: _generate_po2_mipmap<2>(r.ptr(), w.ptr(), width, height); break;
-				case FORMAT_RGB8: _generate_po2_mipmap<3>(r.ptr(), w.ptr(), width, height); break;
-				case FORMAT_RGBA8: _generate_po2_mipmap<4>(r.ptr(), w.ptr(), width, height); break;
+				case FORMAT_R8: _generate_po2_mipmap<1, false>(r.ptr(), w.ptr(), width, height); break;
+				case FORMAT_LA8: _generate_po2_mipmap<2, false>(r.ptr(), w.ptr(), width, height); break;
+				case FORMAT_RG8: _generate_po2_mipmap<2, false>(r.ptr(), w.ptr(), width, height); break;
+				case FORMAT_RGB8: _generate_po2_mipmap<3, false>(r.ptr(), w.ptr(), width, height); break;
+				case FORMAT_RGBA8: _generate_po2_mipmap<4, false>(r.ptr(), w.ptr(), width, height); break;
 				default: {}
 			}
 		}
@@ -1060,7 +1076,7 @@ void Image::shrink_x2() {
 	}
 }
 
-Error Image::generate_mipmaps() {
+Error Image::generate_mipmaps(bool p_renormalize) {
 
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot generate mipmaps in indexed, compressed or custom image formats.");
@@ -1089,11 +1105,22 @@ Error Image::generate_mipmaps() {
 		switch (format) {
 
 			case FORMAT_L8:
-			case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_R8: _generate_po2_mipmap<1, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 			case FORMAT_LA8:
-			case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-			case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-			case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RG8: _generate_po2_mipmap<2, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RGB8:
+				if (p_renormalize)
+					_generate_po2_mipmap<3, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				else
+					_generate_po2_mipmap<3, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+
+				break;
+			case FORMAT_RGBA8:
+				if (p_renormalize)
+					_generate_po2_mipmap<4, true>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				else
+					_generate_po2_mipmap<4, false>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				break;
 			default: {}
 		}
 
@@ -2217,7 +2244,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
-	ClassDB::bind_method(D_METHOD("generate_mipmaps"), &Image::generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);

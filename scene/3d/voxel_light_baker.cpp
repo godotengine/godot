@@ -2338,9 +2338,9 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 				for (int k = 0; k < 3; k++) {
 
 					if (i < 3)
-						face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[j][(i + k) % 3] = v[k];
 					else
-						face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[3 - j][(i + k) % 3] = -v[k];
 				}
 			}
 

@@ -349,6 +349,12 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 
 	String path = p_path;
 
+	if (FileAccess::exists(path) && path.is_rel_path()) {
+		// dlopen expects a slash, in this case a leading ./ for it to be interpreted as a relative path,
+		//  otherwise it will end up searching various system directories for the lib instead and finally failing.
+		path = "./" + path;
+	}
+
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdnative can load .so files from within the executable path
 		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());

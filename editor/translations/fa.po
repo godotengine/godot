@@ -4,6 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # alabd14313 <alabd14313@yahoo.com>, 2016.
+# Dante Marshal <Marshal.Devilhunter@gmail.com>, 2018.
 # hamed nasib <cghamed752@chmail.ir>, 2016.
 # Hasan Hejdari Nasab <hsn6@openmailbox.org>, 2017.
 # rezapouya <r.pouya@chmail.ir>, 2016.
@@ -12,15 +13,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-26 16:49+0000\n"
-"Last-Translator: sayyed hamed nasib <cghamed752@chmail.ir>\n"
+"PO-Revision-Date: 2018-04-29 05:39+0000\n"
+"Last-Translator: Dante Marshal <Marshal.Devilhunter@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -31,9 +32,8 @@ msgid "All Selection"
 msgstr "همه‌ی انتخاب ها"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "مقدار را در انیمیشن تغییر بده"
+msgstr "تغییر زمان فریم کلید در انیمیشن"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -44,9 +44,8 @@ msgid "Anim Change Transform"
 msgstr "انتقال را در انیمیشن تغییر بده"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "مقدار را در انیمیشن تغییر بده"
+msgstr "تغییر مقدار فریم کلید در انیمیشن"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -54,52 +53,51 @@ msgstr "فراخوانی را در انیمیشن تغییر بده"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "افزودن ترَک به انیمیشن"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "تکرار کلید‌های انیمیشن"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "انتقال ترک انیمشین به بالا"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "انتقال ترک انیمشین به پایین"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "حذف ترک انیمشین"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "تنظیم گذار‌ها به :"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "تغییر نام ترک انیمشین"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "تغییر سبک الحاق ترک انیمیشن"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "تغییر حالت مقدار ترک انیمیشن"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr "مقدار را در انیمیشن تغییر بده"
+msgstr "تغییر حالت بسته شدن ترک انیمشین"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "ویرایش منحنی گره"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "ویرایش منحنی انتخاب شده"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -377,7 +375,6 @@ msgid "No Matches"
 msgstr "تطبیقی ندارد"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d occurrence(s)."
 msgstr "تعداد d% رخداد جایگزین شد."
 
@@ -430,6 +427,8 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"متد هدف پیدا نشد! لطفا یک متد صحیح مشخص کنید یا یک اسکریپت به گره هدف الحاق "
+"کنید."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -499,9 +498,8 @@ msgid "Connecting Signal:"
 msgstr "اتصال سیگنال:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "'s%' را به 's%' متصل کن"
+msgstr "'s%' را از 's%' جدا کن"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -517,9 +515,8 @@ msgid "Signals"
 msgstr "سیگنال‌ها"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Change %s Type"
-msgstr "تغییر نوع"
+msgstr "تغییر نوع %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -527,18 +524,17 @@ msgid "Change"
 msgstr "تغییر بده"
 
 #: editor/create_dialog.cpp
-#, fuzzy
 msgid "Create New %s"
-msgstr "ساختن جدید"
+msgstr "ساختن %s جدید"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "برگزیده‌ها:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "اخیر:"
 
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -640,8 +636,9 @@ msgstr ""
 "آیا در هر صورت حذف شوند؟(بدون برگشت)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid "Cannot remove:"
-msgstr ""
+msgstr "ناتوانی در حذف :"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -697,80 +694,82 @@ msgstr "حذف کن"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "تغییر کلید دیکشنری"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr "تغییر ارزش دیکشنری"
+msgstr "تغییر مقدار دیکشنری"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "با تشکر از سوی جامعه‌ی Godot!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr "تشکرات!"
+msgstr "با تشکر !"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "شرکت‌کنندگان در ساخت موتور Godot"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr "برپا کننده های پروژه"
+msgstr "بنیان‌گذاران پروژه"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "توسعه‌دهنده‌ی اصلی"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Manager "
-msgstr "مدیر پروژه"
+msgstr "مدیر پروژه "
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "توسعه دهندگان"
 
 #: editor/editor_about.cpp
 msgid "Authors"
 msgstr "مؤلفان"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "اسپانسر‌های درجه ۱"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "اسپانسر‌های درجه ۲"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "اسپانسر‌های دیگر"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "اهداکنندگان طلایی"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "اهداکنندگان نقره‌ای"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "اهداکنندگان برنزی"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "اهدا کنندگان"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "مجوز"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr ""
+msgstr "مجوز‌های شخص ثالث"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -1333,7 +1332,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Description"
-msgstr "توضیح"
+msgstr "توضیحات"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
@@ -1397,6 +1396,10 @@ msgstr "پاک کردن"
 #, fuzzy
 msgid "Clear Output"
 msgstr "خروجی"
+
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2046,7 +2049,7 @@ msgstr "انجمن"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "معرفی"
+msgstr "درباره"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3646,6 +3649,14 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -3931,6 +3942,10 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5623,6 +5638,15 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "افزودن مورد"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Checked Radio Item"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -6113,7 +6137,9 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6256,10 +6282,6 @@ msgstr "تنظیم '%s' درونی است، نمی‌تواند حذف شود."
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "حذف مورد"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "نمی‌تواند شامل '/' یا ':' باشد"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7340,6 +7362,10 @@ msgstr "ترجیحات"
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr ""
@@ -7582,14 +7608,16 @@ msgid "Sequence"
 msgstr "دنباله"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Switch"
-msgstr "گزینه"
+msgstr "سوییچ"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
 msgstr "تکرارکننده"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "While"
 msgstr "تا زمانی که"
 
@@ -8049,11 +8077,21 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr "دارایی Path باید به یک گره Particles2D معتبر اشاره کند تا کار کند."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "فقط یک WorldEnvironment در هر صحنه (یا مجموعه ای از صحنه های نمونه‌گذاری شده) "
 "مجاز است."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8144,6 +8182,9 @@ msgstr "خطای بارگذاری قلم."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "اندازهٔ قلم نامعتبر."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "نمی‌تواند شامل '/' یا ':' باشد"
 
 #~ msgid "Can't write file."
 #~ msgstr "ناتوان در نوشتن پرونده."

@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "io/marshalls.h"
 #include "io/resource_loader.h"
+#include "main/input_default.h"
 #include "message_queue.h"
 #include "node.h"
 #include "os/keyboard.h"
@@ -620,6 +621,13 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
 
+			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
+				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+				if (id) {
+					id->ensure_touch_mouse_raised();
+				}
+			}
+
 			get_root()->propagate_notification(p_notification);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1197,16 +1205,20 @@ void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, c
 	_update_root_rect();
 }
 
-#ifdef TOOLS_ENABLED
 void SceneTree::set_edited_scene_root(Node *p_node) {
+#ifdef TOOLS_ENABLED
 	edited_scene_root = p_node;
+#endif
 }
 
 Node *SceneTree::get_edited_scene_root() const {
 
+#ifdef TOOLS_ENABLED
 	return edited_scene_root;
-}
+#else
+	return NULL;
 #endif
+}
 
 void SceneTree::set_current_scene(Node *p_scene) {
 
@@ -1737,10 +1749,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene"), &SceneTree::set_edited_scene_root);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &SceneTree::get_edited_scene_root);
-#endif
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
@@ -1815,9 +1825,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
-#ifdef TOOLS_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
-#endif
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");

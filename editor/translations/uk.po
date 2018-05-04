@@ -4,16 +4,17 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018.
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
+# Максим Якимчук <xpinovo@gmail.com>, 2018.
 # Марс Ямбар <mjambarmeta@gmail.com>, 2017-2018.
 # Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
-# Yuri Chornoivan <yurchor@ukr.net>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-02-22 18:08+0000\n"
+"PO-Revision-Date: 2018-04-20 18:42+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -300,11 +301,11 @@ msgstr "Максимальна лінійна похибка:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Макс. Кутові похибки:"
+msgstr "Макс. кутова похибка:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Максимальний оптимізований кут:"
+msgstr "Макс. оптимізований кут:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
@@ -1400,6 +1401,10 @@ msgstr "Очистити"
 msgid "Clear Output"
 msgstr "Очистити вивід"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Помилка збереження ресурсу!"
@@ -1961,7 +1966,7 @@ msgstr "Вийти в список проектів"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "Налагодження"
+msgstr "Діагностика"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2103,7 +2108,7 @@ msgstr "Спільнота"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "Про"
+msgstr "Про програму"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3394,7 +3399,7 @@ msgstr "Все"
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr "Плагіни"
+msgstr "Плаґіни"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -3708,6 +3713,16 @@ msgid "Show Guides"
 msgstr "Показати напрямні"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Перегляд центра"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 панель перегляду"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Центрувати на вибраному"
 
@@ -3996,6 +4011,10 @@ msgstr "У MeshInstance немає сітки!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Сітка не має поверхні, щоб створити контури!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5667,6 +5686,16 @@ msgid "Checked Item"
 msgstr "Позначений елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Додати елемент"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "Позначений елемент"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Має"
 
@@ -6166,8 +6195,10 @@ msgid "Mouse Button"
 msgstr "Кнопка миші"
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "Некоректна дія (можна усе, окрім «/» або «:»)."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6308,10 +6339,6 @@ msgstr "Параметр «%s» є внутрішнім. Його не можн�
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "Вилучити елемент"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "Не може містити «/» або «:»"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -6539,7 +6566,7 @@ msgstr "[Порожньо]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr "Встановити"
+msgstr "Множина"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -7372,6 +7399,10 @@ msgstr "Параметри GridMap"
 msgid "Pick Distance:"
 msgstr "Відстань вибору:"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "Створення розв'язку..."
@@ -7422,7 +7453,7 @@ msgstr "Попередження"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Кінець трасування стека для внутрішнього виключення"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -8082,11 +8113,21 @@ msgstr ""
 "коректний вузол Spatial."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "У сцені (або наборі екземплярів сцен) може бути лише один елемент "
 "WorldEnvironment."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8184,6 +8225,12 @@ msgstr "Помилка завантаження шрифту."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Некоректний розмір шрифту."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "Некоректна дія (можна усе, окрім «/» або «:»)."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Не може містити «/» або «:»"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

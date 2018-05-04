@@ -1076,6 +1076,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 	if (!animation.is_valid()) {
 		v_scroll->hide();
 		h_scroll->hide();
+		length->set_editable(false);
+		step->set_editable(false);
+		loop->set_disabled(true);
 		menu_add_track->set_disabled(true);
 		menu_track->set_disabled(true);
 		edit_button->set_disabled(true);
@@ -1087,6 +1090,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 		return;
 	}
 
+	length->set_editable(true);
+	step->set_editable(true);
+	loop->set_disabled(false);
 	menu_add_track->set_disabled(false);
 	menu_track->set_disabled(false);
 	edit_button->set_disabled(false);
@@ -3130,7 +3136,6 @@ void AnimationKeyEditor::set_animation(const Ref<Animation> &p_anim) {
 
 	timeline_pos = 0;
 	_clear_selection();
-	_update_paths();
 
 	_update_menu();
 	selected_track = -1;
@@ -3857,6 +3862,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	length->set_h_size_flags(SIZE_EXPAND_FILL);
 	length->set_stretch_ratio(1);
 	length->set_tooltip(TTR("Animation length (in seconds)."));
+	length->set_editable(false);
 
 	hb->add_child(length);
 	length->connect("value_changed", this, "_animation_len_changed");
@@ -3873,6 +3879,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	step->set_h_size_flags(SIZE_EXPAND_FILL);
 	step->set_stretch_ratio(1);
 	step->set_tooltip(TTR("Cursor step snap (in seconds)."));
+	step->set_editable(false);
 
 	hb->add_child(step);
 	step->connect("value_changed", this, "_step_changed");
@@ -3882,6 +3889,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	loop->connect("pressed", this, "_animation_loop_changed");
 	hb->add_child(loop);
 	loop->set_tooltip(TTR("Enable/Disable looping in animation."));
+	loop->set_disabled(true);
 
 	hb->add_child(memnew(VSeparator));
 
@@ -3919,7 +3927,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	menu_track = memnew(MenuButton);
 	hb->add_child(menu_track);
 	menu_track->get_popup()->connect("id_pressed", this, "_menu_track");
-	menu_track->set_tooltip(TTR("Track tools"));
+	menu_track->set_tooltip(TTR("Track Tools"));
 
 	edit_button = memnew(ToolButton);
 	edit_button->set_toggle_mode(true);

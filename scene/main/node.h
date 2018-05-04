@@ -190,6 +190,12 @@ private:
 
 	void _set_tree(SceneTree *p_tree);
 
+#ifdef TOOLS_ENABLED
+	friend class SceneTreeEditor;
+#endif
+	static String invalid_character;
+	static bool _validate_node_name(String &p_name);
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
@@ -374,10 +380,8 @@ public:
 
 	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
 
-#ifdef TOOLS_ENABLED
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
-#endif
 
 	bool is_owned_by_parent() const;
 

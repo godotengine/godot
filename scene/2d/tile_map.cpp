@@ -304,6 +304,7 @@ void TileMap::_update_dirty_quadrants() {
 		}
 		q.occluder_instances.clear();
 		Ref<ShaderMaterial> prev_material;
+		int prev_z_index;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
@@ -324,11 +325,12 @@ void TileMap::_update_dirty_quadrants() {
 				continue;
 
 			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
+			int z_index = tile_set->tile_get_z_index(c.id);
 
 			RID canvas_item;
 			RID debug_canvas_item;
 
-			if (prev_canvas_item == RID() || prev_material != mat) {
+			if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
 
 				canvas_item = vs->canvas_item_create();
 				if (mat.is_valid())
@@ -339,6 +341,7 @@ void TileMap::_update_dirty_quadrants() {
 				xform.set_origin(q.pos);
 				vs->canvas_item_set_transform(canvas_item, xform);
 				vs->canvas_item_set_light_mask(canvas_item, get_light_mask());
+				vs->canvas_item_set_z_index(canvas_item, z_index);
 
 				q.canvas_items.push_back(canvas_item);
 
@@ -354,6 +357,7 @@ void TileMap::_update_dirty_quadrants() {
 
 				prev_canvas_item = canvas_item;
 				prev_material = mat;
+				prev_z_index = z_index;
 
 			} else {
 				canvas_item = prev_canvas_item;

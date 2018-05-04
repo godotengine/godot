@@ -215,6 +215,12 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case (KEY_A): { //Select All
 					select();
 				} break;
+				case (KEY_LEFT): { // Go to start of text - like HOME key
+					set_cursor_position(0);
+				} break;
+				case (KEY_RIGHT): { // Go to end of text - like END key
+					set_cursor_position(text.length());
+				} break;
 				default: { handled = false; }
 			}
 
@@ -663,8 +669,8 @@ void LineEdit::_notification(int p_what) {
 							if (ofs >= ime_text.length())
 								break;
 
-							CharType cchar = (pass && !text.empty()) ? '*' : ime_text[ofs];
-							CharType next = (pass && !text.empty()) ? '*' : ime_text[ofs + 1];
+							CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
+							CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 							int im_char_width = font->get_char_size(cchar, next).width;
 
 							if ((x_ofs + im_char_width) > ofs_max)
@@ -685,8 +691,8 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 
-				CharType cchar = (pass && !text.empty()) ? '*' : t[char_ofs];
-				CharType next = (pass && !text.empty()) ? '*' : t[char_ofs + 1];
+				CharType cchar = (pass && !text.empty()) ? secret_character[0] : t[char_ofs];
+				CharType next = (pass && !text.empty()) ? secret_character[0] : t[char_ofs + 1];
 				int char_width = font->get_char_size(cchar, next).width;
 
 				// end of widget, break!
@@ -717,8 +723,8 @@ void LineEdit::_notification(int p_what) {
 						if (ofs >= ime_text.length())
 							break;
 
-						CharType cchar = (pass && !text.empty()) ? '*' : ime_text[ofs];
-						CharType next = (pass && !text.empty()) ? '*' : ime_text[ofs + 1];
+						CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
+						CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 						int im_char_width = font->get_char_size(cchar, next).width;
 
 						if ((x_ofs + im_char_width) > ofs_max)
@@ -1137,7 +1143,6 @@ void LineEdit::clear_internal() {
 
 	_clear_undo_stack();
 	cached_width = 0;
-	cached_placeholder_width = 0;
 	cursor_pos = 0;
 	window_pos = 0;
 	undo_text = "";
@@ -1225,6 +1230,7 @@ void LineEdit::select_all() {
 	selection.enabled = true;
 	update();
 }
+
 void LineEdit::set_editable(bool p_editable) {
 
 	editable = p_editable;
@@ -1241,9 +1247,25 @@ void LineEdit::set_secret(bool p_secret) {
 	pass = p_secret;
 	update();
 }
+
 bool LineEdit::is_secret() const {
 
 	return pass;
+}
+
+void LineEdit::set_secret_character(const String &p_string) {
+
+	// An empty string as the secret character would crash the engine
+	// It also wouldn't make sense to use multiple characters as the secret character
+	ERR_EXPLAIN("Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given)");
+	ERR_FAIL_COND(p_string.length() != 1);
+
+	secret_character = p_string;
+	update();
+}
+
+String LineEdit::get_secret_character() const {
+	return secret_character;
 }
 
 void LineEdit::select(int p_from, int p_to) {
@@ -1327,12 +1349,12 @@ PopupMenu *LineEdit::get_menu() const {
 	return menu;
 }
 
-#ifdef TOOLS_ENABLED
 void LineEdit::_editor_settings_changed() {
+#ifdef TOOLS_ENABLED
 	cursor_set_blink_enabled(EDITOR_DEF("text_editor/cursor/caret_blink", false));
 	cursor_set_blink_speed(EDITOR_DEF("text_editor/cursor/caret_blink_speed", 0.65));
-}
 #endif
+}
 
 void LineEdit::set_expand_to_text_length(bool p_enabled) {
 
@@ -1401,9 +1423,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_text_changed"), &LineEdit::_text_changed);
 	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &LineEdit::_toggle_draw_caret);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method("_editor_settings_changed", &LineEdit::_editor_settings_changed);
-#endif
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &LineEdit::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &LineEdit::get_align);
@@ -1434,6 +1454,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &LineEdit::is_editable);
 	ClassDB::bind_method(D_METHOD("set_secret", "enabled"), &LineEdit::set_secret);
 	ClassDB::bind_method(D_METHOD("is_secret"), &LineEdit::is_secret);
+	ClassDB::bind_method(D_METHOD("set_secret_character", "character"), &LineEdit::set_secret_character);
+	ClassDB::bind_method(D_METHOD("get_secret_character"), &LineEdit::get_secret_character);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
@@ -1461,6 +1483,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length", "get_expand_to_text_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
@@ -1469,7 +1492,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.1"), "cursor_set_blink_speed", "cursor_get_blink_speed");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "cursor_set_blink_speed", "cursor_get_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_position"), "set_cursor_position", "get_cursor_position");
 }
 
@@ -1485,6 +1508,7 @@ LineEdit::LineEdit() {
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
+	secret_character = "*";
 	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 

@@ -3,6 +3,7 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# 01lifeleft <01lifeleft@gmail.com>, 2018.
 # Dlean Jeans <dleanjeans@gmail.com>, 2018.
 # Hai Le <dark.hades.1102@gmail.com>, 2017.
 # Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
@@ -11,15 +12,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-24 12:35+0000\n"
-"Last-Translator: Dlean Jeans <dleanjeans@gmail.com>\n"
+"PO-Revision-Date: 2018-04-18 15:44+0000\n"
+"Last-Translator: 01lifeleft <01lifeleft@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -79,7 +80,7 @@ msgstr "Đổi tên Anim Track"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Đổi phép nội suy Anim Track"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
@@ -112,31 +113,31 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr ""
+msgstr "Bỏ lựa chọn"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Liên tục"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Đứt đoạn"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Kích hoạt"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "Thêm Key Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Di chuyển các Key Anim"
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Chọn Scale"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
@@ -165,15 +166,15 @@ msgstr "Trong"
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Ngoài"
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "Trong-Ngoài"
 
 #: editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "Ngoài-Trong"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
@@ -185,7 +186,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Dọn dẹp Animation"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -205,7 +206,7 @@ msgstr "Tạo"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Tạo & Chèn Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
@@ -221,7 +222,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Đổi vòng lặp Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
@@ -229,7 +230,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Chèn Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
@@ -249,7 +250,7 @@ msgstr "Độ dài (giây):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "Độ dài Animation (giây)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
@@ -261,7 +262,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "Mở/Tắt lặp animation."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -1371,6 +1372,10 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
@@ -3596,6 +3601,14 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -3878,6 +3891,10 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5542,6 +5559,14 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Radio Item"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Checked Radio Item"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -6019,7 +6044,9 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6160,10 +6187,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
-msgstr ""
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -7112,7 +7135,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr ""
+msgstr "Tầng:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
@@ -7204,6 +7227,10 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
+msgstr ""
+
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -7842,8 +7869,18 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp

@@ -330,17 +330,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				{
-					Ref<InputEventMouseButton> ev;
-					ev.instance();
-					ev->set_button_index(BUTTON_LEFT);
-					ev->set_button_mask(BUTTON_MASK_LEFT);
-					ev->set_pressed(false);
-					ev->set_position(touch[0].pos);
-					ev->set_global_position(touch[0].pos);
-					input->parse_input_event(ev);
-				}
-
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;
@@ -358,21 +347,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				touch[i].pos = p_points[i].pos;
 			}
 
-			{
-				//send mouse
-				Ref<InputEventMouseButton> ev;
-				ev.instance();
-				// ev.type = Ref<InputEvent>::MOUSE_BUTTON;
-				ev->set_button_index(BUTTON_LEFT);
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_pressed(true);
-				ev->set_position(touch[0].pos);
-				ev->set_global_position(touch[0].pos);
-				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
-				last_mouse = touch[0].pos;
-				input->parse_input_event(ev);
-			}
-
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
 
@@ -386,19 +360,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 		} break;
 		case 1: { //motion
-
-			if (p_points.size()) {
-				//send mouse, should look for point 0?
-				Ref<InputEventMouseMotion> ev;
-				ev.instance();
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_position(p_points[0].pos);
-				input->set_mouse_position(Point2(ev->get_position().x, ev->get_position().y));
-				ev->set_speed(input->get_last_mouse_speed());
-				ev->set_relative(p_points[0].pos - last_mouse);
-				last_mouse = p_points[0].pos;
-				input->parse_input_event(ev);
-			}
 
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
@@ -432,16 +393,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				Ref<InputEventMouseButton> ev;
-				ev.instance();
-				ev->set_button_index(BUTTON_LEFT);
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_pressed(false);
-				ev->set_position(touch[0].pos);
-				ev->set_global_position(touch[0].pos);
-				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
-				input->parse_input_event(ev);
-
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;

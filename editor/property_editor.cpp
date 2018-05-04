@@ -3273,22 +3273,34 @@ void PropertyEditor::update_tree() {
 				while (hint.begins_with(itos(Variant::ARRAY) + ":")) {
 					type_name += "<Array";
 					type_name_suffix += ">";
-					hint = hint.substr(2, hint.size() - 2);
+					hint = hint.right(2);
 				}
 				if (hint.find(":") >= 0) {
-					hint = hint.substr(0, hint.find(":"));
+					int colon_pos = hint.find(":");
+					String hint_string = hint.right(colon_pos + 1);
+					hint = hint.left(colon_pos);
+
+					PropertyHint property_hint = PROPERTY_HINT_NONE;
+
 					if (hint.find("/") >= 0) {
-						hint = hint.substr(0, hint.find("/"));
+						int slash_pos = hint.find("/");
+						property_hint = PropertyHint(hint.right(slash_pos + 1).to_int());
+						hint = hint.left(slash_pos);
 					}
-					type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+
+					if (property_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+						type_name += "<" + hint_string;
+					} else {
+						type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+					}
 					type_name_suffix += ">";
 				}
 				type_name += type_name_suffix;
 
 				if (v.is_array())
-					item->set_text(1, type_name + "[" + itos(v.call("size")) + "]");
+					item->set_text(1, type_name + "(" + itos(v.call("size")) + ")");
 				else
-					item->set_text(1, type_name + "[]");
+					item->set_text(1, type_name + "()");
 
 				if (show_type_icons)
 					item->set_icon(0, get_icon("PoolByteArray", "EditorIcons"));

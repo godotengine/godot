@@ -979,9 +979,23 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
+String Node::invalid_character = ". : @ / \"";
+
+bool Node::_validate_node_name(String &p_name) {
+	String name = p_name;
+	Vector<String> chars = Node::invalid_character.split(" ");
+	for (int i = 0; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	bool is_valid = name == p_name;
+	p_name = name;
+	return is_valid;
+}
+
 void Node::set_name(const String &p_name) {
 
-	String name = p_name.replace(":", "").replace("/", "").replace("@", "");
+	String name = p_name;
+	_validate_node_name(name);
 
 	ERR_FAIL_COND(name == "");
 	data.name = name;
@@ -2567,18 +2581,21 @@ Array Node::_get_children() const {
 	return arr;
 }
 
-#ifdef TOOLS_ENABLED
 void Node::set_import_path(const NodePath &p_import_path) {
 
+#ifdef TOOLS_ENABLED
 	data.import_path = p_import_path;
+#endif
 }
 
 NodePath Node::get_import_path() const {
 
+#ifdef TOOLS_ENABLED
 	return data.import_path;
-}
-
+#else
+	return NodePath();
 #endif
+}
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 
@@ -2737,12 +2754,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
-
-#endif
 
 	{
 		MethodInfo mi;

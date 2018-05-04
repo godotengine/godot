@@ -74,7 +74,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	int longest_axis = aabb.get_longest_axis_index();
 
 	//first two vertices are the most distant
-	int simplex[4];
+	int simplex[4] = { 0 };
 
 	{
 		real_t max = 0, min = 0;

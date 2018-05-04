@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-25 04:41+0000\n"
+"PO-Revision-Date: 2018-03-10 03:46+0000\n"
 "Last-Translator: Poommetee Ketson <poommetee@protonmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -1381,6 +1381,10 @@ msgstr "ลบ"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "ลบข้อความ"
+
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3641,6 +3645,16 @@ msgid "Show Guides"
 msgstr "แสดงเส้นนำ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "แสดงจุดกำเนิด"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 มุมมอง"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "ให้สิ่งที่เลือกอยู่กลางจอ"
 
@@ -3928,6 +3942,10 @@ msgstr "MeshInstance ไม่มี Mesh!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Mesh ไม่มีพื้นผิวให้สร้างเส้นขอบได้!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5596,6 +5614,16 @@ msgid "Checked Item"
 msgstr "ไอเทมมีเครื่องหมาย"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "เพิ่มไอเทม"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "ไอเทมมีเครื่องหมาย"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "มี"
 
@@ -6082,8 +6110,10 @@ msgid "Mouse Button"
 msgstr "ปุ่มเมาส์"
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "ใช้ชื่อนี้ไม่ได้ (มี '/' หรือ ':')"
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6224,10 +6254,6 @@ msgstr "ตัวเลือก '%s' เป็นค่าภายในไม
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "ลบไอเทม"
-
-#: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "ต้องไม่มี '/' หรือ ':'"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7278,6 +7304,10 @@ msgstr "การตั้งค่า GridMap"
 msgid "Pick Distance:"
 msgstr "ระยะการเลือก:"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "กำลังสร้าง solution..."
@@ -7328,7 +7358,7 @@ msgstr "คำเตือน"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "สิ้นสุดสแตคข้อผิดพลาดภายใน"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7940,9 +7970,19 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr "ต้องแก้ไข Path ให้ชี้ไปยังโหนด Spatial จึงจะทำงานได้"
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr "จะมี WorldEnvironment ได้เพียงโหนดเดียวในฉาก (หรือกลุ่มของฉากที่เป็นอินสแตนซ์)"
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8033,6 +8073,12 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "ใช้ชื่อนี้ไม่ได้ (มี '/' หรือ ':')"
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "ต้องไม่มี '/' หรือ ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

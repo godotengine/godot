@@ -4,11 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Allyson Souza <allyson_as@outlook.com>, 2017.
+# Anderson Araujo <anderson.araujoprog@gmail.com>, 2018.
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # AWK <arthurwk1800@gmail.com>, 2017.
 # Francesco Perrotti-Garcia <fpg1503@gmail.com>, 2017.
 # George Marques <george@gmarqu.es>, 2016.
 # Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017.
+# João Victor Lima <victordevtb@outlook.com>, 2018.
 # João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 # jonathan railarem <railarem@gmail.com>, 2017.
@@ -19,16 +21,15 @@
 # Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
 # Renato Rotenberg <renato.rotenberg@gmail.com>, 2017.
-# Rodolfo R Gomes <rodolforg@gmail.com>, 2017.
+# Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-02-22 20:49+0000\n"
-"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
-"com>\n"
+"PO-Revision-Date: 2018-04-30 13:39+0000\n"
+"Last-Translator: Rodolfo R Gomes <rodolforg@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -44,7 +45,7 @@ msgstr "Desabilitado"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Toda a Seleção"
+msgstr "Toda a seleção"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -775,7 +776,7 @@ msgstr "Doadores"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr "LIcença"
+msgstr "Licença"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
@@ -1413,6 +1414,10 @@ msgstr "Limpar"
 msgid "Clear Output"
 msgstr "Limpar Saída"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Erro ao salvar Recurso!"
@@ -1654,11 +1659,11 @@ msgstr "Abrir Cena Base"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr "Abri Cena Rápidamente..."
+msgstr "Abrir Cena Rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr "Abrir Script Rápidamente..."
+msgstr "Abrir Script Rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1977,7 +1982,7 @@ msgstr "Depurar"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr "Instalar Depuração Remota"
+msgstr "Distribuir com Depuragem Remota"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1989,7 +1994,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr "Instalação Pequena com FS em rede"
+msgstr "Pequeno teste com o sistema de arquivos em rede"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2032,7 +2037,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Sincronizar Alterações na Cena"
+msgstr "Sincronizar Mudanças de Cena"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2048,7 +2053,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr "Sincronizar Alterações no Script"
+msgstr "Sincronizar Mudanças de Script"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2361,7 +2366,7 @@ msgstr "Inclusivo"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Mesmo"
+msgstr "Self"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3436,7 +3441,7 @@ msgstr "Oficial"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr "Em teste"
+msgstr "Testando"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -3719,6 +3724,16 @@ msgstr "Mostrar réguas"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
 msgstr "Mostrar guias"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Ver Origem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4008,6 +4023,10 @@ msgstr "Falta uma Malha na MeshInstance!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Malha não tem superfície para criar contornos dela!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5297,7 +5316,7 @@ msgstr "Modo Escala (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "Coordenadas Locais"
+msgstr "Local Coords"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -5681,6 +5700,16 @@ msgid "Checked Item"
 msgstr "Item Checado"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Adicionar Item"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "Item Checado"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Tem"
 
@@ -5726,7 +5755,7 @@ msgstr "Fonte"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr "Cor"
+msgstr "Color"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
@@ -6182,8 +6211,10 @@ msgid "Mouse Button"
 msgstr "Botão do Mous"
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6326,10 +6357,6 @@ msgid "Delete Item"
 msgstr "Excluir Item"
 
 #: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr "Não pode conter '/' ou ':'"
-
-#: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr "Já existe"
 
@@ -6443,7 +6470,7 @@ msgstr "Remapeamentos por Localidade:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "Localidade"
+msgstr "Locale"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
@@ -6555,7 +6582,7 @@ msgstr "[Vazio]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr "Definir"
+msgstr "Set"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -6964,7 +6991,7 @@ msgstr "Carregar arquivo de script existente"
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
-msgstr "Idioma"
+msgstr "Linguagem"
 
 #: editor/script_create_dialog.cpp
 msgid "Inherits"
@@ -7052,7 +7079,7 @@ msgstr "Pilha de Rastreamento (se aplicável):"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr "Profiler"
+msgstr "Profilador"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -7076,11 +7103,11 @@ msgstr "Total:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video Mem"
-msgstr "Memória de Vídeo"
+msgstr "Mem. de Vídeo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Caminho do recurso"
+msgstr "Caminho do Recurso"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -7386,6 +7413,10 @@ msgstr "Configurações do GridMap"
 msgid "Pick Distance:"
 msgstr "Escolha uma Distância:"
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr "Gerando solução..."
@@ -7436,7 +7467,7 @@ msgstr "Avisos"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Fim da pilha de rastreamento de exceção interna"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7616,27 +7647,27 @@ msgstr "Condição"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr "Sequência"
+msgstr "Sequence"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr "Trocar"
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr "Iterador"
+msgstr "Iterator"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr "Enquanto"
+msgstr "While"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
-msgstr "Retornar"
+msgstr "Return"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr "Chamar"
+msgstr "Call"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
@@ -8097,11 +8128,21 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr "A propriedade Caminho deve apontar para um nó Spatial para funcionar."
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "É permitido apenas um nó WorldEnvironment por cena (ou conjunto de cenas "
 "instanciadas)."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8198,6 +8239,12 @@ msgstr "Erro ao carregar fonte."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
+
+#~ msgid "Invalid action (anything goes but '/' or ':')."
+#~ msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
+
+#~ msgid "Can't contain '/' or ':'"
+#~ msgstr "Não pode conter '/' ou ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

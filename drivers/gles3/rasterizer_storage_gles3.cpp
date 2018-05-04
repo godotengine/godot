@@ -1912,7 +1912,7 @@ void RasterizerStorageGLES3::material_set_param(RID p_material, const StringName
 Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringName &p_param) const {
 
 	const Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, RID());
+	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->params.has(p_param))
 		return material->params[p_param];
@@ -4494,6 +4494,15 @@ Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleto
 	ret[2][1] = texture[base_ofs + 3];
 
 	return ret;
+}
+
+void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	skeleton->base_transform_2d = p_base_transform;
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {

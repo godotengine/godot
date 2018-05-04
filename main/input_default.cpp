@@ -194,8 +194,6 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
-	js.mapping = -1;
-	js.hat_current = 0;
 
 	if (p_connected) {
 
@@ -258,6 +256,11 @@ Vector3 InputDefault::get_gyroscope() const {
 
 void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
+	_parse_input_event_impl(p_event, false);
+}
+
+void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
+
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
@@ -281,17 +284,17 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
 		}
 
-		if (main_loop && emulate_touch && mb->get_button_index() == 1) {
+		Point2 pos = mb->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			main_loop->input_event(touch_event);
-		}
-
-		Point2 pos = mb->get_global_position();
-		if (mouse_pos != pos) {
-			set_mouse_position(pos);
 		}
 	}
 
@@ -299,7 +302,12 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
-		if (main_loop && emulate_touch && mm->get_button_mask() & 1) {
+		Point2 pos = mm->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instance();
 
@@ -308,6 +316,58 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			drag_event->set_speed(mm->get_speed());
 
 			main_loop->input_event(drag_event);
+		}
+	}
+
+	if (emulate_mouse_from_touch) {
+
+		Ref<InputEventScreenTouch> st = p_event;
+
+		if (st.is_valid()) {
+			bool translate = false;
+			if (st->is_pressed()) {
+				if (mouse_from_touch_index == -1) {
+					translate = true;
+					mouse_from_touch_index = st->get_index();
+				}
+			} else {
+				if (st->get_index() == mouse_from_touch_index) {
+					translate = true;
+					mouse_from_touch_index = -1;
+				}
+			}
+
+			if (translate) {
+				Ref<InputEventMouseButton> button_event;
+				button_event.instance();
+
+				button_event->set_position(st->get_position());
+				button_event->set_global_position(st->get_position());
+				button_event->set_pressed(st->is_pressed());
+				button_event->set_button_index(BUTTON_LEFT);
+				if (st->is_pressed()) {
+					button_event->set_button_mask(mouse_button_mask | (1 << BUTTON_LEFT - 1));
+				} else {
+					button_event->set_button_mask(mouse_button_mask & ~(1 << BUTTON_LEFT - 1));
+				}
+
+				_parse_input_event_impl(button_event, true);
+			}
+		}
+
+		Ref<InputEventScreenDrag> sd = p_event;
+
+		if (sd.is_valid() && sd->get_index() == mouse_from_touch_index) {
+			Ref<InputEventMouseMotion> motion_event;
+			motion_event.instance();
+
+			motion_event->set_position(sd->get_position());
+			motion_event->set_global_position(sd->get_position());
+			motion_event->set_relative(sd->get_relative());
+			motion_event->set_speed(sd->get_speed());
+			motion_event->set_button_mask(mouse_button_mask);
+
+			_parse_input_event_impl(motion_event, true);
 		}
 	}
 
@@ -495,14 +555,44 @@ void InputDefault::action_release(const StringName &p_action) {
 	action_state[p_action] = action;
 }
 
-void InputDefault::set_emulate_touch(bool p_emulate) {
+void InputDefault::set_emulate_touch_from_mouse(bool p_emulate) {
 
-	emulate_touch = p_emulate;
+	emulate_touch_from_mouse = p_emulate;
 }
 
-bool InputDefault::is_emulating_touchscreen() const {
+bool InputDefault::is_emulating_touch_from_mouse() const {
 
-	return emulate_touch;
+	return emulate_touch_from_mouse;
+}
+
+// Calling this whenever the game window is focused helps unstucking the "touch mouse"
+// if the OS or its abstraction class hasn't properly reported that touch pointers raised
+void InputDefault::ensure_touch_mouse_raised() {
+
+	if (mouse_from_touch_index != -1) {
+		mouse_from_touch_index = -1;
+
+		Ref<InputEventMouseButton> button_event;
+		button_event.instance();
+
+		button_event->set_position(mouse_pos);
+		button_event->set_global_position(mouse_pos);
+		button_event->set_pressed(false);
+		button_event->set_button_index(BUTTON_LEFT);
+		button_event->set_button_mask(mouse_button_mask & ~(1 << BUTTON_LEFT - 1));
+
+		_parse_input_event_impl(button_event, true);
+	}
+}
+
+void InputDefault::set_emulate_mouse_from_touch(bool p_emulate) {
+
+	emulate_mouse_from_touch = p_emulate;
+}
+
+bool InputDefault::is_emulating_mouse_from_touch() const {
+
+	return emulate_mouse_from_touch;
 }
 
 Input::CursorShape InputDefault::get_default_cursor_shape() {
@@ -539,7 +629,9 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 InputDefault::InputDefault() {
 
 	mouse_button_mask = 0;
-	emulate_touch = false;
+	emulate_touch_from_mouse = false;
+	emulate_mouse_from_touch = false;
+	mouse_from_touch_index = -1;
 	main_loop = NULL;
 
 	hat_map_default[HAT_UP].type = TYPE_BUTTON;
@@ -797,12 +889,12 @@ InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
 	JoyEvent ret;
 	ret.type = -1;
+	ret.index = 0;
 
 	int i = 0;
 	while (buttons[i]) {
 
 		if (p_to == buttons[i]) {
-			//printf("mapping button %s\n", buttons[i]);
 			ret.type = TYPE_BUTTON;
 			ret.index = i;
 			ret.value = 0;
