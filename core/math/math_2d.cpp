@@ -103,6 +103,16 @@ Vector2 Vector2::floor() const {
 	return Vector2(Math::floor(x), Math::floor(y));
 }
 
+Vector2 Vector2::ceil() const {
+
+	return Vector2(Math::ceil(x), Math::ceil(y));
+}
+
+Vector2 Vector2::round() const {
+
+	return Vector2(Math::round(x), Math::round(y));
+}
+
 Vector2 Vector2::rotated(real_t p_by) const {
 
 	Vector2 v;
