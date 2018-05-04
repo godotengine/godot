@@ -166,7 +166,11 @@ void PrimitiveMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mesh_arrays"), &PrimitiveMesh::get_mesh_arrays);
 
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &PrimitiveMesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &PrimitiveMesh::get_custom_aabb);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
@@ -185,6 +189,18 @@ Ref<Material> PrimitiveMesh::get_material() const {
 
 Array PrimitiveMesh::get_mesh_arrays() const {
 	return surface_get_arrays(0);
+}
+
+void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
+
+	custom_aabb = p_custom;
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
+	emit_changed();
+}
+
+AABB PrimitiveMesh::get_custom_aabb() const {
+
+	return custom_aabb;
 }
 
 PrimitiveMesh::PrimitiveMesh() {
