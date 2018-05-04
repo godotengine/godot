@@ -87,7 +87,14 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/create_new_node_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_bounds"));
 	} else {
-		popup_centered_ratio();
+
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		popup_centered(popup_size);
 	}
 
 	if (p_dont_clear) {
