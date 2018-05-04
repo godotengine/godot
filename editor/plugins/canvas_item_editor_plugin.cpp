@@ -2586,7 +2586,9 @@ void CanvasItemEditor::_draw_bones() {
 		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
 		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
 		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+		Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
+		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
 		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
@@ -2615,12 +2617,23 @@ void CanvasItemEditor::_draw_bones() {
 
 			Vector2 rel = to - from;
 			Vector2 relt = rel.tangent().normalized() * bone_width;
+			Vector2 reln = rel.normalized();
+			Vector2 reltn = relt.normalized();
 
 			Vector<Vector2> bone_shape;
 			bone_shape.push_back(from);
 			bone_shape.push_back(from + rel * 0.2 + relt);
 			bone_shape.push_back(to);
 			bone_shape.push_back(from + rel * 0.2 - relt);
+
+			Vector<Vector2> bone_shape_outline;
+			bone_shape_outline.push_back(from + (-reln - reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + (-reln + reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + rel * 0.2 + relt + reltn * bone_outline_size);
+			bone_shape_outline.push_back(to + (reln + reltn) * bone_outline_size);
+			bone_shape_outline.push_back(to + (reln - reltn) * bone_outline_size);
+			bone_shape_outline.push_back(from + rel * 0.2 - relt - reltn * bone_outline_size);
+
 			Vector<Color> colors;
 			if (pi->has_meta("_edit_ik_")) {
 
@@ -2635,14 +2648,25 @@ void CanvasItemEditor::_draw_bones() {
 				colors.push_back(bone_color2);
 			}
 
-			VisualServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
-
+			Vector<Color> outline_colors;
 			if (editor_selection->is_selected(pi)) {
-				for (int i = 0; i < bone_shape.size(); i++) {
-
-					VisualServer::get_singleton()->canvas_item_add_line(ci, bone_shape[i], bone_shape[(i + 1) % bone_shape.size()], bone_selected_color, 2);
-				}
+				outline_colors.push_back(bone_selected_color);
+				outline_colors.push_back(bone_selected_color);
+				outline_colors.push_back(bone_selected_color);
+				outline_colors.push_back(bone_selected_color);
+				outline_colors.push_back(bone_selected_color);
+				outline_colors.push_back(bone_selected_color);
+			} else {
+				outline_colors.push_back(bone_outline_color);
+				outline_colors.push_back(bone_outline_color);
+				outline_colors.push_back(bone_outline_color);
+				outline_colors.push_back(bone_outline_color);
+				outline_colors.push_back(bone_outline_color);
+				outline_colors.push_back(bone_outline_color);
 			}
+
+			VisualServer::get_singleton()->canvas_item_add_polygon(ci, bone_shape_outline, outline_colors);
+			VisualServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
 		}
 	}
 }
