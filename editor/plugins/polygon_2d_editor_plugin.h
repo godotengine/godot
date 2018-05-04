@@ -99,14 +99,14 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
-	PoolVector<Vector2> uv_prev;
+	PoolVector<Vector2> points_prev;
 	PoolVector<Vector2> uv_create_uv_prev;
 	PoolVector<Vector2> uv_create_poly_prev;
 	Array uv_create_bones_prev;
 	PoolVector<int> splits_prev;
 
 	Vector2 uv_create_to;
-	int uv_drag_index;
+	int point_drag_index;
 	bool uv_drag;
 	bool uv_create;
 	bool split_create;

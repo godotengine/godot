@@ -58,7 +58,8 @@ out highp vec2 pixel_size_interp;
 
 #ifdef USE_SKELETON
 uniform mediump sampler2D skeleton_texture; // texunit:-1
-uniform mat4 skeleton_to_object_local_matrix;
+uniform highp mat4 skeleton_transform;
+uniform highp mat4 skeleton_transform_inverse;
 #endif
 
 #ifdef USE_LIGHTING
@@ -157,48 +158,6 @@ void main() {
 
 #endif
 
-#ifdef USE_SKELETON
-
-	if (bone_weights!=vec4(0.0)){ //must be a valid bone
-		//skeleton transform
-
-		ivec4 bone_indicesi = ivec4(bone_indices);
-
-		ivec2 tex_ofs = ivec2( bone_indicesi.x%256, (bone_indicesi.x/256)*2 );
-
-		highp mat2x4 m = mat2x4(
-			texelFetch(skeleton_texture,tex_ofs,0),
-			texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
-		) * bone_weights.x;
-
-		tex_ofs = ivec2( bone_indicesi.y%256, (bone_indicesi.y/256)*2 );
-
-		m+= mat2x4(
-					texelFetch(skeleton_texture,tex_ofs,0),
-					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
-				) * bone_weights.y;
-
-		tex_ofs = ivec2( bone_indicesi.z%256, (bone_indicesi.z/256)*2 );
-
-		m+= mat2x4(
-					texelFetch(skeleton_texture,tex_ofs,0),
-					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
-				) * bone_weights.z;
-
-
-		tex_ofs = ivec2( bone_indicesi.w%256, (bone_indicesi.w/256)*2 );
-
-		m+= mat2x4(
-					texelFetch(skeleton_texture,tex_ofs,0),
-					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
-				) * bone_weights.w;
-
-		mat4 bone_matrix = /*skeleton_to_object_local_matrix */ transpose(mat4(m[0],m[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0)));
-
-		outvec = bone_matrix * outvec;
-	}
-
-#endif
 
 #define extra_matrix extra_matrix2
 
