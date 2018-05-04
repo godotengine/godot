@@ -677,7 +677,20 @@ void CodeTextEditor::_reset_zoom() {
 void CodeTextEditor::_line_col_changed() {
 
 	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
-	col_nb->set_text(itos(text_editor->cursor_get_column() + 1));
+
+	String line = text_editor->get_line(text_editor->cursor_get_line());
+
+	int positional_column = 0;
+
+	for (int i = 0; i < text_editor->cursor_get_column(); i++) {
+		if (line[i] == '\t') {
+			positional_column += text_editor->get_indent_size(); //tab size
+		} else {
+			positional_column += 1;
+		}
+	}
+
+	col_nb->set_text(itos(positional_column + 1));
 }
 
 void CodeTextEditor::_text_changed() {
