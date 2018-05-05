@@ -891,6 +891,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	//RichTextLabel
 	theme->set_color("default_color", "RichTextLabel", font_color);
+	theme->set_color("font_color_shadow", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
+	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
+	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * EDSCALE);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 

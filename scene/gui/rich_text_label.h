@@ -270,7 +270,7 @@ private:
 	int visible_characters;
 	float percent_visible;
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
 
 	Ref<Font> _find_font(Item *p_item);
