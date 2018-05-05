@@ -180,8 +180,10 @@ public:
 
 	static OS *get_singleton();
 
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type);
 	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false);
 	virtual void print(const char *p_format, ...);
+	virtual void printfatal(const char *cond, const char *p_error_type, const char *p_function, const char *p_err_details, const char *p_file, int p_line);
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual void set_mouse_show(bool p_show);

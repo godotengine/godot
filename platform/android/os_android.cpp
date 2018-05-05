@@ -202,6 +202,11 @@ void OS_Android::print(const char *p_format, ...) {
 	va_end(argp);
 }
 
+void OS_Android::printfatal(const char *cond, const char *p_error_type, const char *p_function, const char *p_err_details, const char *p_file, int p_line) {
+
+	__android_log_assert(cond, "godot", "%s exception: %s: %s(%s:%i)\n", p_error_type, p_function, p_err_details, p_file, p_line);
+}
+
 void OS_Android::alert(const String &p_alert, const String &p_title) {
 
 	print("ALERT: %s\n", p_alert.utf8().get_data());
@@ -762,6 +767,30 @@ void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p
 
 bool OS_Android::is_joy_known(int p_device) {
 	return input->is_joy_mapped(p_device);
+}
+
+void OS_Android::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+	const char *err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
+
+	switch (p_type) {
+		case ERR_ERROR:
+			printfatal(NULL, "Error", p_function, err_details, p_file, p_line);
+			break;
+
+		case ERR_WARNING:
+			print("WARNING: %s: %s\n", p_function, err_details);
+			print("   At: %s:%i\n", p_file, p_line);
+			break;
+
+		case ERR_SCRIPT:
+			printfatal(NULL, "Script error", p_function, err_details, p_file, p_line);
+
+			break;
+	}
 }
 
 String OS_Android::get_joy_guid(int p_device) const {
