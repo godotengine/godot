@@ -232,6 +232,7 @@ class Curve3D : public Resource {
 	mutable bool baked_cache_dirty;
 	mutable PoolVector3Array baked_point_cache;
 	mutable PoolRealArray baked_tilt_cache;
+	mutable PoolVector3Array baked_up_vector_cache;
 	mutable float baked_max_ofs;
 
 	void _bake() const;
@@ -268,8 +269,10 @@ public:
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	float interpolate_baked_tilt(float p_offset) const;
+	Vector3 interpolate_baked_up_vector(float p_offset, bool p_apply_tilt = false) const;
 	PoolVector3Array get_baked_points() const; //useful for going through
 	PoolRealArray get_baked_tilts() const; //useful for going through
+	PoolVector3Array get_baked_up_vectors() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	float get_closest_offset(const Vector3 &p_to_point) const;
 
