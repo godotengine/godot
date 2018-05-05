@@ -1289,6 +1289,11 @@ Size2 Control::get_parent_area_size() const {
 	return get_parent_anchorable_rect().size;
 }
 
+Size2 Control::get_parent_area_size() const {
+
+	return get_parent_anchorable_rect().size;
+}
+
 void Control::_size_changed() {
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
@@ -1337,19 +1342,17 @@ void Control::_size_changed() {
 	data.pos_cache = new_pos_cache;
 	data.size_cache = new_size_cache;
 
-	if (is_inside_tree()) {
-		if (size_changed) {
-			notification(NOTIFICATION_RESIZED);
-		}
-		if (pos_changed || size_changed) {
-			item_rect_changed(size_changed);
-			_change_notify_margins();
-			_notify_transform();
-		}
+	if (size_changed) {
+		notification(NOTIFICATION_RESIZED);
+	}
+	if (pos_changed || size_changed) {
+		item_rect_changed(size_changed);
+		_change_notify_margins();
+		_notify_transform();
+	}
 
-		if (pos_changed && !size_changed) {
-			_update_canvas_item_transform(); //move because it won't be updated
-		}
+	if (pos_changed && !size_changed) {
+		_update_canvas_item_transform(); //move because it won't be updated
 	}
 }
 

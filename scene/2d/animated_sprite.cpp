@@ -59,15 +59,36 @@ bool AnimatedSprite::_edit_use_pivot() const {
 }
 
 Rect2 AnimatedSprite::_edit_get_rect() const {
+	return _get_rect();
+}
+
+bool AnimatedSprite::_edit_use_rect() const {
 	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
-		return Node2D::_edit_get_rect();
+		return false;
+	}
+	Ref<Texture> t;
+	if (animation)
+		t = frames->get_frame(animation, frame);
+	if (t.is_null())
+		return false;
+
+	return true;
+}
+
+Rect2 AnimatedSprite::get_anchorable_rect() const {
+	return _get_rect();
+}
+
+Rect2 AnimatedSprite::_get_rect() const {
+	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+		return Rect2();
 	}
 
 	Ref<Texture> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())
-		return Node2D::_edit_get_rect();
+		return Rect2();
 	Size2 s = t->get_size();
 
 	Point2 ofs = offset;
@@ -78,10 +99,6 @@ Rect2 AnimatedSprite::_edit_get_rect() const {
 		s = Size2(1, 1);
 
 	return Rect2(ofs, s);
-}
-
-bool AnimatedSprite::_edit_use_rect() const {
-	return true;
 }
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
