@@ -650,12 +650,12 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void CodeTextEditor::_zoom_in() {
-	font_resize_val += EDSCALE;
+	font_resize_val += MAX(EDSCALE, 1.0f);
 	_zoom_changed();
 }
 
 void CodeTextEditor::_zoom_out() {
-	font_resize_val -= EDSCALE;
+	font_resize_val -= MAX(EDSCALE, 1.0f);
 	_zoom_changed();
 }
 
