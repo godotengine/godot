@@ -1161,6 +1161,9 @@ PoolVector<uint8_t> Image::get_data() const {
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 
+	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
+	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 	data.resize(size);
