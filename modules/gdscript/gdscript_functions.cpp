@@ -122,6 +122,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"randn",
 	};
 
 	return _names[p_func];
@@ -369,6 +370,23 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		case MATH_RANDF: {
 			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::randf();
+		} break;
+		case MATH_RANDN: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+
+			float x, y, r; // Marsaglia polar method
+			do {
+				x = Math::randf() * 2.0f - 1.0f;
+				y = Math::randf() * 2.0f - 1.0f;
+				r = x * x + y * y;
+			} while (r <= 0.0f || r >= 1.0f);
+
+			float d = Math::sqrt(-2.0f * Math::log(r) / r);
+			const float mean = (double)*p_args[0];
+			const float sigma = (double)*p_args[1];
+			r_ret = mean + sigma * x * d; // trash y * d
 		} break;
 		case MATH_RANDOM: {
 			VALIDATE_ARG_COUNT(2);
@@ -1519,6 +1537,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_RANDF: {
 			MethodInfo mi("randf");
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_RANDN: {
+			MethodInfo mi("randn", PropertyInfo(Variant::REAL, "mean"), PropertyInfo(Variant::REAL, "sigma"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;

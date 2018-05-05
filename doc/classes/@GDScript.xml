@@ -778,6 +778,16 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="randn">
+			<return type="float">
+			</return>
+			<description>
+				randn(m, s) returns a normally distributed random number with m as mean as s as standard deviation.
+				[codeblock]
+				randn(10.0, 5.0) # returns 7.23421
+				[/codeblock]
+			</description>
+		</method>
 		<method name="randomize">
 			<return type="void">
 			</return>
