@@ -75,6 +75,7 @@ public:
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void action_erase_events(const StringName &p_action);
 
 	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
