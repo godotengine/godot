@@ -739,6 +739,10 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 
 		_goto_line(p_row);
 
+		if (result.class_name.begins_with("_")) {
+			result.class_name = result.class_name.substr(1, result.class_name.length() - 1);
+		}
+
 		switch (result.type) {
 			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
 
