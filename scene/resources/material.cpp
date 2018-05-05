@@ -391,6 +391,20 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_TRIPLANAR_USE_WORLD] && (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR])) {
 		code += ",world_vertex_coords";
 	}
+
+	if (!color_channels[COLOR_CHANNEL_RED]) {
+		code += ",disable_channel_r";
+	}
+	if (!color_channels[COLOR_CHANNEL_GREEN]) {
+		code += ",disable_channel_g";
+	}
+	if (!color_channels[COLOR_CHANNEL_BLUE]) {
+		code += ",disable_channel_b";
+	}
+	if (!color_channels[COLOR_CHANNEL_ALPHA]) {
+		code += ",disable_channel_a";
+	}
+
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
@@ -1242,6 +1256,23 @@ bool SpatialMaterial::get_feature(Feature p_feature) const {
 	return features[p_feature];
 }
 
+void SpatialMaterial::set_color_channel(ColorChannel p_color_channel, bool p_enabled) {
+
+	ERR_FAIL_INDEX(p_color_channel, COLOR_CHANNEL_MAX);
+	if (color_channels[p_color_channel] == p_enabled)
+		return;
+
+	color_channels[p_color_channel] = p_enabled;
+	_change_notify();
+	_queue_shader_change();
+}
+
+bool SpatialMaterial::get_color_channel(ColorChannel p_color_channel) const {
+
+	ERR_FAIL_INDEX_V(p_color_channel, COLOR_CHANNEL_MAX, false);
+	return color_channels[p_color_channel];
+}
+
 void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_texture) {
 
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
@@ -1753,6 +1784,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &SpatialMaterial::set_feature);
 	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &SpatialMaterial::get_feature);
 
+	ClassDB::bind_method(D_METHOD("set_color_channel", "color_channel", "enable"), &SpatialMaterial::set_color_channel);
+	ClassDB::bind_method(D_METHOD("get_color_channel", "color_channel"), &SpatialMaterial::get_color_channel);
+
 	ClassDB::bind_method(D_METHOD("set_texture", "param", "texture"), &SpatialMaterial::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture", "param"), &SpatialMaterial::get_texture);
 
@@ -1852,6 +1886,12 @@ void SpatialMaterial::_bind_methods() {
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
+
+	ADD_GROUP("Color Channels", "color_channels_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "color_channels_r"), "set_color_channel", "get_color_channel", COLOR_CHANNEL_RED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "color_channels_g"), "set_color_channel", "get_color_channel", COLOR_CHANNEL_GREEN);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "color_channels_b"), "set_color_channel", "get_color_channel", COLOR_CHANNEL_BLUE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "color_channels_a"), "set_color_channel", "get_color_channel", COLOR_CHANNEL_ALPHA);
 
 	ADD_GROUP("Parameters", "params_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Oren Nayar,Toon"), "set_diffuse_mode", "get_diffuse_mode");
@@ -2040,6 +2080,12 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
+	BIND_ENUM_CONSTANT(COLOR_CHANNEL_RED);
+	BIND_ENUM_CONSTANT(COLOR_CHANNEL_GREEN);
+	BIND_ENUM_CONSTANT(COLOR_CHANNEL_BLUE);
+	BIND_ENUM_CONSTANT(COLOR_CHANNEL_ALPHA);
+	BIND_ENUM_CONSTANT(COLOR_CHANNEL_MAX);
+
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT);
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT_WRAP);
@@ -2127,6 +2173,11 @@ SpatialMaterial::SpatialMaterial() :
 	detail_blend_mode = BLEND_MODE_MIX;
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	cull_mode = CULL_BACK;
+
+	for (int i = 0; i < COLOR_CHANNEL_MAX; i++) {
+		color_channels[i] = true;
+	}
+
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = 0;
 	}

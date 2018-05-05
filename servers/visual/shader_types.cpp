@@ -152,6 +152,11 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_disable");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("disable_channel_r");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("disable_channel_g");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("disable_channel_b");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("disable_channel_a");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_front");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disabled");

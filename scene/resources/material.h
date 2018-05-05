@@ -191,6 +191,14 @@ public:
 		FLAG_MAX
 	};
 
+	enum ColorChannel {
+		COLOR_CHANNEL_RED,
+		COLOR_CHANNEL_GREEN,
+		COLOR_CHANNEL_BLUE,
+		COLOR_CHANNEL_ALPHA,
+		COLOR_CHANNEL_MAX
+	};
+
 	enum DiffuseMode {
 		DIFFUSE_BURLEY,
 		DIFFUSE_LAMBERT,
@@ -237,6 +245,7 @@ private:
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
 			uint64_t flags : 14;
+			uint64_t color_channels : 4;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;
@@ -281,6 +290,11 @@ private:
 		for (int i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
 				mk.flags |= (1 << i);
+			}
+		}
+		for (int i = 0; i < COLOR_CHANNEL_MAX; i++) {
+			if (color_channels[i]) {
+				mk.color_channels |= (1 << i);
 			}
 		}
 		mk.detail_blend_mode = detail_blend_mode;
@@ -405,6 +419,7 @@ private:
 	DepthDrawMode depth_draw_mode;
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
+	bool color_channels[COLOR_CHANNEL_MAX];
 	SpecularMode specular_mode;
 	DiffuseMode diffuse_mode;
 	BillboardMode billboard_mode;
@@ -531,6 +546,9 @@ public:
 	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;
 
+	void set_color_channel(ColorChannel p_color_channel, bool p_enabled);
+	bool get_color_channel(ColorChannel p_color_channel) const;
+
 	void set_uv1_scale(const Vector3 &p_scale);
 	Vector3 get_uv1_scale() const;
 
@@ -619,6 +637,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::BlendMode)
 VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
 VARIANT_ENUM_CAST(SpatialMaterial::Flags)
+VARIANT_ENUM_CAST(SpatialMaterial::ColorChannel)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
 VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)

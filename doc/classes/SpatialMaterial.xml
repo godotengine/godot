@@ -40,6 +40,14 @@
 		</member>
 		<member name="clearcoat_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
+		<member name="color_channels_a" type="bool" setter="set_color_channel" getter="get_color_channel">
+		</member>
+		<member name="color_channels_b" type="bool" setter="set_color_channel" getter="get_color_channel">
+		</member>
+		<member name="color_channels_g" type="bool" setter="set_color_channel" getter="get_color_channel">
+		</member>
+		<member name="color_channels_r" type="bool" setter="set_color_channel" getter="get_color_channel">
+		</member>
 		<member name="depth_deep_parallax" type="bool" setter="set_depth_deep_parallax" getter="is_depth_deep_parallax_enabled">
 		</member>
 		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature">
@@ -317,6 +325,16 @@
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="13" enum="Flags">
 		</constant>
 		<constant name="FLAG_MAX" value="14" enum="Flags">
+		</constant>
+		<constant name="COLOR_CHANNEL_RED" value="0" enum="ColorChannel">
+		</constant>
+		<constant name="COLOR_CHANNEL_GREEN" value="1" enum="ColorChannel">
+		</constant>
+		<constant name="COLOR_CHANNEL_BLUE" value="2" enum="ColorChannel">
+		</constant>
+		<constant name="COLOR_CHANNEL_ALPHA" value="3" enum="ColorChannel">
+		</constant>
+		<constant name="COLOR_CHANNEL_MAX" value="4" enum="ColorChannel">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>

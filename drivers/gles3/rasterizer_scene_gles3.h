@@ -197,9 +197,14 @@ public:
 
 		bool cull_front;
 		bool cull_disabled;
+		bool color_mask_red;
+		bool color_mask_green;
+		bool color_mask_blue;
+		bool color_mask_alpha;
 		bool used_sss;
 		bool used_screen_texture;
 		bool using_contact_shadows;
+		bool color_write_disabled;
 
 		VS::ViewportDebugDraw debug_draw;
 	} state;
@@ -812,6 +817,7 @@ public:
 	RenderList render_list;
 
 	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_disabled, bool p_reverse_cull);
+	_FORCE_INLINE_ void _set_color_mask(bool p_color_mask_red, bool p_color_mask_green, bool p_color_mask_blue, bool p_color_mask_alpha);
 
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_alpha_pass);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e, const Transform &p_view_transform);

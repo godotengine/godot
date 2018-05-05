@@ -1647,6 +1647,10 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_vertex = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
+			p_shader->spatial.disable_channel_r = false;
+			p_shader->spatial.disable_channel_g = false;
+			p_shader->spatial.disable_channel_b = false;
+			p_shader->spatial.disable_channel_a = false;
 
 			shaders.actions_scene.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_ADD);
 			shaders.actions_scene.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MIX);
@@ -1657,6 +1661,11 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["depth_draw_always"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALWAYS);
 			shaders.actions_scene.render_mode_values["depth_draw_never"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_NEVER);
 			shaders.actions_scene.render_mode_values["depth_draw_alpha_prepass"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS);
+
+			shaders.actions_scene.render_mode_flags["disable_channel_r"] = &p_shader->spatial.disable_channel_r;
+			shaders.actions_scene.render_mode_flags["disable_channel_g"] = &p_shader->spatial.disable_channel_g;
+			shaders.actions_scene.render_mode_flags["disable_channel_b"] = &p_shader->spatial.disable_channel_b;
+			shaders.actions_scene.render_mode_flags["disable_channel_a"] = &p_shader->spatial.disable_channel_a;
 
 			shaders.actions_scene.render_mode_values["cull_front"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_FRONT);
 			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
