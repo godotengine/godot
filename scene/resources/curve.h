@@ -199,6 +199,8 @@ public:
 	float get_baked_length() const;
 	Vector2 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	PoolVector2Array get_baked_points() const; //useful for going through
+	Vector2 get_closest_point(const Vector2 &p_to_point) const;
+	float get_closest_offset(const Vector2 &p_to_point) const;
 
 	PoolVector2Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
@@ -268,6 +270,8 @@ public:
 	float interpolate_baked_tilt(float p_offset) const;
 	PoolVector3Array get_baked_points() const; //useful for going through
 	PoolRealArray get_baked_tilts() const; //useful for going through
+	Vector3 get_closest_point(const Vector3 &p_to_point) const;
+	float get_closest_offset(const Vector3 &p_to_point) const;
 
 	PoolVector3Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
