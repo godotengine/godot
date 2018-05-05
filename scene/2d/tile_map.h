@@ -245,9 +245,6 @@ public:
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
 
-	Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
 	void update_bitmask_region(const Vector2 &p_start = Vector2(), const Vector2 &p_end = Vector2());

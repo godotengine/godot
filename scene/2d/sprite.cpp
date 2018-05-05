@@ -63,7 +63,14 @@ Rect2 Sprite::_edit_get_rect() const {
 }
 
 bool Sprite::_edit_use_rect() const {
+	if (texture.is_null())
+		return false;
+
 	return true;
+}
+
+Rect2 Sprite::get_anchorable_rect() const {
+	return get_rect();
 }
 
 void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
@@ -367,10 +374,6 @@ Rect2 Sprite::get_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0, 0, 1, 1);
-	/*
-	if (texture.is_null())
-		return CanvasItem::_edit_get_rect();
-	*/
 
 	Size2i s;
 
