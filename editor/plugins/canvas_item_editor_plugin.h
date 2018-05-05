@@ -266,8 +266,6 @@ class CanvasItemEditor : public VBoxContainer {
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
-		Vector2 from;
-		Vector2 to;
 	};
 
 	uint64_t bone_last_frame;

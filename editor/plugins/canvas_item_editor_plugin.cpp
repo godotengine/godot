@@ -2589,9 +2589,6 @@ void CanvasItemEditor::_draw_bones() {
 
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
-			E->get().from = Vector2();
-			E->get().to = Vector2();
-
 			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
 			Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
 
@@ -2610,9 +2607,6 @@ void CanvasItemEditor::_draw_bones() {
 				to = transform.xform(to_node->get_global_position());
 			else
 				to = transform.xform(from_node->get_global_transform().xform(Vector2(E->get().length, 0)));
-
-			E->get().from = from;
-			E->get().to = to;
 
 			Vector2 rel = to - from;
 			Vector2 relt = rel.tangent().normalized() * bone_width;
@@ -2801,27 +2795,20 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 		}
 	}
 
-	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
-	if (!c) {
+	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	Node *scene = editor->get_edited_scene();
+	if (!canvas_item || !canvas_item->is_visible() || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
 		return false;
 	}
 
-	Node *p = c->get_parent();
-	if (!p) {
-		return false;
-	}
+	Node *parent = canvas_item->get_parent();
 
-	if (!c->is_visible()) {
-		return false;
-	}
-
-	if (Object::cast_to<Bone2D>(c)) {
-
-		if (Object::cast_to<Bone2D>(p)) {
-			//add as bone->parent relationship
+	if (Object::cast_to<Bone2D>(canvas_item)) {
+		if (Object::cast_to<Bone2D>(parent)) {
+			// Add as bone->parent relationship
 			BoneKey bk;
-			bk.from = p->get_instance_id();
-			bk.to = c->get_instance_id();
+			bk.from = parent->get_instance_id();
+			bk.to = canvas_item->get_instance_id();
 			if (!bone_list.has(bk)) {
 				BoneList b;
 				b.length = 0;
@@ -2832,8 +2819,9 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 		}
 
 		if (!has_child_bones) {
+			// Add a last bone if the Bone2D has no Bone2D child
 			BoneKey bk;
-			bk.from = c->get_instance_id();
+			bk.from = canvas_item->get_instance_id();
 			bk.to = 0;
 			if (!bone_list.has(bk)) {
 				BoneList b;
@@ -2845,11 +2833,12 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 
 		return true;
 	}
-	if (c->has_meta("_edit_bone_")) {
 
+	if (canvas_item->has_meta("_edit_bone_")) {
+		// Add a "custom bone"
 		BoneKey bk;
-		bk.from = c->get_parent()->get_instance_id();
-		bk.to = c->get_instance_id();
+		bk.from = parent->get_instance_id();
+		bk.to = canvas_item->get_instance_id();
 		if (!bone_list.has(bk)) {
 			BoneList b;
 			b.length = 0;
@@ -2934,6 +2923,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		int nb_control = 0;
 		int nb_having_pivot = 0;
 
+		// Update the viewport if the canvas_item changes
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
 			CanvasItem *canvas_item = E->get();
@@ -2979,12 +2969,14 @@ void CanvasItemEditor::_notification(int p_what) {
 				nb_having_pivot++;
 			}
 		}
+
 		// Activate / Deactivate the pivot tool
 		pivot_button->set_disabled(nb_having_pivot == 0);
 
 		// Show / Hide the layout button
 		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
 
+		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
 			Object *b = ObjectDB::get_instance(E->key().from);
@@ -2995,7 +2987,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 
 			Node2D *b2 = Object::cast_to<Node2D>(b);
-			if (!b2) {
+			if (!b2 || !b2->is_inside_tree()) {
 				continue;
 			}
 
