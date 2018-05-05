@@ -193,7 +193,13 @@ public class PaymentsManager {
 
 	public void destroy() {
 		if (mService != null) {
-			activity.unbindService(mServiceConn);
+			try {
+				activity.unbindService(mServiceConn);
+			} catch (IllegalArgumentException e) {
+				// Somehow we've already been unbound. This is a non-fatal
+				// error.
+				Log.e(TAG, "Unable to unbind from payment service (already unbound)");
+			}
 		}
 
 		mSetupDone = false;
