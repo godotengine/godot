@@ -518,10 +518,9 @@ FRAGMENT_SHADER_CODE
 
 
 
-
 #ifdef USE_LIGHTING
 
-	vec2 light_vec = light_uv_interp.zw;; //for shadow and normal mapping
+	vec2 light_vec = (inverse(light_matrix)*vec4(normalize(light_uv_interp.zw),0.0,0.0)).xy; //for normal mapping
 
 	if (normal_used) {
 		normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
@@ -567,7 +566,7 @@ FRAGMENT_SHADER_CODE
 		color*=light;
 
 #ifdef USE_SHADOWS
-
+		light_vec = light_uv_interp.zw; //for shadows
 		float angle_to_light = -atan(light_vec.x,light_vec.y);
 		float PI = 3.14159265358979323846264;
 		/*int i = int(mod(floor((angle_to_light+7.0*PI/6.0)/(4.0*PI/6.0))+1.0, 3.0)); // +1 pq os indices estao em ordem 2,0,1 nos arrays
