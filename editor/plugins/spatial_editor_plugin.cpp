@@ -3121,7 +3121,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 			if (!scene.is_valid()) { // invalid scene
 				return false;
 			} else {
-				instanced_scene = scene->instance();
+				instanced_scene = scene->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 			}
 		}
 	}
