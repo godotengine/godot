@@ -912,6 +912,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("shadow_as_outline", "Label", 0 * EDSCALE);
 	theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 
+	// LinkButton
+	theme->set_stylebox("focus", "LinkButton", style_empty);
+	theme->set_color("font_color", "LinkButton", font_color);
+
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
