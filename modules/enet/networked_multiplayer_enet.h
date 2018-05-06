@@ -119,9 +119,9 @@ public:
 	virtual int get_peer_port(int p_peer_id) const;
 
 	Error create_server(int p_port, int p_max_clients = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
-	Error create_client(const String &p_address, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
+	Error create_client(const String &p_address, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_client_port = 0);
 
-	void close_connection();
+	void close_connection(uint32_t wait_usec = 100);
 
 	void disconnect_peer(int p_peer, bool now = false);
 
