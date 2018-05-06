@@ -5225,7 +5225,7 @@ EditorNode::EditorNode() {
 	srt->add_child(tabbar_container);
 	tabbar_container->add_child(scene_tabs);
 	distraction_free = memnew(ToolButton);
-	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F11));
+	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_SHIFT | KEY_SPACE));
 	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
 	distraction_free->connect("pressed", this, "_toggle_distraction_free_mode");
 	distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
@@ -5434,7 +5434,7 @@ EditorNode::EditorNode() {
 	p->add_child(editor_layouts);
 	editor_layouts->connect("id_pressed", this, "_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
-	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREN);
+	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_F11), SETTINGS_TOGGLE_FULLSCREN);
 	p->add_separator();
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);
 
