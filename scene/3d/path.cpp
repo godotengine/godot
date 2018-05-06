@@ -82,6 +82,58 @@ Path::Path() {
 
 //////////////
 
+static _FORCE_INLINE_ Basis xy_only(const Basis &basis) {
+
+	Vector3 sideways = basis.get_axis(0);
+	Vector3 up = basis.get_axis(1);
+	Vector3 forward = basis.get_axis(2);
+
+	Vector3 proj = sideways;
+	proj.y = 0.0f;
+
+	if (proj.length_squared() < CMP_EPSILON2) {
+		float dir = Vector3(0, 1, 0).dot(sideways) < 0.0f ? -1 : 1;
+
+		sideways = Vector3(1, 0, 0) * dir;
+		up = Vector3(0, 1, 0) * dir;
+	} else {
+		sideways = proj;
+		sideways.normalize();
+
+		up = forward.cross(sideways).normalized();
+	}
+
+	Basis basis1;
+	basis1.set(sideways, up, forward);
+
+	return basis1;
+}
+
+static _FORCE_INLINE_ Basis y_only(const Basis &basis) {
+
+	Vector3 sideways = basis.get_axis(0);
+	Vector3 up = basis.get_axis(1);
+	Vector3 forward = basis.get_axis(2);
+	float y_dot = Vector3(0, 1, 0).dot(up);
+
+	// Are we pointing up or down?
+	if (fabs(y_dot) < CMP_EPSILON) {
+		sideways = Vector3(1, 0, 0);
+		forward = Vector3(0, 0, 1);
+	} else {
+		forward.y = 0.0f;
+		forward.normalize();
+
+		sideways = Vector3(0, 1, 0).cross(forward).normalized();
+	}
+
+	Basis basis1;
+	basis1.set_axis(0, sideways);
+	basis1.set_axis(2, forward);
+
+	return basis1;
+}
+
 void PathFollow::_update_transform() {
 
 	if (!path)
@@ -91,74 +143,64 @@ void PathFollow::_update_transform() {
 	if (!c.is_valid())
 		return;
 
+	int count = c->get_point_count();
+	if (count < 2)
+		return;
+
 	if (delta_offset == 0) {
 		return;
 	}
 
+	float bl = c->get_baked_length();
+	float bi = c->get_bake_interval();
 	float o = offset;
+	float o_next = offset + bi;
+
+	Vector3 forward;
 
 	if (loop) {
-		o = Math::fposmod(o, c->get_baked_length());
+		o = Math::fposmod(o, bl);
+		o_next = Math::fposmod(o_next, bl);
+	} else if (o_next > bl) {
+		o = bl - bi;
+		o_next = bl;
 	}
 
 	Vector3 pos = c->interpolate_baked(o, cubic);
+	forward = c->interpolate_baked(o_next, cubic) - pos;
+
+	if (forward.length_squared() < CMP_EPSILON2) {
+		forward = Vector3(0, 0, 1);
+	} else {
+		forward.normalize();
+	}
+
 	Transform t = get_transform();
 
-	t.origin = pos;
-	Vector3 pos_offset = Vector3(h_offset, v_offset, 0);
+	Vector3 sideways = c->interpolate_baked_up_vector(o, rotation_mode == ROTATION_XYZ).cross(forward).normalized();
+	Vector3 up = forward.cross(sideways).normalized();
 
 	if (rotation_mode != ROTATION_NONE) {
-		// perform parallel transport
-		//
-		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
-		// for a discussion about why not Frenet frame.
 
-		Vector3 t_prev = (pos - c->interpolate_baked(o - delta_offset, cubic)).normalized();
-		Vector3 t_cur = (c->interpolate_baked(o + delta_offset, cubic) - pos).normalized();
+		Basis basis;
+		basis.set(sideways, up, forward);
 
-		Vector3 axis = t_prev.cross(t_cur);
-		float dot = t_prev.dot(t_cur);
-		float angle = Math::acos(CLAMP(dot, -1, 1));
+		// process constraints, if any
+		if (rotation_mode == ROTATION_Y)
+			basis = y_only(basis);
+		else if (rotation_mode == ROTATION_XY)
+			basis = xy_only(basis);
 
-		if (likely(Math::abs(angle) > CMP_EPSILON)) {
-			if (rotation_mode == ROTATION_Y) {
-				// assuming we're referring to global Y-axis. is this correct?
-				axis.x = 0;
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
-			}
+		sideways = basis.get_axis(0);
+		up = basis.get_axis(1);
 
-			if (likely(axis.length() > CMP_EPSILON)) {
-				t.rotate_basis(axis.normalized(), angle);
-			}
-		}
+		Vector3 scale = t.basis.get_scale();
+		basis.set(basis.get_axis(0) * scale.x, basis.get_axis(1) * scale.y, basis.get_axis(2) * scale.z);
 
-		// do the additional tilting
-		float tilt_angle = c->interpolate_baked_tilt(o);
-		Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
-
-		if (likely(Math::abs(tilt_angle) > CMP_EPSILON)) {
-			if (rotation_mode == ROTATION_Y) {
-				tilt_axis.x = 0;
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
-			}
-
-			if (likely(tilt_axis.length() > CMP_EPSILON)) {
-				t.rotate_basis(tilt_axis.normalized(), tilt_angle);
-			}
-		}
-
-		t.translate(pos_offset);
-	} else {
-		t.origin += pos_offset;
+		t.basis = basis;
 	}
+
+	t.origin = pos + sideways * h_offset + up * v_offset;
 
 	set_transform(t);
 }

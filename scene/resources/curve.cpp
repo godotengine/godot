@@ -1169,6 +1169,7 @@ void Curve3D::_bake() const {
 	if (points.size() == 0) {
 		baked_point_cache.resize(0);
 		baked_tilt_cache.resize(0);
+		baked_up_vector_cache.resize(0);
 		return;
 	}
 
@@ -1178,6 +1179,8 @@ void Curve3D::_bake() const {
 		baked_point_cache.set(0, points[0].pos);
 		baked_tilt_cache.resize(1);
 		baked_tilt_cache.set(0, points[0].tilt);
+		baked_up_vector_cache.resize(1);
+		baked_up_vector_cache.set(0, Vector3(0, 1, 0));
 		return;
 	}
 
@@ -1247,10 +1250,38 @@ void Curve3D::_bake() const {
 	baked_tilt_cache.resize(pointlist.size());
 	PoolRealArray::Write wt = baked_tilt_cache.write();
 
+	baked_up_vector_cache.resize(pointlist.size());
+	PoolVector3Array::Write up_write = baked_up_vector_cache.write();
+
+	Vector3 prev_sideways = Vector3(1, 0, 0);
+	Vector3 prev_up = Vector3(0, 1, 0);
+	Vector3 prev_forward = Vector3(0, 0, 1);
+
 	for (List<Plane>::Element *E = pointlist.front(); E; E = E->next()) {
 
 		w[idx] = E->get().normal;
 		wt[idx] = E->get().d;
+
+		Vector3 sideways;
+		Vector3 up;
+		Vector3 forward = idx > 0 ? (w[idx] - w[idx - 1]).normalized() : prev_forward;
+
+		float y_dot = up.dot(forward);
+
+		if (fabsf(y_dot) > (1.0f - CMP_EPSILON)) {
+			sideways = prev_sideways;
+			up = prev_forward * (y_dot < 0.0f ? 1 : -1);
+		} else {
+			sideways = prev_up.cross(forward).normalized();
+			up = forward.cross(sideways).normalized();
+		}
+
+		up_write[idx] = up;
+
+		prev_sideways = sideways;
+		prev_up = up;
+		prev_forward = forward;
+
 		idx++;
 	}
 }
@@ -1343,6 +1374,55 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 	return Math::lerp(r[idx], r[idx + 1], frac);
 }
 
+Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	int count = baked_up_vector_cache.size();
+	if (count == 0) {
+		ERR_EXPLAIN("No points in Curve3D");
+		ERR_FAIL_COND_V(count == 0, Vector3(0, 1, 0));
+	}
+
+	PoolVector3Array::Read r = baked_up_vector_cache.read();
+	PoolVector3Array::Read rp = baked_point_cache.read();
+
+	float offset = CLAMP(p_offset, 0.0f, baked_max_ofs);
+
+	int idx = Math::floor((double)offset / (double)bake_interval);
+	float frac = Math::fmod(offset, bake_interval) / bake_interval;
+
+	Vector3 forward;
+	Vector3 up;
+	Vector3 up1;
+
+	if (count == 1) {
+		forward = Vector3(0, 0, 1);
+		up = r[0];
+		up1 = r[0];
+	} else {
+		forward = (rp[idx + 1] - rp[idx]).normalized();
+		up = r[idx];
+		up1 = r[idx + 1];
+	}
+
+	Basis basis;
+	Basis basis1;
+	Basis res;
+
+	basis.set(up.cross(forward).normalized(), up, forward);
+	basis1.set(up1.cross(forward).normalized(), up1, forward);
+
+	res = Quat(basis).slerp(basis1, frac);
+
+	if (p_apply_tilt)
+		res.rotate(forward, interpolate_baked_tilt(offset));
+
+	return res.get_axis(1);
+}
+
 PoolVector3Array Curve3D::get_baked_points() const {
 
 	if (baked_cache_dirty)
@@ -1357,6 +1437,14 @@ PoolRealArray Curve3D::get_baked_tilts() const {
 		_bake();
 
 	return baked_tilt_cache;
+}
+
+PoolVector3Array Curve3D::get_baked_up_vectors() const {
+
+	if (baked_cache_dirty)
+		_bake();
+
+	return baked_up_vector_cache;
 }
 
 Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
@@ -1566,8 +1654,10 @@ void Curve3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve3D::interpolate_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("interpolate_baked_up_vector", "offset", "apply_tilt"), &Curve3D::interpolate_baked_up_vector, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
+	ClassDB::bind_method(D_METHOD("get_baked_up_vectors"), &Curve3D::get_baked_up_vectors);
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve3D::get_closest_point);
 	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve3D::get_closest_offset);
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
