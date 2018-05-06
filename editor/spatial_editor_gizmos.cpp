@@ -204,7 +204,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 	}
 
 	selectable_icon_size = p_scale;
-	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 100.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 200.0f));
+	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 40.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 80.0f));
 
 	ins.mesh = mesh;
 	ins.unscaled = true;
@@ -214,7 +214,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
-	selectable_icon_size = p_scale;
+	selectable_icon_size = p_scale * 2.0;
 
 	instances.push_back(ins);
 }
@@ -481,9 +481,8 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 		float scale = t.origin.distance_to(p_camera->get_camera_transform().origin);
 
 		if (p_camera->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
-			float aspect = p_camera->get_viewport()->get_visible_rect().size.aspect();
-			float size = p_camera->get_size();
-			scale = size / aspect;
+			float h = Math::abs(p_camera->get_size());
+			scale = (h * 2.0);
 		}
 
 		Point2 center = p_camera->unproject_position(t.origin);
@@ -722,7 +721,7 @@ void EditorSpatialGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton"), &EditorSpatialGizmo::add_mesh, DEFVAL(false), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorSpatialGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorSpatialGizmo::add_collision_triangles);
-	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "billboard", "secondary"), &EditorSpatialGizmo::add_handles, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorSpatialGizmo::_set_spatial_node);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSpatialGizmo::clear);
