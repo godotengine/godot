@@ -1352,10 +1352,10 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	PoolVector<float> tangents;
 	PoolVector<Vector2> uvs;
 
-	faces.resize(4);
-	normals.resize(4);
-	tangents.resize(4 * 4);
-	uvs.resize(4);
+	faces.resize(6);
+	normals.resize(6);
+	tangents.resize(6 * 4);
+	uvs.resize(6);
 
 	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
 
@@ -1366,9 +1366,15 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 		Vector3(_size.x, -_size.y, 0),
 	};
 
-	for (int i = 0; i < 4; i++) {
+	static const int indices[6] = {
+		0, 1, 2,
+		0, 2, 3
+	};
 
-		faces.set(i, quad_faces[i]);
+	for (int i = 0; i < 6; i++) {
+
+		int j = indices[i];
+		faces.set(i, quad_faces[j]);
 		normals.set(i, Vector3(0, 0, 1));
 		tangents.set(i * 4 + 0, 1.0);
 		tangents.set(i * 4 + 1, 0.0);
@@ -1382,14 +1388,14 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 			Vector2(1, 1),
 		};
 
-		uvs.set(i, quad_uv[i]);
+		uvs.set(i, quad_uv[j]);
 	}
 
 	p_arr[VS::ARRAY_VERTEX] = faces;
 	p_arr[VS::ARRAY_NORMAL] = normals;
 	p_arr[VS::ARRAY_TANGENT] = tangents;
 	p_arr[VS::ARRAY_TEX_UV] = uvs;
-};
+}
 
 void QuadMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadMesh::set_size);
@@ -1398,7 +1404,7 @@ void QuadMesh::_bind_methods() {
 }
 
 QuadMesh::QuadMesh() {
-	primitive_type = PRIMITIVE_TRIANGLE_FAN;
+	primitive_type = PRIMITIVE_TRIANGLES;
 	size = Size2(1.0, 1.0);
 }
 

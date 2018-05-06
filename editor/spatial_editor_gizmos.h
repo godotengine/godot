@@ -49,6 +49,7 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
 
@@ -80,7 +81,6 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 
 	Vector<Vector3> collision_segments;
 	Ref<TriangleMesh> collision_mesh;
-	AABB collision_mesh_bounds;
 
 	struct Handle {
 		Vector3 pos;
@@ -89,6 +89,7 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 
 	Vector<Vector3> handles;
 	Vector<Vector3> secondary_handles;
+	float selectable_icon_size = -1.0f;
 	bool billboard_handle;
 
 	bool valid;
@@ -102,7 +103,7 @@ protected:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
 	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
-	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const AABB &p_bounds = AABB());
+	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
 	void add_handles(const Vector<Vector3> &p_handles, bool p_billboard = false, bool p_secondary = false);
 	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3());
@@ -118,7 +119,7 @@ protected:
 public:
 	virtual Vector3 get_handle_pos(int p_idx) const;
 	virtual bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
-	virtual bool intersect_ray(const Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
+	virtual bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
 
 	void clear();
 	void create();
@@ -190,6 +191,18 @@ public:
 	virtual bool can_draw() const;
 	void redraw();
 	MeshInstanceSpatialGizmo(MeshInstance *p_mesh = NULL);
+};
+
+class Sprite3DSpatialGizmo : public EditorSpatialGizmo {
+
+	GDCLASS(Sprite3DSpatialGizmo, EditorSpatialGizmo);
+
+	SpriteBase3D *sprite;
+
+public:
+	virtual bool can_draw() const;
+	void redraw();
+	Sprite3DSpatialGizmo(SpriteBase3D *p_sprite = NULL);
 };
 
 class Position3DSpatialGizmo : public EditorSpatialGizmo {

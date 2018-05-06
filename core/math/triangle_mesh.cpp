@@ -510,6 +510,222 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 	return inters;
 }
 
+bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_count) const {
+	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
+
+	//p_fully_inside = true;
+
+	enum {
+		TEST_AABB_BIT = 0,
+		VISIT_LEFT_BIT = 1,
+		VISIT_RIGHT_BIT = 2,
+		VISIT_DONE_BIT = 3,
+		VISITED_BIT_SHIFT = 29,
+		NODE_IDX_MASK = (1 << VISITED_BIT_SHIFT) - 1,
+		VISITED_BIT_MASK = ~NODE_IDX_MASK,
+
+	};
+
+	int level = 0;
+
+	PoolVector<Triangle>::Read trianglesr = triangles.read();
+	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector<BVH>::Read bvhr = bvh.read();
+
+	const Triangle *triangleptr = trianglesr.ptr();
+	const Vector3 *vertexptr = verticesr.ptr();
+	int pos = bvh.size() - 1;
+	const BVH *bvhptr = bvhr.ptr();
+
+	stack[0] = pos;
+	while (true) {
+
+		uint32_t node = stack[level] & NODE_IDX_MASK;
+		const BVH &b = bvhptr[node];
+		bool done = false;
+
+		switch (stack[level] >> VISITED_BIT_SHIFT) {
+			case TEST_AABB_BIT: {
+
+				bool valid = b.aabb.intersects_convex_shape(p_planes, p_plane_count);
+				if (!valid) {
+
+					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+
+				} else {
+
+					if (b.face_index >= 0) {
+
+						const Triangle &s = triangleptr[b.face_index];
+
+						for (int j = 0; j < 3; ++j) {
+							const Vector3 &point = vertexptr[s.indices[j]];
+							const Vector3 &next_point = vertexptr[s.indices[(j + 1) % 3]];
+							Vector3 res;
+							bool over = true;
+							for (int i = 0; i < p_plane_count; i++) {
+								const Plane &p = p_planes[i];
+
+								if (p.intersects_segment(point, next_point, &res)) {
+									bool inisde = true;
+									for (int k = 0; k < p_plane_count; k++) {
+										if (k == i) continue;
+										const Plane &pp = p_planes[k];
+										if (pp.is_point_over(res)) {
+											inisde = false;
+											break;
+										}
+									}
+									if (inisde) return true;
+								}
+
+								if (p.is_point_over(point)) {
+									over = false;
+									break;
+								}
+							}
+							if (over) return true;
+						}
+
+						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+
+					} else {
+
+						stack[level] = (VISIT_LEFT_BIT << VISITED_BIT_SHIFT) | node;
+					}
+				}
+				continue;
+			}
+			case VISIT_LEFT_BIT: {
+
+				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
+				stack[level + 1] = b.left | TEST_AABB_BIT;
+				level++;
+				continue;
+			}
+			case VISIT_RIGHT_BIT: {
+
+				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+				stack[level + 1] = b.right | TEST_AABB_BIT;
+				level++;
+				continue;
+			}
+			case VISIT_DONE_BIT: {
+
+				if (level == 0) {
+					done = true;
+					break;
+				} else
+					level--;
+				continue;
+			}
+		}
+
+		if (done)
+			break;
+	}
+
+	return false;
+}
+
+bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, Vector3 p_scale) const {
+	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
+
+	enum {
+		TEST_AABB_BIT = 0,
+		VISIT_LEFT_BIT = 1,
+		VISIT_RIGHT_BIT = 2,
+		VISIT_DONE_BIT = 3,
+		VISITED_BIT_SHIFT = 29,
+		NODE_IDX_MASK = (1 << VISITED_BIT_SHIFT) - 1,
+		VISITED_BIT_MASK = ~NODE_IDX_MASK,
+
+	};
+
+	int level = 0;
+
+	PoolVector<Triangle>::Read trianglesr = triangles.read();
+	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector<BVH>::Read bvhr = bvh.read();
+
+	Transform scale(Basis().scaled(p_scale));
+
+	const Triangle *triangleptr = trianglesr.ptr();
+	const Vector3 *vertexptr = verticesr.ptr();
+	int pos = bvh.size() - 1;
+	const BVH *bvhptr = bvhr.ptr();
+
+	stack[0] = pos;
+	while (true) {
+
+		uint32_t node = stack[level] & NODE_IDX_MASK;
+		const BVH &b = bvhptr[node];
+		bool done = false;
+
+		switch (stack[level] >> VISITED_BIT_SHIFT) {
+			case TEST_AABB_BIT: {
+
+				bool intersects = scale.xform(b.aabb).intersects_convex_shape(p_planes, p_plane_count);
+				if (!intersects) return false;
+
+				bool inside = scale.xform(b.aabb).inside_convex_shape(p_planes, p_plane_count);
+				if (inside) {
+
+					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+
+				} else {
+
+					if (b.face_index >= 0) {
+						const Triangle &s = triangleptr[b.face_index];
+						for (int j = 0; j < 3; ++j) {
+							Vector3 point = scale.xform(vertexptr[s.indices[j]]);
+							for (int i = 0; i < p_plane_count; i++) {
+								const Plane &p = p_planes[i];
+								if (p.is_point_over(point)) return false;
+							}
+						}
+
+						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+
+					} else {
+
+						stack[level] = (VISIT_LEFT_BIT << VISITED_BIT_SHIFT) | node;
+					}
+				}
+				continue;
+			}
+			case VISIT_LEFT_BIT: {
+
+				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
+				stack[level + 1] = b.left | TEST_AABB_BIT;
+				level++;
+				continue;
+			}
+			case VISIT_RIGHT_BIT: {
+
+				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
+				stack[level + 1] = b.right | TEST_AABB_BIT;
+				level++;
+				continue;
+			}
+			case VISIT_DONE_BIT: {
+
+				if (level == 0) {
+					done = true;
+					break;
+				} else
+					level--;
+				continue;
+			}
+		}
+
+		if (done)
+			break;
+	}
+
+	return true;
+}
+
 bool TriangleMesh::is_valid() const {
 
 	return valid;

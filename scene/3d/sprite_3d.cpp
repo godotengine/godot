@@ -185,6 +185,9 @@ void SpriteBase3D::_queue_update() {
 	if (pending_update)
 		return;
 
+	triangle_mesh.unref();
+	update_gizmo();
+
 	pending_update = true;
 	call_deferred(SceneStringNames::get_singleton()->_im_update);
 }
@@ -196,6 +199,66 @@ AABB SpriteBase3D::get_aabb() const {
 PoolVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 
 	return PoolVector<Face3>();
+}
+
+Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
+	if (triangle_mesh.is_valid())
+		return triangle_mesh;
+
+	PoolVector<Vector3> faces;
+	faces.resize(6);
+	PoolVector<Vector3>::Write facesw = faces.write();
+
+	Rect2 final_rect = get_item_rect();
+
+	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+		return Ref<TriangleMesh>();
+
+	float pixel_size = get_pixel_size();
+
+	Vector2 vertices[4] = {
+
+		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
+		(final_rect.position + final_rect.size) * pixel_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
+		final_rect.position * pixel_size,
+
+	};
+
+	int x_axis = ((axis + 1) % 3);
+	int y_axis = ((axis + 2) % 3);
+
+	if (axis != Vector3::AXIS_Z) {
+		SWAP(x_axis, y_axis);
+
+		for (int i = 0; i < 4; i++) {
+			if (axis == Vector3::AXIS_Y) {
+				vertices[i].y = -vertices[i].y;
+			} else if (axis == Vector3::AXIS_X) {
+				vertices[i].x = -vertices[i].x;
+			}
+		}
+	}
+
+	static const int indices[6] = {
+		0, 1, 2,
+		0, 2, 3
+	};
+
+	for (int j = 0; j < 6; j++) {
+		int i = indices[j];
+		Vector3 vtx;
+		vtx[x_axis] = vertices[i][0];
+		vtx[y_axis] = vertices[i][1];
+		facesw[j] = vtx;
+	}
+
+	facesw = PoolVector<Vector3>::Write();
+
+	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh->create(faces);
+
+	return triangle_mesh;
 }
 
 void SpriteBase3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
@@ -255,6 +318,7 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"), &SpriteBase3D::get_alpha_cut_mode);
 
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
+	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("_queue_update"), &SpriteBase3D::_queue_update);
 	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
@@ -901,7 +965,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 		return Rect2(0, 0, 1, 1);
 	Size2i s = t->get_size();
 
-	Point2 ofs = offset;
+	Point2 ofs = get_offset();
 	if (centered)
 		ofs -= s / 2;
 
