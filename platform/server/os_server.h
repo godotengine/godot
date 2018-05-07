@@ -32,6 +32,7 @@
 
 #include "../x11/crash_handler_x11.h"
 #include "../x11/power_x11.h"
+#include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
@@ -64,6 +65,8 @@ class OS_Server : public OS_Unix {
 	PowerX11 *power_manager;
 
 	CrashHandler crash_handler;
+
+	ResourceFormatDummyTexture *resource_loader_dummy;
 
 protected:
 	virtual int get_video_driver_count() const;
