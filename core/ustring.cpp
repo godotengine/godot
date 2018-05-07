@@ -2213,6 +2213,16 @@ String String::substr(int p_from, int p_chars) const {
 	return String(&c_str()[p_from], p_chars);
 }
 
+String String::repeat(int p_n) const {
+
+	p_n = MAX(p_n, 0);
+	String s;
+	for (int i = 0; i < p_n; i++) {
+		s += *this;
+	}
+	return s;
+}
+
 int String::find_last(const String &p_str) const {
 
 	int pos = -1;

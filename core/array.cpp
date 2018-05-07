@@ -117,6 +117,27 @@ void Array::push_back(const Variant &p_value) {
 	_p->array.push_back(p_value);
 }
 
+void Array::append_array(const Array &p_arr, int p_n) {
+
+	const int ds = p_arr.size();
+	if (ds == 0)
+		return;
+	p_n = MAX(p_n, 0);
+	const int bs = size();
+	resize(bs + ds * p_n);
+	int k = bs;
+	for (int j = 0; j < p_n; j++)
+		for (int i = 0; i < ds; i++)
+			set(k++, p_arr[i]);
+}
+
+Array Array::repeat(int p_n) const {
+
+	Array arr;
+	arr.append_array(*this, p_n);
+	return arr;
+}
+
 Error Array::resize(int p_new_size) {
 
 	return _p->array.resize(p_new_size);

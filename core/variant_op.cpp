@@ -787,14 +787,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 				const Array &array_a = *reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array &array_b = *reinterpret_cast<const Array *>(p_b._data._mem);
-				Array sum;
-				int asize = array_a.size();
-				int bsize = array_b.size();
-				sum.resize(asize + bsize);
-				for (int i = 0; i < asize; i++)
-					sum[i] = array_a[i];
-				for (int i = 0; i < bsize; i++)
-					sum[i + asize] = array_b[i];
+				Array sum = array_a;
+				sum.append_array(array_b);
 				_RETURN(sum);
 			}
 
