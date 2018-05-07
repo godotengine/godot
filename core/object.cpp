@@ -1919,9 +1919,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 
 	rw_lock->write_lock();
 	instances[++instance_counter] = p_object;
-#ifdef DEBUG_ENABLED
 	instance_checks[p_object] = instance_counter;
-#endif
 	rw_lock->write_unlock();
 
 	return instance_counter;
@@ -1932,9 +1930,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 	rw_lock->write_lock();
 
 	instances.erase(p_object->get_instance_id());
-#ifdef DEBUG_ENABLED
 	instance_checks.erase(p_object);
-#endif
 
 	rw_lock->write_unlock();
 }
