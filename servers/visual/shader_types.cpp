@@ -231,6 +231,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_disabled");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("unshaded");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");

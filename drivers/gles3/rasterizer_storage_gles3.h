@@ -420,6 +420,7 @@ public:
 				BLEND_MODE_SUB,
 				BLEND_MODE_MUL,
 				BLEND_MODE_PMALPHA,
+				BLEND_MODE_DISABLED,
 			};
 
 			int blend_mode;
