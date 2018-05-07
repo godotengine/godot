@@ -230,12 +230,12 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("skip_vertex_transform");
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_mix");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_add");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_sub");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_mul");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_premul_alpha");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_disabled");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mix");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_add");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_disabled");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("unshaded");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("light_only");
