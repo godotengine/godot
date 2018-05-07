@@ -1910,6 +1910,10 @@ void Image::unlock() {
 	write_lock = PoolVector<uint8_t>::Write();
 }
 
+Color Image::get_pixelv(const Point2 &p_src) const {
+	return get_pixel(p_src.x, p_src.y);
+}
+
 Color Image::get_pixel(int p_x, int p_y) const {
 
 	uint8_t *ptr = write_lock.ptr();
@@ -2054,6 +2058,10 @@ Color Image::get_pixel(int p_x, int p_y) const {
 	}
 
 	return Color();
+}
+
+void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {
+	return set_pixel(p_dst.x, p_dst.y, p_color);
 }
 
 void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
@@ -2287,8 +2295,10 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("lock"), &Image::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &Image::unlock);
-	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
+	ClassDB::bind_method(D_METHOD("get_pixelv", "src"), &Image::get_pixelv);
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
+	ClassDB::bind_method(D_METHOD("set_pixelv", "dst", "color"), &Image::set_pixelv);
+	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
