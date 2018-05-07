@@ -37,6 +37,7 @@
 #include "os/os.h"
 #include "project_settings.h"
 #include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {
 
@@ -146,6 +147,16 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	} else {
 		packet_peer_stream->put_var(var);
 	}
+}
+
+void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
+
+	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+	ERR_FAIL_COND(!node);
+
+	Ref<PackedScene> ps = memnew(PackedScene);
+	ps->pack(node);
+	ResourceSaver::save(p_path, ps);
 }
 
 void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) {
@@ -322,6 +333,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				else
 					remove_breakpoint(cmd[2], cmd[1]);
 
+			} else if (command == "save_node") {
+				_save_node(cmd[1], cmd[2]);
 			} else {
 				_parse_live_edit(cmd);
 			}
