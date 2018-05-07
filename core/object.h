@@ -762,15 +762,10 @@ public:
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 
-#ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
 
 		return instance_checks.has(p_ptr);
 	}
-#else
-	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) { return true; }
-
-#endif
 };
 
 //needed by macros
