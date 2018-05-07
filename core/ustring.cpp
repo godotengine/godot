@@ -945,8 +945,8 @@ String String::num(double p_num, int p_decimals) {
 
 #ifndef NO_USE_STDLIB
 
-	if (p_decimals > 12)
-		p_decimals = 12;
+	if (p_decimals > 16)
+		p_decimals = 16;
 
 	char fmt[7];
 	fmt[0] = '%';
