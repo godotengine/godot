@@ -238,6 +238,8 @@ void CreateDialog::_update_search() {
 	favorite->set_disabled(true);
 
 	help_bit->set_text("");
+	help_full_bit->set_text("");
+
 	/*
 	TreeItem *root = search_options->create_item();
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
@@ -464,6 +466,7 @@ void CreateDialog::_item_selected() {
 		return;
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	help_full_bit->set_text(EditorHelp::get_doc_data()->class_list[name].description);
 
 	get_ok()->set_disabled(false);
 }
@@ -694,7 +697,15 @@ CreateDialog::CreateDialog() {
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
+
+	HSplitContainer *hbc = memnew(HSplitContainer);
+	hbc->set_v_size_flags(SIZE_EXPAND_FILL);
+	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(hbc);
+	VBoxContainer *matches = memnew(VBoxContainer);
+	hbc->add_child(matches);
+	matches->add_margin_child(TTR("Matches:"), search_options, true);
+	matches->set_h_size_flags(SIZE_EXPAND_FILL);
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -703,7 +714,13 @@ CreateDialog::CreateDialog() {
 	base_type = "Object";
 	preferred_search_result_type = "";
 
+	VBoxContainer *vbc2 = memnew(VBoxContainer);
+	hbc->add_child(vbc2);
+
 	help_bit = memnew(EditorHelpBit);
-	vbc->add_margin_child(TTR("Description:"), help_bit);
+	vbc2->add_margin_child(TTR("Brief Description:"), help_bit, false);
 	help_bit->connect("request_hide", this, "_closed");
+	help_full_bit = memnew(EditorHelpBit);
+	vbc2->add_margin_child(TTR("Description:"), help_full_bit, true);
+	help_full_bit->connect("request_hide", this, "_closed");
 }
