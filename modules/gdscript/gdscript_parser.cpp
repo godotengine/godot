@@ -4031,6 +4031,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				bool onready = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_ONREADY;
 
 				tokenizer->advance();
+
+				bool weakref = false;
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_FUNC && tokenizer->get_token_literal() == "weakref") {
+					weakref = true;
+					tokenizer->advance();
+				}
+
 				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("Expected identifier for member variable name.");
@@ -4042,6 +4049,53 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				member._export.name = member.identifier;
 				member.line = tokenizer->get_token_line();
 				member.rpc_mode = rpc_mode;
+				member.weakref = weakref;
+
+				if (weakref) {
+					member.getter = "#get_" + member.identifier;
+					member.setter = "#set_" + member.identifier;
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = member.identifier;
+
+					Vector<StringName> setter_arguments;
+					setter_arguments.push_back("p_" + member.identifier);
+
+					IdentifierNode *id_p = alloc_node<IdentifierNode>();
+					id_p->name = setter_arguments[0];
+
+					FunctionNode *setter = alloc_node<FunctionNode>();
+					setter->name = member.setter;
+					setter->arguments = setter_arguments;
+					setter->_static = false;
+					setter->line = member.line;
+					p_class->functions.push_back(setter);
+
+					OperatorNode *assign = alloc_node<OperatorNode>();
+					assign->op = OperatorNode::OP_ASSIGN;
+					assign->arguments.push_back(id);
+					assign->arguments.push_back(id_p);
+
+					BlockNode *setter_block = alloc_node<BlockNode>();
+					setter_block->parent_class = p_class;
+					setter->body = setter_block;
+					setter_block->statements.push_back(assign);
+
+					FunctionNode *getter = alloc_node<FunctionNode>();
+					getter->name = member.getter;
+					getter->_static = false;
+					getter->line = member.line;
+					p_class->functions.push_back(getter);
+
+					ControlFlowNode *cf_return = alloc_node<ControlFlowNode>();
+					cf_return->cf_type = ControlFlowNode::CF_RETURN;
+					cf_return->arguments.push_back(id);
+
+					BlockNode *getter_block = alloc_node<BlockNode>();
+					getter_block->parent_class = p_class;
+					getter->body = getter_block;
+					getter_block->statements.push_back(cf_return);
+				}
 
 				tokenizer->advance();
 
@@ -4157,6 +4211,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_SETGET) {
+
+					if (weakref) {
+						_set_error("Cannot combine 'weakref' with 'setget'.");
+						return;
+					}
 
 					tokenizer->advance();
 

@@ -122,6 +122,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"weakref_to_ref",
 	};
 
 	return _names[p_func];
@@ -1277,6 +1278,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case OBJ_WEAKREF_TO_REF: {
+
+			VALIDATE_ARG_COUNT(1);
+			Object *obj = *p_args[0];
+			WeakRef *weak_ref = Object::cast_to<WeakRef>(obj);
+			if (weak_ref) {
+				r_ret = weak_ref->get_ref();
+			} else {
+				r_ret = Variant();
+			}
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1796,6 +1808,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case LEN: {
 			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case OBJ_WEAKREF_TO_REF: {
+			MethodInfo mi("weakref_to_ref", PropertyInfo(Variant::NIL, "var"));
+			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
 
