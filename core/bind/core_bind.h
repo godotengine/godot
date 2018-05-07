@@ -670,6 +670,9 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
+	void set_physics_jitter_fix(float p_threshold);
+	float get_physics_jitter_fix() const;
+
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;
 
