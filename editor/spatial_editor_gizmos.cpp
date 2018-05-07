@@ -2490,14 +2490,35 @@ void ParticlesGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_c
 	ur->commit_action();
 }
 
+void ParticlesGizmo::_changed_callback(Object *p_changed, const char *p_property) {
+
+	set_aabb_display(true);
+}
+
+void ParticlesGizmo::set_aabb_display(bool p_display) {
+
+	display_aabb = p_display;
+}
+
+bool ParticlesGizmo::get_aabb_display() {
+
+	return display_aabb;
+}
+
 void ParticlesGizmo::redraw() {
 
 	clear();
+
+	Ref<Material> icon = create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoParticles", "EditorIcons"));
+	add_unscaled_billboard(icon, 0.05);
+
+	if (!display_aabb) return;
 
 	Vector<Vector3> lines;
 	AABB aabb = particles->get_visibility_aabb();
 
 	for (int i = 0; i < 12; i++) {
+
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
 		lines.push_back(a);
@@ -2527,7 +2548,6 @@ void ParticlesGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particles");
 	Ref<Material> material = create_material("particles_material", gizmo_color);
-	Ref<Material> icon = create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoParticles", "EditorIcons"));
 
 	add_lines(lines, material);
 	add_collision_segments(lines);
@@ -2539,14 +2559,14 @@ void ParticlesGizmo::redraw() {
 		add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
 	}
 
-	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
-	add_unscaled_billboard(icon, 0.05);
 	add_handles(handles);
 }
 ParticlesGizmo::ParticlesGizmo(Particles *p_particles) {
 
 	particles = p_particles;
+	display_aabb = true;
 	set_spatial_node(p_particles);
+	particles->add_change_receptor(this);
 }
 
 ////////

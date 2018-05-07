@@ -64,6 +64,7 @@ class ParticlesEditor : public Control {
 	enum Menu {
 
 		MENU_OPTION_GENERATE_AABB,
+		MENU_OPTION_TOGGLE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,
@@ -73,6 +74,7 @@ class ParticlesEditor : public Control {
 	PoolVector<Face3> geometry;
 
 	void _generate_aabb();
+	void _toggle_aabb_display();
 	void _generate_emission_points();
 	void _node_selected(const NodePath &p_path);
 
