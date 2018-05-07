@@ -631,6 +631,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 
 	((Resource *)p_resource.ptr())->set_path(path);
 	emit_signal("resource_saved", p_resource);
+	editor_data.notify_resource_saved(p_resource);
 }
 
 void EditorNode::save_resource(const Ref<Resource> &p_resource) {

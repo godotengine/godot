@@ -364,6 +364,14 @@ void EditorData::notify_edited_scene_changed() {
 	}
 }
 
+void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
+
+	for (int i = 0; i < editor_plugins.size(); i++) {
+
+		editor_plugins[i]->notify_resource_saved(p_resource);
+	}
+}
+
 void EditorData::clear_editor_states() {
 
 	for (int i = 0; i < editor_plugins.size(); i++) {

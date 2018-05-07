@@ -473,6 +473,10 @@ void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
 	emit_signal("scene_closed", scene_filepath);
 }
 
+void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
+	emit_signal("resource_saved", p_resource);
+}
+
 Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
 	//??
 	if (get_script_instance() && get_script_instance()->has_method("create_spatial_gizmo")) {
@@ -757,6 +761,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
+	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_MENU);
