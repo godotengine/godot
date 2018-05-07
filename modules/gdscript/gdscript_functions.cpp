@@ -122,10 +122,67 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"array",
+		"reversed",
 	};
 
 	return _names[p_func];
 }
+
+static Variant to_array(const Variant &p_value, bool p_convert_string) {
+	bool convert;
+	switch (p_value.get_type()) {
+		case Variant::STRING: {
+			convert = p_convert_string;
+		} break;
+		case Variant::ARRAY:
+		case Variant::POOL_BYTE_ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
+		case Variant::POOL_VECTOR2_ARRAY:
+		case Variant::POOL_VECTOR3_ARRAY:
+		case Variant::POOL_COLOR_ARRAY: {
+			convert = false;
+		} break;
+		default: {
+			convert = true;
+		} break;
+	}
+	if (convert) {
+		Variant state;
+		Array items;
+		bool valid = false;
+		if (p_value.iter_init(state, valid) && valid) {
+			do {
+				Variant value = p_value.iter_get(state, valid);
+				if (valid) {
+					items.append(value);
+				}
+			} while (p_value.iter_next(state, valid) && valid);
+		}
+		return items;
+	} else {
+		return p_value;
+	}
+}
+
+class Reversed : public Reference {
+
+	GDCLASS(Reversed, Reference);
+
+	Variant _array;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Variant _iter_init(const Array &r_iter);
+	Variant _iter_next(const Array &r_iter);
+	Variant _iter_get(const Variant &p_iter);
+
+	Reversed(const Variant &array);
+};
 
 void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error) {
 
@@ -1277,6 +1334,14 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case ARRAY: {
+			VALIDATE_ARG_COUNT(1);
+			r_ret = to_array(*p_args[0], true);
+		} break;
+		case REVERSED: {
+			VALIDATE_ARG_COUNT(1);
+			r_ret = memnew(Reversed(to_array(*p_args[0], false)));
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1798,6 +1863,16 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
+		case ARRAY: {
+			MethodInfo mi("array", PropertyInfo(Variant::NIL, "var"));
+			mi.return_val.type = Variant::NIL;
+			return mi;
+		} break;
+		case REVERSED: {
+			MethodInfo mi("reversed", PropertyInfo(Variant::NIL, "var"));
+			mi.return_val.type = Variant::OBJECT;
+			return mi;
+		} break;
 
 		case FUNC_MAX: {
 
@@ -1807,4 +1882,50 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 #endif
 
 	return MethodInfo();
+}
+
+Variant Reversed::_iter_init(const Array &r_iter) {
+
+	Variant::CallError err;
+	Variant res;
+	const Variant *args[] = { &_array };
+	GDScriptFunctions::call(GDScriptFunctions::LEN, &args[0], 1, res, err);
+	const int n = (int)res;
+
+	if (err.error == Variant::CallError::CALL_OK && n > 0) {
+		Array ref = r_iter;
+		ref[0] = n - 1;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant Reversed::_iter_next(const Array &r_iter) {
+
+	Array ref = r_iter;
+	const int n = (int)ref[0];
+	if (n > 0) {
+		ref[0] = n - 1;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant Reversed::_iter_get(const Variant &p_iter) {
+
+	return _array.get(p_iter);
+}
+
+void Reversed::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_iter_init"), &Reversed::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"), &Reversed::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"), &Reversed::_iter_next);
+}
+
+Reversed::Reversed(const Variant &array) {
+
+	_array = array;
 }
