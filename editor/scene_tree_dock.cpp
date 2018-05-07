@@ -1547,6 +1547,9 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 	String newname = n->get_name();
 
+	if (newname == String(n->get_class_name()))
+		newname = newnode->get_class_name();
+
 	List<Node *> to_erase;
 	for (int i = 0; i < n->get_child_count(); i++) {
 		if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
