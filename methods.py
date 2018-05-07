@@ -93,7 +93,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 enumbase = ifdefline[:ifdefline.find("_EN_")]
                 ifdefline = ifdefline.replace("_EN_", "_")
                 line = line.replace("_EN_", "_")
-#				print(enumbase+":"+ifdefline);
                 if (enumbase not in header_data.enums):
                     header_data.enums[enumbase] = []
                 if (ifdefline not in header_data.enums[enumbase]):
@@ -192,9 +191,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
         line = line.replace("\r", "")
         line = line.replace("\n", "")
-        # line=line.replace("\\","\\\\")
-        # line=line.replace("\"","\\\"")
-        # line=line+"\\n\\"
 
         if (header_data.reading == "vertex"):
             header_data.vertex_lines += [line]
@@ -224,7 +220,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
     fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
@@ -262,10 +257,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, unsigned long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n")
@@ -367,10 +358,8 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             x = header_data.enums[xv]
             bits = 1
             amt = len(x)
-#			print(x)
             while(2**bits < amt):
                 bits += 1
-#			print("amount: "+str(amt)+" bits "+str(bits));
             strs = "{"
             for i in range(amt):
                 strs += "\"#define " + x[i] + "\\n\","
@@ -658,7 +647,6 @@ def win32_spawn(sh, escape, cmd, args, env):
     newargs = ' '.join(args[1:])
     cmdline = cmd + " " + newargs
     startupinfo = subprocess.STARTUPINFO()
-    #startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     for e in env:
         if type(env[e]) != type(""):
             env[e] = str(env[e])
@@ -998,7 +986,6 @@ def detect_visual_c_compiler_version(tools_env):
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
     if 'VCTOOLSINSTALLDIR' in tools_env:
-        # print("Checking VCTOOLSINSTALLDIR")
 
         # Newer versions have a different path available
         vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
@@ -1026,13 +1013,6 @@ def detect_visual_c_compiler_version(tools_env):
                 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
-
-    # debug help
-    # print(vc_amd64_compiler_detection_index)
-    # print(vc_amd64_x86_compiler_detection_index)
-    # print(vc_x86_compiler_detection_index)
-    # print(vc_x86_amd64_compiler_detection_index)
-    # print("chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str))
 
     return vc_chosen_compiler_str
 
@@ -1066,7 +1046,6 @@ def generate_vs_project(env, num_jobs):
                                     'call "' + batch_file + '" !plat!']
 
             result = " ^& ".join(common_build_prefix + [commands])
-            # print("Building commandline: ", result)
             return result
 
         env.AddToVSProject(env.core_sources)
