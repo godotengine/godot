@@ -154,10 +154,7 @@ SkeletonEditor::SkeletonEditor() {
 	options->hide();
 }
 
-SkeletonEditor::~SkeletonEditor() {
-	SpatialEditor::get_singleton()->remove_child(options);
-	memdelete(options);
-}
+SkeletonEditor::~SkeletonEditor() {}
 
 void SkeletonEditorPlugin::edit(Object *p_object) {
 	skeleton_editor->edit(Object::cast_to<Skeleton>(p_object));
@@ -183,7 +180,4 @@ SkeletonEditorPlugin::SkeletonEditorPlugin(EditorNode *p_node) {
 	editor->get_viewport()->add_child(skeleton_editor);
 }
 
-SkeletonEditorPlugin::~SkeletonEditorPlugin() {
-	editor->get_viewport()->remove_child(skeleton_editor);
-	memdelete(skeleton_editor);
-}
+SkeletonEditorPlugin::~SkeletonEditorPlugin() {}
