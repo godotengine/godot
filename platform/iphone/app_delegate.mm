@@ -140,6 +140,42 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 	};
 }
 
+static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
+	if (!*is_focus_out) {
+		*is_focus_out = true;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+		[view_controller.view stopAnimation];
+		if (OS::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_focus_out();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->stop();
+	}
+}
+
+static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
+	if (*is_focus_out) {
+		*is_focus_out = false;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_IN);
+
+		[view_controller.view startAnimation];
+		if (OSIPhone::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_unpause();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->start();
+	}
+}
+
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
 	if (ios_joysticks == nil) {
@@ -678,10 +714,13 @@ static int frame_count = 0;
 // When user opens the inactive app again,
 // applicationWillEnterForeground -> applicationDidBecomeActive are called.
 
-// There are cases when applicationWillResignActive -> applicationDidBecomeActive
-// sequence is called without the app going to background. For example, that happens
-// if you open the app list without switching to another app or open/close the
-// notification panel by swiping from the upper part of the screen.
+	on_focus_out(view_controller, &is_focus_out);
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	[view_controller.view startAnimation];
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 	on_focus_out(view_controller, &is_focus_out);
