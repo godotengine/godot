@@ -33,6 +33,7 @@
 #include "message_queue.h"
 
 #include "core/project_settings.h"
+#include "scene/3d/physics_body.h"
 #include "scene/resources/surface_tool.h"
 
 bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
@@ -377,6 +378,17 @@ void Skeleton::unparent_bone_and_rest(int p_bone) {
 	_make_dirty();
 }
 
+void Skeleton::set_bone_ignore_animation(int p_bone, bool p_ignore) {
+	ERR_FAIL_INDEX(p_bone, bones.size());
+	bones[p_bone].ignore_animation = p_ignore;
+}
+
+bool Skeleton::is_bone_ignore_animation(int p_bone) const {
+
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), false);
+	return bones[p_bone].ignore_animation;
+}
+
 void Skeleton::set_bone_disable_rest(int p_bone, bool p_disable) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
@@ -522,6 +534,103 @@ void Skeleton::localize_rests() {
 	}
 }
 
+void _notify_physical_bones_simulation(bool start, Node *p_node) {
+
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		_notify_physical_bones_simulation(start, p_node->get_child(i));
+	}
+
+	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
+	if (pb) {
+		pb->set_simulate_physics(start);
+	}
+}
+
+void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone) {
+	ERR_FAIL_INDEX(p_bone, bones.size());
+	ERR_FAIL_COND(bones[p_bone].physical_bone);
+	ERR_FAIL_COND(!p_physical_bone);
+	bones[p_bone].physical_bone = p_physical_bone;
+
+	_rebuild_physical_bones_cache();
+}
+
+void Skeleton::unbind_physical_bone_from_bone(int p_bone) {
+	ERR_FAIL_INDEX(p_bone, bones.size());
+	bones[p_bone].physical_bone = NULL;
+
+	_rebuild_physical_bones_cache();
+}
+
+PhysicalBone *Skeleton::get_physical_bone(int p_bone) {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+
+	return bones[p_bone].physical_bone;
+}
+
+PhysicalBone *Skeleton::get_physical_bone_parent(int p_bone) {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+
+	if (bones[p_bone].cache_parent_physical_bone) {
+		return bones[p_bone].cache_parent_physical_bone;
+	}
+
+	return _get_physical_bone_parent(p_bone);
+}
+
+PhysicalBone *Skeleton::_get_physical_bone_parent(int p_bone) {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+
+	const int parent_bone = bones[p_bone].parent;
+	if (0 > parent_bone) {
+		return NULL;
+	}
+
+	PhysicalBone *pb = bones[parent_bone].physical_bone;
+	if (pb) {
+		return pb;
+	} else {
+		return get_physical_bone_parent(parent_bone);
+	}
+}
+
+void Skeleton::_rebuild_physical_bones_cache() {
+	const int b_size = bones.size();
+	for (int i = 0; i < b_size; ++i) {
+		bones[i].cache_parent_physical_bone = _get_physical_bone_parent(i);
+		if (bones[i].physical_bone)
+			bones[i].physical_bone->_on_bone_parent_changed();
+	}
+}
+
+void Skeleton::physical_bones_simulation(bool start) {
+	_notify_physical_bones_simulation(start, this);
+}
+
+void _physical_bones_add_remove_collision_exception(bool p_add, Node *p_node, RID p_exception) {
+
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		_physical_bones_add_remove_collision_exception(p_add, p_node->get_child(i), p_exception);
+	}
+
+	CollisionObject *co = Object::cast_to<CollisionObject>(p_node);
+	if (co) {
+		if (p_add) {
+			PhysicsServer::get_singleton()->body_add_collision_exception(co->get_rid(), p_exception);
+		} else {
+			PhysicsServer::get_singleton()->body_remove_collision_exception(co->get_rid(), p_exception);
+		}
+	}
+}
+
+void Skeleton::physical_bones_add_collision_exception(RID p_exception) {
+	_physical_bones_add_remove_collision_exception(true, this, p_exception);
+}
+
+void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
+	_physical_bones_add_remove_collision_exception(false, this, p_exception);
+}
+
 void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton::add_bone);
@@ -557,6 +666,10 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_custom_pose", "bone_idx", "custom_pose"), &Skeleton::set_bone_custom_pose);
 
 	ClassDB::bind_method(D_METHOD("get_bone_transform", "bone_idx"), &Skeleton::get_bone_transform);
+
+	ClassDB::bind_method(D_METHOD("physical_bones_simulation", "start"), &Skeleton::physical_bones_simulation);
+	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton::physical_bones_add_collision_exception);
+	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }
