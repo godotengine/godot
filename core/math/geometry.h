@@ -529,6 +529,21 @@ public:
 		return p_segment[0] + n * d; // inside
 	}
 
+	static bool line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b, Vector2 &r_result) {
+
+		// see http://paulbourke.net/geometry/pointlineplane/
+
+		const real_t denom = p_dir_b.y * p_dir_a.x - p_dir_b.x * p_dir_a.y;
+		if (Math::abs(denom) < CMP_EPSILON) { // parallel?
+			return false;
+		}
+
+		const Vector2 v = p_from_a - p_from_b;
+		const real_t t = (p_dir_b.x * v.y - p_dir_b.y * v.x) / denom;
+		r_result = p_from_a + t * p_dir_a;
+		return true;
+	}
+
 	static bool segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
 
 		Vector2 B = p_to_a - p_from_a;

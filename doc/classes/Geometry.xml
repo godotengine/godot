@@ -259,6 +259,21 @@
 				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
 			</description>
 		</method>
+		<method name="line_intersects_line_2d">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from_a" type="Vector2">
+			</argument>
+			<argument index="1" name="dir_a" type="Vector2">
+			</argument>
+			<argument index="2" name="from_b" type="Vector2">
+			</argument>
+			<argument index="3" name="dir_b" type="Vector2">
+			</argument>
+			<description>
+				Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and ([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant]. Note that the lines are specified using direction vectors, not end points.
+			</description>
+		</method>
 		<method name="segment_intersects_sphere">
 			<return type="PoolVector3Array">
 			</return>
