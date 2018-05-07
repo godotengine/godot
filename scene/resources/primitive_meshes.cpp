@@ -57,6 +57,31 @@ void PrimitiveMesh::_update() const {
 		}
 	}
 
+	if (flip_faces) {
+		PoolVector<Vector3> normals = arr[VS::ARRAY_NORMAL];
+		PoolVector<int> indices = arr[VS::ARRAY_INDEX];
+		if (normals.size() && indices.size()) {
+
+			{
+				int nc = normals.size();
+				PoolVector<Vector3>::Write w = normals.write();
+				for (int i = 0; i < nc; i++) {
+					w[i] = -w[i];
+				}
+			}
+
+			{
+				int ic = indices.size();
+				PoolVector<int>::Write w = indices.write();
+				for (int i = 0; i < ic; i += 3) {
+					SWAP(w[i + 0], w[i + 1]);
+				}
+			}
+			arr[VS::ARRAY_NORMAL] = normals;
+			arr[VS::ARRAY_INDEX] = indices;
+		}
+	}
+
 	// in with the new
 	VisualServer::get_singleton()->mesh_clear(mesh);
 	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)primitive_type, arr);
@@ -169,8 +194,12 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &PrimitiveMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &PrimitiveMesh::get_custom_aabb);
 
+	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &PrimitiveMesh::set_flip_faces);
+	ClassDB::bind_method(D_METHOD("get_flip_faces"), &PrimitiveMesh::get_flip_faces);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
@@ -203,7 +232,18 @@ AABB PrimitiveMesh::get_custom_aabb() const {
 	return custom_aabb;
 }
 
+void PrimitiveMesh::set_flip_faces(bool p_enable) {
+	flip_faces = p_enable;
+	_request_update();
+}
+
+bool PrimitiveMesh::get_flip_faces() const {
+	return flip_faces;
+}
+
 PrimitiveMesh::PrimitiveMesh() {
+
+	flip_faces = false;
 	// defaults
 	mesh = VisualServer::get_singleton()->mesh_create();
 
