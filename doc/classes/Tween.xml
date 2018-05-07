@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Tween" inherits="Node" category="Core" version="3.1">
 	<brief_description>
-		Node useful for animations with unknown start and end points.
+		Smoothly animates a node's properties over time.
 	</brief_description>
 	<description>
-		Node useful for animations with unknown start and end points, procedural animations, making one node follow another, and other simple behavior.
-		Because it is easy to get it wrong, here is a quick usage example:
+		Tweens are useful for animations requiring a numerical property to be interpolated over a range of values. The name *tween* comes from *in-betweening*, an animation technique where you specify *keyframes* and the computer interpolates the frames that appear between them.
+		Here is a brief usage example that causes a 2D node to move smoothly between two positions:
 		[codeblock]
 		var tween = get_node("Tween")
-		tween.interpolate_property(get_node("Node2D_to_move"), "transform/origin", Vector2(0,0), Vector2(100,100), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.interpolate_property($Node2D, "position",
+                Vector2(0, 0), Vector2(100, 100), 1,
+                Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 		[/codeblock]
-		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
-		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
+		Many methods require a property name, such as "position" above. You can find the correct property name by hovering over the property in the Inspector.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [code]http://easings.net/[/code] for some examples). The second accepts an [enum EaseType] constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [enum EASE_IN_OUT], and use the one that looks best.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -41,8 +43,8 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Follows [code]method[/code] of [code]object[/code] and applies the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are called with consecutive values.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="follow_property">
@@ -67,15 +69,15 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Follows [code]property[/code] of [code]object[/code] and applies it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the time needed for all tweens to end in seconds, measured from the start. Thus, if you have two tweens, one ending 10 seconds after the start and the other - 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
+				Returns the total time needed for all tweens to end. If you have two tweens, one lasting 10 seconds and the other 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
 		<method name="interpolate_callback">
@@ -98,7 +100,7 @@
 			<argument index="7" name="arg5" type="Variant" default="null">
 			</argument>
 			<description>
-				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
+				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
@@ -121,7 +123,7 @@
 			<argument index="7" name="arg5" type="Variant" default="null">
 			</argument>
 			<description>
-				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [method Object.call_deferred]). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
+				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [method Object.call_deferred]). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_method">
@@ -144,8 +146,8 @@
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Animates [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are called with consecutive values.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="interpolate_property">
@@ -168,15 +170,15 @@
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Animates [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if any tweens are currently running, and false otherwise. Note that this method doesn't consider tweens that have ended.
+				Returns [code]true[/code] if any tweens are currently running. Note that this method doesn't consider tweens that have ended.
 			</description>
 		</method>
 		<method name="remove">
@@ -187,14 +189,14 @@
 			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stop animating and completely remove a tween, given its object and property/method pair. Passing empty String as key will remove all tweens for given object.
+				Stops animation and removes a tween, given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="remove_all">
 			<return type="bool">
 			</return>
 			<description>
-				Stop animating and completely remove all tweens.
+				Stops animation and removes all tweens.
 			</description>
 		</method>
 		<method name="reset">
@@ -205,7 +207,7 @@
 			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Resets a tween to the initial value (the one given, not the one before the tween), given its object and property/method pair. Passing empty String as key will reset all tweens for given object.
+				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="reset_all">
@@ -223,14 +225,14 @@
 			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Continue animating a stopped tween, given its object and property/method pair. Passing empty String as key will resume all tweens for given object.
+				Continues animating a stopped tween, given its object and property/method pair. By default, all tweens are resumed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="resume_all">
 			<return type="bool">
 			</return>
 			<description>
-				Continue animating all stopped tweens.
+				Continues animating all stopped tweens.
 			</description>
 		</method>
 		<method name="seek">
@@ -239,7 +241,7 @@
 			<argument index="0" name="time" type="float">
 			</argument>
 			<description>
-				Seek the animation to the given [code]time[/code] in seconds.
+				Sets the interpolation to the given [code]time[/code] in seconds.
 			</description>
 		</method>
 		<method name="set_active">
@@ -248,14 +250,14 @@
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
-				Activate/deactivate the tween. You can use this for pausing animations, though [method stop_all] and [method resume_all] might be more fit for this.
+				Activates/deactivates the tween. See also [method stop_all] and [method resume_all].
 			</description>
 		</method>
 		<method name="start">
 			<return type="bool">
 			</return>
 			<description>
-				Start the tween node. You can define tweens both before and after this.
+				Starts the tween. You can define animations both before and after this.
 			</description>
 		</method>
 		<method name="stop">
@@ -266,14 +268,14 @@
 			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stop animating a tween, given its object and property/method pair. Passing empty String as key will stop all tweens for given object.
+				Stops a tween, given its object and property/method pair. By default, all tweens are stopped, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="stop_all">
 			<return type="bool">
 			</return>
 			<description>
-				Stop animating all tweens.
+				Stops animating all tweens.
 			</description>
 		</method>
 		<method name="targeting_method">
@@ -298,8 +300,8 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Animates [code]method[/code] of [code]object[/code] from the value returned by [code]initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="targeting_property">
@@ -324,8 +326,8 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
+				Animates [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
+                Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
@@ -338,12 +340,13 @@
 	</methods>
 	<members>
 		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode">
+            The tween's animation process thread. See [enum TweenProcessMode]. Default value: [enum TWEEN_PROCESS_IDLE].
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
-			The speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
+			The tween's speed multiplier. For example, set it to [code]1.0[/code] for normal speed, [code]2.0[/code] for two times normal speed, or [code]0.5[/code] for half of the normal speed. A value of [code]0[/code] pauses the animation, but see also [method set_active] or [method stop_all] for this.
 		</member>
 		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat">
-			If [code]true[/code], the tween will repeat.
+			If [code]true[/code] the tween loops.
 		</member>
 	</members>
 	<signals>
@@ -353,7 +356,7 @@
 			<argument index="1" name="key" type="NodePath">
 			</argument>
 			<description>
-				This signal is emitted when a tween ends.
+				Emitted when a tween ends.
 			</description>
 		</signal>
 		<signal name="tween_started">
@@ -362,7 +365,7 @@
 			<argument index="1" name="key" type="NodePath">
 			</argument>
 			<description>
-				This signal is emitted when a tween starts.
+				Emitted when a tween starts.
 			</description>
 		</signal>
 		<signal name="tween_step">
@@ -375,61 +378,61 @@
 			<argument index="3" name="value" type="Object">
 			</argument>
 			<description>
-				This signal is emitted each step of the tweening.
+				Emitted at each step of the animation.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [code]Tween[/code] should use [code]_physics_process[/code] for timekeeping when this is enabled.
+			The tween updates with the [code]_physics_process[/code] callback.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [code]Tween[/code] should use [code]_process[/code] for timekeeping when this is enabled (default).
+			The tween updates with the [code]_process[/code] callback.
 		</constant>
 		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
-			Means that the animation is interpolated linearly.
+			The animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1" enum="TransitionType">
-			Means that the animation is interpolated using a sine wave.
+			The animation is interpolated using a sine function.
 		</constant>
 		<constant name="TRANS_QUINT" value="2" enum="TransitionType">
-			Means that the animation is interpolated with a quinary (to the power of 5) function.
+			The animation is interpolated with a quintic (to the power of 5) function.
 		</constant>
 		<constant name="TRANS_QUART" value="3" enum="TransitionType">
-			Means that the animation is interpolated with a quartic (to the power of 4) function.
+			The animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
 		<constant name="TRANS_QUAD" value="4" enum="TransitionType">
-			Means that the animation is interpolated with a quadratic (to the power of 2) function.
+			The animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5" enum="TransitionType">
-			Means that the animation is interpolated with an exponential (some number to the power of x) function.
+			The animation is interpolated with an exponential (to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
-			Means that the animation is interpolated with elasticity, wiggling around the edges.
+			The animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
 		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
-			Means that the animation is interpolated with a cubic (to the power of 3) function.
+			The animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
 		<constant name="TRANS_CIRC" value="8" enum="TransitionType">
-			Means that the animation is interpolated with a function using square roots.
+			The animation is interpolated with a function using square roots.
 		</constant>
 		<constant name="TRANS_BOUNCE" value="9" enum="TransitionType">
-			Means that the animation is interpolated by bouncing at, but never surpassing, the end.
+			The animation is interpolated by bouncing at the end.
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
-			Means that the animation is interpolated backing out at edges.
+			The animation is interpolated backing out at ends.
 		</constant>
 		<constant name="EASE_IN" value="0" enum="EaseType">
-			Signifies that the interpolation should be focused in the beginning.
+			The interpolation starts slowly and speeds up towards the end.
 		</constant>
 		<constant name="EASE_OUT" value="1" enum="EaseType">
-			Signifies that the interpolation should be focused in the end.
+			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
-			Signifies that the interpolation should be focused in both ends.
+			A combination of EASE_IN and EASE_OUT. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
-			Signifies that the interpolation should be focused in both ends, but they should be switched (a bit hard to explain, try it for yourself to be sure).
+			A combination of EASE_IN and EASE_OUT. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>
