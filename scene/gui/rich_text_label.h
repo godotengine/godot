@@ -340,6 +340,8 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
+	int get_content_height();
+
 	VScrollBar *get_v_scroll() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
