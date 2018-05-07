@@ -1206,6 +1206,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 	float omni_attenuation = pow( max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w );
 	vec3 light_attenuation = vec3(omni_attenuation);
 
+#if !defined(SHADOWS_DISABLED)
 	if (omni_lights[idx].light_params.w>0.5) {
 		//there is a shadowmap
 
@@ -1252,6 +1253,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 #endif
 		light_attenuation*=mix(omni_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
+#endif //SHADOWS_DISABLED
 
 	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,omni_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim * omni_attenuation,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
@@ -1270,6 +1272,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	spot_attenuation*= 1.0 - pow( spot_rim, spot_lights[idx].light_params.x);
 	vec3 light_attenuation = vec3(spot_attenuation);
 
+#if !defined(SHADOWS_DISABLED)
 	if (spot_lights[idx].light_params.w>0.5) {
 		//there is a shadowmap
 		highp vec4 splane=(spot_lights[idx].shadow_matrix * vec4(vertex,1.0));
@@ -1287,6 +1290,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 #endif
 		light_attenuation*=mix(spot_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
+#endif //SHADOWS_DISABLED
 
 	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,spot_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim * spot_attenuation,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
@@ -1785,6 +1789,7 @@ FRAGMENT_SHADER_CODE
 
 	float depth_z = -vertex.z;
 #ifdef LIGHT_DIRECTIONAL_SHADOW
+#if !defined(SHADOWS_DISABLED)
 
 #ifdef LIGHT_USE_PSSM4
 	if (depth_z < shadow_split_offsets.w) {
@@ -1927,6 +1932,7 @@ FRAGMENT_SHADER_CODE
 	}
 
 
+#endif // !defined(SHADOWS_DISABLED)
 #endif //LIGHT_DIRECTIONAL_SHADOW
 
 #ifdef USE_VERTEX_LIGHTING
