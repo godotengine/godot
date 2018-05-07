@@ -113,6 +113,7 @@ public:
 		PRINT_STACK,
 		INSTANCE_FROM_ID,
 		LEN,
+		REPEAT,
 		FUNC_MAX
 
 	};

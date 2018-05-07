@@ -122,6 +122,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_stack",
 		"instance_from_id",
 		"len",
+		"repeat",
 	};
 
 	return _names[p_func];
@@ -1277,6 +1278,36 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case REPEAT: {
+
+			VALIDATE_ARG_COUNT(2);
+			const Variant::Type t = p_args[0]->get_type();
+			Variant res = Variant::construct(t, NULL, 0, r_error);
+			if (r_error.error != OK) {
+				break;
+			}
+			switch (t) {
+				case Variant::ARRAY:
+				case Variant::POOL_BYTE_ARRAY:
+				case Variant::POOL_INT_ARRAY:
+				case Variant::POOL_REAL_ARRAY:
+				case Variant::POOL_STRING_ARRAY:
+				case Variant::POOL_VECTOR2_ARRAY:
+				case Variant::POOL_VECTOR3_ARRAY:
+				case Variant::POOL_COLOR_ARRAY: {
+					const Variant *args[] = { p_args[0], p_args[1] };
+					res.call("append_array", args, 2, r_error);
+				} break;
+				default: {
+					const int n = *p_args[1];
+					bool valid = true;
+					for (int i = 0; valid && i < n; i++) {
+						Variant::evaluate(Variant::OP_ADD, res, *p_args[0], res, valid);
+					}
+				} break;
+			}
+			r_ret = res;
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1796,6 +1827,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case LEN: {
 			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case REPEAT: {
+			MethodInfo mi("repeat", PropertyInfo(Variant::NIL, "iterable"), PropertyInfo(Variant::INT, "n"));
+			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
 
