@@ -366,6 +366,16 @@ void Sprite3D::_draw() {
 		final_rect.position * pixel_size,
 
 	};
+
+	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+
+	// Properly setup UVs for impostor textures (AtlasTexture).
+	Ref<AtlasTexture> atlas_tex = texture;
+	if (atlas_tex != NULL) {
+		src_tsize[0] = atlas_tex->get_atlas()->get_width();
+		src_tsize[1] = atlas_tex->get_atlas()->get_height();
+	}
+
 	Vector2 uvs[4] = {
 		final_src_rect.position / tsize,
 		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
@@ -656,6 +666,16 @@ void AnimatedSprite3D::_draw() {
 		final_rect.position * pixel_size,
 
 	};
+
+	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+
+	// Properly setup UVs for impostor textures (AtlasTexture).
+	Ref<AtlasTexture> atlas_tex = texture;
+	if (atlas_tex != NULL) {
+		src_tsize[0] = atlas_tex->get_atlas()->get_width();
+		src_tsize[1] = atlas_tex->get_atlas()->get_height();
+	}
+
 	Vector2 uvs[4] = {
 		final_src_rect.position / tsize,
 		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
