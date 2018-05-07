@@ -90,6 +90,7 @@ public:
 	virtual void finish();
 
 	bool try_lock();
+	void stop();
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio();
