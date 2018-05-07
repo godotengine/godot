@@ -94,6 +94,7 @@ void CanvasItemMaterial::_update_shader() {
 		case BLEND_MODE_SUB: code += "blend_sub"; break;
 		case BLEND_MODE_MUL: code += "blend_mul"; break;
 		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
+		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
 	}
 
 	switch (light_mode) {
@@ -1105,6 +1106,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
+	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
