@@ -117,6 +117,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/atlas.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_mask.h"
 #include "scene/resources/box_shape.h"
@@ -205,6 +206,8 @@ static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
 
 static ResourceFormatLoaderBMFont *resource_loader_bmfont = NULL;
 
+static ResourceFormatLoaderAtlas *resource_loader_atlas = NULL;
+
 static ResourceFormatSaverShader *resource_saver_shader = NULL;
 static ResourceFormatLoaderShader *resource_loader_shader = NULL;
 
@@ -239,6 +242,9 @@ void register_scene_types() {
 
 	resource_loader_bmfont = memnew(ResourceFormatLoaderBMFont);
 	ResourceLoader::add_resource_format_loader(resource_loader_bmfont, true);
+
+	resource_loader_atlas = memnew(ResourceFormatLoaderAtlas);
+	ResourceLoader::add_resource_format_loader(resource_loader_atlas, true);
 
 	OS::get_singleton()->yield(); //may take time to init
 
