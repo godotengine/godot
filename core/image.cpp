@@ -1628,6 +1628,12 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+
+	if (p_dest.x < 0)
+		clipped_src_rect.position.x = ABS(p_dest.x);
+	if (p_dest.y < 0)
+		clipped_src_rect.position.y = ABS(p_dest.y);
+
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
@@ -1676,6 +1682,12 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+
+	if (p_dest.x < 0)
+		clipped_src_rect.position.x = ABS(p_dest.x);
+	if (p_dest.y < 0)
+		clipped_src_rect.position.y = ABS(p_dest.y);
+
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
@@ -1727,6 +1739,12 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+
+	if (p_dest.x < 0)
+		clipped_src_rect.position.x = ABS(p_dest.x);
+	if (p_dest.y < 0)
+		clipped_src_rect.position.y = ABS(p_dest.y);
+
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
@@ -1775,6 +1793,12 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+
+	if (p_dest.x < 0)
+		clipped_src_rect.position.x = ABS(p_dest.x);
+	if (p_dest.y < 0)
+		clipped_src_rect.position.y = ABS(p_dest.y);
+
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
