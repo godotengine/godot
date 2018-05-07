@@ -33,8 +33,8 @@
 
 #include "color.h"
 #include "line_2d.h"
-#include "math_2d.h"
 #include "scene/resources/color_ramp.h"
+#include "vector2.h"
 
 class LineBuilder {
 public:
