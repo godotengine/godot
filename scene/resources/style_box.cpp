@@ -186,7 +186,7 @@ Size2 StyleBoxTexture::get_center_size() const {
 	if (texture.is_null())
 		return Size2();
 
-	return texture->get_size() - get_minimum_size();
+	return region_rect.size - get_minimum_size();
 }
 
 void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {
