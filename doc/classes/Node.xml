@@ -780,6 +780,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="ready">
+			<description>
+				Emitted when the node is ready.
+			</description>
+		</signal>
 		<signal name="renamed">
 			<description>
 				Emitted when the node is renamed.
