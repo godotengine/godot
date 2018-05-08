@@ -382,6 +382,7 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 		while (child) {
 			Variant input = child->get_meta("__input");
 			if (p_event == input) {
+				r->set_collapsed(false);
 				child->select(0);
 				found = true;
 				break;
@@ -656,6 +657,14 @@ void ProjectSettingsEditor::_update_actions() {
 	if (setting)
 		return;
 
+	Map<String, bool> collapsed;
+
+	if (input_editor->get_root() && input_editor->get_root()->get_children()) {
+		for (TreeItem *item = input_editor->get_root()->get_children(); item; item = item->get_next()) {
+			collapsed[item->get_text(0)] = item->is_collapsed();
+		}
+	}
+
 	input_editor->clear();
 	TreeItem *root = input_editor->create_item();
 	input_editor->set_hide_root(true);
@@ -681,6 +690,8 @@ void ProjectSettingsEditor::_update_actions() {
 			item->set_editable(0, true);
 		}
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+		if (collapsed.has(name))
+			item->set_collapsed(collapsed[name]);
 
 		Dictionary action = ProjectSettings::get_singleton()->get(pi.name);
 		Array events = action["events"];
