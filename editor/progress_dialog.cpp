@@ -31,6 +31,7 @@
 #include "progress_dialog.h"
 
 #include "editor_scale.h"
+#include "editor_settings.h"
 #include "main/main.h"
 #include "message_queue.h"
 #include "os/os.h"
@@ -180,6 +181,9 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	vb2->add_child(t.state);
 	main->add_child(t.vb);
 
+	bool show_only_longer = EDITOR_DEF("interface/editor/show_progress_bar_for_longer_tasks_only", false);
+	t.showtime = show_only_longer ? (OS::get_singleton()->get_ticks_msec() + 1000) : 0;
+
 	tasks[p_task] = t;
 	if (p_can_cancel) {
 		cancel_hb->show();
@@ -205,6 +209,10 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	}
 
 	Task &t = tasks[p_task];
+	if (t.showtime > 0 && t.showtime > OS::get_singleton()->get_ticks_msec()) {
+		return cancelled;
+	}
+
 	if (p_step < 0)
 		t.progress->set_value(t.progress->get_value() + 1);
 	else

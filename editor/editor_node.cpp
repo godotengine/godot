@@ -947,7 +947,7 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
-	EditorProgress save("save", TTR("Saving Scene"), 4);
+	EditorProgress save("save", TTR("Saving Scene"), 4, false);
 	save.step(TTR("Analyzing"), 0);
 
 	int c2d = 0;

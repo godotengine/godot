@@ -77,6 +77,7 @@ class ProgressDialog : public Popup {
 		VBoxContainer *vb;
 		ProgressBar *progress;
 		Label *state;
+		uint64_t showtime;
 	};
 	HBoxContainer *cancel_hb;
 	Button *cancel;
