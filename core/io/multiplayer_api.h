@@ -66,11 +66,11 @@ public:
 	// Called by Node.rset
 	void rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
-	void add_peer(int p_id);
-	void del_peer(int p_id);
-	void connected_to_server();
-	void connection_failed();
-	void server_disconnected();
+	void _add_peer(int p_id);
+	void _del_peer(int p_id);
+	void _connected_to_server();
+	void _connection_failed();
+	void _server_disconnected();
 
 	bool has_network_peer() const { return network_peer.is_valid(); }
 	Vector<int> get_network_connected_peers() const;
