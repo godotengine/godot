@@ -267,7 +267,9 @@ private:
 		List<Control *> modal_stack;
 		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
-		List<Control *> subwindows;
+		bool subwindow_visibility_dirty;
+		List<Control *> subwindows; // visible subwindows
+		List<Control *> all_known_subwindows;
 		bool roots_order_dirty;
 		List<Control *> roots;
 		int canvas_sort_index; //for sorting items with canvas as root
@@ -278,6 +280,7 @@ private:
 	bool disable_input;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	void _gui_prepare_subwindows();
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
@@ -466,6 +469,8 @@ public:
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
+
+	void _subwindow_visibility_changed();
 
 	Viewport();
 	~Viewport();

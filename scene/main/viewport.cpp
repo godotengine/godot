@@ -189,6 +189,7 @@ Viewport::GUI::GUI() {
 	tooltip = NULL;
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
+	subwindow_visibility_dirty = false;
 	subwindow_order_dirty = false;
 }
 
@@ -1251,6 +1252,24 @@ void Viewport::warp_mouse(const Vector2 &p_pos) {
 	Input::get_singleton()->warp_mouse_position(gpos);
 }
 
+void Viewport::_gui_prepare_subwindows() {
+
+	if (gui.subwindow_visibility_dirty) {
+
+		gui.subwindows.clear();
+		for (List<Control *>::Element *E = gui.all_known_subwindows.front(); E; E = E->next()) {
+			if (E->get()->is_visible_in_tree()) {
+				gui.subwindows.push_back(E->get());
+			}
+		}
+
+		gui.subwindow_visibility_dirty = false;
+		gui.subwindow_order_dirty = true;
+	}
+
+	_gui_sort_subwindows();
+}
+
 void Viewport::_gui_sort_subwindows() {
 
 	if (!gui.subwindow_order_dirty)
@@ -1393,7 +1412,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 
 Control *Viewport::_gui_find_control(const Point2 &p_global) {
 
-	_gui_sort_subwindows();
+	_gui_prepare_subwindows();
 
 	for (List<Control *>::Element *E = gui.subwindows.back(); E; E = E->prev()) {
 
@@ -2093,8 +2112,14 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 
 List<Control *>::Element *Viewport::_gui_add_subwindow_control(Control *p_control) {
 
-	gui.subwindow_order_dirty = true;
-	return gui.subwindows.push_back(p_control);
+	p_control->connect("visibility_changed", this, "_subwindow_visibility_changed");
+
+	if (p_control->is_visible_in_tree()) {
+		gui.subwindow_order_dirty = true;
+		gui.subwindows.push_back(p_control);
+	}
+
+	return gui.all_known_subwindows.push_back(p_control);
 }
 
 void Viewport::_gui_set_subwindow_order_dirty() {
@@ -2179,7 +2204,17 @@ void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
 
 void Viewport::_gui_remove_subwindow_control(List<Control *>::Element *SI) {
 
-	gui.subwindows.erase(SI);
+	ERR_FAIL_COND(!SI);
+
+	Control *control = SI->get();
+
+	control->disconnect("visibility_changed", this, "_subwindow_visibility_changed");
+
+	List<Control *>::Element *E = gui.subwindows.find(control);
+	if (E)
+		gui.subwindows.erase(E);
+
+	gui.all_known_subwindows.erase(SI);
 }
 
 void Viewport::_gui_unfocus_control(Control *p_control) {
@@ -2684,6 +2719,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
+	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
@@ -2762,6 +2799,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
+}
+
+void Viewport::_subwindow_visibility_changed() {
+
+	// unfortunately, we don't know the sender, i.e. which subwindow changed;
+	// so we have to check them all.
+	gui.subwindow_visibility_dirty = true;
 }
 
 Viewport::Viewport() {
