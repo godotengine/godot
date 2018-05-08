@@ -2094,6 +2094,11 @@ bool Main::iteration() {
 		if (current_ticks < target_ticks) OS::get_singleton()->delay_usec(target_ticks - current_ticks);
 		current_ticks = OS::get_singleton()->get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
+#ifdef __linux__
+	} else {
+		// workaround for DRI3 stutter
+		OS::get_singleton()->delay_usec(1000L);
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
