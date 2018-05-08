@@ -1556,7 +1556,17 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			atlas_rect.position.x = atlas_texture->get_region().position.x;
 			atlas_rect.position.y = atlas_texture->get_region().position.y;
 
-		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+
+		image = texture->get_data();
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:NULL
@@ -1568,7 +1578,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 								isPlanar:NO
 						  colorSpaceName:NSDeviceRGBColorSpace
 							 bytesPerRow:int(texture_size.width) * 4
-							bitsPerPixel:32];
+							bitsPerPixel:32] autorelease];
 
 		ERR_FAIL_COND(imgrep == nil);
 		uint8_t *pixels = [imgrep bitmapData];
@@ -1600,7 +1610,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 		image->unlock();
 
-		NSImage *nsimage = [[NSImage alloc] initWithSize:NSMakeSize(texture_size.width, texture_size.height)];
+		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(texture_size.width, texture_size.height)] autorelease];
 		[nsimage addRepresentation:imgrep];
 
 		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
