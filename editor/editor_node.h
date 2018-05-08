@@ -516,6 +516,7 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, Map<RES, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, Map<RES, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
+	void _prevent_duplicate_edited_scenes(const String &p_scene_name);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
