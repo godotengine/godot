@@ -73,6 +73,23 @@ void OS_Unix::debug_break() {
 	assert(false);
 };
 
+static void handle_interrupt(int sig) {
+	if (ScriptDebugger::get_singleton() == NULL)
+		return;
+
+	ScriptDebugger::get_singleton()->set_depth(-1);
+	ScriptDebugger::get_singleton()->set_lines_left(1);
+}
+
+void OS_Unix::initialize_debugging() {
+
+	if (ScriptDebugger::get_singleton() != NULL) {
+		struct sigaction action;
+		action.sa_handler = handle_interrupt;
+		sigaction(SIGINT, &action, NULL);
+	}
+}
+
 int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 	return 0;

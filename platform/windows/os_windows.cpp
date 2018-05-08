@@ -152,6 +152,25 @@ void RedirectIOToConsole() {
 	// point to console as well
 }
 
+BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
+	if (ScriptDebugger::get_singleton() == NULL)
+		return FALSE;
+
+	switch (dwCtrlType) {
+		case CTRL_C_EVENT:
+			ScriptDebugger::get_singleton()->set_depth(-1);
+			ScriptDebugger::get_singleton()->set_lines_left(1);
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+void OS_Windows::initialize_debugging() {
+
+	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+}
+
 void OS_Windows::initialize_core() {
 
 	crash_handler.initialize();

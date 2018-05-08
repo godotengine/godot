@@ -320,6 +320,7 @@ public:
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
+	virtual void initialize_debugging() {}
 
 	enum CursorShape {
 		CURSOR_ARROW,
