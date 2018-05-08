@@ -217,6 +217,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool use_32_fb;
 	bool immersive;
 	bool export_arm;
+	bool export_arm64;
 	bool export_x86;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
@@ -314,6 +315,8 @@ bool EditorExportPlatformAndroid::_set(const StringName &p_name, const Variant &
 		_signed = p_value;
 	else if (n == "architecture/arm")
 		export_arm = p_value;
+	else if (n == "architecture/arm64")
+		export_arm64 = p_value;
 	else if (n == "architecture/x86")
 		export_x86 = p_value;
 	else if (n == "screen/use_32_bits_view")
@@ -387,6 +390,8 @@ bool EditorExportPlatformAndroid::_get(const StringName &p_name, Variant &r_ret)
 		r_ret = _signed;
 	else if (n == "architecture/arm")
 		r_ret = export_arm;
+	else if (n == "architecture/arm64")
+		r_ret = export_arm64;
 	else if (n == "architecture/x86")
 		r_ret = export_x86;
 	else if (n == "screen/use_32_bits_view")
@@ -443,6 +448,7 @@ void EditorExportPlatformAndroid::_get_property_list(List<PropertyInfo> *p_list)
 	p_list->push_back(PropertyInfo(Variant::STRING, "package/icon", PROPERTY_HINT_FILE, "png"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "package/signed"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/arm"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/arm64"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/x86"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "screen/use_32_bits_view"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "screen/immersive_mode"));
@@ -1122,6 +1128,10 @@ Error EditorExportPlatformAndroid::export_project(const String &p_path, bool p_d
 			skip = true;
 		}
 
+		if (file.match("lib/arm64*/libgodot_android.so") && !export_arm64) {
+			skip = true;
+		}
+
 		if (file.begins_with("META-INF") && _signed) {
 			skip = true;
 		}
@@ -1772,6 +1782,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	immersive = true;
 
 	export_arm = true;
+	export_arm64 = false;
 	export_x86 = false;
 
 	device_thread = Thread::create(_device_poll_thread, this);
