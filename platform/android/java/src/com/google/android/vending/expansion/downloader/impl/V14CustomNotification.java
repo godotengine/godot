@@ -22,7 +22,6 @@ import com.google.android.vending.expansion.downloader.Helpers;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.support.v4.app.NotificationCompat;
 
 public class V14CustomNotification implements DownloadNotification.ICustomNotification {
 
@@ -54,14 +53,13 @@ public class V14CustomNotification implements DownloadNotification.ICustomNotifi
         mCurrentKB = currentBytes;
     }
 
-    void setProgress(NotificationCompat.Builder builder) {
+    void setProgress(Notification.Builder builder) {
 
     }
 
     @Override
-    public NotificationCompat.Builder updateNotification(Context c) {
-        // NotificationCompat.Builder is used to support API < 16. This can be changed to Notification.Builder if minimum API >= 16.
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(c);
+    public Notification.Builder updateNotification(Context c) {
+        Notification.Builder builder = new Notification.Builder(c);
         builder.setContentTitle(mTitle);
         if (mTotalKB > 0 && -1 != mCurrentKB) {
             builder.setProgress((int) (mTotalKB >> 8), (int) (mCurrentKB >> 8), false);
