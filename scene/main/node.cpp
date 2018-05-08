@@ -477,7 +477,7 @@ bool Node::is_network_master() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return get_multiplayer_api()->get_network_unique_id() == data.network_master;
+	return get_multiplayer()->get_network_unique_id() == data.network_master;
 }
 
 /***** RPC CONFIG ********/
@@ -668,12 +668,12 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Va
 
 void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer_api()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
+	get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
 }
 
 void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer_api()->rsetp(this, p_peer_id, p_unreliable, p_property, p_value);
+	get_multiplayer()->rsetp(this, p_peer_id, p_unreliable, p_property, p_value);
 }
 
 /******** RSET *********/
@@ -698,21 +698,21 @@ void Node::rset_unreliable_id(int p_peer_id, const StringName &p_property, const
 }
 
 //////////// end of rpc
-Ref<MultiplayerAPI> Node::get_multiplayer_api() const {
-	if (multiplayer_api.is_valid())
-		return multiplayer_api;
+Ref<MultiplayerAPI> Node::get_multiplayer() const {
+	if (multiplayer.is_valid())
+		return multiplayer;
 	if (!is_inside_tree())
 		return Ref<MultiplayerAPI>();
-	return get_tree()->get_multiplayer_api();
+	return get_tree()->get_multiplayer();
 }
 
-Ref<MultiplayerAPI> Node::get_custom_multiplayer_api() const {
-	return multiplayer_api;
+Ref<MultiplayerAPI> Node::get_custom_multiplayer() const {
+	return multiplayer;
 }
 
-void Node::set_custom_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api) {
+void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 
-	multiplayer_api = p_multiplayer_api;
+	multiplayer = p_multiplayer;
 }
 
 const Map<StringName, Node::RPCMode>::Element *Node::get_node_rpc_mode(const StringName &p_method) {
@@ -2748,9 +2748,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
 
-	ClassDB::bind_method(D_METHOD("get_multiplayer_api"), &Node::get_multiplayer_api);
-	ClassDB::bind_method(D_METHOD("get_custom_multiplayer_api"), &Node::get_custom_multiplayer_api);
-	ClassDB::bind_method(D_METHOD("set_custom_multiplayer_api", "api"), &Node::set_custom_multiplayer_api);
+	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
+	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
+	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
 
@@ -2830,8 +2830,8 @@ void Node::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "multiplayer_api", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer_api");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "custom_multiplayer_api", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer_api", "get_custom_multiplayer_api");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));

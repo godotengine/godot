@@ -1,88 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MultiplayerAPI" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
+		High Level Multiplayer API.
 	</brief_description>
 	<description>
+		This class implements most of the logic behind the high level multiplayer API.
+		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
+		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
 	</description>
 	<tutorials>
 	</tutorials>
 	<demos>
 	</demos>
 	<methods>
-		<method name="add_peer">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="connected_to_server">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="connection_failed">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="del_peer">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
+				Clears the current MultiplayerAPI network state (you shouldn't call this unless you know what you are doing).
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
 			<description>
+				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
 			</description>
 		</method>
 		<method name="get_network_unique_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the unique peer ID of this MultiplayerAPI's [member network_peer].
 			</description>
 		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the sender's peer ID for the RPC currently being executed.
+				NOTE: If not inside an RPC this method will return 0.
 			</description>
 		</method>
 		<method name="has_network_peer" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if there is a [member network_peer] set.
 			</description>
 		</method>
 		<method name="is_network_server" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this MultiplayerAPI's [member network_peer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="poll">
 			<return type="void">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="server_disconnected">
-			<return type="void">
-			</return>
-			<description>
+				Method used for polling the MultiplayerAPI.
+				You only need to worry about this if you are using [memeber Node.custom_multplayer] override.
+				SceneTree will poll the default MultiplayerAPI for you.
 			</description>
 		</method>
 		<method name="set_root_node">
@@ -91,38 +71,47 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
+				Sets the base root node to use for RPCs. Instead of an absolute path, a relative path will be used to find the node upon which the RPC should be executed.
+				This effectively allows to have different branches of the scene tree to be managed by different MultiplayerAPI, allowing for example to run both client and server in the same scene.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
+			If [code]true[/code] the MultiplayerAPI's [member network_peer] refuses new incoming connections.
 		</member>
 	</members>
 	<signals>
 		<signal name="connected_to_server">
 			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] successfully connected to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="connection_failed">
 			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="network_peer_connected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
 		<signal name="network_peer_disconnected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
 			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] disconnected from server. Only emitted on clients.
 			</description>
 		</signal>
 	</signals>
