@@ -2003,7 +2003,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
+		} else if (texture.is_valid()) {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
