@@ -201,6 +201,6 @@ $$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.custom.18"/>
 <uses-permission android:name="godot.custom.19"/>
 
-<uses-sdk android:minSdkVersion="18" android:targetSdkVersion="23"/>
+<uses-sdk android:minSdkVersion="18" android:targetSdkVersion="27"/>
 
 </manifest>
