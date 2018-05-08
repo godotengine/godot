@@ -762,12 +762,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_multiplayer_api" type="MultiplayerAPI" setter="set_custom_multiplayer_api" getter="get_custom_multiplayer_api">
+		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
+			The override to the default [MultiplayerAPI]. Set to null to use the default SceneTree one.
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
 			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
 		</member>
-		<member name="multiplayer_api" type="MultiplayerAPI" setter="" getter="get_multiplayer_api">
+		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
+			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed
