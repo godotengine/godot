@@ -65,6 +65,7 @@ class OS {
 	int _exit_code;
 	int _orientation;
 	bool _allow_hidpi;
+	bool _allow_layered;
 	bool _use_vsync;
 
 	char *last_error;
@@ -102,6 +103,8 @@ public:
 		bool maximized;
 		bool always_on_top;
 		bool use_vsync;
+		bool layered_splash;
+		bool layered;
 		float get_aspect() const { return (float)width / (float)height; }
 		VideoMode(int p_width = 1024, int p_height = 600, bool p_fullscreen = false, bool p_resizable = true, bool p_borderless_window = false, bool p_maximized = false, bool p_always_on_top = false, bool p_use_vsync = false) {
 			width = p_width;
@@ -112,6 +115,8 @@ public:
 			maximized = p_maximized;
 			always_on_top = p_always_on_top;
 			use_vsync = p_use_vsync;
+			layered = false;
+			layered_splash = false;
 		}
 	};
 
@@ -219,6 +224,13 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }
+
+	virtual bool get_window_per_pixel_transparency_enabled() const { return false; }
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) {}
+
+	virtual uint8_t *get_layered_buffer_data() { return NULL; }
+	virtual Size2 get_layered_buffer_size() { return Size2(0, 0); }
+	virtual void swap_layered_buffer() {}
 
 	virtual void set_ime_position(const Point2 &p_pos) {}
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
@@ -481,6 +493,7 @@ public:
 	virtual void force_process_input(){};
 	bool has_feature(const String &p_feature);
 
+	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();
 	virtual ~OS();

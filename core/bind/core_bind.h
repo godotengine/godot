@@ -180,6 +180,9 @@ public:
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;
 
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

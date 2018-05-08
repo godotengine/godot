@@ -336,6 +336,14 @@ void _OS::set_borderless_window(bool p_borderless) {
 	OS::get_singleton()->set_borderless_window(p_borderless);
 }
 
+bool _OS::get_window_per_pixel_transparency_enabled() const {
+	return OS::get_singleton()->get_window_per_pixel_transparency_enabled();
+}
+
+void _OS::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+	OS::get_singleton()->set_window_per_pixel_transparency_enabled(p_enabled);
+}
+
 bool _OS::get_borderless_window() const {
 	return OS::get_singleton()->get_borderless_window();
 }
@@ -1068,6 +1076,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
 
+	ClassDB::bind_method(D_METHOD("get_window_per_pixel_transparency_enabled"), &_OS::get_window_per_pixel_transparency_enabled);
+	ClassDB::bind_method(D_METHOD("set_window_per_pixel_transparency_enabled", "enabled"), &_OS::set_window_per_pixel_transparency_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &_OS::set_ime_position);
 
 	ClassDB::bind_method(D_METHOD("set_screen_orientation", "orientation"), &_OS::set_screen_orientation);
@@ -1185,6 +1196,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor"), "set_screen_orientation", "get_screen_orientation");
 	ADD_GROUP("Window", "window_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_per_pixel_transparency_enabled"), "set_window_per_pixel_transparency_enabled", "get_window_per_pixel_transparency_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_fullscreen"), "set_window_fullscreen", "is_window_fullscreen");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_maximized"), "set_window_maximized", "is_window_maximized");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_minimized"), "set_window_minimized", "is_window_minimized");

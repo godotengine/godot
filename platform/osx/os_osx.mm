@@ -1330,6 +1330,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
 
+	if (p_desired.layered_splash) {
+		set_window_per_pixel_transparency_enabled(true);
+	}
 	return OK;
 }
 
@@ -2042,6 +2045,8 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 void OS_OSX::set_window_fullscreen(bool p_enabled) {
 
 	if (zoomed != p_enabled) {
+		if (layered_window)
+			set_window_per_pixel_transparency_enabled(false);
 		[window_object toggleFullScreen:nil];
 	}
 	zoomed = p_enabled;
@@ -2123,6 +2128,39 @@ void OS_OSX::request_attention() {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
+bool OS_OSX::get_window_per_pixel_transparency_enabled() const {
+
+	if (!is_layered_allowed()) return false;
+	return layered_window;
+}
+
+void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+
+	if (!is_layered_allowed()) return;
+	if (layered_window != p_enabled) {
+		if (p_enabled) {
+			set_borderless_window(true);
+			GLint opacity = 0;
+			[window_object setBackgroundColor:[NSColor clearColor]];
+			[window_object setOpaque:NO];
+			[window_object setHasShadow:NO];
+			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+			layered_window = true;
+		} else {
+			GLint opacity = 1;
+			[window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
+			[window_object setOpaque:YES];
+			[window_object setHasShadow:YES];
+			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+			layered_window = false;
+		}
+		[context update];
+		NSRect frame = [window_object frame];
+		[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
+		[window_object setFrame:frame display:YES];
+	}
+}
+
 void OS_OSX::set_borderless_window(bool p_borderless) {
 
 	// OrderOut prevents a lose focus bug with the window
@@ -2131,6 +2169,9 @@ void OS_OSX::set_borderless_window(bool p_borderless) {
 	if (p_borderless) {
 		[window_object setStyleMask:NSWindowStyleMaskBorderless];
 	} else {
+		if (layered_window)
+			set_window_per_pixel_transparency_enabled(false);
+
 		[window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
 
 		// Force update of the window styles
@@ -2435,6 +2476,7 @@ OS_OSX::OS_OSX() {
 	im_position = Point2();
 	im_callback = NULL;
 	im_target = NULL;
+	layered_window = false;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
 	eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
