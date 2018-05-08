@@ -211,7 +211,7 @@ public class PaymentsManager {
 	}
 
 	public void requestPurchase(final String sku, String transactionId) {
-		if (!mSetupDone) return;
+		if (!isConnected()) return;
 
 		PurchaseTask purchaseTask = new PurchaseTask(mService, Godot.getInstance()) {
 			@Override
