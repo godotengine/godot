@@ -73,7 +73,9 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (!p_event->is_pressed() || p_event->is_echo())
 		return;
 
-	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
+	if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
+		_tool_selected(TOOL_BATCH_RENAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);
 	} else if (ED_IS_SHORTCUT("scene_tree/instance_scene", p_event)) {
 		_tool_selected(TOOL_INSTANCE);
@@ -285,6 +287,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	switch (p_tool) {
 
+		case TOOL_BATCH_RENAME: {
+			Tree *tree = scene_tree->get_scene_tree();
+			if (tree->is_anything_selected()) {
+				rename_dialog->popup_centered();
+			}
+		} break;
 		case TOOL_NEW: {
 
 			String preferred = "";
@@ -1862,6 +1870,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	menu->clear();
 
+	menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	if (selection.size() == 1) {
 
 		subresources.clear();
@@ -2055,6 +2064,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter_hbc->add_constant_override("separate", 0);
 	ToolButton *tb;
 
+	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_CMD | KEY_F2);
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
@@ -2152,6 +2162,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", this, "_create");
+
+	rename_dialog = memnew(RenameDialog(scene_tree, &editor_data->get_undo_redo()));
+	add_child(rename_dialog);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	add_child(script_create_dialog);

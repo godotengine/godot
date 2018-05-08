@@ -898,7 +898,7 @@ Array EditorSelection::_get_transformable_selected_nodes() {
 	return ret;
 }
 
-Array EditorSelection::_get_selected_nodes() {
+Array EditorSelection::get_selected_nodes() {
 
 	Array ret;
 
@@ -916,7 +916,7 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
-	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::_get_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));

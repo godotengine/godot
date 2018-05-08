@@ -226,7 +226,6 @@ private:
 	List<Node *> selected_node_list;
 
 	void _update_nl();
-	Array _get_selected_nodes();
 	Array _get_transformable_selected_nodes();
 	void _emit_change();
 
@@ -234,6 +233,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Array get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
