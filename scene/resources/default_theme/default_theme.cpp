@@ -415,6 +415,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
 	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_modulate", "Label", Color(1, 1, 1));
 
 	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
 	theme->set_constant("shadow_offset_y", "Label", 1 * scale);

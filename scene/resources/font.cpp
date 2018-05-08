@@ -32,12 +32,12 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
+#include "method_bind_ext.gen.inc"
 
-void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate) const {
-
+void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate, const Color &p_outline_modulate) const {
 	float length = get_string_size(p_text).width;
 	if (length >= p_width) {
-		draw(p_canvas_item, p_pos, p_text, p_modulate, p_width);
+		draw(p_canvas_item, p_pos, p_text, p_modulate, p_width, p_outline_modulate);
 		return;
 	}
 
@@ -56,13 +56,14 @@ void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, f
 			ERR_PRINT("Unknown halignment type");
 		} break;
 	}
-	draw(p_canvas_item, p_pos + Point2(ofs, 0), p_text, p_modulate, p_width);
+	draw(p_canvas_item, p_pos + Point2(ofs, 0), p_text, p_modulate, p_width, p_outline_modulate);
 }
 
-void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) const {
-
+void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w, const Color &p_outline_modulate) const {
 	Vector2 ofs;
 
+	int chars_drawn = 0;
+	bool with_outline = has_outline();
 	for (int i = 0; i < p_text.length(); i++) {
 
 		int width = get_char_size(p_text[i]).width;
@@ -70,7 +71,15 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w)
 			break; //clip
 
-		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], p_modulate);
+		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], with_outline ? p_outline_modulate : p_modulate, with_outline);
+		++chars_drawn;
+	}
+
+	if (has_outline()) {
+		ofs = Vector2(0, 0);
+		for (int i = 0; i < chars_drawn; i++) {
+			ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], p_modulate, false);
+		}
 	}
 }
 
@@ -81,13 +90,14 @@ void Font::update_changes() {
 
 void Font::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w", "outline_modulate"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("get_ascent"), &Font::get_ascent);
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "outline"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 }
 
@@ -494,23 +504,24 @@ Ref<BitmapFont> BitmapFont::get_fallback() const {
 	return fallback;
 }
 
-float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
 
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
 		if (fallback.is_valid())
-			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate);
+			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, p_outline);
 		return 0;
 	}
 
-	Point2 cpos = p_pos;
-	cpos.x += c->h_align;
-	cpos.y -= ascent;
-	cpos.y += c->v_align;
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
-	if (c->texture_idx != -1)
+	if (!p_outline && c->texture_idx != -1) {
+		Point2 cpos = p_pos;
+		cpos.x += c->h_align;
+		cpos.y -= ascent;
+		cpos.y += c->v_align;
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+	}
 
 	return get_char_size(p_char, p_next).width;
 }
