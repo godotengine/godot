@@ -126,7 +126,28 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 	}
 }
 
-Size2 OS_JavaScript::get_window_size() const {
+static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
+	int input_mask = _input->get_mouse_button_mask();
+	Point2 pos = Point2(mouse_event->canvasX, mouse_event->canvasY);
+	// outside the canvas, only read mouse movement if dragging started inside
+	// the canvas; imitating desktop app behaviour
+	if (!is_cursor_inside_canvas() && !input_mask)
+		return false;
+
+	Ref<InputEventMouseMotion> ev;
+	ev.instance();
+	dom2godot_mod(mouse_event, ev);
+	ev->set_button_mask(input_mask);
+
+	ev->set_position(pos);
+	ev->set_global_position(ev->get_position());
+
+	ev->set_relative(Vector2(mouse_event->movementX, mouse_event->movementY));
+	_input->set_mouse_position(ev->get_position());
+	ev->set_speed(_input->get_last_mouse_speed());
 
 	int canvas[3];
 	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
