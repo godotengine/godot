@@ -317,7 +317,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		_snap_if_closer_point(p_target, grid_output, output, snapped, 0.0, -1.0);
 	}
 
-	if (((snap_pixel && (p_modes & SNAP_PIXEL)) || (p_forced_modes & SNAP_PIXEL)) && rotation == 0.0) {
+	if ((snap_pixel && (p_modes & SNAP_PIXEL)) || ((p_forced_modes & SNAP_PIXEL) && rotation == 0.0)) {
 		// Pixel
 		output = output.snapped(Size2(1, 1));
 	}
