@@ -65,7 +65,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
@@ -110,6 +110,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_custom_minimum_size(Size2(64, 64));
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -383,7 +384,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid())
-		icon->set_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	asset_installer->connect("confirmed", this, "_close");
@@ -694,7 +695,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
-					image->resize(80 * EDSCALE, 80 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -724,7 +725,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 }
@@ -767,7 +768,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINTS("Error getting PNG file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 
