@@ -15,7 +15,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if an animation if currently being played.
+				Return true if an animation is currently being played.
+			</description>
+		</method>
+		<method name="is_playing_backwards" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if an animation is currently being played in reverse.
 			</description>
 		</method>
 		<method name="play">
@@ -23,8 +30,19 @@
 			</return>
 			<argument index="0" name="anim" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="play_backwards" type="bool" default="false">
+			</argument>
 			<description>
-				Play the animation set in parameter. If no parameter is provided, the current animation is played.
+				Play the animation set in parameter. If no parameter is provided, the current animation is played. Property [code]backwards[/code] is set to the value of [code]play_backwards[/code], playing the animation in reverse if set to [code]true[/code].
+			</description>
+		</method>
+		<method name="play_backwards">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Same as calling [code]play[/code] method with [code]play_backwards = true[/code].
 			</description>
 		</method>
 		<method name="stop">
@@ -38,6 +56,9 @@
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
+		</member>
+		<member name="backwards" type="bool" setter="set_backwards" getter="is_backwards">
+			If [code]true[/code] animation will be played in reverse. Default value: [code]false[/code].
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
 			If [code]true[/code] texture will be centered. Default value: [code]true[/code].
