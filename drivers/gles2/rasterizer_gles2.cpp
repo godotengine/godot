@@ -227,20 +227,13 @@ void RasterizerGLES2::initialize() {
 	scene->initialize();
 }
 
-void RasterizerGLES2::begin_frame() {
-	uint64_t tick = OS::get_singleton()->get_ticks_usec();
+void RasterizerGLES2::begin_frame(double frame_step) {
+	time_total += frame_step;
 
-	double delta = double(tick - prev_ticks) / 1000000.0;
-	delta *= Engine::get_singleton()->get_time_scale();
-
-	time_total += delta;
-
-	if (delta == 0) {
+	if (frame_step == 0) {
 		//to avoid hiccups
-		delta = 0.001;
+		frame_step = 0.001;
 	}
-
-	prev_ticks = tick;
 
 	// double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	// if (time_total > time_roll_over)
@@ -251,9 +244,7 @@ void RasterizerGLES2::begin_frame() {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
-	storage->frame.delta = delta;
-
-	storage->frame.prev_tick = tick;
+	storage->frame.delta = frame_step;
 
 	storage->update_dirty_resources();
 
@@ -452,7 +443,6 @@ RasterizerGLES2::RasterizerGLES2() {
 	scene->storage = storage;
 	storage->scene = scene;
 
-	prev_ticks = 0;
 	time_total = 0;
 }
 
