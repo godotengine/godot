@@ -1922,6 +1922,13 @@ void PhysicalBone::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
+
+	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_CONE);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_HINGE);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_SLIDER);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_6DOF);
 }
 
 Skeleton *PhysicalBone::find_skeleton_parent(Node *p_parent) {
