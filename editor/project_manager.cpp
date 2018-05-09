@@ -725,9 +725,11 @@ void ProjectManager::_update_project_buttons() {
 		}
 	}
 
-	erase_btn->set_disabled(selected_list.size() < 1);
-	open_btn->set_disabled(selected_list.size() < 1);
-	rename_btn->set_disabled(selected_list.size() < 1);
+	bool empty_selection = selected_list.empty();
+	erase_btn->set_disabled(empty_selection);
+	open_btn->set_disabled(empty_selection);
+	rename_btn->set_disabled(empty_selection);
+	run_btn->set_disabled(empty_selection);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
