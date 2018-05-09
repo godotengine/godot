@@ -204,7 +204,7 @@ static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *m
 	ev->set_position(pos);
 	ev->set_global_position(ev->get_position());
 
-	ev->set_relative(ev->get_position() - _input->get_mouse_position());
+	ev->set_relative(Vector2(mouse_event->movementX, mouse_event->movementY));
 	_input->set_mouse_position(ev->get_position());
 	ev->set_speed(_input->get_last_mouse_speed());
 
