@@ -35,6 +35,7 @@
 #include "rid.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/material.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -98,6 +99,7 @@ private:
 	bool flags[FLAG_MAX];
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
+	Vector<Ref<Material> > viewport_material_override;
 	float lod_min_distance;
 	float lod_max_distance;
 	float lod_min_hysteresis;
@@ -106,7 +108,13 @@ private:
 	float extra_cull_margin;
 
 protected:
-	void _notification(int p_what);
+	int _get_viewport_material_override_size() const;
+	void _set_viewport_material_override_size(int p_size);
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	static void _bind_methods();
 
 public:
@@ -130,6 +138,9 @@ public:
 
 	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	Ref<Material> get_viewport_material_override(int p_index) const;
+	void set_viewport_material_override(int p_index, const Ref<Material> &p_material);
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;

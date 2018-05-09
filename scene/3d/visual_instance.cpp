@@ -30,6 +30,7 @@
 
 #include "visual_instance.h"
 
+#include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
 #include "skeleton.h"
@@ -146,6 +147,19 @@ Ref<Material> GeometryInstance::get_material_override() const {
 	return material_override;
 }
 
+Ref<Material> GeometryInstance::get_viewport_material_override(int p_index) const {
+	return viewport_material_override[p_index];
+}
+
+void GeometryInstance::set_viewport_material_override(int p_index, const Ref<Material> &p_material) {
+	if (viewport_material_override[p_index] == p_material) {
+		return;
+	}
+
+	viewport_material_override[p_index] = p_material;
+	VS::get_singleton()->instance_geometry_set_viewport_material_override(p_index, get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+}
+
 void GeometryInstance::set_lod_min_distance(float p_dist) {
 
 	lod_min_distance = p_dist;
@@ -188,20 +202,6 @@ void GeometryInstance::set_lod_max_hysteresis(float p_dist) {
 float GeometryInstance::get_lod_max_hysteresis() const {
 
 	return lod_max_hysteresis;
-}
-
-void GeometryInstance::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_ENTER_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-
-	} else if (p_what == NOTIFICATION_EXIT_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-	}
 }
 
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
@@ -252,6 +252,12 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
 	ClassDB::bind_method(D_METHOD("get_material_override"), &GeometryInstance::get_material_override);
 
+	ClassDB::bind_method(D_METHOD("_set_viewport_material_override_size", "size"), &GeometryInstance::_set_viewport_material_override_size);
+	ClassDB::bind_method(D_METHOD("_get_viewport_material_override_size"), &GeometryInstance::_get_viewport_material_override_size);
+
+	ClassDB::bind_method(D_METHOD("set_viewport_material_override", "index", "material"), &GeometryInstance::set_viewport_material_override);
+	ClassDB::bind_method(D_METHOD("get_viewport_material_override", "index"), &GeometryInstance::get_viewport_material_override);
+
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "value"), &GeometryInstance::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &GeometryInstance::get_flag);
 
@@ -287,6 +293,9 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_max_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_max_distance", "get_lod_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_max_hysteresis", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_max_hysteresis", "get_lod_max_hysteresis");
 
+	ADD_GROUP("Viewport", "viewport_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "viewport_material_override_size", PROPERTY_HINT_LENGTH, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "_set_viewport_material_override_size", "_get_viewport_material_override_size");
+
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
@@ -296,6 +305,66 @@ void GeometryInstance::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FLAG_USE_BAKED_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
+}
+
+int GeometryInstance::_get_viewport_material_override_size() const {
+	return viewport_material_override.size();
+}
+
+void GeometryInstance::_set_viewport_material_override_size(int p_size) {
+	viewport_material_override.resize(p_size);
+}
+
+bool GeometryInstance::_get(const StringName &p_name, Variant &r_ret) const {
+	const String sname = p_name;
+	if (!sname.begins_with("viewport_material_override/")) {
+		return false;
+	}
+
+	const int sep = sname.find("/");
+	const String suffix = sname.substr(sep + 1, sname.length() - sep - 1);
+	if (!suffix.is_numeric()) {
+		return false;
+	}
+
+	const int index = suffix.to_int();
+
+	if (index < 0 || index >= viewport_material_override.size()) {
+		return false;
+	}
+
+	r_ret = get_viewport_material_override(index);
+
+	return true;
+}
+
+bool GeometryInstance::_set(const StringName &p_name, const Variant &p_value) {
+	const String sname = p_name;
+	if (!sname.begins_with("viewport_material_override/")) {
+		return false;
+	}
+
+	const int sep = sname.find("/");
+	const String suffix = sname.substr(sep + 1, sname.length() - sep - 1);
+	if (!suffix.is_numeric()) {
+		return false;
+	}
+
+	const int index = suffix.to_int();
+
+	if (index < 0 || index >= viewport_material_override.size()) {
+		return false;
+	}
+
+	set_viewport_material_override(index, p_value);
+
+	return true;
+}
+
+void GeometryInstance::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0, size = viewport_material_override.size(); i < size; ++i) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "viewport_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
+	}
 }
 
 GeometryInstance::GeometryInstance() {

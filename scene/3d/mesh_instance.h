@@ -78,6 +78,9 @@ public:
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
 
+	void set_viewport_pass(Viewport *p_viewport, const Ref<Material> &p_material);
+	Ref<Material> get_viewport_pass(Viewport *p_viewport) const;
+
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 

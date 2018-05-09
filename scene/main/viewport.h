@@ -184,6 +184,8 @@ private:
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
+	int material_override_index;
+
 	bool size_override;
 	bool size_override_stretch;
 	Size2 size_override_size;
@@ -394,6 +396,9 @@ public:
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
+
+	int get_material_override_index() const;
+	void set_material_override_index(int p_index);
 
 	void set_size_override(bool p_enable, const Size2 &p_size = Size2(-1, -1), const Vector2 &p_margin = Vector2());
 	Size2 get_size_override() const;

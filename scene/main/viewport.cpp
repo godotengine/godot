@@ -1053,6 +1053,15 @@ Transform2D Viewport::get_final_transform() const {
 	return stretch_transform * global_canvas_transform;
 }
 
+int Viewport::get_material_override_index() const {
+	return material_override_index;
+}
+
+void Viewport::set_material_override_index(int p_index) {
+	material_override_index = p_index;
+	VisualServer::get_singleton()->viewport_set_material_override_index(viewport, material_override_index);
+}
+
 void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vector2 &p_margin) {
 
 	if (size_override == p_enable && p_size == size_override_size)
@@ -2683,6 +2692,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_vp_input_text", "text"), &Viewport::_vp_input_text);
 	ClassDB::bind_method(D_METHOD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
 
+	ClassDB::bind_method(D_METHOD("set_material_override_index", "index"), &Viewport::set_material_override_index);
+	ClassDB::bind_method(D_METHOD("get_material_override_index"), &Viewport::get_material_override_index);
+
 	ClassDB::bind_method(D_METHOD("set_size_override", "enable", "size", "margin"), &Viewport::set_size_override, DEFVAL(Size2(-1, -1)), DEFVAL(Size2(0, 0)));
 	ClassDB::bind_method(D_METHOD("get_size_override"), &Viewport::get_size_override);
 	ClassDB::bind_method(D_METHOD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
@@ -2779,6 +2791,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "material_override_index"), "set_material_override_index", "get_material_override_index");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_v_flip"), "set_vflip", "get_vflip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
@@ -2874,6 +2887,7 @@ Viewport::Viewport() {
 	listener = NULL;
 	camera = NULL;
 	arvr = false;
+	material_override_index = -1;
 	size_override = false;
 	size_override_stretch = false;
 	size_override_size = Size2(1, 1);

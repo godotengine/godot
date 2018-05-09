@@ -448,6 +448,8 @@ public:
 
 	BIND1RC(RID, viewport_get_texture, RID)
 
+	BIND2(viewport_set_material_override_index, RID, int)
+
 	BIND2(viewport_set_hide_scenario, RID, bool)
 	BIND2(viewport_set_hide_canvas, RID, bool)
 	BIND2(viewport_set_disable_environment, RID, bool)
@@ -544,6 +546,7 @@ public:
 	BIND3(instance_geometry_set_flag, RID, InstanceFlags, bool)
 	BIND2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	BIND2(instance_geometry_set_material_override, RID, RID)
+	BIND3(instance_geometry_set_viewport_material_override, int, RID, RID)
 
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)

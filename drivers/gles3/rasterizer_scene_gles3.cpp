@@ -2186,10 +2186,18 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_OPAQUE_PREPASS, false);
 }
 
-void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass) {
+void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, int p_viewport_index, bool p_depth_pass, bool p_shadow_pass) {
 
 	RasterizerStorageGLES3::Material *m = NULL;
 	RID m_src = p_instance->material_override.is_valid() ? p_instance->material_override : (p_material >= 0 ? p_instance->materials[p_material] : p_geometry->material);
+
+	// Select an override material depending on the viewport index.
+	if (p_viewport_index >= 0 && p_viewport_index < p_instance->viewport_material_override.size()) {
+		const RID material = p_instance->viewport_material_override[p_viewport_index];
+		if (material.is_valid()) {
+			m_src = material;
+		}
+	}
 
 	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		m_src = default_overdraw_material;
@@ -3088,7 +3096,7 @@ void RasterizerSceneGLES3::_copy_texture_to_front_buffer(GLuint p_texture) {
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
 }
 
-void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass) {
+void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p_cull_count, int p_viewport_index, bool p_depth_pass, bool p_shadow_pass) {
 
 	current_geometry_index = 0;
 	current_material_index = 0;
@@ -3113,7 +3121,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 					int mat_idx = inst->materials[i].is_valid() ? i : -1;
 					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
-					_add_geometry(s, inst, NULL, mat_idx, p_depth_pass, p_shadow_pass);
+					_add_geometry(s, inst, NULL, mat_idx, p_viewport_index, p_depth_pass, p_shadow_pass);
 				}
 
 				//mesh->last_pass=frame;
@@ -3136,7 +3144,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				for (int i = 0; i < ssize; i++) {
 
 					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
-					_add_geometry(s, inst, multi_mesh, -1, p_depth_pass, p_shadow_pass);
+					_add_geometry(s, inst, multi_mesh, -1, p_viewport_index, p_depth_pass, p_shadow_pass);
 				}
 
 			} break;
@@ -3145,7 +3153,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getptr(inst->base);
 				ERR_CONTINUE(!immediate);
 
-				_add_geometry(immediate, inst, NULL, -1, p_depth_pass, p_shadow_pass);
+				_add_geometry(immediate, inst, NULL, -1, p_viewport_index, p_depth_pass, p_shadow_pass);
 
 			} break;
 			case VS::INSTANCE_PARTICLES: {
@@ -3167,7 +3175,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 					for (int j = 0; j < ssize; j++) {
 
 						RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
-						_add_geometry(s, inst, particles, -1, p_depth_pass, p_shadow_pass);
+						_add_geometry(s, inst, particles, -1, p_viewport_index, p_depth_pass, p_shadow_pass);
 					}
 				}
 
@@ -4012,7 +4020,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, false);
 }
 
-void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, int p_viewport_index, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	//first of all, make a new render pass
 	render_pass++;
@@ -4084,7 +4092,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		render_list.clear();
-		_fill_render_list(p_cull_result, p_cull_count, true, false);
+		_fill_render_list(p_cull_result, p_cull_count, p_viewport_index, true, false);
 		render_list.sort_by_key(false);
 		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, true);
 		_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, 0, false, false, true, false, false);
@@ -4118,7 +4126,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	bool use_mrt = false;
 
 	render_list.clear();
-	_fill_render_list(p_cull_result, p_cull_count, false, false);
+	_fill_render_list(p_cull_result, p_cull_count, p_viewport_index, false, false);
 	//
 
 	glEnable(GL_BLEND);
@@ -4634,7 +4642,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	}
 
 	render_list.clear();
-	_fill_render_list(p_cull_result, p_cull_count, true, true);
+	_fill_render_list(p_cull_result, p_cull_count, -1, true, true);
 
 	render_list.sort_by_depth(false); //shadow is front to back for performance
 

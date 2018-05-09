@@ -65,9 +65,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
 		if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-			VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 		} else {
-			VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 		}
 	}
 
@@ -183,9 +183,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			if (!can_draw_3d) {
 				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 			} else if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-				VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 			} else {
-				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 			}
 			scenario_draw_canvas_bg = false;
 		}
@@ -218,9 +218,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				if (!can_draw_3d) {
 					VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 				} else if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-					VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+					VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 				} else {
-					VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+					VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 				}
 
 				scenario_draw_canvas_bg = false;
@@ -233,9 +233,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			if (!can_draw_3d) {
 				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 			} else if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-				VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 			} else {
-				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->material_override_index, p_viewport->size, p_viewport->shadow_atlas);
 			}
 
 			scenario_draw_canvas_bg = false;
@@ -428,6 +428,13 @@ RID VisualServerViewport::viewport_get_texture(RID p_viewport) const {
 	ERR_FAIL_COND_V(!viewport, RID());
 
 	return VSG::storage->render_target_get_texture(viewport->render_target);
+}
+
+void VisualServerViewport::viewport_set_material_override_index(RID p_viewport, int p_index) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->material_override_index = p_index;
 }
 
 void VisualServerViewport::viewport_set_hide_scenario(RID p_viewport, bool p_hide) {

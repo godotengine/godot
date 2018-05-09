@@ -59,6 +59,8 @@ public:
 		int viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
 
+		int material_override_index;
+
 		bool hide_scenario;
 		bool hide_canvas;
 		bool disable_environment;
@@ -108,6 +110,7 @@ public:
 			transparent_bg = false;
 			disable_environment = false;
 			viewport_to_screen = 0;
+			material_override_index = -1;
 			shadow_atlas_size = 0;
 			disable_3d = false;
 			disable_3d_by_usage = false;
@@ -161,6 +164,8 @@ public:
 	void viewport_set_clear_mode(RID p_viewport, VS::ViewportClearMode p_clear_mode);
 
 	RID viewport_get_texture(RID p_viewport) const;
+
+	void viewport_set_material_override_index(RID p_viewport, int p_index);
 
 	void viewport_set_hide_scenario(RID p_viewport, bool p_hide);
 	void viewport_set_hide_canvas(RID p_viewport, bool p_hide);

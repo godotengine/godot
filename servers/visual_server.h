@@ -589,6 +589,8 @@ public:
 
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
+	virtual void viewport_set_material_override_index(RID p_viewport, int p_index) = 0;
+
 	virtual void viewport_set_hide_scenario(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_hide_canvas(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_disable_environment(RID p_viewport, bool p_disable) = 0;
@@ -807,6 +809,7 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
+	virtual void instance_geometry_set_viewport_material_override(int p_index, RID p_instance, RID p_material) = 0;
 
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
