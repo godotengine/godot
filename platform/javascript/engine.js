@@ -161,6 +161,10 @@
 			actualCanvas.style.padding = 0;
 			actualCanvas.style.borderWidth = 0;
 			actualCanvas.style.borderStyle = 'none';
+			// disable right-click context menu
+			actualCanvas.addEventListener('contextmenu', function(ev) {
+				ev.preventDefault();
+			}, false);
 			// until context restoration is implemented
 			actualCanvas.addEventListener('webglcontextlost', function(ev) {
 				alert("WebGL context lost, please reload the page");
