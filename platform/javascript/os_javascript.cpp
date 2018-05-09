@@ -113,17 +113,26 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 
-	windowed_size = p_size;
-	if (is_window_fullscreen()) {
-		window_maximized = false;
-		set_window_fullscreen(false);
-	} else if (is_window_maximized()) {
-		set_window_maximized(false);
+	int mask = _input->get_mouse_button_mask();
+	int button_flag = 1 << (ev->get_button_index() - 1);
+	if (ev->is_pressed()) {
+		// Since the event is consumed, focus manually. The containing iframe,
+		// if used, may not have focus yet, so focus even if already focused.
+		focus_canvas();
+		mask |= button_flag;
+	} else if (mask & button_flag) {
+		mask &= ~button_flag;
 	} else {
 		video_mode.width = p_size.x;
 		video_mode.height = p_size.y;
 		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
+	ev->set_button_mask(mask);
+
+	_input->parse_input_event(ev);
+	// Prevent multi-click text selection and wheel-click scrolling anchor.
+	// Context menu is prevented through contextmenu event.
+	return true;
 }
 
 static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
