@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "gdscript_highlighter.h"
+#include "../gdscript_tokenizer.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/text_edit.h"
 
 inline bool _is_symbol(CharType c) {
@@ -61,12 +63,20 @@ static bool _is_hex_symbol(CharType c) {
 Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
 	Map<int, TextEdit::HighlighterInfo> color_map;
 
+	Type next_type = NONE;
+	Type current_type = NONE;
+	Type previous_type = NONE;
+
+	String previous_text = "";
+	int previous_column = 0;
+
 	bool prev_is_char = false;
 	bool prev_is_number = false;
 	bool in_keyword = false;
 	bool in_word = false;
 	bool in_function_name = false;
 	bool in_member_variable = false;
+	bool in_node_path = false;
 	bool is_hex_notation = false;
 	Color keyword_color;
 	Color color;
@@ -214,18 +224,64 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			in_member_variable = false;
 		}
 
-		if (in_region >= 0)
+		if (!in_node_path && in_region == -1 && str[j] == '$') {
+			in_node_path = true;
+		} else if (in_region != -1 || (is_symbol && str[j] != '/')) {
+			in_node_path = false;
+		}
+
+		if (in_region >= 0) {
+			next_type = REGION;
 			color = text_editor->_get_color_region(in_region).color;
-		else if (in_keyword)
+		} else if (in_node_path) {
+			next_type = NODE_PATH;
+			color = node_path_color;
+		} else if (in_keyword) {
+			next_type = KEYWORD;
 			color = keyword_color;
-		else if (in_member_variable)
+		} else if (in_member_variable) {
+			next_type = MEMBER;
 			color = member_color;
-		else if (in_function_name)
-			color = function_color;
-		else if (is_symbol)
+		} else if (in_function_name) {
+			next_type = FUNCTION;
+
+			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::TK_PR_FUNCTION)) {
+				color = function_definition_color;
+			} else {
+				color = function_color;
+			}
+		} else if (is_symbol) {
+			next_type = SYMBOL;
 			color = symbol_color;
-		else if (is_number)
+		} else if (is_number) {
+			next_type = NUMBER;
 			color = number_color;
+		} else {
+			next_type = IDENTIFIER;
+		}
+
+		if (next_type != current_type) {
+			if (current_type == NONE) {
+				current_type = next_type;
+			} else {
+				previous_type = current_type;
+				current_type = next_type;
+
+				// no need to store regions...
+				if (previous_type == REGION) {
+					previous_text = "";
+					previous_column = j;
+				} else {
+					String text = str.substr(previous_column, j - previous_column).strip_edges();
+					previous_column = j;
+
+					// ignore if just whitespace
+					if (text != "") {
+						previous_text = text;
+					}
+				}
+			}
+		}
 
 		prev_is_char = is_char;
 		prev_is_number = is_number;
@@ -255,6 +311,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	function_color = text_editor->get_color("function_color");
 	number_color = text_editor->get_color("number_color");
 	member_color = text_editor->get_color("member_variable_color");
+
+	function_definition_color = EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
+	node_path_color = EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {

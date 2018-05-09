@@ -596,6 +596,10 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
+
+	// GDScript highlighter
+	_initial_set("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
+	_initial_set("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
@@ -631,6 +635,10 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());
 	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/highlighting/search_result_color")).to_html());
 	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/highlighting/search_result_border_color")).to_html());
+
+	//GDScript highlighter
+	cf->set_value(theme_section, "gdscript/function_definition_color", ((Color)get("text_editor/highlighting/gdscript/function_definition_color")).to_html());
+	cf->set_value(theme_section, "gdscript/node_path_color", ((Color)get("text_editor/highlighting/gdscript/node_path_color")).to_html());
 
 	Error err = cf->save(p_file);
 
