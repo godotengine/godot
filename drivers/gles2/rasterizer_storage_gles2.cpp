@@ -1988,7 +1988,6 @@ void RasterizerStorageGLES2::initialize() {
 	}
 
 	frame.count = 0;
-	frame.prev_tick = 0;
 	frame.delta = 0;
 	frame.current_rt = NULL;
 	frame.clear_request = false;

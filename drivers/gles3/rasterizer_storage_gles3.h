@@ -1417,7 +1417,6 @@ public:
 		int canvas_draw_commands;
 		float time[4];
 		float delta;
-		uint64_t prev_tick;
 		uint64_t count;
 
 	} frame;

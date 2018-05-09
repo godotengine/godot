@@ -55,7 +55,7 @@ class VisualServerWrapMT : public VisualServer {
 	bool create_thread;
 
 	uint64_t draw_pending;
-	void thread_draw();
+	void thread_draw(bool p_swap_buffers, double frame_step);
 	void thread_flush();
 
 	void thread_exit();
@@ -572,7 +572,7 @@ public:
 
 	virtual void init();
 	virtual void finish();
-	virtual void draw(bool p_swap_buffers);
+	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
 	FUNC0RC(bool, has_changed)
 
