@@ -4236,6 +4236,7 @@ void TextEdit::paste() {
 
 	String clipboard = OS::get_singleton()->get_clipboard();
 
+	begin_complex_operation();
 	if (selection.active) {
 
 		selection.active = false;
@@ -4252,6 +4253,8 @@ void TextEdit::paste() {
 	}
 
 	_insert_text_at_cursor(clipboard);
+	end_complex_operation();
+
 	update();
 }
 
