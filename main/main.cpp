@@ -1150,14 +1150,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 	if (id) {
-		if (bool(GLOBAL_DEF("input/pointing_devices/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
+		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
 			if (!OS::get_singleton()->has_touchscreen_ui_hint()) {
 				//only if no touchscreen ui hint, set emulation
 				id->set_emulate_touch_from_mouse(true);
 			}
 		}
 
-		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input/pointing_devices/emulate_mouse_from_touch", true)));
+		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input_devices/pointing/emulate_mouse_from_touch", true)));
 	}
 
 	MAIN_PRINT("Main: Load Remaps");
