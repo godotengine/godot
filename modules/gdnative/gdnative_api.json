@@ -5962,8 +5962,8 @@
       ]
     },
     {
-      "name": "android",
-      "type": "ANDROID",
+      "name": "arvr",
+      "type": "ARVR",
       "version": {
         "major": 1,
         "minor": 0
