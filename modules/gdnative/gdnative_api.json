@@ -5756,8 +5756,9 @@
       }
     ]
   },
-  "extensions": {
-    "nativescript": {
+  "extensions": [
+    {
+      "name": "nativescript",
       "type": "NATIVESCRIPT",
       "version": {
         "major": 1,
@@ -5942,7 +5943,8 @@
         }
       ]
     },
-    "pluginscript": {
+    {
+      "name": "pluginscript",
       "type": "PLUGINSCRIPT",
       "version": {
         "major": 1,
@@ -5959,7 +5961,8 @@
         }
       ]
     },
-    "arvr": {
+    {
+      "name": "arvr",
       "type": "ARVR",
       "version": {
         "major": 1,
@@ -6055,5 +6058,5 @@
         }
       ]
     }
-  }
+  ]
 }
