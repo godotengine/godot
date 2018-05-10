@@ -154,6 +154,19 @@ public:
 		t->image->create(t->width, t->height, false, t->format, p_image->get_data());
 	}
 
+	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, VS::CubeMapSide p_cube_side) {
+		DummyTexture *t = texture_owner.get(p_texture);
+
+		ERR_FAIL_COND(!t);
+		ERR_FAIL_COND(t->format != p_image->get_format());
+		ERR_FAIL_COND(p_image.is_null());
+		ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
+		ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
+		ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > t->width || dst_y + src_h > t->height);
+
+		t->image->blit_rect(p_image, Rect2(src_x, src_y, src_w, src_h), Vector2(dst_x, dst_y));
+	}
+
 	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const {
 		DummyTexture *t = texture_owner.getornull(p_texture);
 		ERR_FAIL_COND_V(!t, Ref<Image>());
@@ -333,6 +346,7 @@ public:
 
 	RID skeleton_create() { return RID(); }
 	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) {}
+	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {}
 	int skeleton_get_bone_count(RID p_skeleton) const { return 0; }
 	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {}
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
