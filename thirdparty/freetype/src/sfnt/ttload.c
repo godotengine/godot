@@ -5,7 +5,7 @@
 /*    Load the basic TrueType tables, i.e., tables that can be either in   */
 /*    TTF or OTF fonts (body).                                             */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -338,7 +338,7 @@
     SFNT_HeaderRec  sfnt;
     FT_Error        error;
     FT_Memory       memory = stream->memory;
-    FT_UShort       nn, valid_entries;
+    FT_UShort       nn, valid_entries = 0;
 
     static const FT_Frame_Field  offset_table_fields[] =
     {

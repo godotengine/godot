@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType character mapping table (cmap) support (body).              */
 /*                                                                         */
-/*  Copyright 2002-2017 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -222,10 +222,10 @@
   /***** The following charmap lookup and iteration functions all      *****/
   /***** assume that the value `charcode' fulfills the following.      *****/
   /*****                                                               *****/
-  /*****   - For one byte characters, `charcode' is simply the         *****/
+  /*****   - For one-byte characters, `charcode' is simply the         *****/
   /*****     character code.                                           *****/
   /*****                                                               *****/
-  /*****   - For two byte characters, `charcode' is the 2-byte         *****/
+  /*****   - For two-byte characters, `charcode' is the 2-byte         *****/
   /*****     character code in big endian format.  More precisely:     *****/
   /*****                                                               *****/
   /*****       (charcode >> 8)    is the first byte value              *****/
@@ -252,11 +252,11 @@
   /*   subs        518            SUBHEAD[NSUBS]  sub-headers array        */
   /*   glyph_ids   518+NSUB*8     USHORT[]        glyph ID array           */
   /*                                                                       */
-  /* The `keys' table is used to map charcode high-bytes to sub-headers.   */
+  /* The `keys' table is used to map charcode high bytes to sub-headers.   */
   /* The value of `NSUBS' is the number of sub-headers defined in the      */
   /* table and is computed by finding the maximum of the `keys' table.     */
   /*                                                                       */
-  /* Note that for any n, `keys[n]' is a byte offset within the `subs'     */
+  /* Note that for any `n', `keys[n]' is a byte offset within the `subs'   */
   /* table, i.e., it is the corresponding sub-header index multiplied      */
   /* by 8.                                                                 */
   /*                                                                       */
@@ -269,8 +269,8 @@
   /*   delta       4           SHORT           see below                   */
   /*   offset      6           USHORT          see below                   */
   /*                                                                       */
-  /* A sub-header defines, for each high-byte, the range of valid          */
-  /* low-bytes within the charmap.  Note that the range defined by `first' */
+  /* A sub-header defines, for each high byte, the range of valid          */
+  /* low bytes within the charmap.  Note that the range defined by `first' */
   /* and `count' must be completely included in the interval [0..255]      */
   /* according to the specification.                                       */
   /*                                                                       */
@@ -360,7 +360,7 @@
       /* check range within 0..255 */
       if ( valid->level >= FT_VALIDATE_PARANOID )
       {
-        if ( first_code >= 256 || first_code + code_count > 256 )
+        if ( first_code >= 256 || code_count > 256 - first_code )
           FT_INVALID_DATA;
       }
 
@@ -412,7 +412,7 @@
     {
       FT_UInt   char_lo = (FT_UInt)( char_code & 0xFF );
       FT_UInt   char_hi = (FT_UInt)( char_code >> 8 );
-      FT_Byte*  p       = table + 6;    /* keys table */
+      FT_Byte*  p       = table + 6;    /* keys table       */
       FT_Byte*  subs    = table + 518;  /* subheaders table */
       FT_Byte*  sub;
 
@@ -425,8 +425,8 @@
         sub = subs;  /* jump to first sub-header */
 
         /* check that the sub-header for this byte is 0, which */
-        /* indicates that it is really a valid one-byte value  */
-        /* Otherwise, return 0                                 */
+        /* indicates that it is really a valid one-byte value; */
+        /* otherwise, return 0                                 */
         /*                                                     */
         p += char_lo * 2;
         if ( TT_PEEK_USHORT( p ) != 0 )
@@ -445,6 +445,7 @@
         if ( sub == subs )
           goto Exit;
       }
+
       result = sub;
     }
 
@@ -517,8 +518,19 @@
         FT_UInt   pos, idx;
 
 
+        if ( char_lo >= start + count && charcode <= 0xFF )
+        {
+          /* this happens only for a malformed cmap */
+          charcode = 0x100;
+          continue;
+        }
+
         if ( offset == 0 )
+        {
+          if ( charcode == 0x100 )
+            goto Exit; /* this happens only for a malformed cmap */
           goto Next_SubHeader;
+        }
 
         if ( char_lo < start )
         {
@@ -545,11 +557,20 @@
             }
           }
         }
+
+        /* if unsuccessful, avoid `charcode' leaving */
+        /* the current 256-character block           */
+        if ( count )
+          charcode--;
       }
 
-      /* jump to next sub-header, i.e. higher byte value */
+      /* If `charcode' is <= 0xFF, retry with `charcode + 1'.      */
+      /* Otherwise jump to the next 256-character block and retry. */
     Next_SubHeader:
-      charcode = FT_PAD_FLOOR( charcode, 256 ) + 256;
+      if ( charcode <= 0xFF )
+        charcode++;
+      else
+        charcode = FT_PAD_FLOOR( charcode, 0x100 ) + 0x100;
     }
 
   Exit:

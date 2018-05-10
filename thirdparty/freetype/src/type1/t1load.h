@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 font loader (specification).                                  */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -88,6 +88,10 @@ FT_BEGIN_HEADER
   T1_Set_MM_Design( T1_Face   face,
                     FT_UInt   num_coords,
                     FT_Long*  coords );
+
+  FT_LOCAL( FT_Error )
+  T1_Reset_MM_Blend( T1_Face  face,
+                     FT_UInt  instance_index );
 
   FT_LOCAL( FT_Error )
   T1_Get_Var_Design( T1_Face    face,

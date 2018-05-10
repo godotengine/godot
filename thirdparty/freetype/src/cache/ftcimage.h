@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Generic Image cache (specification)                         */
 /*                                                                         */
-/*  Copyright 2000-2017 by                                                 */
+/*  Copyright 2000-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

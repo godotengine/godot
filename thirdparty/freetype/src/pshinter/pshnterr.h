@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PS Hinter error codes (specification only).                          */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

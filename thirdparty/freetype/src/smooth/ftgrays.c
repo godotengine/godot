@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    A new `perfect' anti-aliasing renderer (body).                       */
 /*                                                                         */
-/*  Copyright 2000-2017 by                                                 */
+/*  Copyright 2000-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -370,7 +370,7 @@ typedef ptrdiff_t  FT_PtrDist;
   /* optimize a division and modulo operation on the same parameters   */
   /* into a single call to `__aeabi_idivmod'.  See                     */
   /*                                                                   */
-  /*  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43721                */
+  /*  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43721               */
 #undef FT_DIV_MOD
 #define FT_DIV_MOD( type, dividend, divisor, quotient, remainder ) \
   FT_BEGIN_STMNT                                                   \
@@ -404,7 +404,7 @@ typedef ptrdiff_t  FT_PtrDist;
   /* need to define them to "float" or "double" when experimenting with   */
   /* new algorithms                                                       */
 
-  typedef long  TPos;     /* sub-pixel coordinate              */
+  typedef long  TPos;     /* subpixel coordinate               */
   typedef int   TCoord;   /* integer scanline/pixel coordinate */
   typedef int   TArea;    /* cell areas, coordinate products   */
 
@@ -582,8 +582,8 @@ typedef ptrdiff_t  FT_PtrDist;
     if ( ex < ras.min_ex )
       ex = ras.min_ex - 1;
 
-    /* record the current one if it is valid */
-    if ( !ras.invalid )
+    /* record the current one if it is valid and substantial */
+    if ( !ras.invalid && ( ras.area || ras.cover ) )
       gray_record_cell( RAS_VAR );
 
     ras.area  = 0;
@@ -1300,8 +1300,6 @@ typedef ptrdiff_t  FT_PtrDist;
     int  y;
 
 
-    FT_TRACE7(( "gray_sweep: start\n" ));
-
     for ( y = ras.min_ey; y < ras.max_ey; y++ )
     {
       PCell   cell  = ras.ycells[y - ras.min_ey];
@@ -1327,8 +1325,6 @@ typedef ptrdiff_t  FT_PtrDist;
       if ( cover != 0 )
         gray_hline( RAS_VAR_ x, y, cover, ras.max_ex - x );
     }
-
-    FT_TRACE7(( "gray_sweep: end\n" ));
   }
 
 
@@ -1722,8 +1718,11 @@ typedef ptrdiff_t  FT_PtrDist;
       if ( !ras.invalid )
         gray_record_cell( RAS_VAR );
 
-      FT_TRACE7(( "band [%d..%d]: %d cells\n",
-                  ras.min_ey, ras.max_ey, ras.num_cells ));
+      FT_TRACE7(( "band [%d..%d]: %d cell%s\n",
+                  ras.min_ey,
+                  ras.max_ey,
+                  ras.num_cells,
+                  ras.num_cells == 1 ? "" : "s" ));
     }
     else
     {
@@ -1740,35 +1739,43 @@ typedef ptrdiff_t  FT_PtrDist;
   static int
   gray_convert_glyph( RAS_ARG )
   {
+    const TCoord  yMin = ras.min_ey;
+    const TCoord  yMax = ras.max_ey;
+    const TCoord  xMin = ras.min_ex;
+    const TCoord  xMax = ras.max_ex;
+
     TCell    buffer[FT_MAX_GRAY_POOL];
-    TCoord   band_size = FT_MAX_GRAY_POOL / 8;
-    TCoord   count = ras.max_ey - ras.min_ey;
-    int      num_bands;
-    TCoord   min, max, max_y;
+    size_t   height = (size_t)( yMax - yMin );
+    size_t   n = FT_MAX_GRAY_POOL / 8;
+    TCoord   y;
     TCoord   bands[32];  /* enough to accommodate bisections */
     TCoord*  band;
 
 
     /* set up vertical bands */
-    if ( count > band_size )
+    if ( height > n )
     {
       /* two divisions rounded up */
-      num_bands = (int)( ( count + band_size - 1) / band_size );
-      band_size = ( count + num_bands - 1 ) / num_bands;
+      n       = ( height + n - 1 ) / n;
+      height  = ( height + n - 1 ) / n;
     }
 
-    min   = ras.min_ey;
-    max_y = ras.max_ey;
+    /* memory management */
+    n = ( height * sizeof ( PCell ) + sizeof ( TCell ) - 1 ) / sizeof ( TCell );
 
-    for ( ; min < max_y; min = max )
+    ras.cells     = buffer + n;
+    ras.max_cells = (FT_PtrDist)( FT_MAX_GRAY_POOL - n );
+    ras.ycells    = (PCell*)buffer;
+
+    for ( y = yMin; y < yMax; )
     {
-      max = min + band_size;
-      if ( max > max_y )
-        max = max_y;
+      ras.min_ey = y;
+      y         += height;
+      ras.max_ey = FT_MIN( y, yMax );
 
       band    = bands;
-      band[1] = min;
-      band[0] = max;
+      band[1] = xMin;
+      band[0] = xMax;
 
       do
       {
@@ -1776,27 +1783,12 @@ typedef ptrdiff_t  FT_PtrDist;
         int     error;
 
 
-        /* memory management */
-        {
-          size_t  ycount = (size_t)width;
-          size_t  cell_start;
+        FT_MEM_ZERO( ras.ycells, height * sizeof ( PCell ) );
 
-
-          cell_start = ( ycount * sizeof ( PCell ) + sizeof ( TCell ) - 1 ) /
-                       sizeof ( TCell );
-
-          ras.cells     = buffer + cell_start;
-          ras.max_cells = (FT_PtrDist)( FT_MAX_GRAY_POOL - cell_start );
-          ras.num_cells = 0;
-
-          ras.ycells = (PCell*)buffer;
-          while ( ycount )
-            ras.ycells[--ycount] = NULL;
-        }
-
+        ras.num_cells = 0;
         ras.invalid   = 1;
-        ras.min_ey    = band[1];
-        ras.max_ey    = band[0];
+        ras.min_ex    = band[1];
+        ras.max_ex    = band[0];
 
         error = gray_convert_glyph_inner( RAS_VAR );
 
@@ -1812,8 +1804,7 @@ typedef ptrdiff_t  FT_PtrDist;
         /* render pool overflow; we will reduce the render band by half */
         width >>= 1;
 
-        /* This is too complex for a single scanline; there must */
-        /* be some problems.                                     */
+        /* this should never happen even with tiny rendering pool */
         if ( width == 0 )
         {
           FT_TRACE7(( "gray_convert_glyph: rotten glyph\n" ));

@@ -102,7 +102,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.8.1
+- Version: 2.9.1
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
