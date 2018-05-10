@@ -2520,9 +2520,6 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		if (p_shape == CURSOR_ARROW) {
 			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
 		}
-
-		memfree(cursor_image->pixels);
-		XcursorImageDestroy(cursor_image);
 	} else {
 		// Reset to default system cursor
 		if (img[p_shape]) {

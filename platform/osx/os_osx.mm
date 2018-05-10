@@ -1621,9 +1621,6 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		if (p_shape == CURSOR_ARROW) {
 			[cursor set];
 		}
-
-		[imgrep release];
-		[nsimage release];
 	} else {
 		// Reset to default system cursor
 		cursors[p_shape] = NULL;
