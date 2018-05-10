@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType and OpenType embedded BDF properties (specification).       */
 /*                                                                         */
-/*  Copyright 2005-2017 by                                                 */
+/*  Copyright 2005-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -28,6 +28,8 @@
 FT_BEGIN_HEADER
 
 
+#ifdef TT_CONFIG_OPTION_BDF
+
   FT_LOCAL( void )
   tt_face_free_bdf_props( TT_Face  face );
 
@@ -36,6 +38,8 @@ FT_BEGIN_HEADER
   tt_face_find_bdf_prop( TT_Face           face,
                          const char*       property_name,
                          BDF_PropertyRec  *aprop );
+
+#endif /* TT_CONFIG_OPTION_BDF */
 
 
 FT_END_HEADER
