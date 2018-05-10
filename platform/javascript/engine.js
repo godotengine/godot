@@ -304,6 +304,14 @@
 		return !!testContext;
 	};
 
+	Engine.setWebAssemblyFilenameExtension = function(override) {
+
+		if (String(override).length === 0) {
+			throw new Error('Invalid WebAssembly filename extension override');
+		}
+		wasmFilenameExtensionOverride = String(override);
+	}
+
 	Engine.load = function(newBasePath) {
 
 		if (newBasePath !== undefined) basePath = getBasePath(newBasePath);
