@@ -547,18 +547,6 @@ void Skeleton::localize_rests() {
 	}
 }
 
-void _notify_physical_bones_simulation(bool start, Node *p_node) {
-
-	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
-		_notify_physical_bones_simulation(start, p_node->get_child(i));
-	}
-
-	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
-	if (pb) {
-		pb->set_simulate_physics(start);
-	}
-}
-
 void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
@@ -616,8 +604,67 @@ void Skeleton::_rebuild_physical_bones_cache() {
 	}
 }
 
-void Skeleton::physical_bones_simulation(bool start) {
-	_notify_physical_bones_simulation(start, this);
+void _pb_stop_simulation(Node *p_node) {
+
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		_pb_stop_simulation(p_node->get_child(i));
+	}
+
+	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
+	if (pb) {
+		pb->set_simulate_physics(false);
+		pb->set_static_body(false);
+	}
+}
+
+void Skeleton::physical_bones_stop_simulation() {
+	_pb_stop_simulation(this);
+}
+
+void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector<int> &p_sim_bones) {
+
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		_pb_start_simulation(p_skeleton, p_node->get_child(i), p_sim_bones);
+	}
+
+	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
+	if (pb) {
+		bool sim = false;
+		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
+			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
+				sim = true;
+				break;
+			}
+		}
+
+		pb->set_simulate_physics(true);
+		if (sim) {
+			pb->set_static_body(false);
+		} else {
+			pb->set_static_body(true);
+		}
+	}
+}
+
+void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
+
+	Vector<int> sim_bones;
+	if (p_bones.size() <= 0) {
+		sim_bones.push_back(0); // if no bones is specified, activate ragdoll on full body
+	} else {
+		sim_bones.resize(p_bones.size());
+		int c = 0;
+		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
+			if (Variant::STRING == p_bones.get(i).get_type()) {
+				int bone_id = find_bone(p_bones.get(i));
+				if (bone_id != -1)
+					sim_bones[c++] = bone_id;
+			}
+		}
+		sim_bones.resize(c);
+	}
+
+	_pb_start_simulation(this, this, sim_bones);
 }
 
 void _physical_bones_add_remove_collision_exception(bool p_add, Node *p_node, RID p_exception) {
@@ -680,7 +727,8 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_transform", "bone_idx"), &Skeleton::get_bone_transform);
 
-	ClassDB::bind_method(D_METHOD("physical_bones_simulation", "start"), &Skeleton::physical_bones_simulation);
+	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
+	ClassDB::bind_method(D_METHOD("physical_bones_start_simulation", "bones"), &Skeleton::physical_bones_start_simulation_on, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 

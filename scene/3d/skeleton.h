@@ -178,7 +178,8 @@ private:
 	void _rebuild_physical_bones_cache();
 
 public:
-	void physical_bones_simulation(bool start);
+	void physical_bones_stop_simulation();
+	void physical_bones_start_simulation_on(const Array &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
 
