@@ -1825,6 +1825,7 @@ void PhysicalBone::_notification(int p_what) {
 			parent_skeleton = find_skeleton_parent(get_parent());
 			update_bone_id();
 			reset_to_rest_position();
+			_reset_physics_simulation_state();
 			break;
 		case NOTIFICATION_EXIT_TREE:
 			if (parent_skeleton) {
@@ -1886,10 +1887,8 @@ void PhysicalBone::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_body_offset", "offset"), &PhysicalBone::set_body_offset);
 	ClassDB::bind_method(D_METHOD("get_body_offset"), &PhysicalBone::get_body_offset);
 
-	ClassDB::bind_method(D_METHOD("set_static_body", "simulate"), &PhysicalBone::set_static_body);
 	ClassDB::bind_method(D_METHOD("is_static_body"), &PhysicalBone::is_static_body);
 
-	ClassDB::bind_method(D_METHOD("set_simulate_physics", "simulate"), &PhysicalBone::set_simulate_physics);
 	ClassDB::bind_method(D_METHOD("get_simulate_physics"), &PhysicalBone::get_simulate_physics);
 
 	ClassDB::bind_method(D_METHOD("is_simulating_physics"), &PhysicalBone::is_simulating_physics);
@@ -1913,9 +1912,7 @@ void PhysicalBone::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "joint_offset"), "set_joint_offset", "get_joint_offset");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simulate_physics"), "set_simulate_physics", "get_simulate_physics");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "static_body"), "set_static_body", "is_static_body");
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_weight", "get_weight");
@@ -2255,8 +2252,8 @@ PhysicalBone::PhysicalBone() :
 		joint_data(NULL),
 		static_body(false),
 		simulate_physics(false),
-		_internal_static_body(!static_body),
-		_internal_simulate_physics(simulate_physics),
+		_internal_static_body(false),
+		_internal_simulate_physics(false),
 		bone_id(-1),
 		parent_skeleton(NULL),
 		bone_name(""),

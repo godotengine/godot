@@ -120,8 +120,10 @@ public:
 
 	// skeleton creation api
 	void add_bone(const String &p_name);
-	int find_bone(String p_name) const;
+	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
+
+	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 
 	void set_bone_parent(int p_bone, int p_parent);
 	int get_bone_parent(int p_bone) const;
@@ -176,7 +178,8 @@ private:
 	void _rebuild_physical_bones_cache();
 
 public:
-	void physical_bones_simulation(bool start);
+	void physical_bones_stop_simulation();
+	void physical_bones_start_simulation_on(const Array &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
 
