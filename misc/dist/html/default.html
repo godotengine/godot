@@ -380,7 +380,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(BASENAME + '.pck').then(() => {
+				engine.startGame(MAIN_PACK).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);
