@@ -40,6 +40,9 @@ matrix:
       os: osx
       osx_image: xcode9.3
       compiler: clang
+    - env: GODOT_TARGET=server TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+      os: linux
+      compiler: clang
 
 addons:
   apt:
