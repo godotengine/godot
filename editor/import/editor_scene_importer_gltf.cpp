@@ -1163,7 +1163,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			continue;
 		}
 
-		if (mimetype.findn("jpg") != -1) {
+		if (mimetype.findn("jpeg") != -1) {
 			//is a jpg
 			Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
 
