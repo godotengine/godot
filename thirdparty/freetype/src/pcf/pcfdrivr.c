@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include FT_SERVICE_BDF_H
 #include FT_SERVICE_FONT_FORMAT_H
 #include FT_SERVICE_PROPERTIES_H
-#include FT_PCF_DRIVER_H
+#include FT_DRIVER_H
 
 
   /*************************************************************************/

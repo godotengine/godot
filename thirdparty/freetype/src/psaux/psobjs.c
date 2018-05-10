@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auxiliary functions for PostScript fonts (body).                     */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,11 +20,13 @@
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_CALC_H
+#include FT_DRIVER_H
 
 #include "psobjs.h"
 #include "psconv.h"
 
 #include "psauxerr.h"
+#include "psauxmod.h"
 
 
   /*************************************************************************/
@@ -1761,10 +1763,747 @@
   /*************************************************************************/
   /*************************************************************************/
   /*****                                                               *****/
+  /*****                           CFF BUILDER                         *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    cff_builder_init                                                   */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Initializes a given glyph builder.                                 */
+  /*                                                                       */
+  /* <InOut>                                                               */
+  /*    builder :: A pointer to the glyph builder to initialize.           */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face    :: The current face object.                                */
+  /*                                                                       */
+  /*    size    :: The current size object.                                */
+  /*                                                                       */
+  /*    glyph   :: The current glyph object.                               */
+  /*                                                                       */
+  /*    hinting :: Whether hinting is active.                              */
+  /*                                                                       */
+  FT_LOCAL_DEF( void )
+  cff_builder_init( CFF_Builder*   builder,
+                    TT_Face        face,
+                    CFF_Size       size,
+                    CFF_GlyphSlot  glyph,
+                    FT_Bool        hinting )
+  {
+    builder->path_begun  = 0;
+    builder->load_points = 1;
+
+    builder->face   = face;
+    builder->glyph  = glyph;
+    builder->memory = face->root.memory;
+
+    if ( glyph )
+    {
+      FT_GlyphLoader  loader = glyph->root.internal->loader;
+
+
+      builder->loader  = loader;
+      builder->base    = &loader->base.outline;
+      builder->current = &loader->current.outline;
+      FT_GlyphLoader_Rewind( loader );
+
+      builder->hints_globals = NULL;
+      builder->hints_funcs   = NULL;
+
+      if ( hinting && size )
+      {
+        FT_Size       ftsize   = FT_SIZE( size );
+        CFF_Internal  internal = (CFF_Internal)ftsize->internal->module_data;
+
+        if ( internal )
+        {
+          builder->hints_globals = (void *)internal->topfont;
+          builder->hints_funcs   = glyph->root.internal->glyph_hints;
+        }
+      }
+    }
+
+    builder->pos_x = 0;
+    builder->pos_y = 0;
+
+    builder->left_bearing.x = 0;
+    builder->left_bearing.y = 0;
+    builder->advance.x      = 0;
+    builder->advance.y      = 0;
+
+    builder->funcs = cff_builder_funcs;
+  }
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    cff_builder_done                                                   */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Finalizes a given glyph builder.  Its contents can still be used   */
+  /*    after the call, but the function saves important information       */
+  /*    within the corresponding glyph slot.                               */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    builder :: A pointer to the glyph builder to finalize.             */
+  /*                                                                       */
+  FT_LOCAL_DEF( void )
+  cff_builder_done( CFF_Builder*  builder )
+  {
+    CFF_GlyphSlot  glyph = builder->glyph;
+
+
+    if ( glyph )
+      glyph->root.outline = *builder->base;
+  }
+
+
+  /* check that there is enough space for `count' more points */
+  FT_LOCAL_DEF( FT_Error )
+  cff_check_points( CFF_Builder*  builder,
+                    FT_Int        count )
+  {
+    return FT_GLYPHLOADER_CHECK_POINTS( builder->loader, count, 0 );
+  }
+
+
+  /* add a new point, do not check space */
+  FT_LOCAL_DEF( void )
+  cff_builder_add_point( CFF_Builder*  builder,
+                         FT_Pos        x,
+                         FT_Pos        y,
+                         FT_Byte       flag )
+  {
+    FT_Outline*  outline = builder->current;
+
+
+    if ( builder->load_points )
+    {
+      FT_Vector*  point   = outline->points + outline->n_points;
+      FT_Byte*    control = (FT_Byte*)outline->tags + outline->n_points;
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+      PS_Driver  driver   = (PS_Driver)FT_FACE_DRIVER( builder->face );
+
+
+      if ( driver->hinting_engine == FT_HINTING_FREETYPE )
+      {
+        point->x = x >> 16;
+        point->y = y >> 16;
+      }
+      else
+#endif
+      {
+        /* cf2_decoder_parse_charstrings uses 16.16 coordinates */
+        point->x = x >> 10;
+        point->y = y >> 10;
+      }
+      *control = (FT_Byte)( flag ? FT_CURVE_TAG_ON : FT_CURVE_TAG_CUBIC );
+    }
+
+    outline->n_points++;
+  }
+
+
+  /* check space for a new on-curve point, then add it */
+  FT_LOCAL_DEF( FT_Error )
+  cff_builder_add_point1( CFF_Builder*  builder,
+                          FT_Pos        x,
+                          FT_Pos        y )
+  {
+    FT_Error  error;
+
+
+    error = cff_check_points( builder, 1 );
+    if ( !error )
+      cff_builder_add_point( builder, x, y, 1 );
+
+    return error;
+  }
+
+
+  /* check space for a new contour, then add it */
+  FT_LOCAL_DEF( FT_Error )
+  cff_builder_add_contour( CFF_Builder*  builder )
+  {
+    FT_Outline*  outline = builder->current;
+    FT_Error     error;
+
+
+    if ( !builder->load_points )
+    {
+      outline->n_contours++;
+      return FT_Err_Ok;
+    }
+
+    error = FT_GLYPHLOADER_CHECK_POINTS( builder->loader, 0, 1 );
+    if ( !error )
+    {
+      if ( outline->n_contours > 0 )
+        outline->contours[outline->n_contours - 1] =
+          (short)( outline->n_points - 1 );
+
+      outline->n_contours++;
+    }
+
+    return error;
+  }
+
+
+  /* if a path was begun, add its first on-curve point */
+  FT_LOCAL_DEF( FT_Error )
+  cff_builder_start_point( CFF_Builder*  builder,
+                           FT_Pos        x,
+                           FT_Pos        y )
+  {
+    FT_Error  error = FT_Err_Ok;
+
+
+    /* test whether we are building a new contour */
+    if ( !builder->path_begun )
+    {
+      builder->path_begun = 1;
+      error = cff_builder_add_contour( builder );
+      if ( !error )
+        error = cff_builder_add_point1( builder, x, y );
+    }
+
+    return error;
+  }
+
+
+  /* close the current contour */
+  FT_LOCAL_DEF( void )
+  cff_builder_close_contour( CFF_Builder*  builder )
+  {
+    FT_Outline*  outline = builder->current;
+    FT_Int       first;
+
+
+    if ( !outline )
+      return;
+
+    first = outline->n_contours <= 1
+            ? 0 : outline->contours[outline->n_contours - 2] + 1;
+
+    /* We must not include the last point in the path if it */
+    /* is located on the first point.                       */
+    if ( outline->n_points > 1 )
+    {
+      FT_Vector*  p1      = outline->points + first;
+      FT_Vector*  p2      = outline->points + outline->n_points - 1;
+      FT_Byte*    control = (FT_Byte*)outline->tags + outline->n_points - 1;
+
+
+      /* `delete' last point only if it coincides with the first    */
+      /* point and if it is not a control point (which can happen). */
+      if ( p1->x == p2->x && p1->y == p2->y )
+        if ( *control == FT_CURVE_TAG_ON )
+          outline->n_points--;
+    }
+
+    if ( outline->n_contours > 0 )
+    {
+      /* Don't add contours only consisting of one point, i.e., */
+      /* check whether begin point and last point are the same. */
+      if ( first == outline->n_points - 1 )
+      {
+        outline->n_contours--;
+        outline->n_points--;
+      }
+      else
+        outline->contours[outline->n_contours - 1] =
+          (short)( outline->n_points - 1 );
+    }
+  }
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                            PS BUILDER                         *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    ps_builder_init                                                    */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Initializes a given glyph builder.                                 */
+  /*                                                                       */
+  /* <InOut>                                                               */
+  /*    builder :: A pointer to the glyph builder to initialize.           */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face    :: The current face object.                                */
+  /*                                                                       */
+  /*    size    :: The current size object.                                */
+  /*                                                                       */
+  /*    glyph   :: The current glyph object.                               */
+  /*                                                                       */
+  /*    hinting :: Whether hinting should be applied.                      */
+  /*                                                                       */
+  FT_LOCAL_DEF( void )
+  ps_builder_init( PS_Builder*  ps_builder,
+                   void*        builder,
+                   FT_Bool      is_t1 )
+  {
+    FT_ZERO( ps_builder );
+
+    if ( is_t1 )
+    {
+      T1_Builder  t1builder = (T1_Builder)builder;
+
+
+      ps_builder->memory  = t1builder->memory;
+      ps_builder->face    = (FT_Face)t1builder->face;
+      ps_builder->glyph   = (CFF_GlyphSlot)t1builder->glyph;
+      ps_builder->loader  = t1builder->loader;
+      ps_builder->base    = t1builder->base;
+      ps_builder->current = t1builder->current;
+
+      ps_builder->pos_x = &t1builder->pos_x;
+      ps_builder->pos_y = &t1builder->pos_y;
+
+      ps_builder->left_bearing = &t1builder->left_bearing;
+      ps_builder->advance      = &t1builder->advance;
+
+      ps_builder->bbox        = &t1builder->bbox;
+      ps_builder->path_begun  = 0;
+      ps_builder->load_points = t1builder->load_points;
+      ps_builder->no_recurse  = t1builder->no_recurse;
+
+      ps_builder->metrics_only = t1builder->metrics_only;
+    }
+    else
+    {
+      CFF_Builder*  cffbuilder = (CFF_Builder*)builder;
+
+
+      ps_builder->memory  = cffbuilder->memory;
+      ps_builder->face    = (FT_Face)cffbuilder->face;
+      ps_builder->glyph   = cffbuilder->glyph;
+      ps_builder->loader  = cffbuilder->loader;
+      ps_builder->base    = cffbuilder->base;
+      ps_builder->current = cffbuilder->current;
+
+      ps_builder->pos_x = &cffbuilder->pos_x;
+      ps_builder->pos_y = &cffbuilder->pos_y;
+
+      ps_builder->left_bearing = &cffbuilder->left_bearing;
+      ps_builder->advance      = &cffbuilder->advance;
+
+      ps_builder->bbox        = &cffbuilder->bbox;
+      ps_builder->path_begun  = cffbuilder->path_begun;
+      ps_builder->load_points = cffbuilder->load_points;
+      ps_builder->no_recurse  = cffbuilder->no_recurse;
+
+      ps_builder->metrics_only = cffbuilder->metrics_only;
+    }
+
+    ps_builder->is_t1 = is_t1;
+    ps_builder->funcs = ps_builder_funcs;
+  }
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    ps_builder_done                                                    */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Finalizes a given glyph builder.  Its contents can still be used   */
+  /*    after the call, but the function saves important information       */
+  /*    within the corresponding glyph slot.                               */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    builder :: A pointer to the glyph builder to finalize.             */
+  /*                                                                       */
+  FT_LOCAL_DEF( void )
+  ps_builder_done( PS_Builder*  builder )
+  {
+    CFF_GlyphSlot  glyph = builder->glyph;
+
+
+    if ( glyph )
+      glyph->root.outline = *builder->base;
+  }
+
+
+  /* check that there is enough space for `count' more points */
+  FT_LOCAL_DEF( FT_Error )
+  ps_builder_check_points( PS_Builder*  builder,
+                           FT_Int       count )
+  {
+    return FT_GLYPHLOADER_CHECK_POINTS( builder->loader, count, 0 );
+  }
+
+
+  /* add a new point, do not check space */
+  FT_LOCAL_DEF( void )
+  ps_builder_add_point( PS_Builder*  builder,
+                        FT_Pos       x,
+                        FT_Pos       y,
+                        FT_Byte      flag )
+  {
+    FT_Outline*  outline = builder->current;
+
+
+    if ( builder->load_points )
+    {
+      FT_Vector*  point   = outline->points + outline->n_points;
+      FT_Byte*    control = (FT_Byte*)outline->tags + outline->n_points;
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+      PS_Driver  driver   = (PS_Driver)FT_FACE_DRIVER( builder->face );
+
+
+      if ( !builder->is_t1 &&
+           driver->hinting_engine == FT_HINTING_FREETYPE )
+      {
+        point->x = x >> 16;
+        point->y = y >> 16;
+      }
+      else
+#endif
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+#ifndef CFF_CONFIG_OPTION_OLD_ENGINE
+      PS_Driver  driver   = (PS_Driver)FT_FACE_DRIVER( builder->face );
+#endif
+      if ( builder->is_t1 &&
+           driver->hinting_engine == FT_HINTING_FREETYPE )
+      {
+        point->x = FIXED_TO_INT( x );
+        point->y = FIXED_TO_INT( y );
+      }
+      else
+#endif
+      {
+        /* cf2_decoder_parse_charstrings uses 16.16 coordinates */
+        point->x = x >> 10;
+        point->y = y >> 10;
+      }
+      *control = (FT_Byte)( flag ? FT_CURVE_TAG_ON : FT_CURVE_TAG_CUBIC );
+    }
+    outline->n_points++;
+  }
+
+
+  /* check space for a new on-curve point, then add it */
+  FT_LOCAL_DEF( FT_Error )
+  ps_builder_add_point1( PS_Builder*  builder,
+                         FT_Pos       x,
+                         FT_Pos       y )
+  {
+    FT_Error  error;
+
+
+    error = ps_builder_check_points( builder, 1 );
+    if ( !error )
+      ps_builder_add_point( builder, x, y, 1 );
+
+    return error;
+  }
+
+
+  /* check space for a new contour, then add it */
+  FT_LOCAL_DEF( FT_Error )
+  ps_builder_add_contour( PS_Builder*  builder )
+  {
+    FT_Outline*  outline = builder->current;
+    FT_Error     error;
+
+
+    /* this might happen in invalid fonts */
+    if ( !outline )
+    {
+      FT_ERROR(( "ps_builder_add_contour: no outline to add points to\n" ));
+      return FT_THROW( Invalid_File_Format );
+    }
+
+    if ( !builder->load_points )
+    {
+      outline->n_contours++;
+      return FT_Err_Ok;
+    }
+
+    error = FT_GLYPHLOADER_CHECK_POINTS( builder->loader, 0, 1 );
+    if ( !error )
+    {
+      if ( outline->n_contours > 0 )
+        outline->contours[outline->n_contours - 1] =
+          (short)( outline->n_points - 1 );
+
+      outline->n_contours++;
+    }
+
+    return error;
+  }
+
+
+  /* if a path was begun, add its first on-curve point */
+  FT_LOCAL_DEF( FT_Error )
+  ps_builder_start_point( PS_Builder*  builder,
+                          FT_Pos       x,
+                          FT_Pos       y )
+  {
+    FT_Error  error = FT_Err_Ok;
+
+
+    /* test whether we are building a new contour */
+    if ( !builder->path_begun )
+    {
+      builder->path_begun = 1;
+      error = ps_builder_add_contour( builder );
+      if ( !error )
+        error = ps_builder_add_point1( builder, x, y );
+    }
+
+    return error;
+  }
+
+
+  /* close the current contour */
+  FT_LOCAL_DEF( void )
+  ps_builder_close_contour( PS_Builder*  builder )
+  {
+    FT_Outline*  outline = builder->current;
+    FT_Int       first;
+
+
+    if ( !outline )
+      return;
+
+    first = outline->n_contours <= 1
+            ? 0 : outline->contours[outline->n_contours - 2] + 1;
+
+    /* in malformed fonts it can happen that a contour was started */
+    /* but no points were added                                    */
+    if ( outline->n_contours && first == outline->n_points )
+    {
+      outline->n_contours--;
+      return;
+    }
+
+    /* We must not include the last point in the path if it */
+    /* is located on the first point.                       */
+    if ( outline->n_points > 1 )
+    {
+      FT_Vector*  p1      = outline->points + first;
+      FT_Vector*  p2      = outline->points + outline->n_points - 1;
+      FT_Byte*    control = (FT_Byte*)outline->tags + outline->n_points - 1;
+
+
+      /* `delete' last point only if it coincides with the first */
+      /* point and it is not a control point (which can happen). */
+      if ( p1->x == p2->x && p1->y == p2->y )
+        if ( *control == FT_CURVE_TAG_ON )
+          outline->n_points--;
+    }
+
+    if ( outline->n_contours > 0 )
+    {
+      /* Don't add contours only consisting of one point, i.e.,  */
+      /* check whether the first and the last point is the same. */
+      if ( first == outline->n_points - 1 )
+      {
+        outline->n_contours--;
+        outline->n_points--;
+      }
+      else
+        outline->contours[outline->n_contours - 1] =
+          (short)( outline->n_points - 1 );
+    }
+  }
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
   /*****                            OTHER                              *****/
   /*****                                                               *****/
   /*************************************************************************/
   /*************************************************************************/
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    ps_decoder_init                                                    */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Creates a wrapper decoder for use in the combined                  */
+  /*    Type 1 / CFF interpreter.                                          */
+  /*                                                                       */
+  /* <InOut>                                                               */
+  /*    ps_decoder :: A pointer to the decoder to initialize.              */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    decoder    :: A pointer to the original decoder.                   */
+  /*                                                                       */
+  /*    is_t1      :: Flag indicating Type 1 or CFF                        */
+  /*                                                                       */
+  FT_LOCAL_DEF( void )
+  ps_decoder_init( PS_Decoder*  ps_decoder,
+                   void*        decoder,
+                   FT_Bool      is_t1 )
+  {
+    FT_ZERO( ps_decoder );
+
+    if ( is_t1 )
+    {
+      T1_Decoder  t1_decoder = (T1_Decoder)decoder;
+
+
+      ps_builder_init( &ps_decoder->builder,
+                       &t1_decoder->builder,
+                       is_t1 );
+
+      ps_decoder->cf2_instance = &t1_decoder->cf2_instance;
+      ps_decoder->psnames      = t1_decoder->psnames;
+
+      ps_decoder->num_glyphs  = t1_decoder->num_glyphs;
+      ps_decoder->glyph_names = t1_decoder->glyph_names;
+      ps_decoder->hint_mode   = t1_decoder->hint_mode;
+      ps_decoder->blend       = t1_decoder->blend;
+
+      ps_decoder->num_locals  = (FT_UInt)t1_decoder->num_subrs;
+      ps_decoder->locals      = t1_decoder->subrs;
+      ps_decoder->locals_len  = t1_decoder->subrs_len;
+      ps_decoder->locals_hash = t1_decoder->subrs_hash;
+
+      ps_decoder->buildchar     = t1_decoder->buildchar;
+      ps_decoder->len_buildchar = t1_decoder->len_buildchar;
+
+      ps_decoder->lenIV = t1_decoder->lenIV;
+    }
+    else
+    {
+      CFF_Decoder*  cff_decoder = (CFF_Decoder*)decoder;
+
+
+      ps_builder_init( &ps_decoder->builder,
+                       &cff_decoder->builder,
+                       is_t1 );
+
+      ps_decoder->cff             = cff_decoder->cff;
+      ps_decoder->cf2_instance    = &cff_decoder->cff->cf2_instance;
+      ps_decoder->current_subfont = cff_decoder->current_subfont;
+
+      ps_decoder->num_globals  = cff_decoder->num_globals;
+      ps_decoder->globals      = cff_decoder->globals;
+      ps_decoder->globals_bias = cff_decoder->globals_bias;
+      ps_decoder->num_locals   = cff_decoder->num_locals;
+      ps_decoder->locals       = cff_decoder->locals;
+      ps_decoder->locals_bias  = cff_decoder->locals_bias;
+
+      ps_decoder->glyph_width   = &cff_decoder->glyph_width;
+      ps_decoder->width_only    = cff_decoder->width_only;
+
+      ps_decoder->hint_mode = cff_decoder->hint_mode;
+
+      ps_decoder->get_glyph_callback  = cff_decoder->get_glyph_callback;
+      ps_decoder->free_glyph_callback = cff_decoder->free_glyph_callback;
+    }
+  }
+
+
+  /* Synthesize a SubFont object for Type 1 fonts, for use in the  */
+  /* new interpreter to access Private dict data.                  */
+  FT_LOCAL_DEF( void )
+  t1_make_subfont( FT_Face      face,
+                   PS_Private   priv,
+                   CFF_SubFont  subfont )
+  {
+    CFF_Private  cpriv = &subfont->private_dict;
+    FT_UInt      n, count;
+
+
+    FT_ZERO( subfont );
+    FT_ZERO( cpriv );
+
+    count = cpriv->num_blue_values = priv->num_blue_values;
+    for ( n = 0; n < count; n++ )
+      cpriv->blue_values[n] = (FT_Pos)priv->blue_values[n];
+
+    count = cpriv->num_other_blues = priv->num_other_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->other_blues[n] = (FT_Pos)priv->other_blues[n];
+
+    count = cpriv->num_family_blues = priv->num_family_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->family_blues[n] = (FT_Pos)priv->family_blues[n];
+
+    count = cpriv->num_family_other_blues = priv->num_family_other_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->family_other_blues[n] = (FT_Pos)priv->family_other_blues[n];
+
+    cpriv->blue_scale = priv->blue_scale;
+    cpriv->blue_shift = (FT_Pos)priv->blue_shift;
+    cpriv->blue_fuzz  = (FT_Pos)priv->blue_fuzz;
+
+    cpriv->standard_width  = (FT_Pos)priv->standard_width[0];
+    cpriv->standard_height = (FT_Pos)priv->standard_height[0];
+
+    count = cpriv->num_snap_widths = priv->num_snap_widths;
+    for ( n = 0; n < count; n++ )
+      cpriv->snap_widths[n] = (FT_Pos)priv->snap_widths[n];
+
+    count = cpriv->num_snap_heights = priv->num_snap_heights;
+    for ( n = 0; n < count; n++ )
+      cpriv->snap_heights[n] = (FT_Pos)priv->snap_heights[n];
+
+    cpriv->force_bold       = priv->force_bold;
+    cpriv->lenIV            = priv->lenIV;
+    cpriv->language_group   = priv->language_group;
+    cpriv->expansion_factor = priv->expansion_factor;
+
+    cpriv->subfont = subfont;
+
+
+    /* Initialize the random number generator. */
+    if ( face->internal->random_seed != -1 )
+    {
+      /* If we have a face-specific seed, use it.    */
+      /* If non-zero, update it to a positive value. */
+      subfont->random = (FT_UInt32)face->internal->random_seed;
+      if ( face->internal->random_seed )
+      {
+        do
+        {
+          face->internal->random_seed = (FT_Int32)cff_random(
+            (FT_UInt32)face->internal->random_seed );
+
+        } while ( face->internal->random_seed < 0 );
+      }
+    }
+    if ( !subfont->random )
+    {
+      FT_UInt32  seed;
+
+
+      /* compute random seed from some memory addresses */
+      seed = (FT_UInt32)( (FT_Offset)(char*)&seed    ^
+                          (FT_Offset)(char*)&face    ^
+                          (FT_Offset)(char*)&subfont );
+      seed = seed ^ ( seed >> 10 ) ^ ( seed >> 20 );
+      if ( seed == 0 )
+        seed = 0x7384;
+
+      subfont->random = seed;
+    }
+  }
+
 
   FT_LOCAL_DEF( void )
   t1_decrypt( FT_Byte*   buffer,
@@ -1776,6 +2515,18 @@
                          buffer,
                          length,
                          &seed );
+  }
+
+
+  FT_LOCAL_DEF( FT_UInt32 )
+  cff_random( FT_UInt32  r )
+  {
+    /* a 32bit version of the `xorshift' algorithm */
+    r ^= r << 13;
+    r ^= r >> 17;
+    r ^= r << 5;
+
+    return r;
   }
 
 

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    HarfBuzz interface for accessing OpenType features (body).           */
 /*                                                                         */
-/*  Copyright 2013-2017 by                                                 */
+/*  Copyright 2013-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -104,10 +104,10 @@
   {
     hb_face_t*  face;
 
-    hb_set_t*  gsub_lookups;  /* GSUB lookups for a given script */
-    hb_set_t*  gsub_glyphs;   /* glyphs covered by GSUB lookups  */
-    hb_set_t*  gpos_lookups;  /* GPOS lookups for a given script */
-    hb_set_t*  gpos_glyphs;   /* glyphs covered by GPOS lookups  */
+    hb_set_t*  gsub_lookups = NULL; /* GSUB lookups for a given script */
+    hb_set_t*  gsub_glyphs  = NULL; /* glyphs covered by GSUB lookups  */
+    hb_set_t*  gpos_lookups = NULL; /* GPOS lookups for a given script */
+    hb_set_t*  gpos_glyphs  = NULL; /* glyphs covered by GPOS lookups  */
 
     hb_script_t      script;
     const hb_tag_t*  coverage_tags;
@@ -126,11 +126,6 @@
       return FT_THROW( Invalid_Argument );
 
     face = hb_font_get_face( globals->hb_font );
-
-    gsub_lookups = hb_set_create();
-    gsub_glyphs  = hb_set_create();
-    gpos_lookups = hb_set_create();
-    gpos_glyphs  = hb_set_create();
 
     coverage_tags = coverages[style_class->coverage];
     script        = scripts[style_class->script];
@@ -168,6 +163,7 @@
         script_tags[1] = HB_TAG_NONE;
     }
 
+    gsub_lookups = hb_set_create();
     hb_ot_layout_collect_lookups( face,
                                   HB_OT_TAG_GSUB,
                                   script_tags,
@@ -178,13 +174,6 @@
     if ( hb_set_is_empty( gsub_lookups ) )
       goto Exit; /* nothing to do */
 
-    hb_ot_layout_collect_lookups( face,
-                                  HB_OT_TAG_GPOS,
-                                  script_tags,
-                                  NULL,
-                                  coverage_tags,
-                                  gpos_lookups );
-
     FT_TRACE4(( "GSUB lookups (style `%s'):\n"
                 " ",
                 af_style_names[style_class->style] ));
@@ -193,6 +182,7 @@
     count = 0;
 #endif
 
+    gsub_glyphs = hb_set_create();
     for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gsub_lookups, &idx ); )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
@@ -220,10 +210,19 @@
                 " ",
                 af_style_names[style_class->style] ));
 
+    gpos_lookups = hb_set_create();
+    hb_ot_layout_collect_lookups( face,
+                                  HB_OT_TAG_GPOS,
+                                  script_tags,
+                                  NULL,
+                                  coverage_tags,
+                                  gpos_lookups );
+
 #ifdef FT_DEBUG_LEVEL_TRACE
     count = 0;
 #endif
 
+    gpos_glyphs = hb_set_create();
     for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gpos_lookups, &idx ); )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Build macros of the FreeType 2 library.                              */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -318,14 +318,29 @@
   /*************************************************************************
    *
    * @macro:
+   *   FT_DRIVER_H
+   *
+   * @description:
+   *   A macro used in #include statements to name the file containing
+   *   structures and macros related to the driver modules.
+   *
+   */
+#define FT_DRIVER_H  <freetype/ftdriver.h>
+
+
+  /*************************************************************************
+   *
+   * @macro:
    *   FT_AUTOHINTER_H
    *
    * @description:
    *   A macro used in #include statements to name the file containing
    *   structures and macros related to the auto-hinting module.
    *
+   *   Deprecated since version 2.9; use @FT_DRIVER_H instead.
+   *
    */
-#define FT_AUTOHINTER_H  <freetype/ftautoh.h>
+#define FT_AUTOHINTER_H  FT_DRIVER_H
 
 
   /*************************************************************************
@@ -337,8 +352,10 @@
    *   A macro used in #include statements to name the file containing
    *   structures and macros related to the CFF driver module.
    *
+   *   Deprecated since version 2.9; use @FT_DRIVER_H instead.
+   *
    */
-#define FT_CFF_DRIVER_H  <freetype/ftcffdrv.h>
+#define FT_CFF_DRIVER_H  FT_DRIVER_H
 
 
   /*************************************************************************
@@ -350,8 +367,10 @@
    *   A macro used in #include statements to name the file containing
    *   structures and macros related to the TrueType driver module.
    *
+   *   Deprecated since version 2.9; use @FT_DRIVER_H instead.
+   *
    */
-#define FT_TRUETYPE_DRIVER_H  <freetype/ftttdrv.h>
+#define FT_TRUETYPE_DRIVER_H  FT_DRIVER_H
 
 
   /*************************************************************************
@@ -363,8 +382,10 @@
    *   A macro used in #include statements to name the file containing
    *   structures and macros related to the PCF driver module.
    *
+   *   Deprecated since version 2.9; use @FT_DRIVER_H instead.
+   *
    */
-#define FT_PCF_DRIVER_H  <freetype/ftpcfdrv.h>
+#define FT_PCF_DRIVER_H  FT_DRIVER_H
 
 
   /*************************************************************************
@@ -557,63 +578,6 @@
   /*************************************************************************
    *
    * @macro:
-   *   FT_CACHE_IMAGE_H
-   *
-   * @description:
-   *   A macro used in #include statements to name the file containing the
-   *   `glyph image' API of the FreeType~2 cache sub-system.
-   *
-   *   It is used to define a cache for @FT_Glyph elements.  You can also
-   *   use the API defined in @FT_CACHE_SMALL_BITMAPS_H if you only need to
-   *   store small glyph bitmaps, as it will use less memory.
-   *
-   *   This macro is deprecated.  Simply include @FT_CACHE_H to have all
-   *   glyph image-related cache declarations.
-   *
-   */
-#define FT_CACHE_IMAGE_H  FT_CACHE_H
-
-
-  /*************************************************************************
-   *
-   * @macro:
-   *   FT_CACHE_SMALL_BITMAPS_H
-   *
-   * @description:
-   *   A macro used in #include statements to name the file containing the
-   *   `small bitmaps' API of the FreeType~2 cache sub-system.
-   *
-   *   It is used to define a cache for small glyph bitmaps in a relatively
-   *   memory-efficient way.  You can also use the API defined in
-   *   @FT_CACHE_IMAGE_H if you want to cache arbitrary glyph images,
-   *   including scalable outlines.
-   *
-   *   This macro is deprecated.  Simply include @FT_CACHE_H to have all
-   *   small bitmaps-related cache declarations.
-   *
-   */
-#define FT_CACHE_SMALL_BITMAPS_H  FT_CACHE_H
-
-
-  /*************************************************************************
-   *
-   * @macro:
-   *   FT_CACHE_CHARMAP_H
-   *
-   * @description:
-   *   A macro used in #include statements to name the file containing the
-   *   `charmap' API of the FreeType~2 cache sub-system.
-   *
-   *   This macro is deprecated.  Simply include @FT_CACHE_H to have all
-   *   charmap-based cache declarations.
-   *
-   */
-#define FT_CACHE_CHARMAP_H  FT_CACHE_H
-
-
-  /*************************************************************************
-   *
-   * @macro:
    *   FT_MAC_H
    *
    * @description:
@@ -763,17 +727,6 @@
   /*************************************************************************
    *
    * @macro:
-   *   FT_UNPATENTED_HINTING_H
-   *
-   * @description:
-   *   Deprecated.
-   */
-#define FT_UNPATENTED_HINTING_H  <freetype/ttunpat.h>
-
-
-  /*************************************************************************
-   *
-   * @macro:
    *   FT_INCREMENTAL_H
    *
    * @description:
@@ -809,25 +762,30 @@
 
   /* */
 
+  /* These header files don't need to be included by the user. */
 #define FT_ERROR_DEFINITIONS_H  <freetype/fterrdef.h>
+#define FT_PARAMETER_TAGS_H     <freetype/ftparams.h>
 
+  /* Deprecated macros. */
+#define FT_UNPATENTED_HINTING_H   <freetype/ftparams.h>
+#define FT_TRUETYPE_UNPATENTED_H  <freetype/ftparams.h>
+
+  /* FT_CACHE_H is the only header file needed for the cache subsystem. */
+#define FT_CACHE_IMAGE_H          FT_CACHE_H
+#define FT_CACHE_SMALL_BITMAPS_H  FT_CACHE_H
+#define FT_CACHE_CHARMAP_H        FT_CACHE_H
 
   /* The internals of the cache sub-system are no longer exposed.  We */
   /* default to FT_CACHE_H at the moment just in case, but we know of */
   /* no rogue client that uses them.                                  */
   /*                                                                  */
-#define FT_CACHE_MANAGER_H           <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_MRU_H      <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_MANAGER_H  <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_CACHE_H    <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_GLYPH_H    <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_IMAGE_H    <freetype/ftcache.h>
-#define FT_CACHE_INTERNAL_SBITS_H    <freetype/ftcache.h>
-
-
-#define FT_INCREMENTAL_H          <freetype/ftincrem.h>
-
-#define FT_TRUETYPE_UNPATENTED_H  <freetype/ttunpat.h>
+#define FT_CACHE_MANAGER_H           FT_CACHE_H
+#define FT_CACHE_INTERNAL_MRU_H      FT_CACHE_H
+#define FT_CACHE_INTERNAL_MANAGER_H  FT_CACHE_H
+#define FT_CACHE_INTERNAL_CACHE_H    FT_CACHE_H
+#define FT_CACHE_INTERNAL_GLYPH_H    FT_CACHE_H
+#define FT_CACHE_INTERNAL_IMAGE_H    FT_CACHE_H
+#define FT_CACHE_INTERNAL_SBITS_H    FT_CACHE_H
 
 
   /*

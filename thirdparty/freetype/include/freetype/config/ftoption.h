@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    User-selectable configuration macros (specification only).           */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -75,19 +75,21 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*************************************************************************/
+  /*#***********************************************************************/
   /*                                                                       */
   /* If you enable this configuration option, FreeType recognizes an       */
   /* environment variable called `FREETYPE_PROPERTIES', which can be used  */
   /* to control the various font drivers and modules.  The controllable    */
-  /* properties are listed in the section `Controlling FreeType Modules'   */
-  /* in the reference's table of contents; currently there are properties  */
-  /* for the auto-hinter (file `ftautoh.h'), CFF (file `ftcffdrv.h'),      */
-  /* TrueType (file `ftttdrv.h'), and PCF (file `ftpcfdrv.h').             */
+  /* properties are listed in the section @properties.                     */
+  /*                                                                       */
+  /* You have to undefine this configuration option on platforms that lack */
+  /* the concept of environment variables (and thus don't have the         */
+  /* `getenv' function), for example Windows CE.                           */
   /*                                                                       */
   /* `FREETYPE_PROPERTIES' has the following syntax form (broken here into */
   /* multiple lines for better readability).                               */
   /*                                                                       */
+  /* {                                                                     */
   /*   <optional whitespace>                                               */
   /*   <module-name1> ':'                                                  */
   /*   <property-name1> '=' <property-value1>                              */
@@ -95,6 +97,7 @@ FT_BEGIN_HEADER
   /*   <module-name2> ':'                                                  */
   /*   <property-name2> '=' <property-value2>                              */
   /*   ...                                                                 */
+  /* }                                                                     */
   /*                                                                       */
   /* Example:                                                              */
   /*                                                                       */
@@ -211,6 +214,10 @@ FT_BEGIN_HEADER
   /*   Do not #undef this macro here since the build system might define   */
   /*   it for certain configurations only.                                 */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
 
@@ -226,6 +233,10 @@ FT_BEGIN_HEADER
   /*   the system available bzip2 implementation.                          */
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
+  /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
   /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_BZIP2 */
 
@@ -252,6 +263,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_PNG */
 
 
@@ -265,49 +280,11 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_HARFBUZZ */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* DLL export compilation                                                */
-  /*                                                                       */
-  /*   When compiling FreeType as a DLL, some systems/compilers need a     */
-  /*   special keyword in front OR after the return type of function       */
-  /*   declarations.                                                       */
-  /*                                                                       */
-  /*   Two macros are used within the FreeType source code to define       */
-  /*   exported library functions: FT_EXPORT and FT_EXPORT_DEF.            */
-  /*                                                                       */
-  /*     FT_EXPORT( return_type )                                          */
-  /*                                                                       */
-  /*       is used in a function declaration, as in                        */
-  /*                                                                       */
-  /*         FT_EXPORT( FT_Error )                                         */
-  /*         FT_Init_FreeType( FT_Library*  alibrary );                    */
-  /*                                                                       */
-  /*                                                                       */
-  /*     FT_EXPORT_DEF( return_type )                                      */
-  /*                                                                       */
-  /*       is used in a function definition, as in                         */
-  /*                                                                       */
-  /*         FT_EXPORT_DEF( FT_Error )                                     */
-  /*         FT_Init_FreeType( FT_Library*  alibrary )                     */
-  /*         {                                                             */
-  /*           ... some code ...                                           */
-  /*           return FT_Err_Ok;                                           */
-  /*         }                                                             */
-  /*                                                                       */
-  /*   You can provide your own implementation of FT_EXPORT and            */
-  /*   FT_EXPORT_DEF here if you want.  If you leave them undefined, they  */
-  /*   will be later automatically defined as `extern return_type' to      */
-  /*   allow normal compilation.                                           */
-  /*                                                                       */
-  /*   Do not #undef these macros here since the build system might define */
-  /*   them for certain configurations only.                               */
-  /*                                                                       */
-/* #define FT_EXPORT(x)      extern x */
-/* #define FT_EXPORT_DEF(x)  x */
 
 
   /*************************************************************************/
@@ -678,7 +655,7 @@ FT_BEGIN_HEADER
   /* This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be      */
   /* defined.                                                              */
   /*                                                                       */
-  /* [1] http://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
+  /* [1] https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
   /*                                                                       */
 /* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  1         */
 #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  2
@@ -698,7 +675,7 @@ FT_BEGIN_HEADER
   /* composite flags array which can be used to disambiguate, but old      */
   /* fonts will not have them.                                             */
   /*                                                                       */
-  /*   http://www.microsoft.com/typography/otspec/glyf.htm                 */
+  /*   https://www.microsoft.com/typography/otspec/glyf.htm                */
   /*   https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html */
   /*                                                                       */
 #undef TT_CONFIG_OPTION_COMPONENT_OFFSET_SCALED
@@ -796,6 +773,16 @@ FT_BEGIN_HEADER
 
 
   /*************************************************************************/
+  /*                                                                       */
+  /* T1_CONFIG_OPTION_OLD_ENGINE controls whether the pre-Adobe Type 1     */
+  /* engine gets compiled into FreeType.  If defined, it is possible to    */
+  /* switch between the two engines using the `hinting-engine' property of */
+  /* the type1 driver module.                                              */
+  /*                                                                       */
+/* #define T1_CONFIG_OPTION_OLD_ENGINE */
+
+
+  /*************************************************************************/
   /*************************************************************************/
   /****                                                                 ****/
   /****         C F F   D R I V E R    C O N F I G U R A T I O N        ****/
@@ -810,8 +797,8 @@ FT_BEGIN_HEADER
   /* possible to set up the default values of the four control points that */
   /* define the stem darkening behaviour of the (new) CFF engine.  For     */
   /* more details please read the documentation of the                     */
-  /* `darkening-parameters' property of the cff driver module (file        */
-  /* `ftcffdrv.h'), which allows the control at run-time.                  */
+  /* `darkening-parameters' property (file `ftdriver.h'), which allows the */
+  /* control at run-time.                                                  */
   /*                                                                       */
   /* Do *not* undefine these macros!                                       */
   /*                                                                       */
@@ -899,7 +886,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* This experimental option is active only if the rendering mode is      */
   /* FT_RENDER_MODE_LIGHT; you can switch warping on and off with the      */
-  /* `warping' property of the auto-hinter (see file `ftautoh.h' for more  */
+  /* `warping' property of the auto-hinter (see file `ftdriver.h' for more */
   /* information; by default it is switched off).                          */
   /*                                                                       */
 #define AF_CONFIG_OPTION_USE_WARPER
