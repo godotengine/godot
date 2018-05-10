@@ -483,7 +483,7 @@ void EditorNode::_fs_changed() {
 				// come during the export
 				export_defer.preset = "";
 				Error err = OK;
-				if (!preset->is_runnable() && (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip"))) {
+				if (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip")) {
 					if (export_defer.path.ends_with(".zip")) {
 						err = platform->export_zip(preset, export_defer.debug, export_defer.path);
 					} else if (export_defer.path.ends_with(".pck")) {
