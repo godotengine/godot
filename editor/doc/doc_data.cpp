@@ -567,6 +567,9 @@ void DocData::generate(bool p_basic_types) {
 
 			PropertyDoc pd;
 			Engine::Singleton &s = E->get();
+			if (!s.ptr) {
+				continue;
+			}
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
 			while (String(ClassDB::get_parent_class(pd.type)) != "Object")
