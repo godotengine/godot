@@ -1075,6 +1075,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = alpha4;
 
+	theme->set_color("background_color", "Editor", background_color);
+	theme->set_color("keyword_color", "Editor", keyword_color);
+	theme->set_color("text_color", "Editor", text_color);
+	theme->set_color("symbol_color", "Editor", symbol_color);
+
 	EditorSettings *setting = EditorSettings::get_singleton();
 	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");
 	if (text_editor_color_theme == "Adaptive") {
