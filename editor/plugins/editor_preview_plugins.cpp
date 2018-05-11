@@ -467,15 +467,6 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
-	if (EditorSettings::get_singleton()->get("text_editor/theme/color_theme") == "Adaptive") {
-		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
-
-		bg_color = tm->get_color("text_editor/highlighting/background_color", "Editor");
-		keyword_color = tm->get_color("text_editor/highlighting/keyword_color", "Editor");
-		text_color = tm->get_color("text_editor/highlighting/text_color", "Editor");
-		symbol_color = tm->get_color("text_editor/highlighting/symbol_color", "Editor");
-	}
-
 	img->lock();
 
 	if (bg_color.a == 0)
