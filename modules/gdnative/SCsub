@@ -181,7 +181,7 @@ def build_gdnative_api_struct(target, source, env):
     from collections import OrderedDict
 
     with open(source[0].path, 'r') as fd:
-        api = json.load(fd)
+        api = json.load(fd, object_pairs_hook=OrderedDict)
 
     header, source = target
     with open(header.path, 'w') as fd:
