@@ -1216,7 +1216,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
+		} else if (texture.is_valid()) {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
@@ -1257,7 +1257,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			uint32_t color = image.get_pixel(column_index, row_index).to_ARGB32();
 
 			uint8_t alpha = (color >> 24) & 0xFF;
-			pixels[i * 4 + 0] = ((color >> 16)  & 0xFF) * alpha / 255;
+			pixels[i * 4 + 0] = ((color >> 16) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 1] = ((color >> 8) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 2] = ((color) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 3] = alpha;
