@@ -1726,6 +1726,12 @@ void CSharpScript::_clear() {
 
 Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
+	if (unlikely(GDMono::get_singleton() == NULL)) {
+		// Probably not the best error but eh.
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
 	GDMonoClass *top = script_class;
 
 	while (top && top != native) {
