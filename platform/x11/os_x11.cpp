@@ -2486,6 +2486,14 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		if (p_shape == CURSOR_ARROW) {
 			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
 		}
+	} else {
+		// Reset to default system cursor
+		if (img[p_shape]) {
+			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
+		}
+
+		current_cursor = CURSOR_MAX;
+		set_cursor_shape(p_shape);
 	}
 }
 
