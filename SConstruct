@@ -173,6 +173,7 @@ opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen fo
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_bullet', "Use the builtin bullet library", True))
 opts.Add(BoolVariable('builtin_enet', "Use the builtin enet library", True))
+opts.Add(BoolVariable('builtin_miniupnpc', "Use the builtin miniupnpc library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the builtin freetype library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the builtin libogg library", True))
 opts.Add(BoolVariable('builtin_libpng', "Use the builtin libpng library", True))
