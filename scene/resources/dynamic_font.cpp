@@ -1080,6 +1080,11 @@ void DynamicFont::update_oversampling() {
 
 		if (E->self()->data_at_size.is_valid()) {
 			E->self()->data_at_size->update_oversampling();
+
+			if (E->self()->outline_data_at_size.is_valid()) {
+				E->self()->outline_data_at_size->update_oversampling();
+			}
+
 			changed.push_back(Ref<DynamicFont>(E->self()));
 		}
 		E = E->next();
