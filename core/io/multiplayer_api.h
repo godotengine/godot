@@ -43,6 +43,7 @@ protected:
 	Node *_process_get_node(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_rpc(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 	void _process_rset(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
+	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
 	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_from);
@@ -53,6 +54,7 @@ public:
 		NETWORK_COMMAND_REMOTE_SET,
 		NETWORK_COMMAND_SIMPLIFY_PATH,
 		NETWORK_COMMAND_CONFIRM_PATH,
+		NETWORK_COMMAND_RAW,
 	};
 
 	void poll();
@@ -60,6 +62,7 @@ public:
 	void set_root_node(Node *p_node);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
+	Error send_bytes(PoolVector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST);
 
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
