@@ -291,6 +291,7 @@ logo.h
 TAGS
 !TAGS/
 tags
+*.tags
 !tags/
 gtags.files
 GTAGS
