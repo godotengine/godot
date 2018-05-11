@@ -504,24 +504,24 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 
 void DependencyRemoveDialog::ok_pressed() {
 
+	for (int i = 0; i < files_to_delete.size(); ++i) {
+		if (ResourceCache::has(files_to_delete[i])) {
+			Resource *res = ResourceCache::get(files_to_delete[i]);
+			res->set_path("");
+		}
+		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
+		print_line("Moving to trash: " + path);
+		Error err = OS::get_singleton()->move_to_trash(path);
+		if (err != OK) {
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
+		}
+	}
+
 	if (dirs_to_delete.size() == 0) {
 		//If we only deleted files we should only need to tell the file system about the files we touched.
 		for (int i = 0; i < files_to_delete.size(); ++i)
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
 	} else {
-
-		for (int i = 0; i < files_to_delete.size(); ++i) {
-			if (ResourceCache::has(files_to_delete[i])) {
-				Resource *res = ResourceCache::get(files_to_delete[i]);
-				res->set_path("");
-			}
-			String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
-			print_line("Moving to trash: " + path);
-			Error err = OS::get_singleton()->move_to_trash(path);
-			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
-			}
-		}
 
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
