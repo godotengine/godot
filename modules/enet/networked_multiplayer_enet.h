@@ -68,6 +68,9 @@ private:
 
 	int target_peer;
 	TransferMode transfer_mode;
+	int transfer_channel;
+	int channel_count;
+	bool always_ordered;
 
 	ENetEvent event;
 	ENetPeer *peer;
@@ -83,6 +86,7 @@ private:
 
 		ENetPacket *packet;
 		int from;
+		int channel;
 	};
 
 	CompressionMode compression_mode;
@@ -144,6 +148,15 @@ public:
 
 	void set_compression_mode(CompressionMode p_mode);
 	CompressionMode get_compression_mode() const;
+
+	int get_packet_channel() const;
+	int get_last_packet_channel() const;
+	void set_transfer_channel(int p_channel);
+	int get_transfer_channel() const;
+	void set_channel_count(int p_channel);
+	int get_channel_count() const;
+	void set_always_ordered(bool p_ordered);
+	bool is_always_ordered() const;
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

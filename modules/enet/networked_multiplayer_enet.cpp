@@ -55,6 +55,22 @@ int NetworkedMultiplayerENet::get_packet_peer() const {
 	return incoming_packets.front()->get().from;
 }
 
+int NetworkedMultiplayerENet::get_packet_channel() const {
+
+	ERR_FAIL_COND_V(!active, -1);
+	ERR_FAIL_COND_V(incoming_packets.size() == 0, -1);
+
+	return incoming_packets.front()->get().channel;
+}
+
+int NetworkedMultiplayerENet::get_last_packet_channel() const {
+
+	ERR_FAIL_COND_V(!active, -1);
+	ERR_FAIL_COND_V(!current_packet.packet, -1);
+
+	return current_packet.channel;
+}
+
 Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
@@ -83,7 +99,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 
 	host = enet_host_create(&address /* the address to bind the server host to */,
 			p_max_clients /* allow up to 32 clients and/or outgoing connections */,
-			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+			channel_count /* allow up to channel_count to be used */,
 			p_in_bandwidth /* limit incoming bandwith if > 0 */,
 			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 
@@ -127,13 +143,13 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 		host = enet_host_create(&c_client /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
-				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+				channel_count /* allow up to channel_count to be used */,
 				p_in_bandwidth /* limit incoming bandwith if > 0 */,
 				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 	} else {
 		host = enet_host_create(NULL /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
-				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+				channel_count /* allow up to channel_count to be used */,
 				p_in_bandwidth /* limit incoming bandwith if > 0 */,
 				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 	}
@@ -167,7 +183,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	unique_id = _gen_unique_id();
 
 	// Initiate connection, allocating enough channels
-	ENetPeer *peer = enet_host_connect(host, &address, SYSCH_MAX, unique_id);
+	ENetPeer *peer = enet_host_connect(host, &address, channel_count, unique_id);
 
 	if (peer == NULL) {
 		enet_host_destroy(host);
@@ -316,7 +332,7 @@ void NetworkedMultiplayerENet::poll() {
 					}
 
 					enet_packet_destroy(event.packet);
-				} else if (event.channelID < SYSCH_MAX) {
+				} else if (event.channelID < channel_count) {
 
 					Packet packet;
 					packet.packet = event.packet;
@@ -330,6 +346,7 @@ void NetworkedMultiplayerENet::poll() {
 					uint32_t flags = decode_uint32(&event.packet->data[8]);
 
 					packet.from = source;
+					packet.channel = event.channelID;
 
 					if (server) {
 						// Someone is cheating and trying to fake the source!
@@ -496,7 +513,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 
 	switch (transfer_mode) {
 		case TRANSFER_MODE_UNRELIABLE: {
-			packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
+			if (always_ordered)
+				packet_flags = 0;
+			else
+				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
@@ -508,6 +528,9 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 			channel = SYSCH_RELIABLE;
 		} break;
 	}
+
+	if (transfer_channel > SYSCH_CONFIG)
+		channel = transfer_channel;
 
 	Map<int, ENetPeer *>::Element *E = NULL;
 
@@ -572,6 +595,7 @@ void NetworkedMultiplayerENet::_pop_current_packet() {
 		enet_packet_destroy(current_packet.packet);
 		current_packet.packet = NULL;
 		current_packet.from = 0;
+		current_packet.channel = -1;
 	}
 }
 
@@ -759,6 +783,40 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 #endif
 }
 
+void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
+
+	ERR_FAIL_COND(p_channel < -1 || p_channel >= channel_count);
+
+	if (p_channel == SYSCH_CONFIG) {
+		ERR_EXPLAIN("Channel " + itos(SYSCH_CONFIG) + " is reserved");
+		ERR_FAIL();
+	}
+	transfer_channel = p_channel;
+}
+
+int NetworkedMultiplayerENet::get_transfer_channel() const {
+	return transfer_channel;
+}
+
+void NetworkedMultiplayerENet::set_channel_count(int p_channel) {
+
+	ERR_FAIL_COND(active);
+	ERR_FAIL_COND(p_channel < SYSCH_MAX);
+	channel_count = p_channel;
+}
+
+int NetworkedMultiplayerENet::get_channel_count() const {
+	return channel_count;
+}
+
+void NetworkedMultiplayerENet::set_always_ordered(bool p_ordered) {
+	always_ordered = p_ordered;
+}
+
+bool NetworkedMultiplayerENet::is_always_ordered() const {
+	return always_ordered;
+}
+
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
@@ -771,7 +829,19 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
 
+	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
+	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
+	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &NetworkedMultiplayerENet::set_transfer_channel);
+	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &NetworkedMultiplayerENet::get_transfer_channel);
+	ClassDB::bind_method(D_METHOD("set_channel_count", "channels"), &NetworkedMultiplayerENet::set_channel_count);
+	ClassDB::bind_method(D_METHOD("get_channel_count"), &NetworkedMultiplayerENet::get_channel_count);
+	ClassDB::bind_method(D_METHOD("set_always_ordered", "ordered"), &NetworkedMultiplayerENet::set_always_ordered);
+	ClassDB::bind_method(D_METHOD("is_always_ordered"), &NetworkedMultiplayerENet::is_always_ordered);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel_count"), "set_channel_count", "get_channel_count");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "always_ordered"), "set_always_ordered", "is_always_ordered");
 
 	BIND_ENUM_CONSTANT(COMPRESS_NONE);
 	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);
@@ -789,6 +859,9 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	target_peer = 0;
 	current_packet.packet = NULL;
 	transfer_mode = TRANSFER_MODE_RELIABLE;
+	channel_count = SYSCH_MAX;
+	transfer_channel = -1;
+	always_ordered = false;
 	connection_status = CONNECTION_DISCONNECTED;
 	compression_mode = COMPRESS_NONE;
 	enet_compressor.context = this;
