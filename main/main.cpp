@@ -672,22 +672,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
 		} else {
-
-			//test for game path
-			bool gpfound = false;
-
-			if (!I->get().begins_with("-") && game_path == "") {
-				DirAccess *da = DirAccess::open(I->get());
-				if (da != NULL) {
-					game_path = I->get();
-					gpfound = true;
-					memdelete(da);
-				}
-			}
-
-			if (!gpfound) {
-				main_args.push_back(I->get());
-			}
+			main_args.push_back(I->get());
 		}
 
 		I = N;
