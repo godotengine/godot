@@ -6,10 +6,12 @@
 	<description>
 		A unit quaternion used for representing 3D rotations.
 		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating point errors.
+
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions
+		http://docs.godotengine.org/en/latest/tutorials/math/rotations.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -46,13 +48,16 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="x" type="float">
+			<argument index="0" name="euler" type="Vector3">
 			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
-			<argument index="3" name="w" type="float">
+			<description>
+				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
 				Returns a quaternion defined by these values.
@@ -127,7 +132,7 @@
 		<method name="set_axis_angle">
 			<argument index="0" name="axis" type="Vector3">
 			</argument>
-			<argument index="1" name="angle" type="float">
+			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
 				Set the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.

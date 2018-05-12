@@ -139,15 +139,15 @@ bool Quat::is_normalized() const {
 
 Quat Quat::inverse() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Quat());
+	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
 #endif
 	return Quat(-x, -y, -z, w);
 }
 
 Quat Quat::slerp(const Quat &q, const real_t &t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Quat());
-	ERR_FAIL_COND_V(q.is_normalized() == false, Quat());
+	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
+	ERR_FAIL_COND_V(q.is_normalized() == false, Quat(0, 0, 0, 0));
 #endif
 	Quat to1;
 	real_t omega, cosom, sinom, scale0, scale1;
