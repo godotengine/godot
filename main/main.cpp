@@ -337,7 +337,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String video_driver = "";
 	String audio_driver = "";
-	String game_path;
+	String game_path = ".";
 	bool upwards = false;
 	String debug_mode;
 	String debug_host;
@@ -693,9 +693,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
-	if (game_path.empty()) {
-		game_path = ".";
-	}
 	if (globals->setup(game_path, main_pack, upwards) == OK) {
 		found_project = true;
 	} else {
