@@ -22,7 +22,7 @@
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll">
-			The current horizontal scroll value.
+			The current vertical scroll value.
 		</member>
 		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
 			If [code]true[/code], enables vertical scrolling.
