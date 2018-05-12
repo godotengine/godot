@@ -82,13 +82,6 @@
 				Returns the number of visible lines.
 			</description>
 		</method>
-		<method name="get_content_height">
-			<return type="int">
-			</return>
-			<description>
-				Returns the height of the content.
-			</description>
-		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
@@ -334,12 +327,6 @@
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="font_color_shadow" type="Color">
-		</theme_item>
-		<theme_item name="shadow_as_outline" type="int">
-		</theme_item>
-		<theme_item name="shadow_offset_x" type="int">
-		</theme_item>
-		<theme_item name="shadow_offset_y" type="int">
 		</theme_item>
 		<theme_item name="italics_font" type="Font">
 		</theme_item>
