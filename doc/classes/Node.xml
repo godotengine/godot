@@ -586,7 +586,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code]. Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
@@ -606,7 +606,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol. Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rset">
@@ -641,7 +641,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code].
+				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="rset_unreliable">
@@ -665,7 +665,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol.
+				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -703,7 +703,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method]_physics_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process">
@@ -730,7 +730,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method]_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
