@@ -106,6 +106,7 @@ def make_class_list(class_list, columns):
 
     f.close()
 
+
 def rstize_text(text, cclass):
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -156,7 +157,7 @@ def rstize_text(text, cclass):
 
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
-    next_brac_pos = text.find('[');
+    next_brac_pos = text.find('[')
     while True:
         pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
@@ -258,15 +259,17 @@ def rstize_text(text, cclass):
             elif cmd == 'code':
                 tag_text = '``'
                 inside_code = True
+            elif cmd.startswith('enum '):
+                tag_text = make_enum(cmd[5:])
             else:
                 tag_text = make_type(tag_text)
                 escape_post = True
 
         # Properly escape things like `[Node]s`
-        if escape_post and post_text and post_text[0].isalnum(): # not punctuation, escape
+        if escape_post and post_text and post_text[0].isalnum():  # not punctuation, escape
             post_text = '\ ' + post_text
 
-        next_brac_pos = post_text.find('[',0)
+        next_brac_pos = post_text.find('[', 0)
         iter_pos = 0
         while not inside_code:
             iter_pos = post_text.find('*', iter_pos, next_brac_pos)
@@ -286,7 +289,6 @@ def rstize_text(text, cclass):
             else:
                 iter_pos += 1
 
-
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
@@ -299,15 +301,26 @@ def make_type(t):
         return ':ref:`' + t + '<class_' + t.lower() + '>`'
     return t
 
+
 def make_enum(t):
     global class_names
     p = t.find(".")
+    # Global enums such as Error are relative to @GlobalScope.
     if p >= 0:
         c = t[0:p]
-        e = t[p+1:]
-        if c in class_names:
-            return ':ref:`' + e + '<enum_' + c.lower() + '_' + e.lower() + '>`'
+        e = t[p + 1:]
+        # Variant enums live in GlobalScope but still use periods.
+        if c == "Variant":
+            c = "@GlobalScope"
+            e = "Variant." + e
+    else:
+        # Things in GlobalScope don't have a period.
+        c = "@GlobalScope"
+        e = t
+    if c in class_names:
+        return ':ref:`' + e + '<enum_' + c.lower() + '_' + e.lower() + '>`'
     return t
+
 
 def make_method(
         f,
@@ -340,7 +353,10 @@ def make_method(
 
     if not event:
         if -1 in mdata['argidx']:
-            t += make_type(mdata[-1].attrib['type'])
+            if 'enum' in mdata[-1].attrib:
+                t += make_enum(mdata[-1].attrib['enum'])
+            else:
+                t += make_type(mdata[-1].attrib['type'])
         else:
             t += 'void'
         t += ' '
@@ -362,7 +378,10 @@ def make_method(
         else:
             s += ' '
 
-        s += make_type(arg.attrib['type'])
+        if 'enum' in arg.attrib:
+            s += make_enum(arg.attrib['enum'])
+        else:
+            s += make_type(arg.attrib['type'])
         if 'name' in arg.attrib:
             s += ' ' + arg.attrib['name']
         else:
