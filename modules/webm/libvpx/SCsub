@@ -263,7 +263,7 @@ if env["platform"] == 'uwp':
         webm_cpu_x86 = True
 else:
     import platform
-    is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and platform.machine().startswith('arm'))
+    is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and (platform.machine().startswith('arm') or platform.machine().startswith('aarch')))
     is_ios_x86 = (env["platform"] == 'iphone' and env["ios_sim"])
     is_android_x86 = (env["platform"] == 'android' and env["android_arch"] == 'x86')
     if is_android_x86:
@@ -337,7 +337,6 @@ if webm_cpu_arm:
 if webm_simd_optimizations == False:
     print("WebM SIMD optimizations are disabled. Check if your CPU architecture, CPU bits or platform are supported!")
 
-
 env_libvpx.add_source_files(env.modules_sources, libvpx_sources)
 if webm_cpu_x86:
     is_clang_or_gcc = ('gcc' in env["CC"]) or ('clang' in env["CC"]) or ("OSXCROSS_ROOT" in os.environ)
@@ -379,5 +378,5 @@ elif webm_cpu_arm:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
     elif env["platform"] == 'iphone':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
-    elif not env["android_arch"] == 'arm64v8':
+    elif (is_x11_or_server_arm and cpu_bits == '32') or (env["platform"] == 'android' and not env["android_arch"] == 'arm64v8'):
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)
