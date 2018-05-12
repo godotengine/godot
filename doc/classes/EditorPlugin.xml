@@ -114,7 +114,7 @@
 			<argument index="3" name="ud" type="Variant" default="null">
 			</argument>
 			<description>
-				Adds a custom menu to 'Project > Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Adds a custom menu to 'Project &gt; Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -368,7 +368,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Removes a menu [code]name[/code] from 'Project > Tools'.
+				Removes a menu [code]name[/code] from 'Project &gt; Tools'.
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
@@ -422,6 +422,12 @@
 			</argument>
 			<description>
 				Emitted when user change main screen view (2D, 3D, Script, AssetLib). Works also with screens which are defined by plugins.
+			</description>
+		</signal>
+		<signal name="resource_saved">
+			<argument index="0" name="resource" type="Object">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="scene_changed">

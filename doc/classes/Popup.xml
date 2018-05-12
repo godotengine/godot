@@ -50,7 +50,7 @@
 	</methods>
 	<members>
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive">
-			If [code]true[/code] the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event. 
+			If [code]true[/code] the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 		</member>
 	</members>
 	<signals>

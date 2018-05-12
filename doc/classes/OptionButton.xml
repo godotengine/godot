@@ -18,7 +18,7 @@
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
-			<argument index="2" name="id" type="int">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
 				Add an item, with a "texture" icon, text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.

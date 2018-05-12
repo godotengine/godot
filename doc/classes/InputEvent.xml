@@ -13,20 +13,19 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="action_match" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-				Returns [code]true[/code] if this event matches [code]event[/code].
-			</description>
-		</method>
 		<method name="as_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a [String] representation of the event.
+			</description>
+		</method>
+		<method name="get_action_strength" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="is_action" qualifiers="const">
