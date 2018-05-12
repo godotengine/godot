@@ -220,12 +220,15 @@ Image::Format ImageTexture::get_format() const {
 	return format;
 }
 
-void ImageTexture::load(const String &p_path) {
+Error ImageTexture::load(const String &p_path) {
 
 	Ref<Image> img;
 	img.instance();
-	img->load(p_path);
-	create_from_image(img);
+	Error err = img->load(p_path);
+	if (err == OK) {
+		create_from_image(img);
+	}
+	return err;
 }
 
 void ImageTexture::set_data(const Ref<Image> &p_image) {

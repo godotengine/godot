@@ -338,6 +338,7 @@
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
 			<description>
+				Loads an image from the binary contents of a JPEG file.
 			</description>
 		</method>
 		<method name="load_png_from_buffer">
@@ -346,6 +347,7 @@
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
 			<description>
+				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
 		<method name="lock">

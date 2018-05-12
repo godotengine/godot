@@ -47,12 +47,12 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="void">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [code]ImageTexture[/code].
+				Load an [code]ImageTexture[/code] from a file path.
 			</description>
 		</method>
 		<method name="set_data">
