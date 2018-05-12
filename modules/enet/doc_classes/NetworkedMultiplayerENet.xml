@@ -65,6 +65,20 @@
 				Disconnect the given peer. If "now" is set to true, the connection will be closed immediately without flushing queued messages.
 			</description>
 		</method>
+		<method name="get_last_packet_channel" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the channel of the last packet fetched via [method PacketPeer.get_packet]
+			</description>
+		</method>
+		<method name="get_packet_channel" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet_peer]
+			</description>
+		</method>
 		<method name="get_peer_address" qualifiers="const">
 			<return type="String">
 			</return>
@@ -94,8 +108,17 @@
 		</method>
 	</methods>
 	<members>
+		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered">
+			Always use [code]TRANSFER_MODE_ORDERED[/code] in place of [code]TRANSFER_MODE_UNRELIABLE[/code]. This is the only way to use ordering with the RPC system.
+		</member>
+		<member name="channel_count" type="int" setter="set_channel_count" getter="get_channel_count">
+			The number of channels to be used by ENet. Default: [code]3[/code]. Channels are used to separate different kinds of data. In realiable or ordered mode, for example, the packet delivery order is ensured on a per channel basis.
+		</member>
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode">
 			The compression method used for network packets. Default is no compression. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
+		</member>
+		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel">
+			Set the default channel to be used to transfer data. By default this value is [code]-1[/code] which means that ENet will only use 2 channels, one for reliable and one for unreliable packets. Channel [code]0[/code] is reserved, and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data.
 		</member>
 	</members>
 	<constants>
