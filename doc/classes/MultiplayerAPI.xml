@@ -61,8 +61,19 @@
 			</return>
 			<description>
 				Method used for polling the MultiplayerAPI.
-				You only need to worry about this if you are using [memeber Node.custom_multplayer] override.
+				You only need to worry about this if you are using [member Node.custom_multplayer] override.
 				SceneTree will poll the default MultiplayerAPI for you.
+			</description>
+		</method>
+		<method name="send_bytes">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="bytes" type="PoolByteArray">
+			</argument>
+			<argument index="1" name="id" type="int" default="0">
+			</argument>
+			<description>
+				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>
 		</method>
 		<method name="set_root_node">
@@ -78,7 +89,7 @@
 	</methods>
 	<members>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
 			If [code]true[/code] the MultiplayerAPI's [member network_peer] refuses new incoming connections.
@@ -109,9 +120,18 @@
 				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
+		<signal name="network_peer_packet">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="packet" type="PoolByteArray">
+			</argument>
+			<description>
+				Emitted whenever this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+			</description>
+		</signal>
 		<signal name="server_disconnected">
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] disconnected from server. Only emitted on clients.
+				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
 			</description>
 		</signal>
 	</signals>
