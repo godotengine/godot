@@ -340,6 +340,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, angle_to);
 	VCALL_LOCALMEM1R(Vector2, angle_to_point);
 	VCALL_LOCALMEM2R(Vector2, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector2, slerp);
 	VCALL_LOCALMEM4R(Vector2, cubic_interpolate);
 	VCALL_LOCALMEM1R(Vector2, rotated);
 	VCALL_LOCALMEM0R(Vector2, tangent);
@@ -380,6 +381,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
 	VCALL_LOCALMEM2R(Vector3, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector3, slerp);
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
 	VCALL_LOCALMEM1R(Vector3, dot);
 	VCALL_LOCALMEM1R(Vector3, cross);
@@ -439,6 +441,9 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Quat, slerp);
 	VCALL_LOCALMEM2R(Quat, slerpni);
 	VCALL_LOCALMEM4R(Quat, cubic_slerp);
+	VCALL_LOCALMEM0R(Quat, get_euler);
+	VCALL_LOCALMEM1(Quat, set_euler);
+	VCALL_LOCALMEM2(Quat, set_axis_angle);
 
 	VCALL_LOCALMEM0R(Color, to_rgba32);
 	VCALL_LOCALMEM0R(Color, to_argb32);
@@ -876,6 +881,11 @@ struct _VariantCall {
 		r_ret = Quat(((Vector3)(*p_args[0])), ((float)(*p_args[1])));
 	}
 
+	static void Quat_init3(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Quat(((Vector3)(*p_args[0])));
+	}
+
 	static void Color_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Color(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
@@ -1150,7 +1160,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case RECT2: return (Rect2(*p_args[0]));
 			case VECTOR3: return (Vector3(*p_args[0]));
 			case PLANE: return (Plane(*p_args[0]));
-			case QUAT: return (Quat(*p_args[0]));
+			case QUAT: return (p_args[0]->operator Quat());
 			case AABB:
 				return (::AABB(*p_args[0])); // 10
 			case BASIS: return (Basis(p_args[0]->operator Basis()));
@@ -1518,6 +1528,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to_point, VECTOR2, "to", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", REAL, "t", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "b", REAL, "t", varray());
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "t", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
@@ -1557,6 +1568,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", REAL, "t", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", REAL, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "t", varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, dot, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
@@ -1594,6 +1606,9 @@ void register_variant_methods() {
 	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "b", REAL, "t", varray());
 	ADDFUNC2R(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
 	ADDFUNC4R(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
+	ADDFUNC0R(QUAT, VECTOR3, Quat, get_euler, varray());
+	ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
+	ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
 
 	ADDFUNC0R(COLOR, INT, Color, to_rgba32, varray());
 	ADDFUNC0R(COLOR, INT, Color, to_argb32, varray());
@@ -1816,6 +1831,7 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Quat_init1, Variant::QUAT, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL, "w", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Quat_init2, Variant::QUAT, "axis", Variant::VECTOR3, "angle", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Quat_init3, Variant::QUAT, "euler", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);

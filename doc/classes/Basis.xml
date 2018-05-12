@@ -4,11 +4,12 @@
 		3x3 matrix datatype.
 	</brief_description>
 	<description>
-		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized. Almost always used as orthogonal basis for a [Transform].
+		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as orthogonal basis for a [Transform].
 		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html
+		http://docs.godotengine.org/en/latest/tutorials/math/rotations.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -105,7 +106,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Introduce an additional rotation around the given axis by phi (radians). Only relevant when the matrix is being used as a part of [Transform]. The axis must be a normalized vector.
+				Introduce an additional rotation around the given axis by phi (radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
@@ -114,7 +115,18 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
+				Introduce an additional scaling specified by the given 3D scaling factor.
+			</description>
+		</method>
+		<method name="slerp">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="b" type="Basis">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.
 			</description>
 		</method>
 		<method name="tdotx">

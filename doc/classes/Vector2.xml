@@ -208,6 +208,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="slerp">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Both vectors need to be normalized.
+			</description>
+		</method>
 		<method name="slide">
 			<return type="Vector2">
 			</return>

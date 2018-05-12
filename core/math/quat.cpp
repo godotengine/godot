@@ -98,6 +98,9 @@ void Quat::set_euler_yxz(const Vector3 &p_euler) {
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
 Vector3 Quat::get_euler_yxz() const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Vector3(0, 0, 0));
+#endif
 	Basis m(*this);
 	return m.get_euler_yxz();
 }
@@ -135,11 +138,17 @@ bool Quat::is_normalized() const {
 }
 
 Quat Quat::inverse() const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
+#endif
 	return Quat(-x, -y, -z, w);
 }
 
 Quat Quat::slerp(const Quat &q, const real_t &t) const {
-
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
+	ERR_FAIL_COND_V(q.is_normalized() == false, Quat(0, 0, 0, 0));
+#endif
 	Quat to1;
 	real_t omega, cosom, sinom, scale0, scale1;
 
@@ -215,7 +224,10 @@ Quat::operator String() const {
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
-Quat::Quat(const Vector3 &axis, const real_t &angle) {
+void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(axis.is_normalized() == false);
+#endif
 	real_t d = axis.length();
 	if (d == 0)
 		set(0, 0, 0, 0);
