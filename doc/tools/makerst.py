@@ -110,6 +110,7 @@ def make_class_list(class_list, columns):
 
     f.close()
 
+
 def rstize_text(text, cclass):
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -171,7 +172,7 @@ def rstize_text(text, cclass):
 
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
-    next_brac_pos = text.find('[');
+    next_brac_pos = text.find('[')
     while True:
         pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
@@ -283,7 +284,7 @@ def rstize_text(text, cclass):
         if escape_post and post_text and post_text[0].isalnum():  # not punctuation, escape
             post_text = '\ ' + post_text
 
-        next_brac_pos = post_text.find('[',0)
+        next_brac_pos = post_text.find('[', 0)
         iter_pos = 0
         while not inside_code:
             iter_pos = post_text.find('*', iter_pos, next_brac_pos)
@@ -302,7 +303,6 @@ def rstize_text(text, cclass):
                 iter_pos += 2
             else:
                 iter_pos += 1
-
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
