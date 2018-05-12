@@ -678,18 +678,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			main_args.push_back(I->get());
 		}
 
-		I = N;
-	}
-
-	if (globals->setup(project_path, main_pack, upwards) == OK) {
-		found_project = true;
-	} else {
-
-#ifdef TOOLS_ENABLED
-		editor = false;
-#else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", project_path.ascii().get_data());
-
 		goto error;
 #endif
 	}
