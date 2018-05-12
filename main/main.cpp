@@ -337,7 +337,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String video_driver = "";
 	String audio_driver = "";
-	String game_path = ".";
+	String project_path = ".";
 	bool upwards = false;
 	String debug_mode;
 	String debug_host;
@@ -553,7 +553,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				if (OS::get_singleton()->set_cwd(p) == OK) {
 					//nothing
 				} else {
-					game_path = I->next()->get(); //use game_path instead
+					project_path = I->next()->get(); //use project_path instead
 				}
 				N = I->next()->next();
 			} else {
@@ -576,7 +576,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (OS::get_singleton()->set_cwd(path) == OK) {
 				// path already specified, don't override
 			} else {
-				game_path = path;
+				project_path = path;
 			}
 #ifdef TOOLS_ENABLED
 			editor = true;
@@ -678,14 +678,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
-	if (globals->setup(game_path, main_pack, upwards) == OK) {
+	if (globals->setup(project_path, main_pack, upwards) == OK) {
 		found_project = true;
 	} else {
 
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
+		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", project_path.ascii().get_data());
 
 		goto error;
 #endif
@@ -976,7 +976,7 @@ error:
 
 	video_driver = "";
 	audio_driver = "";
-	game_path = "";
+	project_path = "";
 
 	args.clear();
 	main_args.clear();
