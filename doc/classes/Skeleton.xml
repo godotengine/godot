@@ -131,6 +131,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="physical_bones_add_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="exception" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="physical_bones_remove_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="exception" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="physical_bones_simulation">
+			<return type="void">
+			</return>
+			<argument index="0" name="start" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bone_custom_pose">
 			<return type="void">
 			</return>

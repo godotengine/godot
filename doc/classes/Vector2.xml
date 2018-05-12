@@ -72,6 +72,12 @@
 				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
 			</description>
 		</method>
+		<method name="ceil">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clamped">
 			<return type="Vector2">
 			</return>
@@ -194,6 +200,12 @@
 			</argument>
 			<description>
 				Rotates the vector by "phi" radians.
+			</description>
+		</method>
+		<method name="round">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="slide">

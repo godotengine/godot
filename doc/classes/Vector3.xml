@@ -204,6 +204,12 @@
 				Rotates the vector around some axis by phi radians. The axis must be a normalized vector.
 			</description>
 		</method>
+		<method name="round">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="slide">
 			<return type="Vector3">
 			</return>

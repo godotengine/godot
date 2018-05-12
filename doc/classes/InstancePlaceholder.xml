@@ -12,6 +12,16 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="create_instance">
+			<return type="Node">
+			</return>
+			<argument index="0" name="replace" type="bool" default="false">
+			</argument>
+			<argument index="1" name="custom_scene" type="PackedScene" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_instance_path" qualifiers="const">
 			<return type="String">
 			</return>

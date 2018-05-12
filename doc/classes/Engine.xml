@@ -77,6 +77,8 @@
 		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second">
 			The number of fixed iterations per second (for fixed process and physics).
 		</member>
+		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix">
+		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps">
 			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. Defaults to 0, which indicates no limit.
 		</member>

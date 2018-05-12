@@ -42,6 +42,10 @@
 				Emitted when the color changes.
 			</description>
 		</signal>
+		<signal name="popup_closed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 	</constants>

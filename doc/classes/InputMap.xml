@@ -34,6 +34,14 @@
 				Removes an [InputEvent] from an action.
 			</description>
 		</method>
+		<method name="action_erase_events">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="action_has_event">
 			<return type="bool">
 			</return>
@@ -45,13 +53,26 @@
 				Returns [true] if an action has an [InputEvent] associated with it.
 			</description>
 		</method>
+		<method name="action_set_deadzone">
+			<return type="void">
+			</return>
+			<argument index="0" name="deadzone" type="String">
+			</argument>
+			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_action">
 			<return type="void">
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="deadzone" type="float" default="0.5">
+			</argument>
 			<description>
-				Adds an (empty) action to the [code]InputMap[/code]. An [InputEvent] can then be added to this action with [method action_add_event].
+				Adds an (empty) action to the [code]InputMap[/code], with a configurable [code]deadzone[/code].
+				An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
 		<method name="erase_action">

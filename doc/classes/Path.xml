@@ -16,6 +16,12 @@
 		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
 		</member>
 	</members>
+	<signals>
+		<signal name="curve_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

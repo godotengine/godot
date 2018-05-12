@@ -73,6 +73,10 @@
 		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data">
 			The font data.
 		</member>
+		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color">
+		</member>
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size">
+		</member>
 		<member name="size" type="int" setter="set_size" getter="get_size">
 			The font size.
 		</member>

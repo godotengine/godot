@@ -210,6 +210,8 @@
 		<method name="generate_mipmaps">
 			<return type="int" enum="Error">
 			</return>
+			<argument index="0" name="renormalize" type="bool" default="false">
+			</argument>
 			<description>
 				Generates mipmaps for the image. Mipmaps are pre-calculated and lower resolution copies of the image. Mipmaps are automatically used if the image needs to be scaled down when rendered. This improves image quality and the performance of the rendering. Returns an error if the image is compressed, in a custom format or if the image's width/height is 0.
 			</description>
@@ -253,6 +255,14 @@
 			</argument>
 			<description>
 				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code].
+			</description>
+		</method>
+		<method name="get_pixelv" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="src" type="Vector2">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -409,6 +419,16 @@
 				img.unlock()
 				img.set_pixel(x, y, color) # Does not have an effect
 				[/codeblock]
+			</description>
+		</method>
+		<method name="set_pixelv">
+			<return type="void">
+			</return>
+			<argument index="0" name="dst" type="Vector2">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="shrink_x2">
