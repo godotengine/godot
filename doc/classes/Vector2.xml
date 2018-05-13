@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector2" category="Built-In Types" version="3.1">
 	<brief_description>
-		Vector used for 2D Math.
+		Vector used for 2D math.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
+		2-element structure that can be used to represent positions in 2d space or any other pair of numeric values.
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/3.0/tutorials/math/index.html
@@ -34,8 +34,8 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the result of atan2 when called with the Vector's x and y as parameters (Math::atan2(x,y)).
-				Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
+                Returns the vector's angle in radians with respect to the x-axis, or [code](1, 0)[/code] vector.
+				Equivalent to the result of atan2 when called with the vector's x and y as parameters: [code]atan2(x, y)[/code].
 			</description>
 		</method>
 		<method name="angle_to">
@@ -60,7 +60,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the ratio of X to Y.
+				Returns the ratio of x to y.
 			</description>
 		</method>
 		<method name="bounce">
@@ -69,7 +69,7 @@
 			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
+				Returns the vector "bounced off" from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="ceil">
@@ -93,7 +93,7 @@
 			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2-dimensional analog of the cross product with the given Vector2.
+				Returns the 2 dimensional analog of the cross product with the given vector.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -108,7 +108,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this Vector and "b", using "pre_a" and "post_b" as handles, and returning the result at position "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], or a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -117,7 +117,7 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Returns the squared distance to vector "b". Prefer this function over "distance_to" if you need to sort vectors or need the squared distance for some formula.
+				Returns the squared distance to vector [code]b[/code]. Prefer this function over [method distance_to] if you need to sort vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
@@ -126,7 +126,7 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Returns the distance to vector "b".
+				Returns the distance to vector [code]b[/code].
 			</description>
 		</method>
 		<method name="dot">
@@ -135,7 +135,7 @@
 			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<description>
-				Returns the dot product with vector "b".
+				Returns the dot product with vector [code]b[/code].
 			</description>
 		</method>
 		<method name="floor">
@@ -149,21 +149,21 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the vector is normalized or not.
+				Returns [code]true[/code] if the vector is normalized.
 			</description>
 		</method>
 		<method name="length">
 			<return type="float">
 			</return>
 			<description>
-				Returns the length of the vector.
+				Returns the vector's length.
 			</description>
 		</method>
 		<method name="length_squared">
 			<return type="float">
 			</return>
 			<description>
-				Returns the squared length of the vector. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
+				Returns the vector's length squared. Prefer this function over [member length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -174,14 +174,14 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="normalized">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns a normalized vector to unit length.
+				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
 		<method name="reflect">
@@ -190,7 +190,7 @@
 			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-				Reflects the vector along the given plane, specified by its normal vector.
+                Returns the vector reflected from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="rotated">
@@ -199,7 +199,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the vector by "phi" radians.
+				Returns the vector rotated by [code]phi[/code] radians.
 			</description>
 		</method>
 		<method name="round">
@@ -214,7 +214,7 @@
 			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-				Slide returns the component of the vector along the given plane, specified by its normal vector.
+				Returns the component of the vector along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped">
@@ -223,7 +223,7 @@
 			<argument index="0" name="by" type="Vector2">
 			</argument>
 			<description>
-				Snaps the vector to a grid with the given size.
+				Returns the vector snapped to a grid with the given size.
 			</description>
 		</method>
 		<method name="tangent">
@@ -236,10 +236,10 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			X component of the vector.
+			The vector's x component.
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			Y component of the vector.
+			The vector's y component.
 		</member>
 	</members>
 	<constants>

@@ -16,14 +16,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear all cells.
+				Clears all cells.
 			</description>
 		</method>
 		<method name="fix_invalid_tiles">
 			<return type="void">
 			</return>
 			<description>
-				Clear cells that does not exist in the tileset.
+				Clears cells that do not exist in the tileset.
 			</description>
 		</method>
 		<method name="get_cell" qualifiers="const">
@@ -34,7 +34,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Return the tile index of the referenced cell.
+				Returns the tile index of the given cell.
 			</description>
 		</method>
 		<method name="get_cellv" qualifiers="const">
@@ -43,7 +43,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Return the tile index of the cell referenced by a Vector2.
+				Returns the tile index of the cell given by a Vector2.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -52,6 +52,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+                Returns [code]true[/code] if the given collision layer bit is set.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -60,13 +61,14 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+                Returns [code]true[/code] if the given collision mask bit is set.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return an array of all cells containing a tile from the tileset (i.e. a tile index different from -1).
+				Returns an array of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
 		</method>
 		<method name="get_used_cells_by_id" qualifiers="const">
@@ -75,12 +77,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+                Returns an array of all cells with the given tile id.
 			</description>
 		</method>
 		<method name="get_used_rect">
 			<return type="Rect2">
 			</return>
 			<description>
+                Returns a rectangle enclosing the used (non-empty) tiles of the map.
 			</description>
 		</method>
 		<method name="is_cell_transposed" qualifiers="const">
@@ -91,7 +95,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Return whether the referenced cell is transposed, i.e. the X and Y axes are swapped (mirroring with regard to the (1,1) vector).
+				Returns [code]true[/code] if the given cell is transposed, i.e. the x and y axes are swapped.
 			</description>
 		</method>
 		<method name="is_cell_x_flipped" qualifiers="const">
@@ -102,7 +106,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Return whether the referenced cell is flipped over the X axis.
+				Returns [code]true[/code] if the given cell is flipped in the x axis.
 			</description>
 		</method>
 		<method name="is_cell_y_flipped" qualifiers="const">
@@ -113,7 +117,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Return whether the referenced cell is flipped over the Y axis.
+				Returns [code]true[/code] if the given cell is flipped in the y axis.
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -124,8 +128,8 @@
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
-				Return the absolute world position corresponding to the tilemap (grid-based) coordinates given as an argument.
-				Optionally, the tilemap's potential half offset can be ignored.
+                Returns the global position corresponding to the given tilemap (grid-based) coordinates.
+				Optionally, the tilemap's half offset can be ignored.
 			</description>
 		</method>
 		<method name="set_cell">
@@ -146,9 +150,9 @@
 			<argument index="6" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Set the tile index for the cell referenced by its grid-based X and Y coordinates.
-				A tile index of -1 clears the cell.
-				Optionally, the tile can also be flipped over the X and Y coordinates, transposed, or be given autotile coordinates.
+				Sets the tile index for the cell given by a Vector2.
+				An index of [code]-1[/code] clears the cell.
+				Optionally, the tile can also be flipped, transposed, or given autotile coordinates.
 			</description>
 		</method>
 		<method name="set_cellv">
@@ -165,9 +169,9 @@
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
-				Set the tile index for the cell referenced by a Vector2 of grid-based coordinates.
-				A tile index of -1 clears the cell.
-				Optionally, the tile can also be flipped over the X and Y axes or transposed.
+				Sets the tile index for the given cell.
+				An index of [code]-1[/code] clears the cell.
+				Optionally, the tile can also be flipped or transposed.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
@@ -178,7 +182,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set any collision layer to be [code]true[/code] or [code]false[/code].
+				Sets the given collision layer bit.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -189,6 +193,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+                Sets the given collision mask bit.
 			</description>
 		</method>
 		<method name="update_bitmask_area">
@@ -197,7 +202,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Applies autotiling rules to the cell (and its adjacent cells) referenced by its grid-based X and Y coordinates.
+				Applies autotiling rules to the cell (and its adjacent cells) referenced by its grid-based x and y coordinates.
 			</description>
 		</method>
 		<method name="update_bitmask_region">
@@ -208,8 +213,8 @@
 			<argument index="1" name="end" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Applies autotiling rules to the cells in the given region (specified by grid-based X and Y coordinates).
-				Calling with invalid (or missing) parameters applies autotiling rules for the entire TileMap.
+				Applies autotiling rules to the cells in the given region (specified by grid-based x and y coordinates).
+				Calling with invalid (or missing) parameters applies autotiling rules for the entire tilemap.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
@@ -218,7 +223,7 @@
 			<argument index="0" name="world_position" type="Vector2">
 			</argument>
 			<description>
-				Return the tilemap (grid-based) coordinates corresponding to the absolute world position given as an argument.
+                Returns the tilemap (grid-based) coordinatescorresponding to the given global position.
 			</description>
 		</method>
 	</methods>
