@@ -767,7 +767,7 @@ PropertyInfo VisualScriptTypeCast::get_input_value_port_info(int p_idx) const {
 
 PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::OBJECT, "");
+	return PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_TYPE_STRING, get_base_type());
 }
 
 String VisualScriptTypeCast::get_caption() const {

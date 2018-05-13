@@ -319,6 +319,7 @@ public:
 	void custom_signal_swap_argument(const StringName &p_func, int p_argidx, int p_with_argidx);
 	void remove_custom_signal(const StringName &p_name);
 	void rename_custom_signal(const StringName &p_name, const StringName &p_new_name);
+	Set<int> get_output_sequence_ports_connected(const String &edited_func, int from_node);
 
 	void get_custom_signal_list(List<StringName> *r_custom_signals) const;
 
