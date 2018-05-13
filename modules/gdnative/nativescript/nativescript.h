@@ -196,8 +196,8 @@ public:
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void notification(int p_notification);
 	virtual Ref<Script> get_script() const;
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 	virtual ScriptLanguage *get_language();
 
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);

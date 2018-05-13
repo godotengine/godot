@@ -3373,7 +3373,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->line = fnline;
 
 				function->rpc_mode = rpc_mode;
-				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (_static)
 					p_class->static_functions.push_back(function);
@@ -3967,7 +3967,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 				}
-				rpc_mode = ScriptInstance::RPC_MODE_REMOTE;
+				rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
 
 				continue;
 			} break;
@@ -3988,7 +3988,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_MASTER;
+				rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_SLAVE: {
@@ -4008,7 +4008,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_SLAVE;
+				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVE;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_SYNC: {
@@ -4023,7 +4023,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_SYNC;
+				rpc_mode = MultiplayerAPI::RPC_MODE_SYNC;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_VAR: {
@@ -4053,7 +4053,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance();
 
-				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -4478,7 +4478,7 @@ void GDScriptParser::clear() {
 	current_class = NULL;
 
 	completion_found = false;
-	rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 	current_function = NULL;
 
