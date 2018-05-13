@@ -38,7 +38,7 @@
 			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
-				Returns the vector's minimum angle to the vector [code]to[/code].
+				Returns the minimum angle to the given vector.
 			</description>
 		</method>
 		<method name="bounce">
@@ -47,7 +47,7 @@
 			<argument index="0" name="n" type="Vector3">
 			</argument>
 			<description>
-				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
+				Returns the vector "bounced off" from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="ceil">
@@ -87,7 +87,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Returns the squared distance to [code]b[/code]. Prefer this function over distance_to if you need to sort vectors or need the squared distance for some formula.
+				Returns the squared distance to [code]b[/code]. Prefer this function over [method distance_to] if you need to sort vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
@@ -96,7 +96,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Returns the distance to b.
+				Returns the distance to [code]b[/code].
 			</description>
 		</method>
 		<method name="dot">
@@ -105,7 +105,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Returns the dot product with b.
+				Returns the dot product with [code]b[/code].
 			</description>
 		</method>
 		<method name="floor">
@@ -119,28 +119,28 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the inverse of the vector. This is the same as Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )
+				Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )[/code].
 			</description>
 		</method>
 		<method name="is_normalized">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the vector is normalized or not.
+				Returns [code]true[/code] if the vector is normalized.
 			</description>
 		</method>
 		<method name="length">
 			<return type="float">
 			</return>
 			<description>
-				Returns the length of the vector.
+				Returns the vector's length.
 			</description>
 		</method>
 		<method name="length_squared">
 			<return type="float">
 			</return>
 			<description>
-				Returns the length of the vector, squared. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
+				Returns the vector's length squared. Prefer this function over [method length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -151,28 +151,28 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Linearly interpolates the vector to a given one (b), by the given amount (t). (t) should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+                Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="max_axis">
 			<return type="int">
 			</return>
 			<description>
-				Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the largest.
+				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants.
 			</description>
 		</method>
 		<method name="min_axis">
 			<return type="int">
 			</return>
 			<description>
-				Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the smallest.
+				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants.
 			</description>
 		</method>
 		<method name="normalized">
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns a copy of the normalized vector to unit length. This is the same as v / v.length().
+				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
 		<method name="outer">
@@ -181,7 +181,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Returns the outer product with b.
+				Returns the outer product with [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect">
@@ -190,7 +190,7 @@
 			<argument index="0" name="n" type="Vector3">
 			</argument>
 			<description>
-				Reflects the vector along the given plane, specified by its normal vector.
+				Returns the vector reflected from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="rotated">
@@ -201,7 +201,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the vector around some axis by phi radians. The axis must be a normalized vector.
+				Rotates the vector around a given axis by [code]phi[/code] radians. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="round">
@@ -216,7 +216,7 @@
 			<argument index="0" name="n" type="Vector3">
 			</argument>
 			<description>
-				Slide returns the component of the vector along the given plane, specified by its normal vector.
+				Returns the component of the vector along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped">
@@ -238,18 +238,18 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			X component of the vector.
+			The vector's x component.
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			Y component of the vector.
+			The vector's y component.
 		</member>
 		<member name="z" type="float" setter="" getter="">
-			Z component of the vector.
+			The vector's z component.
 		</member>
 	</members>
 	<constants>
 		<constant name="AXIS_X" value="0">
-			Enumerated value for the X axis. Returned by functions like max_axis or min_axis.
+			Enumerated value for the X axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Y" value="1">
 			Enumerated value for the Y axis.
