@@ -1310,21 +1310,21 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-ScriptInstance::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *p_member) const {
+MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *p_member) const {
 
 	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
-		return RPC_MODE_REMOTE;
+		return MultiplayerAPI::RPC_MODE_REMOTE;
 	if (p_member->has_attribute(CACHED_CLASS(SyncAttribute)))
-		return RPC_MODE_SYNC;
+		return MultiplayerAPI::RPC_MODE_SYNC;
 	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute)))
-		return RPC_MODE_MASTER;
+		return MultiplayerAPI::RPC_MODE_MASTER;
 	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
-		return RPC_MODE_SLAVE;
+		return MultiplayerAPI::RPC_MODE_SLAVE;
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-ScriptInstance::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method) const {
+MultiplayerAPI::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method) const {
 
 	GDMonoClass *top = script->script_class;
 
@@ -1337,10 +1337,10 @@ ScriptInstance::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method)
 		top = top->get_parent_class();
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-ScriptInstance::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variable) const {
+MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variable) const {
 
 	GDMonoClass *top = script->script_class;
 
@@ -1358,7 +1358,7 @@ ScriptInstance::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variab
 		top = top->get_parent_class();
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
 void CSharpInstance::notification(int p_notification) {

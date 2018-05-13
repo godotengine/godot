@@ -63,7 +63,7 @@ class GDScript : public Script {
 		int index;
 		StringName setter;
 		StringName getter;
-		ScriptInstance::RPCMode rpc_mode;
+		MultiplayerAPI::RPCMode rpc_mode;
 	};
 
 	friend class GDScriptInstance;
@@ -248,8 +248,8 @@ public:
 
 	void reload_members();
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	GDScriptInstance();
 	~GDScriptInstance();
