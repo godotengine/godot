@@ -60,6 +60,9 @@ class InputDefault : public Input {
 	Map<StringName, Action> action_state;
 
 	bool emulate_touch;
+	bool emulate_mouse_from_touch;
+
+	int mouse_from_touch_index;
 
 	struct VibrationInfo {
 		float weak_magnitude;
@@ -175,6 +178,8 @@ private:
 	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
+	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
+
 public:
 	virtual bool is_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
@@ -225,6 +230,10 @@ public:
 
 	void set_emulate_touch(bool p_emulate);
 	virtual bool is_emulating_touchscreen() const;
+	void ensure_touch_mouse_raised();
+
+	void set_emulate_mouse_from_touch(bool p_emulate);
+	virtual bool is_emulating_mouse_from_touch() const;
 
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 	virtual void set_mouse_in_window(bool p_in_window);
