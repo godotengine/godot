@@ -141,6 +141,7 @@ class AnimatedSprite : public Node2D {
 
 	void _res_changed();
 
+	float _get_frame_duration();
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
