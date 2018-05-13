@@ -278,6 +278,11 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				return idx | (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 			}
 
+			if (codegen.script->tool) {
+				// allow, this might be a singleton that is not defined in the editor.
+				return GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
+			}
+
 			//not found, error
 
 			_set_error("Identifier not found: " + String(identifier), p_expression);
