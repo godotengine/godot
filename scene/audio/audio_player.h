@@ -53,6 +53,10 @@ private:
 	volatile float setseek;
 	volatile bool active;
 
+#ifdef TOOLS_ENABLED
+	volatile bool fake_active;
+#endif
+
 	float mix_volume_db;
 	float pitch_scale;
 	float volume_db;
