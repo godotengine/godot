@@ -102,10 +102,6 @@ private:
 	volatile bool active;
 	volatile float setplay;
 
-#ifdef TOOLS_ENABLED
-	volatile bool fake_active;
-#endif
-
 	AttenuationModel attenuation_model;
 	float unit_db;
 	float unit_size;
