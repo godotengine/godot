@@ -1333,6 +1333,19 @@ VisualScript::VisualScript() {
 	base_type = "Object";
 }
 
+Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_func, int from_node) {
+	List<VisualScript::SequenceConnection> *sc = memnew(List<VisualScript::SequenceConnection>);
+	get_sequence_connection_list(edited_func, sc);
+	Set<int> connected;
+	for (List<VisualScript::SequenceConnection>::Element *E = sc->front(); E; E = E->next()) {
+		if (E->get().from_node == from_node) {
+			connected.insert(E->get().from_output);
+		}
+	}
+	memdelete(sc);
+	return connected;
+}
+
 VisualScript::~VisualScript() {
 
 	while (!functions.empty()) {

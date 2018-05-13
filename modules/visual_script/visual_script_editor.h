@@ -34,9 +34,9 @@
 #include "editor/create_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/property_editor.h"
-#include "editor/property_selector.h"
 #include "scene/gui/graph_edit.h"
 #include "visual_script.h"
+#include "visual_script_property_selector.h"
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
@@ -62,15 +62,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	enum PortAction {
 
-		CREATE_CALL,
-		CREATE_SET,
-		CREATE_GET,
-		CREATE_COND,
-		CREATE_SEQUENCE,
-		CREATE_SWITCH,
-		CREATE_ITERATOR,
-		CREATE_WHILE,
-		CREATE_RETURN,
+		CREATE_CALL_SET_GET,
+		CREATE_ACTION,
 	};
 
 	enum MemberAction {
@@ -102,9 +95,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	AcceptDialog *edit_signal_dialog;
 	PropertyEditor *edit_signal_edit;
 
-	PropertySelector *method_select;
-	PropertySelector *new_connect_node_select;
-	PropertySelector *new_virtual_method_select;
+	VisualScriptPropertySelector *method_select;
+	VisualScriptPropertySelector *new_connect_node_select;
+	VisualScriptPropertySelector *new_virtual_method_select;
 
 	VisualScriptEditorVariableEdit *variable_editor;
 
@@ -162,11 +155,11 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	static Clipboard *clipboard;
 
-	PopupMenu *port_action_popup;
 	PopupMenu *member_popup;
-
 	MemberType member_type;
 	String member_name;
+
+	bool seq_connect = false;
 
 	PortAction port_action;
 	int port_action_node;
@@ -174,9 +167,17 @@ class VisualScriptEditor : public ScriptEditorBase {
 	Vector2 port_action_pos;
 	int port_action_new_node;
 	void _port_action_menu(int p_option);
-	void _selected_connect_node_method_or_setget(const String &p_text);
-	void _cancel_connect_node_method_or_setget();
-	void _selected_new_virtual_method(const String &p_text);
+
+	void new_node(Ref<VisualScriptNode> vnode, Vector2 ofs);
+
+	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
+
+	void _selected_connect_node(const String &p_text, const String &p_category);
+	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
+
+	void _cancel_connect_node();
+	void _create_new_node(const String &p_text, const String &p_category, const Vector2 &p_point);
+	void _selected_new_virtual_method(const String &p_text, const String &p_category);
 
 	int error_line;
 
@@ -231,7 +232,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
 	int selecting_method_id;
-	void _selected_method(const String &p_method);
+	void _selected_method(const String &p_method, const String &p_type);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 	void _button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud);

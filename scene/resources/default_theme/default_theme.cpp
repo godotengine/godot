@@ -883,6 +883,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("logo", "Icons", make_icon(logo_png));
 
+	// Visual Node Ports
+	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
+	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
+
 	// Theme
 
 	default_icon = make_icon(error_icon_png);
