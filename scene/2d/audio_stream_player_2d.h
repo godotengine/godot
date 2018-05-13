@@ -69,10 +69,6 @@ private:
 	volatile bool active;
 	volatile float setplay;
 
-#ifdef TOOLS_ENABLED
-	volatile bool fake_active;
-#endif
-
 	float volume_db;
 	float pitch_scale;
 	bool autoplay;
