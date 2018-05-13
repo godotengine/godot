@@ -1331,12 +1331,6 @@ MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *
 		return MultiplayerAPI::RPC_MODE_MASTER;
 	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
 		return MultiplayerAPI::RPC_MODE_SLAVE;
-	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
-	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-	if (p_member->has_attribute(CACHED_CLASS(SlaveSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_SLAVESYNC;
 
 	return MultiplayerAPI::RPC_MODE_DISABLED;
 }

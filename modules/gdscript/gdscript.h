@@ -64,7 +64,6 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		MultiplayerAPI::RPCMode rpc_mode;
-		GDScriptDataType data_type;
 	};
 
 	friend class GDScriptInstance;

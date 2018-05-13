@@ -67,11 +67,6 @@ public:
 
 	struct Comparator {
 
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
-	};
-
-	struct ComparatorWithPriority {
-
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
 	};
 
@@ -424,11 +419,8 @@ public:
 	Ref<MultiplayerAPI> get_multiplayer() const;
 	Ref<MultiplayerAPI> get_custom_multiplayer() const;
 	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-	const Map<StringName, RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
-	const Map<StringName, RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
-
-	bool can_call_rpc(const StringName &p_method, int p_from) const;
-	bool can_call_rset(const StringName &p_property, int p_from) const;
+	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
+	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
 
 	Node();
 	~Node();

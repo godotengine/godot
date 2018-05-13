@@ -158,7 +158,6 @@ public:
 			StringName getter;
 			int line;
 			Node *expression;
-			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
 		};
 		struct Constant {
@@ -196,7 +195,6 @@ public:
 
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
-		bool has_yield;
 		StringName name;
 		DataType return_type;
 		Vector<StringName> arguments;
@@ -211,7 +209,6 @@ public:
 			type = TYPE_FUNCTION;
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
-			has_yield = false;
 		}
 	};
 

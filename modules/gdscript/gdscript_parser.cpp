@@ -4432,19 +4432,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
-				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-						member.data_type = DataType();
-#ifdef DEBUG_ENABLED
-						member.data_type.infer_type = true;
-#endif
-						tokenizer->advance();
-					} else if (!_parse_type(member.data_type)) {
-						_set_error("Expected type for class variable.");
-						return;
-					}
-				}
-
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
 #ifdef DEBUG_ENABLED
@@ -5003,38 +4990,8 @@ String GDScriptParser::DataType::to_string() const {
 			return native_type.operator String();
 		} break;
 
-		case GDSCRIPT: {
-			Ref<GDScript> gds = script_type;
-			const String &gds_class = gds->get_script_class_name();
-			if (!gds_class.empty()) {
-				return gds_class;
-			}
-		} // fallthrough
-		case SCRIPT: {
-			if (is_meta_type) {
-				return script_type->get_class_name().operator String();
-			}
-			String name = script_type->get_name();
-			if (name != String()) {
-				return name;
-			}
-			name = script_type->get_path().get_file();
-			if (name != String()) {
-				return name;
-			}
-			return native_type.operator String();
-		} break;
-		case CLASS: {
-			ERR_FAIL_COND_V(!class_type, String());
-			if (is_meta_type) {
-				return "GDScript";
-			}
-			if (class_type->name == StringName()) {
-				return "self";
-			}
-			return class_type->name.operator String();
-		} break;
-	}
+	completion_found = false;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 	return "Unresolved";
 }
