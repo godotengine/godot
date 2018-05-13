@@ -31,6 +31,7 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
+#include "io/multiplayer_api.h"
 #include "map.h"
 #include "pair.h"
 #include "resource.h"
@@ -157,16 +158,8 @@ public:
 
 	virtual bool is_placeholder() const { return false; }
 
-	enum RPCMode {
-		RPC_MODE_DISABLED,
-		RPC_MODE_REMOTE,
-		RPC_MODE_SYNC,
-		RPC_MODE_MASTER,
-		RPC_MODE_SLAVE,
-	};
-
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const = 0;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
@@ -332,8 +325,8 @@ public:
 
 	virtual bool is_placeholder() const { return true; }
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const { return RPC_MODE_DISABLED; }
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const { return RPC_MODE_DISABLED; }
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();
