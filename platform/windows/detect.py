@@ -233,7 +233,10 @@ def configure_msvc(env, manual_msvc_config):
         env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
         env.Append(CXXFLAGS=['/TP'])
         env.Append(CPPFLAGS=['/DMSVC', '/GR', ])
-        env.Append(CCFLAGS=['/I' + os.getenv("WindowsSdkDir") + "/Include"])
+        if os.getenv("WindowsSdkDir") is not None:
+            env.Append(CCFLAGS=['/I' + os.getenv("WindowsSdkDir") + "/Include"])
+        else:
+            print("Missing environment variable: WindowsSdkDir")
 
         env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
         env.Append(CCFLAGS=['/DOPENGL_ENABLED'])
@@ -248,7 +251,10 @@ def configure_msvc(env, manual_msvc_config):
         LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32']
         env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
-    ## LTO
+        if os.getenv("WindowsSdkDir") is not None:
+            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
+        else:
+            print("Missing environment variable: WindowsSdkDir")
 
     if (env["use_lto"]):
         env.AppendUnique(CCFLAGS=['/GL'])
