@@ -341,26 +341,26 @@ public:
 		min_B -= (max_A - min_A) * 0.5;
 		max_B += (max_A - min_A) * 0.5;
 
-		real_t dmin = min_B - (min_A + max_A) * 0.5;
-		real_t dmax = max_B - (min_A + max_A) * 0.5;
+		min_B -= (min_A + max_A) * 0.5;
+		max_B -= (min_A + max_A) * 0.5;
 
-		if (dmin > 0.0 || dmax < 0.0) {
+		if (min_B > 0.0 || max_B < 0.0) {
 			separator_axis = axis;
 			return false; // doesn't contain 0
 		}
 
 		//use the smallest depth
 
-		dmin = Math::abs(dmin);
+		min_B = -min_B;
 
-		if (dmax < dmin) {
-			if (dmax < best_depth) {
-				best_depth = dmax;
+		if (max_B < min_B) {
+			if (max_B < best_depth) {
+				best_depth = max_B;
 				best_axis = axis;
 			}
 		} else {
-			if (dmin < best_depth) {
-				best_depth = dmin;
+			if (min_B < best_depth) {
+				best_depth = min_B;
 				best_axis = -axis; // keep it as A axis
 			}
 		}
