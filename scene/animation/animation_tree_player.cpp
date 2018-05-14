@@ -1216,6 +1216,12 @@ String AnimationTreePlayer::animation_node_get_master_animation(const StringName
 	return n->from;
 }
 
+float AnimationTreePlayer::animation_node_get_position(const StringName &p_node) const {
+
+	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0);
+	return n->time;
+}
+
 bool AnimationTreePlayer::animation_node_is_path_filtered(const StringName &p_node, const NodePath &p_path) const {
 
 	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0);
@@ -1724,6 +1730,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_master_animation", "id", "source"), &AnimationTreePlayer::animation_node_set_master_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_master_animation", "id"), &AnimationTreePlayer::animation_node_get_master_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_get_position", "id"), &AnimationTreePlayer::animation_node_get_position);
 	ClassDB::bind_method(D_METHOD("animation_node_set_filter_path", "id", "path", "enable"), &AnimationTreePlayer::animation_node_set_filter_path);
 
 	ClassDB::bind_method(D_METHOD("oneshot_node_set_fadein_time", "id", "time_sec"), &AnimationTreePlayer::oneshot_node_set_fadein_time);
