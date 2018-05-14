@@ -507,7 +507,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, float p_blend) {
 
 	float delta = p_delta * speed_scale * cd.speed_scale;
-	bool backwards = delta < 0;
 	float next_pos = cd.pos + delta;
 
 	float len = cd.from->animation->get_length();
@@ -524,6 +523,8 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		delta = next_pos - cd.pos;
 
 		if (&cd == &playback.current) {
+
+			bool backwards = delta < 0;
 
 			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished

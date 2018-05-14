@@ -190,7 +190,6 @@ private:
 
 	struct ItemNewline : public Item {
 
-		int line; // FIXME: Overriding base's line ?
 		ItemNewline() { type = ITEM_NEWLINE; }
 	};
 

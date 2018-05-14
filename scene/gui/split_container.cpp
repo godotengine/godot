@@ -33,13 +33,6 @@
 #include "label.h"
 #include "margin_container.h"
 
-struct _MinSizeCache {
-
-	int min_size;
-	bool will_stretch;
-	int final_size;
-};
-
 Control *SplitContainer::_getch(int p_idx) const {
 
 	int idx = 0;
