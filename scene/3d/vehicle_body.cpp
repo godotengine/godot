@@ -674,8 +674,8 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 	//collapse all those loops into one!
 	for (int i = 0; i < wheels.size(); i++) {
-		m_sideImpulse.write[i] = real_t(0.);
-		m_forwardImpulse.write[i] = real_t(0.);
+		m_sideImpulse[i] = real_t(0.);
+		m_forwardImpulse[i] = real_t(0.);
 	}
 
 	{
