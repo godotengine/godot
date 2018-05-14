@@ -672,13 +672,8 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 	m_forwardImpulse.resize(numWheel);
 	m_sideImpulse.resize(numWheel);
 
-	int numWheelsOnGround = 0;
-
 	//collapse all those loops into one!
 	for (int i = 0; i < wheels.size(); i++) {
-		VehicleWheel &wheelInfo = *wheels[i];
-		if (wheelInfo.m_raycastInfo.m_isInContact)
-			numWheelsOnGround++;
 		m_sideImpulse[i] = real_t(0.);
 		m_forwardImpulse[i] = real_t(0.);
 	}
