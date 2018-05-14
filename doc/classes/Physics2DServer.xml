@@ -688,7 +688,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assigns a space to the body (see [method create_space]).
+				Assigns a space to the body (see [method space_create]).
 			</description>
 		</method>
 		<method name="body_set_state">
