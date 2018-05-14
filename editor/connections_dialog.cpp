@@ -574,6 +574,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 		}
 		midname[i] = c;
 	}
+	midname = midname.to_lower();
 
 	Node *dst_node = selectedNode->get_owner() ? selectedNode->get_owner() : selectedNode;
 	StringName dst_method = "_on_" + midname + "_" + signal;
