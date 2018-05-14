@@ -348,9 +348,7 @@ public:
 
 		//use the smallest depth
 
-		if (min_B < 0.0) { // could be +0.0, we don't want it to become -0.0
-			min_B = -min_B;
-		}
+		min_B = -min_B;
 
 		if (max_B < min_B) {
 			if (max_B < best_depth) {
