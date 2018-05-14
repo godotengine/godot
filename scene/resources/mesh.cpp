@@ -222,7 +222,6 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			continue;
 
 		Array a = surface_get_arrays(i);
-		int vcount = 0;
 
 		if (i == 0) {
 			arrays = a;
@@ -230,6 +229,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			index_accum += v.size();
 		} else {
 
+			int vcount = 0;
 			for (int j = 0; j < arrays.size(); j++) {
 
 				if (arrays[j].get_type() == Variant::NIL || a[j].get_type() == Variant::NIL) {
@@ -1193,8 +1193,6 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		int surface = uv_index[gen_vertices[gen_indices[i + 0]]].first;
 
 		for (int j = 0; j < 3; j++) {
-
-			int vertex_idx = gen_vertices[gen_indices[i + j]];
 
 			SurfaceTool::Vertex v = surfaces[surface].vertices[uv_index[gen_vertices[gen_indices[i + j]]].second];
 

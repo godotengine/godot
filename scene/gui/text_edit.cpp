@@ -302,7 +302,6 @@ void TextEdit::_update_scrollbars() {
 
 	int hscroll_rows = ((hmin.height - 1) / get_row_height()) + 1;
 	int visible_rows = get_visible_rows();
-	int num_rows = MAX(visible_rows, num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(visible_rows, text.size() - 1 - cursor.line_ofs)));
 
 	int total_rows = (is_hiding_enabled() ? get_total_unhidden_rows() : text.size());
 	if (scroll_past_end_of_file_enabled) {
@@ -2453,13 +2452,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				} else if (k->get_command()) {
 #endif
-					bool prev_char = false;
 					int cc = cursor.column;
 
 					if (cc == 0 && cursor.line > 0) {
 						cursor_set_line(cursor.line - 1);
 						cursor_set_column(text[cursor.line].length());
 					} else {
+						bool prev_char = false;
+
 						while (cc > 0) {
 							bool ischar = _is_text_char(text[cursor.line][cc - 1]);
 
@@ -2514,13 +2514,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				} else if (k->get_command()) {
 #endif
-					bool prev_char = false;
 					int cc = cursor.column;
 
 					if (cc == text[cursor.line].length() && cursor.line < text.size() - 1) {
 						cursor_set_line(cursor.line + 1);
 						cursor_set_column(0);
 					} else {
+						bool prev_char = false;
+
 						while (cc < text[cursor.line].length()) {
 							bool ischar = _is_text_char(text[cursor.line][cc]);
 
