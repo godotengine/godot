@@ -348,6 +348,7 @@ public:
 	Ref<Animation> animation_node_get_animation(const StringName &p_node) const;
 	void animation_node_set_master_animation(const StringName &p_node, const String &p_master_animation);
 	String animation_node_get_master_animation(const StringName &p_node) const;
+	float animation_node_get_position(const StringName &p_node) const;
 
 	void animation_node_set_filter_path(const StringName &p_node, const NodePath &p_track_path, bool p_filter);
 	void animation_node_set_get_filtered_paths(const StringName &p_node, List<NodePath> *r_paths) const;
