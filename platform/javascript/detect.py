@@ -38,7 +38,7 @@ def configure(env):
 
     ## Build type
 
-    if env['target'] == 'release' or env['target'] == 'profile':
+    if env['target'] != 'debug':
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -47,15 +47,11 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=['-Os'])
         env.Append(LINKFLAGS=['-Os'])
-
-    elif env['target'] == 'release_debug':
-        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
-        env.Append(CCFLAGS=['-O2'])
-        env.Append(LINKFLAGS=['-O2'])
-        # Retain function names for backtraces at the cost of file size.
-        env.Append(LINKFLAGS=['--profiling-funcs'])
-
-    elif env['target'] == 'debug':
+        if env['target'] == 'release_debug':
+            env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+            # Retain function names for backtraces at the cost of file size.
+            env.Append(LINKFLAGS=['--profiling-funcs'])
+    else:
         env.Append(CPPDEFINES=['DEBUG_ENABLED'])
         env.Append(CCFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-O1', '-g'])
