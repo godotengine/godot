@@ -1661,6 +1661,114 @@ bool Main::start() {
 		}
 #endif
 
+		if (!project_manager) { // game or editor
+			if (game_path != "" || script != "") {
+				//autoload
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+
+				//first pass, add the constants so they exist before any script is loaded
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+					}
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+#ifdef TOOLS_ENABLED
+							if (editor) {
+								ScriptServer::get_language(i)->add_named_global_constant(name, Variant());
+							} else {
+								ScriptServer::get_language(i)->add_global_constant(name, Variant());
+							}
+#else
+							ScriptServer::get_language(i)->add_global_constant(name, Variant());
+#endif
+						}
+					}
+				}
+
+				//second pass, load into global constants
+				List<Node *> to_add;
+#ifdef TOOLS_ENABLED
+				ResourceLoader::set_timestamp_on_load(editor); // Avoid problems when editing
+#endif
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+						path = path.substr(1, path.length() - 1);
+					}
+
+					RES res = ResourceLoader::load(path);
+					ERR_EXPLAIN("Can't autoload: " + path);
+					ERR_CONTINUE(res.is_null());
+					Node *n = NULL;
+					if (res->is_class("PackedScene")) {
+						Ref<PackedScene> ps = res;
+						n = ps->instance();
+					} else if (res->is_class("Script")) {
+						Ref<Script> s = res;
+						StringName ibt = s->get_instance_base_type();
+						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+						ERR_EXPLAIN("Script does not inherit a Node: " + path);
+						ERR_CONTINUE(!valid_type);
+
+						Object *obj = ClassDB::instance(ibt);
+
+						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE(obj == NULL);
+
+						n = Object::cast_to<Node>(obj);
+						n->set_script(s.get_ref_ptr());
+					}
+
+					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
+					ERR_CONTINUE(!n);
+					n->set_name(name);
+
+					//defer so references are all valid on _ready()
+					to_add.push_back(n);
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+#ifdef TOOLS_ENABLED
+							if (editor) {
+								ScriptServer::get_language(i)->add_named_global_constant(name, n);
+							} else {
+								ScriptServer::get_language(i)->add_global_constant(name, n);
+							}
+#else
+							ScriptServer::get_language(i)->add_global_constant(name, n);
+#endif
+						}
+					}
+				}
+
+#ifdef TOOLS_ENABLED
+				ResourceLoader::set_timestamp_on_load(false);
+#endif
+
+				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
+
+					sml->get_root()->add_child(E->get());
+				}
+			}
+		}
+
 #ifdef TOOLS_ENABLED
 
 		EditorNode *editor_node = NULL;
@@ -1679,9 +1787,6 @@ bool Main::start() {
 			}
 		}
 #endif
-
-		{
-		}
 
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
@@ -1795,89 +1900,6 @@ bool Main::start() {
 		}
 
 		if (!project_manager && !editor) { // game
-			if (game_path != "" || script != "") {
-				//autoload
-				List<PropertyInfo> props;
-				ProjectSettings::get_singleton()->get_property_list(&props);
-
-				//first pass, add the constants so they exist before any script is loaded
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
-					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
-						continue;
-					String name = s.get_slicec('/', 1);
-					String path = ProjectSettings::get_singleton()->get(s);
-					bool global_var = false;
-					if (path.begins_with("*")) {
-						global_var = true;
-					}
-
-					if (global_var) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(name, Variant());
-						}
-					}
-				}
-
-				//second pass, load into global constants
-				List<Node *> to_add;
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
-					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
-						continue;
-					String name = s.get_slicec('/', 1);
-					String path = ProjectSettings::get_singleton()->get(s);
-					bool global_var = false;
-					if (path.begins_with("*")) {
-						global_var = true;
-						path = path.substr(1, path.length() - 1);
-					}
-
-					RES res = ResourceLoader::load(path);
-					ERR_EXPLAIN("Can't autoload: " + path);
-					ERR_CONTINUE(res.is_null());
-					Node *n = NULL;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instance();
-					} else if (res->is_class("Script")) {
-						Ref<Script> s = res;
-						StringName ibt = s->get_instance_base_type();
-						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_EXPLAIN("Script does not inherit a Node: " + path);
-						ERR_CONTINUE(!valid_type);
-
-						Object *obj = ClassDB::instance(ibt);
-
-						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
-						ERR_CONTINUE(obj == NULL);
-
-						n = Object::cast_to<Node>(obj);
-						n->set_script(s.get_ref_ptr());
-					}
-
-					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
-					ERR_CONTINUE(!n);
-					n->set_name(name);
-
-					//defer so references are all valid on _ready()
-					to_add.push_back(n);
-
-					if (global_var) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(name, n);
-						}
-					}
-				}
-
-				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
-
-					sml->get_root()->add_child(E->get());
-				}
-			}
-
 			if (game_path != "") {
 				Node *scene = NULL;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);

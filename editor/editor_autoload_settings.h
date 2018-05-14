@@ -50,6 +50,8 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	struct AutoLoadInfo {
 		String name;
+		String path;
+		bool is_singleton;
 		int order;
 
 		bool operator==(const AutoLoadInfo &p_info) {

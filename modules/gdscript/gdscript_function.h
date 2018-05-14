@@ -92,7 +92,8 @@ public:
 		ADDR_TYPE_STACK = 5,
 		ADDR_TYPE_STACK_VARIABLE = 6,
 		ADDR_TYPE_GLOBAL = 7,
-		ADDR_TYPE_NIL = 8
+		ADDR_TYPE_NAMED_GLOBAL = 8,
+		ADDR_TYPE_NIL = 9
 	};
 
 	enum RPCMode {
@@ -121,6 +122,10 @@ private:
 	int _constant_count;
 	const StringName *_global_names_ptr;
 	int _global_names_count;
+#ifdef TOOLS_ENABLED
+	const StringName *_named_globals_ptr;
+	int _named_globals_count;
+#endif
 	const int *_default_arg_ptr;
 	int _default_arg_count;
 	const int *_code_ptr;
@@ -137,6 +142,9 @@ private:
 	StringName name;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
+#ifdef TOOLS_ENABLED
+	Vector<StringName> named_globals;
+#endif
 	Vector<int> default_arguments;
 	Vector<int> code;
 
