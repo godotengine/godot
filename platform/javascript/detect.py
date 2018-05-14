@@ -1,5 +1,4 @@
 import os
-import string
 import sys
 
 
@@ -48,8 +47,6 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=['-Os'])
         env.Append(LINKFLAGS=['-Os'])
-        if env['target'] == 'profile':
-            env.Append(LINKFLAGS=['--profiling-funcs'])
 
     elif env['target'] == 'release_debug':
         env.Append(CPPDEFINES=['DEBUG_ENABLED'])
