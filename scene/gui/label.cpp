@@ -103,7 +103,8 @@ void Label::_notification(int p_what) {
 
 		int lines_visible = (size.y + line_spacing) / font_h;
 
-		int space_w = font->get_char_size(' ').width;
+		// ceiling to ensure autowrapping does not cut text
+		int space_w = Math::ceil(font->get_char_size(' ').width);
 		int chars_total = 0;
 
 		int vbegin = 0, vsep = 0;
@@ -331,7 +332,8 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			int char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			line_width += char_width;
 		}
 	}
@@ -384,7 +386,8 @@ void Label::regenerate_word_cache() {
 	int word_pos = 0;
 	int line_width = 0;
 	int space_count = 0;
-	int space_width = font->get_char_size(' ').width;
+	// ceiling to ensure autowrapping does not cut text
+	int space_width = Math::ceil(font->get_char_size(' ').width);
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
@@ -446,8 +449,8 @@ void Label::regenerate_word_cache() {
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
-
-			char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			current_word_size += char_width;
 			line_width += char_width;
 			total_char_cache++;
