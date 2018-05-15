@@ -64,7 +64,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			double v = get_value();
 
 			double diff_x = mm->get_relative().x;
-			diff_x = Math::pow(ABS(diff_x), 1.8f) * SGN(diff_x);
+			diff_x = Math::pow(ABS(diff_x), 1.8) * SGN(diff_x);
 			diff_x *= 0.1;
 
 			v += diff_x * get_step();
