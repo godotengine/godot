@@ -539,6 +539,88 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 	}
 }
 
+void CanvasItemEditor::_get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items) {
+	Point2 screen_pos = transform.xform(p_pos);
+
+	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+		Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+		Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
+
+		Vector<Vector2> bone_shape;
+		if (!_get_bone_shape(&bone_shape, NULL, E))
+			continue;
+
+		// Check if the point is inside the Polygon2D
+		if (Geometry::is_point_in_polygon(screen_pos, bone_shape)) {
+			// Check if the item is already in the list
+			bool duplicate = false;
+			for (int i = 0; i < r_items.size(); i++) {
+				if (r_items[i].item == from_node) {
+					duplicate = true;
+					break;
+				}
+			}
+			if (duplicate)
+				continue;
+
+			// Else, add it
+			_SelectResult res;
+			res.item = from_node;
+			res.z_index = from_node ? from_node->get_z_index() : 0;
+			res.has_z = from_node;
+			r_items.push_back(res);
+		}
+	}
+}
+
+bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *outline_shape, Map<BoneKey, BoneList>::Element *bone) {
+	int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
+	int bone_outline_width = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
+
+	Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().from));
+	Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().to));
+
+	if (!from_node->is_inside_tree())
+		return false; //may have been removed
+	if (!from_node)
+		return false;
+
+	if (!to_node && bone->get().length == 0)
+		return false;
+
+	Vector2 from = transform.xform(from_node->get_global_position());
+	Vector2 to;
+
+	if (to_node)
+		to = transform.xform(to_node->get_global_position());
+	else
+		to = transform.xform(from_node->get_global_transform().xform(Vector2(bone->get().length, 0)));
+
+	Vector2 rel = to - from;
+	Vector2 relt = rel.tangent().normalized() * bone_width;
+	Vector2 reln = rel.normalized();
+	Vector2 reltn = relt.normalized();
+
+	if (shape) {
+		shape->clear();
+		shape->push_back(from);
+		shape->push_back(from + rel * 0.2 + relt);
+		shape->push_back(to);
+		shape->push_back(from + rel * 0.2 - relt);
+	}
+
+	if (outline_shape) {
+		outline_shape->clear();
+		outline_shape->push_back(from + (-reln - reltn) * bone_outline_width);
+		outline_shape->push_back(from + (-reln + reltn) * bone_outline_width);
+		outline_shape->push_back(from + rel * 0.2 + relt + reltn * bone_outline_width);
+		outline_shape->push_back(to + (reln + reltn) * bone_outline_width);
+		outline_shape->push_back(to + (reln - reltn) * bone_outline_width);
+		outline_shape->push_back(from + rel * 0.2 - relt - reltn * bone_outline_width);
+	}
+	return true;
+}
+
 void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	if (!p_node)
 		return;
@@ -1796,7 +1878,12 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Find the item to select
 			CanvasItem *canvas_item = NULL;
 			Vector<_SelectResult> selection;
+
+			// Retrieve the items
 			_get_canvas_items_at_pos(click, selection, editor_selection->get_selection().empty() ? 1 : 0);
+
+			// Retrieve the bones
+			_get_bones_at_pos(click, selection);
 
 			for (int i = 0; i < selection.size(); i++) {
 				if (editor_selection->is_selected(selection[i].item)) {
@@ -2588,57 +2675,22 @@ void CanvasItemEditor::_draw_bones() {
 	RID ci = viewport->get_canvas_item();
 
 	if (skeleton_show_bones) {
-		int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
 		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
 		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
 		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
 		Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
-		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
-			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
-			Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
-
-			if (!from_node->is_inside_tree())
-				continue; //may have been removed
-			if (!from_node)
-				continue;
-
-			if (!to_node && E->get().length == 0)
-				continue;
-
-			Vector2 from = transform.xform(from_node->get_global_position());
-			Vector2 to;
-
-			if (to_node)
-				to = transform.xform(to_node->get_global_position());
-			else
-				to = transform.xform(from_node->get_global_transform().xform(Vector2(E->get().length, 0)));
-
-			Vector2 rel = to - from;
-			Vector2 relt = rel.tangent().normalized() * bone_width;
-			Vector2 reln = rel.normalized();
-			Vector2 reltn = relt.normalized();
-
 			Vector<Vector2> bone_shape;
-			bone_shape.push_back(from);
-			bone_shape.push_back(from + rel * 0.2 + relt);
-			bone_shape.push_back(to);
-			bone_shape.push_back(from + rel * 0.2 - relt);
-
 			Vector<Vector2> bone_shape_outline;
-			bone_shape_outline.push_back(from + (-reln - reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + (-reln + reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + rel * 0.2 + relt + reltn * bone_outline_size);
-			bone_shape_outline.push_back(to + (reln + reltn) * bone_outline_size);
-			bone_shape_outline.push_back(to + (reln - reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + rel * 0.2 - relt - reltn * bone_outline_size);
+			if (!_get_bone_shape(&bone_shape, &bone_shape_outline, E))
+				continue;
 
+			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
 			Vector<Color> colors;
 			if (from_node->has_meta("_edit_ik_")) {
-
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
