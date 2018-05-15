@@ -166,6 +166,19 @@ void VP8YuvToRgb56532_SSE2(const uint8_t* y, const uint8_t* u, const uint8_t* v,
 
 #endif    // WEBP_USE_SSE2
 
+//-----------------------------------------------------------------------------
+// SSE41 extra functions (mostly for upsampling_sse41.c)
+
+#if defined(WEBP_USE_SSE41)
+
+// Process 32 pixels and store the result (16b, 24b or 32b per pixel) in *dst.
+void VP8YuvToRgb32_SSE41(const uint8_t* y, const uint8_t* u, const uint8_t* v,
+                         uint8_t* dst);
+void VP8YuvToBgr32_SSE41(const uint8_t* y, const uint8_t* u, const uint8_t* v,
+                         uint8_t* dst);
+
+#endif    // WEBP_USE_SSE41
+
 //------------------------------------------------------------------------------
 // RGB -> YUV conversion
 
