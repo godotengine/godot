@@ -1855,6 +1855,12 @@ uint64_t _File::get_modified_time(const String &p_file) const {
 	return FileAccess::get_modified_time(p_file);
 }
 
+// NEW FUNCTION
+uint64_t _File::get_creation_time(const String &p_file) const {
+
+	return FileAccess::get_creation_time(p_file);
+}
+
 void _File::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("open_encrypted", "path", "mode_flags", "key"), &_File::open_encrypted);
@@ -1906,6 +1912,7 @@ void _File::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &_File::get_modified_time);
+	ClassDB::bind_method(D_METHOD("get_creation_time", "file"), &_File::get_creation_time); // NEW FUNCTION
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "endian_swap"), "set_endian_swap", "get_endian_swap");
 
@@ -2106,6 +2113,7 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &_Directory::dir_exists);
 	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&_Directory::get_modified_time);
+	//ClassDB::bind_method(D_METHOD("get_creation_time","file"),&_Directory::get_creation_time); // NEW FUNCTION
 	ClassDB::bind_method(D_METHOD("get_space_left"), &_Directory::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &_Directory::copy);
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &_Directory::rename);

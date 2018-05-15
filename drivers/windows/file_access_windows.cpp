@@ -311,6 +311,26 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	ERR_FAIL_V(0);
 };
 
+// NEW FUNCTION
+uint64_t FileAccessWindows::_get_creation_time(const String &p_file) {
+
+	String file = fix_path(p_file);
+	if (file.ends_with("/") && file != "/")
+		file = file.substr(0, file.length() - 1);
+
+	struct _stat st;
+	int rv = _wstat(file.c_str(), &st);
+
+	if (rv == 0) {
+
+		return st.st_ctime;
+	} else {
+		print_line("no access to " + file);
+	}
+
+	ERR_FAIL_V(0);
+};
+
 FileAccessWindows::FileAccessWindows() {
 
 	f = NULL;

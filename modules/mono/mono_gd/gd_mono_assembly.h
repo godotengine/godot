@@ -77,6 +77,7 @@ class GDMonoAssembly {
 	String name;
 	String path;
 	uint64_t modified_time;
+	uint64_t creation_time; // NEW FUNCTION
 
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
 	Map<MonoClass *, GDMonoClass *> cached_raw;
@@ -116,6 +117,7 @@ public:
 	_FORCE_INLINE_ String get_name() const { return name; }
 	_FORCE_INLINE_ String get_path() const { return path; }
 	_FORCE_INLINE_ uint64_t get_modified_time() const { return modified_time; }
+	_FORCE_INLINE_ uint64_t get_creation_time() const { return creation_time; } // NEW FUNCTION
 
 	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
 	GDMonoClass *get_class(MonoClass *p_mono_class);

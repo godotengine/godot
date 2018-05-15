@@ -77,6 +77,7 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	uint64_t _get_modified_time(const String &p_file);
+	uint64_t _get_creation_time(const String &p_file); // NEW FUNCTION
 
 	FileAccessWindows();
 	virtual ~FileAccessWindows();

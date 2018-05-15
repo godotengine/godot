@@ -489,6 +489,19 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	memdelete(fa);
 	return mt;
 }
+// NEW FUNCTION
+uint64_t FileAccess::get_creation_time(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V(!fa, 0);
+
+	uint64_t ct = fa->_get_creation_time(p_file);
+	memdelete(fa);
+	return ct;
+}
 
 void FileAccess::store_string(const String &p_string) {
 

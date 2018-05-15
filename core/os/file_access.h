@@ -59,6 +59,7 @@ protected:
 	String fix_path(const String &p_path) const;
 	virtual Error _open(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
+	virtual uint64_t _get_creation_time(const String &p_file) = 0; // NEW FUNCTION
 
 	static FileCloseFailNotify close_fail_notify;
 
@@ -153,6 +154,7 @@ public:
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
+	static uint64_t get_creation_time(const String &p_file); // NEW FUNCTION
 
 	static void set_backup_save(bool p_enable) { backup_save = p_enable; };
 	static bool is_backup_save_enabled() { return backup_save; };

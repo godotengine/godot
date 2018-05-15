@@ -297,6 +297,22 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	};
 }
 
+// NEW FUNCTION
+uint64_t FileAccessUnix::_get_creation_time(const String &p_file) {
+
+	String file = fix_path(p_file);
+	struct stat flags;
+	int err = stat(file.utf8().get_data(), &flags);
+
+	if (!err) {
+		return flags.st_ctime;
+	} else {
+		print_line("ERROR IN: " + p_file);
+
+		ERR_FAIL_V(0);
+	};
+}
+
 Error FileAccessUnix::_chmod(const String &p_path, int p_mod) {
 	int err = chmod(p_path.utf8().get_data(), p_mod);
 	if (!err) {

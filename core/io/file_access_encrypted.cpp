@@ -302,6 +302,12 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 	return 0;
 }
 
+// NEW FUNCTION
+uint64_t FileAccessEncrypted::_get_creation_time(const String &p_file) {
+
+	return 0;
+}
+
 FileAccessEncrypted::FileAccessEncrypted() {
 
 	file = NULL;

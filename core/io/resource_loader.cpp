@@ -231,6 +231,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 	res->set_edited(false);
 	if (timestamp_on_load) {
 		uint64_t mt = FileAccess::get_modified_time(path);
+		uint64_t ct = FileAccess::get_creation_time(path); // NEW FUNCTION
 		//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 		res->set_last_modified_time(mt);
 	}
