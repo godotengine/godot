@@ -400,7 +400,9 @@ static void DitherRow(VP8Decoder* const dec) {
 #define MACROBLOCK_VPOS(mb_y)  ((mb_y) * 16)    // vertical position of a MB
 
 // Finalize and transmit a complete row. Return false in case of user-abort.
-static int FinishRow(VP8Decoder* const dec, VP8Io* const io) {
+static int FinishRow(void* arg1, void* arg2) {
+  VP8Decoder* const dec = (VP8Decoder*)arg1;
+  VP8Io* const io = (VP8Io*)arg2;
   int ok = 1;
   const VP8ThreadContext* const ctx = &dec->thread_ctx_;
   const int cache_id = ctx->id_;
@@ -448,10 +450,9 @@ static int FinishRow(VP8Decoder* const dec, VP8Io* const io) {
     if (y_end > io->crop_bottom) {
       y_end = io->crop_bottom;    // make sure we don't overflow on last row.
     }
+    // If dec->alpha_data_ is not NULL, we have some alpha plane present.
     io->a = NULL;
     if (dec->alpha_data_ != NULL && y_start < y_end) {
-      // TODO(skal): testing presence of alpha with dec->alpha_data_ is not a
-      // good idea.
       io->a = VP8DecompressAlphaRows(dec, io, y_start, y_end - y_start);
       if (io->a == NULL) {
         return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
@@ -558,7 +559,6 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io) {
   if (io->bypass_filtering) {
     dec->filter_type_ = 0;
   }
-  // TODO(skal): filter type / strength / sharpness forcing
 
   // Define the area where we can skip in-loop filtering, in case of cropping.
   //
@@ -569,8 +569,6 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io) {
   // Means: there's a dependency chain that goes all the way up to the
   // top-left corner of the picture (MB #0). We must filter all the previous
   // macroblocks.
-  // TODO(skal): add an 'approximate_decoding' option, that won't produce
-  // a 1:1 bit-exactness for complex filtering?
   {
     const int extra_pixels = kFilterExtraRows[dec->filter_type_];
     if (dec->filter_type_ == 2) {
@@ -651,7 +649,7 @@ static int InitThreadContext(VP8Decoder* const dec) {
     }
     worker->data1 = dec;
     worker->data2 = (void*)&dec->thread_ctx_.io_;
-    worker->hook = (WebPWorkerHook)FinishRow;
+    worker->hook = FinishRow;
     dec->num_caches_ =
       (dec->filter_type_ > 0) ? MT_CACHE_LINES : MT_CACHE_LINES - 1;
   } else {

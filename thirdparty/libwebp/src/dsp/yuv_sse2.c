@@ -180,7 +180,7 @@ static WEBP_INLINE void PlanarTo24b_SSE2(__m128i* const in0, __m128i* const in1,
   // Repeat the same permutations twice more:
   //   r0r4g0g4 | b0b4r1r5 | g1g5b1b5 | r2r6g2g6 | b2b6r3r7 | g3g7b3b7
   //   r0g0b0r1 | g1b1r2g2 | b2r3g3b3 | r4g4b4r5 | g5b5r6g6 | b6r7g7b7
-  VP8PlanarTo24b(in0, in1, in2, in3, in4, in5);
+  VP8PlanarTo24b_SSE2(in0, in1, in2, in3, in4, in5);
 
   _mm_storeu_si128((__m128i*)(rgb +  0), *in0);
   _mm_storeu_si128((__m128i*)(rgb + 16), *in1);
@@ -492,7 +492,7 @@ static WEBP_INLINE void RGB32PackedToPlanar_SSE2(const uint32_t* const argb,
   __m128i a1 = LOAD_16(argb + 4);
   __m128i a2 = LOAD_16(argb + 8);
   __m128i a3 = LOAD_16(argb + 12);
-  VP8L32bToPlanar(&a0, &a1, &a2, &a3);
+  VP8L32bToPlanar_SSE2(&a0, &a1, &a2, &a3);
   rgb[0] = _mm_unpacklo_epi8(a1, zero);
   rgb[1] = _mm_unpackhi_epi8(a1, zero);
   rgb[2] = _mm_unpacklo_epi8(a2, zero);

@@ -26,6 +26,9 @@ static void InitLeft(VP8EncIterator* const it) {
   memset(it->u_left_, 129, 8);
   memset(it->v_left_, 129, 8);
   it->left_nz_[8] = 0;
+  if (it->top_derr_ != NULL) {
+    memset(&it->left_derr_, 0, sizeof(it->left_derr_));
+  }
 }
 
 static void InitTop(VP8EncIterator* const it) {
@@ -33,6 +36,9 @@ static void InitTop(VP8EncIterator* const it) {
   const size_t top_size = enc->mb_w_ * 16;
   memset(enc->y_top_, 127, 2 * top_size);
   memset(enc->nz_, 0, enc->mb_w_ * sizeof(*enc->nz_));
+  if (enc->top_derr_ != NULL) {
+    memset(enc->top_derr_, 0, enc->mb_w_ * sizeof(*enc->top_derr_));
+  }
 }
 
 void VP8IteratorSetRow(VP8EncIterator* const it, int y) {
@@ -76,6 +82,7 @@ void VP8IteratorInit(VP8Encoder* const enc, VP8EncIterator* const it) {
   it->y_left_ = (uint8_t*)WEBP_ALIGN(it->yuv_left_mem_ + 1);
   it->u_left_ = it->y_left_ + 16 + 16;
   it->v_left_ = it->u_left_ + 16;
+  it->top_derr_ = enc->top_derr_;
   VP8IteratorReset(it);
 }
 
@@ -450,4 +457,3 @@ int VP8IteratorRotateI4(VP8EncIterator* const it,
 }
 
 //------------------------------------------------------------------------------
-

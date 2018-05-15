@@ -141,6 +141,42 @@ extern "C" {
 #endif
 #endif
 
+#if defined(WEBP_USE_THREAD) && !defined(_WIN32)
+#include <pthread.h>  // NOLINT
+
+#define WEBP_DSP_INIT(func) do {                                    \
+  static volatile VP8CPUInfo func ## _last_cpuinfo_used =           \
+      (VP8CPUInfo)&func ## _last_cpuinfo_used;                      \
+  static pthread_mutex_t func ## _lock = PTHREAD_MUTEX_INITIALIZER; \
+  if (pthread_mutex_lock(&func ## _lock)) break;                    \
+  if (func ## _last_cpuinfo_used != VP8GetCPUInfo) func();          \
+  func ## _last_cpuinfo_used = VP8GetCPUInfo;                       \
+  (void)pthread_mutex_unlock(&func ## _lock);                       \
+} while (0)
+#else  // !(defined(WEBP_USE_THREAD) && !defined(_WIN32))
+#define WEBP_DSP_INIT(func) do {                                    \
+  static volatile VP8CPUInfo func ## _last_cpuinfo_used =           \
+      (VP8CPUInfo)&func ## _last_cpuinfo_used;                      \
+  if (func ## _last_cpuinfo_used == VP8GetCPUInfo) break;           \
+  func();                                                           \
+  func ## _last_cpuinfo_used = VP8GetCPUInfo;                       \
+} while (0)
+#endif  // defined(WEBP_USE_THREAD) && !defined(_WIN32)
+
+// Defines an Init + helper function that control multiple initialization of
+// function pointers / tables.
+/* Usage:
+   WEBP_DSP_INIT_FUNC(InitFunc) {
+     ...function body
+   }
+*/
+#define WEBP_DSP_INIT_FUNC(name)                             \
+  static WEBP_TSAN_IGNORE_FUNCTION void name ## _body(void); \
+  WEBP_TSAN_IGNORE_FUNCTION void name(void) {                \
+    WEBP_DSP_INIT(name ## _body);                            \
+  }                                                          \
+  static WEBP_TSAN_IGNORE_FUNCTION void name ## _body(void)
+
 #define WEBP_UBSAN_IGNORE_UNDEF
 #define WEBP_UBSAN_IGNORE_UNSIGNED_OVERFLOW
 #if defined(__clang__) && defined(__has_attribute)
@@ -166,6 +202,13 @@ extern "C" {
 #define WEBP_SWAP_16BIT_CSP 0
 #endif
 
+// some endian fix (e.g.: mips-gcc doesn't define __BIG_ENDIAN__)
+#if !defined(WORDS_BIGENDIAN) && \
+    (defined(__BIG_ENDIAN__) || defined(_M_PPC) || \
+     (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)))
+#define WORDS_BIGENDIAN
+#endif
+
 typedef enum {
   kSSE2,
   kSSE3,
@@ -189,7 +232,7 @@ WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 // avoiding a compiler warning.
 #define WEBP_DSP_INIT_STUB(func) \
   extern void func(void); \
-  WEBP_TSAN_IGNORE_FUNCTION void func(void) {}
+  void func(void) {}
 
 //------------------------------------------------------------------------------
 // Encoding
@@ -577,6 +620,13 @@ void WebPMultRows(uint8_t* ptr, int stride,
 void WebPMultRow_C(uint8_t* const ptr, const uint8_t* const alpha,
                    int width, int inverse);
 void WebPMultARGBRow_C(uint32_t* const ptr, int width, int inverse);
+
+#ifdef WORDS_BIGENDIAN
+// ARGB packing function: a/r/g/b input is rgba or bgra order.
+extern void (*WebPPackARGB)(const uint8_t* a, const uint8_t* r,
+                            const uint8_t* g, const uint8_t* b, int len,
+                            uint32_t* out);
+#endif
 
 // RGB packing function. 'step' can be 3 or 4. r/g/b input is rgb or bgr order.
 extern void (*WebPPackRGB)(const uint8_t* r, const uint8_t* g, const uint8_t* b,

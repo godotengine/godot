@@ -204,11 +204,7 @@ extern void WebPRescalerDspInitMIPSdspR2(void);
 extern void WebPRescalerDspInitMSA(void);
 extern void WebPRescalerDspInitNEON(void);
 
-static volatile VP8CPUInfo rescaler_last_cpuinfo_used =
-    (VP8CPUInfo)&rescaler_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void WebPRescalerDspInit(void) {
-  if (rescaler_last_cpuinfo_used == VP8GetCPUInfo) return;
+WEBP_DSP_INIT_FUNC(WebPRescalerDspInit) {
 #if !defined(WEBP_REDUCE_SIZE)
 #if !WEBP_NEON_OMIT_C_CODE
   WebPRescalerExportRowExpand = WebPRescalerExportRowExpand_C;
@@ -253,5 +249,4 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPRescalerDspInit(void) {
   assert(WebPRescalerImportRowExpand != NULL);
   assert(WebPRescalerImportRowShrink != NULL);
 #endif   // WEBP_REDUCE_SIZE
-  rescaler_last_cpuinfo_used = VP8GetCPUInfo;
 }

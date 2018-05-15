@@ -46,16 +46,14 @@ static void SubtractGreenFromBlueAndRed_SSE2(uint32_t* argb_data,
 //------------------------------------------------------------------------------
 // Color Transform
 
+#define MK_CST_16(HI, LO) \
+  _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
+
 static void TransformColor_SSE2(const VP8LMultipliers* const m,
                                 uint32_t* argb_data, int num_pixels) {
-  const __m128i mults_rb = _mm_set_epi16(
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_),
-      CST_5b(m->green_to_red_), CST_5b(m->green_to_blue_));
-  const __m128i mults_b2 = _mm_set_epi16(
-      CST_5b(m->red_to_blue_), 0, CST_5b(m->red_to_blue_), 0,
-      CST_5b(m->red_to_blue_), 0, CST_5b(m->red_to_blue_), 0);
+  const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red_),
+                                     CST_5b(m->green_to_blue_));
+  const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue_), 0);
   const __m128i mask_ag = _mm_set1_epi32(0xff00ff00);  // alpha-green masks
   const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);  // red-blue masks
   int i;
@@ -85,12 +83,8 @@ static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
                                             int tile_width, int tile_height,
                                             int green_to_blue, int red_to_blue,
                                             int histo[]) {
-  const __m128i mults_r = _mm_set_epi16(
-      CST_5b(red_to_blue), 0, CST_5b(red_to_blue), 0,
-      CST_5b(red_to_blue), 0, CST_5b(red_to_blue), 0);
-  const __m128i mults_g = _mm_set_epi16(
-      0, CST_5b(green_to_blue), 0, CST_5b(green_to_blue),
-      0, CST_5b(green_to_blue), 0, CST_5b(green_to_blue));
+  const __m128i mults_r = MK_CST_16(CST_5b(red_to_blue), 0);
+  const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_blue));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
   const __m128i mask_b = _mm_set1_epi32(0x0000ff);  // blue mask
   int y;
@@ -135,9 +129,7 @@ static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
 static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
                                            int tile_width, int tile_height,
                                            int green_to_red, int histo[]) {
-  const __m128i mults_g = _mm_set_epi16(
-      0, CST_5b(green_to_red), 0, CST_5b(green_to_red),
-      0, CST_5b(green_to_red), 0, CST_5b(green_to_red));
+  const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_red));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
   const __m128i mask = _mm_set1_epi32(0xff);
 
@@ -174,6 +166,7 @@ static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
   }
 }
 #undef SPAN
+#undef MK_CST_16
 
 //------------------------------------------------------------------------------
 

@@ -1643,17 +1643,17 @@ int VP8LDecodeImage(VP8LDecoder* const dec) {
 
 #if !defined(WEBP_REDUCE_SIZE)
     if (io->use_scaling && !AllocateAndInitRescaler(dec, io)) goto Err;
-
-    if (io->use_scaling || WebPIsPremultipliedMode(dec->output_->colorspace)) {
-      // need the alpha-multiply functions for premultiplied output or rescaling
-      WebPInitAlphaProcessing();
-    }
 #else
     if (io->use_scaling) {
       dec->status_ = VP8_STATUS_INVALID_PARAM;
       goto Err;
     }
 #endif
+    if (io->use_scaling || WebPIsPremultipliedMode(dec->output_->colorspace)) {
+      // need the alpha-multiply functions for premultiplied output or rescaling
+      WebPInitAlphaProcessing();
+    }
+
     if (!WebPIsRGBMode(dec->output_->colorspace)) {
       WebPInitConvertARGBToYUV();
       if (dec->output_->u.YUVA.a != NULL) WebPInitAlphaProcessing();
