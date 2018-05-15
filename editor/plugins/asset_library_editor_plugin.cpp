@@ -936,41 +936,43 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	if (to > p_page_count)
 		to = p_page_count;
 
-	Color gray = Color(0.65, 0.65, 0.65);
-
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 10);
+	hbc->add_constant_override("separation", 5);
 
+	Button *first = memnew(Button);
+	first->set_text(TTR("First"));
 	if (p_page != 0) {
-		LinkButton *first = memnew(LinkButton);
-		first->set_text(TTR("first"));
-		first->add_color_override("font_color", gray);
-		first->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		first->connect("pressed", this, "_search", varray(0));
-		hbc->add_child(first);
+	} else {
+		first->set_disabled(true);
+		first->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(first);
 
+	Button *prev = memnew(Button);
+	prev->set_text(TTR("Previous"));
 	if (p_page > 0) {
-		LinkButton *prev = memnew(LinkButton);
-		prev->set_text(TTR("prev"));
-		prev->add_color_override("font_color", gray);
-		prev->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		prev->connect("pressed", this, "_search", varray(p_page - 1));
-		hbc->add_child(prev);
+	} else {
+		prev->set_disabled(true);
+		prev->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(prev);
+	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
 
 		if (i == p_page) {
 
-			Label *current = memnew(Label);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
+			current->set_disabled(true);
+			current->set_focus_mode(Control::FOCUS_NONE);
+
 			hbc->add_child(current);
 		} else {
 
-			LinkButton *current = memnew(LinkButton);
-			current->add_color_override("font_color", gray);
-			current->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
 			current->connect("pressed", this, "_search", varray(i));
 
@@ -978,28 +980,26 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		}
 	}
 
+	Button *next = memnew(Button);
+	next->set_text(TTR("Next"));
 	if (p_page < p_page_count - 1) {
-		LinkButton *next = memnew(LinkButton);
-		next->set_text(TTR("next"));
-		next->add_color_override("font_color", gray);
-		next->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		next->connect("pressed", this, "_search", varray(p_page + 1));
-
-		hbc->add_child(next);
+	} else {
+		next->set_disabled(true);
+		next->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(memnew(VSeparator));
+	hbc->add_child(next);
 
+	Button *last = memnew(Button);
+	last->set_text(TTR("Last"));
 	if (p_page != p_page_count - 1) {
-		LinkButton *last = memnew(LinkButton);
-		last->set_text(TTR("last"));
-		last->add_color_override("font_color", gray);
-		last->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		hbc->add_child(last);
 		last->connect("pressed", this, "_search", varray(p_page_count - 1));
+	} else {
+		last->set_disabled(true);
+		last->set_focus_mode(Control::FOCUS_NONE);
 	}
-
-	Label *totals = memnew(Label);
-	totals->set_text("( " + itos(from * p_page_len) + " - " + itos(from * p_page_len + p_current_items - 1) + " / " + itos(p_total_items) + " )");
-	hbc->add_child(totals);
+	hbc->add_child(last);
 
 	hbc->add_spacer();
 
