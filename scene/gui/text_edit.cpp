@@ -302,7 +302,7 @@ void TextEdit::Text::remove(int p_at) {
 	text.remove(p_at);
 }
 
-int TextEdit::Text::get_char_width(char c, char next_c, int px) const {
+int TextEdit::Text::get_char_width(CharType c, CharType next_c, int px) const {
 
 	int tab_w = font->get_char_size(' ').width * indent_size;
 	int w = 0;
