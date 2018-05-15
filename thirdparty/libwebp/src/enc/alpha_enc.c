@@ -361,7 +361,8 @@ static int EncodeAlpha(VP8Encoder* const enc,
 //------------------------------------------------------------------------------
 // Main calls
 
-static int CompressAlphaJob(VP8Encoder* const enc, void* dummy) {
+static int CompressAlphaJob(void* arg1, void* dummy) {
+  VP8Encoder* const enc = (VP8Encoder*)arg1;
   const WebPConfig* config = enc->config_;
   uint8_t* alpha_data = NULL;
   size_t alpha_size = 0;
@@ -394,7 +395,7 @@ void VP8EncInitAlpha(VP8Encoder* const enc) {
     WebPGetWorkerInterface()->Init(worker);
     worker->data1 = enc;
     worker->data2 = NULL;
-    worker->hook = (WebPWorkerHook)CompressAlphaJob;
+    worker->hook = CompressAlphaJob;
   }
 }
 
