@@ -1,51 +1,26 @@
-/*************************************************************************/
-/*  editor_inspector.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/line_edit.h"
+#include "editor_data.h"
 #include "scene/gui/scroll_container.h"
-
-class UndoRedo;
 
 class EditorProperty : public Container {
 
 	GDCLASS(EditorProperty, Container)
+public:
+	enum LabelLayout {
+		LABEL_LAYOUT_LEFT,
+		LABEL_LAYOUT_TOP,
+	};
+
 private:
 	String label;
 	int text_size;
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
+
+	LabelLayout label_layout;
 
 	int property_usage;
 
@@ -54,9 +29,6 @@ private:
 	bool checked;
 	bool draw_red;
 	bool keying;
-
-	Rect2 right_child_rect;
-	Rect2 bottom_child_rect;
 
 	Rect2 keying_rect;
 	bool keying_hover;
@@ -67,25 +39,17 @@ private:
 
 	bool can_revert;
 
-	bool use_folding;
-
 	bool _might_be_in_instance();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage);
 	bool _is_instanced_node_with_original_property_different();
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
-	bool selectable;
 	bool selected;
 	int selected_focusable;
 
-	float split_ratio;
-
 	Vector<Control *> focusables;
 	Control *label_reference;
-	Control *bottom_editor;
-
-	mutable String tooltip_text;
 
 protected:
 	void _notification(int p_what);
@@ -128,27 +92,10 @@ public:
 	bool is_selected() const;
 
 	void set_label_reference(Control *p_control);
-	void set_bottom_editor(Control *p_editor);
-
-	void set_use_folding(bool p_use_folding);
-	bool is_using_folding() const;
-
-	virtual void expand_all_folding();
-	virtual void collapse_all_folding();
 
 	virtual Variant get_drag_data(const Point2 &p_point);
 
-	void set_selectable(bool p_selectable);
-	bool is_selectable() const;
-
-	void set_name_split_ratio(float p_ratio);
-	float get_name_split_ratio() const;
-
-	void set_object_and_property(Object *p_object, const StringName &p_property);
-	virtual Control *make_custom_tooltip(const String &p_text) const;
-
-	String get_tooltip_text() const;
-
+	void set_label_layout(LabelLayout p_layout);
 	EditorProperty();
 };
 
@@ -174,7 +121,6 @@ public:
 
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
-	virtual void parse_category(Object *p_object, const String &p_parse_category);
 	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 	virtual void parse_end();
 };
@@ -186,17 +132,12 @@ class EditorInspectorCategory : public Control {
 	Ref<Texture> icon;
 	String label;
 	Color bg_color;
-	mutable String tooltip_text;
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const;
-	virtual Control *make_custom_tooltip(const String &p_text) const;
-
-	String get_tooltip_text() const;
 
 	EditorInspectorCategory();
 };
@@ -208,11 +149,8 @@ class EditorInspectorSection : public Container {
 	String section;
 	Object *object;
 	VBoxContainer *vbox;
-	bool vbox_added; //optimization
 	Color bg_color;
 	bool foldable;
-
-	void _test_unfold();
 
 protected:
 	void _notification(int p_what);
@@ -230,7 +168,6 @@ public:
 	Object *get_edited_object();
 
 	EditorInspectorSection();
-	~EditorInspectorSection();
 };
 
 class EditorInspector : public ScrollContainer {
@@ -267,32 +204,21 @@ class EditorInspector : public ScrollContainer {
 	bool update_all_pending;
 	bool read_only;
 	bool keying;
-	bool use_sub_inspector_bg;
 
-	float refresh_countdown;
+	int refresh_countdown;
 	bool update_tree_pending;
 	StringName _prop_edited;
 	StringName property_selected;
 	int property_focusable;
-	int update_scroll_request;
 
 	Map<StringName, Map<StringName, String> > descr_cache;
 	Map<StringName, String> class_descr_cache;
-	Set<StringName> restart_request_props;
-
-	Map<ObjectID, int> scroll_cache;
-
-	String property_prefix; //used for sectioned inspector
-	String object_class;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
-	void _property_changed(const String &p_path, const Variant &p_value, bool changing = false);
-	void _property_changed_update_all(const String &p_path, const Variant &p_value);
+	void _property_changed(const String &p_path, const Variant &p_value);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path);
-	void _property_keyed_with_value(const String &p_path, const Variant &p_value);
-
 	void _property_checked(const String &p_path, bool p_checked);
 
 	void _resource_selected(const String &p_path, RES p_resource);
@@ -305,9 +231,6 @@ class EditorInspector : public ScrollContainer {
 	void _edit_request_change(Object *p_changed, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
-	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
-
-	void _vscroll_changed(double);
 
 protected:
 	static void _bind_methods();
@@ -317,8 +240,6 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
-
-	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 
@@ -330,7 +251,6 @@ public:
 	void refresh();
 
 	void edit(Object *p_object);
-	Object *get_edited_object();
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
@@ -350,21 +270,12 @@ public:
 	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
-	bool is_using_folding();
 
 	void collapse_all_folding();
 	void expand_all_folding();
 
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
-
-	void set_property_prefix(const String &p_prefix);
-	String get_property_prefix() const;
-
-	void set_object_class(const String &p_class);
-	String get_object_class() const;
-
-	void set_use_sub_inspector_bg(bool p_enable);
 
 	EditorInspector();
 };

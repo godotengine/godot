@@ -1,56 +1,13 @@
-/*************************************************************************/
-/*  editor_properties.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-
 #include "editor_properties.h"
 #include "editor/editor_resource_preview.h"
 #include "editor_node.h"
-#include "editor_properties_array_dict.h"
 #include "scene/main/viewport.h"
-
-///////////////////// NULL /////////////////////////
-
-void EditorPropertyNil::update_property() {
-}
-
-EditorPropertyNil::EditorPropertyNil() {
-	Label *label = memnew(Label);
-	label->set_text("[null]");
-	add_child(label);
-}
-
 ///////////////////// TEXT /////////////////////////
 void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_signal("property_changed", get_edited_property(), p_string, true);
+	emit_signal("property_changed", get_edited_property(), p_string);
 }
 
 void EditorPropertyText::update_property() {
@@ -78,12 +35,12 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_signal("property_changed", get_edited_property(), big_text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), big_text->get_text());
 }
 
 void EditorPropertyMultilineText::_text_changed() {
 
-	emit_signal("property_changed", get_edited_property(), text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), text->get_text());
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
@@ -131,8 +88,8 @@ void EditorPropertyMultilineText::_bind_methods() {
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	set_label_layout(LABEL_LAYOUT_TOP);
 	add_child(hb);
-	set_bottom_editor(hb);
 	text = memnew(TextEdit);
 	text->connect("text_changed", this, "_text_changed");
 	add_focusable(text);
@@ -178,8 +135,6 @@ void EditorPropertyTextEnum::_bind_methods() {
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
-	options->set_flat(true);
-
 	add_child(options);
 	add_focusable(options);
 	options->connect("item_selected", this, "_option_selected");
@@ -256,51 +211,6 @@ EditorPropertyPath::EditorPropertyPath() {
 	path->connect("pressed", this, "_path_pressed");
 	folder = false;
 	global = false;
-}
-
-///////////////////// CLASS NAME /////////////////////////
-
-void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
-
-	base_type = p_base_type;
-	dialog->set_base_type(base_type);
-	selected_type = p_selected_type;
-	property->set_text(selected_type);
-}
-
-void EditorPropertyClassName::update_property() {
-
-	String s = get_edited_object()->get(get_edited_property());
-	property->set_text(s);
-	selected_type = s;
-}
-
-void EditorPropertyClassName::_property_selected() {
-	dialog->popup_create(true);
-}
-
-void EditorPropertyClassName::_dialog_created() {
-	selected_type = dialog->get_selected_type();
-	emit_signal("property_changed", get_edited_property(), selected_type);
-	update_property();
-}
-
-void EditorPropertyClassName::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_dialog_created"), &EditorPropertyClassName::_dialog_created);
-	ClassDB::bind_method(D_METHOD("_property_selected"), &EditorPropertyClassName::_property_selected);
-}
-
-EditorPropertyClassName::EditorPropertyClassName() {
-	property = memnew(Button);
-	property->set_clip_text(true);
-	add_child(property);
-	add_focusable(property);
-	property->set_text(selected_type);
-	property->connect("pressed", this, "_property_selected");
-	dialog = memnew(CreateDialog);
-	dialog->set_base_type(base_type);
-	dialog->connect("create", this, "_dialog_created");
-	add_child(dialog);
 }
 
 ///////////////////// MEMBER /////////////////////////
@@ -437,47 +347,19 @@ EditorPropertyCheck::EditorPropertyCheck() {
 
 void EditorPropertyEnum::_option_selected(int p_which) {
 
-	String text = options->get_item_text(p_which);
-	Vector<String> text_split = text.split(":");
-	if (text_split.size() == 1) {
-		emit_signal("property_changed", get_edited_property(), p_which);
-		return;
-	}
-	String name = text_split[1];
-	emit_signal("property_changed", get_edited_property(), name.to_int());
+	emit_signal("property_changed", get_edited_property(), p_which);
 }
 
 void EditorPropertyEnum::update_property() {
 
 	int which = get_edited_object()->get(get_edited_property());
-	if (which == 0) {
-		options->select(which);
-		return;
-	}
-
-	for (int i = 0; i < options->get_item_count(); i++) {
-		String text = options->get_item_text(i);
-		Vector<String> text_split = text.split(":");
-		if (text_split.size() == 1) {
-			options->select(which);
-			return;
-		}
-		String name = text_split[1];
-		if (itos(which) == name) {
-			options->select(i);
-			return;
-		}
-	}
+	options->select(which);
 }
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	for (int i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
 	}
-}
-
-void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
-	options->set_clip_text(p_enable);
 }
 
 void EditorPropertyEnum::_bind_methods() {
@@ -488,7 +370,6 @@ void EditorPropertyEnum::_bind_methods() {
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
-	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
 	options->connect("item_selected", this, "_option_selected");
@@ -568,7 +449,6 @@ public:
 	uint32_t value;
 	Vector<Rect2> flag_rects;
 	Vector<String> names;
-	Vector<String> tooltips;
 
 	virtual Size2 get_minimum_size() const {
 		Ref<Font> font = get_font("font", "Label");
@@ -577,8 +457,8 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const {
 		for (int i = 0; i < flag_rects.size(); i++) {
-			if (i < tooltips.size() && flag_rects[i].has_point(p_pos)) {
-				return tooltips[i];
+			if (flag_rects[i].has_point(p_pos) && i < names.size()) {
+				return names[i];
 			}
 		}
 		return String();
@@ -682,7 +562,6 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	}
 
 	Vector<String> names;
-	Vector<String> tooltips;
 	for (int i = 0; i < 20; i++) {
 		String name;
 
@@ -691,15 +570,13 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		}
 
 		if (name == "") {
-			name = TTR("Layer") + " " + itos(i + 1);
+			name = "Layer " + itos(i + 1);
 		}
 
 		names.push_back(name);
-		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i));
 	}
 
 	grid->names = names;
-	grid->tooltips = tooltips;
 }
 
 void EditorPropertyLayers::_button_pressed() {
@@ -715,7 +592,6 @@ void EditorPropertyLayers::_button_pressed() {
 	}
 
 	Rect2 gp = button->get_global_rect();
-	layers->set_as_minsize();
 	Vector2 popup_pos = gp.position - Vector2(layers->get_combined_minimum_size().x, 0);
 	layers->set_global_position(popup_pos);
 	layers->popup();
@@ -728,7 +604,6 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 		grid->value |= (1 << p_menu);
 	}
 	grid->update();
-	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
 
@@ -751,10 +626,9 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	button->set_text("..");
 	button->connect("pressed", this, "_button_pressed");
 	hb->add_child(button);
-	set_bottom_editor(hb);
+	set_label_layout(LABEL_LAYOUT_TOP);
 	layers = memnew(PopupMenu);
 	add_child(layers);
-	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 }
 ///////////////////// INT /////////////////////////
@@ -777,17 +651,14 @@ void EditorPropertyInteger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyInteger::_value_changed);
 }
 
-void EditorPropertyInteger::setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser) {
+void EditorPropertyInteger::setup(int p_min, int p_max) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(1);
-	spin->set_allow_greater(p_allow_greater);
-	spin->set_allow_lesser(p_allow_lesser);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
 	spin = memnew(EditorSpinSlider);
-	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
 	spin->connect("value_changed", this, "_value_changed");
@@ -861,20 +732,17 @@ void EditorPropertyFloat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyFloat::_value_changed);
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range) {
 
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
 	spin->set_hide_slider(p_no_slider);
 	spin->set_exp_ratio(p_exp_range);
-	spin->set_allow_greater(p_greater);
-	spin->set_allow_lesser(p_lesser);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
 	spin = memnew(EditorSpinSlider);
-	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
 	spin->connect("value_changed", this, "_value_changed");
@@ -884,12 +752,6 @@ EditorPropertyFloat::EditorPropertyFloat() {
 ///////////////////// EASING /////////////////////////
 
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
-
-	Ref<InputEventMouseButton> mb = p_ev;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-		preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
-		preset->popup();
-	}
 
 	Ref<InputEventMouseMotion> mm = p_ev;
 
@@ -928,7 +790,7 @@ void EditorPropertyEasing::_draw_easing() {
 	Size2 s = easing_draw->get_size();
 	Rect2 r(Point2(), s);
 	r = r.grow(3);
-	//get_stylebox("normal", "LineEdit")->draw(ci, r);
+	get_stylebox("normal", "LineEdit")->draw(ci, r);
 
 	int points = 48;
 
@@ -938,7 +800,6 @@ void EditorPropertyEasing::_draw_easing() {
 	Ref<Font> f = get_font("font", "Label");
 	Color color = get_color("font_color", "Label");
 
-	Vector<Point2> lines;
 	for (int i = 1; i <= points; i++) {
 
 		float ifl = i / float(points);
@@ -951,12 +812,10 @@ void EditorPropertyEasing::_draw_easing() {
 			iflp = 1.0 - iflp;
 		}
 
-		lines.push_back(Point2(ifl * s.width, h * s.height));
-		lines.push_back(Point2(iflp * s.width, prev * s.height));
+		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(iflp * s.width, prev * s.height), Point2(ifl * s.width, h * s.height), color);
 		prev = h;
 	}
 
-	easing_draw->draw_multiline(lines, color, 1.0, true);
 	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), color);
 }
 
@@ -964,17 +823,29 @@ void EditorPropertyEasing::update_property() {
 	easing_draw->update();
 }
 
-void EditorPropertyEasing::_set_preset(int p_preset) {
-	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
-
-	emit_signal("property_changed", get_edited_property(), preset_value[p_preset]);
+void EditorPropertyEasing::_set_preset(float p_val) {
+	emit_signal("property_changed", get_edited_property(), p_val);
 	easing_draw->update();
 }
 
 void EditorPropertyEasing::setup(bool p_full, bool p_flip) {
 
 	flip = p_flip;
-	full = p_full;
+	if (p_full) {
+		HBoxContainer *hb2 = memnew(HBoxContainer);
+		vb->add_child(hb2);
+		button_out_in = memnew(ToolButton);
+		button_out_in->set_tooltip(TTR("Out-In"));
+		button_out_in->set_h_size_flags(SIZE_EXPAND_FILL);
+		button_out_in->connect("pressed", this, "_set_preset", varray(-0.5));
+		hb2->add_child(button_out_in);
+
+		button_in_out = memnew(ToolButton);
+		button_in_out->set_tooltip(TTR("In"));
+		button_in_out->set_h_size_flags(SIZE_EXPAND_FILL);
+		button_in_out->connect("pressed", this, "_set_preset", varray(-2));
+		hb2->add_child(button_in_out);
+	}
 }
 
 void EditorPropertyEasing::_notification(int p_what) {
@@ -982,19 +853,15 @@ void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			preset->clear();
-			preset->add_icon_item(get_icon("CurveConstant", "EditorIcons"), "Zero", EASING_ZERO);
-			preset->add_icon_item(get_icon("CurveLinear", "EditorIcons"), "Linear", EASING_LINEAR);
-			preset->add_icon_item(get_icon("CurveIn", "EditorIcons"), "In", EASING_IN);
-			preset->add_icon_item(get_icon("CurveOut", "EditorIcons"), "Out", EASING_OUT);
-			if (full) {
-				preset->add_icon_item(get_icon("CurveInOut", "EditorIcons"), "In-Out", EASING_IN_OUT);
-				preset->add_icon_item(get_icon("CurveOutIn", "EditorIcons"), "Out-In", EASING_OUT_IN);
-			}
 			easing_draw->set_custom_minimum_size(Size2(0, get_font("font", "Label")->get_height() * 2));
-		} break;
-		case NOTIFICATION_RESIZED: {
-
+			button_linear->set_icon(get_icon("CurveLinear", "EditorIcons"));
+			button_out->set_icon(get_icon("CurveOut", "EditorIcons"));
+			button_in->set_icon(get_icon("CurveIn", "EditorIcons"));
+			button_constant->set_icon(get_icon("CurveConstant", "EditorIcons"));
+			if (button_out_in)
+				button_out_in->set_icon(get_icon("CurveOutIn", "EditorIcons"));
+			if (button_in_out)
+				button_in_out->set_icon(get_icon("CurveInOut", "EditorIcons"));
 		} break;
 	}
 }
@@ -1008,18 +875,47 @@ void EditorPropertyEasing::_bind_methods() {
 
 EditorPropertyEasing::EditorPropertyEasing() {
 
+	vb = memnew(VBoxContainer);
+	add_child(vb);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	set_label_reference(hb);
+
+	vb->add_child(hb);
+
+	button_linear = memnew(ToolButton);
+	button_linear->set_tooltip(TTR("Linear"));
+	button_linear->set_h_size_flags(SIZE_EXPAND_FILL);
+	button_linear->connect("pressed", this, "_set_preset", varray(1));
+	hb->add_child(button_linear);
+
+	button_constant = memnew(ToolButton);
+	button_constant->set_tooltip(TTR("Linear"));
+	button_constant->set_h_size_flags(SIZE_EXPAND_FILL);
+	button_constant->connect("pressed", this, "_set_preset", varray(0));
+	hb->add_child(button_constant);
+
+	button_out = memnew(ToolButton);
+	button_out->set_tooltip(TTR("Out"));
+	button_out->set_h_size_flags(SIZE_EXPAND_FILL);
+	button_out->connect("pressed", this, "_set_preset", varray(0.5));
+	hb->add_child(button_out);
+
+	button_in = memnew(ToolButton);
+	button_in->set_tooltip(TTR("In"));
+	button_in->set_h_size_flags(SIZE_EXPAND_FILL);
+	button_in->connect("pressed", this, "_set_preset", varray(2));
+	hb->add_child(button_in);
+
+	button_in_out = NULL;
+	button_out_in = NULL;
+
 	easing_draw = memnew(Control);
 	easing_draw->connect("draw", this, "_draw_easing");
 	easing_draw->connect("gui_input", this, "_drag_easing");
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
-	add_child(easing_draw);
-
-	preset = memnew(PopupMenu);
-	add_child(preset);
-	preset->connect("id_pressed", this, "_set_preset");
+	vb->add_child(easing_draw);
 
 	flip = false;
-	full = false;
 }
 
 ///////////////////// VECTOR2 /////////////////////////
@@ -1042,18 +938,6 @@ void EditorPropertyVector2::update_property() {
 	setting = false;
 }
 
-void EditorPropertyVector2::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 2; i++) {
-
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
-
 void EditorPropertyVector2::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyVector2::_value_changed);
@@ -1074,7 +958,6 @@ EditorPropertyVector2::EditorPropertyVector2() {
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
 		spin[i] = memnew(EditorSpinSlider);
-		spin[i]->set_flat(true);
 		spin[i]->set_label(desc[i]);
 		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
@@ -1092,8 +975,8 @@ void EditorPropertyRect2::_value_changed(double val) {
 
 	Rect2 r2;
 	r2.position.x = spin[0]->get_value();
-	r2.position.y = spin[1]->get_value();
-	r2.size.x = spin[2]->get_value();
+	r2.position.x = spin[1]->get_value();
+	r2.size.y = spin[2]->get_value();
 	r2.size.y = spin[3]->get_value();
 	emit_signal("property_changed", get_edited_property(), r2);
 }
@@ -1107,17 +990,7 @@ void EditorPropertyRect2::update_property() {
 	spin[3]->set_value(val.size.y);
 	setting = false;
 }
-void EditorPropertyRect2::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 4; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyRect2::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyRect2::_value_changed);
@@ -1139,8 +1012,6 @@ EditorPropertyRect2::EditorPropertyRect2() {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
-
 		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
@@ -1169,17 +1040,7 @@ void EditorPropertyVector3::update_property() {
 	spin[2]->set_value(val.z);
 	setting = false;
 }
-void EditorPropertyVector3::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 3; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyVector3::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyVector3::_value_changed);
@@ -1201,8 +1062,6 @@ EditorPropertyVector3::EditorPropertyVector3() {
 	for (int i = 0; i < 3; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
-
 		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
@@ -1233,17 +1092,7 @@ void EditorPropertyPlane::update_property() {
 	spin[3]->set_value(val.d);
 	setting = false;
 }
-void EditorPropertyPlane::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 3; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyPlane::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyPlane::_value_changed);
@@ -1265,7 +1114,6 @@ EditorPropertyPlane::EditorPropertyPlane() {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
 		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
@@ -1297,17 +1145,7 @@ void EditorPropertyQuat::update_property() {
 	spin[3]->set_value(val.w);
 	setting = false;
 }
-void EditorPropertyQuat::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 3; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyQuat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyQuat::_value_changed);
@@ -1329,8 +1167,6 @@ EditorPropertyQuat::EditorPropertyQuat() {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
-
 		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
@@ -1368,17 +1204,7 @@ void EditorPropertyAABB::update_property() {
 
 	setting = false;
 }
-void EditorPropertyAABB::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 6; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyAABB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyAABB::_value_changed);
@@ -1402,14 +1228,13 @@ EditorPropertyAABB::EditorPropertyAABB() {
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
-
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
+	set_label_reference(spin[0]); //show text and buttons around this
+	set_label_layout(LABEL_LAYOUT_TOP);
 	setting = false;
 }
 
@@ -1442,17 +1267,7 @@ void EditorPropertyTransform2D::update_property() {
 
 	setting = false;
 }
-void EditorPropertyTransform2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 6; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyTransform2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyTransform2D::_value_changed);
@@ -1472,17 +1287,17 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 	g->set_columns(2);
 	add_child(g);
 
-	static const char *desc[6] = { "x", "y", "x", "y", "x", "y" };
+	static const char *desc[6] = { "xx", "xy", "yx", "yy", "ox", "oy" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
+	set_label_reference(spin[0]); //show text and buttons around this
+	set_label_layout(LABEL_LAYOUT_TOP);
 	setting = false;
 }
 
@@ -1521,17 +1336,7 @@ void EditorPropertyBasis::update_property() {
 
 	setting = false;
 }
-void EditorPropertyBasis::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 9; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyBasis::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyBasis::_value_changed);
@@ -1551,17 +1356,17 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[9] = { "x", "y", "z", "x", "y", "z", "x", "y", "z" };
+	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
+	set_label_reference(spin[0]); //show text and buttons around this
+	set_label_layout(LABEL_LAYOUT_TOP);
 	setting = false;
 }
 
@@ -1606,17 +1411,7 @@ void EditorPropertyTransform::update_property() {
 
 	setting = false;
 }
-void EditorPropertyTransform::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
-		for (int i = 0; i < 12; i++) {
 
-			Color c = base;
-			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
-			spin[i]->set_custom_label_color(true, c);
-		}
-	}
-}
 void EditorPropertyTransform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyTransform::_value_changed);
@@ -1636,17 +1431,17 @@ EditorPropertyTransform::EditorPropertyTransform() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[12] = { "x", "y", "z", "x", "y", "z", "x", "y", "z", "x", "y", "z" };
+	static const char *desc[12] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz", "ox", "oy", "oz" };
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
+	set_label_reference(spin[0]); //show text and buttons around this
+	set_label_layout(LABEL_LAYOUT_TOP);
 	setting = false;
 }
 
@@ -1683,23 +1478,13 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
-	NodePath path = p_path;
-	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	if (base_node == NULL && get_edited_object()->has_method("get_root_path")) {
-		base_node = get_edited_object()->call("get_root_path");
-	}
-	if (base_node) { // for AnimationTrackKeyEdit
-		path = base_node->get_path().rel_path_to(p_path);
-	}
-	emit_signal("property_changed", get_edited_property(), path);
+	emit_signal("property_changed", get_edited_property(), p_path);
 	update_property();
 }
 
 void EditorPropertyNodePath::_node_assign() {
 	if (!scene_tree) {
 		scene_tree = memnew(SceneTreeDialog);
-		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
-		scene_tree->get_scene_tree()->set_valid_types(valid_types);
 		add_child(scene_tree);
 		scene_tree->connect("selected", this, "_node_selected");
 	}
@@ -1754,10 +1539,9 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(icon);
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint) {
 
 	base_hint = p_base_hint;
-	valid_types = p_valid_types;
 }
 
 void EditorPropertyNodePath::_notification(int p_what) {
@@ -1950,7 +1734,6 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 				if (!scene_tree) {
 					scene_tree = memnew(SceneTreeDialog);
-					scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 					add_child(scene_tree);
 					scene_tree->connect("selected", this, "_viewport_selected");
 					scene_tree->set_title(TTR("Pick a Viewport"));
@@ -1987,19 +1770,7 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 	RES p = get_edited_object()->get(get_edited_property());
 	if (p.is_valid() && p->get_instance_id() == p_obj) {
 		if (p_preview.is_valid()) {
-			String type = p->get_class_name();
-			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_constant("hseparation", "Button"));
-			if (type == "GradientTexture") {
-				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
-				assign->set_custom_minimum_size(Size2(1, 1));
-			} else {
-				preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-				thumbnail_size *= EDSCALE;
-				assign->set_custom_minimum_size(Size2(1, thumbnail_size));
-			}
-			preview->set_texture(p_preview);
-			assign->set_text("");
+			assign->set_icon(p_preview);
 		}
 	}
 }
@@ -2147,107 +1918,23 @@ void EditorPropertyResource::_update_menu() {
 		}
 	}
 
-	Rect2 gt = edit->get_global_rect();
-	menu->set_as_minsize();
+	Rect2 gt = get_global_rect();
 	int ms = menu->get_combined_minimum_size().width;
 	Vector2 popup_pos = gt.position + gt.size - Vector2(ms, 0);
-	menu->set_global_position(popup_pos);
+	menu->set_position(popup_pos);
 	menu->popup();
-}
-
-void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool) {
-
-	emit_signal("property_keyed_with_value", String(get_edited_property()) + ":" + p_property, p_value);
-}
-
-void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
-
-	emit_signal("resource_selected", String(get_edited_property()) + ":" + p_property, p_resource);
-}
-
-void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
-
-	emit_signal("object_id_selected", get_edited_property(), p_id);
-}
-
-void EditorPropertyResource::_open_editor_pressed() {
-	RES res = get_edited_object()->get(get_edited_property());
-	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_resource(res.ptr());
-	}
 }
 
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
 
-	if (use_sub_inspector) {
-
-		if (res.is_valid() != assign->is_toggle_mode()) {
-			assign->set_toggle_mode(res.is_valid());
-		}
-#ifdef TOOLS_ENABLED
-		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
-
-			if (!sub_inspector) {
-				sub_inspector = memnew(EditorInspector);
-				sub_inspector->set_enable_v_scroll(false);
-
-				sub_inspector->set_use_sub_inspector_bg(true);
-				sub_inspector->set_enable_capitalize_paths(true);
-
-				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
-				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
-				sub_inspector->connect("object_id_selected", this, "_sub_inspector_object_id_selected");
-				sub_inspector->set_keying(is_keying());
-				sub_inspector->set_read_only(is_read_only());
-				sub_inspector->set_use_folding(is_using_folding());
-
-				sub_inspector_vbox = memnew(VBoxContainer);
-				add_child(sub_inspector_vbox);
-				set_bottom_editor(sub_inspector_vbox);
-
-				sub_inspector_vbox->add_child(sub_inspector);
-				assign->set_pressed(true);
-
-				bool use_editor = false;
-				for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_editor_plugin_count(); i++) {
-					EditorPlugin *ep = EditorNode::get_singleton()->get_editor_data().get_editor_plugin(i);
-					if (ep->handles(res.ptr())) {
-						use_editor = true;
-					}
-				}
-
-				if (use_editor) {
-					Button *open_in_editor = memnew(Button);
-					open_in_editor->set_text(TTR("Open Editor"));
-					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
-					sub_inspector_vbox->add_child(open_in_editor);
-					open_in_editor->connect("pressed", this, "_open_editor_pressed");
-					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
-				}
-			}
-
-			if (res.ptr() != sub_inspector->get_edited_object()) {
-				sub_inspector->edit(res.ptr());
-			}
-
-		} else {
-			if (sub_inspector) {
-				set_bottom_editor(NULL);
-				memdelete(sub_inspector_vbox);
-				sub_inspector = NULL;
-				sub_inspector_vbox = NULL;
-			}
-		}
-#endif
-	}
-
-	preview->set_texture(Ref<Texture>());
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture>());
 		assign->set_text(TTR("[empty]"));
+		assign->set_disabled(true);
 	} else {
+		assign->set_disabled(false);
 
 		Ref<Texture> icon;
 		if (has_icon(res->get_class(), "EditorIcons"))
@@ -2278,16 +1965,7 @@ void EditorPropertyResource::update_property() {
 void EditorPropertyResource::_resource_selected() {
 	RES res = get_edited_object()->get(get_edited_property());
 
-	if (res.is_null()) {
-		_update_menu();
-		return;
-	}
-
-	if (use_sub_inspector) {
-
-		get_edited_object()->editor_set_section_unfold(get_edited_property(), assign->is_pressed());
-		update_property();
-	} else {
+	if (!res.is_null()) {
 
 		emit_signal("resource_selected", get_edited_property(), res);
 	}
@@ -2302,23 +1980,6 @@ void EditorPropertyResource::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<Texture> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
-	}
-
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
-				assign->update();
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAG_END) {
-		if (dropping) {
-			dropping = false;
-			assign->update();
-		}
 	}
 }
 
@@ -2338,115 +1999,6 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	emit_signal("property_changed", get_edited_property(), vt);
 	update_property();
 }
-
-void EditorPropertyResource::collapse_all_folding() {
-	if (sub_inspector) {
-		sub_inspector->collapse_all_folding();
-	}
-}
-
-void EditorPropertyResource::expand_all_folding() {
-
-	if (sub_inspector) {
-		sub_inspector->expand_all_folding();
-	}
-}
-
-void EditorPropertyResource::_button_draw() {
-
-	if (dropping) {
-		Color color = get_color("accent_color", "Editor");
-		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
-	}
-}
-
-Variant EditorPropertyResource::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-
-	RES res = get_edited_object()->get(get_edited_property());
-	if (res.is_valid()) {
-
-		return EditorNode::get_singleton()->drag_resource(res, p_from);
-	}
-
-	return Variant();
-}
-
-bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const {
-
-	String allowed_type = base_type;
-
-	Dictionary drag_data = p_drag_data;
-	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		Ref<Resource> res = drag_data["resource"];
-		for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
-			String at = allowed_type.get_slice(",", i).strip_edges();
-			if (res.is_valid() && ClassDB::is_parent_class(res->get_class(), at)) {
-				return true;
-			}
-		}
-	}
-
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			String file = files[0];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
-
-			if (ftype != "") {
-
-				for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
-					String at = allowed_type.get_slice(",", i).strip_edges();
-					if (ClassDB::is_parent_class(ftype, at)) {
-						return true;
-					}
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool EditorPropertyResource::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-
-	return _is_drop_valid(p_data);
-}
-void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
-	Dictionary drag_data = p_data;
-	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		Ref<Resource> res = drag_data["resource"];
-		if (res.is_valid()) {
-			emit_signal("property_changed", get_edited_property(), res);
-			update_property();
-			return;
-		}
-	}
-
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			String file = files[0];
-			RES res = ResourceLoader::load(file);
-			if (res.is_valid()) {
-				emit_signal("property_changed", get_edited_property(), res);
-				update_property();
-				return;
-			}
-		}
-	}
-}
-
-void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
-	use_sub_inspector = p_enable;
-}
-
 void EditorPropertyResource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorPropertyResource::_file_selected);
@@ -2455,21 +2007,9 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_resource_preview"), &EditorPropertyResource::_resource_preview);
 	ClassDB::bind_method(D_METHOD("_resource_selected"), &EditorPropertyResource::_resource_selected);
 	ClassDB::bind_method(D_METHOD("_viewport_selected"), &EditorPropertyResource::_viewport_selected);
-	ClassDB::bind_method(D_METHOD("_sub_inspector_property_keyed"), &EditorPropertyResource::_sub_inspector_property_keyed);
-	ClassDB::bind_method(D_METHOD("_sub_inspector_resource_selected"), &EditorPropertyResource::_sub_inspector_resource_selected);
-	ClassDB::bind_method(D_METHOD("_sub_inspector_object_id_selected"), &EditorPropertyResource::_sub_inspector_object_id_selected);
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &EditorPropertyResource::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyResource::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyResource::drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorPropertyResource::_button_draw);
-	ClassDB::bind_method(D_METHOD("_open_editor_pressed"), &EditorPropertyResource::_open_editor_pressed);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
-
-	sub_inspector = NULL;
-	sub_inspector_vbox = NULL;
-	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
@@ -2478,17 +2018,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", this, "_resource_selected");
-	assign->set_drag_forwarding(this);
-	assign->connect("draw", this, "_button_draw");
 	hbc->add_child(assign);
-
-	preview = memnew(TextureRect);
-	preview->set_expand(true);
-	preview->set_anchors_and_margins_preset(PRESET_WIDE);
-	preview->set_margin(MARGIN_TOP, 1);
-	preview->set_margin(MARGIN_BOTTOM, -1);
-	preview->set_margin(MARGIN_RIGHT, -1);
-	assign->add_child(preview);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
@@ -2500,7 +2030,6 @@ EditorPropertyResource::EditorPropertyResource() {
 
 	file = NULL;
 	scene_tree = NULL;
-	dropping = false;
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////
@@ -2518,10 +2047,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 	switch (p_type) {
 
 		// atomic types
-		case Variant::NIL: {
-			EditorPropertyNil *editor = memnew(EditorPropertyNil);
-			add_property_editor(p_path, editor);
-		} break;
 		case Variant::BOOL: {
 			EditorPropertyCheck *editor = memnew(EditorPropertyCheck);
 			add_property_editor(p_path, editor);
@@ -2570,25 +2095,13 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 				int min = 0, max = 65535;
-				bool greater = true, lesser = true;
 
 				if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, asume false by default
-					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_int();
 					max = p_hint_text.get_slice(",", 1).to_int();
-					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-						String slice = p_hint_text.get_slice(",", i).strip_edges();
-						if (slice == "or_greater") {
-							greater = true;
-						}
-						if (slice == "or_lesser") {
-							lesser = true;
-						}
-					}
 				}
 
-				editor->setup(min, max, greater, lesser);
+				editor->setup(min, max);
 
 				add_property_editor(p_path, editor);
 			}
@@ -2618,11 +2131,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				double min = -65535, max = 65535, step = 0.001;
 				bool hide_slider = true;
 				bool exp_range = false;
-				bool greater = true, lesser = true;
 
 				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, asume false by default
-					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_double();
 					max = p_hint_text.get_slice(",", 1).to_double();
 					if (p_hint_text.get_slice_count(",") >= 3) {
@@ -2630,18 +2140,9 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					}
 					hide_slider = false;
 					exp_range = p_hint == PROPERTY_HINT_EXP_RANGE;
-					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-						String slice = p_hint_text.get_slice(",", i).strip_edges();
-						if (slice == "or_greater") {
-							greater = true;
-						}
-						if (slice == "or_lesser") {
-							lesser = true;
-						}
-					}
 				}
 
-				editor->setup(min, max, step, hide_slider, exp_range, greater, lesser);
+				editor->setup(min, max, step, hide_slider, exp_range);
 
 				add_property_editor(p_path, editor);
 			}
@@ -2655,10 +2156,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
-				add_property_editor(p_path, editor);
-			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
-				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
-				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 
@@ -2870,12 +2367,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
 			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
-				editor->setup(p_hint_text, Vector<StringName>());
-			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
-				Vector<String> types = p_hint_text.split(",", false);
-				Vector<StringName> sn = Variant(types); //convert via variant
-				editor->setup(NodePath(), sn);
+				editor->setup(p_hint_text);
 			}
 			add_property_editor(p_path, editor);
 
@@ -2885,68 +2377,28 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		case Variant::OBJECT: {
 			EditorPropertyResource *editor = memnew(EditorPropertyResource);
 			editor->setup(p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
-
-			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
-				String open_in_new = EDITOR_GET("interface/inspector/resources_types_to_open_in_new_inspector");
-				for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
-					String type = open_in_new.get_slicec(',', i).strip_edges();
-					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
-						String inherits = p_hint_text.get_slicec(',', j);
-
-						if (ClassDB::is_parent_class(inherits, type)) {
-
-							editor->set_use_sub_inspector(false);
-						}
-					}
-				}
-			}
-
 			add_property_editor(p_path, editor);
 
 		} break;
 		case Variant::DICTIONARY: {
-			EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-			add_property_editor(p_path, editor);
 		} break;
 		case Variant::ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
+
+		// arrays
 		case Variant::POOL_BYTE_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_BYTE_ARRAY);
-			add_property_editor(p_path, editor);
 		} break; // 20
 		case Variant::POOL_INT_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_INT_ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_REAL_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_REAL_ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_STRING_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_STRING_ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_VECTOR2_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_VECTOR2_ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_VECTOR3_ARRAY);
-			add_property_editor(p_path, editor);
 		} break; // 25
 		case Variant::POOL_COLOR_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_COLOR_ARRAY);
-			add_property_editor(p_path, editor);
 		} break;
 		default: {}
 	}

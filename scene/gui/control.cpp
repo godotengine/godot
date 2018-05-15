@@ -160,16 +160,8 @@ void Control::_update_minimum_size_cache() {
 	Size2 minsize = get_minimum_size();
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
-
-	bool size_changed = false;
-	if (data.minimum_size_cache != minsize)
-		size_changed = true;
-
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
-
-	if (size_changed)
-		minimum_size_changed();
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -285,7 +277,6 @@ void Control::_update_minimum_size() {
 	data.updating_last_minimum_size = false;
 
 	if (minsize != data.last_minimum_size) {
-		data.last_minimum_size = minsize;
 		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
 	}
 }
@@ -460,8 +451,10 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
-			data.minimum_size_valid = false;
-			_size_changed();
+			if (is_visible_in_tree()) {
+				data.minimum_size_valid = false;
+				_size_changed();
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 

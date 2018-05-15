@@ -241,7 +241,7 @@ void ScrollContainer::_notification(int p_what) {
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
 
-		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+		if (h_scroll->is_visible_in_tree())
 			size.y -= h_scroll->get_minimum_size().y;
 
 		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons

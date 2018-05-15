@@ -687,11 +687,6 @@ void ColorPickerButton::_modal_closed() {
 	emit_signal("popup_closed");
 }
 
-void ColorPickerButton::_modal_closed() {
-
-	emit_signal("popup_closed");
-}
-
 void ColorPickerButton::pressed() {
 
 	_update_picker();
@@ -786,12 +781,7 @@ void ColorPickerButton::_bind_methods() {
 
 ColorPickerButton::ColorPickerButton() {
 
-	popup = memnew(PopupPanel);
-	picker = memnew(ColorPicker);
-	popup->add_child(picker);
-
-	picker->connect("color_changed", this, "_color_changed");
-	popup->connect("modal_closed", this, "_modal_closed");
-
-	add_child(popup);
+	picker = NULL;
+	popup = NULL;
+	edit_alpha = true;
 }

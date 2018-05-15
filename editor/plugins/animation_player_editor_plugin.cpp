@@ -84,7 +84,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 					}
 				}
 				frame->set_value(player->get_current_animation_position());
-				track_editor->set_anim_pos(player->get_current_animation_position());
+				key_editor->set_anim_pos(player->get_current_animation_position());
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (last_active) {

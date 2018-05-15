@@ -1,33 +1,3 @@
-/*************************************************************************/
-/*  editor_properties.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-
 #ifndef EDITOR_PROPERTIES_H
 #define EDITOR_PROPERTIES_H
 
@@ -38,15 +8,6 @@
 #include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
-
-class EditorPropertyNil : public EditorProperty {
-	GDCLASS(EditorPropertyNil, EditorProperty)
-	LineEdit *text;
-
-public:
-	virtual void update_property();
-	EditorPropertyNil();
-};
 
 class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty)
@@ -119,25 +80,6 @@ public:
 	EditorPropertyPath();
 };
 
-class EditorPropertyClassName : public EditorProperty {
-	GDCLASS(EditorPropertyClassName, EditorProperty)
-private:
-	CreateDialog *dialog;
-	Button *property;
-	String selected_type;
-	String base_type;
-	void _property_selected();
-	void _dialog_created();
-
-protected:
-	static void _bind_methods();
-
-public:
-	void setup(const String &p_base_type, const String &p_selected_type);
-	virtual void update_property();
-	EditorPropertyClassName();
-};
-
 class EditorPropertyMember : public EditorProperty {
 	GDCLASS(EditorPropertyMember, EditorProperty)
 public:
@@ -197,7 +139,6 @@ protected:
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property();
-	void set_option_button_clip(bool p_enable);
 	EditorPropertyEnum();
 };
 
@@ -260,7 +201,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int p_min, int p_max);
 	EditorPropertyInteger();
 };
 
@@ -290,33 +231,23 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range);
 	EditorPropertyFloat();
 };
 
 class EditorPropertyEasing : public EditorProperty {
 	GDCLASS(EditorPropertyEasing, EditorProperty)
 	Control *easing_draw;
-	PopupMenu *preset;
-	bool full;
-
-	enum {
-		EASING_ZERO,
-		EASING_LINEAR,
-		EASING_IN,
-		EASING_OUT,
-		EASING_IN_OUT,
-		EASING_OUT_IN,
-		EASING_MAX
-
-	};
+	ToolButton *button_out, *button_in, *button_linear, *button_constant;
+	ToolButton *button_in_out, *button_out_in;
+	VBoxContainer *vb;
 
 	bool flip;
 
 	void _drag_easing(const Ref<InputEvent> &p_ev);
 	void _draw_easing();
 	void _notification(int p_what);
-	void _set_preset(int);
+	void _set_preset(float p_val);
 
 protected:
 	static void _bind_methods();
@@ -334,7 +265,6 @@ class EditorPropertyVector2 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -350,7 +280,6 @@ class EditorPropertyRect2 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -366,7 +295,6 @@ class EditorPropertyVector3 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -382,7 +310,6 @@ class EditorPropertyPlane : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -398,7 +325,6 @@ class EditorPropertyQuat : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -414,7 +340,6 @@ class EditorPropertyAABB : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -430,7 +355,6 @@ class EditorPropertyTransform2D : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -446,7 +370,6 @@ class EditorPropertyBasis : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -462,7 +385,6 @@ class EditorPropertyTransform : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -492,7 +414,6 @@ class EditorPropertyNodePath : public EditorProperty {
 	SceneTreeDialog *scene_tree;
 	NodePath base_hint;
 
-	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path);
 	void _node_assign();
 	void _node_clear();
@@ -503,7 +424,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types);
+	void setup(const NodePath &p_base_hint);
 	EditorPropertyNodePath();
 };
 
@@ -526,16 +447,11 @@ class EditorPropertyResource : public EditorProperty {
 	};
 
 	Button *assign;
-	TextureRect *preview;
 	Button *edit;
 	PopupMenu *menu;
 	EditorFileDialog *file;
 	Vector<String> inheritors_array;
-	EditorInspector *sub_inspector;
-	VBoxContainer *sub_inspector_vbox;
 
-	bool use_sub_inspector;
-	bool dropping;
 	String base_type;
 
 	SceneTreeDialog *scene_tree;
@@ -548,18 +464,6 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _update_menu();
 
-	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
-	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
-	void _sub_inspector_object_id_selected(int p_id);
-
-	void _button_draw();
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-
-	void _open_editor_pressed();
-
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -567,12 +471,6 @@ protected:
 public:
 	virtual void update_property();
 	void setup(const String &p_base_type);
-
-	void collapse_all_folding();
-	void expand_all_folding();
-
-	void set_use_sub_inspector(bool p_enable);
-
 	EditorPropertyResource();
 };
 

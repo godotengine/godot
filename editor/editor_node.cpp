@@ -545,8 +545,8 @@ void EditorNode::_vp_resized() {
 
 void EditorNode::_node_renamed() {
 
-	if (get_inspector())
-		get_inspector()->update_tree();
+	if (inspector)
+		inspector->update_tree();
 }
 
 void EditorNode::_editor_select_next() {
@@ -1386,7 +1386,7 @@ void EditorNode::edit_item(Object *p_object) {
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
 
 	if (!p_object) {
-		get_inspector()->edit(NULL);
+		inspector->edit(NULL);
 		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(NULL);
 		return;
@@ -1404,6 +1404,89 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	}
 
 	_edit_current();
+}
+
+void EditorNode::_select_history(int p_idx) {
+
+	//push it to the top, it is not correct, but it's more useful
+	ObjectID id = editor_history.get_history_obj(p_idx);
+	Object *obj = ObjectDB::get_instance(id);
+	if (!obj)
+		return;
+	push_item(obj);
+}
+
+void EditorNode::_prepare_history() {
+
+	int history_to = MAX(0, editor_history.get_history_len() - 25);
+
+	editor_history_menu->get_popup()->clear();
+
+	Ref<Texture> base_icon = gui_base->get_icon("Object", "EditorIcons");
+	Set<ObjectID> already;
+	for (int i = editor_history.get_history_len() - 1; i >= history_to; i--) {
+
+		ObjectID id = editor_history.get_history_obj(i);
+		Object *obj = ObjectDB::get_instance(id);
+		if (!obj || already.has(id)) {
+			if (history_to > 0) {
+				history_to--;
+			}
+			continue;
+		}
+
+		already.insert(id);
+
+		Ref<Texture> icon = gui_base->get_icon("Object", "EditorIcons");
+		if (gui_base->has_icon(obj->get_class(), "EditorIcons"))
+			icon = gui_base->get_icon(obj->get_class(), "EditorIcons");
+		else
+			icon = base_icon;
+
+		String text;
+		if (Object::cast_to<Resource>(obj)) {
+			Resource *r = Object::cast_to<Resource>(obj);
+			if (r->get_path().is_resource_file())
+				text = r->get_path().get_file();
+			else if (r->get_name() != String()) {
+				text = r->get_name();
+			} else {
+				text = r->get_class();
+			}
+		} else if (Object::cast_to<Node>(obj)) {
+			text = Object::cast_to<Node>(obj)->get_name();
+		} else if (obj->is_class("ScriptEditorDebuggerInspectedObject")) {
+			text = obj->call("get_title");
+		} else {
+			text = obj->get_class();
+		}
+
+		if (i == editor_history.get_history_pos()) {
+			text = "[" + text + "]";
+		}
+		editor_history_menu->get_popup()->add_icon_item(icon, text, i);
+	}
+}
+
+void EditorNode::_property_editor_forward() {
+
+	if (editor_history.next())
+		_edit_current();
+}
+void EditorNode::_property_editor_back() {
+
+	if (editor_history.previous() || editor_history.get_path_size() == 1)
+		_edit_current();
+}
+
+void EditorNode::_menu_collapseall() {
+
+	inspector->collapse_all_folding();
+}
+
+void EditorNode::_menu_expandall() {
+
+	inspector->expand_all_folding();
 }
 
 void EditorNode::_save_default_environment() {
@@ -1458,7 +1541,7 @@ void EditorNode::_edit_current() {
 	if (!current_obj) {
 
 		scene_tree_dock->set_selected(NULL);
-		get_inspector()->edit(NULL);
+		inspector->edit(NULL);
 		node_dock->set_node(NULL);
 		inspector_dock->update(NULL);
 
@@ -1479,7 +1562,7 @@ void EditorNode::_edit_current() {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
-		get_inspector()->edit(current_res);
+		inspector->edit(current_res);
 		node_dock->set_node(NULL);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
@@ -1503,7 +1586,7 @@ void EditorNode::_edit_current() {
 		Node *current_node = Object::cast_to<Node>(current_obj);
 		ERR_FAIL_COND(!current_node);
 
-		get_inspector()->edit(current_node);
+		inspector->edit(current_node);
 		if (current_node->is_inside_tree()) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
@@ -1527,7 +1610,7 @@ void EditorNode::_edit_current() {
 			disable_folding = true;
 		}
 
-		get_inspector()->edit(current_obj);
+		inspector->edit(current_obj);
 		node_dock->set_node(NULL);
 	}
 
@@ -1537,8 +1620,8 @@ void EditorNode::_edit_current() {
 		get_inspector()->set_enable_capitalize_paths(capitalize);
 	}
 
-	if (get_inspector()->is_using_folding() == disable_folding) {
-		get_inspector()->set_use_folding(!disable_folding);
+	if (inspector->is_capitalize_paths_enabled() != capitalize) {
+		inspector->set_enable_capitalize_paths(capitalize);
 	}
 
 	/* Take care of PLUGIN EDITOR */
@@ -3015,9 +3098,23 @@ InspectorDock *EditorNode::get_inspector_dock() {
 	return inspector_dock;
 }
 
-void EditorNode::_instance_request(const Vector<String> &p_files) {
+void EditorNode::update_keying() {
 
-	request_instance_scenes(p_files);
+	bool valid = false;
+
+	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
+
+		if (editor_history.get_path_size() >= 1) {
+
+			Object *obj = ObjectDB::get_instance(editor_history.get_path_object(0));
+			if (Object::cast_to<Node>(obj)) {
+
+				valid = true;
+			}
+		}
+	}
+
+	inspector->set_keying(valid);
 }
 
 void EditorNode::_close_messages() {
@@ -3165,8 +3262,6 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorInspector>();
 	ClassDB::register_class<EditorInspectorPlugin>();
 	ClassDB::register_class<EditorProperty>();
-	ClassDB::register_class<AnimationTrackEditPlugin>();
-	ClassDB::register_class<ScriptCreateDialog>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -4004,6 +4099,30 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	editor_data.get_undo_redo().commit_action();
 }
 
+void EditorNode::_toggle_search_bar(bool p_pressed) {
+
+	inspector->set_use_filter(p_pressed);
+
+	if (p_pressed) {
+
+		search_bar->show();
+		search_box->grab_focus();
+		search_box->select_all();
+	} else {
+
+		search_bar->hide();
+	}
+}
+
+void EditorNode::_clear_search_box() {
+
+	if (search_box->get_text() == "")
+		return;
+
+	search_box->clear();
+	inspector->update_tree();
+}
+
 ToolButton *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 
 	ToolButton *tb = memnew(ToolButton);
@@ -4796,14 +4915,6 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorDefaultPlugin> eidp;
 		eidp.instance();
 		EditorInspector::add_inspector_plugin(eidp);
-
-		Ref<EditorInspectorRootMotionPlugin> rmp;
-		rmp.instance();
-		EditorInspector::add_inspector_plugin(rmp);
-
-		Ref<EditorInspectorShaderModePlugin> smp;
-		smp.instance();
-		EditorInspector::add_inspector_plugin(smp);
 	}
 
 	_pvrtc_register_compressors();
@@ -5565,19 +5676,21 @@ EditorNode::EditorNode() {
 	property_editable_warning->hide();
 	property_editable_warning->connect("pressed", this, "_property_editable_warning_pressed");
 
-	property_editor = memnew(PropertyEditor);
-	property_editor->set_autoclear(true);
-	property_editor->set_show_categories(true);
-	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	property_editor->set_use_doc_hints(true);
-	property_editor->set_hide_script(false);
-	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	property_editor->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	inspector = memnew(EditorInspector);
+	inspector->set_autoclear(true);
+	inspector->set_show_categories(true);
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_use_doc_hints(true);
+	inspector->set_hide_script(false);
+	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
 
-	property_editor->hide_top_label();
-	property_editor->register_text_enter(search_box);
+	//	inspector->hide_top_label();
+	inspector->register_text_enter(search_box);
 
 	Button *property_editable_warning;
+	prop_editor_base->add_child(inspector);
+	inspector->set_undo_redo(&editor_data.get_undo_redo());
 
 	import_dock = memnew(ImportDock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
@@ -5722,6 +5835,8 @@ EditorNode::EditorNode() {
 
 	file->connect("file_selected", this, "_dialog_action");
 	file_templates->connect("file_selected", this, "_dialog_action");
+	inspector->connect("resource_selected", this, "_resource_selected");
+	inspector->connect("property_keyed", this, "_property_keyed");
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);

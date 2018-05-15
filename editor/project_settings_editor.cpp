@@ -830,8 +830,10 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
-	String selected_path = p_path;
-	if (selected_path == String())
+	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
+	if (!ti)
+		return;
+	if (!ti->get_parent())
 		return;
 	category->set_text(globals_editor->get_current_section());
 	property->set_text(selected_path);
@@ -1786,10 +1788,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_inspector()->connect("property_selected", this, "_item_selected");
-	//globals_editor->get_inspector()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
-	globals_editor->get_inspector()->connect("property_edited", this, "_settings_prop_edited");
-	globals_editor->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
+	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
+	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
+	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 
 	Button *del = memnew(Button);
 	hbc->add_child(del);
