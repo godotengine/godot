@@ -96,8 +96,8 @@ index 7617f41f1..32e27bd65 100644
 +/* GODOT end */
 +
  /*
-   Close a ZipFile opened with unzipOpen.
-   If there is files inside the .Zip opened with unzipOpenCurrentFile (see later),
+   Close a ZipFile opened with unzOpen.
+   If there is files inside the .Zip opened with unzOpenCurrentFile (see later),
 @@ -1018,10 +1034,20 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
  
          if (lSeek!=0)
@@ -237,7 +237,7 @@ index 3183968b7..54e65ad8a 100644
 --- a/thirdparty/minizip/unzip.h
 +++ b/thirdparty/minizip/unzip.h
 @@ -202,6 +202,10 @@ extern int ZEXPORT unzClose OF((unzFile file));
-     these files MUST be closed with unzipCloseCurrentFile before call unzipClose.
+     these files MUST be closed with unzCloseCurrentFile before call unzClose.
    return UNZ_OK if there is no problem. */
  
 +/* GODOT start */
