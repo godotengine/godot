@@ -544,6 +544,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("updown", "SpinBox", make_icon(spinbox_updown_png));
 
+	//scroll container
+	Ref<StyleBoxEmpty> empty;
+	empty.instance();
+	theme->set_stylebox("bg", "ScrollContainer", empty);
+
 	// WindowDialog
 
 	theme->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));

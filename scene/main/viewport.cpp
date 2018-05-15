@@ -1345,7 +1345,7 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
 	gui.tooltip_label->set_text(tooltip.strip_edges());
-	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_combined_minimum_size() + ttp->get_minimum_size());
+	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_minimum_size() + ttp->get_minimum_size());
 	Rect2 vr = gui.tooltip_label->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
 		r.position.x = vr.size.x - r.size.x;

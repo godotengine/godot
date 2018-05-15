@@ -268,7 +268,7 @@ protected:
 
 		if (String(p_name) == "export") {
 			script->set_variable_export(var, p_value);
-			EditorNode::get_singleton()->get_property_editor()->update_tree();
+			EditorNode::get_singleton()->get_inspector()->update_tree();
 			return true;
 		}
 

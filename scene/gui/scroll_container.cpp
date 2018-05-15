@@ -37,6 +37,7 @@ bool ScrollContainer::clips_input() const {
 
 Size2 ScrollContainer::get_minimum_size() const {
 
+	Ref<StyleBox> sb = get_stylebox("bg");
 	Size2 min_size;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -64,8 +65,9 @@ Size2 ScrollContainer::get_minimum_size() const {
 	if (v_scroll->is_visible_in_tree()) {
 		min_size.x += v_scroll->get_minimum_size().x;
 	}
+	min_size += sb->get_minimum_size();
 	return min_size;
-};
+}
 
 void ScrollContainer::_cancel_drag() {
 	set_physics_process_internal(false);
@@ -233,6 +235,12 @@ void ScrollContainer::_notification(int p_what) {
 
 		child_max_size = Size2(0, 0);
 		Size2 size = get_size();
+		Point2 ofs;
+
+		Ref<StyleBox> sb = get_stylebox("bg");
+		size -= sb->get_minimum_size();
+		ofs += sb->get_offset();
+
 		if (h_scroll->is_visible_in_tree())
 			size.y -= h_scroll->get_minimum_size().y;
 
@@ -268,12 +276,16 @@ void ScrollContainer::_notification(int p_what) {
 				else
 					r.size.height = minsize.height;
 			}
+			r.position += ofs;
 			fit_child_in_rect(c, r);
 		}
 		update();
 	};
 
 	if (p_what == NOTIFICATION_DRAW) {
+
+		Ref<StyleBox> sb = get_stylebox("bg");
+		draw_style_box(sb, Rect2(Vector2(), get_size()));
 
 		update_scrollbars();
 	}
@@ -353,6 +365,8 @@ void ScrollContainer::_notification(int p_what) {
 void ScrollContainer::update_scrollbars() {
 
 	Size2 size = get_size();
+	Ref<StyleBox> sb = get_stylebox("bg");
+	size -= sb->get_minimum_size();
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();

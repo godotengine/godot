@@ -176,6 +176,9 @@ void Node::_propagate_ready() {
 		data.children[i]->_propagate_ready();
 	}
 	data.blocked--;
+
+	notification(NOTIFICATION_POST_ENTER_TREE);
+
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);

@@ -148,6 +148,11 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+		Size2 minimum_size_cache;
+		bool minimum_size_valid;
+
+		Size2 last_minimum_size;
+		bool updating_last_minimum_size;
 
 		float margin[4];
 		float anchor[4];
@@ -164,7 +169,6 @@ private:
 		int h_size_flags;
 		int v_size_flags;
 		float expand;
-		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
 		bool pass_on_modal_close_click;
@@ -243,6 +247,8 @@ private:
 	friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
+
+	void _update_minimum_size_cache();
 
 protected:
 	virtual void add_child_notify(Node *p_child);

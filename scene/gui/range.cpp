@@ -136,9 +136,9 @@ void Range::set_as_ratio(double p_value) {
 
 	double v;
 
-	if (shared->exp_ratio && get_min() > 0) {
+	if (shared->exp_ratio && get_min() >= 0) {
 
-		double exp_min = Math::log(get_min()) / Math::log((double)2);
+		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
 		v = Math::pow(2, exp_min + (exp_max - exp_min) * p_value);
 	} else {
@@ -155,9 +155,9 @@ void Range::set_as_ratio(double p_value) {
 }
 double Range::get_as_ratio() const {
 
-	if (shared->exp_ratio && get_min() > 0) {
+	if (shared->exp_ratio && get_min() >= 0) {
 
-		double exp_min = Math::log(get_min()) / Math::log((double)2);
+		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
 		double v = Math::log(get_value()) / Math::log((double)2);
 

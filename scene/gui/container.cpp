@@ -34,9 +34,9 @@
 
 void Container::_child_minsize_changed() {
 
-	Size2 ms = get_combined_minimum_size();
-	if (ms.width > get_size().width || ms.height > get_size().height)
-		minimum_size_changed();
+	//Size2 ms = get_combined_minimum_size();
+	//if (ms.width > get_size().width || ms.height > get_size().height) {
+	minimum_size_changed();
 	queue_sort();
 }
 

@@ -198,7 +198,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
 
-			String p = editor->get_property_editor()->get_selected_path();
+			String p = editor->get_inspector()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
 
 				to_erase = p.get_slice("/", 3).to_int();

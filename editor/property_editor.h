@@ -275,7 +275,7 @@ public:
 
 	String get_selected_path() const;
 
-	Tree *get_scene_tree();
+	Tree *get_property_tree();
 	Label *get_top_label();
 	void hide_top_label();
 	void update_tree();
@@ -309,6 +309,7 @@ public:
 
 	void collapse_all_folding();
 	void expand_all_folding();
+
 	PropertyEditor();
 	~PropertyEditor();
 };
