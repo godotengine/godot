@@ -1095,7 +1095,7 @@ void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 	state.using_texture_rect = true;
 	_set_texture_rect_mode(false);
 
-	_bind_canvas_texture(state.current_tex, state.current_normal);
+	_bind_canvas_texture(state.current_tex, state.current_normal, true);
 
 	glEnable(GL_BLEND);
 }
