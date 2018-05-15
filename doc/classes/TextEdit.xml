@@ -99,6 +99,8 @@
 			</argument>
 			<argument index="2" name="can_be_hidden" type="bool" default="true">
 			</argument>
+			<argument index="3" name="wrap_index" type="int" default="0">
+			</argument>
 			<description>
 			</description>
 		</method>
