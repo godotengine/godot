@@ -29,6 +29,7 @@ const char* ERR_getErrorString(ERR_enum code)
     case PREFIX(parameter_outOfBound): return "Parameter is out of bound";
     case PREFIX(init_missing): return "Context should be init first";
     case PREFIX(memory_allocation): return "Allocation error : not enough memory";
+    case PREFIX(workSpace_tooSmall): return "workSpace buffer is not large enough";
     case PREFIX(stage_wrong): return "Operation not authorized at current processing stage";
     case PREFIX(tableLog_tooLarge): return "tableLog requires too much memory : unsupported";
     case PREFIX(maxSymbolValue_tooLarge): return "Unsupported max Symbol Value : too large";

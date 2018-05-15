@@ -480,7 +480,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.3
+- Version: 1.3.4
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
