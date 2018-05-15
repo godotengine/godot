@@ -118,11 +118,15 @@ class ColorPickerButton : public Button {
 
 	PopupPanel *popup;
 	ColorPicker *picker;
+	Color color;
+	bool edit_alpha;
 
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
 
 	virtual void pressed();
+
+	void _update_picker();
 
 protected:
 	void _notification(int);
@@ -135,7 +139,7 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	ColorPicker *get_picker() const;
+	ColorPicker *get_picker();
 	PopupPanel *get_popup() const;
 
 	ColorPickerButton();

@@ -4212,7 +4212,7 @@ void PropertyEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
 }
 
-Tree *PropertyEditor::get_scene_tree() {
+Tree *PropertyEditor::get_property_tree() {
 
 	return tree;
 }
@@ -4695,7 +4695,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(editor, true);
 
-	editor->get_scene_tree()->set_column_titles_visible(false);
+	editor->get_property_tree()->set_column_titles_visible(false);
 
 	editor->hide_top_label();
 

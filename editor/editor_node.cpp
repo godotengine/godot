@@ -56,6 +56,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_initialize_ssl.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
@@ -548,8 +549,8 @@ void EditorNode::_vp_resized() {
 
 void EditorNode::_node_renamed() {
 
-	if (property_editor)
-		property_editor->update_tree();
+	if (inspector)
+		inspector->update_tree();
 }
 
 void EditorNode::_editor_select_next() {
@@ -1351,7 +1352,7 @@ void EditorNode::_dialog_action(String p_file) {
 void EditorNode::push_item(Object *p_object, const String &p_property) {
 
 	if (!p_object) {
-		property_editor->edit(NULL);
+		inspector->edit(NULL);
 		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(NULL);
 		return;
@@ -1444,12 +1445,12 @@ void EditorNode::_property_editor_back() {
 
 void EditorNode::_menu_collapseall() {
 
-	property_editor->collapse_all_folding();
+	inspector->collapse_all_folding();
 }
 
 void EditorNode::_menu_expandall() {
 
-	property_editor->expand_all_folding();
+	inspector->expand_all_folding();
 }
 
 void EditorNode::_save_default_environment() {
@@ -1515,7 +1516,7 @@ void EditorNode::_edit_current() {
 	if (!current_obj) {
 
 		scene_tree_dock->set_selected(NULL);
-		property_editor->edit(NULL);
+		inspector->edit(NULL);
 		node_dock->set_node(NULL);
 		object_menu->set_disabled(true);
 
@@ -1536,7 +1537,7 @@ void EditorNode::_edit_current() {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
-		property_editor->edit(current_res);
+		inspector->edit(current_res);
 		node_dock->set_node(NULL);
 		object_menu->set_disabled(false);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
@@ -1561,7 +1562,7 @@ void EditorNode::_edit_current() {
 		Node *current_node = Object::cast_to<Node>(current_obj);
 		ERR_FAIL_COND(!current_node);
 
-		property_editor->edit(current_node);
+		inspector->edit(current_node);
 		if (current_node->is_inside_tree()) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
@@ -1585,7 +1586,7 @@ void EditorNode::_edit_current() {
 			capitalize = false;
 		}
 
-		property_editor->edit(current_obj);
+		inspector->edit(current_obj);
 		node_dock->set_node(NULL);
 	}
 
@@ -1594,8 +1595,8 @@ void EditorNode::_edit_current() {
 		property_editable_warning_dialog->set_text(editable_warning);
 	}
 
-	if (property_editor->is_capitalize_paths_enabled() != capitalize) {
-		property_editor->set_enable_capitalize_paths(capitalize);
+	if (inspector->is_capitalize_paths_enabled() != capitalize) {
+		inspector->set_enable_capitalize_paths(capitalize);
 	}
 
 	/* Take care of PLUGIN EDITOR */
@@ -2939,7 +2940,7 @@ Dictionary EditorNode::_get_main_scene_state() {
 	Dictionary state;
 	state["main_tab"] = _get_current_main_editor();
 	state["scene_tree_offset"] = scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
-	state["property_edit_offset"] = get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
+	state["property_edit_offset"] = get_inspector()->get_scroll_offset();
 	state["saved_version"] = saved_version;
 	state["node_filter"] = scene_tree_dock->get_filter();
 	return state;
@@ -2985,7 +2986,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	if (p_state.has("scene_tree_offset"))
 		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
 	if (p_state.has("property_edit_offset"))
-		get_property_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["property_edit_offset"]);
+		get_inspector()->set_scroll_offset(p_state["property_edit_offset"]);
 
 	if (p_state.has("node_filter"))
 		scene_tree_dock->set_filter(p_state["node_filter"]);
@@ -3278,9 +3279,7 @@ void EditorNode::update_keying() {
 		}
 	}
 
-	property_editor->set_keying(valid);
-
-	AnimationPlayerEditor::singleton->get_key_editor()->update_keying();
+	inspector->set_keying(valid);
 }
 
 void EditorNode::_close_messages() {
@@ -3425,6 +3424,9 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorExportPlugin>();
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 	ClassDB::register_class<EditorSceneImporter>();
+	ClassDB::register_class<EditorInspector>();
+	ClassDB::register_class<EditorInspectorPlugin>();
+	ClassDB::register_class<EditorProperty>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -4236,7 +4238,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 
 void EditorNode::_toggle_search_bar(bool p_pressed) {
 
-	property_editor->set_use_filter(p_pressed);
+	inspector->set_use_filter(p_pressed);
 
 	if (p_pressed) {
 
@@ -4255,7 +4257,7 @@ void EditorNode::_clear_search_box() {
 		return;
 
 	search_box->clear();
-	property_editor->update_tree();
+	inspector->update_tree();
 }
 
 ToolButton *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
@@ -5007,6 +5009,12 @@ EditorNode::EditorNode() {
 		ResourceFormatImporter::get_singleton()->add_importer(import_bitmap);
 	}
 
+	{
+		Ref<EditorInspectorDefaultPlugin> eidp;
+		eidp.instance();
+		EditorInspector::add_inspector_plugin(eidp);
+	}
+
 	_pvrtc_register_compressors();
 
 	editor_selection = memnew(EditorSelection);
@@ -5665,21 +5673,21 @@ EditorNode::EditorNode() {
 	property_editable_warning->hide();
 	property_editable_warning->connect("pressed", this, "_property_editable_warning_pressed");
 
-	property_editor = memnew(PropertyEditor);
-	property_editor->set_autoclear(true);
-	property_editor->set_show_categories(true);
-	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	property_editor->set_use_doc_hints(true);
-	property_editor->set_hide_script(false);
-	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	property_editor->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	inspector = memnew(EditorInspector);
+	inspector->set_autoclear(true);
+	inspector->set_show_categories(true);
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_use_doc_hints(true);
+	inspector->set_hide_script(false);
+	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
 
-	property_editor->hide_top_label();
-	property_editor->register_text_enter(search_box);
+	//	inspector->hide_top_label();
+	inspector->register_text_enter(search_box);
 
 	Button *property_editable_warning;
-	prop_editor_base->add_child(property_editor);
-	property_editor->set_undo_redo(&editor_data.get_undo_redo());
+	prop_editor_base->add_child(inspector);
+	inspector->set_undo_redo(&editor_data.get_undo_redo());
 
 	import_dock = memnew(ImportDock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
@@ -5815,8 +5823,8 @@ EditorNode::EditorNode() {
 
 	file->connect("file_selected", this, "_dialog_action");
 	file_templates->connect("file_selected", this, "_dialog_action");
-	property_editor->connect("resource_selected", this, "_resource_selected");
-	property_editor->connect("property_keyed", this, "_property_keyed");
+	inspector->connect("resource_selected", this, "_resource_selected");
+	inspector->connect("property_keyed", this, "_property_keyed");
 
 	//plugin stuff
 
@@ -6038,6 +6046,8 @@ EditorNode::EditorNode() {
 }
 
 EditorNode::~EditorNode() {
+
+	EditorInspector::cleanup_plugins();
 
 	remove_print_handler(&print_handler);
 	memdelete(EditorHelp::get_doc_data());

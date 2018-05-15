@@ -155,12 +155,21 @@ Size2 Control::get_custom_minimum_size() const {
 	return data.custom_minimum_size;
 }
 
-Size2 Control::get_combined_minimum_size() const {
+void Control::_update_minimum_size_cache() {
 
 	Size2 minsize = get_minimum_size();
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
-	return minsize;
+	data.minimum_size_cache = minsize;
+	data.minimum_size_valid = true;
+}
+
+Size2 Control::get_combined_minimum_size() const {
+
+	if (!data.minimum_size_valid) {
+		const_cast<Control *>(this)->_update_minimum_size_cache();
+	}
+	return data.minimum_size_cache;
 }
 
 Size2 Control::_edit_get_minimum_size() const {
@@ -259,14 +268,17 @@ void Control::_update_minimum_size() {
 	if (!is_inside_tree())
 		return;
 
-	data.pending_min_size_update = false;
 	Size2 minsize = get_combined_minimum_size();
 	if (minsize.x > data.size_cache.x ||
 			minsize.y > data.size_cache.y) {
 		_size_changed();
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	data.updating_last_minimum_size = false;
+
+	if (minsize != data.last_minimum_size) {
+		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	}
 }
 
 bool Control::_get(const StringName &p_name, Variant &r_ret) const {
@@ -437,8 +449,12 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			_size_changed();
-
+		} break;
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (is_visible_in_tree()) {
+				data.minimum_size_valid = false;
+				_size_changed();
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -620,13 +636,12 @@ void Control::_notification(int p_notification) {
 
 				if (is_inside_tree()) {
 					_modal_stack_remove();
-					minimum_size_changed();
 				}
 
 				//remove key focus
 				//remove modalness
 			} else {
-
+				data.minimum_size_valid = false;
 				_size_changed();
 			}
 
@@ -2464,17 +2479,25 @@ void Control::minimum_size_changed() {
 	if (!is_inside_tree() || data.block_minimum_size_adjust)
 		return;
 
-	if (data.pending_min_size_update)
+	Control *invalidate = this;
+
+	//invalidate cache upwards
+	while (invalidate && invalidate->data.minimum_size_valid) {
+		invalidate->data.minimum_size_valid = false;
+		if (invalidate->is_set_as_toplevel())
+			break; // do not go further up
+		invalidate = invalidate->data.parent;
+	}
+
+	if (!is_visible_in_tree())
 		return;
 
-	data.pending_min_size_update = true;
-	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
+	if (data.updating_last_minimum_size)
+		return;
 
-	if (!is_toplevel_control()) {
-		Control *pc = get_parent_control();
-		if (pc)
-			pc->minimum_size_changed();
-	}
+	data.updating_last_minimum_size = true;
+
+	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
 }
 
 int Control::get_v_size_flags() const {
@@ -2985,7 +3008,6 @@ Control::Control() {
 	data.h_size_flags = SIZE_FILL;
 	data.v_size_flags = SIZE_FILL;
 	data.expand = 1;
-	data.pending_min_size_update = false;
 	data.rotation = 0;
 	data.parent_canvas_item = NULL;
 	data.scale = Vector2(1, 1);
@@ -2995,6 +3017,8 @@ Control::Control() {
 	data.disable_visibility_clip = false;
 	data.h_grow = GROW_DIRECTION_END;
 	data.v_grow = GROW_DIRECTION_END;
+	data.minimum_size_valid = false;
+	data.updating_last_minimum_size = false;
 
 	data.clip_contents = false;
 	for (int i = 0; i < 4; i++) {

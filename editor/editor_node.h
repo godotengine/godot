@@ -37,6 +37,7 @@
 #include "editor/editor_about.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_log.h"
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_path.h"
@@ -80,7 +81,6 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/viewport_container.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -267,7 +267,7 @@ private:
 	Button *property_back;
 	Button *property_forward;
 	SceneTreeDock *scene_tree_dock;
-	PropertyEditor *property_editor;
+	EditorInspector *inspector;
 	Button *property_editable_warning;
 	AcceptDialog *property_editable_warning_dialog;
 	void _property_editable_warning_pressed();
@@ -640,7 +640,7 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	PropertyEditor *get_property_editor() { return property_editor; }
+	EditorInspector *get_inspector() { return inspector; }
 	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }

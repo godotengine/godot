@@ -732,7 +732,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					node->set_scene_inherited_state(Ref<SceneState>());
 					scene_tree->update_tree();
-					EditorNode::get_singleton()->get_property_editor()->update_tree();
+					EditorNode::get_singleton()->get_inspector()->update_tree();
 				}
 			}
 		} break;

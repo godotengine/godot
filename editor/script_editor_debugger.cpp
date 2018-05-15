@@ -1851,7 +1851,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
 	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
 	editor = p_editor;
-	editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
+	editor->get_inspector()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -1936,7 +1936,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector = memnew(PropertyEditor);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->hide_top_label();
-		inspector->get_scene_tree()->set_column_title(0, TTR("Variable"));
+		inspector->get_property_tree()->set_column_title(0, TTR("Variable"));
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");

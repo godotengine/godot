@@ -782,7 +782,7 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->get_property_editor()->update_tree();
+		EditorNode::get_singleton()->get_inspector()->update_tree();
 		NodeDock::singleton->update_lists();
 	}
 }

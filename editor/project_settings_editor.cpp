@@ -785,7 +785,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 void ProjectSettingsEditor::_item_selected() {
 
-	TreeItem *ti = globals_editor->get_property_editor()->get_scene_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -1727,7 +1727,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected", this, "_item_selected");
+	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
 	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 
