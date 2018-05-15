@@ -1720,7 +1720,7 @@ void ScriptEditorDebugger::_bind_methods() {
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
-	ppeer->set_input_buffer_max_size(pow(2, 20));
+	ppeer->set_input_buffer_max_size(1024 * 1024 * 1);
 
 	editor = p_editor;
 	editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
