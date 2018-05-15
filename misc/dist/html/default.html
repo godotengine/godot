@@ -230,6 +230,7 @@ $GODOT_HEAD_INCLUDE
 		(function() {
 
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const MEMORY_SIZE = $GODOT_TOTAL_MEMORY;
 			const DEBUG_ENABLED = $GODOT_DEBUG_ENABLED;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
@@ -243,6 +244,8 @@ $GODOT_HEAD_INCLUDE
 			var initializing = true;
 			var statusMode = 'hidden';
 			var indeterminiateStatusAnimationId = 0;
+
+			engine.setAsmjsMemorySize(MEMORY_SIZE);
 
 			function setStatusMode(mode) {
 
@@ -327,6 +330,10 @@ $GODOT_HEAD_INCLUDE
 				outputRoot.style.display = 'block';
 
 				function print(text) {
+					if (arguments.length > 1) {
+						text = Array.prototype.slice.call(arguments).join(" ");
+					}
+					if (text.length <= 0) return;
 					while (outputScroll.childElementCount >= OUTPUT_MSG_COUNT_MAX) {
 						outputScroll.firstChild.remove();
 					}
