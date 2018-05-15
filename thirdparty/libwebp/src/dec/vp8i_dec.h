@@ -30,9 +30,9 @@ extern "C" {
 // Various defines and enums
 
 // version numbers
-#define DEC_MAJ_VERSION 0
-#define DEC_MIN_VERSION 6
-#define DEC_REV_VERSION 1
+#define DEC_MAJ_VERSION 1
+#define DEC_MIN_VERSION 0
+#define DEC_REV_VERSION 0
 
 // YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).
 // Constraints are: We need to store one 16x16 block of luma samples (y),
