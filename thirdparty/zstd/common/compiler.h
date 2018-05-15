@@ -63,6 +63,31 @@
 #  endif
 #endif
 
+/* target attribute */
+#ifndef __has_attribute
+  #define __has_attribute(x) 0  /* Compatibility with non-clang compilers. */
+#endif
+#if defined(__GNUC__)
+#  define TARGET_ATTRIBUTE(target) __attribute__((__target__(target)))
+#else
+#  define TARGET_ATTRIBUTE(target)
+#endif
+
+/* Enable runtime BMI2 dispatch based on the CPU.
+ * Enabled for clang & gcc >=4.8 on x86 when BMI2 isn't enabled by default.
+ */
+#ifndef DYNAMIC_BMI2
+  #if (defined(__clang__) && __has_attribute(__target__)) \
+      || (defined(__GNUC__) \
+          && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))) \
+      && (defined(__x86_64__) || defined(_M_X86)) \
+      && !defined(__BMI2__)
+  #  define DYNAMIC_BMI2 1
+  #else
+  #  define DYNAMIC_BMI2 0
+  #endif
+#endif
+
 /* prefetch */
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_I86))  /* _mm_prefetch() is not defined outside of x86/x64 */
 #  include <mmintrin.h>   /* https://msdn.microsoft.com/fr-fr/library/84szxsww(v=vs.90).aspx */
