@@ -1700,7 +1700,7 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 
 			Ref<Texture> icon = se->get_icon();
-			String path = se->get_edited_resource()->get_path();
+			String path = se->get_edited_script()->get_path();
 			bool built_in = !path.is_resource_file();
 			String name = built_in ? path.get_file() : se->get_name();
 
