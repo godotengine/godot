@@ -4,7 +4,7 @@
 		Editor interface and main components.
 	</brief_description>
 	<description>
-		Editor interface. Allows saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview]\ er, [ScriptEditor], the editor viewport, as well as information about scenes. Also see [EditorPlugin] and [EditorScript].
+		Editor interface. Allows saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, as well as information about scenes. Also see [EditorPlugin] and [EditorScript].
 	</description>
 	<tutorials>
 	</tutorials>
