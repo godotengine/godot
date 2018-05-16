@@ -3261,19 +3261,19 @@ msgid "Download for this asset is already in progress!"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "first"
+msgid "First"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "prev"
+msgid "Previous"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "next"
+msgid "Next"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "last"
+msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
