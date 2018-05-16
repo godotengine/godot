@@ -91,6 +91,7 @@ struct Vector3 {
 	/* Static Methods between 2 vector3s */
 
 	_FORCE_INLINE_ Vector3 linear_interpolate(const Vector3 &p_b, real_t p_t) const;
+	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_b, real_t p_t) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 
@@ -216,6 +217,15 @@ Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
 			x + (p_t * (p_b.x - x)),
 			y + (p_t * (p_b.y - y)),
 			z + (p_t * (p_b.z - z)));
+}
+
+Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Vector3());
+#endif
+
+	real_t theta = angle_to(p_b);
+	return rotated(cross(p_b), theta * p_t);
 }
 
 real_t Vector3::distance_to(const Vector3 &p_b) const {

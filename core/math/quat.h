@@ -64,11 +64,13 @@ public:
 	Quat slerpni(const Quat &q, const real_t &t) const;
 	Quat cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const;
 
+	void set_axis_angle(const Vector3 &axis, const real_t &angle);
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
-		r_axis.x = x / Math::sqrt(1 - w * w);
-		r_axis.y = y / Math::sqrt(1 - w * w);
-		r_axis.z = z / Math::sqrt(1 - w * w);
+		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+		r_axis.x = x * r;
+		r_axis.y = y * r;
+		r_axis.z = z * r;
 	}
 
 	void operator*=(const Quat &q);
@@ -83,9 +85,9 @@ public:
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 
-		Quat q = *this * v;
-		q *= this->inverse();
-		return Vector3(q.x, q.y, q.z);
+		Vector3 u(x, y, z);
+		Vector3 uv = u.cross(v);
+		return v + ((uv * w) + u.cross(uv)) * ((real_t)2);
 	}
 
 	_FORCE_INLINE_ void operator+=(const Quat &q);
@@ -115,7 +117,15 @@ public:
 		z = p_z;
 		w = p_w;
 	}
-	Quat(const Vector3 &axis, const real_t &angle);
+	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
+
+	Quat(const Vector3 &euler) { set_euler(euler); }
+	Quat(const Quat &q) {
+		x = q.x;
+		y = q.y;
+		z = q.z;
+		w = q.w;
+	}
 
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc
 	{

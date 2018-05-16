@@ -155,6 +155,8 @@ public:
 	bool is_diagonal() const;
 	bool is_rotation() const;
 
+	Basis slerp(const Basis &target, const real_t &t) const;
+
 	operator String() const;
 
 	/* create / set */

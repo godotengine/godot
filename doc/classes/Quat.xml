@@ -4,13 +4,14 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		A 4-dimensional vector representing a rotation.
-		The vector represents a 4 dimensional complex number where multiplication of the basis elements is not commutative (multiplying i with j gives a different result than multiplying j with i).
-		Multiplying quaternions reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
-		It can be used to perform SLERP (spherical-linear interpolation) between two rotations.
+		A unit quaternion used for representing 3D rotations.
+		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating point errors.
+
+		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions
+		http://docs.godotengine.org/en/latest/tutorials/math/rotations.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -39,6 +40,15 @@
 			</argument>
 			<description>
 				Returns a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
 			</description>
 		</method>
 		<method name="Quat">
@@ -74,6 +84,13 @@
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
+		<method name="get_euler">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+			</description>
+		</method>
 		<method name="inverse">
 			<return type="Quat">
 			</return>
@@ -107,6 +124,22 @@
 			</return>
 			<description>
 				Returns a copy of the quaternion, normalized to unit length.
+			</description>
+		</method>
+		<method name="set_axis_angle">
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Set the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="set_euler">
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Set the quaternion to a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
 			</description>
 		</method>
 		<method name="slerp">
