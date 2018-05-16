@@ -61,7 +61,7 @@
 			</return>
 			<description>
 				Method used for polling the MultiplayerAPI.
-				You only need to worry about this if you are using [member Node.custom_multplayer] override.
+				You only need to worry about this if you are using [member Node.custom_multiplayer] override.
 				SceneTree will poll the default MultiplayerAPI for you.
 			</description>
 		</method>
