@@ -605,7 +605,7 @@
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
 			</description>
 		</method>
 		<method name="body_set_kinematic_safe_margin">

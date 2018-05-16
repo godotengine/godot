@@ -51,7 +51,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Overrides the color in the [theme] resource the node uses.
+				Overrides the color in the [member theme] resource the node uses.
 			</description>
 		</method>
 		<method name="add_constant_override">
@@ -62,7 +62,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant in the [Theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
+				Overrides an integer constant in the [member theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -73,7 +73,7 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Overrides the [code]name[/code] font in the [theme] resource the node uses. If [code]font[/code] is empty, Godot clears the override.
+				Overrides the [code]name[/code] font in the [member theme] resource the node uses. If [code]font[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_icon_override">
@@ -84,7 +84,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Overrides the [code]name[/code] icon in the [theme] resource the node uses. If [code]icon[/code] is empty, Godot clears the override.
+				Overrides the [code]name[/code] icon in the [member theme] resource the node uses. If [code]icon[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_shader_override">
@@ -95,7 +95,7 @@
 			<argument index="1" name="shader" type="Shader">
 			</argument>
 			<description>
-				Overrides the [code]name[/code] shader in the [theme] resource the node uses. If [code]shader[/code] is empty, Godot clears the override.
+				Overrides the [code]name[/code] shader in the [member theme] resource the node uses. If [code]shader[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_stylebox_override">
@@ -106,7 +106,7 @@
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
 			<description>
-				Overrides the [code]name[/code] [Stylebox] in the [theme] resource the node uses. If [code]stylebox[/code] is empty, Godot clears the override.
+				Overrides the [code]name[/code] [Stylebox] in the [member theme] resource the node uses. If [code]stylebox[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">
