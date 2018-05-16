@@ -373,7 +373,6 @@ void FindReplaceBar::_hide_bar() {
 
 void FindReplaceBar::_show_search() {
 
-	hide(); // to update size correctly
 	show();
 	search_text->grab_focus();
 
@@ -481,7 +480,7 @@ void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 void FindReplaceBar::_update_size() {
 
-	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
+	container->set_size(Size2(hbc->get_size().width, 1));
 }
 
 void FindReplaceBar::_bind_methods() {
@@ -507,7 +506,8 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 
-	container = memnew(Control);
+	container = memnew(MarginContainer);
+	container->add_constant_override("margin_bottom", 5 * EDSCALE);
 	add_child(container);
 	container->set_clip_contents(true);
 	container->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -592,8 +592,7 @@ FindReplaceBar::FindReplaceBar() {
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->connect("pressed", this, "_hide_pressed");
-	hide_button->set_expand(true);
-	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
 /*** CODE EDITOR ****/
