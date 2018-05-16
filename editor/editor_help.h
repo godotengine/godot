@@ -148,6 +148,8 @@ class FindBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_entered(const String &p_text);
 
+	void _update_size();
+
 protected:
 	void _notification(int p_what);
 	void _unhandled_input(const Ref<InputEvent> &p_event);
