@@ -1542,7 +1542,7 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
-		members_overview_alphabeta_sort_button->set_visible(false);
+		members_overview_buttons_hbox->set_visible(false);
 		members_overview->set_visible(false);
 		overview_vbox->set_visible(false);
 		return;
@@ -2947,7 +2947,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_vbox->add_child(members_overview_buttons_hbox);
 
 	members_overview_alphabeta_sort_button = memnew(ToolButton);
-	members_overview_alphabeta_sort_button->set_tooltip(TTR("Sort alphabetically"));
+	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
