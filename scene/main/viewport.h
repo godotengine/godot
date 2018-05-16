@@ -58,6 +58,7 @@ class ViewportTexture : public Texture {
 
 	friend class Viewport;
 	Viewport *vp;
+	uint32_t flags;
 
 	RID proxy;
 
