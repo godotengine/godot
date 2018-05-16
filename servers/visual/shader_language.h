@@ -149,6 +149,32 @@ public:
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
 		TK_SHADER_TYPE,
+		TK_STENCIL,
+		TK_STENCIL_FACE_FRONT,
+		TK_STENCIL_FACE_BACK,
+		TK_STENCIL_VALUE,
+		TK_STENCIL_MASK_READ,
+		TK_STENCIL_MASK_WRITE,
+		TK_STENCIL_TEST,
+		TK_STENCIL_TEST_ALWAYS,
+		TK_STENCIL_TEST_NEVER,
+		TK_STENCIL_TEST_EQUAL,
+		TK_STENCIL_TEST_NOT_EQUAL,
+		TK_STENCIL_TEST_LESS,
+		TK_STENCIL_TEST_LESS_EQUAL,
+		TK_STENCIL_TEST_GREATER,
+		TK_STENCIL_TEST_GREATER_EQUAL,
+		TK_STENCIL_PASS,
+		TK_STENCIL_FAIL_STENCIL,
+		TK_STENCIL_FAIL_DEPTH,
+		TK_STENCIL_ACTION_KEEP,
+		TK_STENCIL_ACTION_ZERO,
+		TK_STENCIL_ACTION_INCR,
+		TK_STENCIL_ACTION_DECR,
+		TK_STENCIL_ACTION_INVERT,
+		TK_STENCIL_ACTION_REPLACE,
+		TK_STENCIL_ACTION_INCR_WRAP,
+		TK_STENCIL_ACTION_DECR_WRAP,
 		TK_CURSOR,
 		TK_ERROR,
 		TK_EOF,
@@ -265,6 +291,47 @@ public:
 		ARGUMENT_QUALIFIER_OUT,
 		ARGUMENT_QUALIFIER_INOUT,
 
+	};
+
+	struct StencilTest {
+		enum StencilActionType {
+			STENCIL_ACTION_KEEP,
+			STENCIL_ACTION_ZERO,
+			STENCIL_ACTION_INCR,
+			STENCIL_ACTION_DECR,
+			STENCIL_ACTION_INVERT,
+			STENCIL_ACTION_REPLACE,
+			STENCIL_ACTION_INCR_WRAP,
+			STENCIL_ACTION_DECR_WRAP
+		};
+		enum StencilTestType {
+			STENCIL_TEST_ALWAYS,
+			STENCIL_TEST_NEVER,
+			STENCIL_TEST_EQUAL,
+			STENCIL_TEST_NOT_EQUAL,
+			STENCIL_TEST_LESS,
+			STENCIL_TEST_LESS_EQUAL,
+			STENCIL_TEST_GREATER,
+			STENCIL_TEST_GREATER_EQUAL
+		};
+
+		int value;
+		int read_mask;
+		int write_mask;
+		StencilTestType test;
+		StencilActionType pass;
+		StencilActionType fail_depth;
+		StencilActionType fail_stencil;
+
+		StencilTest() :
+				value(0),
+				read_mask(255),
+				write_mask(255),
+				test(STENCIL_TEST_ALWAYS),
+				pass(STENCIL_ACTION_KEEP),
+				fail_depth(STENCIL_ACTION_KEEP),
+				fail_stencil(STENCIL_ACTION_KEEP) {
+		}
 	};
 
 	struct Node {
@@ -481,6 +548,8 @@ public:
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
+		StencilTest front_stencil;
+		StencilTest back_stencil;
 
 		ShaderNode() { type = TYPE_SHADER; }
 	};
@@ -511,7 +580,6 @@ public:
 	};
 
 	struct Token {
-
 		TokenType type;
 		StringName text;
 		double constant;
@@ -530,6 +598,11 @@ public:
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
+
+	static bool is_stencil_action_type(TokenType p_type);
+	static bool is_stencil_test_type(TokenType p_type);
+	static StencilTest::StencilActionType get_stencil_action_type(TokenType p_type);
+	static StencilTest::StencilTestType get_stencil_test_type(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = NULL);
 	static DataType get_scalar_type(DataType p_type);
@@ -561,6 +634,7 @@ private:
 		const char *text;
 	};
 	static const KeyWord keyword_list[];
+	static const KeyWord stencil_keyword_list[];
 
 	bool error_set;
 	String error_str;
@@ -602,6 +676,7 @@ private:
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
+	Token _get_stencil_token();
 
 	ShaderNode *shader;
 
@@ -651,6 +726,7 @@ private:
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_stencil_block(bool &p_hasFrontStencil, bool &p_hasBackStencil);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
