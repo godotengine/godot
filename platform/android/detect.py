@@ -25,7 +25,7 @@ def get_opts():
     return [
         ('ANDROID_NDK_ROOT', 'the path to Android NDK',
          os.environ.get("ANDROID_NDK_ROOT", 0)),
-        ('ndk_platform', 'compile for platform: (android-<api> , example: android-14)', "android-14"),
+        ('ndk_platform', 'compile for platform: (android-<api> , example: android-18)', "android-18"),
         ('android_arch', 'select compiler architecture: (armv7/armv6/arm64v8/x86)', "armv7"),
         ('android_neon', 'enable neon (armv7 only)', "yes"),
         ('android_stl', 'enable STL support in android port (for modules)', "no")
@@ -133,7 +133,7 @@ def configure(env):
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         if get_platform(ndk_platform) < 21:
-            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than andorid-21; setting ndk_platform=android-21")
+            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
             ndk_platform = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
