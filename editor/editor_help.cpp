@@ -1978,8 +1978,27 @@ FindBar::FindBar() {
 }
 
 void FindBar::popup_search() {
+
 	show();
-	search_text->grab_focus();
+	bool grabbed_focus = false;
+	if (!search_text->has_focus()) {
+		search_text->grab_focus();
+		grabbed_focus = true;
+	}
+
+	if (!search_text->get_text().empty()) {
+		search_text->select_all();
+		search_text->set_cursor_position(search_text->get_text().length());
+		if (grabbed_focus) {
+			_search();
+		}
+	}
+
+	call_deferred("_update_size");
+}
+
+void FindBar::_update_size() {
+
 	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
 }
 
@@ -2016,6 +2035,7 @@ void FindBar::_bind_methods() {
 	ClassDB::bind_method("_search_next", &FindBar::search_next);
 	ClassDB::bind_method("_search_prev", &FindBar::search_prev);
 	ClassDB::bind_method("_hide_pressed", &FindBar::_hide_bar);
+	ClassDB::bind_method("_update_size", &FindBar::_update_size);
 
 	ADD_SIGNAL(MethodInfo("search"));
 }
