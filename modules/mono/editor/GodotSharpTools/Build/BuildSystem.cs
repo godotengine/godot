@@ -16,24 +16,48 @@ namespace GodotSharpTools.Build
         private extern static void godot_icall_BuildInstance_ExitCallback(string solution, string config, int exitCode);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern static void godot_icall_BuildInstance_get_MSBuildInfo(ref string msbuildPath, ref string frameworkPath);
+        private extern static string godot_icall_BuildInstance_get_MSBuildPath();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static string godot_icall_BuildInstance_get_FrameworkPath();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static string godot_icall_BuildInstance_get_MonoWindowsBinDir();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static bool godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
 
-        private struct MSBuildInfo
+        private static string GetMSBuildPath()
         {
-            public string path;
-            public string frameworkPathOverride;
-        }
+            string msbuildPath = godot_icall_BuildInstance_get_MSBuildPath();
 
-        private static MSBuildInfo GetMSBuildInfo()
-        {
-            MSBuildInfo msbuildInfo = new MSBuildInfo();
-
-            godot_icall_BuildInstance_get_MSBuildInfo(ref msbuildInfo.path, ref msbuildInfo.frameworkPathOverride);
-
-            if (msbuildInfo.path == null)
+            if (msbuildPath == null)
                 throw new FileNotFoundException("Cannot find the MSBuild executable.");
 
-            return msbuildInfo;
+            return msbuildPath;
+        }
+
+        private static string GetFrameworkPath()
+        {
+            return godot_icall_BuildInstance_get_FrameworkPath();
+        }
+
+        private static string MonoWindowsBinDir
+        {
+            get
+            {
+                string monoWinBinDir = godot_icall_BuildInstance_get_MonoWindowsBinDir();
+
+                if (monoWinBinDir == null)
+                    throw new FileNotFoundException("Cannot find the Windows Mono binaries directory.");
+
+                return monoWinBinDir;
+            }
+        }
+
+        private static bool UsingMonoMSBuildOnWindows
+        {
+            get
+            {
+                return godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
+            }
         }
 
         private string solution;
@@ -54,24 +78,34 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
-            MSBuildInfo msbuildInfo = GetMSBuildInfo();
-
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.frameworkPathOverride != null)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
+            string frameworkPath = GetFrameworkPath();
+
+            if (!string.IsNullOrEmpty(frameworkPath))
+                customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
+
+            if (UsingMonoMSBuildOnWindows)
+            {
+                // These environment variables are required for Mono's MSBuild to find the compilers.
+                // We use the batch files in Mono's bin directory to make sure the compilers are executed with mono.
+                string monoWinBinDir = MonoWindowsBinDir;
+                startInfo.EnvironmentVariables.Add("CscToolExe", Path.Combine(monoWinBinDir, "csc.bat"));
+                startInfo.EnvironmentVariables.Add("VbcToolExe", Path.Combine(monoWinBinDir, "vbc.bat"));
+                startInfo.EnvironmentVariables.Add("FscToolExe", Path.Combine(monoWinBinDir, "fsharpc.bat"));
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -98,24 +132,34 @@ namespace GodotSharpTools.Build
             if (process != null)
                 throw new InvalidOperationException("Already in use");
 
-            MSBuildInfo msbuildInfo = GetMSBuildInfo();
-
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.frameworkPathOverride.Length > 0)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
+            string frameworkPath = GetFrameworkPath();
+
+            if (!string.IsNullOrEmpty(frameworkPath))
+                customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
+
+            if (UsingMonoMSBuildOnWindows)
+            {
+                // These environment variables are required for Mono's MSBuild to find the compilers.
+                // We use the batch files in Mono's bin directory to make sure the compilers are executed with mono.
+                string monoWinBinDir = MonoWindowsBinDir;
+                startInfo.EnvironmentVariables.Add("CscToolExe", Path.Combine(monoWinBinDir, "csc.bat"));
+                startInfo.EnvironmentVariables.Add("VbcToolExe", Path.Combine(monoWinBinDir, "vbc.bat"));
+                startInfo.EnvironmentVariables.Add("FscToolExe", Path.Combine(monoWinBinDir, "fsharpc.bat"));
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);

@@ -68,10 +68,9 @@ public:
 	enum BuildTool {
 		MSBUILD_MONO,
 #ifdef WINDOWS_ENABLED
-		MSBUILD
-#else
-		XBUILD // Deprecated
+		MSBUILD_VS,
 #endif
+		XBUILD // Deprecated
 	};
 
 	_FORCE_INLINE_ static GodotSharpBuilds *get_singleton() { return singleton; }
