@@ -2710,6 +2710,26 @@ Dictionary _Engine::get_version_info() const {
 	return Engine::get_singleton()->get_version_info();
 }
 
+Dictionary _Engine::get_author_info() const {
+	return Engine::get_singleton()->get_author_info();
+}
+
+Array _Engine::get_copyright_info() const {
+	return Engine::get_singleton()->get_copyright_info();
+}
+
+Dictionary _Engine::get_donor_info() const {
+	return Engine::get_singleton()->get_donor_info();
+}
+
+Dictionary _Engine::get_license_info() const {
+	return Engine::get_singleton()->get_license_info();
+}
+
+String _Engine::get_license_text() const {
+	return Engine::get_singleton()->get_license_text();
+}
+
 bool _Engine::is_in_physics_frame() const {
 	return Engine::get_singleton()->is_in_physics_frame();
 }
@@ -2752,6 +2772,11 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &_Engine::get_main_loop);
 
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
+	ClassDB::bind_method(D_METHOD("get_author_info"), &_Engine::get_author_info);
+	ClassDB::bind_method(D_METHOD("get_copyright_info"), &_Engine::get_copyright_info);
+	ClassDB::bind_method(D_METHOD("get_donor_info"), &_Engine::get_donor_info);
+	ClassDB::bind_method(D_METHOD("get_license_info"), &_Engine::get_license_info);
+	ClassDB::bind_method(D_METHOD("get_license_text"), &_Engine::get_license_text);
 
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &_Engine::is_in_physics_frame);
 
