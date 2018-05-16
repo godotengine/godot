@@ -1324,7 +1324,11 @@ void EditorInspector::update_tree() {
 					ep->connect("multiple_properties_changed", this, "_multiple_properties_changed");
 					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
-					ep->set_tooltip(doc_hint);
+					if (doc_hint != String()) {
+						ep->set_tooltip(TTR("Property: ") + p.name + "\n\n" + doc_hint);
+					} else {
+						ep->set_tooltip(TTR("Property: ") + p.name);
+					}
 					ep->set_draw_red(draw_red);
 					ep->set_checkable(checkable);
 					ep->set_checked(checked);
