@@ -1549,9 +1549,10 @@ void ScriptEditor::_update_script_names() {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (se) {
 
-			String name = se->get_name();
 			Ref<Texture> icon = se->get_icon();
 			String path = se->get_edited_script()->get_path();
+			bool built_in = !path.is_resource_file();
+			String name = built_in ? path.get_file() : se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
