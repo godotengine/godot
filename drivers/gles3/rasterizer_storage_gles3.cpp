@@ -1679,6 +1679,9 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
+			actions->back_stencil = &p_shader->back_stencil;
+			actions->front_stencil = &p_shader->front_stencil;
+			actions->uses_stencil = &p_shader->uses_stencil;
 
 		} break;
 
@@ -1737,6 +1740,9 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 			actions = &shaders.actions_scene;
 			actions->uniforms = &p_shader->uniforms;
+			actions->back_stencil = &p_shader->back_stencil;
+			actions->front_stencil = &p_shader->front_stencil;
+			actions->uses_stencil = &p_shader->uses_stencil;
 
 		} break;
 		case VS::SHADER_PARTICLES: {

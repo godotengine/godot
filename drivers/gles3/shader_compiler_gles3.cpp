@@ -329,6 +329,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				}
 			}
 
+			if (p_actions.uses_stencil && p_actions.back_stencil && p_actions.front_stencil) {
+				*p_actions.back_stencil = pnode->back_stencil;
+				*p_actions.front_stencil = pnode->front_stencil;
+				*p_actions.uses_stencil = pnode->front_stencil.uses_stencil() || pnode->back_stencil.uses_stencil();
+			}
+
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 

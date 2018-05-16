@@ -46,6 +46,10 @@ public:
 		Map<StringName, bool *> write_flag_pointers;
 
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms;
+
+		ShaderLanguage::StencilTest *front_stencil;
+		ShaderLanguage::StencilTest *back_stencil;
+		bool *uses_stencil;
 	};
 
 	struct GeneratedCode {

@@ -408,8 +408,11 @@ public:
 		Map<StringName, RID> default_textures;
 
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
-
 		bool valid;
+
+		ShaderLanguage::StencilTest front_stencil;
+		ShaderLanguage::StencilTest back_stencil;
+		bool uses_stencil;
 
 		String path;
 
