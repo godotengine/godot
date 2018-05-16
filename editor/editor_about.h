@@ -53,7 +53,7 @@ class EditorAbout : public AcceptDialog {
 
 private:
 	void _license_tree_selected();
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[], const int p_flag_single_column = 0);
+	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column = 0);
 
 	Tree *_tpl_tree;
 	RichTextLabel *_license_text;
