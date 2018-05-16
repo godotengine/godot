@@ -2300,7 +2300,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 	if (p_node->type == Node::TYPE_OPERATOR) {
 
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
-		if (op->type == OP_INDEX) {
+		if (op->op == OP_INDEX) {
 			return _validate_assign(op->arguments[0], p_builtin_types);
 		}
 	}
