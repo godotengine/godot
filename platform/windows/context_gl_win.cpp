@@ -113,7 +113,7 @@ Error ContextGL_Win::initialize() {
 		0, // No Accumulation Buffer
 		0, 0, 0, 0, // Accumulation Bits Ignored
 		24, // 24Bit Z-Buffer (Depth Buffer)
-		0, // No Stencil Buffer
+		8, // 8-Bit Stencil Buffer
 		0, // No Auxiliary Buffer
 		PFD_MAIN_PLANE, // Main Drawing Layer
 		0, // Reserved
