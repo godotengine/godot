@@ -41,7 +41,7 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 	if (is_inside_tree() && pb) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale, screen_offset);
+		set_base_offset_and_scale(ofs, scale);
 	}
 }
 
@@ -61,7 +61,7 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 	if (is_inside_tree() && pb) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale, screen_offset);
+		set_base_offset_and_scale(ofs, scale);
 	}
 }
 
@@ -80,8 +80,7 @@ void ParallaxLayer::_update_mirroring() {
 
 		RID c = pb->get_world_2d()->get_canvas();
 		RID ci = get_canvas_item();
-		Point2 mirrorScale = mirroring * get_scale();
-		VisualServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirrorScale);
+		VisualServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirroring);
 	}
 }
 
@@ -114,21 +113,16 @@ void ParallaxLayer::_notification(int p_what) {
 	}
 }
 
-void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset) {
-	screen_offset = p_screen_offset;
+void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale) {
 
 	if (!is_inside_tree())
 		return;
 	if (get_tree()->is_editor_hint())
 		return;
-
-	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
-
-	Vector2 mirror = Vector2(1, 1);
+	Point2 new_ofs = ((orig_offset + p_offset) * motion_scale) * p_scale + motion_offset;
 
 	if (mirroring.x) {
 		double den = mirroring.x * p_scale;
-		double before = new_ofs.x;
 		new_ofs.x -= den * ceil(new_ofs.x / den);
 	}
 
@@ -138,9 +132,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 	}
 
 	set_pos(new_ofs);
-	set_scale(Vector2(1, 1) * p_scale * orig_scale);
-
-	_update_mirroring();
+	set_scale(Vector2(1, 1) * p_scale);
 }
 
 String ParallaxLayer::get_configuration_warning() const {

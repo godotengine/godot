@@ -47,12 +47,10 @@ void ParallaxBackground::_notification(int p_what) {
 	}
 }
 
-void ParallaxBackground::_camera_moved(const Matrix32 &p_transform, const Point2 &p_screen_offset) {
+void ParallaxBackground::_camera_moved(const Matrix32 &p_transform) {
 
-	screen_offset = p_screen_offset;
-
-	set_scroll_scale(p_transform.get_scale().dot(Vector2(0.5, 0.5)));
 	set_scroll_offset(p_transform.get_origin());
+	set_scroll_scale(p_transform.get_scale().dot(Vector2(0.5, 0.5)));
 }
 
 void ParallaxBackground::set_scroll_scale(float p_scale) {
@@ -108,9 +106,9 @@ void ParallaxBackground::_update_scroll() {
 			continue;
 
 		if (ignore_camera_zoom)
-			l->set_base_offset_and_scale(ofs, 1.0, screen_offset);
+			l->set_base_offset_and_scale(ofs, 1.0);
 		else
-			l->set_base_offset_and_scale(ofs, scale, screen_offset);
+			l->set_base_offset_and_scale(ofs, scale);
 	}
 }
 

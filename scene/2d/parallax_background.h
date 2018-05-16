@@ -42,7 +42,6 @@ class ParallaxBackground : public CanvasLayer {
 	float scale;
 	Point2 base_offset;
 	Point2 base_scale;
-	Point2 screen_offset;
 	String group_name;
 	Point2 limit_begin;
 	Point2 limit_end;
@@ -52,7 +51,7 @@ class ParallaxBackground : public CanvasLayer {
 	void _update_scroll();
 
 protected:
-	void _camera_moved(const Matrix32 &p_transform, const Point2 &p_screen_offset);
+	void _camera_moved(const Matrix32 &p_transform);
 
 	void _notification(int p_what);
 	static void _bind_methods();

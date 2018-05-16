@@ -50,11 +50,7 @@ void Camera2D::_update_scroll() {
 		if (viewport) {
 			viewport->set_canvas_transform(xform);
 		}
-
-		Size2 screen_size = viewport->get_visible_rect().size;
-		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
-
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME, group_name, "_camera_moved", xform, screen_offset);
+		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME, group_name, "_camera_moved", xform);
 	};
 }
 
