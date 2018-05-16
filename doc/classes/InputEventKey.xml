@@ -27,7 +27,7 @@
 			If [code]true[/code] the key's state is pressed. If [code]false[/code] the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
-			Key scancode, one of the [code]KEY_*[/code] constants in [@global Scope].
+			Key scancode, one of the [code]KEY_*[/code] constants in [@GlobalScope].
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
 			Key unicode identifier when relevant.

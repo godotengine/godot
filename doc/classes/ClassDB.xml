@@ -112,7 +112,7 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns an array with all the signals of 'class' or its ancestry if 'no_inheritance' is false. Every element of the array is a [Dictionary] as described in [class_get_signal].
+				Returns an array with all the signals of 'class' or its ancestry if 'no_inheritance' is false. Every element of the array is a [Dictionary] as described in [method class_get_signal].
 			</description>
 		</method>
 		<method name="class_has_integer_constant" qualifiers="const">

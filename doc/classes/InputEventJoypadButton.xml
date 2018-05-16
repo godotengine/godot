@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
-			Button identifier. One of the [code]JOY_BUTTON_*[/code] constants from [@global Scope].
+			Button identifier. One of the [code]JOY_BUTTON_*[/code] constants from [@GlobalScope].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			If [code]true[/code] the button's state is pressed. If [code]false[/code] the button's state is released.
