@@ -167,7 +167,7 @@ public:
 	String get_cache_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
-	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default);
+	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
 
 	void set_favorite_dirs(const Vector<String> &p_favorites_dirs);
 	Vector<String> get_favorite_dirs() const;
