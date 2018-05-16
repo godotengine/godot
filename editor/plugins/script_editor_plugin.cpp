@@ -1182,6 +1182,7 @@ void ScriptEditor::_notification(int p_what) {
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
+			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1408,10 +1409,17 @@ void ScriptEditor::_update_members_overview_visibility() {
 	}
 
 	if (members_overview_enabled && se->show_members_overview()) {
+		members_overview_buttons_hbox->set_visible(true);
 		members_overview->set_visible(true);
 	} else {
+		members_overview_buttons_hbox->set_visible(false);
 		members_overview->set_visible(false);
 	}
+}
+
+void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
+	EditorSettings::get_singleton()->set("text_editor/tools/sort_members_outline_alphabetically", p_alphabetic_sort);
+	_update_members_overview();
 }
 
 void ScriptEditor::_update_members_overview() {
@@ -1423,6 +1431,10 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	Vector<String> functions = se->get_functions();
+	if (EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically")) {
+		functions.sort();
+	}
+
 	for (int i = 0; i < functions.size(); i++) {
 		members_overview->add_item(functions[i].get_slice(":", 0));
 		members_overview->set_item_metadata(i, functions[i].get_slice(":", 1).to_int() - 1);
@@ -1445,6 +1457,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 	}
 
 	if (help_overview_enabled) {
+		members_overview_buttons_hbox->set_visible(false);
 		help_overview->set_visible(true);
 	} else {
 		help_overview->set_visible(false);
@@ -2596,6 +2609,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
 	ClassDB::bind_method("_script_list_gui_input", &ScriptEditor::_script_list_gui_input);
+	ClassDB::bind_method("_toggle_members_overview_alpha_sort", &ScriptEditor::_toggle_members_overview_alpha_sort);
+	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
@@ -2656,14 +2671,33 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_menu_option");
 
+	members_overview_vbox = memnew(VBoxContainer);
+	members_overview_vbox->set_custom_minimum_size(Size2(0, 90));
+	members_overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	list_split->add_child(members_overview_vbox);
+	members_overview_buttons_hbox = memnew(HBoxContainer);
+	members_overview_vbox->add_child(members_overview_buttons_hbox);
+
+	members_overview_alphabeta_sort_button = memnew(ToolButton);
+	members_overview_alphabeta_sort_button->set_tooltip(TTR("Sort alphabetically"));
+	members_overview_alphabeta_sort_button->set_toggle_mode(true);
+	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
+	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
+
+	members_overview_buttons_hbox->add_child(members_overview_alphabeta_sort_button);
+
 	members_overview = memnew(ItemList);
-	list_split->add_child(members_overview);
+	members_overview_vbox->add_child(members_overview);
+
 	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
+	members_overview->set_allow_rmb_select(true);
+	members_overview->set_drag_forwarding(this);
 
 	help_overview = memnew(ItemList);
-	list_split->add_child(help_overview);
+	members_overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
 	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
