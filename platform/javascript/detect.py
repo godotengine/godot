@@ -20,10 +20,12 @@ def get_opts():
     return [
         # eval() can be a security concern, so it can be disabled.
         BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
+	BoolVariable('wasm', 'Compile to WebAssembly', False),
     ]
 
 
 def get_flags():
+
     return [
         ('tools', False),
         ('module_theora_enabled', False),
@@ -129,17 +131,20 @@ def configure(env):
 
     ## Link flags
 
-    env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-
-    # Allow increasing memory buffer size during runtime. This is efficient
-    # when using WebAssembly (in comparison to asm.js) and works well for
-    # us since we don't know requirements at compile-time.
-    env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
-
-    # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
-
     env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
+
+    if env['wasm']:
+        env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
+        # In contrast to asm.js, enabling memory growth on WebAssembly has no
+        # major performance impact, and causes only a negligible increase in
+        # memory size.
+        env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
+        env.extra_suffix = '.webassembly' + env.extra_suffix
+    else:
+        env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
+        env.Append(LINKFLAGS=['--separate-asm'])
+        env.Append(LINKFLAGS=['--memory-init-file', '1'])
 
     # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
     env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
