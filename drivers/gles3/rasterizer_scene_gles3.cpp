@@ -158,23 +158,27 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas, int p_size) {
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow_atlas->fbo);
 
 		// Create a texture for storing the depth
+		GLenum atlas_internal_format = storage->config.stencil_buffer_shadows ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+		GLenum atlas_format = storage->config.stencil_buffer_shadows ? GL_DEPTH_STENCIL : GL_DEPTH_COMPONENT;
+		GLenum atlas_type = storage->config.stencil_buffer_shadows ? GL_UNSIGNED_INT_24_8 : GL_UNSIGNED_INT;
+		GLenum atlas_attachment = storage->config.stencil_buffer_shadows ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+
 		glActiveTexture(GL_TEXTURE0);
 		glGenTextures(1, &shadow_atlas->depth);
 		glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, shadow_atlas->size, shadow_atlas->size, 0,
-				GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, atlas_internal_format, shadow_atlas->size, shadow_atlas->size, 0, atlas_format, atlas_type, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				GL_TEXTURE_2D, shadow_atlas->depth, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, atlas_attachment, GL_TEXTURE_2D, shadow_atlas->depth, 0);
 
 		glViewport(0, 0, shadow_atlas->size, shadow_atlas->size);
 		glClearDepth(0.0f);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClearStencil(0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -1101,6 +1105,8 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		glEnable(GL_CULL_FACE);
 	} */
 
+	_set_stencil(p_material->shader->uses_stencil, p_material->shader->front_stencil, p_material->shader->back_stencil);
+
 	if (state.current_line_width != p_material->line_width) {
 		//glLineWidth(MAX(p_material->line_width,1.0));
 		state.current_line_width = p_material->line_width;
@@ -1901,6 +1907,78 @@ void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_rever
 	}
 }
 
+_FORCE_INLINE_ void RasterizerSceneGLES3::_set_stencil(bool p_enabled, const ShaderLanguage::StencilTest &p_front, const ShaderLanguage::StencilTest &p_back) {
+	if (p_enabled) {
+		if (!state.current_stencil_enabled) {
+			glEnable(GL_STENCIL_TEST);
+			state.current_stencil_enabled = true;
+		}
+		_set_stencil_face(GL_FRONT, p_front, state.front_stencil);
+		_set_stencil_face(GL_BACK, p_back, state.back_stencil);
+	} else if (state.current_stencil_enabled) {
+		glDisable(GL_STENCIL_TEST);
+		state.current_stencil_enabled = false;
+	}
+}
+
+_FORCE_INLINE_ void RasterizerSceneGLES3::_set_stencil_face(GLenum p_face, const ShaderLanguage::StencilTest &p_stencil, ShaderLanguage::StencilTest &p_state_stencil) {
+	if (p_stencil.value != p_state_stencil.value ||
+			p_stencil.read_mask != p_state_stencil.read_mask ||
+			p_stencil.test != p_state_stencil.test) {
+
+		glStencilFuncSeparate(p_face, _get_stencil_test(p_stencil.test), p_stencil.value, p_stencil.read_mask);
+		p_state_stencil.value = p_stencil.value;
+		p_state_stencil.read_mask = p_stencil.read_mask;
+		p_state_stencil.test = p_stencil.test;
+	}
+
+	if (p_stencil.write_mask != p_state_stencil.write_mask) {
+		glStencilMaskSeparate(p_face, p_stencil.write_mask);
+		p_state_stencil.write_mask = p_stencil.write_mask;
+	}
+
+	if (p_stencil.pass != p_state_stencil.pass ||
+			p_stencil.fail_depth != p_state_stencil.fail_depth ||
+			p_stencil.fail_stencil != p_state_stencil.fail_stencil) {
+
+		glStencilOpSeparate(p_face,
+				_get_stencil_op(p_stencil.fail_stencil),
+				_get_stencil_op(p_stencil.fail_depth),
+				_get_stencil_op(p_stencil.pass));
+		p_state_stencil.pass = p_stencil.pass;
+		p_state_stencil.fail_depth = p_stencil.fail_depth;
+		p_state_stencil.fail_stencil = p_stencil.fail_stencil;
+	}
+}
+
+_FORCE_INLINE_ GLenum RasterizerSceneGLES3::_get_stencil_test(ShaderLanguage::StencilTest::StencilTestType p_test) {
+	switch (p_test) {
+		case ShaderLanguage::StencilTest::STENCIL_TEST_ALWAYS: return GL_ALWAYS;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_NEVER: return GL_NEVER;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_EQUAL: return GL_EQUAL;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_NOT_EQUAL: return GL_NOTEQUAL;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_LESS: return GL_LESS;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_LESS_EQUAL: return GL_LEQUAL;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_GREATER: return GL_GREATER;
+		case ShaderLanguage::StencilTest::STENCIL_TEST_GREATER_EQUAL: return GL_GEQUAL;
+		default: ERR_FAIL_V(GL_ALWAYS);
+	}
+}
+
+_FORCE_INLINE_ GLenum RasterizerSceneGLES3::_get_stencil_op(ShaderLanguage::StencilTest::StencilActionType p_action) {
+	switch (p_action) {
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_KEEP: return GL_KEEP;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_ZERO: return GL_ZERO;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_INCR: return GL_INCR;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_DECR: return GL_DECR;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_INVERT: return GL_INVERT;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_REPLACE: return GL_REPLACE;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_INCR_WRAP: return GL_INCR_WRAP;
+		case ShaderLanguage::StencilTest::STENCIL_ACTION_DECR_WRAP: return GL_DECR_WRAP;
+		default: ERR_FAIL_V(GL_KEEP);
+	}
+}
+
 void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows) {
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.scene_ubo); //bind globals ubo
@@ -1936,7 +2014,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	glEnable(GL_CULL_FACE);
 
 	state.current_depth_test = true;
+	state.current_stencil_enabled = false;
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 
@@ -2166,6 +2246,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 	glBindVertexArray(0);
 
+	_set_stencil(false, ShaderLanguage::StencilTest(), ShaderLanguage::StencilTest());
+
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
@@ -2254,11 +2336,19 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	if (p_depth_pass) {
 
-		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
+		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture)
 			return; //bye
+		if (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)
+			return;
 
-		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
-			//shader does not use discard and does not write a vertex position, use generic material
+		if (!p_material->shader->spatial.uses_alpha_scissor &&
+				!p_material->shader->spatial.writes_modelview_or_projection &&
+				!p_material->shader->spatial.uses_vertex &&
+				!p_material->shader->spatial.uses_discard &&
+				p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS &&
+				!p_material->shader->uses_stencil) {
+
+			//shader does not use discard, stencil, and does not write a vertex position, use generic material
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
 				p_material = storage->material_owner.getptr(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material_twosided : default_material_twosided);
 				no_cull = true;
@@ -2319,6 +2409,9 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 	} else {
 		e->sort_key |= uint64_t(e->instance->depth_layer) << RenderList::SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT;
 		e->sort_key |= uint64_t(e->material->index) << RenderList::SORT_KEY_MATERIAL_INDEX_SHIFT;
+
+		//Want to be able to control render order for use with stencils
+		e->sort_key |= uint64_t(p_material->render_priority + 128) << RenderList::SORT_KEY_PRIORITY_SHIFT;
 	}
 
 	/*
@@ -4082,6 +4175,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		glColorMask(0, 0, 0, 0);
 		glClearDepth(1.0f);
+		glClearStencil(0);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		render_list.clear();
@@ -4091,6 +4185,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, 0, false, false, true, false, false);
 		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, false);
 
+		glClearStencil(0);
+		glClear(GL_STENCIL_BUFFER_BIT);
 		glColorMask(1, 1, 1, 1);
 
 		if (state.used_contact_shadows) {
@@ -4637,7 +4733,13 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, true, true);
 
-	render_list.sort_by_depth(false); //shadow is front to back for performance
+	//shadow is front to back for performance
+	//if geometry rendered for shadows wants to use the stencil buffer, we still need priority.
+	if (storage->config.stencil_buffer_shadows) {
+		render_list.sort_by_depth_and_priority(false);
+	} else {
+		render_list.sort_by_depth(false);
+	}
 
 	glDisable(GL_BLEND);
 	glDisable(GL_DITHER);
@@ -4657,7 +4759,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClearStencil(0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glDisable(GL_SCISSOR_TEST);
 
 	state.ubo_data.z_offset = bias;
@@ -4867,6 +4970,11 @@ void RasterizerSceneGLES3::initialize() {
 
 	glActiveTexture(GL_TEXTURE0);
 
+	GLenum shadow_depth_internal_format = storage->config.stencil_buffer_shadows ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+	GLenum shadow_depth_format = storage->config.stencil_buffer_shadows ? GL_DEPTH_STENCIL : GL_DEPTH_COMPONENT;
+	GLenum shadow_depth_type = storage->config.stencil_buffer_shadows ? GL_UNSIGNED_INT_24_8 : GL_UNSIGNED_INT;
+	GLenum shadow_depth_attachment = storage->config.stencil_buffer_shadows ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+
 	while (cube_size >= 32) {
 
 		ShadowCubeMap cube;
@@ -4876,8 +4984,8 @@ void RasterizerSceneGLES3::initialize() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cube.cubemap);
 		//gen cubemap first
 		for (int i = 0; i < 6; i++) {
-
-			glTexImage2D(_cube_side_enum[i], 0, GL_DEPTH_COMPONENT24, cube.size, cube.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+			glTexImage2D(_cube_side_enum[i], 0, shadow_depth_internal_format, cube.size, cube.size, 0,
+					shadow_depth_format, shadow_depth_type, NULL);
 		}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -4892,7 +5000,7 @@ void RasterizerSceneGLES3::initialize() {
 
 			glGenFramebuffers(1, &cube.fbo_id[i]);
 			glBindFramebuffer(GL_FRAMEBUFFER, cube.fbo_id[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _cube_side_enum[i], cube.cubemap, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, shadow_depth_attachment, _cube_side_enum[i], cube.cubemap, 0);
 
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
@@ -4911,13 +5019,14 @@ void RasterizerSceneGLES3::initialize() {
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
 		glGenTextures(1, &directional_shadow.depth);
 		glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, shadow_depth_internal_format, directional_shadow.size, directional_shadow.size, 0,
+				shadow_depth_format, shadow_depth_type, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, shadow_depth_attachment, GL_TEXTURE_2D, directional_shadow.depth, 0);
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			ERR_PRINT("Directional shadow framebuffer status invalid");

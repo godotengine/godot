@@ -97,6 +97,9 @@ public:
 
 		bool no_depth_prepass;
 		bool force_vertex_shading;
+
+		bool stencil_buffer_enable;
+		bool stencil_buffer_shadows;
 	} config;
 
 	mutable struct Shaders {
