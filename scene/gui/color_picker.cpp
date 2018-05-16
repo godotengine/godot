@@ -684,7 +684,7 @@ void ColorPickerButton::_notification(int p_what) {
 		draw_rect(r, color);
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
 		popup->hide();
 	}
 }
