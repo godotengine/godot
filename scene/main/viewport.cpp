@@ -72,6 +72,9 @@ void ViewportTexture::setup_local_to_scene() {
 	vp->viewport_textures.insert(this);
 
 	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
+
+	vp->texture_flags = flags;
+	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -122,20 +125,18 @@ Ref<Image> ViewportTexture::get_data() const {
 	return VS::get_singleton()->texture_get_data(vp->texture_rid);
 }
 void ViewportTexture::set_flags(uint32_t p_flags) {
+	flags = p_flags;
 
 	if (!vp)
 		return;
 
-	vp->texture_flags = p_flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, p_flags);
+	vp->texture_flags = flags;
+	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
 }
 
 uint32_t ViewportTexture::get_flags() const {
 
-	if (!vp)
-		return 0;
-
-	return vp->texture_flags;
+	return flags;
 }
 
 void ViewportTexture::_bind_methods() {
@@ -149,6 +150,7 @@ void ViewportTexture::_bind_methods() {
 ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
+	flags = 0;
 	set_local_to_scene(true);
 	proxy = VS::get_singleton()->texture_create();
 }
