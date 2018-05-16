@@ -1400,7 +1400,7 @@ void PhysicalBone::ConeJointData::_get_property_list(List<PropertyInfo> *p_list)
 	JointData::_get_property_list(p_list);
 
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/swing_span", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1"));
+	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
