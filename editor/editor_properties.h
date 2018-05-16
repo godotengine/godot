@@ -201,7 +201,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max);
+	void setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 
@@ -231,7 +231,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser);
 	EditorPropertyFloat();
 };
 

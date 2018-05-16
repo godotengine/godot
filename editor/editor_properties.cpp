@@ -651,10 +651,12 @@ void EditorPropertyInteger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyInteger::_value_changed);
 }
 
-void EditorPropertyInteger::setup(int p_min, int p_max) {
+void EditorPropertyInteger::setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(1);
+	spin->set_allow_greater(p_allow_greater);
+	spin->set_allow_lesser(p_allow_lesser);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
@@ -732,13 +734,15 @@ void EditorPropertyFloat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyFloat::_value_changed);
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser) {
 
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
 	spin->set_hide_slider(p_no_slider);
 	spin->set_exp_ratio(p_exp_range);
+	spin->set_allow_greater(p_greater);
+	spin->set_allow_lesser(p_lesser);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
@@ -2095,13 +2099,25 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 				int min = 0, max = 65535;
+				bool greater = true, lesser = true;
 
 				if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
+					greater = false; //if using ranged, asume false by default
+					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_int();
 					max = p_hint_text.get_slice(",", 1).to_int();
+					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
+						String slice = p_hint_text.get_slice(",", i).strip_edges();
+						if (slice == "or_greater") {
+							greater = true;
+						}
+						if (slice == "or_lesser") {
+							lesser = true;
+						}
+					}
 				}
 
-				editor->setup(min, max);
+				editor->setup(min, max, greater, lesser);
 
 				add_property_editor(p_path, editor);
 			}
@@ -2131,8 +2147,11 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				double min = -65535, max = 65535, step = 0.001;
 				bool hide_slider = true;
 				bool exp_range = false;
+				bool greater = true, lesser = true;
 
 				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && p_hint_text.get_slice_count(",") >= 2) {
+					greater = false; //if using ranged, asume false by default
+					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_double();
 					max = p_hint_text.get_slice(",", 1).to_double();
 					if (p_hint_text.get_slice_count(",") >= 3) {
@@ -2140,9 +2159,18 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					}
 					hide_slider = false;
 					exp_range = p_hint == PROPERTY_HINT_EXP_RANGE;
+					for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
+						String slice = p_hint_text.get_slice(",", i).strip_edges();
+						if (slice == "or_greater") {
+							greater = true;
+						}
+						if (slice == "or_lesser") {
+							lesser = true;
+						}
+					}
 				}
 
-				editor->setup(min, max, step, hide_slider, exp_range);
+				editor->setup(min, max, step, hide_slider, exp_range, greater, lesser);
 
 				add_property_editor(p_path, editor);
 			}
