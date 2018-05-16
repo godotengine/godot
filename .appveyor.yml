@@ -17,7 +17,8 @@ cache:
 
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - pip install --egg scons  # it will fail on AppVeyor without --egg flag
+  - pip install -U wheel  # needed for pip install scons to work, otherwise a flag is missing
+  - pip install scons
   - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
 
 before_build:
