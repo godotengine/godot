@@ -30,8 +30,14 @@ extern "C" {
 /*-*************************************
 *  Constants
 ***************************************/
-static const U32 g_searchStrength = 8;
-#define HASH_READ_SIZE 8
+#define kSearchStrength      8
+#define HASH_READ_SIZE       8
+#define ZSTD_DUBT_UNSORTED_MARK 1   /* For btlazy2 strategy, index 1 now means "unsorted".
+                                       It could be confused for a real successor at index "1", if sorted as larger than its predecessor.
+                                       It's not a big deal though : candidate will just be sorted again.
+                                       Additionnally, candidate position 1 will be lost.
+                                       But candidate 1 cannot hide a large tree of candidates, so it's a minimal loss.
+                                       The benefit is that ZSTD_DUBT_UNSORTED_MARK cannot be misdhandled after table re-use with a different strategy */
 
 
 /*-*************************************
@@ -43,7 +49,7 @@ typedef enum { zcss_init=0, zcss_load, zcss_flush } ZSTD_cStreamStage;
 typedef struct ZSTD_prefixDict_s {
     const void* dict;
     size_t dictSize;
-    ZSTD_dictMode_e dictMode;
+    ZSTD_dictContentType_e dictContentType;
 } ZSTD_prefixDict;
 
 typedef struct {
@@ -51,7 +57,6 @@ typedef struct {
     FSE_CTable offcodeCTable[FSE_CTABLE_SIZE_U32(OffFSELog, MaxOff)];
     FSE_CTable matchlengthCTable[FSE_CTABLE_SIZE_U32(MLFSELog, MaxML)];
     FSE_CTable litlengthCTable[FSE_CTABLE_SIZE_U32(LLFSELog, MaxLL)];
-    U32 workspace[HUF_WORKSPACE_SIZE_U32];
     HUF_repeat hufCTable_repeatMode;
     FSE_repeat offcode_repeatMode;
     FSE_repeat matchlength_repeatMode;
@@ -94,11 +99,43 @@ typedef struct {
 } optState_t;
 
 typedef struct {
+  ZSTD_entropyCTables_t entropy;
+  U32 rep[ZSTD_REP_NUM];
+} ZSTD_compressedBlockState_t;
+
+typedef struct {
+    BYTE const* nextSrc;    /* next block here to continue on current prefix */
+    BYTE const* base;       /* All regular indexes relative to this position */
+    BYTE const* dictBase;   /* extDict indexes relative to this position */
+    U32 dictLimit;          /* below that point, need extDict */
+    U32 lowLimit;           /* below that point, no more data */
+} ZSTD_window_t;
+
+typedef struct {
+    ZSTD_window_t window;      /* State for window round buffer management */
+    U32 loadedDictEnd;         /* index of end of dictionary */
+    U32 nextToUpdate;          /* index from which to continue table update */
+    U32 nextToUpdate3;         /* index from which to continue table update */
+    U32 hashLog3;              /* dispatch table : larger == faster, more memory */
+    U32* hashTable;
+    U32* hashTable3;
+    U32* chainTable;
+    optState_t opt;         /* optimal parser state */
+} ZSTD_matchState_t;
+
+typedef struct {
+    ZSTD_compressedBlockState_t* prevCBlock;
+    ZSTD_compressedBlockState_t* nextCBlock;
+    ZSTD_matchState_t matchState;
+} ZSTD_blockState_t;
+
+typedef struct {
     U32 offset;
     U32 checksum;
 } ldmEntry_t;
 
 typedef struct {
+    ZSTD_window_t window;   /* State for the window round buffer management */
     ldmEntry_t* hashTable;
     BYTE* bucketOffsets;    /* Next position in bucket to insert entry */
     U64 hashPower;          /* Used to compute the rolling hash.
@@ -111,7 +148,21 @@ typedef struct {
     U32 bucketSizeLog;      /* Log bucket size for collision resolution, at most 8 */
     U32 minMatchLength;     /* Minimum match length */
     U32 hashEveryLog;       /* Log number of entries to skip */
+    U32 windowLog;          /* Window log for the LDM */
 } ldmParams_t;
+
+typedef struct {
+    U32 offset;
+    U32 litLength;
+    U32 matchLength;
+} rawSeq;
+
+typedef struct {
+  rawSeq* seq;     /* The start of the sequences */
+  size_t pos;      /* The position where reading stopped. <= size. */
+  size_t size;     /* The number of sequences. <= capacity. */
+  size_t capacity; /* The capacity of the `seq` pointer */
+} rawSeqStore_t;
 
 struct ZSTD_CCtx_params_s {
     ZSTD_format_e format;
@@ -119,52 +170,46 @@ struct ZSTD_CCtx_params_s {
     ZSTD_frameParameters fParams;
 
     int compressionLevel;
-    U32 forceWindow;           /* force back-references to respect limit of
+    int disableLiteralCompression;
+    int forceWindow;           /* force back-references to respect limit of
                                 * 1<<wLog, even for dictionary */
 
     /* Multithreading: used to pass parameters to mtctx */
-    U32 nbThreads;
+    unsigned nbWorkers;
     unsigned jobSize;
     unsigned overlapSizeLog;
 
     /* Long distance matching parameters */
     ldmParams_t ldmParams;
 
-    /* For use with createCCtxParams() and freeCCtxParams() only */
+    /* Internal use, for createCCtxParams() and freeCCtxParams() only */
     ZSTD_customMem customMem;
-
 };  /* typedef'd to ZSTD_CCtx_params within "zstd.h" */
 
 struct ZSTD_CCtx_s {
-    const BYTE* nextSrc;    /* next block here to continue on current prefix */
-    const BYTE* base;       /* All regular indexes relative to this position */
-    const BYTE* dictBase;   /* extDict indexes relative to this position */
-    U32   dictLimit;        /* below that point, need extDict */
-    U32   lowLimit;         /* below that point, no more data */
-    U32   nextToUpdate;     /* index from which to continue dictionary update */
-    U32   nextToUpdate3;    /* index from which to continue dictionary update */
-    U32   hashLog3;         /* dispatch table : larger == faster, more memory */
-    U32   loadedDictEnd;    /* index of end of dictionary */
     ZSTD_compressionStage_e stage;
-    U32   dictID;
+    int cParamsChanged;                  /* == 1 if cParams(except wlog) or compression level are changed in requestedParams. Triggers transmission of new params to ZSTDMT (if available) then reset to 0. */
+    int bmi2;                            /* == 1 if the CPU supports BMI2 and 0 otherwise. CPU support is determined dynamically once per context lifetime. */
     ZSTD_CCtx_params requestedParams;
     ZSTD_CCtx_params appliedParams;
+    U32   dictID;
     void* workSpace;
     size_t workSpaceSize;
     size_t blockSize;
-    U64 pledgedSrcSizePlusOne;  /* this way, 0 (default) == unknown */
-    U64 consumedSrcSize;
+    unsigned long long pledgedSrcSizePlusOne;  /* this way, 0 (default) == unknown */
+    unsigned long long consumedSrcSize;
+    unsigned long long producedCSize;
     XXH64_state_t xxhState;
     ZSTD_customMem customMem;
     size_t staticSize;
 
-    seqStore_t seqStore;    /* sequences storage ptrs */
-    optState_t optState;
-    ldmState_t ldmState;    /* long distance matching state */
-    U32* hashTable;
-    U32* hashTable3;
-    U32* chainTable;
-    ZSTD_entropyCTables_t* entropy;
+    seqStore_t seqStore;      /* sequences storage ptrs */
+    ldmState_t ldmState;      /* long distance matching state */
+    rawSeq* ldmSequences;     /* Storage for the ldm output sequences */
+    size_t maxNbLdmSequences;
+    rawSeqStore_t externSeqStore; /* Mutable reference to external sequences */
+    ZSTD_blockState_t blockState;
+    U32* entropyWorkspace;  /* entropy workspace of HUF_WORKSPACE_SIZE bytes */
 
     /* streaming */
     char*  inBuff;
@@ -189,6 +234,12 @@ struct ZSTD_CCtx_s {
     ZSTDMT_CCtx* mtctx;
 #endif
 };
+
+
+typedef size_t (*ZSTD_blockCompressor) (
+        ZSTD_matchState_t* bs, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
+        ZSTD_compressionParameters const* cParams, void const* src, size_t srcSize);
+ZSTD_blockCompressor ZSTD_selectBlockCompressor(ZSTD_strategy strat, int extDict);
 
 
 MEM_STATIC U32 ZSTD_LLcode(U32 litLength)
@@ -359,10 +410,12 @@ MEM_STATIC size_t ZSTD_count(const BYTE* pIn, const BYTE* pMatch, const BYTE* co
 }
 
 /** ZSTD_count_2segments() :
-*   can count match length with `ip` & `match` in 2 different segments.
-*   convention : on reaching mEnd, match count continue starting from iStart
-*/
-MEM_STATIC size_t ZSTD_count_2segments(const BYTE* ip, const BYTE* match, const BYTE* iEnd, const BYTE* mEnd, const BYTE* iStart)
+ *  can count match length with `ip` & `match` in 2 different segments.
+ *  convention : on reaching mEnd, match count continue starting from iStart
+ */
+MEM_STATIC size_t
+ZSTD_count_2segments(const BYTE* ip, const BYTE* match,
+                     const BYTE* iEnd, const BYTE* mEnd, const BYTE* iStart)
 {
     const BYTE* const vEnd = MIN( ip + (mEnd - match), iEnd);
     size_t const matchLength = ZSTD_count(ip, match, vEnd);
@@ -372,8 +425,8 @@ MEM_STATIC size_t ZSTD_count_2segments(const BYTE* ip, const BYTE* match, const 
 
 
 /*-*************************************
-*  Hashes
-***************************************/
+ *  Hashes
+ ***************************************/
 static const U32 prime3bytes = 506832829U;
 static U32    ZSTD_hash3(U32 u, U32 h) { return ((u << (32-24)) * prime3bytes)  >> (32-h) ; }
 MEM_STATIC size_t ZSTD_hash3Ptr(const void* ptr, U32 h) { return ZSTD_hash3(MEM_readLE32(ptr), h); } /* only in zstd_opt.h */
@@ -411,6 +464,171 @@ MEM_STATIC size_t ZSTD_hashPtr(const void* p, U32 hBits, U32 mls)
     }
 }
 
+/*-*************************************
+*  Round buffer management
+***************************************/
+/* Max current allowed */
+#define ZSTD_CURRENT_MAX ((3U << 29) + (1U << ZSTD_WINDOWLOG_MAX))
+/* Maximum chunk size before overflow correction needs to be called again */
+#define ZSTD_CHUNKSIZE_MAX                                                     \
+    ( ((U32)-1)                  /* Maximum ending current index */            \
+    - ZSTD_CURRENT_MAX)          /* Maximum beginning lowLimit */
+
+/**
+ * ZSTD_window_clear():
+ * Clears the window containing the history by simply setting it to empty.
+ */
+MEM_STATIC void ZSTD_window_clear(ZSTD_window_t* window)
+{
+    size_t const endT = (size_t)(window->nextSrc - window->base);
+    U32 const end = (U32)endT;
+
+    window->lowLimit = end;
+    window->dictLimit = end;
+}
+
+/**
+ * ZSTD_window_hasExtDict():
+ * Returns non-zero if the window has a non-empty extDict.
+ */
+MEM_STATIC U32 ZSTD_window_hasExtDict(ZSTD_window_t const window)
+{
+    return window.lowLimit < window.dictLimit;
+}
+
+/**
+ * ZSTD_window_needOverflowCorrection():
+ * Returns non-zero if the indices are getting too large and need overflow
+ * protection.
+ */
+MEM_STATIC U32 ZSTD_window_needOverflowCorrection(ZSTD_window_t const window,
+                                                  void const* srcEnd)
+{
+    U32 const current = (U32)((BYTE const*)srcEnd - window.base);
+    return current > ZSTD_CURRENT_MAX;
+}
+
+/**
+ * ZSTD_window_correctOverflow():
+ * Reduces the indices to protect from index overflow.
+ * Returns the correction made to the indices, which must be applied to every
+ * stored index.
+ *
+ * The least significant cycleLog bits of the indices must remain the same,
+ * which may be 0. Every index up to maxDist in the past must be valid.
+ * NOTE: (maxDist & cycleMask) must be zero.
+ */
+MEM_STATIC U32 ZSTD_window_correctOverflow(ZSTD_window_t* window, U32 cycleLog,
+                                           U32 maxDist, void const* src)
+{
+    /* preemptive overflow correction:
+     * 1. correction is large enough:
+     *    lowLimit > (3<<29) ==> current > 3<<29 + 1<<windowLog
+     *    1<<windowLog <= newCurrent < 1<<chainLog + 1<<windowLog
+     *
+     *    current - newCurrent
+     *    > (3<<29 + 1<<windowLog) - (1<<windowLog + 1<<chainLog)
+     *    > (3<<29) - (1<<chainLog)
+     *    > (3<<29) - (1<<30)             (NOTE: chainLog <= 30)
+     *    > 1<<29
+     *
+     * 2. (ip+ZSTD_CHUNKSIZE_MAX - cctx->base) doesn't overflow:
+     *    After correction, current is less than (1<<chainLog + 1<<windowLog).
+     *    In 64-bit mode we are safe, because we have 64-bit ptrdiff_t.
+     *    In 32-bit mode we are safe, because (chainLog <= 29), so
+     *    ip+ZSTD_CHUNKSIZE_MAX - cctx->base < 1<<32.
+     * 3. (cctx->lowLimit + 1<<windowLog) < 1<<32:
+     *    windowLog <= 31 ==> 3<<29 + 1<<windowLog < 7<<29 < 1<<32.
+     */
+    U32 const cycleMask = (1U << cycleLog) - 1;
+    U32 const current = (U32)((BYTE const*)src - window->base);
+    U32 const newCurrent = (current & cycleMask) + maxDist;
+    U32 const correction = current - newCurrent;
+    assert((maxDist & cycleMask) == 0);
+    assert(current > newCurrent);
+    /* Loose bound, should be around 1<<29 (see above) */
+    assert(correction > 1<<28);
+
+    window->base += correction;
+    window->dictBase += correction;
+    window->lowLimit -= correction;
+    window->dictLimit -= correction;
+
+    DEBUGLOG(4, "Correction of 0x%x bytes to lowLimit=0x%x", correction,
+             window->lowLimit);
+    return correction;
+}
+
+/**
+ * ZSTD_window_enforceMaxDist():
+ * Updates lowLimit so that:
+ *    (srcEnd - base) - lowLimit == maxDist + loadedDictEnd
+ * This allows a simple check that index >= lowLimit to see if index is valid.
+ * This must be called before a block compression call, with srcEnd as the block
+ * source end.
+ * If loadedDictEndPtr is not NULL, we set it to zero once we update lowLimit.
+ * This is because dictionaries are allowed to be referenced as long as the last
+ * byte of the dictionary is in the window, but once they are out of range,
+ * they cannot be referenced. If loadedDictEndPtr is NULL, we use
+ * loadedDictEnd == 0.
+ */
+MEM_STATIC void ZSTD_window_enforceMaxDist(ZSTD_window_t* window,
+                                           void const* srcEnd, U32 maxDist,
+                                           U32* loadedDictEndPtr)
+{
+    U32 const current = (U32)((BYTE const*)srcEnd - window->base);
+    U32 loadedDictEnd = loadedDictEndPtr != NULL ? *loadedDictEndPtr : 0;
+    if (current > maxDist + loadedDictEnd) {
+        U32 const newLowLimit = current - maxDist;
+        if (window->lowLimit < newLowLimit) window->lowLimit = newLowLimit;
+        if (window->dictLimit < window->lowLimit) {
+            DEBUGLOG(5, "Update dictLimit from %u to %u", window->dictLimit,
+                     window->lowLimit);
+            window->dictLimit = window->lowLimit;
+        }
+        if (loadedDictEndPtr)
+            *loadedDictEndPtr = 0;
+    }
+}
+
+/**
+ * ZSTD_window_update():
+ * Updates the window by appending [src, src + srcSize) to the window.
+ * If it is not contiguous, the current prefix becomes the extDict, and we
+ * forget about the extDict. Handles overlap of the prefix and extDict.
+ * Returns non-zero if the segment is contiguous.
+ */
+MEM_STATIC U32 ZSTD_window_update(ZSTD_window_t* window,
+                                  void const* src, size_t srcSize)
+{
+    BYTE const* const ip = (BYTE const*)src;
+    U32 contiguous = 1;
+    /* Check if blocks follow each other */
+    if (src != window->nextSrc) {
+        /* not contiguous */
+        size_t const distanceFromBase = (size_t)(window->nextSrc - window->base);
+        DEBUGLOG(5, "Non contiguous blocks, new segment starts at %u",
+                 window->dictLimit);
+        window->lowLimit = window->dictLimit;
+        assert(distanceFromBase == (size_t)(U32)distanceFromBase);  /* should never overflow */
+        window->dictLimit = (U32)distanceFromBase;
+        window->dictBase = window->base;
+        window->base = ip - distanceFromBase;
+        // ms->nextToUpdate = window->dictLimit;
+        if (window->dictLimit - window->lowLimit < HASH_READ_SIZE) window->lowLimit = window->dictLimit;   /* too small extDict */
+        contiguous = 0;
+    }
+    window->nextSrc = ip + srcSize;
+    /* if input and dictionary overlap : reduce dictionary (area presumed modified by input) */
+    if ( (ip+srcSize > window->dictBase + window->lowLimit)
+       & (ip < window->dictBase + window->dictLimit)) {
+        ptrdiff_t const highInputIdx = (ip + srcSize) - window->dictBase;
+        U32 const lowLimitMax = (highInputIdx > (ptrdiff_t)window->dictLimit) ? window->dictLimit : (U32)highInputIdx;
+        window->lowLimit = lowLimitMax;
+    }
+    return contiguous;
+}
+
 #if defined (__cplusplus)
 }
 #endif
@@ -420,6 +638,13 @@ MEM_STATIC size_t ZSTD_hashPtr(const void* p, U32 hBits, U32 mls)
  * Private declarations
  * These prototypes shall only be called from within lib/compress
  * ============================================================== */
+
+/* ZSTD_getCParamsFromCCtxParams() :
+ * cParams are built depending on compressionLevel, src size hints, 
+ * LDM and manually set compression parameters.
+ */
+ZSTD_compressionParameters ZSTD_getCParamsFromCCtxParams(
+        const ZSTD_CCtx_params* CCtxParams, U64 srcSizeHint, size_t dictSize);
 
 /*! ZSTD_initCStream_internal() :
  *  Private use only. Init streaming operation.
@@ -446,7 +671,7 @@ ZSTD_compressionParameters ZSTD_getCParamsFromCDict(const ZSTD_CDict* cdict);
  * Private use only. To be called from zstdmt_compress.c. */
 size_t ZSTD_compressBegin_advanced_internal(ZSTD_CCtx* cctx,
                                     const void* dict, size_t dictSize,
-                                    ZSTD_dictMode_e dictMode,
+                                    ZSTD_dictContentType_e dictContentType,
                                     const ZSTD_CDict* cdict,
                                     ZSTD_CCtx_params params,
                                     unsigned long long pledgedSrcSize);
@@ -458,5 +683,27 @@ size_t ZSTD_compress_advanced_internal(ZSTD_CCtx* cctx,
                                  const void* src, size_t srcSize,
                                  const void* dict,size_t dictSize,
                                  ZSTD_CCtx_params params);
+
+
+/* ZSTD_writeLastEmptyBlock() :
+ * output an empty Block with end-of-frame mark to complete a frame
+ * @return : size of data written into `dst` (== ZSTD_blockHeaderSize (defined in zstd_internal.h))
+ *           or an error code if `dstCapcity` is too small (<ZSTD_blockHeaderSize)
+ */
+size_t ZSTD_writeLastEmptyBlock(void* dst, size_t dstCapacity);
+
+
+/* ZSTD_referenceExternalSequences() :
+ * Must be called before starting a compression operation.
+ * seqs must parse a prefix of the source.
+ * This cannot be used when long range matching is enabled.
+ * Zstd will use these sequences, and pass the literals to a secondary block
+ * compressor.
+ * @return : An error code on failure.
+ * NOTE: seqs are not verified! Invalid sequences can cause out-of-bounds memory
+ * access and data corruption.
+ */
+size_t ZSTD_referenceExternalSequences(ZSTD_CCtx* cctx, rawSeq* seq, size_t nbSeq);
+
 
 #endif /* ZSTD_COMPRESS_H */

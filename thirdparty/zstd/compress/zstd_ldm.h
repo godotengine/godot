@@ -22,32 +22,71 @@ extern "C" {
 ***************************************/
 
 #define ZSTD_LDM_DEFAULT_WINDOW_LOG ZSTD_WINDOWLOG_DEFAULTMAX
-#define ZSTD_LDM_HASHEVERYLOG_NOTSET 9999
 
-/** ZSTD_compressBlock_ldm_generic() :
+/**
+ * ZSTD_ldm_generateSequences():
  *
- *  This is a block compressor intended for long distance matching.
+ * Generates the sequences using the long distance match finder.
+ * Generates long range matching sequences in `sequences`, which parse a prefix
+ * of the source. `sequences` must be large enough to store every sequence,
+ * which can be checked with `ZSTD_ldm_getMaxNbSeq()`.
+ * @returns 0 or an error code.
  *
- *  The function searches for matches of length at least
- *  ldmParams.minMatchLength using a hash table in cctx->ldmState.
- *  Matches can be at a distance of up to cParams.windowLog.
- *
- *  Upon finding a match, the unmatched literals are compressed using a
- *  ZSTD_blockCompressor (depending on the strategy in the compression
- *  parameters), which stores the matched sequences. The "long distance"
- *  match is then stored with the remaining literals from the
- *  ZSTD_blockCompressor. */
-size_t ZSTD_compressBlock_ldm(ZSTD_CCtx* cctx, const void* src, size_t srcSize);
-size_t ZSTD_compressBlock_ldm_extDict(ZSTD_CCtx* ctx,
-                                      const void* src, size_t srcSize);
+ * NOTE: The user must have called ZSTD_window_update() for all of the input
+ * they have, even if they pass it to ZSTD_ldm_generateSequences() in chunks.
+ * NOTE: This function returns an error if it runs out of space to store
+ *       sequences.
+ */
+size_t ZSTD_ldm_generateSequences(
+            ldmState_t* ldms, rawSeqStore_t* sequences,
+            ldmParams_t const* params, void const* src, size_t srcSize);
 
-/** ZSTD_ldm_initializeParameters() :
- *  Initialize the long distance matching parameters to their default values. */
-size_t ZSTD_ldm_initializeParameters(ldmParams_t* params, U32 enableLdm);
+/**
+ * ZSTD_ldm_blockCompress():
+ *
+ * Compresses a block using the predefined sequences, along with a secondary
+ * block compressor. The literals section of every sequence is passed to the
+ * secondary block compressor, and those sequences are interspersed with the
+ * predefined sequences. Returns the length of the last literals.
+ * Updates `rawSeqStore.pos` to indicate how many sequences have been consumed.
+ * `rawSeqStore.seq` may also be updated to split the last sequence between two
+ * blocks.
+ * @return The length of the last literals.
+ *
+ * NOTE: The source must be at most the maximum block size, but the predefined
+ * sequences can be any size, and may be longer than the block. In the case that
+ * they are longer than the block, the last sequences may need to be split into
+ * two. We handle that case correctly, and update `rawSeqStore` appropriately.
+ * NOTE: This function does not return any errors.
+ */
+size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
+            ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
+            ZSTD_compressionParameters const* cParams,
+            void const* src, size_t srcSize,
+            int const extDict);
+
+/**
+ * ZSTD_ldm_skipSequences():
+ *
+ * Skip past `srcSize` bytes worth of sequences in `rawSeqStore`.
+ * Avoids emitting matches less than `minMatch` bytes.
+ * Must be called for data with is not passed to ZSTD_ldm_blockCompress().
+ */
+void ZSTD_ldm_skipSequences(rawSeqStore_t* rawSeqStore, size_t srcSize,
+    U32 const minMatch);
+
 
 /** ZSTD_ldm_getTableSize() :
- *  Estimate the space needed for long distance matching tables. */
-size_t ZSTD_ldm_getTableSize(U32 hashLog, U32 bucketSizeLog);
+ *  Estimate the space needed for long distance matching tables or 0 if LDM is
+ *  disabled.
+ */
+size_t ZSTD_ldm_getTableSize(ldmParams_t params);
+
+/** ZSTD_ldm_getSeqSpace() :
+ *  Return an upper bound on the number of sequences that can be produced by
+ *  the long distance matcher, or 0 if LDM is disabled.
+ */
+size_t ZSTD_ldm_getMaxNbSeq(ldmParams_t params, size_t maxChunkSize);
 
 /** ZSTD_ldm_getTableSize() :
  *  Return prime8bytes^(minMatchLength-1) */
@@ -58,8 +97,12 @@ U64 ZSTD_ldm_getHashPower(U32 minMatchLength);
  *  windowLog and params->hashLog.
  *
  *  Ensures that params->bucketSizeLog is <= params->hashLog (setting it to
- *  params->hashLog if it is not). */
-void ZSTD_ldm_adjustParameters(ldmParams_t* params, U32 windowLog);
+ *  params->hashLog if it is not).
+ *
+ *  Ensures that the minMatchLength >= targetLength during optimal parsing.
+ */
+void ZSTD_ldm_adjustParameters(ldmParams_t* params,
+                               ZSTD_compressionParameters const* cParams);
 
 #if defined (__cplusplus)
 }
