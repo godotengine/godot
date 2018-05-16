@@ -1151,7 +1151,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 	cf->save(path);
 }
 
-Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) {
+Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
@@ -1492,6 +1492,9 @@ void EditorSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_settings_dir"), &EditorSettings::get_settings_dir);
 	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorSettings::get_project_settings_dir);
+
+	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
+	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("set_favorite_dirs", "dirs"), &EditorSettings::set_favorite_dirs);
 	ClassDB::bind_method(D_METHOD("get_favorite_dirs"), &EditorSettings::get_favorite_dirs);
