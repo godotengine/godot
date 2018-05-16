@@ -781,6 +781,9 @@ void ColorPickerButton::_bind_methods() {
 
 ColorPickerButton::ColorPickerButton() {
 
+	//Initialization is now done deferred
+	//this improves performance in the inspector as the color picker
+	//can be expensive to initialize
 	picker = NULL;
 	popup = NULL;
 	edit_alpha = true;
