@@ -425,7 +425,7 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		} break;
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
 
-			EditorNode::get_singleton()->get_property_editor_vb()->remove_child(p_control);
+			EditorNode::get_singleton()->get_inspector_dock_addon_area()->remove_child(p_control);
 
 		} break;
 	}

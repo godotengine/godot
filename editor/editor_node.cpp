@@ -545,8 +545,8 @@ void EditorNode::_vp_resized() {
 
 void EditorNode::_node_renamed() {
 
-	if (inspector)
-		inspector->update_tree();
+	if (get_inspector())
+		get_inspector()->update_tree();
 }
 
 void EditorNode::_editor_select_next() {
@@ -1155,20 +1155,6 @@ void EditorNode::_mark_unsaved_scenes() {
 void EditorNode::_dialog_action(String p_file) {
 
 	switch (current_option) {
-
-		case RESOURCE_LOAD: {
-
-			RES res = ResourceLoader::load(p_file);
-			if (res.is_null()) {
-
-				current_option = -1;
-				accept->get_ok()->set_text("Ugh");
-				accept->set_text(TTR("Failed to load resource."));
-				return;
-			};
-
-			push_item(res.operator->());
-		} break;
 		case FILE_NEW_INHERITED_SCENE: {
 
 			load_scene(p_file, false, true);
@@ -1386,7 +1372,7 @@ void EditorNode::edit_item(Object *p_object) {
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
 
 	if (!p_object) {
-		inspector->edit(NULL);
+		get_inspector()->edit(NULL);
 		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(NULL);
 		return;
@@ -1404,89 +1390,6 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 	}
 
 	_edit_current();
-}
-
-void EditorNode::_select_history(int p_idx) {
-
-	//push it to the top, it is not correct, but it's more useful
-	ObjectID id = editor_history.get_history_obj(p_idx);
-	Object *obj = ObjectDB::get_instance(id);
-	if (!obj)
-		return;
-	push_item(obj);
-}
-
-void EditorNode::_prepare_history() {
-
-	int history_to = MAX(0, editor_history.get_history_len() - 25);
-
-	editor_history_menu->get_popup()->clear();
-
-	Ref<Texture> base_icon = gui_base->get_icon("Object", "EditorIcons");
-	Set<ObjectID> already;
-	for (int i = editor_history.get_history_len() - 1; i >= history_to; i--) {
-
-		ObjectID id = editor_history.get_history_obj(i);
-		Object *obj = ObjectDB::get_instance(id);
-		if (!obj || already.has(id)) {
-			if (history_to > 0) {
-				history_to--;
-			}
-			continue;
-		}
-
-		already.insert(id);
-
-		Ref<Texture> icon = gui_base->get_icon("Object", "EditorIcons");
-		if (gui_base->has_icon(obj->get_class(), "EditorIcons"))
-			icon = gui_base->get_icon(obj->get_class(), "EditorIcons");
-		else
-			icon = base_icon;
-
-		String text;
-		if (Object::cast_to<Resource>(obj)) {
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (r->get_path().is_resource_file())
-				text = r->get_path().get_file();
-			else if (r->get_name() != String()) {
-				text = r->get_name();
-			} else {
-				text = r->get_class();
-			}
-		} else if (Object::cast_to<Node>(obj)) {
-			text = Object::cast_to<Node>(obj)->get_name();
-		} else if (obj->is_class("ScriptEditorDebuggerInspectedObject")) {
-			text = obj->call("get_title");
-		} else {
-			text = obj->get_class();
-		}
-
-		if (i == editor_history.get_history_pos()) {
-			text = "[" + text + "]";
-		}
-		editor_history_menu->get_popup()->add_icon_item(icon, text, i);
-	}
-}
-
-void EditorNode::_property_editor_forward() {
-
-	if (editor_history.next())
-		_edit_current();
-}
-void EditorNode::_property_editor_back() {
-
-	if (editor_history.previous() || editor_history.get_path_size() == 1)
-		_edit_current();
-}
-
-void EditorNode::_menu_collapseall() {
-
-	inspector->collapse_all_folding();
-}
-
-void EditorNode::_menu_expandall() {
-
-	inspector->expand_all_folding();
 }
 
 void EditorNode::_save_default_environment() {
@@ -1534,14 +1437,13 @@ void EditorNode::_edit_current() {
 
 	uint32_t current = editor_history.get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
-	bool inspector_only = editor_history.is_current_inspector_only();
 
 	this->current = current_obj;
 
 	if (!current_obj) {
 
 		scene_tree_dock->set_selected(NULL);
-		inspector->edit(NULL);
+		get_inspector()->edit(NULL);
 		node_dock->set_node(NULL);
 		inspector_dock->update(NULL);
 
@@ -1550,9 +1452,7 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
-	object_menu->set_disabled(true);
-
-	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
@@ -1563,7 +1463,7 @@ void EditorNode::_edit_current() {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
-		inspector->edit(current_res);
+		get_inspector()->edit(current_res);
 		node_dock->set_node(NULL);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
@@ -1587,7 +1487,7 @@ void EditorNode::_edit_current() {
 		Node *current_node = Object::cast_to<Node>(current_obj);
 		ERR_FAIL_COND(!current_node);
 
-		inspector->edit(current_node);
+		get_inspector()->edit(current_node);
 		if (current_node->is_inside_tree()) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
@@ -1611,7 +1511,7 @@ void EditorNode::_edit_current() {
 			disable_folding = true;
 		}
 
-		inspector->edit(current_obj);
+		get_inspector()->edit(current_obj);
 		node_dock->set_node(NULL);
 	}
 
@@ -1619,10 +1519,6 @@ void EditorNode::_edit_current() {
 
 	if (get_inspector()->is_capitalize_paths_enabled() != capitalize) {
 		get_inspector()->set_enable_capitalize_paths(capitalize);
-	}
-
-	if (inspector->is_capitalize_paths_enabled() != capitalize) {
-		inspector->set_enable_capitalize_paths(capitalize);
 	}
 
 	/* Take care of PLUGIN EDITOR */
@@ -1656,45 +1552,7 @@ void EditorNode::_edit_current() {
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// update screen main_plugin
 
-				if (!changing_scene) {
-
-					if (editor_plugin_screen)
-						editor_plugin_screen->make_visible(false);
-					editor_plugin_screen = main_plugin;
-					editor_plugin_screen->edit(current_obj);
-
-					editor_plugin_screen->make_visible(true);
-
-					int plugin_count = editor_data.get_editor_plugin_count();
-					for (int i = 0; i < plugin_count; i++) {
-						editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
-					}
-
-					for (int i = 0; i < editor_table.size(); i++) {
-
-						main_editor_buttons[i]->set_pressed(editor_table[i] == main_plugin);
-					}
-				}
-
-			} else {
-
-				editor_plugin_screen->edit(current_obj);
-			}
-		}
-
-		Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(current_obj);
-
-		if (!sub_plugins.empty()) {
-			_display_top_editors(false);
-
-			_set_top_editors(sub_plugins);
-			_set_editing_top_editors(current_obj);
-			_display_top_editors(true);
-
-		} else if (!editor_plugins_over->get_plugins_list().empty()) {
-
-			_hide_top_editors();
-		}
+		_hide_top_editors();
 	}
 
 	inspector_dock->update(current_obj);
@@ -2415,13 +2273,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			about->popup_centered_minsize(Size2(780, 500) * EDSCALE);
 		} break;
 
-		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
-
-			ProjectSettings::get_singleton()->set("rendering/quality/driver/driver_name", video_driver_request);
-			ProjectSettings::get_singleton()->save();
-
-			save_all_scenes_and_restart();
-		} break;
 		default: {
 			if (p_option >= IMPORT_PLUGIN_BASE) {
 			}
@@ -3099,23 +2950,9 @@ InspectorDock *EditorNode::get_inspector_dock() {
 	return inspector_dock;
 }
 
-void EditorNode::update_keying() {
+void EditorNode::_instance_request(const Vector<String> &p_files) {
 
-	bool valid = false;
-
-	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
-
-		if (editor_history.get_path_size() >= 1) {
-
-			Object *obj = ObjectDB::get_instance(editor_history.get_path_object(0));
-			if (Object::cast_to<Node>(obj)) {
-
-				valid = true;
-			}
-		}
-	}
-
-	inspector->set_keying(valid);
+	request_instance_scenes(p_files);
 }
 
 void EditorNode::_close_messages() {
@@ -4098,30 +3935,6 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	editor_data.get_undo_redo().add_undo_method(this, "set_current_scene", editor_data.get_edited_scene());
 	editor_data.get_undo_redo().add_undo_method(this, "set_current_version", saved_version);
 	editor_data.get_undo_redo().commit_action();
-}
-
-void EditorNode::_toggle_search_bar(bool p_pressed) {
-
-	inspector->set_use_filter(p_pressed);
-
-	if (p_pressed) {
-
-		search_bar->show();
-		search_box->grab_focus();
-		search_box->select_all();
-	} else {
-
-		search_bar->hide();
-	}
-}
-
-void EditorNode::_clear_search_box() {
-
-	if (search_box->get_text() == "")
-		return;
-
-	search_box->clear();
-	inspector->update_tree();
 }
 
 ToolButton *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
@@ -5585,129 +5398,11 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
 	dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 
-	VBoxContainer *prop_editor_base = memnew(VBoxContainer);
-	prop_editor_base->set_name("Inspector");
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(prop_editor_base);
-	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(prop_editor_base->get_index(), TTR("Inspector"));
-
-	HBoxContainer *prop_editor_hb = memnew(HBoxContainer);
-
-	prop_editor_base->add_child(prop_editor_hb);
-	prop_editor_vb = prop_editor_base;
-
-	resource_new_button = memnew(ToolButton);
-	resource_new_button->set_tooltip(TTR("Create a new resource in memory and edit it."));
-	resource_new_button->set_icon(gui_base->get_icon("New", "EditorIcons"));
-	prop_editor_hb->add_child(resource_new_button);
-	resource_new_button->connect("pressed", this, "_menu_option", varray(RESOURCE_NEW));
-	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
-
-	resource_load_button = memnew(ToolButton);
-	resource_load_button->set_tooltip(TTR("Load an existing resource from disk and edit it."));
-	resource_load_button->set_icon(gui_base->get_icon("Load", "EditorIcons"));
-	prop_editor_hb->add_child(resource_load_button);
-	resource_load_button->connect("pressed", this, "_menu_option", varray(RESOURCE_LOAD));
-	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
-
-	resource_save_button = memnew(MenuButton);
-	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
-	resource_save_button->set_icon(gui_base->get_icon("Save", "EditorIcons"));
-	prop_editor_hb->add_child(resource_save_button);
-	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
-	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
-	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
-	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
-	resource_save_button->set_disabled(true);
-
-	prop_editor_hb->add_spacer();
-
-	property_back = memnew(ToolButton);
-	property_back->set_icon(gui_base->get_icon("Back", "EditorIcons"));
-	property_back->set_flat(true);
-	property_back->set_tooltip(TTR("Go to the previous edited object in history."));
-	property_back->set_disabled(true);
-
-	prop_editor_hb->add_child(property_back);
-
-	property_forward = memnew(ToolButton);
-	property_forward->set_icon(gui_base->get_icon("Forward", "EditorIcons"));
-	property_forward->set_flat(true);
-	property_forward->set_tooltip(TTR("Go to the next edited object in history."));
-	property_forward->set_disabled(true);
-
-	prop_editor_hb->add_child(property_forward);
-
-	editor_history_menu = memnew(MenuButton);
-	editor_history_menu->set_tooltip(TTR("History of recently edited objects."));
-	editor_history_menu->set_icon(gui_base->get_icon("History", "EditorIcons"));
-	prop_editor_hb->add_child(editor_history_menu);
-	editor_history_menu->connect("about_to_show", this, "_prepare_history");
-	editor_history_menu->get_popup()->connect("id_pressed", this, "_select_history");
-
-	prop_editor_hb = memnew(HBoxContainer); //again...
-	prop_editor_base->add_child(prop_editor_hb);
-
-	editor_path = memnew(EditorPath(&editor_history));
-	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	prop_editor_hb->add_child(editor_path);
-
-	search_button = memnew(ToolButton);
-	search_button->set_toggle_mode(true);
-	search_button->set_pressed(false);
-	search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
-	prop_editor_hb->add_child(search_button);
-	search_button->connect("toggled", this, "_toggle_search_bar");
-
-	object_menu = memnew(MenuButton);
-	object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
-	prop_editor_hb->add_child(object_menu);
-	object_menu->set_tooltip(TTR("Object properties."));
-
-	create_dialog = memnew(CreateDialog);
-	gui_base->add_child(create_dialog);
-	create_dialog->set_base_type("Resource");
-	create_dialog->connect("create", this, "_resource_created");
-
-	search_bar = memnew(HBoxContainer);
-	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	prop_editor_base->add_child(search_bar);
-	search_bar->hide();
-
-	Label *l = memnew(Label(TTR("Search:") + " "));
-	search_bar->add_child(l);
-
-	search_box = memnew(LineEdit);
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_bar->add_child(search_box);
-
-	ToolButton *clear_button = memnew(ToolButton);
-	clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons"));
-	search_bar->add_child(clear_button);
-	clear_button->connect("pressed", this, "_clear_search_box");
-
-	property_editable_warning = memnew(Button);
-	property_editable_warning->set_text(TTR("Changes may be lost!"));
-	prop_editor_base->add_child(property_editable_warning);
-	property_editable_warning_dialog = memnew(AcceptDialog);
-	gui_base->add_child(property_editable_warning_dialog);
-	property_editable_warning->hide();
-	property_editable_warning->connect("pressed", this, "_property_editable_warning_pressed");
-
-	inspector = memnew(EditorInspector);
-	inspector->set_autoclear(true);
-	inspector->set_show_categories(true);
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	inspector->set_use_doc_hints(true);
-	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/inspector/capitalize_properties", true)));
-	inspector->set_use_folding(!bool(EDITOR_DEF("interface/inspector/disable_inspector_folding", false)));
-
-	//	inspector->hide_top_label();
-	inspector->register_text_enter(search_box);
+	inspector_dock = memnew(InspectorDock(this, editor_data));
+	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(inspector_dock);
+	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
 
 	Button *property_editable_warning;
-	prop_editor_base->add_child(inspector);
-	inspector->set_undo_redo(&editor_data.get_undo_redo());
 
 	import_dock = memnew(ImportDock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
@@ -5852,8 +5547,6 @@ EditorNode::EditorNode() {
 
 	file->connect("file_selected", this, "_dialog_action");
 	file_templates->connect("file_selected", this, "_dialog_action");
-	inspector->connect("resource_selected", this, "_resource_selected");
-	inspector->connect("property_keyed", this, "_property_keyed");
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);

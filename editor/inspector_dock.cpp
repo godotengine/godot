@@ -140,7 +140,6 @@ void InspectorDock::_load_resource(const String &p_type) {
 
 void InspectorDock::_resource_file_selected(String p_file) {
 	RES res = ResourceLoader::load(p_file);
-
 	if (res.is_null()) {
 		warning_dialog->get_ok()->set_text("Ugh");
 		warning_dialog->set_text(TTR("Failed to load resource."));
@@ -293,14 +292,14 @@ void InspectorDock::_menu_expandall() {
 }
 
 void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	AnimationPlayerEditor::singleton->get_key_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform &p_key) {
 	Spatial *s = Object::cast_to<Spatial>(sp);
 	if (!s)
 		return;
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(s, p_sub, p_key);
+	AnimationPlayerEditor::singleton->get_key_editor()->insert_transform_key(s, p_sub, p_key);
 }
 
 void InspectorDock::_warning_pressed() {
@@ -436,14 +435,10 @@ void InspectorDock::update(Object *p_object) {
 	}
 }
 
-void InspectorDock::go_back() {
-	_edit_back();
-}
-
 void InspectorDock::update_keying() {
 	bool valid = false;
 
-	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
+	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
 
 		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
@@ -528,8 +523,6 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search->set_placeholder(TTR("Filter properties"));
-	search->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	add_child(search);
 
 	warning = memnew(Button);
@@ -554,8 +547,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
-	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
+	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
 	inspector->register_text_enter(search);
 	inspector->set_undo_redo(&editor_data->get_undo_redo());
 
@@ -567,3 +560,12 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 InspectorDock::~InspectorDock() {
 }
+
+// void InspectorDock::_clear_search_box() {
+
+// 	if (search_box->get_text() == "")
+// 		return;
+
+// 	search_box->clear();
+// 	inspector->update_tree();
+// }

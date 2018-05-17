@@ -143,8 +143,6 @@ private:
 		EDIT_REVERT,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_CUSTOM,
-		RESOURCE_NEW,
-		RESOURCE_LOAD,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		RUN_PLAY,
@@ -187,8 +185,6 @@ private:
 		HELP_ABOUT,
 
 		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
-
-		IMPORT_PLUGIN_BASE = 100,
 
 		TOOL_MENU_BASE = 1000
 	};
@@ -265,10 +261,7 @@ private:
 
 	PopupMenu *recent_scenes;
 	SceneTreeDock *scene_tree_dock;
-	EditorInspector *inspector;
-	Button *property_editable_warning;
-	AcceptDialog *property_editable_warning_dialog;
-	void _property_editable_warning_pressed();
+	InspectorDock *inspector_dock;
 	NodeDock *node_dock;
 	ImportDock *import_dock;
 	FileSystemDock *filesystem_dock;
@@ -616,8 +609,8 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return inspector; }
-	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
+	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
+	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
