@@ -272,6 +272,15 @@ namespace Godot
             );
         }
 
+        public Color Lightened(float amount)
+        {
+            Color res = this;
+            res.r = res.r + (1.0f - res.r) * amount;
+            res.g = res.g + (1.0f - res.g) * amount;
+            res.b = res.b + (1.0f - res.b) * amount;
+            return res;
+        }
+
         public Color LinearInterpolate(Color c, float t)
         {
             var res = this;
