@@ -2073,6 +2073,23 @@ void EditorPropertyResource::_notification(int p_what) {
 		Ref<Texture> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
 	}
+
+	if (p_what == NOTIFICATION_DRAG_BEGIN) {
+
+		if (is_visible_in_tree()) {
+			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+				dropping = true;
+				assign->update();
+			}
+		}
+	}
+
+	if (p_what == NOTIFICATION_DRAG_END) {
+		if (dropping) {
+			dropping = false;
+			assign->update();
+		}
+	}
 }
 
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
@@ -2105,6 +2122,97 @@ void EditorPropertyResource::expand_all_folding() {
 	}
 }
 
+void EditorPropertyResource::_button_draw() {
+
+	if (dropping) {
+		Color color = get_color("accent_color", "Editor");
+		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
+	}
+}
+
+Variant EditorPropertyResource::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	RES res = get_edited_object()->get(get_edited_property());
+	if (res.is_valid()) {
+
+		return EditorNode::get_singleton()->drag_resource(res, p_from);
+	}
+
+	return Variant();
+}
+
+bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const {
+
+	String allowed_type = base_type;
+
+	Dictionary drag_data = p_drag_data;
+	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
+			String at = allowed_type.get_slice(",", i).strip_edges();
+			if (res.is_valid() && ClassDB::is_parent_class(res->get_class(), at)) {
+				return true;
+			}
+		}
+	}
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+
+		Vector<String> files = drag_data["files"];
+
+		if (files.size() == 1) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			if (ftype != "") {
+
+				for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
+					String at = allowed_type.get_slice(",", i).strip_edges();
+					if (ClassDB::is_parent_class(ftype, at)) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool EditorPropertyResource::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	return _is_drop_valid(p_data);
+}
+void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	ERR_FAIL_COND(!_is_drop_valid(p_data));
+
+	Dictionary drag_data = p_data;
+	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_valid()) {
+			emit_signal("property_changed", get_edited_property(), res);
+			update_property();
+			return;
+		}
+	}
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+
+		Vector<String> files = drag_data["files"];
+
+		if (files.size() == 1) {
+			String file = files[0];
+			RES res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				emit_signal("property_changed", get_edited_property(), res);
+				update_property();
+				return;
+			}
+		}
+	}
+}
+
 void EditorPropertyResource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorPropertyResource::_file_selected);
@@ -2116,6 +2224,10 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_sub_inspector_property_keyed"), &EditorPropertyResource::_sub_inspector_property_keyed);
 	ClassDB::bind_method(D_METHOD("_sub_inspector_resource_selected"), &EditorPropertyResource::_sub_inspector_resource_selected);
 	ClassDB::bind_method(D_METHOD("_sub_inspector_object_id_selected"), &EditorPropertyResource::_sub_inspector_object_id_selected);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &EditorPropertyResource::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyResource::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyResource::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorPropertyResource::_button_draw);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
@@ -2129,6 +2241,8 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", this, "_resource_selected");
+	assign->set_drag_forwarding(this);
+	assign->connect("draw", this, "_button_draw");
 	hbc->add_child(assign);
 
 	menu = memnew(PopupMenu);
@@ -2141,6 +2255,7 @@ EditorPropertyResource::EditorPropertyResource() {
 
 	file = NULL;
 	scene_tree = NULL;
+	dropping = false;
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////
