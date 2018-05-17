@@ -56,6 +56,7 @@ public:
 
 	enum BitmaskMode {
 		BITMASK_2X2,
+		BITMASK_3X3_MINIMAL,
 		BITMASK_3X3
 	};
 
