@@ -667,7 +667,7 @@ void TileSetEditor::_on_workspace_draw() {
 							if (mask & TileSet::BIND_BOTTOMRIGHT) {
 								workspace->draw_rect(Rect2(anchor + size / 2, size / 2), c);
 							}
-						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+						} else {
 							if (mask & TileSet::BIND_TOPLEFT) {
 								workspace->draw_rect(Rect2(anchor, size / 3), c);
 							}
@@ -821,7 +821,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										bit = TileSet::BIND_BOTTOMRIGHT;
 									}
 								}
-							} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+							} else {
 								if (pos.x < size.x / 3) {
 									if (pos.y < size.y / 3) {
 										bit = TileSet::BIND_TOPLEFT;
@@ -884,7 +884,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									bit = TileSet::BIND_BOTTOMRIGHT;
 								}
 							}
-						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+						} else {
 							if (pos.x < size.x / 3) {
 								if (pos.y < size.y / 3) {
 									bit = TileSet::BIND_TOPLEFT;
@@ -1849,7 +1849,7 @@ void TileSetEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (selected_tile < 0 || tileset.is_null())
 		return;
 
-	p_list->push_back(PropertyInfo(Variant::INT, "bitmask_mode", PROPERTY_HINT_ENUM, "2x2,3x3"));
+	p_list->push_back(PropertyInfo(Variant::INT, "bitmask_mode", PROPERTY_HINT_ENUM, "2x2,3x3 (minimal),3x3"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "layout/tile_size"));
 	p_list->push_back(PropertyInfo(Variant::INT, "layout/spacing", PROPERTY_HINT_RANGE, "0,256,1"));
 }
