@@ -142,7 +142,8 @@ public:
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
-	virtual Vector<Plane> get_frustum() const;
+	virtual Vector<Plane> get_frustum(bool p_transformed = true) const;
+	virtual Vector<Vector3> get_endpoints(bool p_transformed = true) const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;

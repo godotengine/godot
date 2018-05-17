@@ -462,6 +462,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera::get_frustum);
+	ClassDB::bind_method(D_METHOD("get_endpoints"), &Camera::get_endpoints);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
@@ -550,7 +552,7 @@ uint32_t Camera::get_cull_mask() const {
 	return layers;
 }
 
-Vector<Plane> Camera::get_frustum() const {
+Vector<Plane> Camera::get_frustum(bool p_transformed) const {
 
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
@@ -561,7 +563,35 @@ Vector<Plane> Camera::get_frustum() const {
 	else
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
 
-	return cm.get_projection_planes(get_camera_transform());
+	if (p_transformed)
+		return cm.get_projection_planes(get_camera_transform());
+	else
+		return cm.get_projection_planes(Transform());
+}
+
+Vector<Vector3> Camera::get_endpoints(bool p_transformed) const {
+
+	ERR_FAIL_COND_V(!is_inside_world(), Vector<Vector3>());
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	CameraMatrix cm;
+	if (mode == PROJECTION_PERSPECTIVE)
+		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	else
+		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+
+	Vector<Vector3> v8;
+	v8.resize(8);
+
+	bool endpoints_valid;
+	if (p_transformed)
+		endpoints_valid = cm.get_endpoints(get_camera_transform(), v8.ptrw());
+	else
+		endpoints_valid = cm.get_endpoints(Transform(), v8.ptrw());
+
+	ERR_FAIL_COND_V(!endpoints_valid, Vector<Vector3>());
+
+	return v8;
 }
 
 void Camera::set_v_offset(float p_offset) {

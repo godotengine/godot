@@ -1188,12 +1188,12 @@ void CameraSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p
 
 	if (camera->get_projection() == Camera::PROJECTION_PERSPECTIVE) {
 		Transform gt = camera->get_global_transform();
-		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], 1.0, gt);
-		camera->set("fov", a * 2.0);
+		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], camera->get_zfar(), gt);
+		camera->set("fov", CLAMP(a * 2.0, 0.01, 179.99));
 	} else {
 
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
+		Geometry::get_closest_points_between_segments(Vector3(0, 0, -camera->get_zfar()), Vector3(4096, 0, -camera->get_zfar()), s[0], s[1], ra, rb);
 		float d = ra.x * 2.0;
 		if (d < 0)
 			d = 0;
@@ -1238,21 +1238,11 @@ void CameraSpatialGizmo::redraw() {
 	Vector<Vector3> lines;
 	Vector<Vector3> handles;
 
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
-	Ref<Material> material = create_material("camera_material", gizmo_color);
-	Ref<Material> icon = create_icon_material("camera_icon", SpatialEditor::get_singleton()->get_icon("GizmoCamera", "EditorIcons"));
-
-	switch (camera->get_projection()) {
-
-		case Camera::PROJECTION_PERSPECTIVE: {
-
-			// The real FOV is halved for accurate representation
-			float fov = camera->get_fov() / 2.0;
-
-			Vector3 side = Vector3(Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)));
-			Vector3 nside = side;
-			nside.x = -nside.x;
-			Vector3 up = Vector3(0, side.x, 0);
+#define ADD_LINE(m_a, m_b)    \
+	{                         \
+		lines.push_back(m_a); \
+		lines.push_back(m_b); \
+	}
 
 #define ADD_TRIANGLE(m_a, m_b, m_c) \
 	{                               \
@@ -1263,20 +1253,6 @@ void CameraSpatialGizmo::redraw() {
 		lines.push_back(m_c);       \
 		lines.push_back(m_a);       \
 	}
-
-			ADD_TRIANGLE(Vector3(), side + up, side - up);
-			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
-			ADD_TRIANGLE(Vector3(), side + up, nside + up);
-			ADD_TRIANGLE(Vector3(), side - up, nside - up);
-
-			handles.push_back(side);
-			side.x *= 0.25;
-			nside.x *= 0.25;
-			Vector3 tup(0, up.y * 3 / 2, side.z);
-			ADD_TRIANGLE(tup, side + up, nside + up);
-
-		} break;
-		case Camera::PROJECTION_ORTHOGONAL: {
 
 #define ADD_QUAD(m_a, m_b, m_c, m_d) \
 	{                                \
@@ -1289,25 +1265,21 @@ void CameraSpatialGizmo::redraw() {
 		lines.push_back(m_d);        \
 		lines.push_back(m_a);        \
 	}
-			float size = camera->get_size();
 
-			float hsize = size * 0.5;
-			Vector3 right(hsize, 0, 0);
-			Vector3 up(0, hsize, 0);
-			Vector3 back(0, 0, -1.0);
-			Vector3 front(0, 0, 0);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
+	Ref<Material> material = create_material("camera_material", gizmo_color);
+	Ref<Material> icon = create_icon_material("camera_icon", SpatialEditor::get_singleton()->get_icon("GizmoCamera", "EditorIcons"));
 
-			ADD_QUAD(-up - right, -up + right, up + right, up - right);
-			ADD_QUAD(-up - right + back, -up + right + back, up + right + back, up - right + back);
-			ADD_QUAD(up + right, up + right + back, up - right + back, up - right);
-			ADD_QUAD(-up + right, -up + right + back, -up - right + back, -up - right);
-			handles.push_back(right + back);
+	Vector<Vector3> endspoints = camera->get_endpoints(false);
 
-			right.x *= 0.25;
-			Vector3 tup(0, up.y * 3 / 2, back.z);
-			ADD_TRIANGLE(tup, right + up + back, -right + up + back);
-
-		} break;
+	if (endspoints.size() > 0) {
+		ADD_QUAD(endspoints[0], endspoints[1], endspoints[3], endspoints[2])
+		ADD_QUAD(endspoints[4], endspoints[5], endspoints[7], endspoints[6])
+		ADD_LINE(endspoints[0], endspoints[4])
+		ADD_LINE(endspoints[1], endspoints[5])
+		ADD_LINE(endspoints[2], endspoints[6])
+		ADD_LINE(endspoints[3], endspoints[7])
+		handles.push_back(endspoints[2].linear_interpolate(endspoints[3], 0.5));
 	}
 
 	add_lines(lines, material);

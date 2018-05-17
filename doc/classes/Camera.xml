@@ -27,6 +27,24 @@
 				Gets the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
 			</description>
 		</method>
+		<method name="get_endpoints" qualifiers="const">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="transformed" type="bool">
+			</argument>
+			<description>
+				Returns a [PoolVector3Array] containing the 8 endpoints which make up the camera's frustum. If [code]transformed[/code] is true, the points will be transformed by the camera's global transform.
+			</description>
+		</method>
+		<method name="get_frustum" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="transformed" type="bool">
+			</argument>
+			<description>
+				Returns an [Array] of planes making up this camera's frustum. If [code]transformed[/code] is true, the planes will be transformed by the camera's global transform.
+			</description>
+		</method>
 		<method name="is_position_behind" qualifiers="const">
 			<return type="bool">
 			</return>

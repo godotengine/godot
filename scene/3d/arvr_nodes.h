@@ -55,7 +55,8 @@ public:
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	virtual Vector3 project_position(const Point2 &p_point) const;
-	virtual Vector<Plane> get_frustum() const;
+	virtual Vector<Plane> get_frustum(bool p_transformed = true) const;
+	virtual Vector<Vector3> get_endpoints(bool p_transformed = true) const;
 
 	ARVRCamera();
 	~ARVRCamera();

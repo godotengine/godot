@@ -160,7 +160,7 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
 	return get_camera_transform().xform(p);
 };
 
-Vector<Plane> ARVRCamera::get_frustum() const {
+Vector<Plane> ARVRCamera::get_frustum(bool p_transformed) const {
 	// get our ARVRServer
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, Vector<Plane>());
@@ -175,8 +175,39 @@ Vector<Plane> ARVRCamera::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
-	return cm.get_projection_planes(get_camera_transform());
+	if (p_transformed)
+		return cm.get_projection_planes(get_camera_transform());
+	else
+		return cm.get_projection_planes(Transform());
 };
+
+Vector<Vector3> ARVRCamera::get_endpoints(bool p_transformed) const {
+
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, Vector<Vector3>());
+
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector<Vector3>());
+
+	ERR_FAIL_COND_V(!is_inside_world(), Vector<Vector3>());
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+
+	Vector<Vector3> v8;
+	v8.resize(8);
+
+	bool endpoints_valid;
+	if (p_transformed)
+		endpoints_valid = cm.get_endpoints(get_camera_transform(), v8.ptrw());
+	else
+		endpoints_valid = cm.get_endpoints(Transform(), v8.ptrw());
+
+	ERR_FAIL_COND_V(!endpoints_valid, Vector<Vector3>());
+
+	return v8;
+}
 
 ARVRCamera::ARVRCamera(){
 	// nothing to do here yet for now..
