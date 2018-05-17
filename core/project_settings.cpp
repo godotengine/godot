@@ -1071,6 +1071,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_mode", 2);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
+	GLOBAL_DEF("debug/settings/performance/update_frequency_msec", 250);
 
 	//assigning here, because using GLOBAL_GET on every block for compressing can be slow
 	Compression::zstd_long_distance_matching = GLOBAL_DEF("compression/formats/zstd/long_distance_matching", false);
