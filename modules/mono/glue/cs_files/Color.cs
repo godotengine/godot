@@ -272,6 +272,15 @@ namespace Godot
             );
         }
 
+        public Color Lightened(float amount)
+        {
+            Color res = this;
+            res.r = res.r + (1.0f - res.r) * amount;
+            res.g = res.g + (1.0f - res.g) * amount;
+            res.b = res.b + (1.0f - res.b) * amount;
+            return res;
+        }
+
         public Color LinearInterpolate(Color c, float t)
         {
             var res = this;
@@ -284,28 +293,15 @@ namespace Godot
             return res;
         }
 
-        public int ToAbgr32()
+        public int ToRgba32()
         {
-            int c = (byte)Math.Round(a * 255);
-            c <<= 8;
-            c |= (byte)Math.Round(b * 255);
+            int c = (byte)(r * 255);
             c <<= 8;
             c |= (byte)Math.Round(g * 255);
             c <<= 8;
-            c |= (byte)Math.Round(r * 255);
-
-            return c;
-        }
-
-        public long ToAbgr64()
-        {
-            long c = (ushort)Math.Round(a * 65535);
-            c <<= 16;
-            c |= (ushort)Math.Round(b * 65535);
-            c <<= 16;
-            c |= (ushort)Math.Round(g * 65535);
-            c <<= 16;
-            c |= (ushort)Math.Round(r * 65535);
+            c |= (byte)(b * 255);
+            c <<= 8;
+            c |= (byte)(a * 255);
 
             return c;
         }
