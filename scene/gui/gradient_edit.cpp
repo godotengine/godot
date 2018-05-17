@@ -147,6 +147,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		grabbed = _get_point_from_pos(x);
 		//grab or select
 		if (grabbed != -1) {
+			grabbed = false;
 			return;
 		}
 

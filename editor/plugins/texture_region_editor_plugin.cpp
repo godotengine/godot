@@ -601,6 +601,17 @@ void TextureRegionEditor::apply_rect(const Rect2 &rect) {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			if (node_sprite) {
+				if (node_sprite->is_region()) {
+
+					set_process(false);
+					EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+				}
+			} else {
+				set_process(false);
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_READY: {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
@@ -640,6 +651,23 @@ void TextureRegionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_zoom_out"), &TextureRegionEditor::_zoom_out);
 }
 
+bool TextureRegionEditor::is_stylebox() {
+	return obj_styleBox.is_valid();
+}
+
+bool TextureRegionEditor::is_atlas_texture() {
+
+	return atlas_tex.is_valid();
+}
+
+bool TextureRegionEditor::is_ninepatch() {
+	return node_ninepatch != NULL;
+}
+
+Sprite *TextureRegionEditor::get_sprite() {
+	return node_sprite;
+}
+
 void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite)
 		node_sprite->remove_change_receptor(this);
@@ -670,6 +698,12 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		tile_set = Ref<TileSet>(NULL);
 	}
 	edit_draw->update();
+	if (node_sprite && !node_sprite->is_region()) {
+		set_process(true);
+	}
+	if (!p_obj) {
+		set_process(false);
+	}
 }
 
 void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
@@ -932,8 +966,12 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		if (texture_region_button->is_pressed())
-			region_editor->show();
+		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region())) {
+			editor->make_bottom_panel_item_visible(region_editor);
+		} else {
+			if (texture_region_button->is_pressed())
+				region_editor->show();
+		}
 	} else {
 		texture_region_button->hide();
 		region_editor->edit(NULL);
@@ -989,10 +1027,10 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	region_editor = memnew(TextureRegionEditor(p_node));
 
-	texture_region_button = p_node->add_bottom_panel_item(TTR("Texture Region"), region_editor);
+	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->set_tooltip(TTR("Texture Region Editor"));
 
-	region_editor->set_custom_minimum_size(Size2(0, 200));
+	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
 	texture_region_button->hide();
 }

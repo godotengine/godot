@@ -324,7 +324,7 @@ void EditorNode::_notification(int p_what) {
 	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+		scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 
 		theme_base->set_theme(theme);
@@ -343,8 +343,8 @@ void EditorNode::_notification(int p_what) {
 		settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 		help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 
-		if (bool(EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true))) {
-			scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+		if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
+			scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
 		} else {
 			scene_tabs->set_min_width(0);
 		}
@@ -1527,7 +1527,7 @@ void EditorNode::_edit_current() {
 
 	object_menu->set_disabled(true);
 
-	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
+	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
@@ -1796,7 +1796,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		}
 	}
 
-	if (bool(EDITOR_DEF("run/auto_save/save_before_running", true))) {
+	if (bool(EDITOR_GET("run/auto_save/save_before_running"))) {
 
 		if (unsaved_cache) {
 
@@ -1823,11 +1823,11 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	if (!call_build())
 		return;
 
-	if (bool(EDITOR_DEF("run/output/always_clear_output_on_play", true))) {
+	if (bool(EDITOR_GET("run/output/always_clear_output_on_play"))) {
 		log->clear();
 	}
 
-	if (bool(EDITOR_DEF("run/output/always_open_output_on_play", true))) {
+	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
 		make_bottom_panel_item_visible(log);
 	}
 
@@ -2326,7 +2326,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
 			stop_button->set_disabled(true);
 
-			if (bool(EDITOR_DEF("run/output/always_close_output_on_stop", true))) {
+			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
 				for (int i = 0; i < bottom_panel_items.size(); i++) {
 					if (bottom_panel_items[i].control == log) {
 						_bottom_panel_switch(false, i);
@@ -2346,7 +2346,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_PLAY_NATIVE: {
 
-			bool autosave = EDITOR_DEF("run/auto_save/save_before_running", true);
+			bool autosave = EDITOR_GET("run/auto_save/save_before_running");
 			if (autosave) {
 				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
 			}
@@ -2372,10 +2372,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_PROJECT_MANAGER: {
 
 			if (!p_confirmed) {
-				bool save_each = EDITOR_DEF("interface/editor/save_each_scene_on_quit", true);
+				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
 
-					bool confirm = EDITOR_DEF("interface/editor/quit_confirmation", true);
+					bool confirm = EDITOR_GET("interface/editor/quit_confirmation");
 					if (confirm) {
 
 						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
@@ -4044,7 +4044,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 }
 
 void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
-	if (!bool(EDITOR_DEF("interface/scene_tabs/restore_scenes_on_load", false))) {
+	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return;
 	}
 
@@ -4166,7 +4166,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 }
 
 void EditorNode::_scene_tab_hover(int p_tab) {
-	if (bool(EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true)) == false) {
+	if (bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover")) == false) {
 		return;
 	}
 	int current_tab = scene_tabs->get_current_tab();
@@ -5042,6 +5042,22 @@ EditorNode::EditorNode() {
 	ClassDB::set_class_enabled("CollisionShape2D", true);
 	ClassDB::set_class_enabled("CollisionPolygon2D", true);
 
+	//defs here, use EDITOR_GET in logic
+	EDITOR_DEF("interface/scene_tabs/always_show_close_button", false);
+	EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true);
+	EDITOR_DEF("interface/scene_tabs/minimum_width", 50);
+	EDITOR_DEF("run/output/always_clear_output_on_play", true);
+	EDITOR_DEF("run/output/always_open_output_on_play", true);
+	EDITOR_DEF("run/output/always_close_output_on_stop", true);
+	EDITOR_DEF("run/auto_save/save_before_running", true);
+	EDITOR_DEF("interface/editor/save_each_scene_on_quit", true);
+	EDITOR_DEF("interface/editor/quit_confirmation", true);
+	EDITOR_DEF("interface/scene_tabs/restore_scenes_on_load", false);
+	EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true);
+	EDITOR_DEF("interface/inspector/capitalize_properties", true);
+	EDITOR_DEF("interface/inspector/open_resources_in_new_inspector", false);
+	EDITOR_DEF("run/auto_save/save_before_running", true);
+
 	theme_base = memnew(Control);
 	add_child(theme_base);
 	theme_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -5679,8 +5695,8 @@ EditorNode::EditorNode() {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/inspector/capitalize_properties", true)));
+	inspector->set_use_folding(!bool(EDITOR_DEF("interface/inspector/disable_inspector_folding", false)));
 
 	//	inspector->hide_top_label();
 	inspector->register_text_enter(search_box);

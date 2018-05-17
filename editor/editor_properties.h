@@ -481,7 +481,9 @@ class EditorPropertyResource : public EditorProperty {
 	PopupMenu *menu;
 	EditorFileDialog *file;
 	Vector<String> inheritors_array;
+	EditorInspector *sub_inspector;
 
+	bool use_sub_inspector;
 	String base_type;
 
 	SceneTreeDialog *scene_tree;
@@ -494,6 +496,10 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _update_menu();
 
+	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
+	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
+	void _sub_inspector_object_id_selected(int p_id);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -501,6 +507,10 @@ protected:
 public:
 	virtual void update_property();
 	void setup(const String &p_base_type);
+
+	void collapse_all_folding();
+	void expand_all_folding();
+
 	EditorPropertyResource();
 };
 

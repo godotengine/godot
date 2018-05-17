@@ -277,6 +277,7 @@ void Control::_update_minimum_size() {
 	data.updating_last_minimum_size = false;
 
 	if (minsize != data.last_minimum_size) {
+		data.last_minimum_size = minsize;
 		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
 	}
 }
