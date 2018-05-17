@@ -1188,7 +1188,7 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 			get_tree()->connect("tree_changed", this, "_tree_changed");
-			editor->connect("request_help", this, "_request_help");
+			editor->get_inspector_dock()->connect("request_help", this, "_request_help");
 			editor->connect("request_help_search", this, "_help_search");
 			editor->connect("request_help_index", this, "_help_index");
 		} break;
