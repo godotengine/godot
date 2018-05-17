@@ -127,12 +127,11 @@ Transform Transform::interpolate_with(const Transform &p_transform, real_t p_c) 
 	Quat dst_rot = p_transform.basis;
 	Vector3 dst_loc = p_transform.origin;
 
-	Transform dst; //this could be made faster by using a single function in Basis..
-	dst.basis = src_rot.slerp(dst_rot, p_c).normalized();
-	dst.basis.set_scale(src_scale.linear_interpolate(dst_scale, p_c));
-	dst.origin = src_loc.linear_interpolate(dst_loc, p_c);
+	Transform interp;
+	interp.basis.set_quat_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.linear_interpolate(dst_scale, p_c));
+	interp.origin = src_loc.linear_interpolate(dst_loc, p_c);
 
-	return dst;
+	return interp;
 }
 
 void Transform::scale(const Vector3 &p_scale) {
