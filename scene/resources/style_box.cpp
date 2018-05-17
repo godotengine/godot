@@ -136,8 +136,17 @@ Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 
+	ERR_FAIL_INDEX(p_margin, 4);
+
 	margin[p_margin] = p_size;
 	emit_changed();
+	static const char *margin_prop[4] = {
+		"content_margin_left",
+		"content_margin_top",
+		"content_margin_right",
+		"content_margin_bottom",
+	};
+	_change_notify(margin_prop[p_margin]);
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
 

@@ -131,6 +131,10 @@ public:
 	void _region_draw();
 	void _region_input(const Ref<InputEvent> &p_input);
 	void _scroll_changed(float);
+	bool is_stylebox();
+	bool is_atlas_texture();
+	bool is_ninepatch();
+	Sprite *get_sprite();
 
 	void edit(Object *p_obj);
 	TextureRegionEditor(EditorNode *p_editor);
