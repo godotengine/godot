@@ -472,6 +472,13 @@ public class PaymentsManager {
 				if (skuList.size() == 0) {
 					return;
 				}
+
+				if (mService == null) {
+					godotPaymentV3.errorSkuDetail("Payment manager is not initialized");
+
+					return;
+				}
+
 				// Split the sku list in blocks of no more than 20 elements.
 				ArrayList<ArrayList<String>> packs = new ArrayList<ArrayList<String>>();
 				ArrayList<String> tempList;
@@ -520,8 +527,7 @@ public class PaymentsManager {
 				}
 				godotPaymentV3.completeSkuDetail();
 			}
-		}))
-				.start();
+		})).start();
 	}
 
 	public void setBaseSingleton(GodotPaymentV3 godotPaymentV3) {
