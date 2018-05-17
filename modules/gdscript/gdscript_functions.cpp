@@ -120,6 +120,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"Color8",
 		"ColorN",
 		"print_stack",
+		"get_stack",
 		"instance_from_id",
 		"len",
 		"is_instance_valid",
@@ -1213,6 +1214,22 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			};
 		} break;
 
+		case GET_STACK: {
+			VALIDATE_ARG_COUNT(0);
+
+			ScriptLanguage *script = GDScriptLanguage::get_singleton();
+			Array ret;
+			for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
+
+				Dictionary frame;
+				frame["source"] = script->debug_get_stack_level_source(i);
+				frame["function"] = script->debug_get_stack_level_function(i);
+				frame["line"] = script->debug_get_stack_level_line(i);
+				ret.push_back(frame);
+			};
+			r_ret = ret;
+		} break;
+
 		case INSTANCE_FROM_ID: {
 
 			VALIDATE_ARG_COUNT(1);
@@ -1810,6 +1827,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 		case PRINT_STACK: {
 			MethodInfo mi("print_stack");
+			mi.return_val.type = Variant::NIL;
+			return mi;
+		} break;
+		case GET_STACK: {
+			MethodInfo mi("get_stack");
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
