@@ -1550,8 +1550,9 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
+	object_menu->set_disabled(true);
+
 	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
-	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
@@ -4960,6 +4961,22 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/resources_types_to_open_in_new_inspector", "SpatialMaterial");
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
+	//defs here, use EDITOR_GET in logic
+	EDITOR_DEF("interface/scene_tabs/always_show_close_button", false);
+	EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true);
+	EDITOR_DEF("interface/scene_tabs/minimum_width", 50);
+	EDITOR_DEF("run/output/always_clear_output_on_play", true);
+	EDITOR_DEF("run/output/always_open_output_on_play", true);
+	EDITOR_DEF("run/output/always_close_output_on_stop", true);
+	EDITOR_DEF("run/auto_save/save_before_running", true);
+	EDITOR_DEF("interface/editor/save_each_scene_on_quit", true);
+	EDITOR_DEF("interface/editor/quit_confirmation", true);
+	EDITOR_DEF("interface/scene_tabs/restore_scenes_on_load", false);
+	EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true);
+	EDITOR_DEF("interface/inspector/capitalize_properties", true);
+	EDITOR_DEF("interface/inspector/open_resources_in_new_inspector", false);
+	EDITOR_DEF("run/auto_save/save_before_running", true);
+
 	theme_base = memnew(Control);
 	add_child(theme_base);
 	theme_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -5682,8 +5699,8 @@ EditorNode::EditorNode() {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/inspector/capitalize_properties", true)));
+	inspector->set_use_folding(!bool(EDITOR_DEF("interface/inspector/disable_inspector_folding", false)));
 
 	//	inspector->hide_top_label();
 	inspector->register_text_enter(search_box);

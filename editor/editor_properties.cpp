@@ -118,8 +118,8 @@ void EditorPropertyMultilineText::_bind_methods() {
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
-	set_label_layout(LABEL_LAYOUT_TOP);
 	add_child(hb);
+	set_bottom_editor(hb);
 	text = memnew(TextEdit);
 	text->connect("text_changed", this, "_text_changed");
 	add_focusable(text);
@@ -622,6 +622,7 @@ void EditorPropertyLayers::_button_pressed() {
 	}
 
 	Rect2 gp = button->get_global_rect();
+	layers->set_as_minsize();
 	Vector2 popup_pos = gp.position - Vector2(layers->get_combined_minimum_size().x, 0);
 	layers->set_global_position(popup_pos);
 	layers->popup();
@@ -656,7 +657,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	button->set_text("..");
 	button->connect("pressed", this, "_button_pressed");
 	hb->add_child(button);
-	set_label_layout(LABEL_LAYOUT_TOP);
+	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);
 	add_child(layers);
 	layers->connect("id_pressed", this, "_menu_pressed");
@@ -1267,8 +1268,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
-	set_label_layout(LABEL_LAYOUT_TOP);
+	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1330,8 +1330,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
-	set_label_layout(LABEL_LAYOUT_TOP);
+	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1399,8 +1398,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
-	set_label_layout(LABEL_LAYOUT_TOP);
+	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1474,8 +1472,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
-	set_label_layout(LABEL_LAYOUT_TOP);
+	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1952,23 +1949,75 @@ void EditorPropertyResource::_update_menu() {
 		}
 	}
 
-	Rect2 gt = get_global_rect();
+	Rect2 gt = edit->get_global_rect();
+	menu->set_as_minsize();
 	int ms = menu->get_combined_minimum_size().width;
 	Vector2 popup_pos = gt.position + gt.size - Vector2(ms, 0);
-	menu->set_position(popup_pos);
+	menu->set_global_position(popup_pos);
 	menu->popup();
+}
+
+void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool) {
+
+	emit_signal("property_keyed_with_value", String(get_edited_property()) + ":" + p_property, p_value);
+}
+
+void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
+
+	emit_signal("resource_selected", String(get_edited_property()) + ":" + p_property, p_resource);
+}
+
+void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
+
+	emit_signal("object_id_selected", get_edited_property(), p_id);
 }
 
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
 
+	if (use_sub_inspector) {
+
+		if (res.is_valid() != assign->is_toggle_mode()) {
+			assign->set_toggle_mode(res.is_valid());
+		}
+#ifdef TOOLS_ENABLED
+		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
+
+			if (!sub_inspector) {
+				sub_inspector = memnew(EditorInspector);
+				sub_inspector->set_enable_v_scroll(false);
+
+				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
+				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
+				sub_inspector->connect("object_id_selected", this, "_sub_inspector_object_id_selected");
+				sub_inspector->set_keying(is_keying());
+				sub_inspector->set_read_only(is_read_only());
+				sub_inspector->set_use_folding(is_using_folding());
+
+				add_child(sub_inspector);
+				set_bottom_editor(sub_inspector);
+				assign->set_pressed(true);
+			}
+
+			if (res.ptr() != sub_inspector->get_edited_object()) {
+				sub_inspector->edit(res.ptr());
+			}
+
+		} else {
+			if (sub_inspector) {
+				set_bottom_editor(NULL);
+				memdelete(sub_inspector);
+				sub_inspector = NULL;
+			}
+		}
+#endif
+	}
+
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture>());
 		assign->set_text(TTR("[empty]"));
-		assign->set_disabled(true);
 	} else {
-		assign->set_disabled(false);
 
 		Ref<Texture> icon;
 		if (has_icon(res->get_class(), "EditorIcons"))
@@ -1999,7 +2048,16 @@ void EditorPropertyResource::update_property() {
 void EditorPropertyResource::_resource_selected() {
 	RES res = get_edited_object()->get(get_edited_property());
 
-	if (!res.is_null()) {
+	if (res.is_null()) {
+		_update_menu();
+		return;
+	}
+
+	if (use_sub_inspector) {
+
+		get_edited_object()->editor_set_section_unfold(get_edited_property(), assign->is_pressed());
+		update_property();
+	} else {
 
 		emit_signal("resource_selected", get_edited_property(), res);
 	}
@@ -2033,6 +2091,20 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	emit_signal("property_changed", get_edited_property(), vt);
 	update_property();
 }
+
+void EditorPropertyResource::collapse_all_folding() {
+	if (sub_inspector) {
+		sub_inspector->collapse_all_folding();
+	}
+}
+
+void EditorPropertyResource::expand_all_folding() {
+
+	if (sub_inspector) {
+		sub_inspector->expand_all_folding();
+	}
+}
+
 void EditorPropertyResource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorPropertyResource::_file_selected);
@@ -2041,10 +2113,15 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_resource_preview"), &EditorPropertyResource::_resource_preview);
 	ClassDB::bind_method(D_METHOD("_resource_selected"), &EditorPropertyResource::_resource_selected);
 	ClassDB::bind_method(D_METHOD("_viewport_selected"), &EditorPropertyResource::_viewport_selected);
+	ClassDB::bind_method(D_METHOD("_sub_inspector_property_keyed"), &EditorPropertyResource::_sub_inspector_property_keyed);
+	ClassDB::bind_method(D_METHOD("_sub_inspector_resource_selected"), &EditorPropertyResource::_sub_inspector_resource_selected);
+	ClassDB::bind_method(D_METHOD("_sub_inspector_object_id_selected"), &EditorPropertyResource::_sub_inspector_object_id_selected);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
 
+	sub_inspector = NULL;
+	use_sub_inspector = !bool(EDITOR_GET("interface/inspector/open_resources_in_new_inspector"));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 	assign = memnew(Button);

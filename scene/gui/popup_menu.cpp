@@ -627,7 +627,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_ID, uint32_t p_accel
 void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p_accel) {
 
 	add_check_item(p_label, p_ID, p_accel);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
 	minimum_size_changed();
 }
@@ -635,23 +635,9 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p
 void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID, uint32_t p_accel) {
 
 	add_icon_check_item(p_icon, p_label, p_ID, p_accel);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
 	minimum_size_changed();
-}
-
-void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p_accel) {
-
-	add_check_item(p_label, p_ID, p_accel);
-	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
-	update();
-}
-
-void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID, uint32_t p_accel) {
-
-	add_icon_check_item(p_icon, p_label, p_ID, p_accel);
-	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
-	update();
 }
 
 void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID, bool p_global) {
@@ -721,16 +707,9 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bo
 void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bool p_global) {
 
 	add_check_shortcut(p_shortcut, p_ID, p_global);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
-	update();
-	minimum_size_changed();
-}
-
-void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bool p_global) {
-
-	add_check_shortcut(p_shortcut, p_ID, p_global);
 	items[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
+	minimum_size_changed();
 }
 
 void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_ID, uint32_t p_accel) {

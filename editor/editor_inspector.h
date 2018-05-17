@@ -31,26 +31,21 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
-#include "editor_data.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
+
+class UndoRedo;
 
 class EditorProperty : public Container {
 
 	GDCLASS(EditorProperty, Container)
-public:
-	enum LabelLayout {
-		LABEL_LAYOUT_LEFT,
-		LABEL_LAYOUT_TOP,
-	};
-
 private:
 	String label;
 	int text_size;
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
-
-	LabelLayout label_layout;
 
 	int property_usage;
 
@@ -69,6 +64,8 @@ private:
 
 	bool can_revert;
 
+	bool use_folding;
+
 	bool _might_be_in_instance();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage);
 	bool _is_instanced_node_with_original_property_different();
@@ -80,6 +77,7 @@ private:
 
 	Vector<Control *> focusables;
 	Control *label_reference;
+	Control *bottom_editor;
 
 protected:
 	void _notification(int p_what);
@@ -122,10 +120,16 @@ public:
 	bool is_selected() const;
 
 	void set_label_reference(Control *p_control);
+	void set_bottom_editor(Control *p_editor);
+
+	void set_use_folding(bool p_use_folding);
+	bool is_using_folding() const;
+
+	virtual void expand_all_folding();
+	virtual void collapse_all_folding();
 
 	virtual Variant get_drag_data(const Point2 &p_point);
 
-	void set_label_layout(LabelLayout p_layout);
 	EditorProperty();
 };
 
@@ -151,6 +155,7 @@ public:
 
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
+	virtual void parse_category(Object *p_object, const String &p_parse_category);
 	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 	virtual void parse_end();
 };
@@ -249,6 +254,8 @@ class EditorInspector : public ScrollContainer {
 	void _property_changed(const String &p_path, const Variant &p_value);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path);
+	void _property_keyed_with_value(const String &p_path, const Variant &p_value);
+
 	void _property_checked(const String &p_path, bool p_checked);
 
 	void _resource_selected(const String &p_path, RES p_resource);
@@ -261,6 +268,7 @@ class EditorInspector : public ScrollContainer {
 	void _edit_request_change(Object *p_changed, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
+	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
 
 protected:
 	static void _bind_methods();
@@ -281,6 +289,7 @@ public:
 	void refresh();
 
 	void edit(Object *p_object);
+	Object *get_edited_object();
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);

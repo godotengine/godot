@@ -601,6 +601,17 @@ void TextureRegionEditor::apply_rect(const Rect2 &rect) {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			if (node_sprite) {
+				if (node_sprite->is_region()) {
+
+					set_process(false);
+					EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+				}
+			} else {
+				set_process(false);
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_READY: {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
@@ -955,8 +966,12 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		if (texture_region_button->is_pressed())
-			region_editor->show();
+		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region())) {
+			editor->make_bottom_panel_item_visible(region_editor);
+		} else {
+			if (texture_region_button->is_pressed())
+				region_editor->show();
+		}
 	} else {
 		texture_region_button->hide();
 		region_editor->edit(NULL);
@@ -1012,7 +1027,7 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	region_editor = memnew(TextureRegionEditor(p_node));
 
-	texture_region_button = p_node->add_bottom_panel_item(TTR("Texture Region"), region_editor);
+	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->set_tooltip(TTR("Texture Region Editor"));
 
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
