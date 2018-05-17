@@ -1112,15 +1112,10 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_line_width = p_material->line_width;
 	}
 
-	if (state.current_depth_test != (!p_material->shader->spatial.no_depth_test)) {
-		if (p_material->shader->spatial.no_depth_test) {
-			glDisable(GL_DEPTH_TEST);
-
-		} else {
-			glEnable(GL_DEPTH_TEST);
-		}
-
-		state.current_depth_test = !p_material->shader->spatial.no_depth_test;
+	GLenum depthFunc = p_material->shader->spatial.no_depth_test ? GL_ALWAYS : state.default_depth_func;
+	if (depthFunc != state.current_depth_func) {
+		glDepthFunc(depthFunc);
+		state.current_depth_func = depthFunc;
 	}
 
 	if (state.current_depth_draw != p_material->shader->spatial.depth_draw_mode) {
@@ -2013,10 +2008,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	state.current_depth_test = true;
 	state.current_stencil_enabled = false;
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+
+	//TODO: Do we ever need to support a different depth func in _render_list?
+	state.default_depth_func = GL_LEQUAL;
+	state.current_depth_func = GL_LEQUAL;
+	glDepthFunc(GL_LEQUAL);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 
@@ -2247,6 +2246,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	glBindVertexArray(0);
 
 	_set_stencil(false, ShaderLanguage::StencilTest(), ShaderLanguage::StencilTest());
+	glDepthFunc(state.default_depth_func);
+	state.current_depth_func = state.default_depth_func;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);

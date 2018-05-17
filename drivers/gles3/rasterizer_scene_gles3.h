@@ -98,7 +98,8 @@ public:
 		int current_blend_mode;
 		float current_line_width;
 		int current_depth_draw;
-		bool current_depth_test;
+		GLenum current_depth_func;
+		GLenum default_depth_func;
 		GLuint current_main_tex;
 
 		SceneShaderGLES3 scene_shader;
