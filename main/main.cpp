@@ -1729,7 +1729,7 @@ bool Main::start() {
 
 uint64_t Main::last_ticks = 0;
 uint64_t Main::target_ticks = 0;
-uint32_t Main::frames = 0;
+Array Main::frame_times = Array();
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 
@@ -1848,10 +1848,19 @@ bool Main::iteration() {
 		script_debugger->idle_poll();
 	}
 
-	frames++;
 	Engine::get_singleton()->_idle_frames++;
 
-	if (frame > 1000000) {
+	// FPS counter
+	frame_times.push_back(ticks);
+	int frames = frame_times.size();
+
+	while (frame_times.size() > 0 && (int)frame_times.get(0) <= ticks - 1000000) {
+		frame_times.pop_front();
+	}
+
+	int update_frequency = MAX(1, (int)GLOBAL_GET("debug/settings/performance/update_frequency_msec"));
+
+	if (frame > update_frequency * 1000) {
 
 		if (editor || project_manager) {
 			if (print_fps) {
@@ -1867,8 +1876,7 @@ bool Main::iteration() {
 		idle_process_max = 0;
 		physics_process_max = 0;
 
-		frame %= 1000000;
-		frames = 0;
+		frame %= update_frequency * 1000;
 	}
 
 	if (fixed_fps != -1)
