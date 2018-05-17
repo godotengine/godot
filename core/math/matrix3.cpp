@@ -247,13 +247,6 @@ Basis Basis::scaled_local(const Vector3 &p_scale) const {
 	return (*this) * b;
 }
 
-void Basis::set_scale(const Vector3 &p_scale) {
-
-	set_axis(0, get_axis(0).normalized() * p_scale.x);
-	set_axis(1, get_axis(1).normalized() * p_scale.y);
-	set_axis(2, get_axis(2).normalized() * p_scale.z);
-}
-
 Vector3 Basis::get_scale_abs() const {
 
 	return Vector3(

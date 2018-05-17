@@ -236,7 +236,6 @@ public:
 
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
-	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;
