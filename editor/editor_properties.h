@@ -484,6 +484,7 @@ class EditorPropertyResource : public EditorProperty {
 	EditorInspector *sub_inspector;
 
 	bool use_sub_inspector;
+	bool dropping;
 	String base_type;
 
 	SceneTreeDialog *scene_tree;
@@ -499,6 +500,12 @@ class EditorPropertyResource : public EditorProperty {
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
 	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
+
+	void _button_draw();
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool _is_drop_valid(const Dictionary &p_drag_data) const;
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	static void _bind_methods();
