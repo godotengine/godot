@@ -127,15 +127,24 @@ def find_msbuild_windows():
     if not mono_root:
         raise RuntimeError('Cannot find mono root directory')
 
+    framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
+
+    mono_bin_dir = os.path.join(mono_root, 'bin')
+
+    msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
+
+    if os.path.isfile(msbuild_mono):
+        mono_msbuild_env = {
+            'CscToolExe': os.path.join(mono_bin_dir, 'csc.bat'),
+            'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),
+            'FscToolExe': os.path.join(mono_bin_dir, 'fsharpc.bat')
+        }
+        return (msbuild_mono, framework_path, mono_msbuild_env)
+
     msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), os.path.join(mono_root, 'lib', 'mono', '4.5'))
-    else:
-        msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
-
-        if os.path.isfile(msbuild_mono):
-            return (msbuild_mono, '')
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
 
     return None
 
@@ -145,14 +154,21 @@ def mono_build_solution(source, target, env):
     import mono_reg_utils as monoreg
     from shutil import copyfile
 
-    framework_path_override = ''
+    framework_path = ''
+
+    msbuild_env = os.environ.copy()
+
+    # Needed when running from Developer Command Prompt for VS
+    if 'PLATFORM' in msbuild_env:
+        del msbuild_env['PLATFORM']
 
     if os.name == 'nt':
         msbuild_info = find_msbuild_windows()
         if msbuild_info is None:
             raise RuntimeError('Cannot find MSBuild executable')
         msbuild_path = msbuild_info[0]
-        framework_path_override = msbuild_info[1]
+        framework_path = msbuild_info[1]
+        msbuild_env.update(msbuild_info[2])
     else:
         msbuild_path = find_msbuild_unix('msbuild')
         if msbuild_path is None:
@@ -183,14 +199,8 @@ def mono_build_solution(source, target, env):
         '/p:Configuration=' + build_config,
     ]
 
-    if framework_path_override:
-        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path_override]
-
-    msbuild_env = os.environ.copy()
-
-    # Needed when running from Developer Command Prompt for VS
-    if 'PLATFORM' in msbuild_env:
-        del msbuild_env['PLATFORM']
+    if framework_path:
+        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path]
 
     try:
         subprocess.check_call(msbuild_args, env=msbuild_env)
