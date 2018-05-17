@@ -128,12 +128,12 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 	if (build_tool == GodotSharpBuilds::XBUILD) {
 		if (xbuild_path.empty()) {
 			WARN_PRINT("Cannot find binary for '" PROP_NAME_XBUILD "'");
-			return;
+			return NULL;
 		}
 	} else {
 		if (msbuild_path.empty()) {
 			WARN_PRINT("Cannot find binary for '" PROP_NAME_MSBUILD_MONO "'");
-			return;
+			return NULL;
 		}
 	}
 
