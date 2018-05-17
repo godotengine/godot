@@ -110,7 +110,6 @@ public:
 	void scale_local(const Vector3 &p_scale);
 	Basis scaled_local(const Vector3 &p_scale) const;
 
-	void set_scale(const Vector3 &p_scale);
 	Vector3 get_scale() const;
 	Vector3 get_scale_abs() const;
 	Vector3 get_scale_local() const;
@@ -230,10 +229,13 @@ public:
 	operator Quat() const { return get_quat(); }
 
 	Basis(const Quat &p_quat) { set_quat(p_quat); };
+	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
+
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
+	Basis(const Vector3 &p_euler, const Vector3 &p_scale) { set_euler_scale(p_euler, p_scale); }
+
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
-	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;
