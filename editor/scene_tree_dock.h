@@ -56,12 +56,13 @@ class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
-
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
+		TOOL_NEW_PARENT,
+		TOOL_NEW_ROOT,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
@@ -106,6 +107,7 @@ class SceneTreeDock : public VBoxContainer {
 	Control *remote_tree;
 
 	HBoxContainer *tool_hbc;
+	String _generate_preferred_node_type(Node *basis);
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 
 	EditorData *editor_data;
@@ -128,18 +130,19 @@ class SceneTreeDock : public VBoxContainer {
 	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
-
 	void _create();
-	Node *scene_root;
-	Node *edited_scene;
+	Node *scene_root; //This is the scenes 'internal' root
+	Node *edited_scene; //This is the root node as seen in the SceneTreeDock.
 	EditorNode *editor;
 
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
-	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
+	void _node_reparent(Node *new_parent, Node *child, bool p_keep_global_xform);
+	void _nodepath_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
+	void _set_owner_down_tree(Node *starting_on, Node *owner);
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
