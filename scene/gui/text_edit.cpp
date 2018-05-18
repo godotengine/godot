@@ -2845,13 +2845,13 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_A: {
 
 #ifndef APPLE_STYLE_KEYS
-				if (!k->get_command() || k->get_shift() || k->get_alt()) {
+				if (!k->get_control() || k->get_shift() || k->get_alt()) {
 					scancode_handled = false;
 					break;
 				}
 				select_all();
 #else
-				if (k->get_alt() || (!k->get_shift() && !k->get_command() && !k->get_control())) {
+				if ((!k->get_command() && !k->get_control())) {
 					scancode_handled = false;
 					break;
 				}
