@@ -523,6 +523,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search->set_placeholder(TTR("Filter properties"));
+	search->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	add_child(search);
 
 	warning = memnew(Button);
@@ -560,12 +562,3 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 InspectorDock::~InspectorDock() {
 }
-
-// void InspectorDock::_clear_search_box() {
-
-// 	if (search_box->get_text() == "")
-// 		return;
-
-// 	search_box->clear();
-// 	inspector->update_tree();
-// }
