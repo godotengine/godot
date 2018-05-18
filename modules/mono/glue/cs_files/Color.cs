@@ -249,6 +249,15 @@ namespace Godot
             );
         }
 
+        public Color Darkened(float amount)
+        {
+            Color res = this;
+            res.r = res.r * (1.0f - amount);
+            res.g = res.g * (1.0f - amount);
+            res.b = res.b * (1.0f - amount);
+            return res;
+        }
+
         public float Gray()
         {
             return (r + g + b) / 3.0f;
@@ -263,6 +272,15 @@ namespace Godot
             );
         }
 
+        public Color Lightened(float amount)
+        {
+            Color res = this;
+            res.r = res.r + (1.0f - res.r) * amount;
+            res.g = res.g + (1.0f - res.g) * amount;
+            res.b = res.b + (1.0f - res.b) * amount;
+            return res;
+        }
+
         public Color LinearInterpolate(Color c, float t)
         {
             var res = this;
@@ -275,15 +293,15 @@ namespace Godot
             return res;
         }
 
-        public int To32()
+        public int ToRgba32()
         {
-            int c = (byte)(a * 255);
-            c <<= 8;
-            c |= (byte)(r * 255);
+            int c = (byte)(r * 255);
             c <<= 8;
             c |= (byte)(g * 255);
             c <<= 8;
             c |= (byte)(b * 255);
+            c <<= 8;
+            c |= (byte)(a * 255);
 
             return c;
         }
