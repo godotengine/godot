@@ -346,7 +346,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-#ifdef WINDOWS_ENABLED
+#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
 			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
 			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
 			if (data) {
@@ -401,7 +401,7 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-#ifdef WINDOWS_ENABLED
+#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
 			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
 			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
 			if (data) {
