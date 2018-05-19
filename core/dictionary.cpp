@@ -50,6 +50,32 @@ void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	}
 }
 
+Variant Dictionary::get_key_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.key();
+		}
+		index++;
+	}
+
+	return Variant();
+}
+
+Variant Dictionary::get_value_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.value();
+		}
+		index++;
+	}
+
+	return Variant();
+}
+
 Variant &Dictionary::operator[](const Variant &p_key) {
 
 	return _p->variant_map[p_key];
