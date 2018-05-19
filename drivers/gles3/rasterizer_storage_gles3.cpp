@@ -6027,10 +6027,6 @@ void RasterizerStorageGLES3::update_particles() {
 							tex = resources.white_tex;
 						} break;
 					}
-				} else if (t->proxy && t->proxy->tex_id) {
-
-					target = t->proxy->target;
-					tex = t->proxy->tex_id;
 				} else {
 
 					t = t->get_ptr(); //resolve for proxies
