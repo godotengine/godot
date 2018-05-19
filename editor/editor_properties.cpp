@@ -65,12 +65,17 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_signal("property_changed", get_edited_property(), big_text->get_text());
 }
 
 void EditorPropertyMultilineText::_text_changed() {
 
-	emit_signal("property_changed", get_edited_property(), text->get_text());
+	String t = text->get_text();
+	// prevent feedback when updating property
+	// which would cause unchanged properties to appear changed and mark scene unsaved
+	if (t != current_text) {
+		current_text = t;
+		emit_signal("property_changed", get_edited_property(), t);
+	}
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
@@ -89,10 +94,10 @@ void EditorPropertyMultilineText::_open_big_text() {
 }
 
 void EditorPropertyMultilineText::update_property() {
-	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
+	current_text = get_edited_object()->get(get_edited_property());
+	text->set_text(current_text);
 	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+		big_text->set_text(current_text);
 	}
 }
 

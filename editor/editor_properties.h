@@ -61,6 +61,7 @@ class EditorPropertyMultilineText : public EditorProperty {
 	AcceptDialog *big_text_dialog;
 	TextEdit *big_text;
 	Button *open_big_text;
+	String current_text;
 
 	void _big_text_changed();
 	void _text_changed();
