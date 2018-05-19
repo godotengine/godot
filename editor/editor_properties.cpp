@@ -2648,6 +2648,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 		} break;
 		case Variant::DICTIONARY: {
+			EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
