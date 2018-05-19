@@ -520,6 +520,8 @@ bool EditorProperty::is_draw_red() const {
 
 void EditorProperty::_focusable_focused(int p_index) {
 
+	if (!selectable)
+		return;
 	bool already_selected = selected;
 	selected = true;
 	selected_focusable = p_index;
@@ -596,7 +598,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-		if (!selected) {
+		if (!selected && selectable) {
 			selected = true;
 			emit_signal("selected", property, -1);
 			update();
@@ -681,6 +683,19 @@ void EditorProperty::expand_all_folding() {
 void EditorProperty::collapse_all_folding() {
 }
 
+void EditorProperty::set_selectable(bool p_selectable) {
+	selectable = p_selectable;
+}
+
+bool EditorProperty::is_selectable() const {
+	return selectable;
+}
+
+void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
+	object = p_object;
+	property = p_property;
+}
+
 void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_label", "text"), &EditorProperty::set_label);
@@ -729,6 +744,7 @@ void EditorProperty::_bind_methods() {
 
 EditorProperty::EditorProperty() {
 
+	selectable = true;
 	text_size = 0;
 	read_only = false;
 	checkable = false;

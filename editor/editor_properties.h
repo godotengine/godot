@@ -39,6 +39,15 @@
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
 
+class EditorPropertyNil : public EditorProperty {
+	GDCLASS(EditorPropertyNil, EditorProperty)
+	LineEdit *text;
+
+public:
+	virtual void update_property();
+	EditorPropertyNil();
+};
+
 class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty)
 	LineEdit *text;

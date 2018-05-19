@@ -72,6 +72,7 @@ private:
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
+	bool selectable;
 	bool selected;
 	int selected_focusable;
 
@@ -130,6 +131,10 @@ public:
 
 	virtual Variant get_drag_data(const Point2 &p_point);
 
+	void set_selectable(bool p_selectable);
+	bool is_selectable() const;
+
+	void set_object_and_property(Object *p_object, const StringName &p_property);
 	EditorProperty();
 };
 
