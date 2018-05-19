@@ -31,7 +31,20 @@
 #include "editor_properties.h"
 #include "editor/editor_resource_preview.h"
 #include "editor_node.h"
+#include "editor_properties_array_dict.h"
 #include "scene/main/viewport.h"
+
+///////////////////// NULL /////////////////////////
+
+void EditorPropertyNil::update_property() {
+}
+
+EditorPropertyNil::EditorPropertyNil() {
+	Label *label = memnew(Label);
+	label->set_text("[null]");
+	add_child(label);
+}
+
 ///////////////////// TEXT /////////////////////////
 void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
@@ -2273,6 +2286,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 	switch (p_type) {
 
 		// atomic types
+		case Variant::NIL: {
+			EditorPropertyNil *editor = memnew(EditorPropertyNil);
+			add_property_editor(p_path, editor);
+		} break;
 		case Variant::BOOL: {
 			EditorPropertyCheck *editor = memnew(EditorPropertyCheck);
 			add_property_editor(p_path, editor);
@@ -2633,22 +2650,36 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		case Variant::DICTIONARY: {
 		} break;
 		case Variant::ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
-
-		// arrays
 		case Variant::POOL_BYTE_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break; // 20
 		case Variant::POOL_INT_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_REAL_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_STRING_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_VECTOR2_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break; // 25
 		case Variant::POOL_COLOR_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			add_property_editor(p_path, editor);
 		} break;
 		default: {}
 	}
