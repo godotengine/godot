@@ -199,6 +199,7 @@ private:
 					sp = TTR("Imported Project");
 
 				project_name->set_text(sp);
+				_text_changed(sp);
 			}
 		}
 
@@ -222,6 +223,7 @@ private:
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
+		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -230,6 +232,7 @@ private:
 		String p = p_path;
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
+		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -263,7 +266,9 @@ private:
 				if (d->make_dir(project_name->get_text()) == OK) {
 
 					d->change_dir(project_name->get_text());
-					project_path->set_text(d->get_current_dir());
+					String dir_str = d->get_current_dir();
+					project_path->set_text(dir_str);
+					_path_text_changed(dir_str);
 					created_folder_path = d->get_current_dir();
 					create_dir->set_disabled(true);
 				} else {
@@ -475,7 +480,9 @@ private:
 		_remove_created_folder();
 
 		project_path->clear();
+		_path_text_changed("");
 		project_name->clear();
+		_text_changed("");
 
 		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
 			msg->show();
@@ -540,7 +547,9 @@ public:
 				msg->show();
 				get_ok()->set_disabled(true);
 			} else if (current->has_setting("application/config/name")) {
-				project_name->set_text(current->get("application/config/name"));
+				String proj = current->get("application/config/name");
+				project_name->set_text(proj);
+				_text_changed(proj);
 			}
 
 			project_name->call_deferred("grab_focus");
@@ -559,7 +568,9 @@ public:
 				fdialog->set_current_dir(d->get_current_dir());
 				memdelete(d);
 			}
-			project_name->set_text(TTR("New Game Project"));
+			String proj = TTR("New Game Project");
+			project_name->set_text(proj);
+			_text_changed(proj);
 
 			project_path->set_editable(true);
 			browse->set_disabled(false);

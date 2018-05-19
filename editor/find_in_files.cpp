@@ -428,6 +428,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 void FindInFilesDialog::set_search_text(String text) {
 	_search_text_line_edit->set_text(text);
+	_on_search_text_modified(text);
 }
 
 String FindInFilesDialog::get_search_text() const {
