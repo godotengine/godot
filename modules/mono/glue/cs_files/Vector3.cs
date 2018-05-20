@@ -242,6 +242,12 @@ namespace Godot
             z = v.z;
         }
 
+        public Vector3 Slerp(Vector3 b, real_t t)
+        {
+            real_t theta = AngleTo(b);
+            return Rotated(Cross(b), theta * t);
+        }
+
         public Vector3 Slide(Vector3 n)
         {
             return this - n * Dot(n);
