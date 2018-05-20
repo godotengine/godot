@@ -81,6 +81,7 @@
 	<signals>
 		<signal name="finished">
 			<description>
+				Emitted when playback is finished.
 			</description>
 		</signal>
 	</signals>
