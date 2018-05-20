@@ -659,38 +659,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				video_mode.height = window_h;
 			} else {
 				preserve_window_size = false;
-				set_window_size(Size2(video_mode.width, video_mode.height));
-			}
-			if (wParam == SIZE_MAXIMIZED) {
-				maximized = true;
-				minimized = false;
-			} else if (wParam == SIZE_MINIMIZED) {
-				maximized = false;
-				minimized = true;
-			} else if (wParam == SIZE_RESTORED) {
-				maximized = false;
-				minimized = false;
-			}
-			if (is_layered_allowed() && layered_window) {
-				DeleteObject(hBitmap);
+				int w = video_mode.width;
+				int h = video_mode.height;
 
-				RECT r;
-				GetWindowRect(hWnd, &r);
-				dib_size = Size2(r.right - r.left, r.bottom - r.top);
+				RECT rect;
+				GetWindowRect(hWnd, &rect);
 
-				BITMAPINFO bmi;
-				ZeroMemory(&bmi, sizeof(BITMAPINFO));
-				bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				bmi.bmiHeader.biWidth = dib_size.x;
-				bmi.bmiHeader.biHeight = dib_size.y;
-				bmi.bmiHeader.biPlanes = 1;
-				bmi.bmiHeader.biBitCount = 32;
-				bmi.bmiHeader.biCompression = BI_RGB;
-				bmi.bmiHeader.biSizeImage = dib_size.x, dib_size.y * 4;
-				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
-				SelectObject(hDC_dib, hBitmap);
+				if (video_mode.borderless_window == false) {
+					RECT crect;
+					GetClientRect(hWnd, &crect);
 
-				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
+					w += (rect.right - rect.left) - (crect.right - crect.left);
+					h += (rect.bottom - rect.top) - (crect.bottom - crect.top);
+				}
+
+				MoveWindow(hWnd, rect.left, rect.top, w, h, TRUE);
 			}
 			if (wParam == SIZE_MAXIMIZED) {
 				maximized = true;
@@ -1867,7 +1850,7 @@ void OS_Windows::_update_window_style(bool repaint) {
 		}
 	}
 
-	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
 	if (repaint) {
 		RECT rect;
@@ -2078,7 +2061,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+	if (mouse_mode != MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
 		cursor_shape = p_shape;
 		return;
 	}
