@@ -623,9 +623,26 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_SIZE: {
 			int window_w = LOWORD(lParam);
 			int window_h = HIWORD(lParam);
-			if (window_w > 0 && window_h > 0) {
+			if (window_w > 0 && window_h > 0 && !preserve_window_size) {
 				video_mode.width = window_w;
 				video_mode.height = window_h;
+			} else {
+				preserve_window_size = false;
+				int w = video_mode.width;
+				int h = video_mode.height;
+
+				RECT rect;
+				GetWindowRect(hWnd, &rect);
+
+				if (video_mode.borderless_window == false) {
+					RECT crect;
+					GetClientRect(hWnd, &crect);
+
+					w += (rect.right - rect.left) - (crect.right - crect.left);
+					h += (rect.bottom - rect.top) - (crect.bottom - crect.top);
+				}
+
+				MoveWindow(hWnd, rect.left, rect.top, w, h, TRUE);
 			}
 			if (wParam == SIZE_MAXIMIZED) {
 				maximized = true;
@@ -1561,6 +1578,15 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 	}
 
 	MoveWindow(hWnd, rect.left, rect.top, w, h, TRUE);
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution
+	if (mouse_mode == MOUSE_MODE_CONFINED) {
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		ClientToScreen(hWnd, (POINT *)&rect.left);
+		ClientToScreen(hWnd, (POINT *)&rect.right);
+		ClipCursor(&rect);
+	}
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled) {
 
@@ -1767,6 +1793,7 @@ void OS_Windows::set_borderless_window(bool p_borderless) {
 
 	video_mode.borderless_window = p_borderless;
 
+	preserve_window_size = true;
 	_update_window_style();
 }
 
@@ -1785,7 +1812,7 @@ void OS_Windows::_update_window_style(bool repaint) {
 		}
 	}
 
-	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
 	if (repaint) {
 		RECT rect;
@@ -1996,7 +2023,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+	if (mouse_mode != MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
 		cursor_shape = p_shape;
 		return;
 	}
