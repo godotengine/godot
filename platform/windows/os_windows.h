@@ -105,6 +105,7 @@ class OS_Windows : public OS {
 
 	Size2 window_rect;
 	VideoMode video_mode;
+	bool preserve_window_size = false;
 
 	MainLoop *main_loop;
 
