@@ -777,7 +777,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						SetCursor(NULL);
 				} else {
 					if (hCursor != NULL) {
-						SetCursor(hCursor);
+						CursorShape c = cursor_shape;
+						cursor_shape = CURSOR_MAX;
+						set_cursor_shape(c);
 						hCursor = NULL;
 					}
 				}
