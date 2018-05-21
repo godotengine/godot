@@ -202,11 +202,6 @@ void OS_Android::print(const char *p_format, ...) {
 	va_end(argp);
 }
 
-void OS_Android::printfatal(const char *cond, const char *p_error_type, const char *p_function, const char *p_err_details, const char *p_file, int p_line) {
-
-	__android_log_assert(cond, "godot", "%s exception: %s: %s(%s:%i)\n", p_error_type, p_function, p_err_details, p_file, p_line);
-}
-
 void OS_Android::alert(const String &p_alert, const String &p_title) {
 
 	print("ALERT: %s\n", p_alert.utf8().get_data());
@@ -778,17 +773,30 @@ void OS_Android::print_error(const char *p_function, const char *p_file, int p_l
 
 	switch (p_type) {
 		case ERR_ERROR:
-			printfatal(NULL, "Error", p_function, err_details, p_file, p_line);
+			print("ERROR: %s: %s\n", p_function, err_details);
+			print("   At: %s:%i\n", p_file, p_line);
+
+			if (emit_error_signal) {
+				emit_error_signal("Error", p_function, err_details, p_file, p_line);
+			}
 			break;
 
 		case ERR_WARNING:
 			print("WARNING: %s: %s\n", p_function, err_details);
 			print("   At: %s:%i\n", p_file, p_line);
+
+			if (emit_error_signal) {
+				emit_error_signal("Warning", p_function, err_details, p_file, p_line);
+			}
 			break;
 
 		case ERR_SCRIPT:
-			printfatal(NULL, "Script error", p_function, err_details, p_file, p_line);
+			print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
+			print("   At: %s:%i\n", p_file, p_line);
 
+			if (emit_error_signal) {
+				emit_error_signal("Script error", p_function, err_details, p_file, p_line);
+			}
 			break;
 	}
 }
@@ -797,7 +805,7 @@ String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, EmitErrorSignal p_emit_error_signal) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -836,6 +844,8 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 
 	set_clipboard_func = p_set_clipboard_func;
 	get_clipboard_func = p_get_clipboard_func;
+
+	emit_error_signal = p_emit_error_signal;
 }
 
 OS_Android::~OS_Android() {
