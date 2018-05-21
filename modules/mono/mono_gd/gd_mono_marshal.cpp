@@ -911,4 +911,29 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 
 	return ret;
 }
+
+MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
+	MonoArray *keys = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
+	MonoArray *values = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
+
+	int i = 0;
+	const Variant *dkey = NULL;
+	while ((dkey = p_dict.next(dkey))) {
+		mono_array_set(keys, MonoObject *, i, variant_to_mono_object(dkey));
+		mono_array_set(values, MonoObject *, i, variant_to_mono_object(p_dict[*dkey]));
+		i++;
+	}
+
+	GDMonoUtils::MarshalUtils_ArraysToDict arrays_to_dict = CACHED_METHOD_THUNK(MarshalUtils, ArraysToDictionary);
+
+	MonoObject *ex = NULL;
+	MonoObject *ret = arrays_to_dict(keys, values, &ex);
+
+	if (ex) {
+		mono_print_unhandled_exception(ex);
+		ERR_FAIL_V(NULL);
+	}
+
+	return ret;
+}
 } // namespace GDMonoMarshal
