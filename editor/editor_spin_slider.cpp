@@ -56,6 +56,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 
 				grabbing_spinner_attempt = true;
+				grabbing_spinner_dist_cache = 0;
 				grabbing_spinner = false;
 				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 			}
@@ -89,21 +90,27 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (grabbing_spinner_attempt) {
 
-			if (!grabbing_spinner) {
+			double diff_x = mm->get_relative().x;
+			if (mm->get_shift() && grabbing_spinner) {
+				diff_x *= 0.1;
+			}
+			grabbing_spinner_dist_cache += diff_x;
+
+			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
+			} else {
+				if (mm->get_control() || updown_offset != -1) {
+					set_value(Math::round(get_value()));
+					if (ABS(grabbing_spinner_dist_cache) > 6) {
+						set_value(get_value() + SGN(grabbing_spinner_dist_cache));
+						grabbing_spinner_dist_cache = 0;
+					}
+				} else {
+					set_value(get_value() + get_step() * grabbing_spinner_dist_cache * 10);
+					grabbing_spinner_dist_cache = 0;
+				}
 			}
-
-			double v = get_value();
-
-			double diff_x = mm->get_relative().x;
-			diff_x = Math::pow(ABS(diff_x), 1.8) * SGN(diff_x);
-			diff_x *= 0.1;
-
-			v += diff_x * get_step();
-
-			set_value(v);
-
 		} else if (updown_offset != -1) {
 			bool new_hover = (mm->get_position().x > updown_offset);
 			if (new_hover != hover_updown) {
@@ -336,7 +343,7 @@ EditorSpinSlider::EditorSpinSlider() {
 
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
-
+	grabbing_spinner_dist_cache = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
 	hover_updown = false;
