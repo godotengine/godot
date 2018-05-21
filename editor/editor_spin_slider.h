@@ -61,11 +61,12 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 
 	LineEdit *value_input;
+	bool value_input_just_closed;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
 	void _value_input_entered(const String &);
-
+	void _value_focus_exited();
 	bool hide_slider;
 
 protected:
@@ -74,6 +75,7 @@ protected:
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();
+	void _focus_entered();
 
 public:
 	String get_text_value() const;
