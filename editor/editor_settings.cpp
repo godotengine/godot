@@ -308,6 +308,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/dim_transition_time", 0.08f);
 	hints["interface/editor/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/editor/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
 
+	_initial_set("interface/editor/osx_ctrl_click_to_right_click", false);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression

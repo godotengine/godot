@@ -34,6 +34,7 @@
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
+#include "editor_settings.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
 #include "os/input.h"
