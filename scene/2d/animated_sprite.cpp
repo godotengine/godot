@@ -175,6 +175,16 @@ void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
 	}
 }
 
+Vector<String> SpriteFrames::get_animation_names() const {
+
+	Vector<String> names;
+	for (const Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+		names.push_back(E->key());
+	}
+	names.sort();
+	return names;
+}
+
 void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
 
 	ERR_FAIL_COND(p_fps < 0);
@@ -265,6 +275,8 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_animation", "anim"), &SpriteFrames::has_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "anim"), &SpriteFrames::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "anim", "newname"), &SpriteFrames::rename_animation);
+
+	ClassDB::bind_method(D_METHOD("get_animation_names"), &SpriteFrames::get_animation_names);
 
 	ClassDB::bind_method(D_METHOD("set_animation_speed", "anim", "speed"), &SpriteFrames::set_animation_speed);
 	ClassDB::bind_method(D_METHOD("get_animation_speed", "anim"), &SpriteFrames::get_animation_speed);
