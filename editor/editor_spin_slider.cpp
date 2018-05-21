@@ -211,7 +211,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 			draw_rect(grabber_rect, c);
 
-			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner;
+			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
 			if (grabber->is_visible() != display_grabber) {
 				if (display_grabber) {
 					grabber->show();
