@@ -225,7 +225,7 @@ namespace Godot
             if (pos < 0)
                 return instance;
 
-            return instance.Substring(pos + 1, instance.Length);
+            return instance.Substring(pos + 1);
         }
 
         // <summary>
