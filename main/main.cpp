@@ -1449,7 +1449,7 @@ bool Main::start() {
 		}
 #endif
 
-		if (!project_manager) { // game or editor
+		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
 				//autoload
 				List<PropertyInfo> props;
@@ -1470,24 +1470,13 @@ bool Main::start() {
 
 					if (global_var) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-#ifdef TOOLS_ENABLED
-							if (editor) {
-								ScriptServer::get_language(i)->add_named_global_constant(name, Variant());
-							} else {
-								ScriptServer::get_language(i)->add_global_constant(name, Variant());
-							}
-#else
 							ScriptServer::get_language(i)->add_global_constant(name, Variant());
-#endif
 						}
 					}
 				}
 
 				//second pass, load into global constants
 				List<Node *> to_add;
-#ifdef TOOLS_ENABLED
-				ResourceLoader::set_timestamp_on_load(editor); // Avoid problems when editing
-#endif
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 					String s = E->get().name;
@@ -1533,22 +1522,10 @@ bool Main::start() {
 
 					if (global_var) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-#ifdef TOOLS_ENABLED
-							if (editor) {
-								ScriptServer::get_language(i)->add_named_global_constant(name, n);
-							} else {
-								ScriptServer::get_language(i)->add_global_constant(name, n);
-							}
-#else
 							ScriptServer::get_language(i)->add_global_constant(name, n);
-#endif
 						}
 					}
 				}
-
-#ifdef TOOLS_ENABLED
-				ResourceLoader::set_timestamp_on_load(false);
-#endif
 
 				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
 

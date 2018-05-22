@@ -52,6 +52,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		String name;
 		String path;
 		bool is_singleton;
+		bool in_editor;
 		int order;
 		Node *node;
 
