@@ -223,6 +223,8 @@ public:
 
 	virtual Size2 get_center_size() const;
 
+	Size2 get_minimum_size() const;
+
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	StyleBoxFlat();

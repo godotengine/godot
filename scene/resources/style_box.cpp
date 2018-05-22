@@ -762,6 +762,14 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 float StyleBoxFlat::get_style_margin(Margin p_margin) const {
 	return border_width[p_margin];
 }
+
+Size2 StyleBoxFlat::get_minimum_size() const {
+
+	int w = get_margin(MARGIN_LEFT) + get_margin(MARGIN_RIGHT) + get_border_width(MARGIN_LEFT) + get_border_width(MARGIN_RIGHT);
+	int h = get_margin(MARGIN_TOP) + get_margin(MARGIN_BOTTOM) + get_border_width(MARGIN_TOP) + get_border_width(MARGIN_BOTTOM);
+	return Size2(w, h);
+}
+
 void StyleBoxFlat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &StyleBoxFlat::set_bg_color);
@@ -807,6 +815,8 @@ void StyleBoxFlat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_corner_detail", "detail"), &StyleBoxFlat::set_corner_detail);
 	ClassDB::bind_method(D_METHOD("get_corner_detail"), &StyleBoxFlat::get_corner_detail);
+
+	ClassDB::bind_method(D_METHOD("get_minimum_size"), &StyleBoxFlat::get_minimum_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
 

@@ -37,7 +37,6 @@
 #include "scene/resources/packed_scene.h"
 
 // TODO:
-// arrays and dictionary
 // replace property editor in sectionedpropertyeditor
 
 Size2 EditorProperty::get_minimum_size() const {
@@ -62,21 +61,23 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (keying) {
 		Ref<Texture> key = get_icon("Key", "EditorIcons");
-		ms.width += key->get_width() + get_constant("hseparator", "Tree");
+		ms.width += key->get_width() + get_constant("hseparation", "Inspector");
 	}
 
 	if (checkable) {
 		Ref<Texture> check = get_icon("checked", "CheckBox");
-		ms.width += check->get_width() + get_constant("hseparator", "Tree");
+		ms.width += check->get_width() + get_constant("hseparation", "Inspector");
 	}
 
 	if (bottom_editor != NULL) {
-		Ref<Font> font = get_font("font", "Tree");
-		ms.height += font->get_height();
-		ms.height += get_constant("vseparation", "Tree");
+		if (!draw_grouped) {
+			// when we have a subinspector we dont need to bother adding the label size
+			Ref<Font> font = get_font("font", "Inspector");
+			ms.height += font->get_ascent();
+		}
 		Size2 bems = bottom_editor->get_combined_minimum_size();
-		bems.width += get_constant("item_margin", "Tree");
-		ms.height += bems.height;
+		// bems.width -= get_constant("hseparation", "Inspector");
+		ms.height += bems.height + get_constant("item_separation", "Inspector") * 2;
 		ms.width = MAX(ms.width, bems.width);
 	}
 
@@ -93,7 +94,7 @@ void EditorProperty::_notification(int p_what) {
 
 		{
 			int child_room = size.width / 2;
-			Ref<Font> font = get_font("font", "Tree");
+			Ref<Font> font = get_font("font", "Inspector");
 			int height = font->get_height();
 
 			//compute room needed
@@ -112,14 +113,19 @@ void EditorProperty::_notification(int p_what) {
 				height = MAX(height, minsize.height);
 			}
 
-			text_size = MAX(0, size.width - child_room + 4 * EDSCALE);
+			text_size = MAX(0, size.width - child_room + get_constant("hseparation", "Inspector") * 2);
 
-			rect = Rect2(text_size, 0, size.width - text_size, height);
+			rect = Rect2(text_size, 0, size.width - text_size - get_constant("hseparation", "Inspector"), height);
 
 			if (bottom_editor) {
-
-				int m = get_constant("item_margin", "Tree");
-				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
+				int m = 0;
+				int wr = 0;
+				// this means that we are not in subresource context
+				if (!draw_grouped) {
+					m = (get_constant("group_ruler_size", "Inspector") + 1) * depth + get_constant("hseparation", "Inspector");
+					wr = get_constant("hseparation", "Inspector") * 2;
+				}
+				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation", "Inspector"), size.width - wr, bottom_editor->get_combined_minimum_size().height);
 			}
 		}
 
@@ -132,7 +138,7 @@ void EditorProperty::_notification(int p_what) {
 				key = get_icon("Key", "EditorIcons");
 			}
 
-			rect.size.x -= key->get_width() + get_constant("hseparator", "Tree");
+			rect.size.x -= key->get_width() + get_constant("hseparation", "Inspector");
 		}
 
 		//set children
@@ -157,7 +163,7 @@ void EditorProperty::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Font> font = get_font("font", "Tree");
+		Ref<Font> font = get_font("font", "Inspector");
 
 		Size2 size = get_size();
 		if (bottom_editor) {
@@ -166,22 +172,8 @@ void EditorProperty::_notification(int p_what) {
 			size.height = label_reference->get_size().height;
 		}
 
-		if (selected) {
-			Ref<StyleBox> sb = get_stylebox("selected", "Tree");
-			draw_style_box(sb, Rect2(Vector2(), size));
-		}
-
-		Color color;
-		if (draw_red) {
-			color = get_color("error_color", "Editor");
-		} else {
-			color = get_color("font_color", "Tree");
-		}
-		if (label.find(".") != -1) {
-			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
-		}
-
-		int ofs = 0;
+		int hs = get_constant("hseparation", "Inspector");
+		int ofs = depth * get_constant("group_ruler_size", "Inspector") + hs * 2;
 		if (checkable) {
 			Ref<Texture> checkbox;
 			if (checked)
@@ -189,39 +181,39 @@ void EditorProperty::_notification(int p_what) {
 			else
 				checkbox = get_icon("unchecked", "CheckBox");
 
-			Color color(1, 1, 1);
-			if (check_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
-			}
+			Color color = check_hover ? Color(1.2, 1.2, 1.2) : Color(1.0, 1.0, 1.0);
 			check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 			draw_texture(checkbox, check_rect.position, color);
-			ofs += get_constant("hseparator", "Tree");
+			ofs += get_constant("hseparation", "Inspector");
 			ofs += checkbox->get_width();
 		} else {
 			check_rect = Rect2();
 		}
 
-		int text_limit = text_size;
+		int text_limit = text_size - get_constant("hseparation", "Inspector");
 
 		if (can_revert) {
 			Ref<Texture> reload_icon = get_icon("ReloadSmall", "EditorIcons");
-			text_limit -= reload_icon->get_width() + get_constant("hseparator", "Tree") * 2;
-			revert_rect = Rect2(text_limit + get_constant("hseparator", "Tree"), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
+			text_limit -= reload_icon->get_width() + get_constant("hseparation", "Inspector") * 2;
+			revert_rect = Rect2(text_limit + get_constant("hseparation", "Inspector"), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
-			Color color(1, 1, 1);
-			if (revert_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
-			}
-
+			Color color = check_hover ? Color(1.2, 1.2, 1.2) : Color(1.0, 1.0, 1.0);
 			draw_texture(reload_icon, revert_rect.position, color);
 		} else {
 			revert_rect = Rect2();
 		}
 
+		Color color = draw_red ? get_color("error_color", "Editor") : color = get_color("font_color", "Inspector");
+		if (label.find(".") != -1) {
+			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
+		}
+		if (selected) {
+			color = get_color("select_color", "Editor");
+		}
+
+		if (draw_grouped && has_color_override("depth_color")) {
+			color = get_color("depth_color");
+		}
 		int v_ofs = (size.height - font->get_height()) / 2;
 		draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, color, text_limit);
 
@@ -236,22 +228,12 @@ void EditorProperty::_notification(int p_what) {
 
 			ofs = size.width - key->get_width() - get_constant("hseparator", "Tree");
 
-			Color color(1, 1, 1);
-			if (keying_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
-			}
+			Color color = check_hover ? Color(1.2, 1.2, 1.2) : Color(1.0, 1.0, 1.0);
 			keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
 			draw_texture(key, keying_rect.position, color);
 		} else {
 			keying_rect = Rect2();
 		}
-
-		//int vs = get_constant("vseparation", "Tree");
-		Color guide_color = get_color("guide_color", "Tree");
-		int vs_height = get_size().height; // vs / 2;
-		draw_line(Point2(0, vs_height), Point2(get_size().width, vs_height), guide_color);
 	}
 }
 
@@ -761,6 +743,9 @@ EditorProperty::EditorProperty() {
 	selected_focusable = -1;
 	label_reference = NULL;
 	bottom_editor = NULL;
+
+	draw_grouped = false;
+	depth = 0;
 }
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
@@ -871,31 +856,25 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		draw_rect(Rect2(Vector2(), get_size()), bg_color);
-		Ref<Font> font = get_font("font", "Tree");
+		draw_rect(Rect2(Vector2(), get_size()), get_color("category_bg", "Inspector"));
+		Ref<Font> font = get_font("category_font", "Inspector");
 
-		int hs = get_constant("hseparation", "Tree");
-
-		int w = font->get_string_size(label).width;
-		if (icon.is_valid()) {
-			w += hs + icon->get_width();
-		}
-
-		int ofs = (get_size().width - w) / 2;
+		int hs = get_constant("hseparation", "Inspector");
+		int ofs = hs;
 
 		if (icon.is_valid()) {
 			draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
 			ofs += hs + icon->get_width();
 		}
 
-		Color color = get_color("font_color", "Tree");
+		Color color = get_color("category_font_color", "Inspector");
 		draw_string(font, Point2(ofs, font->get_ascent() + (get_size().height - font->get_height()) / 2).floor(), label, color, get_size().width);
 	}
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
 
-	Ref<Font> font = get_font("font", "Tree");
+	Ref<Font> font = get_font("category_font", "Inspector");
 
 	Size2 ms;
 	ms.width = 1;
@@ -903,7 +882,7 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	if (icon.is_valid()) {
 		ms.height = MAX(icon->get_height(), ms.height);
 	}
-	ms.height += get_constant("vseparation", "Tree");
+	ms.height += get_constant("vseparation", "Inspector");
 
 	return ms;
 }
@@ -918,7 +897,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 
-		Ref<Font> font = get_font("font", "Tree");
+		Ref<Font> font = get_font("section_font", "Inspector");
 		Ref<Texture> arrow;
 
 #ifdef TOOLS_ENABLED
@@ -938,8 +917,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			offset.y = MAX(offset.y, arrow->get_height());
 		}
 
-		offset.y += get_constant("vseparation", "Tree");
-		offset.x += get_constant("item_margin", "Tree");
+		offset.y += get_constant("vseparation", "Inspector");
 
 		Rect2 rect(offset, size - offset);
 
@@ -974,26 +952,33 @@ void EditorInspectorSection::_notification(int p_what) {
 		}
 #endif
 
-		Ref<Font> font = get_font("font", "Tree");
+		Color section_font_color = get_color("section_font_color", "Inspector");
+		Ref<Font> font = get_font("section_font", "Inspector");
+
+		Size2 size = get_size();
+		if (vbox->is_visible()) {
+			section_font_color = get_color("section_font_hl_color", "Inspector");
+			Color section_bg_color = get_color("section_bg_color", "Inspector");
+			draw_rect(Rect2(Vector2(), get_size()), section_bg_color);
+
+			font = get_font("category_font", "Inspector");
+		}
 
 		int h = font->get_height();
 		if (arrow.is_valid()) {
 			h = MAX(h, arrow->get_height());
 		}
-		h += get_constant("vseparation", "Tree");
+		h += get_constant("vseparation", "Inspector");
 
-		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+		int hs = get_constant("hseparation", "Inspector");
 
-		int hs = get_constant("hseparation", "Tree");
-
-		int ofs = 0;
+		int ofs = depth * get_constant("group_ruler_size", "Inspector");
 		if (arrow.is_valid()) {
 			draw_texture(arrow, Point2(ofs, (h - arrow->get_height()) / 2).floor());
 			ofs += hs + arrow->get_width();
 		}
 
-		Color color = get_color("font_color", "Tree");
-		draw_string(font, Point2(ofs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+		draw_string(font, Point2(ofs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, section_font_color, get_size().width);
 	}
 }
 
@@ -1014,8 +999,12 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 		ms.height = MAX(ms.height, minsize.height);
 	}
 
-	Ref<Font> font = get_font("font", "Tree");
-	ms.height += font->get_ascent() + get_constant("vseparation", "Tree");
+	Ref<Font> font = get_font("section_font", "Inspector");
+	if (vbox->is_visible()) {
+		font = get_font("category_font", "Inspector");
+		ms.height += get_constant("vseparation", "Inspector") + get_constant("item_separation", "Inspector");
+	}
+	ms.height += font->get_ascent() + get_constant("vseparation", "Inspector");
 	ms.width += get_constant("item_margin", "Tree");
 
 	return ms;
@@ -1037,7 +1026,6 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 			vbox->hide();
 		}
 	}
-		//	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 
 #endif
 }
@@ -1099,9 +1087,10 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorInspectorSection::_gui_input);
 }
 
-EditorInspectorSection::EditorInspectorSection() {
+EditorInspectorSection::EditorInspectorSection(int p_depth) {
 	object = NULL;
 	foldable = false;
+	depth = p_depth;
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
 }
@@ -1234,8 +1223,6 @@ void EditorInspector::update_tree() {
 			draw_red = true;
 		}
 	}
-
-	//	TreeItem *current_category = NULL;
 
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
@@ -1389,7 +1376,7 @@ void EditorInspector::update_tree() {
 					acc_path += "/";
 				acc_path += path_name;
 				if (!item_path.has(acc_path)) {
-					EditorInspectorSection *section = memnew(EditorInspectorSection);
+					EditorInspectorSection *section = memnew(EditorInspectorSection(depth));
 					current_vbox->add_child(section);
 					sections.push_back(section);
 
@@ -1469,6 +1456,8 @@ void EditorInspector::update_tree() {
 
 				EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
 				current_vbox->add_child(F->get().property_editor);
+
+				ep->set_depth(depth);
 
 				if (ep) {
 
@@ -1882,7 +1871,6 @@ void EditorInspector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		get_tree()->connect("node_removed", this, "_node_removed");
-		add_style_override("bg", get_stylebox("bg", "Tree"));
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
@@ -1958,7 +1946,7 @@ void EditorInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
 }
 
-EditorInspector::EditorInspector() {
+EditorInspector::EditorInspector(int p_depth) {
 	object = NULL;
 	undo_redo = NULL;
 	main_vbox = memnew(VBoxContainer);
@@ -1984,4 +1972,6 @@ EditorInspector::EditorInspector() {
 	_prop_edited = "property_edited";
 	set_process(true);
 	property_focusable = -1;
+
+	depth = p_depth;
 }

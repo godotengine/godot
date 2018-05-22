@@ -168,33 +168,35 @@ void EditorSpinSlider::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 
 		updown_offset = -1;
+		int val_ofs = 0;
 
 		Ref<StyleBox> sb = get_stylebox("normal", "LineEdit");
 		draw_style_box(sb, Rect2(Vector2(), get_size()));
 		Ref<Font> font = get_font("font", "LineEdit");
+		Ref<Font> label_font = get_font("label", "EditorSpinSlider");
 
 		int avail_width = get_size().width - sb->get_minimum_size().width - sb->get_minimum_size().width;
-		avail_width -= font->get_string_size(label).width;
+		avail_width -= label_font->get_string_size(label).width;
+		val_ofs += label_font->get_string_size(label).width;
 		Ref<Texture> updown = get_icon("updown", "SpinBox");
 
 		if (get_step() == 1) {
 			avail_width -= updown->get_width();
 		}
 
-		if (has_focus()) {
-			Ref<StyleBox> focus = get_stylebox("focus", "LineEdit");
-			draw_style_box(focus, Rect2(Vector2(), get_size()));
-		}
-
 		String numstr = get_text_value();
 
+		int label_vofs = (get_size().height - label_font->get_height()) / 2 + label_font->get_ascent();
 		int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
 
 		Color fc = get_color("font_color", "LineEdit");
+		Color label_color = fc * Color(1, 1, 1, 0.5);
+		if (has_color(label, "Editor"))
+			label_color = get_color(label, "Editor");
 
-		int label_ofs = sb->get_offset().x + avail_width;
-		draw_string(font, Vector2(label_ofs, vofs), label, fc * Color(1, 1, 1, 0.5));
-		draw_string(font, Vector2(sb->get_offset().x, vofs), numstr, fc, avail_width);
+		val_ofs += sb->get_offset().x * 2;
+		draw_string(label_font, Vector2(sb->get_offset().x, label_vofs), label, label_color);
+		draw_string(font, Vector2(val_ofs, vofs), numstr, fc, avail_width);
 
 		if (get_step() == 1) {
 			Ref<Texture> updown = get_icon("updown", "SpinBox");
@@ -319,6 +321,7 @@ EditorSpinSlider::EditorSpinSlider() {
 
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
+	set_h_size_flags(SIZE_EXPAND_FILL);
 
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
@@ -336,6 +339,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabbing_grabber = false;
 	grabber_range = 1;
 	value_input = memnew(LineEdit);
+	value_input->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(value_input);
 	value_input->set_as_toplevel(true);
 	value_input->hide();

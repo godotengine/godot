@@ -324,8 +324,8 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 
+		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 		theme_base->set_theme(theme);
 		gui_base->set_theme(theme);
 

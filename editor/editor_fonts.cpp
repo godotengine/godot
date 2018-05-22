@@ -207,6 +207,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_DEFAULT_FONT(df, default_font_size);
 	p_theme->set_default_theme_font(df);
 
+	// typographic scale
+	int step = 1;
+	if (default_font_size > 12) step = 2;
+	if (default_font_size > 18) step = 3;
+	MAKE_DEFAULT_FONT(df_sm, (int(default_font_size) - step) * EDSCALE);
+	p_theme->set_font("small", "EditorFonts", df_sm);
+
 	// Bold font
 	MAKE_BOLD_FONT(df_bold, default_font_size);
 	p_theme->set_font("bold", "EditorFonts", df_bold);
@@ -225,6 +232,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
+
+	// small monospaced font, for now will be used for EditorSpinSlider label.
+	MAKE_SOURCE_FONT(df_monospace_sm, int(default_font_size) * EDSCALE);
+	p_theme->set_font("monospace", "EditorFonts", df_monospace_sm);
 
 	// Ruler font
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
