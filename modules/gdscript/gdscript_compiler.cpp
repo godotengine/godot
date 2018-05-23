@@ -738,6 +738,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptParser::OperatorNode::OP_NEG: {
 					if (!_create_unary_operator(codegen, on, Variant::OP_NEGATE, p_stack_level)) return -1;
 				} break;
+				case GDScriptParser::OperatorNode::OP_POS: {
+					if (!_create_unary_operator(codegen, on, Variant::OP_POSITIVE, p_stack_level)) return -1;
+				} break;
 				case GDScriptParser::OperatorNode::OP_NOT: {
 					if (!_create_unary_operator(codegen, on, Variant::OP_NOT, p_stack_level)) return -1;
 				} break;
