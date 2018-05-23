@@ -705,7 +705,18 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 		int len = image_data.size();
 		PoolByteArray::Read r = image_data.read();
-		Ref<Image> image = Ref<Image>(memnew(Image(r.ptr(), len)));
+		Ref<Image> image = Ref<Image>(memnew(Image));
+
+		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
+		uint8_t jpg_signature[3] = { 255, 216, 255 };
+
+		if (r.ptr()) {
+			if (memcmp(&r[0], &png_signature[0], 8) == 0) {
+				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
+			} else if (memcmp(&r[0], &jpg_signature[0], 3) == 0) {
+				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
+			}
+		}
 
 		if (!image->empty()) {
 			switch (image_queue[p_queue_id].image_type) {
@@ -750,7 +761,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
-	if (p_status == HTTPRequest::RESULT_SUCCESS) {
+	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
 
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
@@ -781,7 +792,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting PNG file from URL: " + image_queue[p_queue_id].image_url);
+		// WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
