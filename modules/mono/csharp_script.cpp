@@ -446,7 +446,7 @@ String CSharpLanguage::make_function(const String &p_class, const String &p_name
 
 		s += variant_type_to_managed_name(arg.get_slice(":", 1)) + " " + escape_csharp_keyword(arg.get_slice(":", 0));
 	}
-	s += ")\n{\n    // Replace with function body\n}\n";
+	s += ")\n{\n    // Replace with function body.\n}\n";
 
 	return s;
 #else
