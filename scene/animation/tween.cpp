@@ -886,6 +886,10 @@ real_t Tween::tell() const {
 
 real_t Tween::get_runtime() const {
 
+	if (speed_scale == 0) {
+		return INFINITY;
+	}
+
 	pending_update++;
 	real_t runtime = 0;
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -896,7 +900,8 @@ real_t Tween::get_runtime() const {
 			runtime = t;
 	}
 	pending_update--;
-	return runtime;
+
+	return runtime / speed_scale;
 }
 
 bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val) {
