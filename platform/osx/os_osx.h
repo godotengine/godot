@@ -109,6 +109,7 @@ public:
 	bool minimized;
 	bool maximized;
 	bool zoomed;
+	bool resizable;
 
 	Size2 window_size;
 	Rect2 restore_rect;
