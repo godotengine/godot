@@ -500,7 +500,7 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const {
 		for (int i = 0; i < flag_rects.size(); i++) {
-			if (flag_rects[i].has_point(p_pos) && i < names.size()) {
+			if (i < names.size() && flag_rects[i].has_point(p_pos)) {
 				return names[i];
 			}
 		}
