@@ -1292,6 +1292,9 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 	hints.decorations = current_videomode.borderless_window ? 0 : 1;
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+
+	// Preserve window size
+	set_window_size(Size2(current_videomode.width, current_videomode.height));
 }
 
 bool OS_X11::get_borderless_window() {
