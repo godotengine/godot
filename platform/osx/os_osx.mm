@@ -2249,7 +2249,7 @@ void OS_OSX::set_borderless_window(bool p_borderless) {
 		if (layered_window)
 			set_window_per_pixel_transparency_enabled(false);
 
-		[window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+		[window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (resizable ? NSWindowStyleMaskResizable : 0)];
 
 		// Force update of the window styles
 		NSRect frameRect = [window_object frame];
