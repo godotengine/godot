@@ -185,10 +185,8 @@ class TileMapEditor : public VBoxContainer {
 	void _menu_option(int p_option);
 	void _palette_selected(int index);
 
-	void _start_undo(const String &p_action);
-	void _finish_undo();
-	void _create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
-	void _set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
+	void _create_set_cell_undo(const Point2i &p_pos, int p_value, bool p_flip_h, bool p_flip_v, bool p_transpose);
+	void _set_cell(const Point2i &p_pos, int p_value, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
