@@ -628,21 +628,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				video_mode.height = window_h;
 			} else {
 				preserve_window_size = false;
-				int w = video_mode.width;
-				int h = video_mode.height;
-
-				RECT rect;
-				GetWindowRect(hWnd, &rect);
-
-				if (video_mode.borderless_window == false) {
-					RECT crect;
-					GetClientRect(hWnd, &crect);
-
-					w += (rect.right - rect.left) - (crect.right - crect.left);
-					h += (rect.bottom - rect.top) - (crect.bottom - crect.top);
-				}
-
-				MoveWindow(hWnd, rect.left, rect.top, w, h, TRUE);
+				set_window_size(Size2(video_mode.width, video_mode.height));
 			}
 			if (wParam == SIZE_MAXIMIZED) {
 				maximized = true;
