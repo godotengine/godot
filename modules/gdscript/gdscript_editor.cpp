@@ -460,7 +460,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			}
 		}
 	}
-	s += String(")") + (th ? " -> void" : "") + ":\n" + _get_indentation() + "pass # Replace with function body.\n";
+	s += "):\n" + _get_indentation() + "pass # Replace with function body.\n";
 
 	return s;
 }
