@@ -191,7 +191,7 @@ Files extracted from upstream source:
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
-- Version: 1.3.5
+- Version: 1.3.6
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
