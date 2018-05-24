@@ -50,8 +50,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 
 int main(int argc, char *argv[]) {
 
-	// Sync from persistent state into memory and then
-	// run the 'main_after_fs_sync' function.
+	// sync from persistent state into memory and then
+	// run the 'main_after_fs_sync' function
 	/* clang-format off */
 	EM_ASM(
 		FS.mkdir('/userfs');
