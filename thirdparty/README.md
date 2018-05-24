@@ -342,11 +342,11 @@ Collection of single-file libraries used in Godot components.
   * License: zlib
 - `stb_truetype.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.17
+  * Version: 1.19
   * License: Public Domain (Unlicense) or MIT
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.11
+  * Version: 1.14
   * License: Public Domain (Unlicense) or MIT
 
 
