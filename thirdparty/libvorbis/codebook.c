@@ -11,7 +11,6 @@
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -387,7 +386,7 @@ long vorbis_book_decodevs_add(codebook *book,float *a,oggpack_buffer *b,int n){
       t[i] = book->valuelist+entry[i]*book->dim;
     }
     for(i=0,o=0;i<book->dim;i++,o+=step)
-      for (j=0;j<step;j++)
+      for (j=0;o+j<n && j<step;j++)
         a[o+j]+=t[j][i];
   }
   return(0);
@@ -399,41 +398,12 @@ long vorbis_book_decodev_add(codebook *book,float *a,oggpack_buffer *b,int n){
     int i,j,entry;
     float *t;
 
-    if(book->dim>8){
-      for(i=0;i<n;){
-        entry = decode_packed_entry_number(book,b);
-        if(entry==-1)return(-1);
-        t     = book->valuelist+entry*book->dim;
-        for (j=0;j<book->dim;)
-          a[i++]+=t[j++];
-      }
-    }else{
-      for(i=0;i<n;){
-        entry = decode_packed_entry_number(book,b);
-        if(entry==-1)return(-1);
-        t     = book->valuelist+entry*book->dim;
-        j=0;
-        switch((int)book->dim){
-        case 8:
-          a[i++]+=t[j++];
-        case 7:
-          a[i++]+=t[j++];
-        case 6:
-          a[i++]+=t[j++];
-        case 5:
-          a[i++]+=t[j++];
-        case 4:
-          a[i++]+=t[j++];
-        case 3:
-          a[i++]+=t[j++];
-        case 2:
-          a[i++]+=t[j++];
-        case 1:
-          a[i++]+=t[j++];
-        case 0:
-          break;
-        }
-      }
+    for(i=0;i<n;){
+      entry = decode_packed_entry_number(book,b);
+      if(entry==-1)return(-1);
+      t     = book->valuelist+entry*book->dim;
+      for(j=0;i<n && j<book->dim;)
+        a[i++]+=t[j++];
     }
   }
   return(0);
@@ -471,12 +441,13 @@ long vorbis_book_decodevv_add(codebook *book,float **a,long offset,int ch,
   long i,j,entry;
   int chptr=0;
   if(book->used_entries>0){
-    for(i=offset/ch;i<(offset+n)/ch;){
+    int m=(offset+n)/ch;
+    for(i=offset/ch;i<m;){
       entry = decode_packed_entry_number(book,b);
       if(entry==-1)return(-1);
       {
         const float *t = book->valuelist+entry*book->dim;
-        for (j=0;j<book->dim;j++){
+        for (j=0;i<m && j<book->dim;j++){
           a[chptr++][i]+=t[j];
           if(chptr==ch){
             chptr=0;
