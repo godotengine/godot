@@ -1810,9 +1810,13 @@ void _File::store_buffer(const PoolVector<uint8_t> &p_buffer) {
 	f->store_buffer(&r[0], len);
 }
 
-bool _File::file_exists(const String &p_name) const {
-
-	return FileAccess::exists(p_name);
+bool _File::file_exists(const String &p_name, bool remap) const {
+	String path = p_name;
+	if (remap) {
+		path = ResourceLoader::path_remap(path); //remap for translation
+		path = ResourceLoader::import_remap(path); //remap for import
+	}
+	return FileAccess::exists(path);
 }
 
 void _File::store_var(const Variant &p_var) {
@@ -1904,7 +1908,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &_File::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &_File::get_pascal_string);
 
-	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_File::file_exists);
+	ClassDB::bind_method(D_METHOD("file_exists", "path", "remap"), &_File::file_exists, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &_File::get_modified_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "endian_swap"), "set_endian_swap", "get_endian_swap");

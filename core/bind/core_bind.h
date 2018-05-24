@@ -478,7 +478,7 @@ public:
 
 	void store_var(const Variant &p_var);
 
-	bool file_exists(const String &p_name) const; ///< return true if a file exists
+	bool file_exists(const String &p_name, bool remap = true) const; ///< return true if a file exists
 
 	uint64_t get_modified_time(const String &p_file) const;
 
