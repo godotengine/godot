@@ -155,19 +155,22 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 
 	AudioDriver::MicrophoneDeviceOutput *microphone_device_output = reciever->owner;
 	const Vector<AudioFrame> &source_buffer = microphone_device_output->get_buffer();
+	int current_buffer_size = microphone_device_output->get_current_buffer_size();
 
-	if (microphone_device_output->get_read_index() >= 0) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = source_buffer[internal_mic_offset + microphone_device_output->get_read_index() + i];
+	for (int i = 0; i < p_frames; i++) {
+		if (current_buffer_size >= internal_mic_offset) {
+			if (internal_mic_offset >= source_buffer.size()) {
+				internal_mic_offset = 0;
+			}
+			p_buffer[i] = source_buffer[internal_mic_offset++];
+		} else {
+			p_buffer[i] = AudioFrame(0.f, 0.f);
 		}
 	}
-
-	internal_mic_offset += p_frames;
 }
 
 void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	AudioStreamPlaybackResampled::mix(p_buffer, p_rate_scale, p_frames);
-	internal_mic_offset = 0; // Reset
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
@@ -175,6 +178,7 @@ float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
 }
 
 void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
+	internal_mic_offset = 0;
 	active = true;
 
 	// note: can this be called twice?

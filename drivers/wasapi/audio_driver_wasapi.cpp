@@ -432,30 +432,27 @@ Error AudioDriverWASAPI::init_capture_devices(bool reinit) {
 		microphone_device_output_wasapi->frame_size = (microphone_device_output_wasapi->bits_per_sample / 8) * microphone_device_output_wasapi->channels;
 
 		microphone_device_output_wasapi->current_capture_index = 0;
+		microphone_device_output_wasapi->current_capture_size = 0;
 
-		if (pwfex->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+		WORD format_tag = pwfex->wFormatTag;
+		if (format_tag == WAVE_FORMAT_EXTENSIBLE) {
 			WAVEFORMATEXTENSIBLE *wfex = (WAVEFORMATEXTENSIBLE *)pwfex;
 
 			if (wfex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
-				microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_PCM;
+				format_tag = WAVE_FORMAT_PCM;
 			} else if (wfex->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
-				microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_FLOAT;
+				format_tag = WAVE_FORMAT_IEEE_FLOAT;
 			} else {
 				ERR_PRINT("WASAPI: Format not supported");
 				ERR_FAIL_V(ERR_CANT_OPEN);
 			}
 		} else {
-			if (pwfex->wFormatTag != WAVE_FORMAT_PCM && pwfex->wFormatTag != WAVE_FORMAT_IEEE_FLOAT) {
+			if (format_tag != WAVE_FORMAT_PCM && format_tag != WAVE_FORMAT_IEEE_FLOAT) {
 				ERR_PRINT("WASAPI: Format not supported");
 				ERR_FAIL_V(ERR_CANT_OPEN);
-			} else {
-				if (pwfex->wFormatTag == WAVE_FORMAT_PCM) {
-					microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_PCM;
-				} else {
-					microphone_device_output_wasapi->microphone_format = MicrophoneDeviceOutputDirect::FORMAT_FLOAT;
-				}
 			}
 		}
+		microphone_device_output_wasapi->capture_format_tag = format_tag;
 
 		hr = microphone_device_output_wasapi->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, REFTIMES_PER_SEC, 0, pwfex, NULL);
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -466,7 +463,7 @@ Error AudioDriverWASAPI::init_capture_devices(bool reinit) {
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 		// Set the buffer size
-		microphone_device_output_wasapi->buffer.resize(max_frames * 10); // 10 second test buffer (will crash after it's been filled due to lack of looping)
+		microphone_device_output_wasapi->buffer.resize(max_frames);
 		memset(microphone_device_output_wasapi->buffer.ptrw(), 0x00, microphone_device_output_wasapi->buffer.size() * microphone_device_output_wasapi->frame_size);
 
 		// Get the capture client
@@ -611,6 +608,39 @@ void AudioDriverWASAPI::set_device(String device) {
 	unlock();
 }
 
+float AudioDriverWASAPI::read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i) {
+	if (format_tag == WAVE_FORMAT_PCM) {
+		int32_t sample = 0;
+		switch (bits_per_sample) {
+			case 8:
+				sample = int32_t(((int8_t *)buffer)[i]) << 24;
+				break;
+
+			case 16:
+				sample = int32_t(((int16_t *)buffer)[i]) << 16;
+				break;
+
+			case 24:
+				sample |= int32_t(((int8_t *)buffer)[i * 3 + 2]) << 24;
+				sample |= int32_t(((int8_t *)buffer)[i * 3 + 1]) << 16;
+				sample |= int32_t(((int8_t *)buffer)[i * 3 + 0]) << 8;
+				break;
+
+			case 32:
+				sample = ((int32_t *)buffer)[i];
+				break;
+		}
+
+		return (sample >> 16) / 32768.f;
+	} else if (format_tag == WAVE_FORMAT_IEEE_FLOAT) {
+		return ((float *)buffer)[i];
+	} else {
+		ERR_PRINT("WASAPI: Unknown format tag");
+	}
+
+	return 0.f;
+}
+
 void AudioDriverWASAPI::write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample) {
 	if (ad->format_tag == WAVE_FORMAT_PCM) {
 		switch (ad->bits_per_sample) {
@@ -688,19 +718,27 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					memset((char *)(microphone_device_output_wasapi->buffer.ptrw()) + (microphone_device_output_wasapi->current_capture_index * microphone_device_output_wasapi->frame_size), 0, frames_to_copy * microphone_device_output_wasapi->frame_size);
 				} else {
 					// fixme: Only works for floating point atm
-					if (microphone_device_output_wasapi->channels == 2) {
-						for (int j = 0; j < frames_to_copy; j++) {
-							float left = *(((float *)data) + (j * 2));
-							float right = *(((float *)data) + (j * 2) + 1);
-							microphone_device_output_wasapi->buffer[microphone_device_output_wasapi->current_capture_index + j] = AudioFrame(left, right);
+					for (int j = 0; j < frames_to_copy; j++) {
+						float l, r;
+
+						if (microphone_device_output_wasapi->channels == 2) {
+							l = read_sample(microphone_device_output_wasapi->capture_format_tag, microphone_device_output_wasapi->bits_per_sample, data, j * 2);
+							r = read_sample(microphone_device_output_wasapi->capture_format_tag, microphone_device_output_wasapi->bits_per_sample, data, j * 2 + 1);
+						} else if (microphone_device_output_wasapi->channels == 1) {
+							l = r = read_sample(microphone_device_output_wasapi->capture_format_tag, microphone_device_output_wasapi->bits_per_sample, data, j);
+						} else {
+							l = r = 0.f;
+							ERR_PRINT("WASAPI: unsupported channel count in microphone!");
 						}
-					} else if (microphone_device_output_wasapi->channels == 1) {
-						for (int j = 0; j < frames_to_copy; j++) {
-							float value = *(((float *)data) + j);
-							microphone_device_output_wasapi->buffer[microphone_device_output_wasapi->current_capture_index + j] = AudioFrame(value, value);
+
+						microphone_device_output_wasapi->buffer[microphone_device_output_wasapi->current_capture_index++] = AudioFrame(l, r);
+
+						if (microphone_device_output_wasapi->current_capture_index >= microphone_device_output_wasapi->buffer.size()) {
+							microphone_device_output_wasapi->current_capture_index = 0;
 						}
-					} else {
-						ERR_PRINT("WASAPI: unsupported channel count in microphone!");
+						if (microphone_device_output_wasapi->current_capture_size < microphone_device_output_wasapi->buffer.size()) {
+							microphone_device_output_wasapi->current_capture_size++;
+						}
 					}
 				}
 
@@ -709,12 +747,6 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 				hr = microphone_device_output_wasapi->capture_client->GetNextPacketSize(&packet_length);
 				ERR_BREAK(hr != S_OK);
-
-				microphone_device_output_wasapi->current_capture_index += frames_to_copy;
-
-				// Test: ensuring the read index is always behind the capture index keeps the input and output reliably in sync, but it
-				// also results in clipping, stutter and other audio artefacts
-				microphone_device_output_wasapi->set_read_index(microphone_device_output_wasapi->current_capture_index - 8192);
 			}
 		}
 

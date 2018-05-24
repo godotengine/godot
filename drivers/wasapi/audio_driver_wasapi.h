@@ -52,6 +52,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	public:
 		IAudioClient *audio_client;
 		IAudioCaptureClient *capture_client;
+		WORD capture_format_tag;
 	};
 	//
 	Mutex *mutex;
@@ -79,6 +80,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	bool active;
 
 	_FORCE_INLINE_ void write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample);
+	static _FORCE_INLINE_ float read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
 	StringName get_default_capture_device_name(IMMDeviceEnumerator *p_enumerator);

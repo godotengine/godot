@@ -127,7 +127,7 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	friend class AudioStreamMicrophone;
 
 	bool active;
-	uint64_t internal_mic_offset;
+	uint32_t internal_mic_offset;
 
 	Ref<AudioStreamMicrophone> microphone;
 	AudioDriver::MicrophoneReciever *reciever;

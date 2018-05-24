@@ -90,6 +90,7 @@ public:
 
 		virtual unsigned int get_mix_rate() = 0;
 		virtual Vector<AudioFrame> &get_buffer() = 0;
+		virtual int get_current_buffer_size() = 0;
 		virtual int get_read_index() = 0;
 		virtual void set_read_index(int p_temp_index) = 0;
 
@@ -138,6 +139,7 @@ public:
 		int read_index = -2048;
 
 		unsigned int current_capture_index;
+		unsigned int current_capture_size;
 		Vector<AudioFrame> buffer;
 
 		unsigned int get_mix_rate() {
@@ -147,6 +149,8 @@ public:
 		Vector<AudioFrame> &get_buffer() {
 			return buffer;
 		};
+
+		int get_current_buffer_size() { return current_capture_size; }
 
 		int get_read_index() {
 			return read_index;
@@ -174,6 +178,7 @@ public:
 		void set_read_index(int p_read_index) {
 			owner->set_read_index(p_read_index);
 		}
+		int get_current_buffer_size() { return owner->get_current_buffer_size(); }
 	};
 
 	MicrophoneDeviceOutputIndirect *default_microphone_device_output;
