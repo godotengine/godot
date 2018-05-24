@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -176,6 +176,8 @@ static const unsigned char compile_error_texts[] =
   "internal error: unknown code in parsed pattern\0"
   /* 90 */
   "internal error: bad code value in parsed_skip()\0"
+  "PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES is not allowed in UTF-16 mode\0"
+  "invalid option bits with PCRE2_LITERAL\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -244,7 +246,7 @@ static const unsigned char match_error_texts[] =
   "non-unique substring name\0"
   "NULL argument passed\0"
   "nested recursion at the same subject position\0"
-  "recursion limit exceeded\0"
+  "matching depth limit exceeded\0"
   "requested value is not available\0"
   /* 55 */
   "requested value is not set\0"
@@ -256,6 +258,8 @@ static const unsigned char match_error_texts[] =
   "match with end before start is not supported\0"
   "too many replacements (more than INT_MAX)\0"
   "bad serialized data\0"
+  "heap limit exceeded\0"
+  "invalid syntax\0"
   ;
 
 
@@ -271,7 +275,7 @@ distinct.
 Arguments:
   enumber       error number
   buffer        where to put the message (zero terminated)
-  size          size of the buffer
+  size          size of the buffer in code units
 
 Returns:        length of message if all is well
                 negative on error
@@ -304,8 +308,8 @@ else                                /* Invalid error number */
 
 for (; n > 0; n--)
   {
-  while (*message++ != CHAR_NULL) {};
-  if (*message == CHAR_NULL) return PCRE2_ERROR_BADDATA;
+  while (*message++ != CHAR_NUL) {};
+  if (*message == CHAR_NUL) return PCRE2_ERROR_BADDATA;
   }
 
 for (i = 0; *message != 0; i++)
