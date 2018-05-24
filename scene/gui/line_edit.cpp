@@ -215,12 +215,14 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case (KEY_A): { //Select All
 					select();
 				} break;
+#ifdef APPLE_STYLE_KEYS
 				case (KEY_LEFT): { // Go to start of text - like HOME key
 					set_cursor_position(0);
 				} break;
 				case (KEY_RIGHT): { // Go to end of text - like END key
 					set_cursor_position(text.length());
 				} break;
+#endif
 				default: { handled = false; }
 			}
 
