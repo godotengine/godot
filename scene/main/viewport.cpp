@@ -1562,7 +1562,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (mb->is_pressed()) {
 
 			Size2 pos = mpos;
-			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button && mb->get_button_index() == BUTTON_LEFT) {
+			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button) {
 
 				//do not steal mouse focus and stuff
 
