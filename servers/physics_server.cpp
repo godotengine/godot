@@ -444,6 +444,8 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_get_object_instance_id", "area"), &PhysicsServer::area_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &PhysicsServer::area_set_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "receiver", "method"), &PhysicsServer::area_set_area_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_monitorable", "area", "monitorable"), &PhysicsServer::area_set_monitorable);
 
 	ClassDB::bind_method(D_METHOD("area_set_ray_pickable", "area", "enable"), &PhysicsServer::area_set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("area_is_ray_pickable", "area"), &PhysicsServer::area_is_ray_pickable);
