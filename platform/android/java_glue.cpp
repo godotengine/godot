@@ -624,6 +624,7 @@ static jmethodID _getDataDir = 0;
 static jmethodID _getLocale = 0;
 static jmethodID _getClipboard = 0;
 static jmethodID _setClipboard = 0;
+static jmethodID _emitErrorSignal = 0;
 static jmethodID _getModel = 0;
 static jmethodID _getScreenDPI = 0;
 static jmethodID _showKeyboard = 0;
@@ -673,6 +674,16 @@ static void _set_clipboard(const String &p_text) {
 	JNIEnv *env = ThreadAndroid::get_env();
 	jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 	env->CallVoidMethod(_godot_instance, _setClipboard, jStr);
+}
+
+static void _emit_error_signal(const String &p_error_type, const String &p_function, const String &p_err_details, const String &p_file, int p_line) {
+	JNIEnv *env = ThreadAndroid::get_env();
+	jstring j_error_type = env->NewStringUTF(p_error_type.utf8().get_data());
+	jstring j_function = env->NewStringUTF(p_function.utf8().get_data());
+	jstring j_err_details = env->NewStringUTF(p_err_details.utf8().get_data());
+	jstring j_file = env->NewStringUTF(p_file.utf8().get_data());
+
+	env->CallVoidMethod(_godot_instance, _emitErrorSignal, j_error_type, j_function, j_err_details, j_file, p_line);
 }
 
 static String _get_model() {
@@ -787,6 +798,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_alertDialog = env->GetMethodID(cls, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 		_getClipboard = env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
+		_emitErrorSignal = env->GetMethodID(cls, "emitErrorSignal", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
 
 		jclass clsio = env->FindClass("org/godotengine/godot/Godot");
 		if (cls) {
@@ -845,7 +857,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		}
 	}
 
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, use_apk_expansion, _set_clipboard, _get_clipboard);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, use_apk_expansion, _set_clipboard, _get_clipboard, _emit_error_signal);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
