@@ -583,11 +583,14 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 	rel_vel = normal.dot(vel);
 
 	// !BAS! We had this set to 0.4, in bullet its 0.2
-	// real_t contactDamping = real_t(0.2);
+	real_t contactDamping = real_t(0.2);
 
-	// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
-	// keeping in mind our anti roll factor
-	real_t contactDamping = s->get_step() / p_rollInfluence;
+	if (p_rollInfluence > 0.0) {
+		// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
+		// keeping in mind our anti roll factor if it is set
+		contactDamping = s->get_step() / p_rollInfluence;
+	}
+
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
 	real_t massTerm = real_t(1.) / ((1.0 / mass) + b2invmass);
