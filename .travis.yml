@@ -1,11 +1,14 @@
 language: cpp
 
+dist: trusty
+
 sudo: false
 
 env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
+    - OPTIONS="verbose=yes progress=no"
 
 cache:
   directories:
@@ -15,25 +18,27 @@ matrix:
   include:
     - env: STATIC_CHECKS=yes
       os: linux
-      compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
+      compiler: gcc
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools"
       os: linux
       compiler: gcc
-    #- env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
-    #  os: linux
-    #  compiler: clang
-    #- env: GODOT_TARGET=windows TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
-    #  os: linux
-    #  compiler: gcc
+    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+      os: linux
+      compiler: clang
     - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-gcc
       os: linux
       compiler: gcc
-    #- env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
-    #  os: osx
-    #  compiler: clang
-    #- env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
-    #  os: osx
-    #  compiler: clang
+    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
+      os: osx
+      osx_image: xcode9.3
+      compiler: clang
+    - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+      os: osx
+      osx_image: xcode9.3
+      compiler: clang
+    - env: GODOT_TARGET=server TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+      os: linux
+      compiler: clang
 
 addons:
   apt:
@@ -46,17 +51,22 @@ addons:
       - pkg-config
       - libx11-dev
       - libxcursor-dev
-      - libasound2-dev
-      - libfreetype6-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
-      - libssl-dev
+      - libxi-dev
       - libxinerama-dev
       - libxrandr-dev
-      - libxi-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
+      - libasound2-dev
+      - libfreetype6-dev
+      - libssl-dev
 
       # For style checks.
       - clang-format-5.0
+
+before_install:
+  - if [ "$STATIC_CHECKS" = "yes" ]; then
+      unset SCONS_CACHE;
+    fi
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
@@ -79,5 +89,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j 2 platform=$GODOT_TARGET CXX=$CXX builtin_openssl=yes verbose=yes progress=no;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET tools=$TOOLS $OPTIONS;
     fi
