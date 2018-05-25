@@ -569,7 +569,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 }
 
 - (void)mouseDown:(NSEvent *)event {
-	if (([event modifierFlags] & NSEventModifierFlagControl)) {
+	if (([event modifierFlags] & NSEventModifierFlagControl) && EditorSettings::get_singleton()->get("interface/editor/osx_ctrl_click_to_right_click")) {
 		mouse_down_control = true;
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 	} else {
@@ -583,7 +583,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 }
 
 - (void)mouseUp:(NSEvent *)event {
-	if (mouse_down_control) {
+	if (mouse_down_control && EditorSettings::get_singleton()->get("interface/editor/osx_ctrl_click_to_right_click")) {
 		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
 	} else {
 		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
