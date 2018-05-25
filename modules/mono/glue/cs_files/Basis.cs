@@ -453,15 +453,15 @@ namespace Godot
 
             c = Mathf.Cos(euler.x);
             s = Mathf.Sin(euler.x);
-            var xmat = new Basis((real_t)1.0, (real_t)0.0, (real_t)0.0, (real_t)0.0, c, -s, (real_t)0.0, s, c);
+            var xmat = new Basis(1, 0, 0, 0, c, -s, 0, s, c);
 
             c = Mathf.Cos(euler.y);
             s = Mathf.Sin(euler.y);
-            var ymat = new Basis(c, (real_t)0.0, s, (real_t)0.0, (real_t)1.0, (real_t)0.0, -s, (real_t)0.0, c);
+            var ymat = new Basis(c, 0, s, 0, 1, 0, -s, 0, c);
 
             c = Mathf.Cos(euler.z);
             s = Mathf.Sin(euler.z);
-            var zmat = new Basis(c, -s, (real_t)0.0, s, c, (real_t)0.0, (real_t)0.0, (real_t)0.0, (real_t)1.0);
+            var zmat = new Basis(c, -s, 0, s, c, 0, 0, 0, 1);
 
             this = ymat * xmat * zmat;
         }
