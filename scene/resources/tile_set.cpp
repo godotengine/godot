@@ -857,6 +857,17 @@ void TileSet::get_tile_list(List<int> *p_tiles) const {
 	}
 }
 
+bool TileSet::has_auto_tile() const {
+
+	for (Map<int, TileData>::Element *E = tile_map.front(); E; E = E->next()) {
+
+		if (E->get().tile_mode == AUTO_TILE) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool TileSet::has_tile(int p_id) const {
 
 	return tile_map.has(p_id);

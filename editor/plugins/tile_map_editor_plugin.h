@@ -119,6 +119,8 @@ class TileMapEditor : public VBoxContainer {
 	PoolVector<Vector2> bucket_cache;
 	List<Point2i> bucket_queue;
 
+	bool has_auto_tile;
+
 	struct CellOp {
 		int idx;
 		bool xf;
@@ -149,6 +151,9 @@ class TileMapEditor : public VBoxContainer {
 	};
 
 	List<TileData> copydata;
+
+	void _start_set_cell_undo(const String &p_name);
+	void _finish_set_cell_undo();
 
 	void _pick_tile(const Point2 &p_pos);
 

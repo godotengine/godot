@@ -229,6 +229,7 @@ public:
 	void remove_tile(int p_id);
 
 	bool has_tile(int p_id) const;
+	bool has_auto_tile() const;
 
 	bool is_tile_bound(int p_drawn_id, int p_neighbor_id);
 
