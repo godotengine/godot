@@ -540,6 +540,8 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_get_object_instance_id", "area"), &Physics2DServer::area_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &Physics2DServer::area_set_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "receiver", "method"), &Physics2DServer::area_set_area_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_monitorable", "area", "monitorable"), &Physics2DServer::area_set_monitorable);
 
 	ClassDB::bind_method(D_METHOD("body_create"), &Physics2DServer::body_create);
 
