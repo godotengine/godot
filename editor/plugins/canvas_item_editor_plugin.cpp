@@ -2689,6 +2689,9 @@ void CanvasItemEditor::_draw_bones() {
 				continue;
 
 			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+			if (!from_node->is_visible_in_tree())
+				continue;
+
 			Vector<Color> colors;
 			if (from_node->has_meta("_edit_ik_")) {
 				colors.push_back(bone_ik_color);
