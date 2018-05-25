@@ -347,51 +347,9 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	code_editor->set_edit_state(p_state);
 }
 
-void ScriptTextEditor::_convert_case(CaseStyle p_case) {
-	TextEdit *te = code_editor->get_text_edit();
-	Ref<Script> scr = get_edited_script();
-	if (scr.is_null()) {
-		return;
-	}
+void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 
-	if (te->is_selection_active()) {
-		te->begin_complex_operation();
-
-		int begin = te->get_selection_from_line();
-		int end = te->get_selection_to_line();
-		int begin_col = te->get_selection_from_column();
-		int end_col = te->get_selection_to_column();
-
-		for (int i = begin; i <= end; i++) {
-			int len = te->get_line(i).length();
-			if (i == end)
-				len -= len - end_col;
-			if (i == begin)
-				len -= begin_col;
-			String new_line = te->get_line(i).substr(i == begin ? begin_col : 0, len);
-
-			switch (p_case) {
-				case UPPER: {
-					new_line = new_line.to_upper();
-				} break;
-				case LOWER: {
-					new_line = new_line.to_lower();
-				} break;
-				case CAPITALIZE: {
-					new_line = new_line.capitalize();
-				} break;
-			}
-
-			if (i == begin) {
-				new_line = te->get_line(i).left(begin_col) + new_line;
-			}
-			if (i == end) {
-				new_line = new_line + te->get_line(i).right(end_col);
-			}
-			te->set_line(i, new_line);
-		}
-		te->end_complex_operation();
-	}
+	code_editor->convert_case(p_case);
 }
 
 void ScriptTextEditor::trim_trailing_whitespace() {
@@ -415,21 +373,11 @@ void ScriptTextEditor::tag_saved_version() {
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	TextEdit *tx = code_editor->get_text_edit();
-	tx->deselect();
-	tx->unfold_line(p_line);
-	tx->call_deferred("cursor_set_line", p_line);
+
+	code_editor->goto_line(p_line);
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
-	TextEdit *tx = code_editor->get_text_edit();
-	tx->unfold_line(p_line);
-	tx->call_deferred("cursor_set_line", p_line);
-	tx->call_deferred("cursor_set_column", p_begin);
-	tx->select(p_line, p_begin, p_line, p_end);
-}
-
-void ScriptTextEditor::ensure_focus() {
 
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
@@ -788,72 +736,11 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_DELETE_LINE: {
 
-			Ref<Script> scr = get_edited_script();
-			if (scr.is_null())
-				return;
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				int to_line = tx->get_selection_to_line();
-				int from_line = tx->get_selection_from_line();
-				int count = Math::abs(to_line - from_line) + 1;
-				while (count) {
-					tx->set_line(tx->cursor_get_line(), "");
-					tx->backspace_at_cursor();
-					count--;
-					if (count)
-						tx->unfold_line(from_line);
-				}
-				tx->cursor_set_line(from_line - 1);
-				tx->deselect();
-			} else {
-				int line = tx->cursor_get_line();
-				tx->set_line(tx->cursor_get_line(), "");
-				tx->backspace_at_cursor();
-				tx->unfold_line(line);
-				tx->cursor_set_line(line);
-			}
-			tx->end_complex_operation();
+			code_editor->delete_lines();
 		} break;
 		case EDIT_CLONE_DOWN: {
 
-			Ref<Script> scr = get_edited_script();
-			if (scr.is_null())
-				return;
-
-			int from_line = tx->cursor_get_line();
-			int to_line = tx->cursor_get_line();
-			int column = tx->cursor_get_column();
-
-			if (tx->is_selection_active()) {
-				from_line = tx->get_selection_from_line();
-				to_line = tx->get_selection_to_line();
-				column = tx->cursor_get_column();
-			}
-			int next_line = to_line + 1;
-
-			if (to_line >= tx->get_line_count() - 1) {
-				tx->set_line(to_line, tx->get_line(to_line) + "\n");
-			}
-
-			tx->begin_complex_operation();
-			for (int i = from_line; i <= to_line; i++) {
-
-				tx->unfold_line(i);
-				if (i >= tx->get_line_count() - 1) {
-					tx->set_line(i, tx->get_line(i) + "\n");
-				}
-				String line_clone = tx->get_line(i);
-				tx->insert_at(line_clone, next_line);
-				next_line++;
-			}
-
-			tx->cursor_set_column(column);
-			if (tx->is_selection_active()) {
-				tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
-			}
-
-			tx->end_complex_operation();
-			tx->update();
+			code_editor->code_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 
