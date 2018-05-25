@@ -69,17 +69,17 @@ def configure(env):
         env.Append(CCFLAGS='-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"'.split())
     elif (env["arch"] == "arm64"):  # arm64
         env["bits"] = "64"
-        env.Append(CCFLAGS='-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=7.0 -isysroot $IPHONESDK'.split())
+        env.Append(CCFLAGS='-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=9.0 -isysroot $IPHONESDK'.split())
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
     else:  # armv7
         env["arch"] = "arm"
         env["bits"] = "32"
-        env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=7.0 -MMD -MT dependencies'.split())
+        env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=9.0 -MMD -MT dependencies'.split())
 
     if (env["arch"] == "x86"):
         env['IPHONEPLATFORM'] = 'iPhoneSimulator'
-        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=4.3',
+        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=9.0',
                               '-isysroot', '$IPHONESDK',
                               #'-mmacosx-version-min=10.6',
                               '-Xlinker',
@@ -102,7 +102,7 @@ def configure(env):
                               '-F$IPHONESDK',
                               ])
     elif (env["arch"] == "arm64"):
-        env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=7.0',
+        env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
                                                 '-isysroot', '$IPHONESDK',
                                                 #'-stdlib=libc++',
                                                 '-framework', 'Foundation',
@@ -122,7 +122,7 @@ def configure(env):
                                                 '-framework', 'GameController',
                               ])
     else:
-        env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=7.0',
+        env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
                                                 '-isysroot', '$IPHONESDK',
                                                 '-framework', 'Foundation',
                                                 '-framework', 'UIKit',
