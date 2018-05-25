@@ -404,6 +404,7 @@ void register_scene_types() {
 	ClassDB::register_class<Curve3D>();
 	ClassDB::register_class<Path>();
 	ClassDB::register_class<PathFollow>();
+	ClassDB::register_class<OrientedPathFollow>();
 	ClassDB::register_class<VisibilityNotifier>();
 	ClassDB::register_class<VisibilityEnabler>();
 	ClassDB::register_class<WorldEnvironment>();

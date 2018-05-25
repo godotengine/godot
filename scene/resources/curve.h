@@ -232,11 +232,13 @@ class Curve3D : public Resource {
 	mutable bool baked_cache_dirty;
 	mutable PoolVector3Array baked_point_cache;
 	mutable PoolRealArray baked_tilt_cache;
+	mutable PoolVector3Array baked_up_vector_cache;
 	mutable float baked_max_ofs;
 
 	void _bake() const;
 
 	float bake_interval;
+	bool up_vector_enabled;
 
 	void _bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;
@@ -264,12 +266,16 @@ public:
 
 	void set_bake_interval(float p_tolerance);
 	float get_bake_interval() const;
+	void set_up_vector_enabled(bool p_enable);
+	bool is_up_vector_enabled() const;
 
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	float interpolate_baked_tilt(float p_offset) const;
+	Vector3 interpolate_baked_up_vector(float p_offset, bool p_apply_tilt = false) const;
 	PoolVector3Array get_baked_points() const; //useful for going through
 	PoolRealArray get_baked_tilts() const; //useful for going through
+	PoolVector3Array get_baked_up_vectors() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	float get_closest_offset(const Vector3 &p_to_point) const;
 
