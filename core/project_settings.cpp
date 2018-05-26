@@ -870,6 +870,10 @@ void ProjectSettings::set_custom_property_info(const String &p_prop, const Prope
 	custom_prop_info[p_prop].name = p_prop;
 }
 
+const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
+	return custom_prop_info;
+}
+
 void ProjectSettings::set_disable_feature_overrides(bool p_disable) {
 
 	disable_feature_overrides = p_disable;
