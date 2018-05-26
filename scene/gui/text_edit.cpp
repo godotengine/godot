@@ -5535,7 +5535,17 @@ void TextEdit::_confirm_completion() {
 	cursor_set_column(cursor.column - completion_base.length(), false);
 	insert_text_at_cursor(completion_current);
 
-	if (completion_current.ends_with("(") && auto_brace_completion_enabled) {
+	// When inserted into the middle of an existing string, don't add an unnecessary quote
+	String line = text[cursor.line];
+	CharType next_char = line[cursor.column];
+	CharType last_completion_char = completion_current[completion_current.length() - 1];
+
+	if ((last_completion_char == '"' || last_completion_char == '\'') &&
+			last_completion_char == next_char) {
+		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+	}
+
+	if (last_completion_char == '(' && auto_brace_completion_enabled) {
 		insert_text_at_cursor(")");
 		cursor.column--;
 	}
