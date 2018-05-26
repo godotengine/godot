@@ -1578,7 +1578,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 								isPlanar:NO
 						  colorSpaceName:NSDeviceRGBColorSpace
 							 bytesPerRow:int(texture_size.width) * 4
-							bitsPerPixel:32] autorelease];
+							bitsPerPixel:32];
 
 		ERR_FAIL_COND(imgrep == nil);
 		uint8_t *pixels = [imgrep bitmapData];
@@ -1610,7 +1610,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 		image->unlock();
 
-		NSImage *nsimage = [[[NSImage alloc] initWithSize:NSMakeSize(texture_size.width, texture_size.height)] autorelease];
+		NSImage *nsimage = [[NSImage alloc] initWithSize:NSMakeSize(texture_size.width, texture_size.height)];
 		[nsimage addRepresentation:imgrep];
 
 		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
@@ -1621,6 +1621,9 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		if (p_shape == CURSOR_ARROW) {
 			[cursor set];
 		}
+
+		[imgrep release];
+		[nsimage release];
 	} else {
 		// Reset to default system cursor
 		cursors[p_shape] = NULL;

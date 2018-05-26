@@ -2170,6 +2170,9 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		if (hXorMask != NULL) {
 			DeleteObject(hXorMask);
 		}
+
+		memfree(buffer);
+		DeleteObject(bitmap);
 	} else {
 		// Reset to default system cursor
 		cursors[p_shape] = NULL;
