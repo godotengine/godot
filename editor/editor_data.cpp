@@ -420,6 +420,18 @@ void EditorData::paste_object_params(Object *p_object) {
 	}
 }
 
+bool EditorData::call_build() {
+
+	bool result = true;
+
+	for (int i = 0; i < editor_plugins.size() && result; i++) {
+
+		result &= editor_plugins[i]->build();
+	}
+
+	return result;
+}
+
 UndoRedo &EditorData::get_undo_redo() {
 
 	return undo_redo;
