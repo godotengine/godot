@@ -1320,6 +1320,12 @@ MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *
 		return MultiplayerAPI::RPC_MODE_MASTER;
 	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
 		return MultiplayerAPI::RPC_MODE_SLAVE;
+	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+	if (p_member->has_attribute(CACHED_CLASS(SlaveSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_SLAVESYNC;
 
 	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
@@ -1967,15 +1973,15 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		return NULL;
 #endif
 	}
-	
+
 	if (!script_class) {
 		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
 			// The project assembly is not loaded
 			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
 			ERR_FAIL_V(NULL);
 		}
-		
-			// The project assembly is loaded, but the class could not found
+
+		// The project assembly is loaded, but the class could not found
 		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
 		ERR_FAIL_V(NULL);
 	}
