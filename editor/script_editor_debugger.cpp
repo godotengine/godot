@@ -872,7 +872,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 			reason->add_color_override("font_color", get_color("success_color", "Editor"));
 	}
 	reason->set_text(p_reason);
-	reason->set_tooltip(p_reason);
+	reason->set_tooltip(p_reason.word_wrap(80));
 }
 
 void ScriptEditorDebugger::_performance_select() {
@@ -1877,6 +1877,9 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
+		reason->set_autowrap(true);
+		reason->set_max_lines_visible(3);
+		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 		hbc->add_child(memnew(VSeparator));
 
