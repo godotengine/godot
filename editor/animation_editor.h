@@ -283,6 +283,7 @@ class AnimationKeyEditor : public VBoxContainer {
 	void _query_insert(const InsertData &p_id);
 	void _update_menu();
 	bool insert_queue;
+	void _show_insert_confirm();
 	void _insert_delay();
 	void _scale();
 
