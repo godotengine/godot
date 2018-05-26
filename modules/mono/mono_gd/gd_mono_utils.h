@@ -112,6 +112,9 @@ struct MonoCache {
 	GDMonoClass *class_ToolAttribute;
 	GDMonoClass *class_RemoteAttribute;
 	GDMonoClass *class_SyncAttribute;
+	GDMonoClass *class_RemoteSyncAttribute;
+	GDMonoClass *class_MasterSyncAttribute;
+	GDMonoClass *class_SlaveSyncAttribute;
 	GDMonoClass *class_MasterAttribute;
 	GDMonoClass *class_SlaveAttribute;
 	GDMonoClass *class_GodotMethodAttribute;

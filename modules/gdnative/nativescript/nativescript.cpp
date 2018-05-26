@@ -766,6 +766,12 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_m
 					return MultiplayerAPI::RPC_MODE_MASTER;
 				case GODOT_METHOD_RPC_MODE_SLAVE:
 					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
+					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
+					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				case GODOT_METHOD_RPC_MODE_SLAVESYNC:
+					return MultiplayerAPI::RPC_MODE_SLAVESYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}

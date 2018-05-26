@@ -3931,10 +3931,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					tokenizer->advance();
 				}
 
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC) {
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVESYNC) {
 
 					current_export = PropertyInfo();
-					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave' or 'sync'.");
+					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave', 'sync', 'remotesync', 'mastersync', 'slavesync'.");
 					return;
 				}
 
@@ -4011,6 +4011,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVE;
 				continue;
 			} break;
+			case GDScriptTokenizer::TK_PR_REMOTESYNC:
 			case GDScriptTokenizer::TK_PR_SYNC: {
 
 				//may be fallthrough from export, ignore if so
@@ -4024,6 +4025,36 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				rpc_mode = MultiplayerAPI::RPC_MODE_SYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_MASTERSYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_SLAVESYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVESYNC;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_VAR: {
