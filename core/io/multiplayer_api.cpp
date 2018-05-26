@@ -42,6 +42,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 		case MultiplayerAPI::RPC_MODE_REMOTE: {
 			//do nothing also, no need to call local
 		} break;
+		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
+		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
+		case MultiplayerAPI::RPC_MODE_SLAVESYNC:
 		case MultiplayerAPI::RPC_MODE_SYNC: {
 			//call it, sync always results in call
 			return true;
@@ -67,12 +70,15 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 		case MultiplayerAPI::RPC_MODE_REMOTE: {
 			return true;
 		} break;
+		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
 		case MultiplayerAPI::RPC_MODE_SYNC: {
 			return true;
 		} break;
+		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
 		case MultiplayerAPI::RPC_MODE_MASTER: {
 			return p_node->is_network_master();
 		} break;
+		case MultiplayerAPI::RPC_MODE_SLAVESYNC:
 		case MultiplayerAPI::RPC_MODE_SLAVE: {
 			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
 		} break;
@@ -797,6 +803,9 @@ void MultiplayerAPI::_bind_methods() {
 	BIND_ENUM_CONSTANT(RPC_MODE_SYNC);
 	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
 	BIND_ENUM_CONSTANT(RPC_MODE_SLAVE);
+	BIND_ENUM_CONSTANT(RPC_MODE_REMOTESYNC);
+	BIND_ENUM_CONSTANT(RPC_MODE_MASTERSYNC);
+	BIND_ENUM_CONSTANT(RPC_MODE_SLAVESYNC);
 }
 
 MultiplayerAPI::MultiplayerAPI() {
