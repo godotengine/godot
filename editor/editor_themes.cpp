@@ -1050,7 +1050,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color function_definition_color = Color::html(dark_theme ? "#01e1ff" : "#00a5ba");
 	const Color node_path_color = Color::html(dark_theme ? "64c15a" : "#518b4b");
 
-	const Color te_background_color = Color(0, 0, 0, 0);
+	const Color te_background_color = dark_theme ? background_color : Color::html("#ffffff");
 	const Color completion_background_color = base_color;
 	const Color completion_selected_color = alpha1;
 	const Color completion_existing_color = alpha2;
@@ -1084,7 +1084,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", type_color, true);
 		setting->set_initial_value("text_editor/highlighting/comment_color", comment_color, true);
 		setting->set_initial_value("text_editor/highlighting/string_color", string_color, true);
-		setting->set_initial_value("text_editor/highlighting/background_color", background_color, true);
+		setting->set_initial_value("text_editor/highlighting/background_color", te_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_background_color", completion_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_selected_color", completion_selected_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_existing_color", completion_existing_color, true);
@@ -1118,7 +1118,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", Color::html("83d3ff"), true);
 		setting->set_initial_value("text_editor/highlighting/comment_color", Color::html("676767"), true);
 		setting->set_initial_value("text_editor/highlighting/string_color", Color::html("ef6ebe"), true);
-		setting->set_initial_value("text_editor/highlighting/background_color", Color::html("3b000000"), true);
+		setting->set_initial_value("text_editor/highlighting/background_color", dark_theme ? Color::html("3b000000") : Color::html("#323b4f"), true);
 		setting->set_initial_value("text_editor/highlighting/completion_background_color", Color::html("2C2A32"), true);
 		setting->set_initial_value("text_editor/highlighting/completion_selected_color", Color::html("434244"), true);
 		setting->set_initial_value("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"), true);
