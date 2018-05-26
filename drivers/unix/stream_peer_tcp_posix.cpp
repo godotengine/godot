@@ -297,6 +297,7 @@ Error StreamPeerTCPPosix::read(uint8_t *p_buffer, int p_bytes, int &r_received, 
 			status = STATUS_NONE;
 			peer_port = 0;
 			peer_host = IP_Address();
+			r_received = total_read;
 			return ERR_FILE_EOF;
 
 		} else {
