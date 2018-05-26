@@ -24,7 +24,7 @@
 			<argument index="3" name="d" type="float">
 			</argument>
 			<description>
-				Creates a plane from the three parameters "a", "b", "c" and "d".
+				Creates a plane from the four parameters "a", "b", "c" and "d".
 			</description>
 		</method>
 		<method name="Plane">
