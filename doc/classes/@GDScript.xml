@@ -870,6 +870,7 @@
 				my_seed = "Godot Rocks"
 				seed(my_seed.hash())
 				[/codeblock]
+				Note: The first call to a function such as [code]randf()[/code] or [code]randi()[/code] after setting the seed will usually return a number close to or equal to 0. This is due to the specific implementation. To avoid this behavior call [code]randf()[/code] or [code]randi()[/code] once after setting the seed.
 			</description>
 		</method>
 		<method name="sign">
