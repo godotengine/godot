@@ -37,6 +37,7 @@
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "scene/resources/bit_mask.h"
+#include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
@@ -932,4 +933,101 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	VS::get_singleton()->free(light_instance2);
 	VS::get_singleton()->free(camera);
 	VS::get_singleton()->free(scenario);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
+
+	preview_done = true;
+}
+
+void EditorFontPreviewPlugin::_bind_methods() {
+
+	ClassDB::bind_method("_preview_done", &EditorFontPreviewPlugin::_preview_done);
+}
+
+bool EditorFontPreviewPlugin::handles(const String &p_type) const {
+
+	return ClassDB::is_parent_class(p_type, "DynamicFontData");
+}
+
+Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) {
+	if (canvas.is_valid()) {
+		VS::get_singleton()->viewport_remove_canvas(viewport, canvas);
+	}
+
+	canvas = VS::get_singleton()->canvas_create();
+	canvas_item = VS::get_singleton()->canvas_item_create();
+
+	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+
+	Ref<DynamicFontData> SampledFont;
+	SampledFont.instance();
+	SampledFont->set_font_path(p_path);
+
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	thumbnail_size *= EDSCALE;
+
+	Ref<DynamicFont> sampled_font;
+	sampled_font.instance();
+	sampled_font->set_size(50);
+	sampled_font->set_font_data(SampledFont);
+
+	String sampled_text = "Abg";
+	Vector2 size = sampled_font->get_string_size(sampled_text);
+
+	Vector2 pos;
+
+	pos.x = 64 - size.x / 2;
+	pos.y = 80;
+
+	Ref<Font> font = sampled_font;
+
+	font->draw(canvas_item, pos, sampled_text);
+
+	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
+
+	preview_done = false;
+	VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+
+	while (!preview_done) {
+		OS::get_singleton()->delay_usec(10);
+	}
+
+	Ref<Image> img = VS::get_singleton()->VS::get_singleton()->texture_get_data(viewport_texture);
+	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
+
+	img->convert(Image::FORMAT_RGBA8);
+	img->resize(thumbnail_size, thumbnail_size);
+
+	post_process_preview(img);
+
+	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	ptex->create_from_image(img, 0);
+
+	return ptex;
+}
+
+Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from) {
+
+	return generate_from_path(p_from->get_path());
+}
+
+EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
+
+	viewport = VS::get_singleton()->viewport_create();
+	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
+	VS::get_singleton()->viewport_set_vflip(viewport, true);
+	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	VS::get_singleton()->viewport_set_active(viewport, true);
+	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+}
+
+EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
+
+	VS::get_singleton()->free(canvas_item);
+	VS::get_singleton()->free(canvas);
+	VS::get_singleton()->free(viewport);
 }
