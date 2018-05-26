@@ -4392,6 +4392,37 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_PR_VAR: {
 				//variale declaration and (eventual) initialization
 
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_SLAVESYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVESYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_VAR: {
+				//variale declaration and (eventual) initialization
+
 				ClassNode::Member member;
 				bool autoexport = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_EXPORT;
 				if (current_export.type != Variant::NIL) {
