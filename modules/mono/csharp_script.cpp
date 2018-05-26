@@ -50,6 +50,10 @@
 #include "mono_gd/gd_mono_marshal.h"
 #include "signal_awaiter_utils.h"
 
+#define UPPERCASE(m_c) (((m_c) >= 'a' && (m_c) <= 'z') ? ((m_c) - ('a' - 'A')) : (m_c))
+#define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
+#define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
+
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
 #ifdef TOOLS_ENABLED
@@ -293,33 +297,70 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 
 Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 
-	String script_template = "using " BINDINGS_NAMESPACE ";\n"
-							 "using System;\n"
-							 "\n"
-							 "public class %CLASS_NAME% : %BASE_CLASS_NAME%\n"
-							 "{\n"
-							 "    // Member variables here, example:\n"
-							 "    // private int a = 2;\n"
-							 "    // private string b = \"textvar\";\n"
-							 "\n"
-							 "    public override void _Ready()\n"
-							 "    {\n"
-							 "        // Called every time the node is added to the scene.\n"
-							 "        // Initialization here.\n"
-							 "        \n"
-							 "    }\n"
-							 "\n"
-							 "//    public override void _Process(float delta)\n"
-							 "//    {\n"
-							 "//        // Called every frame. Delta is time since last frame.\n"
-							 "//        // Update game logic here.\n"
-							 "//        \n"
-							 "//    }\n"
-							 "}\n";
-
+	String project_name = (String)ProjectSettings::get_singleton()->get_setting("application/config/name");
+	bool generate_namespace = true;
+	for (int i = 0; i < project_name.size()-1; i++) {
+		if (!UPPERCASE(project_name[i]) && !LOWERCASE(project_name[i]) && !IS_DIGIT(project_name[i])) {
+			generate_namespace = false;
+			break;
+		}
+	}
+	String script_template = "";
+	if (generate_namespace) {
+		script_template = "using " BINDINGS_NAMESPACE ";\n"
+						  "using System;\n"
+						  "\n"
+						  "namespace %PROJECT_NAME%\n"
+						  "{\n"
+						  "%TS%public class %CLASS_NAME% : %BASE_CLASS_NAME%\n"
+						  "%TS%{\n"
+						  "%TS%%TS%// Member variables here, example:\n"
+						  "%TS%%TS%// private int a = 2;\n"
+						  "%TS%%TS%// private string b = \"textvar\";\n"
+						  "\n"
+						  "%TS%%TS%public override void _Ready()\n"
+						  "%TS%%TS%{\n"
+						  "%TS%%TS%%TS%// Called every time the node is added to the scene.\n"
+						  "%TS%%TS%%TS%// Initialization here.\n"
+						  "%TS%%TS%%TS%\n"
+						  "%TS%%TS%}\n"
+						  "\n"
+						  "%TS%%TS%// public override void _Process(float delta)\n"
+						  "%TS%%TS%// {\n"
+						  "%TS%%TS%%TS%// Called every frame. Delta is time since last frame.\n"
+						  "%TS%%TS%%TS%// Update game logic here.\n"
+						  "%TS%%TS%%TS%\n"
+						  "%TS%%TS%// }\n"
+						  "%TS%}\n"
+						  "}\n";
+		script_template = script_template.replace("%PROJECT_NAME%", project_name);
+	} else {
+		script_template = "using " BINDINGS_NAMESPACE ";\n"
+						  "using System;\n"
+						  "\n"
+						  "public class %CLASS_NAME% : %BASE_CLASS_NAME%\n"
+						  "{\n"
+						  "%TS%// Member variables here, example:\n"
+						  "%TS%// private int a = 2;\n"
+						  "%TS%// private string b = \"textvar\";\n"
+						  "\n"
+						  "%TS%public override void _Ready()\n"
+						  "%TS%{\n"
+						  "%TS%%TS%// Called every time the node is added to the scene.\n"
+						  "%TS%%TS%// Initialization here.\n"
+						  "%TS%%TS%\n"
+						  "%TS%}\n"
+						  "\n"
+						  "%TS%// public override void _Process(float delta)\n"
+						  "%TS%// {\n"
+						  "%TS%%TS%// Called every frame. Delta is time since last frame.\n"
+						  "%TS%%TS%// Update game logic here.\n"
+						  "%TS%%TS%\n"
+						  "%TS%// }\n"
+						  "}\n";
+	}
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
-	script_template = script_template.replace("%BASE_CLASS_NAME%", base_class_name)
-							  .replace("%CLASS_NAME%", p_class_name);
+	script_template = script_template.replace("%TS%", _get_indentation()).replace("%BASE_CLASS_NAME%", base_class_name).replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
@@ -1967,15 +2008,15 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		return NULL;
 #endif
 	}
-	
+
 	if (!script_class) {
 		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
 			// The project assembly is not loaded
 			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
 			ERR_FAIL_V(NULL);
 		}
-		
-			// The project assembly is loaded, but the class could not found
+
+		// The project assembly is loaded, but the class could not found
 		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
 		ERR_FAIL_V(NULL);
 	}
