@@ -17,7 +17,7 @@
 			<argument index="0" name="param" type="String">
 			</argument>
 			<description>
-				Returns the current value set for this material of a uniform in the shader
+				Returns the current value set for this material of a uniform in the shader 
 			</description>
 		</method>
 		<method name="set_shader_param">
