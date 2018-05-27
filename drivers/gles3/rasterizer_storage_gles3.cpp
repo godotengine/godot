@@ -1356,6 +1356,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		ERR_FAIL_COND(!texture);
 	}
 
+	texture = texture->get_ptr(); //resolve for proxies
+
 	glBindVertexArray(0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -5895,12 +5897,9 @@ void RasterizerStorageGLES3::update_particles() {
 							tex = resources.white_tex;
 						} break;
 					}
-				} else if (t->proxy && t->proxy->tex_id) {
-
-					target = t->proxy->target;
-					tex = t->proxy->tex_id;
 				} else {
 
+					t = t->get_ptr(); //resolve for proxies
 					target = t->target;
 					tex = t->tex_id;
 				}

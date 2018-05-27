@@ -2363,10 +2363,9 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	ERR_FAIL_COND(!tex);
 	glActiveTexture(GL_TEXTURE0);
 
-	if (tex->proxy && tex->proxy->tex_id)
-		glBindTexture(tex->target, tex->proxy->tex_id);
-	else
-		glBindTexture(tex->target, tex->tex_id);
+	tex = tex->get_ptr(); //resolve for proxies
+
+	glBindTexture(tex->target, tex->tex_id);
 
 	if (storage->config.srgb_decode_supported && tex->srgb && !tex->using_srgb) {
 
