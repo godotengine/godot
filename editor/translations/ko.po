@@ -9,6 +9,7 @@
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
+# 박건영 (pgyage3263) <pgyage3263@naver.com>, 2018.
 #
 msgid ""
 msgstr ""
@@ -571,7 +572,7 @@ msgid ""
 "Changes will not take effect unless reloaded."
 msgstr ""
 "씬 '%s'(이)가 현재 편집 중입니다.\n"
-"다시 로드 할 때 변경 사항이 적용됩니다."
+"다시 불러올 때 변경 사항이 적용됩니다."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -579,7 +580,7 @@ msgid ""
 "Changes will take effect when reloaded."
 msgstr ""
 "리소스 '%s'이(가) 사용 중입니다.\n"
-"다시 로드 할 때 변경 사항이 적용됩니다."
+"다시 불러올 때 변경 사항이 적용됩니다."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -642,11 +643,11 @@ msgstr "제거할 수 없습니다:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr "로드 중 에러:"
+msgstr "불러오던 중 에러:"
 
 #: editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr "종속 관계를 찾을 수 없어 씬를 로드할 수 없습니다:"
+msgstr "종속 관계를 찾을 수 없어 씬를 불러올 수 없습니다:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -662,7 +663,7 @@ msgstr "종속 관계 수정"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "로드 중 에러 발생!"
+msgstr "불러오던 중 에러 발생!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
@@ -953,7 +954,7 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr "로드"
+msgstr "불러오기"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
@@ -1473,11 +1474,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
-msgstr "리소스 로드 실패."
+msgstr "리소스 불러오기 실패."
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "병합할 메시 라이브러리를 로드할 수 없습니다!"
+msgstr "병합할 메시 라이브러리를 불러올 수 없습니다!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
@@ -1485,7 +1486,7 @@ msgstr "메시 라이브러리 저장 중 에러!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "병합할 타일셋을 로드할 수 없습니다!"
+msgstr "병합할 타일셋을 불러올 수 없습니다!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
@@ -1696,7 +1697,7 @@ msgstr "현재 씬이 저장되지 않았습니다. 무시하고 여시겠습니
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr "저장되지 않은 씬은 다시 로드할 수 없습니다."
+msgstr "저장되지 않은 씬은 다시 불러올 수 없습니다."
 
 #: editor/editor_node.cpp
 msgid "Revert"
@@ -1756,19 +1757,19 @@ msgstr "확장기능 플러그인을 찾을 수 없습니다: 'res://addons/%s'.
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "확장기능 스크립트를 로드할 수 없습니다: '%s'."
+msgstr "확장기능 스크립트를 불러올 수 없습니다: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"해당 경로에서 확장기능 스크립트를 로드할 수 없습니다: '%s' 기본 타입이 "
+"해당 경로에서 확장기능 스크립트를 불러올 수 없습니다: '%s' 기본 타입이 "
 "EditorPlugin이 아닙니다."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"해당 경로에서 확장기능 스크립트를 로드할 수 없습니다: '%s' 스크립트가 tool 모"
+"해당 경로에서 확장기능 스크립트를 불러올 수 없습니다: '%s' 스크립트가 tool 모"
 "드가 아닙니다."
 
 #: editor/editor_node.cpp
@@ -2164,7 +2165,7 @@ msgstr "새로운 리소스를 메모리에 만들고 편집합니다."
 
 #: editor/editor_node.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr "디스크에서 기존 리소스를 로드하여 편집합니다."
+msgstr "디스크에서 기존 리소스를 불러와 편집합니다."
 
 #: editor/editor_node.cpp
 msgid "Save the currently edited resource."
@@ -2245,7 +2246,7 @@ msgstr "새 상속 씬"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr "로드 에러"
+msgstr "불러오기 에러"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
@@ -2809,7 +2810,7 @@ msgstr "사용자 정의 스크립트 실행중.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "가져오기 후 실행할 스크립트를 로드할 수 없습니다:"
+msgstr "가져오기 후 실행할 스크립트를 불러올 수 없습니다:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
@@ -2958,7 +2959,7 @@ msgstr "블렌드 시간 변경"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr "애니메이션 로드하기"
+msgstr "애니메이션 불러오기"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -3018,11 +3019,11 @@ msgstr "새로운 애니메이션 만들기."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load animation from disk."
-msgstr "디스크에서 애니메이션 로드."
+msgstr "디스크에서 애니메이션 불러오기."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
-msgstr "디스크에서 애니메이션 로드."
+msgstr "디스크에서 애니메이션 불러오기."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
@@ -3034,7 +3035,7 @@ msgstr "애니메이션 목록 표시."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr "로드 시 자동 플레이"
+msgstr "불러올 시 자동 플레이"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
@@ -3847,7 +3848,7 @@ msgstr "커브 탄젠트 수정"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
-msgstr "커브 프리셋 로드"
+msgstr "커브 프리셋 불러오기"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add point"
@@ -3867,11 +3868,11 @@ msgstr "오른쪽 선형"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load preset"
-msgstr "프리셋 로드"
+msgstr "프리셋 불러오기"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
-msgstr "커프 포인트 삭제"
+msgstr "커브 포인트 삭제"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
@@ -4225,7 +4226,7 @@ msgstr "오직 ParticlesMaterial 프로세스 메테리얼 안의 포인트만 �
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr "이미지 로드 에러:"
+msgstr "이미지 불러오기 에러:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
@@ -4237,7 +4238,7 @@ msgstr "Visibility Rect를 생성"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "에미션 마스크 로드"
+msgstr "에미션 마스크 불러오기"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
@@ -4509,7 +4510,7 @@ msgstr "그리드"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr "에러: 리소스를 로드할 수 없습니다!"
+msgstr "에러: 리소스를 불러올 수 없습니다!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
@@ -4547,7 +4548,7 @@ msgstr "타입:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
-msgstr "리소스 로드"
+msgstr "리소스 불러오기"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4634,7 +4635,7 @@ msgstr "모두 저장"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr "스크립트 다시 로드"
+msgstr "스크립트 다시 불러오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
@@ -4654,7 +4655,7 @@ msgstr "다음 히스토리"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr "테마 다시 로드"
+msgstr "테마 다시 불러오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
@@ -4757,7 +4758,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload"
-msgstr "다시 로드"
+msgstr "다시 불러오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Resave"
@@ -5466,7 +5467,7 @@ msgstr "Post"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "에러: 프레임 리소스를 로드할 수 없습니다!"
+msgstr "에러: 프레임 리소스를 불러올 수 없습니다!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
@@ -5985,7 +5986,7 @@ msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"프로젝트 경로로 부터 project.godot 파일을 로드 할 수 없습니다 (에러 %d). 존재"
+"프로젝트 경로로 부터 project.godot 파일을 불러올 수 없습니다 (에러 %d). 존재"
 "하지 않거나 손상되었을 수 있습니다."
 
 #: editor/project_manager.cpp
@@ -6509,7 +6510,7 @@ msgstr "%s로 변환"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr "파일 로드 에러: 리소스가 아닙니다!"
+msgstr "파일 불러오기 에러: 리소스가 아닙니다!"
 
 #: editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -6557,7 +6558,7 @@ msgstr "PVRTC 도구를 실행할 수 없습니다:"
 
 #: editor/pvrtc_compress.cpp
 msgid "Can't load back converted image using PVRTC tool:"
-msgstr "PVRTC 도구를 사용하여 변환된 이미지를 다시 로드 할 수 없습니다:"
+msgstr "PVRTC 도구를 사용하여 변환된 이미지를 다시 불러올 수 없습니다:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -6656,7 +6657,7 @@ msgstr "자식노드 편집 가능"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
-msgstr "Placeholder로써 로드"
+msgstr "Placeholder로써 불러오기"
 
 #: editor/scene_tree_dock.cpp
 msgid "Discard Instancing"
@@ -6758,7 +6759,7 @@ msgstr "노드 필터"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스크립트를 로드합니다."
+msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스크립트를 불러옵니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
@@ -6862,7 +6863,7 @@ msgstr "노드 선택"
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
-msgstr "'%s' 템플릿 로드 에러"
+msgstr "'%s' 템플릿 불러오기 에러"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
@@ -6934,7 +6935,7 @@ msgstr "새 스크립트 파일 만들기"
 
 #: editor/script_create_dialog.cpp
 msgid "Load existing script file"
-msgstr "기존 스크립트 파일 로드하기"
+msgstr "기존 스크립트 파일 불러오기"
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
@@ -7230,7 +7231,7 @@ msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path 없음)"
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 로드할 수 없음)"
+"유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 불러올 수 없음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
@@ -8141,7 +8142,7 @@ msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"Project Setings(렌더링 -> 환경 -> 기본 환경)에 지정된 기본 환경은 로드할 수 "
+"Project Setings(렌더링 -> 환경 -> 기본 환경)에 지정된 기본 환경은 불러올 수 "
 "없습니다."
 
 #: scene/main/viewport.cpp
@@ -8532,7 +8533,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "소스 경로가 비어있습니다."
 
 #~ msgid "Couldn't load post-import script."
-#~ msgstr "가져오기 후 실행할 스크립트를 로드할 수 없습니다."
+#~ msgstr "가져오기 후 실행할 스크립트를 불러올 수 없습니다."
 
 #~ msgid "Invalid/broken script for post-import."
 #~ msgstr "가져오기 후 실행할 스크립트가 유효하지 않거나 깨져있습니다."
@@ -8625,7 +8626,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "아틀라스를 위한 텍스쳐 가져오기 (2D)"
 
 #~ msgid "Cell Size:"
-#~ msgstr "쎌 사이즈:"
+#~ msgstr "셀 사이즈:"
 
 #~ msgid "Large Texture"
 #~ msgstr "큰 텍스쳐"
@@ -8677,7 +8678,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "큰 텍스쳐 가져오기"
 
 #~ msgid "Load Source Image"
-#~ msgstr "소스 이미지 로드"
+#~ msgstr "소스 이미지 불러오기"
 
 #~ msgid "Slicing"
 #~ msgstr "자르는 중"
@@ -8695,7 +8696,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "이미지 로딩:"
 
 #~ msgid "Couldn't load image:"
-#~ msgstr "이미지를 로드할 수 없음:"
+#~ msgstr "이미지를 불러올 수 없음:"
 
 #~ msgid "Converting Images"
 #~ msgstr "이미지 변환 중"
@@ -8806,7 +8807,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "샘플 파일 열기"
 
 #~ msgid "ERROR: Couldn't load sample!"
-#~ msgstr "에러: 샘플을 로드할 수 없습니다!"
+#~ msgstr "에러: 샘플을 불러올 수 없습니다!"
 
 #~ msgid "Add Sample"
 #~ msgstr "샘플 추가"
@@ -8852,11 +8853,11 @@ msgstr "유효하지 않은 폰트 크기."
 
 #, fuzzy
 #~ msgid "Invalid project path, project.godot must not exist."
-#~ msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 있으면 안됩니다."
+#~ msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재하면 안됩니다."
 
 #, fuzzy
 #~ msgid "Invalid project path, project.godot must exist."
-#~ msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재해야합니다."
+#~ msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재해야 합니다."
 
 #~ msgid "Project Path (Must Exist):"
 #~ msgstr "프로젝트 경로 (반드시 필요):"
@@ -8868,7 +8869,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "리소스 열기"
 
 #~ msgid "Save Resource"
-#~ msgstr "리로스 저장"
+#~ msgstr "리소스 저장"
 
 #~ msgid "Resource Tools"
 #~ msgstr "리소스 도구"
@@ -8912,7 +8913,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "인증서 파일을 읽을 수 없습니다. 경로와 비밀번호가 정확합니까?"
 
 #~ msgid "Error creating the signature object."
-#~ msgstr "서명 오브젝트 생성중 에러."
+#~ msgstr "서명 오브젝트 생성 중 에러."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "패키지 서명을 생성하는 중 에러가 발생했습니다."
@@ -8934,13 +8935,13 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "유효하지 않은 고유 이름."
 
 #~ msgid "Invalid product GUID."
-#~ msgstr "유요하지 않은 프로덕트 GUID."
+#~ msgstr "유효하지 않은 프로덕트 GUID."
 
 #~ msgid "Invalid publisher GUID."
-#~ msgstr "유요하지 않은 퍼블리셔 GUID."
+#~ msgstr "유효하지 않은 퍼블리셔 GUID."
 
 #~ msgid "Invalid background color."
-#~ msgstr "유요하지 않은 배경 색상."
+#~ msgstr "유효하지 않은 배경 색상."
 
 #~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
 #~ msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
@@ -9005,7 +9006,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "환경 광 색상:"
 
 #~ msgid "Couldn't load image"
-#~ msgstr "이미지를 로드할 수 없음"
+#~ msgstr "이미지를 불러올 수 없음"
 
 #~ msgid "Invalid parent class name"
 #~ msgstr "유요하지 않은 부모 클래스명"
@@ -9306,7 +9307,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "애니메이션 루프 시 보간 활성화/비활성화."
 
 #~ msgid "Load Layout"
-#~ msgstr "레이아웃 로드"
+#~ msgstr "레이아웃 불러오기"
 
 #~ msgid "Scale Region Editor"
 #~ msgstr "스케일 구역 편집기"
@@ -9328,10 +9329,10 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "바인드 (추가 파라미터):"
 
 #~ msgid "Method In Node:"
-#~ msgstr "노드의 함수:"
+#~ msgstr "노드 안의 함수:"
 
 #~ msgid "Reload Tool Script (Soft)"
-#~ msgstr "툴 스크립트 다시 로드 (소프트)"
+#~ msgstr "툴 스크립트 다시 불러오기 (소프트)"
 
 #~ msgid "Edit Connections.."
 #~ msgstr "연결 편집.."
@@ -9352,7 +9353,7 @@ msgstr "유효하지 않은 폰트 크기."
 #~ msgstr "그룹 편집기"
 
 #~ msgid "Node Group(s)"
-#~ msgstr "노트 그룹"
+#~ msgstr "노드 그룹"
 
 #~ msgid "Plugin List:"
 #~ msgstr "플러그인 목록:"
