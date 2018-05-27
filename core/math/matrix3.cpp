@@ -349,8 +349,7 @@ void Basis::rotate(const Quat &p_quat) {
 	*this = rotated(p_quat);
 }
 
-// TODO: rename this to get_rotation_euler
-Vector3 Basis::get_rotation() const {
+Vector3 Basis::get_rotation_euler() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
