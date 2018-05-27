@@ -883,14 +883,14 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	}
 #endif
 
-	btTransform body_safe_position;
-	G_TO_B(p_from, body_safe_position);
-	UNSCALE_BT_BASIS(body_safe_position);
+	btTransform body_transform;
+	G_TO_B(p_from, body_transform);
+	UNSCALE_BT_BASIS(body_transform);
 
-	btVector3 recover_initial_position(0, 0, 0);
+	btVector3 initial_recover_motion(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-			if (!recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, recover_initial_position)) {
+			if (!recover_from_penetration(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, initial_recover_motion)) {
 				break;
 			}
 		}
@@ -954,32 +954,27 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		btVector3 __rec(0, 0, 0);
 		RecoverResult r_recover_result;
 
-		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-			l_has_penetration = recover_from_penetration(p_body, body_safe_position, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, delta_recover_movement, &r_recover_result);
+		has_penetration = recover_from_penetration(p_body, body_transform, 0, p_infinite_inertia, __rec, &r_recover_result);
 
-			if (r_result) {
-				B_TO_G(motion + delta_recover_movement + recover_initial_position, r_result->motion);
+		// Parse results
+		if (r_result) {
+			B_TO_G(motion + initial_recover_motion, r_result->motion);
 
-				if (l_has_penetration) {
-					has_penetration = true;
-					if (l_penetration_distance <= r_recover_result.penetration_distance) {
-						continue;
-					}
+			if (has_penetration) {
 
-					l_penetration_distance = r_recover_result.penetration_distance;
+				const btRigidBody *btRigid = static_cast<const btRigidBody *>(r_recover_result.other_collision_object);
+				CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
 
-					const btRigidBody *btRigid = static_cast<const btRigidBody *>(r_recover_result.other_collision_object);
-					CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
+				B_TO_G(motion, r_result->remainder); // is the remaining movements
+				r_result->remainder = p_motion - r_result->remainder;
 
-					B_TO_G(motion, r_result->remainder); // is the remaining movements
-					r_result->remainder = p_motion - r_result->remainder;
-					B_TO_G(r_recover_result.pointWorld, r_result->collision_point);
-					B_TO_G(r_recover_result.normal, r_result->collision_normal);
-					B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
-					r_result->collider = collisionObject->get_self();
-					r_result->collider_id = collisionObject->get_instance_id();
-					r_result->collider_shape = r_recover_result.other_compound_shape_index;
-					r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
+				B_TO_G(r_recover_result.pointWorld, r_result->collision_point);
+				B_TO_G(r_recover_result.normal, r_result->collision_normal);
+				B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
+				r_result->collider = collisionObject->get_self();
+				r_result->collider_id = collisionObject->get_instance_id();
+				r_result->collider_shape = r_recover_result.other_compound_shape_index;
+				r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
 
 #if debug_test_motion
 				Vector3 sup_line2;
@@ -991,10 +986,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				normalLine->end();
 #endif
 			} else {
-				if (!l_has_penetration)
-					break;
-				else
-					has_penetration = true;
+				r_result->remainder = Vector3();
 			}
 		}
 	}
