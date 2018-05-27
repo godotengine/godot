@@ -33,9 +33,10 @@
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/tokentype.h>
 
-#include "list.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/list.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "../godotsharp_dirs.h"
 #include "gd_mono_class.h"
@@ -210,7 +211,7 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(path);
 	ERR_FAIL_COND_V(data.empty(), ERR_FILE_CANT_READ);
 
-	String image_filename(path);
+	String image_filename = ProjectSettings::get_singleton()->globalize_path(path);
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 
