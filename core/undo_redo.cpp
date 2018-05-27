@@ -299,26 +299,30 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 	}
 }
 
-void UndoRedo::redo() {
+bool UndoRedo::redo() {
 
-	ERR_FAIL_COND(action_level > 0);
+	ERR_FAIL_COND_V(action_level > 0, false);
 
 	if ((current_action + 1) >= actions.size())
-		return; //nothing to redo
+		return false; //nothing to redo
 	current_action++;
 
 	_process_operation_list(actions[current_action].do_ops.front());
 	version++;
+
+	return true;
 }
 
-void UndoRedo::undo() {
+bool UndoRedo::undo() {
 
-	ERR_FAIL_COND(action_level > 0);
+	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
-		return; //nothing to redo
+		return false; //nothing to redo
 	_process_operation_list(actions[current_action].undo_ops.front());
 	current_action--;
 	version--;
+
+	return true;
 }
 
 void UndoRedo::clear_history() {

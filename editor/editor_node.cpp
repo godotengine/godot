@@ -593,9 +593,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
-		current_option = -1;
-		accept->set_text(TTR("Error saving resource!"));
-		accept->popup_centered_minsize();
+		show_accept(TTR("Error saving resource!"), TTR("I see..."));
 		return;
 	}
 
@@ -681,26 +679,21 @@ void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 
 	if (p_error) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-
 		switch (p_error) {
 
 			case ERR_FILE_CANT_WRITE: {
 
-				accept->set_text(TTR("Can't open file for writing:") + " " + p_file.get_extension());
+				show_accept(TTR("Can't open file for writing:") + " " + p_file.get_extension(), TTR("I see..."));
 			} break;
 			case ERR_FILE_UNRECOGNIZED: {
 
-				accept->set_text(TTR("Requested file format unknown:") + " " + p_file.get_extension());
+				show_accept(TTR("Requested file format unknown:") + " " + p_file.get_extension(), TTR("I see..."));
 			} break;
 			default: {
 
-				accept->set_text(TTR("Error while saving."));
+				show_accept(TTR("Error while saving."), TTR("I see..."));
 			} break;
 		}
-
-		accept->popup_centered_minsize();
 	}
 }
 
@@ -708,34 +701,29 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 
 	if (p_error) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-
 		switch (p_error) {
 
 			case ERR_CANT_OPEN: {
 
-				accept->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_file.get_file()));
+				show_accept(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_file.get_file()), TTR("I see..."));
 			} break;
 			case ERR_PARSE_ERROR: {
 
-				accept->set_text(vformat(TTR("Error while parsing '%s'."), p_file.get_file()));
+				show_accept(vformat(TTR("Error while parsing '%s'."), p_file.get_file()), TTR("I see..."));
 			} break;
 			case ERR_FILE_CORRUPT: {
 
-				accept->set_text(vformat(TTR("Unexpected end of file '%s'."), p_file.get_file()));
+				show_accept(vformat(TTR("Unexpected end of file '%s'."), p_file.get_file()), TTR("I see..."));
 			} break;
 			case ERR_FILE_NOT_FOUND: {
 
-				accept->set_text(vformat(TTR("Missing '%s' or its dependencies."), p_file.get_file()));
+				show_accept(vformat(TTR("Missing '%s' or its dependencies."), p_file.get_file()), TTR("I see..."));
 			} break;
 			default: {
 
-				accept->set_text(vformat(TTR("Error while loading '%s'."), p_file.get_file()));
+				show_accept(vformat(TTR("Error while loading '%s'."), p_file.get_file()), TTR("I see..."));
 			} break;
 		}
-
-		accept->popup_centered_minsize();
 	}
 }
 
@@ -996,10 +984,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (!scene) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-		accept->set_text(TTR("This operation can't be done without a tree root."));
-		accept->popup_centered_minsize();
+		show_accept(TTR("This operation can't be done without a tree root."), TTR("I see..."));
 		return;
 	}
 
@@ -1027,10 +1012,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
-		accept->popup_centered_minsize();
+		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("I see..."));
 		return;
 	}
 
@@ -1038,10 +1020,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	// (hacky but needed for the tree to update properly)
 	Node *dummy_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!dummy_scene) {
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
-		accept->popup_centered_minsize();
+		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("I see..."));
 		return;
 	}
 	memdelete(dummy_scene);
@@ -1164,10 +1143,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = ResourceLoader::load(p_file, "MeshLibrary");
 
 				if (ml.is_null()) {
-					current_option = -1;
-					accept->get_ok()->set_text(TTR("I see..."));
-					accept->set_text(TTR("Can't load MeshLibrary for merging!"));
-					accept->popup_centered_minsize();
+					show_accept(TTR("Can't load MeshLibrary for merging!"), TTR("I see..."));
 					return;
 				}
 			}
@@ -1180,11 +1156,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
-
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("Error saving MeshLibrary!"));
-				accept->popup_centered_minsize();
+				show_accept(TTR("Error saving MeshLibrary!"), TTR("I see..."));
 				return;
 			}
 
@@ -1196,10 +1168,7 @@ void EditorNode::_dialog_action(String p_file) {
 				tileset = ResourceLoader::load(p_file, "TileSet");
 
 				if (tileset.is_null()) {
-					current_option = -1;
-					accept->get_ok()->set_text(TTR("I see..."));
-					accept->set_text(TTR("Can't load TileSet for merging!"));
-					accept->popup_centered_minsize();
+					show_accept(TTR("Can't load TileSet for merging!"), TTR("I see..."));
 					return;
 				}
 
@@ -1212,10 +1181,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Error err = ResourceSaver::save(p_file, tileset);
 			if (err) {
 
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("Error saving TileSet!"));
-				accept->popup_centered_minsize();
+				show_accept("Error saving TileSet!", "I see...");
 				return;
 			}
 		} break;
@@ -1534,10 +1500,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
-			current_option = -1;
-			accept->get_ok()->set_text(TTR("I see..."));
-			accept->set_text(TTR("There is no defined scene to run."));
-			accept->popup_centered_minsize();
+			show_accept(TTR("There is no defined scene to run."), TTR("I see..."));
 			return;
 		}
 
@@ -1591,10 +1554,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 				if (scene->get_filename() == "") {
 
-					current_option = -1;
-					accept->get_ok()->set_text(TTR("I see..."));
-					accept->set_text(TTR("Current scene was never saved, please save it prior to running."));
-					accept->popup_centered_minsize();
+					show_accept(TTR("Current scene was never saved, please save it prior to running."), TTR("I see..."));
 					return;
 				}
 
@@ -1625,10 +1585,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	if (error != OK) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("I see..."));
-		accept->set_text(TTR("Could not start subprocess!"));
-		accept->popup_centered_minsize();
+		show_accept(TTR("Could not start subprocess!"), TTR("I see..."));
 		return;
 	}
 
@@ -1746,10 +1703,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!scene) {
 
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("This operation can't be done without a tree root."));
-				accept->popup_centered_minsize();
+				show_accept(TTR("This operation can't be done without a tree root."), TTR("I see..."));
 				break;
 			}
 
@@ -1812,10 +1766,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!editor_data.get_edited_scene_root()) {
 
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("This operation can't be done without a scene."));
-				accept->popup_centered_minsize();
+				show_accept(TTR("This operation can't be done without a scene."), TTR("I see..."));
 				break;
 			}
 
@@ -1835,10 +1786,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			//Make sure that the scene has a root before trying to convert to tileset
 			if (!editor_data.get_edited_scene_root()) {
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("This operation can't be done without a root node."));
-				accept->popup_centered_minsize();
+				show_accept(TTR("This operation can't be done without a root node."), TTR("I see..."));
 				break;
 			}
 
@@ -1863,10 +1811,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!editor_data.get_edited_scene_root()) {
 
-				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see..."));
-				accept->set_text(TTR("This operation can't be done without a selected node."));
-				accept->popup_centered_minsize();
+				show_accept(TTR("This operation can't be done without a selected node."), TTR("I see..."));
 				break;
 			}
 
@@ -1896,25 +1841,29 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDIT_UNDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				break; // can't undo while mouse buttons are pressed
+				log->add_message("Can't UNDO while mouse buttons are pressed.");
+			} else {
+				String action = editor_data.get_undo_redo().get_current_action_name();
+
+				if (!editor_data.get_undo_redo().undo()) {
+					log->add_message("There is nothing to UNDO.");
+				} else if (action != "") {
+					log->add_message("UNDO: " + action);
+				}
 			}
-
-			String action = editor_data.get_undo_redo().get_current_action_name();
-			if (action != "")
-				log->add_message("UNDO: " + action);
-
-			editor_data.get_undo_redo().undo();
 		} break;
 		case EDIT_REDO: {
 
-			if (Input::get_singleton()->get_mouse_button_mask() & 0x7)
-				break; // can't redo while mouse buttons are pressed
-
-			editor_data.get_undo_redo().redo();
-			String action = editor_data.get_undo_redo().get_current_action_name();
-			if (action != "")
-				log->add_message("REDO: " + action);
-
+			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
+				log->add_message("Can't REDO while mouse buttons are pressed.");
+			} else {
+				if (!editor_data.get_undo_redo().redo()) {
+					log->add_message("There is nothing to REDO.");
+				} else {
+					String action = editor_data.get_undo_redo().get_current_action_name();
+					log->add_message("REDO: " + action);
+				}
+			}
 		} break;
 
 		case EDIT_REVERT: {
@@ -2135,10 +2084,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->set_low_processor_usage_mode(false);
 			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", true);
 
-			current_option = -1;
-			accept->get_ok()->set_text(TTR("I see..."));
-			accept->set_text(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."));
-			accept->popup_centered_minsize();
+			show_accept(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."), TTR("I see..."));
 		} break;
 		case SETTINGS_UPDATE_CHANGES: {
 
@@ -2737,10 +2683,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (!lpath.begins_with("res://")) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."));
-		accept->popup_centered_minsize();
+		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("Ugh"));
 		opening_prev = false;
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -3151,6 +3094,13 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.password = p_password;
 
 	return OK;
+}
+
+void EditorNode::show_accept(const String &p_text, const String &p_title) {
+	current_option = -1;
+	accept->get_ok()->set_text(p_title);
+	accept->set_text(p_text);
+	accept->popup_centered_minsize();
 }
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
