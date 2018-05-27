@@ -733,54 +733,57 @@ void TextureRegionEditor::_edit_region() {
 	}
 
 	autoslice_cache.clear();
-	Ref<Image> i;
-	i.instance();
-	if (i->load(texture->get_path()) == OK) {
-		BitMap bm;
-		bm.create_from_image_alpha(i);
-		for (int y = 0; y < i->get_height(); y++) {
-			for (int x = 0; x < i->get_width(); x++) {
-				if (bm.get_bit(Point2(x, y))) {
-					bool found = false;
-					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
-						Rect2 grown = E->get().grow(1.5);
-						if (grown.has_point(Point2(x, y))) {
-							E->get().expand_to(Point2(x, y));
-							E->get().expand_to(Point2(x + 1, y + 1));
-							x = E->get().position.x + E->get().size.x - 1;
-							bool merged = true;
-							while (merged) {
-								merged = false;
-								bool queue_erase = false;
-								for (List<Rect2>::Element *F = autoslice_cache.front(); F; F = F->next()) {
-									if (queue_erase) {
-										autoslice_cache.erase(F->prev());
-										queue_erase = false;
+
+	if (cached_texture != texture) {
+		Ref<Image> i = texture->get_data();
+		i->decompress();
+
+		cached_bm->create_from_image_alpha(i);
+		cached_texture = texture;
+	}
+
+	for (int y = 0; y < cached_bm->get_size().y; y++) {
+		for (int x = 0; x < cached_bm->get_size().x; x++) {
+			if (cached_bm->get_bit(Point2(x, y))) {
+				bool found = false;
+				for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
+					Rect2 grown = E->get().grow(1.5);
+					if (grown.has_point(Point2(x, y))) {
+						E->get().expand_to(Point2(x, y));
+						E->get().expand_to(Point2(x + 1, y + 1));
+						x = E->get().position.x + E->get().size.x - 1;
+						bool merged = true;
+						while (merged) {
+							merged = false;
+							bool queue_erase = false;
+							for (List<Rect2>::Element *F = autoslice_cache.front(); F; F = F->next()) {
+								if (queue_erase) {
+									autoslice_cache.erase(F->prev());
+									queue_erase = false;
+								}
+								if (F == E)
+									continue;
+								if (E->get().grow(1).intersects(F->get())) {
+									E->get().expand_to(F->get().position);
+									E->get().expand_to(F->get().position + F->get().size);
+									if (F->prev()) {
+										F = F->prev();
+										autoslice_cache.erase(F->next());
+									} else {
+										queue_erase = true;
+										//Can't delete the first rect in the list.
 									}
-									if (F == E)
-										continue;
-									if (E->get().grow(1).intersects(F->get())) {
-										E->get().expand_to(F->get().position);
-										E->get().expand_to(F->get().position + F->get().size);
-										if (F->prev()) {
-											F = F->prev();
-											autoslice_cache.erase(F->next());
-										} else {
-											queue_erase = true;
-											//Can't delete the first rect in the list.
-										}
-										merged = true;
-									}
+									merged = true;
 								}
 							}
-							found = true;
-							break;
 						}
+						found = true;
+						break;
 					}
-					if (!found) {
-						Rect2 new_rect(x, y, 1, 1);
-						autoslice_cache.push_back(new_rect);
-					}
+				}
+				if (!found) {
+					Rect2 new_rect(x, y, 1, 1);
+					autoslice_cache.push_back(new_rect);
 				}
 			}
 		}
@@ -951,6 +954,8 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	edit_draw->connect("gui_input", this, "_region_input");
 	draw_zoom = 1.0;
 	updating_scroll = false;
+
+	cached_bm.instance();
 
 	edit_draw->set_clip_contents(true);
 }

@@ -93,6 +93,9 @@ class TextureRegionEditor : public Control {
 	Ref<AtlasTexture> atlas_tex;
 	Ref<TileSet> tile_set;
 
+	Ref<Texture> cached_texture;
+	Ref<BitMap> cached_bm;
+
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin;
