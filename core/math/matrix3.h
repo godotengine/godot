@@ -84,9 +84,11 @@ public:
 	void rotate(const Quat &p_quat);
 	Basis rotated(const Quat &p_quat) const;
 
-	Vector3 get_rotation() const;
+	Vector3 get_rotation_euler() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
+	Quat get_rotation_quat() const;
+	Vector3 get_rotation() const { return get_rotation_euler(); };
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 

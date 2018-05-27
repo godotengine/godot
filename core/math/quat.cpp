@@ -139,15 +139,15 @@ bool Quat::is_normalized() const {
 
 Quat Quat::inverse() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
+	ERR_FAIL_COND_V(is_normalized() == false, Quat());
 #endif
 	return Quat(-x, -y, -z, w);
 }
 
 Quat Quat::slerp(const Quat &q, const real_t &t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Quat(0, 0, 0, 0));
-	ERR_FAIL_COND_V(q.is_normalized() == false, Quat(0, 0, 0, 0));
+	ERR_FAIL_COND_V(is_normalized() == false, Quat());
+	ERR_FAIL_COND_V(q.is_normalized() == false, Quat());
 #endif
 	Quat to1;
 	real_t omega, cosom, sinom, scale0, scale1;
@@ -192,7 +192,10 @@ Quat Quat::slerp(const Quat &q, const real_t &t) const {
 }
 
 Quat Quat::slerpni(const Quat &q, const real_t &t) const {
-
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Quat());
+	ERR_FAIL_COND_V(q.is_normalized() == false, Quat());
+#endif
 	const Quat &from = *this;
 
 	real_t dot = from.dot(q);
@@ -211,7 +214,10 @@ Quat Quat::slerpni(const Quat &q, const real_t &t) const {
 }
 
 Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const {
-
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Quat());
+	ERR_FAIL_COND_V(q.is_normalized() == false, Quat());
+#endif
 	//the only way to do slerp :|
 	real_t t2 = (1.0 - t) * t * 2;
 	Quat sp = this->slerp(q, t);

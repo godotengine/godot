@@ -84,7 +84,9 @@ public:
 	}
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
-
+#ifdef MATH_CHECKS
+		ERR_FAIL_COND_V(is_normalized() == false, v);
+#endif
 		Vector3 u(x, y, z);
 		Vector3 uv = u.cross(v);
 		return v + ((uv * w) + u.cross(uv)) * ((real_t)2);

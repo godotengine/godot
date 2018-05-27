@@ -349,8 +349,7 @@ void Basis::rotate(const Quat &p_quat) {
 	*this = rotated(p_quat);
 }
 
-// TODO: rename this to get_rotation_euler
-Vector3 Basis::get_rotation() const {
+Vector3 Basis::get_rotation_euler() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -362,6 +361,20 @@ Vector3 Basis::get_rotation() const {
 	}
 
 	return m.get_euler();
+}
+
+Quat Basis::get_rotation_quat() const {
+	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
+	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
+	// See the comment in get_scale() for further information.
+	Basis m = orthonormalized();
+	real_t det = m.determinant();
+	if (det < 0) {
+		// Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
+		m.scale(Vector3(-1, -1, -1));
+	}
+
+	return m.get_quat();
 }
 
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
@@ -584,10 +597,9 @@ Basis::operator String() const {
 }
 
 Quat Basis::get_quat() const {
-	//commenting this check because precision issues cause it to fail when it shouldn't
-	//#ifdef MATH_CHECKS
-	//ERR_FAIL_COND_V(is_rotation() == false, Quat());
-	//#endif
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_rotation() == false, Quat());
+#endif
 	real_t trace = elements[0][0] + elements[1][1] + elements[2][2];
 	real_t temp[4];
 
