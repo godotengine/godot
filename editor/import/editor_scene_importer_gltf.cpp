@@ -1983,8 +1983,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 						int bone = node->joints[i].godot_bone_index;
 						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
 
-						rot = xform.basis;
-						rot.normalize();
+						rot = xform.basis.get_rotation_quat();
 						scale = xform.basis.get_scale();
 						pos = xform.origin;
 					}
