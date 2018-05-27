@@ -34,7 +34,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GROUP_CALL] flags.
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="change_scene">
@@ -160,7 +160,7 @@
 			<argument index="2" name="notification" type="int">
 			</argument>
 			<description>
-				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GROUP_CALL] flags.
+				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -220,7 +220,7 @@
 			<argument index="3" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GROUP_CALL] flags.
+				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="set_input_as_handled">
