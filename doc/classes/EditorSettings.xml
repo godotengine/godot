@@ -67,7 +67,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_project_settings_dir">
+		<method name="get_project_settings_dir" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -144,6 +144,8 @@
 			</description>
 		</method>
 		<method name="set_project_metadata">
+			<return type="void">
+			</return>
 			<argument index="0" name="section" type="String">
 			</argument>
 			<argument index="1" name="key" type="String">

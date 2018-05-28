@@ -147,11 +147,17 @@
 			<description>
 			</description>
 		</method>
-		<method name="physical_bones_simulation">
+		<method name="physical_bones_start_simulation">
 			<return type="void">
 			</return>
-			<argument index="0" name="start" type="bool">
+			<argument index="0" name="bones" type="Array" default="[  ]">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="physical_bones_stop_simulation">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>

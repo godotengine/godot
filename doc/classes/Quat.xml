@@ -19,16 +19,19 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
-			<argument index="3" name="w" type="float">
+			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Returns a quaternion defined by these values.
+				Returns the rotation matrix corresponding to the given quaternion.
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
 			</description>
 		</method>
 		<method name="Quat">
@@ -45,19 +48,16 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="euler" type="Vector3">
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<argument index="3" name="w" type="float">
 			</argument>
 			<description>
-				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X-angle, Y-angle, Z-angle).
-			</description>
-		</method>
-		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
-			<description>
-				Returns the rotation matrix corresponding to the given quaternion.
+				Returns a quaternion defined by these values.
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -129,7 +129,7 @@
 		<method name="set_axis_angle">
 			<argument index="0" name="axis" type="Vector3">
 			</argument>
-			<argument index="1" name="phi" type="float">
+			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
 				Set the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.

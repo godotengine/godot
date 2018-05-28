@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorProperty" inherits="Container" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_edited_object">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_edited_property">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="update_property" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="checkable" type="bool" setter="set_checkable" getter="is_checkable">
+		</member>
+		<member name="checked" type="bool" setter="set_checked" getter="is_checked">
+		</member>
+		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red">
+		</member>
+		<member name="keying" type="bool" setter="set_keying" getter="is_keying">
+		</member>
+		<member name="label" type="String" setter="set_label" getter="get_label">
+		</member>
+		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only">
+		</member>
+	</members>
+	<signals>
+		<signal name="multiple_properties_changed">
+			<argument index="0" name="properties" type="PoolStringArray">
+			</argument>
+			<argument index="1" name="value" type="Array">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="object_id_selected">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_changed">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Nil">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_checked">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="bool" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_keyed">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_keyed_with_value">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Nil">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="resource_selected">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="resource" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="selected">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="focusable_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This node behaves like [PathFollow], except it uses its parent [Path] up vector information to enforce orientation. 
-		Make sure to check if the curve of this node's parent [Path] has up vectors enabled. See [PathFollow] and [Curve3D] for further information. 
+		Make sure to check if the curve of this node's parent [Path] has up vectors enabled. See [PathFollow] and [Curve3D] for further information.
 	</description>
 	<tutorials>
 	</tutorials>
