@@ -2081,7 +2081,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		UINT size = sizeof(UINT) * image_size;
 
 		// Create the BITMAP with alpha channel
-		COLORREF *buffer = (COLORREF *)malloc(sizeof(COLORREF) * image_size);
+		COLORREF *buffer = (COLORREF *)memalloc(sizeof(COLORREF) * image_size);
 
 		image->lock();
 		for (UINT index = 0; index < image_size; index++) {
@@ -2108,6 +2108,8 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		GetMaskBitmaps(bitmap, clrTransparent, hAndMask, hXorMask);
 
 		if (NULL == hAndMask || NULL == hXorMask) {
+			memfree(buffer);
+			DeleteObject(bitmap);
 			return;
 		}
 
@@ -2132,6 +2134,9 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		if (hXorMask != NULL) {
 			DeleteObject(hXorMask);
 		}
+
+		memfree(buffer);
+		DeleteObject(bitmap);
 	} else {
 		// Reset to default system cursor
 		cursors[p_shape] = NULL;
