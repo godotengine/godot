@@ -1,5 +1,5 @@
 import os
-from compat import iteritems, open_utf8, escape_string
+from compat import iteritems, itervalues, open_utf8, escape_string
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
@@ -661,7 +661,7 @@ def make_license_header(target, source, env):
                 reader.next_line()
 
     data_list = []
-    for project in projects.itervalues():
+    for project in itervalues(projects):
         for part in project:
             part["file_index"] = len(data_list)
             data_list += part["Files"]
@@ -703,7 +703,7 @@ def make_license_header(target, source, env):
         f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
         part_index = 0
         part_indexes = {}
-        for project_name, project in projects.iteritems():
+        for project_name, project in iteritems(projects):
             part_indexes[project_name] = part_index
             for part in project:
                 f.write("\t{ \"" + escape_string(part["License"][0]) + "\", "
@@ -717,7 +717,7 @@ def make_license_header(target, source, env):
         f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
 
         f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
-        for project_name, project in projects.iteritems():
+        for project_name, project in iteritems(projects):
             f.write("\t{ \"" + escape_string(project_name) + "\", "
                     + "&COPYRIGHT_PROJECT_PARTS[" + str(part_indexes[project_name]) + "], "
                     + str(len(project)) + " },\n")
