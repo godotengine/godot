@@ -151,7 +151,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-                Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
 			</description>
 		</method>
 		<method name="max_axis">

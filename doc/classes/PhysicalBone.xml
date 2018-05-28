@@ -9,7 +9,19 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_simulate_physics">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_simulating_physics">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_static_body">
 			<return type="bool">
 			</return>
 			<description>
@@ -30,10 +42,6 @@
 		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone.JointType">
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass">
-		</member>
-		<member name="simulate_physics" type="bool" setter="set_simulate_physics" getter="get_simulate_physics">
-		</member>
-		<member name="static_body" type="bool" setter="set_static_body" getter="is_static_body">
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
 		</member>
