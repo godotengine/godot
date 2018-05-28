@@ -11,6 +11,36 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_author_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns engine author information in a Dictionary.
+
+				"lead_developers" - Array of Strings, lead developer names
+				"founders" - Array of Strings, founder names
+				"project_managers" - Array of Strings, project manager names
+				"developers" - Array of Strings, developer names
+			</description>
+		</method>
+		<method name="get_copyright_info" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an Array of copyright information Dictionaries.
+
+				"name" - String, component name
+				"parts" - Array of Dictionaries {"files", "copyright", "license"} describing subsections of the component
+			</description>
+		</method>
+		<method name="get_donor_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a Dictionary of Arrays of donor names.
+				{"platinum_sponsors", "gold_sponsors", "mini_sponsors", "gold_donors", "silver_donors", "bronze_donors"}
+			</description>
+		</method>
 		<method name="get_frames_drawn">
 			<return type="int">
 			</return>
@@ -23,6 +53,20 @@
 			</return>
 			<description>
 				Returns the frames per second of the running game.
+			</description>
+		</method>
+		<method name="get_license_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns Dictionary of licenses used by Godot and included third party components.
+			</description>
+		</method>
+		<method name="get_license_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns Godot license text.
 			</description>
 		</method>
 		<method name="get_main_loop" qualifiers="const">

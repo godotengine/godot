@@ -2,6 +2,8 @@
 
 Import('env')
 
+import methods
+
 env.core_sources = []
 
 
@@ -93,6 +95,17 @@ env.add_source_files(env.core_sources, "*.cpp")
 import make_binders
 env.Command(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', make_binders.run)
 
+# Authors
+env.Depends('#core/authors.gen.h', "../AUTHORS.md")
+env.Command('#core/authors.gen.h', "../AUTHORS.md", methods.make_authors_header)
+
+# Donors
+env.Depends('#core/donors.gen.h', "../DONORS.md")
+env.Command('#core/donors.gen.h', "../DONORS.md", methods.make_donors_header)
+
+# License
+env.Depends('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
+env.Command('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], methods.make_license_header)
 
 # Chain load SCsubs
 SConscript('os/SCsub')
