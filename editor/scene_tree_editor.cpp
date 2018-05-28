@@ -198,8 +198,18 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 	} else if (p_id == BUTTON_VISIBILITY) {
 		undo_redo->create_action(TTR("Toggle Visible"));
-		undo_redo->add_do_method(this, "toggle_visible", n);
-		undo_redo->add_undo_method(this, "toggle_visible", n);
+		_toggle_visible(n);
+		List<Node *> selection = editor_selection->get_selected_node_list();
+		if (selection.size() > 1) {
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+				Node *nv = E->get();
+				ERR_FAIL_COND(!nv);
+				if (nv == n) {
+					continue;
+				}
+				_toggle_visible(nv);
+			}
+		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_LOCK) {
 
@@ -247,31 +257,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 }
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
-	if (p_node->is_type("Spatial")) {
-		bool v = !bool(p_node->call("is_hidden"));
-		p_node->call("_set_visible_", !v);
-	} else if (p_node->is_type("CanvasItem")) {
-		bool v = bool(p_node->call("is_visible"));
-		if (v) {
-			p_node->call("hide");
-		} else {
-			p_node->call("show");
-		}
-	}
-}
-
-void SceneTreeEditor::toggle_visible(Node *p_node) {
-	_toggle_visible(p_node);
-	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.size() > 1) {
-		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			Node *nv = E->get();
-			ERR_FAIL_COND(!nv);
-			if (nv == p_node) {
-				continue;
-			}
-			_toggle_visible(nv);
-		}
+	if (p_node->has_method("is_hidden") && p_node->has_method("set_hidden")) {
+		bool v = bool(p_node->call("is_hidden"));
+		undo_redo->add_do_method(p_node, "set_hidden", !v);
+		undo_redo->add_undo_method(p_node, "set_hidden", v);
 	}
 }
 
@@ -1078,8 +1067,6 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_subscene_option", &SceneTreeEditor::_subscene_option);
 	ObjectTypeDB::bind_method("_rmb_select", &SceneTreeEditor::_rmb_select);
 	ObjectTypeDB::bind_method("_warning_changed", &SceneTreeEditor::_warning_changed);
-	ObjectTypeDB::bind_method("_toggle_visible", &SceneTreeEditor::_toggle_visible);
-	ObjectTypeDB::bind_method("toggle_visible", &SceneTreeEditor::toggle_visible);
 
 	ObjectTypeDB::bind_method("_node_script_changed", &SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed", &SceneTreeEditor::_node_visibility_changed);
