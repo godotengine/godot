@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  script_text_editor.h                                                 */
+/*  text_editor.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_TEXT_EDITOR_H
-#define SCRIPT_TEXT_EDITOR_H
+#ifndef TEXT_EDITOR_H
+#define TEXT_EDITOR_H
 
-#include "scene/gui/color_picker.h"
 #include "script_editor_plugin.h"
 
-class ScriptTextEditor : public ScriptEditorBase {
+class TextEditor : public ScriptEditorBase {
 
-	GDCLASS(ScriptTextEditor, ScriptEditorBase);
+	GDCLASS(TextEditor, ScriptEditorBase)
 
+private:
 	CodeTextEditor *code_editor;
 
-	Ref<Script> script;
-
-	Vector<String> functions;
-
-	Vector<String> member_keywords;
+	Ref<TextFile> text_file;
 
 	HBoxContainer *edit_hb;
-
 	MenuButton *edit_menu;
-	MenuButton *search_menu;
 	PopupMenu *highlighter_menu;
+	MenuButton *search_menu;
 	PopupMenu *context_menu;
 
 	GotoLineDialog *goto_line_dialog;
-	ScriptEditorQuickOpen *quick_open;
-
-	PopupPanel *color_panel;
-	ColorPicker *color_picker;
-	int color_line;
-	String color_args;
-
-	void _update_member_keywords();
 
 	struct ColorsCache {
+		Color font_color;
 		Color symbol_color;
 		Color keyword_color;
 		Color basetype_color;
@@ -72,8 +60,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 		Color string_color;
 	} colors_cache;
 
-	bool theme_loaded;
-
 	enum {
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -81,19 +67,15 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COPY,
 		EDIT_PASTE,
 		EDIT_SELECT_ALL,
-		EDIT_COMPLETE,
-		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
 		EDIT_CONVERT_INDENT_TO_SPACES,
 		EDIT_CONVERT_INDENT_TO_TABS,
-		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
 		EDIT_CLONE_DOWN,
-		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
@@ -104,86 +86,61 @@ class ScriptTextEditor : public ScriptEditorBase {
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
-		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
-		SEARCH_IN_FILES,
-		DEBUG_TOGGLE_BREAKPOINT,
-		DEBUG_REMOVE_ALL_BREAKPOINTS,
-		DEBUG_GOTO_NEXT_BREAKPOINT,
-		DEBUG_GOTO_PREV_BREAKPOINT,
-		HELP_CONTEXTUAL,
 	};
 
 protected:
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force);
-	void _breakpoint_toggled(int p_row);
-
-	//no longer virtual
-	void _validate_script();
-	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
-	void _load_theme_settings();
-	void _set_theme_for_script();
+	static void _bind_methods();
 
 	void _notification(int p_what);
-	static void _bind_methods();
+
+	void _edit_option(int p_op);
+	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded);
+	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 
 	Map<String, SyntaxHighlighter *> highlighters;
 	void _change_syntax_highlighter(int p_idx);
-
-	void _edit_option(int p_op);
-	void _make_context_menu(bool p_selection, bool p_color, bool p_can_fold, bool p_is_folded);
-	void _text_edit_gui_input(const Ref<InputEvent> &ev);
-	void _color_changed(const Color &p_color);
-
-	void _goto_line(int p_line) { goto_line(p_line); }
-	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+	void _load_theme_settings();
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	void _validate_script();
 
 public:
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 
-	virtual void apply_code();
-	virtual RES get_edited_resource() const;
-	virtual void set_edited_resource(const RES &p_res);
-	virtual Vector<String> get_functions();
-	virtual void reload_text();
 	virtual String get_name();
 	virtual Ref<Texture> get_icon();
+	virtual RES get_edited_resource() const;
+	virtual void set_edited_resource(const RES &p_res);
+	void set_edited_file(const Ref<TextFile> &p_file);
+	virtual void reload_text();
+	virtual void apply_code();
 	virtual bool is_unsaved();
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);
-	virtual void ensure_focus();
+	virtual Vector<String> get_functions();
+	virtual void get_breakpoints(List<int> *p_breakpoints);
+	virtual void goto_line(int p_line, bool p_with_error = false);
 	virtual void trim_trailing_whitespace();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();
+	virtual void ensure_focus();
 	virtual void tag_saved_version();
-
-	virtual void goto_line(int p_line, bool p_with_error = false);
-	void goto_line_selection(int p_line, int p_begin, int p_end);
-
-	virtual void reload(bool p_soft);
-	virtual void get_breakpoints(List<int> *p_breakpoints);
-
-	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
-
 	virtual bool show_members_overview();
-
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
-
+	virtual bool can_lose_focus_on_node_selection() { return true; }
 	virtual void set_debugger_active(bool p_active);
+	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
+	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 
-	Control *get_edit_menu();
+	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();
+
 	static void register_editor();
 
-	ScriptTextEditor();
+	TextEditor();
 };
 
-#endif // SCRIPT_TEXT_EDITOR_H
+#endif // TEXT_EDITOR_H
