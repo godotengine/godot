@@ -842,9 +842,11 @@ void EditorInspectorPlugin::_bind_methods() {
 
 	MethodInfo vm;
 	vm.name = "can_handle";
+	vm.return_val.type = Variant::BOOL;
 	vm.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 	BIND_VMETHOD(vm);
 	vm.name = "parse_begin";
+	vm.return_val.type = Variant::NIL;
 	BIND_VMETHOD(vm);
 	vm.name = "parse_category";
 	vm.arguments.push_back(PropertyInfo(Variant::STRING, "category"));
@@ -859,8 +861,8 @@ void EditorInspectorPlugin::_bind_methods() {
 	vm.arguments.push_back(PropertyInfo(Variant::INT, "usage"));
 	BIND_VMETHOD(vm);
 	vm.arguments.clear();
-	vm.return_val.type = Variant::NIL;
 	vm.name = "parse_end";
+	vm.return_val.type = Variant::NIL;
 	BIND_VMETHOD(vm);
 }
 
