@@ -215,6 +215,10 @@ godot_object GDAPI *godot_global_get_singleton(char *p_name); // result shouldn'
 
 ////// MethodBind API
 
+////// Android
+
+#include <gdnative/android.h>
+
 typedef struct {
 	uint8_t _dont_touch_that[1]; // TODO
 } godot_method_bind;

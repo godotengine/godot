@@ -7,6 +7,11 @@
     },
     "next": null,
     "api": [
+	  {
+          "name": "godot_android_get_env",
+          "return_type": "JNIEnv*",
+          "arguments": []
+      },
       {
         "name": "godot_color_new_rgba",
         "return_type": "void",
