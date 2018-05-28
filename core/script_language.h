@@ -345,8 +345,6 @@ class ScriptDebugger {
 public:
 	typedef void (*RequestSceneTreeMessageFunc)(void *);
 
-	int update_frequency;
-
 	struct LiveEditFuncs {
 
 		void *udata;
