@@ -40,7 +40,7 @@
 			</description>
 		</method>
 		<method name="can_handle" qualifiers="virtual">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
