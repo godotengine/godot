@@ -158,6 +158,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 		ERR_FAIL();
 	}
 
+	if (allow_focus_steal_pid) {
+		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
+	}
+
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
@@ -1031,6 +1035,10 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	physics_frame_time = p_physics_frame_time;
 }
 
+void ScriptDebuggerRemote::set_allow_focus_steal_pid(OS::ProcessID p_pid) {
+	allow_focus_steal_pid = p_pid;
+}
+
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :
@@ -1052,6 +1060,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		n_errors_dropped(0),
 		last_msec(0),
 		msec_count(0),
+		allow_focus_steal_pid(0),
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),
