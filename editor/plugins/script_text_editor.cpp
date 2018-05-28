@@ -66,9 +66,22 @@ void ScriptTextEditor::apply_code() {
 	_update_member_keywords();
 }
 
-Ref<Script> ScriptTextEditor::get_edited_script() const {
-
+RES ScriptTextEditor::get_edited_resource() const {
 	return script;
+}
+
+void ScriptTextEditor::set_edited_resource(const RES &p_res) {
+	ERR_FAIL_COND(!script.is_null());
+
+	script = p_res;
+	_set_theme_for_script();
+
+	code_editor->get_text_edit()->set_text(script->get_source_code());
+	code_editor->get_text_edit()->clear_undo_history();
+	code_editor->get_text_edit()->tag_saved_version();
+
+	emit_signal("name_changed");
+	code_editor->update_line_and_column();
 }
 
 void ScriptTextEditor::_update_member_keywords() {
@@ -399,22 +412,6 @@ Ref<Texture> ScriptTextEditor::get_icon() {
 	return Ref<Texture>();
 }
 
-void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
-
-	ERR_FAIL_COND(!script.is_null());
-
-	script = p_script;
-	_set_theme_for_script();
-
-	code_editor->get_text_edit()->set_text(script->get_source_code());
-	code_editor->get_text_edit()->clear_undo_history();
-	code_editor->get_text_edit()->tag_saved_version();
-
-	emit_signal("name_changed");
-	code_editor->update_line_and_column();
-	call_deferred("_validate_script");
-}
-
 void ScriptTextEditor::_validate_script() {
 
 	String errortxt;
@@ -707,7 +704,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_INDENT_LEFT: {
 
-			Ref<Script> scr = get_edited_script();
+			Ref<Script> scr = script;
 			if (scr.is_null())
 				return;
 
@@ -715,7 +712,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_INDENT_RIGHT: {
 
-			Ref<Script> scr = get_edited_script();
+			Ref<Script> scr = script;
 			if (scr.is_null())
 				return;
 
@@ -746,7 +743,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
-			Ref<Script> scr = get_edited_script();
+			Ref<Script> scr = script;
 			if (scr.is_null())
 				return;
 
@@ -814,7 +811,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_AUTO_INDENT: {
 
 			String text = tx->get_text();
-			Ref<Script> scr = get_edited_script();
+			Ref<Script> scr = script;
 			if (scr.is_null())
 				return;
 
@@ -905,7 +902,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			int line = tx->cursor_get_line();
 			bool dobreak = !tx->is_line_set_as_breakpoint(line);
 			tx->set_line_as_breakpoint(line, dobreak);
-			ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(get_edited_script()->get_path(), line + 1, dobreak);
+			ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
 
@@ -916,7 +913,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				int line = E->get();
 				bool dobreak = !tx->is_line_set_as_breakpoint(line);
 				tx->set_line_as_breakpoint(line, dobreak);
-				ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(get_edited_script()->get_path(), line + 1, dobreak);
+				ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
 		}
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
@@ -1036,7 +1033,7 @@ void ScriptTextEditor::clear_edit_menu() {
 void ScriptTextEditor::reload(bool p_soft) {
 
 	TextEdit *te = code_editor->get_text_edit();
-	Ref<Script> scr = get_edited_script();
+	Ref<Script> scr = script;
 	if (scr.is_null())
 		return;
 	scr->set_source_code(te->get_text());
@@ -1420,9 +1417,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
 
-static ScriptEditorBase *create_editor(const Ref<Script> &p_script) {
+static ScriptEditorBase *create_editor(const RES &p_resource) {
 
-	return memnew(ScriptTextEditor);
+	if (Object::cast_to<Script>(*p_resource)) {
+		return memnew(ScriptTextEditor);
+	}
+	return NULL;
 }
 
 void ScriptTextEditor::register_editor() {
