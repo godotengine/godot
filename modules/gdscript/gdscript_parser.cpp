@@ -716,6 +716,14 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					expr = constant;
 					bfn = true;
 				}
+
+				if (!bfn && GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
+					//check from singletons
+					ConstantNode *constant = alloc_node<ConstantNode>();
+					constant->value = GDScriptLanguage::get_singleton()->get_named_globals_map()[identifier];
+					expr = constant;
+					bfn = true;
+				}
 			}
 
 			if (!bfn) {
