@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "script_language.h"
-#include "project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -284,7 +283,6 @@ ScriptDebugger::ScriptDebugger() {
 	lines_left = -1;
 	depth = -1;
 	break_lang = NULL;
-	update_frequency = GLOBAL_GET("debug/settings/performance/update_frequency_msec");
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
