@@ -81,7 +81,6 @@ class SceneTreeEditor : public Control {
 	int blocked;
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
-	void toggle_visible(Node *p_node);
 
 	bool _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
