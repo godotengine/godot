@@ -2074,9 +2074,10 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 
 		ERR_FAIL_COND(!texture.is_valid());
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(!image.is_valid());
 
 		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
 
 		UINT image_size = texture_size.width * texture_size.height;
 		UINT size = sizeof(UINT) * image_size;
