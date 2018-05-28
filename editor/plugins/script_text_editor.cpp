@@ -412,22 +412,6 @@ Ref<Texture> ScriptTextEditor::get_icon() {
 	return Ref<Texture>();
 }
 
-void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
-
-	ERR_FAIL_COND(!script.is_null());
-
-	script = p_script;
-	_set_theme_for_script();
-
-	code_editor->get_text_edit()->set_text(script->get_source_code());
-	code_editor->get_text_edit()->clear_undo_history();
-	code_editor->get_text_edit()->tag_saved_version();
-
-	emit_signal("name_changed");
-	code_editor->update_line_and_column();
-	call_deferred("_validate_script");
-}
-
 void ScriptTextEditor::_validate_script() {
 
 	String errortxt;

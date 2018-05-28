@@ -75,7 +75,7 @@ class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
 
-	GDCLASS(ScriptEditorBase, VBoxContainer);
+	GDCLASS(ScriptEditorBase, VBoxContainer)
 
 protected:
 	static void _bind_methods();
@@ -117,7 +117,7 @@ public:
 };
 
 typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
-typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Script> &p_script);
+typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
@@ -378,6 +378,9 @@ class ScriptEditor : public PanelContainer {
 
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
+
+	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error);
+	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
