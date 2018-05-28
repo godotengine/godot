@@ -60,18 +60,18 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	bool th = false;
 #endif
 
-	String _template = String() +
-					   "extends %BASE%\n\n" +
-					   "# class member variables go here, for example:\n" +
-					   "# var a = 2\n" +
-					   "# var b = \"textvar\"\n\n" +
-					   "func _ready():\n" +
-					   "%TS%# Called when the node is added to the scene for the first time.\n" +
-					   "%TS%# Initialization here.\n" +
-					   "%TS%pass\n\n" +
-					   "#func _process(delta):\n" +
-					   "#%TS%# Called every frame. Delta is time since last frame.\n" +
-					   "#%TS%# Update game logic here.\n" +
+	String _template = "extends %BASE%\n"
+					   "\n"
+					   "# Declare member variables here. Examples:\n"
+					   "# var a = 2\n"
+					   "# var b = \"text\"\n"
+					   "\n"
+					   "# Called when the node enters the scene tree for the first time.\n"
+					   "func _ready():\n"
+					   "%TS%pass # Replace with function body.\n"
+					   "\n"
+					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
+					   "#func _process(delta):\n"
 					   "#%TS%pass\n";
 
 #ifdef TOOLS_ENABLED
