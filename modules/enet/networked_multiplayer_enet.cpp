@@ -71,7 +71,7 @@ int NetworkedMultiplayerENet::get_last_packet_channel() const {
 	return current_packet.channel;
 }
 
-Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
+Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth, bool p_notify_peers) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER);
@@ -108,6 +108,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	_setup_compressor();
 	active = true;
 	server = true;
+	notify_peers = p_notify_peers;
 	refuse_connections = false;
 	unique_id = 1;
 	connection_status = CONNECTION_CONNECTED;
@@ -246,7 +247,7 @@ void NetworkedMultiplayerENet::poll() {
 
 				emit_signal("peer_connected", *new_id);
 
-				if (server) {
+				if (server && notify_peers) {
 					// Someone connected, notify all the peers available
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
@@ -281,7 +282,7 @@ void NetworkedMultiplayerENet::poll() {
 					}
 				} else {
 
-					if (server) {
+					if (server && notify_peers) {
 						// Someone disconnected, notify everyone else
 						for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
@@ -819,7 +820,7 @@ bool NetworkedMultiplayerENet::is_always_ordered() const {
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth", "notify_peers"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
