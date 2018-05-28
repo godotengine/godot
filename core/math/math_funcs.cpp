@@ -39,6 +39,8 @@ pcg32_random_t Math::default_pcg = { 12047754176567800795ULL, PCG_DEFAULT_INC_64
 // TODO: we should eventually expose pcg.inc too
 uint32_t Math::rand_from_seed(uint64_t *seed) {
 	pcg32_random_t pcg = { *seed, PCG_DEFAULT_INC_64 };
+	// the next state ensures a proper seed value
+	pcg32_random_r(&pcg);
 	uint32_t r = pcg32_random_r(&pcg);
 	*seed = pcg.state;
 	return r;
@@ -46,6 +48,8 @@ uint32_t Math::rand_from_seed(uint64_t *seed) {
 
 void Math::seed(uint64_t x) {
 	default_pcg.state = x;
+	// the next state ensures a proper seed value
+	pcg32_random_r(&default_pcg);
 }
 
 void Math::randomize() {
