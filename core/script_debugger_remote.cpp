@@ -880,7 +880,7 @@ void ScriptDebuggerRemote::idle_poll() {
 	if (performance) {
 
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
-		if (pt - last_perf_time > update_frequency) {
+		if (pt - last_perf_time > 1000) {
 
 			last_perf_time = pt;
 			int max = performance->get("MONITOR_MAX");
@@ -1107,7 +1107,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 	eh.userdata = this;
 	add_error_handler(&eh);
 
-	profile_info.resize(CLAMP(int(GLOBAL_GET("debug/settings/profiler/max_functions")), 128, 65535));
+	profile_info.resize(CLAMP(int(ProjectSettings::get_singleton()->get("debug/settings/profiler/max_functions")), 128, 65535));
 	profile_info_ptrs.resize(profile_info.size());
 }
 
