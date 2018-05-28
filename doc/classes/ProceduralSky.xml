@@ -54,7 +54,7 @@
 			Amount of energy contribution from the sun.
 		</member>
 		<member name="sun_latitude" type="float" setter="set_sun_latitude" getter="get_sun_latitude">
-			The suns height using polar coordinates. 
+			The suns height using polar coordinates.
 		</member>
 		<member name="sun_longitude" type="float" setter="set_sun_longitude" getter="get_sun_longitude">
 			The direction of the sun using polar coordinates.

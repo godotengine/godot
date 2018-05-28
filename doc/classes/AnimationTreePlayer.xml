@@ -50,6 +50,14 @@
 				Returns the name of the [member master_player]'s [Animation] bound to this animation node.
 			</description>
 		</method>
+		<method name="animation_node_get_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="animation_node_set_animation">
 			<return type="void">
 			</return>

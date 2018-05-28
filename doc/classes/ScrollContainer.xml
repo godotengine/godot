@@ -42,4 +42,8 @@
 	</signals>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+	</theme_items>
 </class>

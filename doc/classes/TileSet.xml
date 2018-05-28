@@ -450,7 +450,9 @@
 	<constants>
 		<constant name="BITMASK_2X2" value="0" enum="BitmaskMode">
 		</constant>
-		<constant name="BITMASK_3X3" value="1" enum="BitmaskMode">
+		<constant name="BITMASK_3X3_MINIMAL" value="1" enum="BitmaskMode">
+		</constant>
+		<constant name="BITMASK_3X3" value="2" enum="BitmaskMode">
 		</constant>
 		<constant name="BIND_TOPLEFT" value="1" enum="AutotileBindings">
 		</constant>

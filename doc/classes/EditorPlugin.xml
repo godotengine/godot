@@ -81,7 +81,7 @@
 		<method name="add_export_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="exporter" type="EditorExportPlugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
 			</description>
@@ -90,6 +90,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_inspector_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
 			</description>
@@ -133,6 +141,12 @@
 			<description>
 				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
 				This is used, for example, in shader editors to let the plugin know that it must apply the shader code being written by the user to the object.
+			</description>
+		</method>
+		<method name="build" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
@@ -341,7 +355,7 @@
 		<method name="remove_export_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="exporter" type="EditorExportPlugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
 			</description>
@@ -350,6 +364,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_inspector_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
 			</description>
