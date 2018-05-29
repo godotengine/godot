@@ -433,8 +433,8 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	VisualScriptInstance();
 	~VisualScriptInstance();
