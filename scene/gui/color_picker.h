@@ -67,6 +67,7 @@ private:
 
 	Color color;
 	bool raw_mode_enabled;
+	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
 	float h, s, v;
@@ -106,6 +107,9 @@ public:
 	void add_preset(const Color &p_color);
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
+
+	void set_deferred_mode(bool p_enabled);
+	bool is_deferred_mode() const;
 
 	void set_focus_on_line_edit();
 
