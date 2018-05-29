@@ -1984,11 +1984,11 @@ Ref<Script> VisualScriptInstance::get_script() const {
 	return script;
 }
 
-MultiplayerAPI::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
+ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
 	const Map<StringName, VisualScript::Function>::Element *E = script->functions.find(p_method);
 	if (!E) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
+		return RPC_MODE_DISABLED;
 	}
 
 	if (E->get().function_id >= 0 && E->get().nodes.has(E->get().function_id)) {
@@ -2000,12 +2000,12 @@ MultiplayerAPI::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_m
 		}
 	}
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return RPC_MODE_DISABLED;
 }
 
-MultiplayerAPI::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
+ScriptInstance::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return RPC_MODE_DISABLED;
 }
 
 void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_owner) {

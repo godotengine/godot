@@ -3712,7 +3712,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->line = fnline;
 
 				function->rpc_mode = rpc_mode;
-				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
 
 				if (_static)
 					p_class->static_functions.push_back(function);
@@ -4271,10 +4271,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					tokenizer->advance();
 				}
 
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVESYNC) {
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC) {
 
 					current_export = PropertyInfo();
-					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave', 'sync', 'remotesync', 'mastersync', 'slavesync'.");
+					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave' or 'sync'.");
 					return;
 				}
 
@@ -4307,7 +4307,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 				}
-				rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
+				rpc_mode = ScriptInstance::RPC_MODE_REMOTE;
 
 				continue;
 			} break;
@@ -4328,7 +4328,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
+				rpc_mode = ScriptInstance::RPC_MODE_MASTER;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_SLAVE: {
@@ -4348,10 +4348,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVE;
+				rpc_mode = ScriptInstance::RPC_MODE_SLAVE;
 				continue;
 			} break;
-			case GDScriptTokenizer::TK_PR_REMOTESYNC:
 			case GDScriptTokenizer::TK_PR_SYNC: {
 
 				//may be fallthrough from export, ignore if so
@@ -4364,37 +4363,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				rpc_mode = MultiplayerAPI::RPC_MODE_SYNC;
-				continue;
-			} break;
-			case GDScriptTokenizer::TK_PR_MASTERSYNC: {
-
-				//may be fallthrough from export, ignore if so
-				tokenizer->advance();
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
-					if (current_export.type)
-						_set_error("Expected 'var'.");
-					else
-						_set_error("Expected 'var' or 'func'.");
-					return;
-				}
-
-				rpc_mode = MultiplayerAPI::RPC_MODE_MASTERSYNC;
-				continue;
-			} break;
-			case GDScriptTokenizer::TK_PR_SLAVESYNC: {
-
-				//may be fallthrough from export, ignore if so
-				tokenizer->advance();
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
-					if (current_export.type)
-						_set_error("Expected 'var'.");
-					else
-						_set_error("Expected 'var' or 'func'.");
-					return;
-				}
-
-				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVESYNC;
+				rpc_mode = ScriptInstance::RPC_MODE_SYNC;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_VAR: {
@@ -4469,7 +4438,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance();
 
-				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -5030,7 +4999,7 @@ String GDScriptParser::DataType::to_string() const {
 		} break;
 
 	completion_found = false;
-	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
 
 	return "Unresolved";
 }

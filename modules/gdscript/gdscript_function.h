@@ -191,6 +191,14 @@ public:
 		ADDR_TYPE_NIL = 9
 	};
 
+	enum RPCMode {
+		RPC_DISABLED,
+		RPC_ENABLED,
+		RPC_SYNC,
+		RPC_SYNC_MASTER,
+		RPC_SYNC_SLAVE
+	};
+
 	struct StackDebug {
 
 		int line;
@@ -222,7 +230,7 @@ private:
 	int _call_size;
 	int _initial_line;
 	bool _static;
-	MultiplayerAPI::RPCMode rpc_mode;
+	ScriptInstance::RPCMode rpc_mode;
 
 	GDScript *_script;
 
@@ -321,7 +329,7 @@ public:
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
 
-	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
+	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };
