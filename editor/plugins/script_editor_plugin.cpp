@@ -1876,6 +1876,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	if ((debugger->get_dump_stack_script() != p_resource || debugger->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
+			p_resource->get_class_name() != StringName("VisualScript") &&
 			bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
 
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");

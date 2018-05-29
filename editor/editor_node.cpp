@@ -1502,7 +1502,7 @@ void EditorNode::_edit_current() {
 		if (main_plugin) {
 
 			// special case if use of external editor is true
-			if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene)
 					main_plugin->edit(current_obj);
 			}
