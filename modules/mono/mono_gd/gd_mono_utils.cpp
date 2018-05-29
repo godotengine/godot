@@ -120,6 +120,9 @@ void MonoCache::clear_members() {
 	class_SyncAttribute = NULL;
 	class_MasterAttribute = NULL;
 	class_SlaveAttribute = NULL;
+	class_RemoteSyncAttribute = NULL;
+	class_MasterSyncAttribute = NULL;
+	class_SlaveSyncAttribute = NULL;
 	class_GodotMethodAttribute = NULL;
 	field_GodotMethodAttribute_methodName = NULL;
 
@@ -208,6 +211,9 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
 	CACHE_CLASS_AND_CHECK(SlaveAttribute, GODOT_API_CLASS(SlaveAttribute));
+	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
+	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
+	CACHE_CLASS_AND_CHECK(SlaveSyncAttribute, GODOT_API_CLASS(SlaveSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 

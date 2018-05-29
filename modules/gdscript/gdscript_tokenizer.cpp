@@ -110,6 +110,9 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"sync",
 	"master",
 	"slave",
+	"remotesync",
+	"mastersync",
+	"slavesync",
 	"'['",
 	"']'",
 	"'{'",
@@ -201,6 +204,9 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_MASTER, "master" },
 	{ GDScriptTokenizer::TK_PR_SLAVE, "slave" },
 	{ GDScriptTokenizer::TK_PR_SYNC, "sync" },
+	{ GDScriptTokenizer::TK_PR_REMOTESYNC, "remotesync" },
+	{ GDScriptTokenizer::TK_PR_MASTERSYNC, "mastersync" },
+	{ GDScriptTokenizer::TK_PR_SLAVESYNC, "slavesync" },
 	{ GDScriptTokenizer::TK_PR_CONST, "const" },
 	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
 	//controlflow
@@ -247,6 +253,9 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_MASTER:
 		case TK_PR_SLAVE:
 		case TK_PR_SYNC:
+		case TK_PR_REMOTESYNC:
+		case TK_PR_MASTERSYNC:
+		case TK_PR_SLAVESYNC:
 			return true;
 
 		// Literal for non-variables only:
