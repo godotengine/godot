@@ -128,6 +128,7 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
 
 	class FileOrFolder {
@@ -145,6 +146,7 @@ private:
 	FileOrFolder to_rename;
 	FileOrFolder to_duplicate;
 	Vector<FileOrFolder> to_move;
+	String to_move_path;
 
 	Vector<String> history;
 	int history_pos;
@@ -188,7 +190,9 @@ private:
 	void _make_dir_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
-	void _move_operation_confirm(const String &p_to_path);
+	void _move_with_overwrite();
+	bool _check_existing();
+	void _move_operation_confirm(const String &p_to_path, bool overwrite = false);
 
 	void _file_option(int p_option);
 	void _folder_option(int p_option);
