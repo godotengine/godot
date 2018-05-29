@@ -97,6 +97,7 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from) {
 	if (img.is_null() || img->empty())
 		return Ref<Texture>();
 
+	img = img->duplicate();
 	img->clear_mipmaps();
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
