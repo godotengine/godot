@@ -87,18 +87,6 @@ public:
 		NETWORK_COMMAND_RAW,
 	};
 
-	enum RPCMode {
-
-		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_SYNC, // Using rpc() on it will call method / set property in all remote peers and locally
-		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_SLAVE, // Using rpc() on it will call method for all slaves
-		RPC_MODE_REMOTESYNC, // Same as RPC_MODE_SYNC, compatibility
-		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_SLAVESYNC, // Using rpc() on it will call method / set property in all slave peers and locally
-	};
-
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
@@ -128,7 +116,5 @@ public:
 	MultiplayerAPI();
 	~MultiplayerAPI();
 };
-
-VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
 
 #endif // MULTIPLAYER_PROTOCOL_H

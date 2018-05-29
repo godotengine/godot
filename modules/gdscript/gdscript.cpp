@@ -1220,7 +1220,7 @@ ScriptLanguage *GDScriptInstance::get_language() {
 	return GDScriptLanguage::get_singleton();
 }
 
-MultiplayerAPI::RPCMode GDScriptInstance::get_rpc_mode(const StringName &p_method) const {
+GDScriptInstance::RPCMode GDScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
 	const GDScript *cscript = script.ptr();
 
@@ -1228,17 +1228,17 @@ MultiplayerAPI::RPCMode GDScriptInstance::get_rpc_mode(const StringName &p_metho
 		const Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.find(p_method);
 		if (E) {
 
-			if (E->get()->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
+			if (E->get()->get_rpc_mode() != RPC_MODE_DISABLED) {
 				return E->get()->get_rpc_mode();
 			}
 		}
 		cscript = cscript->_base;
 	}
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return RPC_MODE_DISABLED;
 }
 
-MultiplayerAPI::RPCMode GDScriptInstance::get_rset_mode(const StringName &p_variable) const {
+GDScriptInstance::RPCMode GDScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
 	const GDScript *cscript = script.ptr();
 
@@ -1253,7 +1253,7 @@ MultiplayerAPI::RPCMode GDScriptInstance::get_rset_mode(const StringName &p_vari
 		cscript = cscript->_base;
 	}
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return RPC_MODE_DISABLED;
 }
 
 void GDScriptInstance::reload_members() {
@@ -1769,9 +1769,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"sync",
 		"master",
 		"slave",
-		"remotesync",
-		"mastersync",
-		"slavesync",
 		0
 	};
 
