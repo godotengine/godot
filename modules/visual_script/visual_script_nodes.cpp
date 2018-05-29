@@ -93,7 +93,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 	}
 
 	if (p_name == "rpc/mode") {
-		rpc_mode = MultiplayerAPI::RPCMode(int(p_value));
+		rpc_mode = ScriptInstance::RPCMode(int(p_value));
 		return true;
 	}
 
@@ -267,11 +267,11 @@ int VisualScriptFunction::get_argument_count() const {
 	return arguments.size();
 }
 
-void VisualScriptFunction::set_rpc_mode(MultiplayerAPI::RPCMode p_mode) {
+void VisualScriptFunction::set_rpc_mode(ScriptInstance::RPCMode p_mode) {
 	rpc_mode = p_mode;
 }
 
-MultiplayerAPI::RPCMode VisualScriptFunction::get_rpc_mode() const {
+ScriptInstance::RPCMode VisualScriptFunction::get_rpc_mode() const {
 	return rpc_mode;
 }
 
@@ -319,7 +319,7 @@ VisualScriptFunction::VisualScriptFunction() {
 	stack_size = 256;
 	stack_less = false;
 	sequenced = true;
-	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
 }
 
 void VisualScriptFunction::set_stack_less(bool p_enable) {
