@@ -132,6 +132,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_breakpoints" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array containing the line number of each breakpoint.
+			</description>
+		</method>
 		<method name="get_keyword_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -218,6 +225,12 @@
 			</argument>
 			<description>
 				Insert a given text at the cursor position.
+			</description>
+		</method>
+		<method name="is_breakpoint_gutter_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
@@ -307,6 +320,14 @@
 			</return>
 			<description>
 				Select all the text.
+			</description>
+		</method>
+		<method name="set_breakpoint_gutter_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
