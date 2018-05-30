@@ -56,17 +56,25 @@ protected:
 	StringName group_name;
 	StringName canvas_group_name;
 	RID canvas;
+
 	Vector2 offset;
 	Vector2 zoom;
+
+	bool snapping_enabled;
+	Vector2 snapping;
+	Vector2 snapping_offset;
+
 	AnchorMode anchor_mode;
 	bool rotating;
 	bool current;
+
 	float smoothing;
 	bool smoothing_enabled;
+
 	int limit[4];
 	bool limit_smoothing_enabled;
-	float drag_margin[4];
 
+	float drag_margin[4];
 	bool h_drag_enabled;
 	bool v_drag_enabled;
 	float h_ofs;
@@ -125,6 +133,15 @@ public:
 
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;
+
+	void set_snapping_enabled(bool p_enabled);
+	bool is_snapping_enabled() const;
+
+	void set_snapping_offset(const Vector2 &p_snapping_offset);
+	Vector2 get_snapping_offset() const;
+
+	void set_snapping_value(const Vector2 &p_snapping);
+	Vector2 get_snapping_value() const;
 
 	void make_current();
 	void clear_current();

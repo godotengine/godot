@@ -133,6 +133,15 @@
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
 			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code]
 		</member>
+		<member name="snapping_value" type="Vector2" setter="set_snapping_value" getter="get_snapping_value">
+			The camera's snapping, useful for restricting camera's position to a grid, suitable for tile-based games.
+		</member>
+		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled">
+			If [code]true[/code] the camera's position is snapped to a grid. If [member smoothing_enabled] is [code]true[/code], this creates smooth transitions between grid cells. Default value: [code]false[/code]
+		</member>
+		<member name="snapping_offset" type="Vector2" setter="set_snapping_offset" getter="get_snapping_offset">
+			The camera's snapping offset used for shifting the snapping grid. Each component's value can range from -0.5 to 0.5. Default value: [code]Vector(0, 0)[/code].
+		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
 			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2x zoom in, and [code]Vector2(4, 4)[/code] for a 4x zoom out.
 		</member>

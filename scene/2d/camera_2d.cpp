@@ -141,6 +141,14 @@ Transform2D Camera2D::get_camera_transform() {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
 		}
 
+		if (snapping_enabled && !Engine::get_singleton()->is_editor_hint()) {
+
+			real_t x = Math::floor(camera_pos.x / snapping.x + snapping_offset.x) * snapping.x;
+			real_t y = Math::floor(camera_pos.y / snapping.y + snapping_offset.y) * snapping.y;
+
+			camera_pos = Vector2(x, y);
+		}
+
 		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
 			float c = smoothing * get_process_delta_time();
@@ -513,6 +521,46 @@ float Camera2D::get_follow_smoothing() const {
 	return smoothing;
 }
 
+void Camera2D::set_snapping_enabled(bool p_enabled) {
+
+	snapping_enabled = p_enabled;
+}
+
+bool Camera2D::is_snapping_enabled() const {
+
+	return snapping_enabled;
+}
+
+void Camera2D::set_snapping_offset(const Vector2 &p_snapping_offset) {
+
+	real_t x = CLAMP(p_snapping_offset.x, -0.5, 0.5);
+	real_t y = CLAMP(p_snapping_offset.y, -0.5, 0.5);
+
+	snapping_offset = Vector2(x, y);
+}
+
+Vector2 Camera2D::get_snapping_offset() const {
+
+	return snapping_offset;
+}
+
+void Camera2D::set_snapping_value(const Vector2 &p_snapping) {
+
+	snapping = p_snapping;
+
+	if (snapping.x <= 0.0) {
+		snapping.x = 0.01;
+	}
+	if (snapping.y <= 0.0) {
+		snapping.y = 0.01;
+	}
+}
+
+Vector2 Camera2D::get_snapping_value() const {
+
+	return snapping;
+}
+
 Point2 Camera2D::get_camera_screen_center() const {
 
 	return camera_screen_center;
@@ -695,6 +743,15 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_follow_smoothing", "follow_smoothing"), &Camera2D::set_enable_follow_smoothing);
 	ClassDB::bind_method(D_METHOD("is_follow_smoothing_enabled"), &Camera2D::is_follow_smoothing_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_snapping_enabled", "enabled"), &Camera2D::set_snapping_enabled);
+	ClassDB::bind_method(D_METHOD("is_snapping_enabled"), &Camera2D::is_snapping_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_snapping_offset", "offset"), &Camera2D::set_snapping_offset);
+	ClassDB::bind_method(D_METHOD("get_snapping_offset"), &Camera2D::get_snapping_offset);
+
+	ClassDB::bind_method(D_METHOD("set_snapping_value", "value"), &Camera2D::set_snapping_value);
+	ClassDB::bind_method(D_METHOD("get_snapping_value"), &Camera2D::get_snapping_value);
+
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
@@ -731,6 +788,11 @@ void Camera2D::_bind_methods() {
 	ADD_GROUP("Smoothing", "smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smoothing_enabled"), "set_enable_follow_smoothing", "is_follow_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "smoothing_speed"), "set_follow_smoothing", "get_follow_smoothing");
+
+	ADD_GROUP("Snapping", "snapping_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "snapping_offset", PROPERTY_HINT_RANGE, "-0.5,0.5,0.01"), "set_snapping_offset", "get_snapping_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "snapping_value"), "set_snapping_value", "get_snapping_value");
 
 	ADD_GROUP("Offset", "offset_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset_v", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_v_offset", "get_v_offset");
@@ -774,6 +836,10 @@ Camera2D::Camera2D() {
 
 	smoothing = 5.0;
 	zoom = Vector2(1, 1);
+
+	snapping_enabled = false;
+	snapping = Vector2();
+	snapping_offset = Vector2();
 
 	screen_drawing_enabled = true;
 	limit_drawing_enabled = false;
