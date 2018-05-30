@@ -1868,6 +1868,53 @@ void Image::fill(const Color &c) {
 	unlock();
 }
 
+void Image::replace_color(const Color &p_color_old, const Color &p_color_new) {
+
+	if (p_color_old != p_color_new) {
+
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		uint8_t colorb_new[16];
+		uint8_t colorb_old[16];
+		uint8_t colorb_current[16];
+
+		Image new_img(2, 1, 0, format);
+		new_img.lock();
+
+		new_img.set_pixel(0, 0, p_color_new);
+		new_img.set_pixel(1, 0, p_color_old);
+
+		PoolVector<uint8_t>::Read r_dummy = new_img.data.read();
+		new_img._get_pixelb(0, 0, pixel_size, r_dummy.ptr(), colorb_new);
+		new_img._get_pixelb(1, 0, pixel_size, r_dummy.ptr(), colorb_old);
+
+		new_img.unlock();
+
+		lock();
+
+		PoolVector<uint8_t>::Read r = data.read();
+		PoolVector<uint8_t>::Write w = data.write();
+
+		bool found = false;
+		for (int y = 0; y < height; y++) {
+
+			for (int x = 0; x < width; x++) {
+				found = true;
+				_get_pixelb(x, y, pixel_size, r.ptr(), colorb_current);
+				for (uint32_t i = 0; i < pixel_size; i++)
+					if (colorb_current[i] != colorb_old[i]) {
+						found = false;
+					}
+				if (found) {
+					_put_pixelb(x, y, pixel_size, w.ptr(), colorb_new);
+				}
+			}
+		}
+
+		unlock();
+	}
+}
+
 Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
 Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
@@ -2308,6 +2355,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("replace_color", "color_old", "color_new"), &Image::replace_color);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
