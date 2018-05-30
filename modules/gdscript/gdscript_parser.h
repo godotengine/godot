@@ -100,7 +100,7 @@ public:
 		Type type;
 
 		virtual DataType get_datatype() const { return DataType(); }
-		virtual void set_datatype(DataType p_datatype) {}
+		virtual void set_datatype(const DataType &p_datatype) {}
 
 		virtual ~Node() {}
 	};
@@ -124,6 +124,7 @@ public:
 			Variant default_value;
 #endif
 			StringName identifier;
+			DataType data_type;
 			StringName setter;
 			StringName getter;
 			int line;
@@ -133,6 +134,7 @@ public:
 		struct Constant {
 			StringName identifier;
 			Node *expression;
+			DataType type;
 		};
 
 		struct Signal {
@@ -166,9 +168,14 @@ public:
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		StringName name;
+		DataType return_type;
 		Vector<StringName> arguments;
+		Vector<DataType> argument_types;
 		Vector<Node *> default_values;
 		BlockNode *body;
+
+		virtual DataType get_datatype() const { return return_type; }
+		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
@@ -184,6 +191,7 @@ public:
 		Map<StringName, int> locals;
 		List<Node *> statements;
 		Vector<StringName> variables;
+		Vector<DataType> variable_types;
 		Vector<int> variable_lines;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
@@ -203,6 +211,9 @@ public:
 	struct TypeNode : public Node {
 
 		Variant::Type vtype;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		TypeNode() { type = TYPE_TYPE; }
 	};
 	struct BuiltInFunctionNode : public Node {
@@ -213,6 +224,9 @@ public:
 	struct IdentifierNode : public Node {
 
 		StringName name;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		IdentifierNode() { type = TYPE_IDENTIFIER; }
 	};
 
@@ -220,6 +234,9 @@ public:
 
 		StringName name;
 		Node *assign;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
 			assign = NULL;
@@ -228,13 +245,24 @@ public:
 
 	struct ConstantNode : public Node {
 		Variant value;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		ConstantNode() { type = TYPE_CONSTANT; }
 	};
 
 	struct ArrayNode : public Node {
 
 		Vector<Node *> elements;
-		ArrayNode() { type = TYPE_ARRAY; }
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		ArrayNode() {
+			type = TYPE_ARRAY;
+			datatype.has_type = true;
+			datatype.kind = DataType::BUILTIN;
+			datatype.builtin_type = Variant::ARRAY;
+		}
 	};
 
 	struct DictionaryNode : public Node {
@@ -246,7 +274,15 @@ public:
 		};
 
 		Vector<Pair> elements;
-		DictionaryNode() { type = TYPE_DICTIONARY; }
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+		DictionaryNode() {
+			type = TYPE_DICTIONARY;
+			datatype.has_type = true;
+			datatype.kind = DataType::BUILTIN;
+			datatype.builtin_type = Variant::DICTIONARY;
+		}
 	};
 
 	struct SelfNode : public Node {
@@ -312,6 +348,9 @@ public:
 		Operator op;
 
 		Vector<Node *> arguments;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		OperatorNode() { type = TYPE_OPERATOR; }
 	};
 
@@ -381,6 +420,9 @@ public:
 
 	struct CastNode : public Node {
 		Node *source_node;
+		DataType cast_type;
+		virtual DataType get_datatype() const { return cast_type; }
+		virtual void set_datatype(const DataType &p_datatype) { cast_type = p_datatype; }
 		CastNode() { type = TYPE_CAST; }
 	};
 
