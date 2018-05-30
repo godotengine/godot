@@ -941,8 +941,12 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				}
-			} else
+			} else {
+				if (!E->get().data_type.is_type(p_value)) {
+					return false; // Type mismatch
+				}
 				members[E->get().index] = p_value;
+			}
 			return true;
 		}
 	}

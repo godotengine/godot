@@ -423,7 +423,80 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 		} break;
 		case GDScriptParser::Node::TYPE_CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			return _parse_expression(codegen, cn->source_node, p_stack_level);
+
+			int slevel = p_stack_level;
+			int src_addr = _parse_expression(codegen, cn->source_node, slevel);
+			if (src_addr < 0)
+				return src_addr;
+			if (src_addr & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+				slevel++;
+				codegen.alloc_stack(slevel);
+			}
+
+			switch (cn->cast_type.kind) {
+				case GDScriptParser::DataType::BUILTIN: {
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
+					codegen.opcodes.push_back(cn->cast_type.builtin_type);
+				} break;
+				case GDScriptParser::DataType::NATIVE: {
+					int class_idx;
+					if (GDScriptLanguage::get_singleton()->get_global_map().has(cn->cast_type.native_type)) {
+
+						class_idx = GDScriptLanguage::get_singleton()->get_global_map()[cn->cast_type.native_type];
+						class_idx |= (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
+					} else {
+						_set_error("Invalid native class type '" + String(cn->cast_type.native_type) + "'.", cn);
+						return -1;
+					}
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_NATIVE); // perform operator
+					codegen.opcodes.push_back(class_idx); // variable type
+				} break;
+				case GDScriptParser::DataType::CLASS: {
+
+					Variant script;
+					int idx = -1;
+					if (cn->cast_type.class_type->name == StringName()) {
+						script = codegen.script;
+					} else {
+						StringName name = cn->cast_type.class_type->name;
+						if (class_map[name] == codegen.script->subclasses[name]) {
+							idx = codegen.get_name_map_pos(name);
+							idx |= GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS;
+						} else {
+							script = class_map[name];
+						}
+					}
+
+					if (idx < 0) {
+						idx = codegen.get_constant_pos(script);
+						idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
+					}
+
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_SCRIPT); // perform operator
+					codegen.opcodes.push_back(idx); // variable type
+				} break;
+				case GDScriptParser::DataType::SCRIPT:
+				case GDScriptParser::DataType::GDSCRIPT: {
+
+					Variant script = cn->cast_type.script_type;
+					int idx = codegen.get_constant_pos(script);
+					idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
+
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_SCRIPT); // perform operator
+					codegen.opcodes.push_back(idx); // variable type
+				} break;
+				default: {
+					_set_error("Parser bug: unresolved data type.", cn);
+					return -1;
+				}
+			}
+
+			codegen.opcodes.push_back(src_addr); // source adddress
+			int dst_addr = (p_stack_level) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+			codegen.opcodes.push_back(dst_addr); // append the stack level as destination address of the opcode
+			codegen.alloc_stack(p_stack_level);
+			return dst_addr;
+
 		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
 			//hell breaks loose
@@ -1051,12 +1124,87 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						if (src_address_b < 0)
 							return -1;
 
-						codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN); // perform operator
-						codegen.opcodes.push_back(dst_address_a); // argument 1
-						codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
+						GDScriptParser::DataType assign_type = on->arguments[0]->get_datatype();
+
+						if (assign_type.has_type && !on->arguments[1]->get_datatype().has_type) {
+							// Typed assignment
+							switch (assign_type.kind) {
+								case GDScriptParser::DataType::BUILTIN: {
+									codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN); // perform operator
+									codegen.opcodes.push_back(assign_type.builtin_type); // variable type
+									codegen.opcodes.push_back(dst_address_a); // argument 1
+									codegen.opcodes.push_back(src_address_b); // argument 2
+								} break;
+								case GDScriptParser::DataType::NATIVE: {
+									int class_idx;
+									if (GDScriptLanguage::get_singleton()->get_global_map().has(assign_type.native_type)) {
+
+										class_idx = GDScriptLanguage::get_singleton()->get_global_map()[assign_type.native_type];
+										class_idx |= (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
+									} else {
+										_set_error("Invalid native class type '" + String(assign_type.native_type) + "'.", on->arguments[0]);
+										return -1;
+									}
+									codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE); // perform operator
+									codegen.opcodes.push_back(class_idx); // variable type
+									codegen.opcodes.push_back(dst_address_a); // argument 1
+									codegen.opcodes.push_back(src_address_b); // argument 2
+								} break;
+								case GDScriptParser::DataType::CLASS: {
+
+									Variant script;
+									int idx = -1;
+									if (assign_type.class_type->name == StringName()) {
+										script = codegen.script;
+									} else {
+										StringName name = assign_type.class_type->name;
+										if (class_map[name] == codegen.script->subclasses[name]) {
+											idx = codegen.get_name_map_pos(name);
+											idx |= GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS;
+										} else {
+											script = class_map[name];
+										}
+									}
+
+									if (idx < 0) {
+										idx = codegen.get_constant_pos(script);
+										idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
+									}
+
+									codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN_TYPED_SCRIPT); // perform operator
+									codegen.opcodes.push_back(idx); // variable type
+									codegen.opcodes.push_back(dst_address_a); // argument 1
+									codegen.opcodes.push_back(src_address_b); // argument 2
+								} break;
+								case GDScriptParser::DataType::SCRIPT:
+								case GDScriptParser::DataType::GDSCRIPT: {
+
+									Variant script = assign_type.script_type;
+									int idx = codegen.get_constant_pos(script);
+									idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
+
+									codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN_TYPED_SCRIPT); // perform operator
+									codegen.opcodes.push_back(idx); // variable type
+									codegen.opcodes.push_back(dst_address_a); // argument 1
+									codegen.opcodes.push_back(src_address_b); // argument 2
+								} break;
+								default: {
+									ERR_PRINT("Compiler bug: unresolved assign.");
+
+									// Shouldn't get here, but fail-safe to a regular assignment
+									codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN); // perform operator
+									codegen.opcodes.push_back(dst_address_a); // argument 1
+									codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
+								}
+							}
+						} else {
+							// Either untyped assignment or already type-checked by the parser
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN); // perform operator
+							codegen.opcodes.push_back(dst_address_a); // argument 1
+							codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
+						}
 						return dst_address_a; //if anything, returns wathever was assigned or correct stack position
 					}
-
 				} break;
 				case GDScriptParser::OperatorNode::OP_IS: {
 
@@ -1513,6 +1661,17 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_static = p_func->_static;
 		gdfunc->rpc_mode = p_func->rpc_mode;
 		gdfunc->argument_types.resize(p_func->argument_types.size());
+		for (int i = 0; i < p_func->argument_types.size(); i++) {
+			gdfunc->argument_types[i] = _gdtype_from_datatype(p_func->argument_types[i]);
+		}
+		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
+	} else {
+		gdfunc->_static = false;
+		gdfunc->rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+		gdfunc->return_type = GDScriptDataType();
+		gdfunc->return_type.has_type = true;
+		gdfunc->return_type.kind = GDScriptDataType::BUILTIN;
+		gdfunc->return_type.builtin_type = Variant::NIL;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1843,7 +2002,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 		p_script->subclasses.insert(name, subclass);
 	}
 
-	p_script->valid = true;
 	return OK;
 }
 
@@ -1950,6 +2108,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 		}
 	}
 
+	p_script->valid = true;
 	return OK;
 }
 

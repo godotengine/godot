@@ -54,6 +54,79 @@ struct GDScriptDataType {
 	StringName native_type;
 	Ref<Script> script_type;
 
+	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
+		if (!has_type) return true; // Can't type check
+
+		switch (kind) {
+			case BUILTIN: {
+				Variant::Type var_type = p_variant.get_type();
+				bool valid = builtin_type == var_type;
+				if (!valid && p_allow_implicit_conversion) {
+					valid = Variant::can_convert_strict(var_type, builtin_type);
+				}
+				return valid;
+			} break;
+			case NATIVE: {
+				if (p_variant.get_type() == Variant::NIL) {
+					return true;
+				}
+				if (p_variant.get_type() != Variant::OBJECT) {
+					return false;
+				}
+				Object *obj = p_variant.operator Object *();
+				if (obj && !ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+					return false;
+				}
+				return true;
+			} break;
+			case SCRIPT:
+			case GDSCRIPT: {
+				if (p_variant.get_type() == Variant::NIL) {
+					return true;
+				}
+				if (p_variant.get_type() != Variant::OBJECT) {
+					return false;
+				}
+				Object *obj = p_variant.operator Object *();
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				bool valid = false;
+				while (base.is_valid()) {
+					if (base == script_type) {
+						valid = true;
+						break;
+					}
+					base = base->get_base_script();
+				}
+				return valid;
+			} break;
+		}
+		return false;
+	}
+
+	operator PropertyInfo() const {
+		PropertyInfo info;
+		if (has_type) {
+			switch (kind) {
+				case BUILTIN: {
+					info.type = builtin_type;
+				} break;
+				case NATIVE: {
+					info.type = Variant::OBJECT;
+					info.class_name = native_type;
+				} break;
+				case SCRIPT:
+				case GDSCRIPT: {
+					info.type = Variant::OBJECT;
+					info.class_name = script_type->get_instance_base_type();
+				} break;
+			}
+		} else {
+			info.type = Variant::NIL;
+			info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+		return info;
+	}
+
 	GDScriptDataType() :
 			has_type(false) {}
 };
@@ -72,6 +145,12 @@ public:
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
+		OPCODE_ASSIGN_TYPED_BUILTIN,
+		OPCODE_ASSIGN_TYPED_NATIVE,
+		OPCODE_ASSIGN_TYPED_SCRIPT,
+		OPCODE_CAST_TO_BUILTIN,
+		OPCODE_CAST_TO_NATIVE,
+		OPCODE_CAST_TO_SCRIPT,
 		OPCODE_CONSTRUCT, //only for basic types!!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
