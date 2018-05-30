@@ -75,9 +75,11 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	bool in_keyword = false;
 	bool in_word = false;
 	bool in_function_name = false;
+	bool in_variable_declaration = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
 	bool is_hex_notation = false;
+	bool expect_type = false;
 	Color keyword_color;
 	Color color;
 
@@ -205,6 +207,8 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 			if (str[k] == '(') {
 				in_function_name = true;
+			} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::TK_PR_VAR)) {
+				in_variable_declaration = true;
 			}
 		}
 
@@ -222,6 +226,28 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		if (is_symbol) {
 			in_function_name = false;
 			in_member_variable = false;
+
+			if (expect_type && str[j] != ' ' && str[j] != '\t' && str[j] != ':') {
+				expect_type = false;
+			}
+			if (j > 0 && str[j] == '>' && str[j - 1] == '-') {
+				expect_type = true;
+			}
+
+			if (in_variable_declaration || previous_text == "(" || previous_text == ",") {
+				int k = j;
+				// Skip space
+				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+					k++;
+				}
+
+				if (str[k] == ':') {
+					// has type hint
+					expect_type = true;
+				}
+			}
+
+			in_variable_declaration = false;
 		}
 
 		if (!in_node_path && in_region == -1 && str[j] == '$') {
@@ -256,6 +282,9 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		} else if (is_number) {
 			next_type = NUMBER;
 			color = number_color;
+		} else if (expect_type) {
+			next_type = TYPE;
+			color = type_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -330,6 +359,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	function_definition_color = EDITOR_GET("text_editor/highlighting/gdscript/function_definition_color");
 	node_path_color = EDITOR_GET("text_editor/highlighting/gdscript/node_path_color");
+	type_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
