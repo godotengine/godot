@@ -1878,7 +1878,9 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 
 	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 
-		StringName name = E->key();
+		StringName name = p_class->constant_expressions[i].identifier;
+
+		ERR_CONTINUE(p_class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
 		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
@@ -1921,7 +1923,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 		p_script->_signals[name] = p_class->_signals[i].arguments;
 	}
 
-	if (!p_class->owner) {
+	if (p_class->name != StringName()) {
 		parsed_classes.insert(p_class->name);
 	}
 
@@ -1950,6 +1952,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 		p_script->subclasses.insert(name, subclass);
 	}
 
+	p_script->valid = true;
 	return OK;
 }
 
@@ -2056,7 +2059,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 		}
 	}
 
-	p_script->valid = true;
 	return OK;
 }
 

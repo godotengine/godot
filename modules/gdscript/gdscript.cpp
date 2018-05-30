@@ -1826,8 +1826,40 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
 
 		const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(parser.get_parse_tree());
-		if (r_base_type && c->extends_used && c->extends_class.size() == 1) {
-			*r_base_type = c->extends_class[0]; //todo, should work much better
+		if (r_base_type) {
+			GDScriptParser::DataType base_type;
+			if (c->base_type.has_type) {
+				base_type = c->base_type;
+				while (base_type.has_type && base_type.kind != GDScriptParser::DataType::NATIVE) {
+					switch (base_type.kind) {
+						case GDScriptParser::DataType::CLASS: {
+							base_type = base_type.class_type->base_type;
+						} break;
+						case GDScriptParser::DataType::GDSCRIPT: {
+							Ref<GDScript> gds = base_type.script_type;
+							if (gds.is_valid()) {
+								base_type.kind = GDScriptParser::DataType::NATIVE;
+								base_type.native_type = gds->get_instance_base_type();
+							} else {
+								base_type = GDScriptParser::DataType();
+							}
+						} break;
+						default: {
+							base_type = GDScriptParser::DataType();
+						} break;
+					}
+				}
+			}
+			if (base_type.has_type) {
+				*r_base_type = base_type.native_type;
+			} else {
+				// Fallback
+				if (c->extends_used && c->extends_class.size() == 1) {
+					*r_base_type = c->extends_class[0];
+				} else if (!c->extends_used) {
+					*r_base_type = "Reference";
+				}
+			}
 		}
 		return c->name;
 	}
