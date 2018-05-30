@@ -94,17 +94,24 @@
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Execute the file at the given path, optionally blocking until it returns.
-				Platform path resolution will take place.  The resolved file must exist and be executable.
-				Returns a process id.
-				For example:
+				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
+				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-c', '3', 'godotengine.org'])[/code] will resolve to [code]ping -c 3 godotengine.org[/code] in the system's shell.
+				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
+				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
+				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
+				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return -1.
+				Example of blocking mode and retrieving the shell output:
 				[codeblock]
 				var output = []
-				var pid = OS.execute('ls', [], true, output)
+				OS.execute('ls', ['-l', '/tmp'], true, output)
 				[/codeblock]
-				If you wish to access a shell built-in or perform a composite command, a platform specific shell can be invoked.  For example:
+				Example of non-blocking mode, running another instance of the project and storing its process ID:
 				[codeblock]
-				var pid = OS.execute('CMD.exe', ['/C', 'cd %TEMP% &amp;&amp; dir'], true, output)
+				var pid = OS.execute(OS.get_executable_path(), [], false)
+				[/codeblock]
+				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
+				[codeblock]
+				OS.execute('CMD.exe', ['/C', 'cd %TEMP% &amp;&amp; dir'], true, output)
 				[/codeblock]
 			</description>
 		</method>
@@ -527,7 +534,8 @@
 			<argument index="0" name="pid" type="int">
 			</argument>
 			<description>
-				Kill a process ID (this method can be used to kill processes that were not spawned by the game).
+				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
+				Note that this method can also be used to kill processes that were not spawned by the game.
 			</description>
 		</method>
 		<method name="native_video_is_playing">
