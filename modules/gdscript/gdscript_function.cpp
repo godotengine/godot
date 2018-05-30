@@ -742,22 +742,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
 
-#ifdef DEBUG_ENABLED
 				if (src->get_type() != var_type) {
-					if (Variant::can_convert_strict(src->get_type(), var_type)) {
-						Variant::CallError ce;
-						*dst = Variant::construct(var_type, const_cast<const Variant **>(&src), 1, ce);
-					} else {
-						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-								   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
-						OPCODE_BREAK;
-					}
-				} else {
-#endif // DEBUG_ENABLED
-					*dst = *src;
-#ifdef DEBUG_ENABLED
+					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+							   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
+					OPCODE_BREAK;
 				}
-#endif // DEBUG_ENABLED
+
+				*dst = *src;
 
 				ip += 4;
 			}
@@ -770,22 +761,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
-#ifdef DEBUG_ENABLED
 				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
 				GD_ERR_BREAK(!nc);
-				if (!src->get_type() != Variant::OBJECT && !src->get_type() != Variant::NIL) {
-					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + nc->get_name() + "'.";
-					OPCODE_BREAK;
-				}
 				Object *src_obj = src->operator Object *();
+				GD_ERR_BREAK(!src_obj);
 
-				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+				if (!ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
 					err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
 							   "' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
-#endif // DEBUG_ENABLED
+
 				*dst = *src;
 
 				ip += 4;
@@ -799,7 +785,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
-#ifdef DEBUG_ENABLED
 				Script *base_type = Object::cast_to<Script>(type->operator Object *());
 
 				GD_ERR_BREAK(!base_type);
@@ -835,7 +820,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 				}
-#endif // DEBUG_ENABLED
 
 				*dst = *src;
 
