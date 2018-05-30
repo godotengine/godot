@@ -193,14 +193,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 				case GDScriptParser::OperatorNode::OP_BIT_INVERT: {
 					txt = "~" + _parser_expr(c_node->arguments[0]);
 				} break;
-				case GDScriptParser::OperatorNode::OP_PREINC: {
-				} break;
-				case GDScriptParser::OperatorNode::OP_PREDEC: {
-				} break;
-				case GDScriptParser::OperatorNode::OP_INC: {
-				} break;
-				case GDScriptParser::OperatorNode::OP_DEC: {
-				} break;
 				case GDScriptParser::OperatorNode::OP_IN: {
 					txt = _parser_expr(c_node->arguments[0]) + " in " + _parser_expr(c_node->arguments[1]);
 				} break;
@@ -455,10 +447,9 @@ static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_i
 		print_line("\n");
 	}
 
-	for (int i = 0; i < p_class->constant_expressions.size(); i++) {
-
-		const GDScriptParser::ClassNode::Constant &constant = p_class->constant_expressions[i];
-		_print_indent(p_indent, "const " + String(constant.identifier) + "=" + _parser_expr(constant.expression));
+	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
+		const GDScriptParser::ClassNode::Constant &constant = E->get();
+		_print_indent(p_indent, "const " + String(E->key()) + "=" + _parser_expr(constant.expression));
 	}
 
 	for (int i = 0; i < p_class->variables.size(); i++) {

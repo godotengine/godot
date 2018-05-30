@@ -64,6 +64,7 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		MultiplayerAPI::RPCMode rpc_mode;
+		GDScriptDataType data_type;
 	};
 
 	friend class GDScriptInstance;
@@ -145,6 +146,10 @@ public:
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
+	const GDScriptDataType &get_member_type(const StringName &p_member) const {
+		ERR_FAIL_COND_V(!member_indices.has(p_member), GDScriptDataType());
+		return member_indices[p_member].data_type;
+	}
 	const Map<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 

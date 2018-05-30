@@ -1370,6 +1370,15 @@ int GDScriptFunction::get_default_argument_addr(int p_idx) const {
 	return default_arguments[p_idx];
 }
 
+GDScriptDataType GDScriptFunction::get_return_type() const {
+	return return_type;
+}
+
+GDScriptDataType GDScriptFunction::get_argument_type(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, argument_types.size(), GDScriptDataType());
+	return argument_types[p_idx];
+}
+
 StringName GDScriptFunction::get_name() const {
 
 	return name;

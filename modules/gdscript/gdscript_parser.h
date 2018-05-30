@@ -37,6 +37,8 @@
 #include "object.h"
 #include "script_language.h"
 
+struct GDScriptDataType;
+
 class GDScriptParser {
 public:
 	struct ClassNode;
@@ -47,29 +49,93 @@ public:
 			NATIVE,
 			SCRIPT,
 			GDSCRIPT,
-			CLASS
+			CLASS,
+			UNRESOLVED
 		} kind;
 
 		bool has_type;
+		bool is_constant;
+		bool is_meta_type; // Whether the value can be used as a type
 
 		Variant::Type builtin_type;
 		StringName native_type;
 		Ref<Script> script_type;
 		ClassNode *class_type;
 
-		DataType *meta_type;
+		String to_string() const {
+			if (!has_type) return "var";
+			switch (kind) {
+				case BUILTIN: {
+					if (builtin_type == Variant::NIL) return "null";
+					return Variant::get_type_name(builtin_type);
+				} break;
+				case NATIVE: {
+					if (is_meta_type) {
+						return "GDScriptNativeClass";
+					}
+					return native_type.operator String();
+				} break;
+				case SCRIPT:
+				case GDSCRIPT: {
+					if (is_meta_type) {
+						return script_type->get_class_name().operator String();
+					}
+					String name = script_type->get_name();
+					if (name != String()) {
+						return name;
+					}
+					name = script_type->get_path().get_file();
+					if (name != String()) {
+						return name;
+					}
+					return native_type.operator String();
+				} break;
+				case CLASS: {
+					ERR_FAIL_COND_V(!class_type, String());
+					if (is_meta_type) {
+						return "GDScript";
+					}
+					if (class_type->name == StringName()) {
+						return "self";
+					}
+					return class_type->name.operator String();
+				} break;
+			}
+
+			return "Unresolved";
+		}
+
+		bool operator==(const DataType &other) const {
+			if (!has_type || !other.has_type) {
+				return true; // Can be considered equal for parsing purpose
+			}
+			if (kind != other.kind) {
+				return false;
+			}
+			switch (kind) {
+				case BUILTIN: {
+					return builtin_type == other.builtin_type;
+				} break;
+				case NATIVE: {
+					return native_type == other.native_type;
+				} break;
+				case GDSCRIPT:
+				case SCRIPT: {
+					return script_type == other.script_type;
+				} break;
+				case CLASS: {
+					return class_type == other.class_type;
+				} break;
+			}
+			return false;
+		}
 
 		DataType() :
 				has_type(false),
-				meta_type(NULL),
+				is_constant(false),
+				is_meta_type(false),
 				builtin_type(Variant::NIL),
 				class_type(NULL) {}
-
-		~DataType() {
-			if (meta_type) {
-				memdelete(meta_type);
-			}
-		}
 	};
 
 	struct Node {
@@ -108,6 +174,8 @@ public:
 	struct FunctionNode;
 	struct BlockNode;
 	struct ConstantNode;
+	struct LocalVarNode;
+	struct OperatorNode;
 
 	struct ClassNode : public Node {
 
@@ -129,10 +197,10 @@ public:
 			StringName getter;
 			int line;
 			Node *expression;
+			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
 		};
 		struct Constant {
-			StringName identifier;
 			Node *expression;
 			DataType type;
 		};
@@ -144,7 +212,7 @@ public:
 
 		Vector<ClassNode *> subclasses;
 		Vector<Member> variables;
-		Vector<Constant> constant_expressions;
+		Map<StringName, Constant> constant_expressions;
 		Vector<FunctionNode *> functions;
 		Vector<FunctionNode *> static_functions;
 		Vector<Signal> _signals;
@@ -167,6 +235,7 @@ public:
 
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
+		bool has_yield;
 		StringName name;
 		DataType return_type;
 		Vector<StringName> arguments;
@@ -181,6 +250,7 @@ public:
 			type = TYPE_FUNCTION;
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+			has_yield = false;
 		}
 	};
 
@@ -188,11 +258,9 @@ public:
 
 		ClassNode *parent_class;
 		BlockNode *parent_block;
-		Map<StringName, int> locals;
 		List<Node *> statements;
-		Vector<StringName> variables;
-		Vector<DataType> variable_types;
-		Vector<int> variable_lines;
+		Map<StringName, LocalVarNode *> variables;
+		bool has_return;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
 
@@ -205,15 +273,13 @@ public:
 			end_line = -1;
 			parent_block = NULL;
 			parent_class = NULL;
+			has_return = false;
 		}
 	};
 
 	struct TypeNode : public Node {
 
 		Variant::Type vtype;
-		DataType datatype;
-		virtual DataType get_datatype() const { return datatype; }
-		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		TypeNode() { type = TYPE_TYPE; }
 	};
 	struct BuiltInFunctionNode : public Node {
@@ -224,22 +290,30 @@ public:
 	struct IdentifierNode : public Node {
 
 		StringName name;
+		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
-		IdentifierNode() { type = TYPE_IDENTIFIER; }
+		IdentifierNode() {
+			type = TYPE_IDENTIFIER;
+			declared_block = NULL;
+		}
 	};
 
 	struct LocalVarNode : public Node {
 
 		StringName name;
 		Node *assign;
+		OperatorNode *assign_op;
+		int assignments;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
 			assign = NULL;
+			assign_op = NULL;
+			assignments = 0;
 		}
 	};
 
@@ -304,10 +378,6 @@ public:
 			OP_POS,
 			OP_NOT,
 			OP_BIT_INVERT,
-			OP_PREINC,
-			OP_PREDEC,
-			OP_INC,
-			OP_DEC,
 			//binary operators (in precedence order)
 			OP_IN,
 			OP_EQUAL,
@@ -421,8 +491,9 @@ public:
 	struct CastNode : public Node {
 		Node *source_node;
 		DataType cast_type;
-		virtual DataType get_datatype() const { return cast_type; }
-		virtual void set_datatype(const DataType &p_datatype) { cast_type = p_datatype; }
+		DataType return_type;
+		virtual DataType get_datatype() const { return return_type; }
+		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
 		CastNode() { type = TYPE_CAST; }
 	};
 
@@ -462,6 +533,8 @@ public:
 		COMPLETION_VIRTUAL_FUNC,
 		COMPLETION_YIELD,
 		COMPLETION_ASSIGN,
+		COMPLETION_TYPE_HINT,
+		COMPLETION_TYPE_HINT_INDEX,
 	};
 
 private:
@@ -479,6 +552,7 @@ private:
 	String error;
 	int error_line;
 	int error_column;
+	bool check_types;
 
 	int pending_newline;
 
@@ -490,7 +564,6 @@ private:
 	ClassNode *current_class;
 	FunctionNode *current_function;
 	BlockNode *current_block;
-	Map<StringName, ClassNode *> class_map;
 
 	bool _get_completable_identifier(CompletionType p_type, StringName &identifier);
 	void _make_completable_call(int p_arg);
@@ -524,7 +597,7 @@ private:
 
 	PatternNode *_parse_pattern(bool p_static);
 	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
-	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
+	void _transform_match_statment(MatchNode *p_match_statement);
 	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node *> &p_bindings);
 
 	void _parse_block(BlockNode *p_block, bool p_static);
@@ -534,6 +607,23 @@ private:
 
 	void _determine_inheritance(ClassNode *p_class);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
+	DataType _resolve_type(const DataType &p_source, int p_line);
+	DataType _type_from_variant(const Variant &p_value) const;
+	DataType _type_from_property(const PropertyInfo &p_property, bool p_nil_is_variant = true) const;
+	DataType _type_from_gdtype(const GDScriptDataType &p_gdtype) const;
+	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
+	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
+	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
+	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
+	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
+
+	DataType _reduce_node_type(Node *p_node);
+	DataType _reduce_function_call_type(const OperatorNode *p_call);
+	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line);
+	void _check_class_level_types(ClassNode *p_class);
+	void _check_class_blocks_types(ClassNode *p_class);
+	void _check_function_types(FunctionNode *p_function);
+	void _check_block_types(BlockNode *p_block);
 
 	Error _parse(const String &p_base_path);
 
