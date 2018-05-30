@@ -1171,7 +1171,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				return NULL;
 			}
 			CastNode *cn = alloc_node<CastNode>();
-			if (!_parse_type(cn->cast_type)) {
+			DataType casttype;
+			if (!_parse_type(casttype)) {
 				_set_error("Expected type after 'as'.");
 				return NULL;
 			}
@@ -2698,13 +2699,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				Node *assigned = NULL;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-						lv->datatype = DataType();
-#ifdef DEBUG_ENABLED
-						lv->datatype.infer_type = true;
-#endif
-						tokenizer->advance();
-					} else if (!_parse_type(lv->datatype)) {
+					DataType vartype;
+					if (!_parse_type(vartype)) {
 						_set_error("Expected type for variable.");
 						return;
 					}
@@ -3535,17 +3531,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						tokenizer->advance();
 
-						DataType argtype;
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-							if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-								argtype.infer_type = true;
-								tokenizer->advance();
-							} else if (!_parse_type(argtype)) {
+							DataType argtype;
+							if (!_parse_type(argtype)) {
 								_set_error("Expected type for argument.");
 								return;
 							}
 						}
-						argument_types.push_back(argtype);
 
 						if (defaulting && tokenizer->get_token() != GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -3662,10 +3654,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				DataType return_type;
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_FORWARD_ARROW) {
-
-					if (!_parse_type(return_type, true)) {
+					DataType rettype;
+					if (!_parse_type(rettype, true)) {
 						_set_error("Expected return type for function.");
 						return;
 					}
@@ -4446,6 +4437,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+					DataType vartype;
+					if (!_parse_type(vartype)) {
+						_set_error("Expected type for class variable.");
+						return;
+					}
+				}
+
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
 #ifdef DEBUG_ENABLED
@@ -4629,13 +4628,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-						constant.type = DataType();
-#ifdef DEBUG_ENABLED
-						constant.type.infer_type = true;
-#endif
-						tokenizer->advance();
-					} else if (!_parse_type(constant.type)) {
+					DataType consttype;
+					if (!_parse_type(consttype)) {
 						_set_error("Expected type for class constant.");
 						return;
 					}
@@ -4802,7 +4796,32 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 	}
 }
 
-void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
+bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
+	tokenizer->advance();
+
+	r_type.has_type = true;
+
+	switch (tokenizer->get_token()) {
+		case GDScriptTokenizer::TK_IDENTIFIER: {
+			StringName id = tokenizer->get_token_identifier();
+		} break;
+		case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+		} break;
+		case GDScriptTokenizer::TK_PR_VOID: {
+			if (!p_can_be_void) {
+				return false;
+			}
+		} break;
+		default: {
+			return false;
+		}
+	}
+
+	tokenizer->advance();
+	return true;
+}
+
+void GDScriptParser::_set_error(const String &p_error, int p_line, int p_column) {
 
 	if (p_class->extends_used) {
 		//do inheritance

@@ -49,54 +49,29 @@ public:
 			NATIVE,
 			SCRIPT,
 			GDSCRIPT,
-			CLASS,
-			UNRESOLVED
+			CLASS
 		} kind;
 
 		bool has_type;
-		bool is_constant;
-		bool is_meta_type; // Whether the value can be used as a type
-		bool infer_type;
 
 		Variant::Type builtin_type;
 		StringName native_type;
 		Ref<Script> script_type;
 		ClassNode *class_type;
 
-		String to_string() const;
-
-		bool operator==(const DataType &other) const {
-			if (!has_type || !other.has_type) {
-				return true; // Can be considered equal for parsing purpose
-			}
-			if (kind != other.kind) {
-				return false;
-			}
-			switch (kind) {
-				case BUILTIN: {
-					return builtin_type == other.builtin_type;
-				} break;
-				case NATIVE: {
-					return native_type == other.native_type;
-				} break;
-				case GDSCRIPT:
-				case SCRIPT: {
-					return script_type == other.script_type;
-				} break;
-				case CLASS: {
-					return class_type == other.class_type;
-				} break;
-			}
-			return false;
-		}
+		DataType *meta_type;
 
 		DataType() :
 				has_type(false),
-				is_constant(false),
-				is_meta_type(false),
-				infer_type(false),
+				meta_type(NULL),
 				builtin_type(Variant::NIL),
 				class_type(NULL) {}
+
+		~DataType() {
+			if (meta_type) {
+				memdelete(meta_type);
+			}
+		}
 	};
 
 	struct Node {
@@ -127,7 +102,7 @@ public:
 		Type type;
 
 		virtual DataType get_datatype() const { return DataType(); }
-		virtual void set_datatype(const DataType &p_datatype) {}
+		virtual void set_datatype(DataType p_datatype) {}
 
 		virtual ~Node() {}
 	};
@@ -448,10 +423,6 @@ public:
 
 	struct CastNode : public Node {
 		Node *source_node;
-		DataType cast_type;
-		DataType return_type;
-		virtual DataType get_datatype() const { return return_type; }
-		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
 		CastNode() { type = TYPE_CAST; }
 	};
 
@@ -566,35 +537,7 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
-	void _determine_inheritance(ClassNode *p_class);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
-	DataType _resolve_type(const DataType &p_source, int p_line);
-	DataType _type_from_variant(const Variant &p_value) const;
-	DataType _type_from_property(const PropertyInfo &p_property, bool p_nil_is_variant = true) const;
-	DataType _type_from_gdtype(const GDScriptDataType &p_gdtype) const;
-	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
-	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
-	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
-	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
-	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
-
-	DataType _reduce_node_type(Node *p_node);
-	DataType _reduce_function_call_type(const OperatorNode *p_call);
-	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line);
-	void _check_class_level_types(ClassNode *p_class);
-	void _check_class_blocks_types(ClassNode *p_class);
-	void _check_function_types(FunctionNode *p_function);
-	void _check_block_types(BlockNode *p_block);
-	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
-#ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->insert(p_line);
-#endif // DEBUG_ENABLED
-	}
-	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
-#ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->erase(p_line);
-#endif // DEBUG_ENABLED
-	}
 
 	Error _parse(const String &p_base_path);
 
