@@ -1615,17 +1615,6 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_static = p_func->_static;
 		gdfunc->rpc_mode = p_func->rpc_mode;
 		gdfunc->argument_types.resize(p_func->argument_types.size());
-		for (int i = 0; i < p_func->argument_types.size(); i++) {
-			gdfunc->argument_types.write[i] = _gdtype_from_datatype(p_func->argument_types[i]);
-		}
-		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
-	} else {
-		gdfunc->_static = false;
-		gdfunc->rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
-		gdfunc->return_type = GDScriptDataType();
-		gdfunc->return_type.has_type = true;
-		gdfunc->return_type.kind = GDScriptDataType::BUILTIN;
-		gdfunc->return_type.builtin_type = Variant::NIL;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1878,9 +1867,9 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 
 	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 
-		StringName name = p_class->constant_expressions[i].identifier;
+		StringName name = E->key();
 
-		ERR_CONTINUE(p_class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT);
+		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
 		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 

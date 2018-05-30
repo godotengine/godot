@@ -1686,23 +1686,16 @@ static bool _guess_method_return_type_from_base(const GDScriptCompletionContext 
 				if (err.error != Variant::CallError::CALL_OK) {
 					return false;
 				}
-
-				List<MethodInfo> methods;
-				tmp.get_method_list(&methods);
-
-				for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-					MethodInfo &mi = E->get();
-					if (mi.name == p_method) {
-						r_type = _type_from_property(mi.return_val);
-						return true;
-					}
-				}
-				return false;
-			} break;
-			default: {
-				return false;
 			}
 		}
+	}
+
+	//guess type in constant
+	if (context._class->constant_expressions.has(p_identifier)) {
+
+		ERR_FAIL_COND_V(context._class->constant_expressions[p_identifier].expression->type != GDScriptParser::Node::TYPE_CONSTANT, false);
+		r_type = _get_type_from_variant(static_cast<const GDScriptParser::ConstantNode *>(context._class->constant_expressions[p_identifier].expression)->value);
+		return true;
 	}
 	return false;
 }
@@ -1842,7 +1835,9 @@ static void _find_identifiers_in_block(const GDScriptCompletionContext &p_contex
 	}
 }
 
-static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, bool p_only_functions, Set<String> &r_result);
+		for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = context._class->constant_expressions.front(); E; E = E->next()) {
+			result.insert(E->key());
+		}
 
 static void _find_identifiers_in_class(const GDScriptCompletionContext &p_context, bool p_static, bool p_only_functions, bool p_parent_only, Set<String> &r_result) {
 	if (!p_parent_only) {
@@ -2600,17 +2595,10 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				}
 			}
 
-			if (!native_type.has_type) {
-				break;
-			}
-
-			StringName class_name = native_type.native_type;
-			if (!ClassDB::class_exists(class_name)) {
-				class_name = String("_") + class_name;
-				if (!ClassDB::class_exists(class_name)) {
-					break;
-				}
-			}
+											for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = cl->constant_expressions.front(); E; E = E->next()) {
+												options.insert(String(E->key()));
+											}
+										}
 
 			bool use_type_hint = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints").operator bool();
 
@@ -3286,14 +3274,25 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				}
 			}
 
-			if (context.function && context.function->name != StringName()) {
-				// Lookup function arguments
-				for (int i = 0; i < context.function->arguments.size(); i++) {
-					if (context.function->arguments[i] == p_symbol) {
-						r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
-						r_result.location = context.function->line;
-						return OK;
+				//guess from function arguments
+				if (context.function && context.function->name != StringName()) {
+
+					for (int i = 0; i < context.function->arguments.size(); i++) {
+
+						if (context.function->arguments[i] == p_symbol) {
+							r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location = context.function->line;
+							return OK;
+						}
 					}
+				}
+
+				//guess in class constants
+
+				if (context._class->constant_expressions.has(p_symbol)) {
+					r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+					r_result.location = context._class->constant_expressions[p_symbol].expression->line;
+					return OK;
 				}
 			}
 
