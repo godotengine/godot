@@ -399,7 +399,7 @@ Error _OS::shell_open(String p_uri) {
 
 int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output) {
 
-	OS::ProcessID pid;
+	OS::ProcessID pid = -2;
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++)
 		args.push_back(p_arguments[i]);
@@ -412,6 +412,7 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 	else
 		return pid;
 }
+
 Error _OS::kill(int p_pid) {
 
 	return OS::get_singleton()->kill(p_pid);
