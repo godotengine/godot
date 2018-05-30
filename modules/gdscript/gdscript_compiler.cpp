@@ -140,7 +140,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::CLASS: {
 			result.kind = GDScriptDataType::GDSCRIPT;
-			if (!p_datatype.class_type->owner) {
+			if (p_datatype.class_type->name == StringName()) {
 				result.script_type = Ref<GDScript>(main_script);
 			} else {
 				result.script_type = class_map[p_datatype.class_type->name];
@@ -1952,8 +1952,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 
 		StringName name = E->key();
-
-		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
 		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 

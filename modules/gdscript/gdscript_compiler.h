@@ -41,6 +41,7 @@ class GDScriptCompiler {
 	Map<StringName, Ref<GDScript> > class_map;
 	Set<StringName> parsed_classes;
 	Set<StringName> parsing_classes;
+	GDScript *main_script;
 	struct CodeGen {
 
 		GDScript *script;
