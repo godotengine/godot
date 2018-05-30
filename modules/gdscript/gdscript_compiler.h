@@ -41,6 +41,7 @@ class GDScriptCompiler {
 	Map<StringName, Ref<GDScript> > class_map;
 	Set<StringName> parsed_classes;
 	Set<StringName> parsing_classes;
+	GDScript *main_script;
 	struct CodeGen {
 
 		GDScript *script;
@@ -141,6 +142,8 @@ class GDScriptCompiler {
 
 	bool _create_unary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level);
 	bool _create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer = false);
+
+	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const;
 
 	int _parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level);
 	int _parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root = false, bool p_initializer = false);

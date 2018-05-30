@@ -111,23 +111,50 @@ bool GDScriptCompiler::_create_binary_operator(CodeGen &codegen, const GDScriptP
 	return true;
 }
 
-/*
-int GDScriptCompiler::_parse_subexpression(CodeGen& codegen,const GDScriptParser::Node *p_expression) {
-
-
-	int ret = _parse_expression(codegen,p_expression);
-	if (ret<0)
-		return ret;
-
-	if (ret&(GDScriptFunction::ADDR_TYPE_STACK<<GDScriptFunction::ADDR_BITS)) {
-		codegen.stack_level++;
-		codegen.check_max_stack_level();
-		//stack was used, keep value
+GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const {
+	if (!p_datatype.has_type) {
+		return GDScriptDataType();
 	}
 
-	return ret;
+	GDScriptDataType result;
+	result.has_type = true;
+
+	switch (p_datatype.kind) {
+		case GDScriptParser::DataType::BUILTIN: {
+			result.kind = GDScriptDataType::BUILTIN;
+			result.builtin_type = p_datatype.builtin_type;
+		} break;
+		case GDScriptParser::DataType::NATIVE: {
+			result.kind = GDScriptDataType::NATIVE;
+			result.native_type = p_datatype.native_type;
+		} break;
+		case GDScriptParser::DataType::SCRIPT: {
+			result.kind = GDScriptDataType::SCRIPT;
+			result.script_type = p_datatype.script_type;
+			result.native_type = result.script_type->get_instance_base_type();
+		}
+		case GDScriptParser::DataType::GDSCRIPT: {
+			result.kind = GDScriptDataType::GDSCRIPT;
+			result.script_type = p_datatype.script_type;
+			result.native_type = result.script_type->get_instance_base_type();
+		} break;
+		case GDScriptParser::DataType::CLASS: {
+			result.kind = GDScriptDataType::GDSCRIPT;
+			if (p_datatype.class_type->name == StringName()) {
+				result.script_type = Ref<GDScript>(main_script);
+			} else {
+				result.script_type = class_map[p_datatype.class_type->name];
+			}
+			result.native_type = result.script_type->get_instance_base_type();
+		} break;
+		default: {
+			ERR_PRINT("Parser bug: converting unresolved type.");
+			result.has_type = false;
+		}
+	}
+
+	return result;
 }
-*/
 
 int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level) {
 
@@ -1883,41 +1910,41 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 	for (int i = 0; i < p_class->variables.size(); i++) {
 
 		StringName name = p_class->variables[i].identifier;
-		if (p_script->member_indices.has(name)) {
-			_set_error("Member '" + name + "' already exists (in current or parent class)", p_class);
-			return ERR_ALREADY_EXISTS;
-		}
-		if (_is_class_member_property(p_script, name)) {
-			_set_error("Member '" + name + "' already exists as a class property.", p_class);
-			return ERR_ALREADY_EXISTS;
-		}
 
-		if (p_class->variables[i]._export.type != Variant::NIL) {
-
-			p_script->member_info[name] = p_class->variables[i]._export;
-#ifdef TOOLS_ENABLED
-			if (p_class->variables[i].default_value.get_type() != Variant::NIL) {
-
-				p_script->member_default_values[name] = p_class->variables[i].default_value;
-			}
-#endif
-		} else {
-
-			p_script->member_info[name] = PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
-		}
-
-		//int new_idx = p_script->member_indices.size();
 		GDScript::MemberInfo minfo;
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
 		minfo.getter = p_class->variables[i].getter;
 		minfo.rpc_mode = p_class->variables[i].rpc_mode;
+		minfo.data_type = _gdtype_from_datatype(p_class->variables[i].data_type);
 
+		PropertyInfo prop_info = minfo.data_type;
+		prop_info.name = name;
+		PropertyInfo export_info = p_class->variables[i]._export;
+
+		if (export_info.type != Variant::NIL) {
+
+			if (!minfo.data_type.has_type) {
+				prop_info.type = export_info.type;
+				prop_info.class_name = export_info.class_name;
+			}
+			prop_info.hint = export_info.hint;
+			prop_info.hint_string = export_info.hint_string;
+			prop_info.usage = export_info.usage;
+#ifdef TOOLS_ENABLED
+			if (p_class->variables[i].default_value.get_type() != Variant::NIL) {
+				p_script->member_default_values[name] = p_class->variables[i].default_value;
+			}
+#endif
+		} else {
+			prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
+		}
+
+		p_script->member_info[name] = prop_info;
 		p_script->member_indices[name] = minfo;
 		p_script->members.insert(name);
 
 #ifdef TOOLS_ENABLED
-
 		p_script->member_lines[name] = p_class->variables[i].line;
 #endif
 	}
@@ -1928,15 +1955,9 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 
 		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
-		if (_is_class_member_property(p_script, name)) {
-			_set_error("Member '" + name + "' already exists as a class property.", p_class);
-			return ERR_ALREADY_EXISTS;
-		}
-
 		GDScriptParser::ConstantNode *constant = static_cast<GDScriptParser::ConstantNode *>(E->get().expression);
 
 		p_script->constants.insert(name, constant->value);
-//p_script->constants[constant->value].make_const();
 #ifdef TOOLS_ENABLED
 
 		p_script->member_lines[name] = E->get().expression->line;
@@ -2144,6 +2165,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	err_column = -1;
 	error = "";
 	parser = p_parser;
+	main_script = p_script;
 	const GDScriptParser::Node *root = parser->get_parse_tree();
 	ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_INVALID_DATA);
 

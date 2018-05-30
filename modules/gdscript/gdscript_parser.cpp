@@ -4957,6 +4957,56 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 	}
 }
 
+String GDScriptParser::DataType::to_string() const {
+	if (!has_type) return "var";
+	switch (kind) {
+		case BUILTIN: {
+			if (builtin_type == Variant::NIL) return "null";
+			return Variant::get_type_name(builtin_type);
+		} break;
+		case NATIVE: {
+			if (is_meta_type) {
+				return "GDScriptNativeClass";
+			}
+			return native_type.operator String();
+		} break;
+
+		case GDSCRIPT: {
+			Ref<GDScript> gds = script_type;
+			const String &gds_class = gds->get_script_class_name();
+			if (!gds_class.empty()) {
+				return gds_class;
+			}
+		} // fallthrough
+		case SCRIPT: {
+			if (is_meta_type) {
+				return script_type->get_class_name().operator String();
+			}
+			String name = script_type->get_name();
+			if (name != String()) {
+				return name;
+			}
+			name = script_type->get_path().get_file();
+			if (name != String()) {
+				return name;
+			}
+			return native_type.operator String();
+		} break;
+		case CLASS: {
+			ERR_FAIL_COND_V(!class_type, String());
+			if (is_meta_type) {
+				return "GDScript";
+			}
+			if (class_type->name == StringName()) {
+				return "self";
+			}
+			return class_type->name.operator String();
+		} break;
+	}
+
+	return "Unresolved";
+}
+
 bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 	tokenizer->advance();
 	r_type.has_type = true;
