@@ -572,10 +572,10 @@
 			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
+			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, methods are not exposed to networking (and RPCs). Also see [method rset] and [method rset_config] for properties.
+				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, methods are not exposed to networking (and RPCs). Also see [method rset] and [method rset_config] for properties.
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -625,10 +625,10 @@
 			</return>
 			<argument index="0" name="property" type="String">
 			</argument>
-			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
+			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, properties are not exposed to networking (and RPCs). Also see [method rpc] and [method rpc_config] for methods.
+				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, properties are not exposed to networking (and RPCs). Also see [method rpc] and [method rpc_config] for methods.
 			</description>
 		</method>
 		<method name="rset_id">
@@ -859,21 +859,6 @@
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
-		</constant>
-		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
-			Used with [method rpc_config] or [method rset_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
-		</constant>
-		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
-			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword.
-		</constant>
-		<constant name="RPC_MODE_SYNC" value="2" enum="RPCMode">
-			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed both on the remote end and locally. Analogous to the [code]sync[/code] keyword.
-		</constant>
-		<constant name="RPC_MODE_MASTER" value="3" enum="RPCMode">
-			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. See [method set_network_master].
-		</constant>
-		<constant name="RPC_MODE_SLAVE" value="4" enum="RPCMode">
-			Used with [method rpc_config] or [method rset_config] to set a method to be called or a property to be changed only on slaves for this node. Analogous to the [code]slave[/code] keyword. See [method set_network_master].
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to PAUSE_MODE_STOP. Default.

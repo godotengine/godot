@@ -136,5 +136,29 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
+			Used with [method Node.rpc_config] or [method Node.rset_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
+		</constant>
+		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
+			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword. Calls and property changes are accepted from all remote peers, no matter if they are node's master or slaves.
+		</constant>
+		<constant name="RPC_MODE_SYNC" value="2" enum="RPCMode">
+			Behave like [constant RPC_MODE_REMOTE] but also make the call or property change locally. Analogous to the [code]sync[/code] keyword.
+		</constant>
+		<constant name="RPC_MODE_MASTER" value="3" enum="RPCMode">
+			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. Only accepts calls or property changes from the node's network slaves, see [method Node.set_network_master].
+		</constant>
+		<constant name="RPC_MODE_SLAVE" value="4" enum="RPCMode">
+			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on slaves for this node. Analogous to the [code]slave[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
+		</constant>
+		<constant name="RPC_MODE_REMOTESYNC" value="5" enum="RPCMode">
+			Behave like [code]RPC_MODE_REMOTE[/code] but also make the call or property change locally. Same as [constant RPC_MODE_SYNC] which is only kept for compatibility. Analogous to the [code]remotesync[/code] keyword.
+		</constant>
+		<constant name="RPC_MODE_MASTERSYNC" value="6" enum="RPCMode">
+			Behave like [code]RPC_MODE_MASTER[/code] but also make the call or property change locally. Analogous to the [code]mastersync[/code] keyword.
+		</constant>
+		<constant name="RPC_MODE_SLAVESYNC" value="7" enum="RPCMode">
+			Behave like [code]RPC_MODE_SLAVE[/code] but also make the call or property change locally. Analogous to the [code]slavesync[/code] keyword.
+		</constant>
 	</constants>
 </class>
