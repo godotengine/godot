@@ -152,7 +152,10 @@ void RotatedFileLogger::rotate_file() {
 			OS::Time time = OS::get_singleton()->get_time();
 			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
-			String backup_name = base_path.get_basename() + timestamp + "." + base_path.get_extension();
+			String backup_name = base_path.get_basename() + timestamp;
+			if (base_path.get_extension() != String()) {
+				backup_name += "." + base_path.get_extension();
+			}
 
 			DirAccess *da = DirAccess::open(base_path.get_base_dir());
 			if (da) {
