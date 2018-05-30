@@ -19,7 +19,7 @@ def find_file_in_dir(directory, files, prefix='', extension=''):
     return ''
 
 
-def can_build(platform):
+def can_build(env, platform):
     if platform in ["javascript"]:
         return False # Not yet supported
     return True
