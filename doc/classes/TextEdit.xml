@@ -132,6 +132,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_breakpoints" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array containing the line number of each breakpoint.
+			</description>
+		</method>
 		<method name="get_keyword_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -220,6 +227,12 @@
 				Insert a given text at the cursor position.
 			</description>
 		</method>
+		<method name="is_breakpoint_gutter_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_folded" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -265,6 +278,13 @@
 				Perform redo operation.
 			</description>
 		</method>
+		<method name="remove_breakpoints">
+			<return type="void">
+			</return>
+			<description>
+				Removes all the breakpoints (without firing "breakpoint_toggled" signal).
+			</description>
+		</method>
 		<method name="search" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
@@ -300,6 +320,14 @@
 			</return>
 			<description>
 				Select all the text.
+			</description>
+		</method>
+		<method name="set_breakpoint_gutter_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
@@ -344,6 +372,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
+			If [code]true[/code] the breakpoint gutter is visible.
+		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 			If [code]true[/code] the caret (visual cursor) blinks.
 		</member>

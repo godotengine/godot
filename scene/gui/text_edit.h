@@ -473,6 +473,8 @@ public:
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;
+	Array get_breakpoints_array() const;
+	void remove_breakpoints();
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
@@ -632,8 +634,8 @@ public:
 	void set_show_line_length_guideline(bool p_show);
 	void set_line_length_guideline_column(int p_column);
 
-	void set_draw_breakpoint_gutter(bool p_draw);
-	bool is_drawing_breakpoint_gutter() const;
+	void set_breakpoint_gutter_enabled(bool p_draw);
+	bool is_breakpoint_gutter_enabled() const;
 
 	void set_breakpoint_gutter_width(int p_gutter_width);
 	int get_breakpoint_gutter_width() const;
