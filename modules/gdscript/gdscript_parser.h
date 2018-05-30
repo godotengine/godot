@@ -62,48 +62,7 @@ public:
 		Ref<Script> script_type;
 		ClassNode *class_type;
 
-		String to_string() const {
-			if (!has_type) return "var";
-			switch (kind) {
-				case BUILTIN: {
-					if (builtin_type == Variant::NIL) return "null";
-					return Variant::get_type_name(builtin_type);
-				} break;
-				case NATIVE: {
-					if (is_meta_type) {
-						return "GDScriptNativeClass";
-					}
-					return native_type.operator String();
-				} break;
-				case SCRIPT:
-				case GDSCRIPT: {
-					if (is_meta_type) {
-						return script_type->get_class_name().operator String();
-					}
-					String name = script_type->get_name();
-					if (name != String()) {
-						return name;
-					}
-					name = script_type->get_path().get_file();
-					if (name != String()) {
-						return name;
-					}
-					return native_type.operator String();
-				} break;
-				case CLASS: {
-					ERR_FAIL_COND_V(!class_type, String());
-					if (is_meta_type) {
-						return "GDScript";
-					}
-					if (class_type->name == StringName()) {
-						return "self";
-					}
-					return class_type->name.operator String();
-				} break;
-			}
-
-			return "Unresolved";
-		}
+		String to_string() const;
 
 		bool operator==(const DataType &other) const {
 			if (!has_type || !other.has_type) {
