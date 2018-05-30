@@ -49,7 +49,7 @@ class Image;
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
 
 class Image : public Resource {
-	GDCLASS(Image, Resource);
+	GDCLASS(Image, Resource)
 
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
@@ -283,6 +283,7 @@ public:
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
+	void linear_to_srgb();
 	void normalmap_to_xy();
 	void bumpmap_to_normalmap(float bump_scale = 1.0);
 
