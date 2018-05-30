@@ -1238,6 +1238,7 @@ bool Main::start() {
 	String test;
 	String _export_preset;
 	bool export_debug = false;
+	bool check_only = false;
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
@@ -1262,6 +1263,8 @@ bool Main::start() {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
+			} else if (args[i] == "--check-only") {
+				check_only = true;
 			} else if (args[i] == "--test") {
 				test = args[i + 1];
 #ifdef TOOLS_ENABLED
