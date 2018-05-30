@@ -1,4 +1,4 @@
-def can_build(platform):
+def can_build(env, platform):
     # should probably change this to only be true on iOS and Android
     return False
 

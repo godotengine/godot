@@ -10,8 +10,17 @@ from SCons.Script import BoolVariable, Dir, Environment, PathVariable, Variables
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
 
 
+def find_file_in_dir(directory, files, prefix='', extension=''):
+    if not extension.startswith('.'):
+        extension = '.' + extension
+    for curfile in files:
+        if os.path.isfile(os.path.join(directory, prefix + curfile + extension)):
+            return curfile
+    return ''
+
+
 def can_build(env, platform):
-    if platform in ['javascript']:
+    if platform in ["javascript"]:
         return False # Not yet supported
     return True
 
