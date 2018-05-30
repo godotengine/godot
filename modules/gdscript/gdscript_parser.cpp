@@ -1098,8 +1098,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				return NULL;
 			}
 			CastNode *cn = alloc_node<CastNode>();
-			DataType casttype;
-			if (!_parse_type(casttype)) {
+			if (!_parse_type(cn->cast_type)) {
 				_set_error("Expected type after 'as'.");
 				return NULL;
 			}
@@ -2510,8 +2509,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				Node *assigned = NULL;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					DataType vartype;
-					if (!_parse_type(vartype)) {
+					if (!_parse_type(lv->datatype)) {
 						_set_error("Expected type for variable.");
 						return;
 					}
@@ -3293,6 +3291,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 
 				Vector<StringName> arguments;
+				Vector<DataType> argument_types;
 				Vector<Node *> default_values;
 
 				int fnline = tokenizer->get_token_line();
@@ -3323,13 +3322,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						tokenizer->advance();
 
+						DataType argtype;
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-							DataType argtype;
 							if (!_parse_type(argtype)) {
 								_set_error("Expected type for argument.");
 								return;
 							}
 						}
+						argument_types.push_back(argtype);
 
 						if (defaulting && tokenizer->get_token() != GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -3438,9 +3438,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
+				DataType return_type;
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_FORWARD_ARROW) {
-					DataType rettype;
-					if (!_parse_type(rettype, true)) {
+
+					if (!_parse_type(return_type, true)) {
 						_set_error("Expected return type for function.");
 						return;
 					}
@@ -3454,7 +3455,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				FunctionNode *function = alloc_node<FunctionNode>();
 				function->name = name;
+				function->return_type = return_type;
 				function->arguments = arguments;
+				function->argument_types = argument_types;
 				function->default_values = default_values;
 				function->_static = _static;
 				function->line = fnline;
@@ -4174,8 +4177,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					DataType vartype;
-					if (!_parse_type(vartype)) {
+					if (!_parse_type(member.data_type)) {
 						_set_error("Expected type for class variable.");
 						return;
 					}
@@ -4341,8 +4343,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					DataType consttype;
-					if (!_parse_type(consttype)) {
+					if (!_parse_type(constant.type)) {
 						_set_error("Expected type for class constant.");
 						return;
 					}
@@ -4464,6 +4465,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							enum_dict[constant.identifier] = cn->value;
 						}
 
+						constant.type.has_type = true;
+						constant.type.kind = DataType::BUILTIN;
+						constant.type.builtin_type = Variant::INT;
 						p_class->constant_expressions.push_back(constant);
 					}
 				}
@@ -4473,7 +4477,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					enum_constant.identifier = enum_name;
 					ConstantNode *cn = alloc_node<ConstantNode>();
 					cn->value = enum_dict;
+					cn->datatype.has_type = true;
+					cn->datatype.kind = DataType::BUILTIN;
+					cn->datatype.builtin_type = Variant::DICTIONARY;
+					p_class->constant_expressions.push_back(enum_constant);
 					enum_constant.expression = cn;
+					enum_constant.type = cn->datatype;
 					p_class->constant_expressions.push_back(enum_constant);
 				}
 
@@ -4716,14 +4725,22 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 	r_type.has_type = true;
 
 	switch (tokenizer->get_token()) {
-		case GDScriptTokenizer::TK_IDENTIFIER: {
-			StringName id = tokenizer->get_token_identifier();
-		} break;
-		case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
-		} break;
 		case GDScriptTokenizer::TK_PR_VOID: {
 			if (!p_can_be_void) {
 				return false;
+			}
+			r_type.kind = DataType::BUILTIN;
+			r_type.builtin_type = Variant::NIL;
+		} break;
+		case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+			r_type.kind = DataType::BUILTIN;
+			r_type.builtin_type = tokenizer->get_token_type();
+		} break;
+		case GDScriptTokenizer::TK_IDENTIFIER: {
+			StringName id = tokenizer->get_token_identifier();
+			if (ClassDB::class_exists(id)) {
+				r_type.kind = DataType::NATIVE;
+				r_type.native_type = id;
 			}
 		} break;
 		default: {
