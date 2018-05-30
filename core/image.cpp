@@ -752,6 +752,10 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 				case 3: _scale_cubic<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 				case 4: _scale_cubic<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 			}
+		} break;
+		case INTERPOLATE_NONE: {
+
+			dst.blit_rect(Ref<Image>((Image *)this), Rect2(0, 0, width, height), Point2(0, 0));
 
 		} break;
 	}
@@ -883,6 +887,110 @@ void Image::flip_x() {
 				_put_pixelb(width - x - 1, y, pixel_size, w.ptr(), up);
 				_put_pixelb(x, y, pixel_size, w.ptr(), down);
 			}
+		}
+	}
+
+	if (gm)
+		generate_mipmaps();
+}
+
+void Image::rotate_right() {
+
+	if (!_can_modify(format)) {
+		ERR_EXPLAIN("Cannot rotate_right in indexed, compressed or custom image formats.");
+		ERR_FAIL();
+	}
+
+	bool gm = mipmaps;
+
+	if (gm)
+		clear_mipmaps();
+
+	{
+		int cache_width = width;
+		int cache_height = height;
+		int max = MAX(width, height);
+		resize(max, max, INTERPOLATE_NONE);
+
+		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t up[16];
+		uint8_t down[16];
+		uint8_t left[16];
+		uint8_t right[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		for (int y = 0; y < max / 2; y++) {
+
+			for (int x = y; x < max - y - 1; x++) {
+
+				_get_pixelb(x, y, pixel_size, w.ptr(), left);
+				_get_pixelb(y, max - x - 1, pixel_size, w.ptr(), up);
+				_get_pixelb(max - x - 1, max - y - 1, pixel_size, w.ptr(), right);
+				_get_pixelb(max - y - 1, x, pixel_size, w.ptr(), down);
+
+				_put_pixelb(max - y - 1, x, pixel_size, w.ptr(), left);
+				_put_pixelb(x, y, pixel_size, w.ptr(), up);
+				_put_pixelb(y, max - x - 1, pixel_size, w.ptr(), right);
+				_put_pixelb(max - x - 1, max - y - 1, pixel_size, w.ptr(), down);
+			}
+		}
+
+		if (cache_width > cache_height) {
+			crop_from_point(width - cache_height, 0, cache_height, cache_width);
+		} else if (cache_width < cache_height) {
+			crop_from_point(0, 0, cache_height, cache_width);
+		}
+	}
+
+	if (gm)
+		generate_mipmaps();
+}
+
+void Image::rotate_left() {
+
+	if (!_can_modify(format)) {
+		ERR_EXPLAIN("Cannot rotate_left in indexed, compressed or custom image formats.");
+		ERR_FAIL();
+	}
+
+	bool gm = mipmaps;
+
+	if (gm)
+		clear_mipmaps();
+
+	{
+		int cache_width = width;
+		int cache_height = height;
+		int max = MAX(width, height);
+		resize(max, max, INTERPOLATE_NONE);
+
+		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t up[16];
+		uint8_t down[16];
+		uint8_t left[16];
+		uint8_t right[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		for (int y = 0; y < max / 2; y++) {
+
+			for (int x = y; x < max - y - 1; x++) {
+
+				_get_pixelb(max - y - 1, x, pixel_size, w.ptr(), left);
+				_get_pixelb(x, y, pixel_size, w.ptr(), up);
+				_get_pixelb(y, max - x - 1, pixel_size, w.ptr(), right);
+				_get_pixelb(max - x - 1, max - y - 1, pixel_size, w.ptr(), down);
+
+				_put_pixelb(x, y, pixel_size, w.ptr(), left);
+				_put_pixelb(y, max - x - 1, pixel_size, w.ptr(), up);
+				_put_pixelb(max - x - 1, max - y - 1, pixel_size, w.ptr(), right);
+				_put_pixelb(max - y - 1, x, pixel_size, w.ptr(), down);
+			}
+		}
+
+		if (cache_width > cache_height) {
+			crop_from_point(0, 0, cache_height, cache_width);
+		} else if (cache_width < cache_height) {
+			crop_from_point(0, height - cache_width, cache_height, cache_width);
 		}
 	}
 
@@ -2279,6 +2387,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
+	ClassDB::bind_method(D_METHOD("rotate_right"), &Image::rotate_right);
+	ClassDB::bind_method(D_METHOD("rotate_left"), &Image::rotate_left);
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
@@ -2371,6 +2481,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATE_BILINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATE_CUBIC);
+	BIND_ENUM_CONSTANT(INTERPOLATE_NONE);
 
 	BIND_ENUM_CONSTANT(ALPHA_NONE);
 	BIND_ENUM_CONSTANT(ALPHA_BIT);
