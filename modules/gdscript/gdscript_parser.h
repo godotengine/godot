@@ -102,7 +102,7 @@ public:
 		Type type;
 
 		virtual DataType get_datatype() const { return DataType(); }
-		virtual void set_datatype(DataType p_datatype) {}
+		virtual void set_datatype(const DataType &p_datatype) {}
 
 		virtual ~Node() {}
 	};
@@ -190,8 +190,9 @@ public:
 		ClassNode *parent_class;
 		BlockNode *parent_block;
 		List<Node *> statements;
-		Map<StringName, LocalVarNode *> variables;
-		bool has_return;
+		Vector<StringName> variables;
+		Vector<DataType> variable_types;
+		Vector<int> variable_lines;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
 
@@ -211,6 +212,9 @@ public:
 	struct TypeNode : public Node {
 
 		Variant::Type vtype;
+		DataType datatype;
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		TypeNode() { type = TYPE_TYPE; }
 	};
 	struct BuiltInFunctionNode : public Node {
@@ -221,22 +225,16 @@ public:
 	struct IdentifierNode : public Node {
 
 		StringName name;
-		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
-		IdentifierNode() {
-			type = TYPE_IDENTIFIER;
-			declared_block = NULL;
-		}
+		IdentifierNode() { type = TYPE_IDENTIFIER; }
 	};
 
 	struct LocalVarNode : public Node {
 
 		StringName name;
 		Node *assign;
-		OperatorNode *assign_op;
-		int assignments;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
@@ -421,6 +419,9 @@ public:
 
 	struct CastNode : public Node {
 		Node *source_node;
+		DataType cast_type;
+		virtual DataType get_datatype() const { return cast_type; }
+		virtual void set_datatype(const DataType &p_datatype) { cast_type = p_datatype; }
 		CastNode() { type = TYPE_CAST; }
 	};
 
