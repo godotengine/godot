@@ -2301,6 +2301,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
+	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
 	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
@@ -2410,6 +2411,37 @@ void Image::normalmap_to_xy() {
 	}
 
 	convert(Image::FORMAT_LA8);
+}
+
+Ref<Image> Image::rgbe_to_srgb() {
+
+	if (data.size() == 0)
+		return Ref<Image>();
+
+	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
+
+	Ref<Image> new_image;
+	new_image.instance();
+	new_image->create(width, height, 0, Image::FORMAT_RGB8);
+
+	lock();
+
+	new_image->lock();
+
+	for (int row = 0; row < height; row++) {
+		for (int col = 0; col < width; col++) {
+			new_image->set_pixel(col, row, get_pixel(col, row).to_srgb());
+		}
+	}
+
+	unlock();
+	new_image->unlock();
+
+	if (has_mipmaps()) {
+		new_image->generate_mipmaps();
+	}
+
+	return new_image;
 }
 
 void Image::bumpmap_to_normalmap(float bump_scale) {
