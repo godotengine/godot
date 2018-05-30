@@ -1087,6 +1087,27 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				break;
 		}
 
+		/*****************/
+		/* Parse Casting */
+		/*****************/
+
+		bool has_casting = expr->type == Node::TYPE_CAST;
+		if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_AS) {
+			if (has_casting) {
+				_set_error("Unexpected 'as'.");
+				return NULL;
+			}
+			CastNode *cn = alloc_node<CastNode>();
+			DataType casttype;
+			if (!_parse_type(casttype)) {
+				_set_error("Expected type after 'as'.");
+				return NULL;
+			}
+			has_casting = true;
+			cn->source_node = expr;
+			expr = cn;
+		}
+
 		/******************/
 		/* Parse Operator */
 		/******************/
@@ -1110,7 +1131,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 //assign, if allowed is only allowed on the first operator
 #define _VALIDATE_ASSIGN                  \
-	if (!p_allow_assign) {                \
+	if (!p_allow_assign || has_casting) { \
 		_set_error("Unexpected assign."); \
 		return NULL;                      \
 	}                                     \
@@ -2488,6 +2509,14 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				Node *assigned = NULL;
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+					DataType vartype;
+					if (!_parse_type(vartype)) {
+						_set_error("Expected type for variable.");
+						return;
+					}
+				}
+
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
 					tokenizer->advance();
@@ -3150,7 +3179,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				//class inside class :D
 
 				StringName name;
-				StringName extends;
 
 				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_IDENTIFIER) {
 
@@ -3279,6 +3307,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						tokenizer->advance();
 
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+							DataType argtype;
+							if (!_parse_type(argtype)) {
+								_set_error("Expected type for argument.");
+								return;
+							}
+						}
+
 						if (defaulting && tokenizer->get_token() != GDScriptTokenizer::TK_OP_ASSIGN) {
 
 							_set_error("Default parameter expected.");
@@ -3383,6 +3419,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							_set_error("Parent constructor call found for a class without inheritance.");
 							return;
 						}
+					}
+				}
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_FORWARD_ARROW) {
+					DataType rettype;
+					if (!_parse_type(rettype, true)) {
+						_set_error("Expected return type for function.");
+						return;
 					}
 				}
 
@@ -4113,6 +4157,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+					DataType vartype;
+					if (!_parse_type(vartype)) {
+						_set_error("Expected type for class variable.");
+						return;
+					}
+				}
+
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
 #ifdef DEBUG_ENABLED
@@ -4272,6 +4324,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				constant.identifier = tokenizer->get_token_literal();
 				tokenizer->advance();
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+					DataType consttype;
+					if (!_parse_type(consttype)) {
+						_set_error("Expected type for class constant.");
+						return;
+					}
+				}
+
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_ASSIGN) {
 					_set_error("Constant expects assignment.");
 					return;
@@ -4421,6 +4481,31 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			} break;
 		}
 	}
+}
+
+bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
+	tokenizer->advance();
+
+	r_type.has_type = true;
+
+	switch (tokenizer->get_token()) {
+		case GDScriptTokenizer::TK_IDENTIFIER: {
+			StringName id = tokenizer->get_token_identifier();
+		} break;
+		case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+		} break;
+		case GDScriptTokenizer::TK_PR_VOID: {
+			if (!p_can_be_void) {
+				return false;
+			}
+		} break;
+		default: {
+			return false;
+		}
+	}
+
+	tokenizer->advance();
+	return true;
 }
 
 void GDScriptParser::_set_error(const String &p_error, int p_line, int p_column) {

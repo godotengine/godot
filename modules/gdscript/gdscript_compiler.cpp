@@ -430,6 +430,10 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			return dst_addr;
 
 		} break;
+		case GDScriptParser::Node::TYPE_CAST: {
+			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
+			return _parse_expression(codegen, cn->source_node, p_stack_level);
+		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
 			//hell breaks loose
 
