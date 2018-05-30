@@ -29,12 +29,11 @@
 /*************************************************************************/
 
 #include "navigation_mesh_editor_plugin.h"
+
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
-
-#ifdef RECAST_ENABLED
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 
@@ -162,5 +161,3 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin(EditorNode *p_node) {
 
 NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
 }
-
-#endif // RECAST_ENABLED
