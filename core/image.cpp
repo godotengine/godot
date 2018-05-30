@@ -2300,6 +2300,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
+	ClassDB::bind_method(D_METHOD("linear_to_srgb"), &Image::linear_to_srgb);
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
 	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
 
@@ -2486,6 +2487,41 @@ void Image::srgb_to_linear() {
 			data_ptr[(i * 3) + 0] = srgb2lin[data_ptr[(i * 3) + 0]];
 			data_ptr[(i * 3) + 1] = srgb2lin[data_ptr[(i * 3) + 1]];
 			data_ptr[(i * 3) + 2] = srgb2lin[data_ptr[(i * 3) + 2]];
+		}
+	}
+}
+
+void Image::linear_to_srgb() {
+
+	if (data.size() == 0)
+		return;
+
+	static const uint8_t lin2srgb[256] = { 0, 12, 21, 28, 33, 38, 42, 46, 49, 52, 55, 58, 61, 64, 66, 68, 71, 73, 75, 77, 79, 81, 83, 85, 86, 88, 90, 91, 93, 95, 96, 98, 99, 101, 102, 103, 105, 106, 108, 109, 110, 112, 113, 114, 115, 117, 118, 119, 120, 121, 122, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 149, 150, 151, 152, 153, 154, 155, 155, 156, 157, 158, 159, 160, 160, 161, 162, 163, 164, 164, 165, 166, 167, 168, 168, 169, 170, 171, 171, 172, 173, 174, 174, 175, 176, 176, 177, 178, 179, 179, 180, 181, 181, 182, 183, 183, 184, 185, 185, 186, 187, 187, 188, 189, 189, 190, 191, 191, 192, 193, 193, 194, 195, 195, 196, 196, 197, 198, 198, 199, 200, 200, 201, 201, 202, 203, 203, 204, 204, 205, 205, 206, 207, 207, 208, 208, 209, 210, 210, 211, 211, 212, 212, 213, 214, 214, 215, 215, 216, 216, 217, 217, 218, 218, 219, 220, 220, 221, 221, 222, 222, 223, 223, 224, 224, 225, 225, 226, 226, 227, 227, 228, 228, 229, 229, 230, 231, 231, 232, 232, 233, 233, 234, 234, 235, 235, 235, 236, 236, 237, 237, 238, 238, 239, 239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 246, 246, 246, 247, 247, 248, 248, 249, 249, 250, 250, 251, 251, 251, 252, 252, 253, 253, 254, 254, 255, 255, 255 };
+
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+
+	if (format == FORMAT_RGB8) {
+		int len = data.size() / 4;
+		PoolVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr = wp.ptr();
+
+		for (int i = 0; i < len; i++) {
+
+			data_ptr[(i << 2) + 0] = lin2srgb[data_ptr[(i << 2) + 0]];
+			data_ptr[(i << 2) + 1] = lin2srgb[data_ptr[(i << 2) + 1]];
+			data_ptr[(i << 2) + 2] = lin2srgb[data_ptr[(i << 2) + 2]];
+		}
+
+	} else if (format == FORMAT_RGBA8) {
+		int len = data.size() / 3;
+		PoolVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr = wp.ptr();
+
+		for (int i = 0; i < len; i++) {
+
+			data_ptr[(i * 3) + 0] = lin2srgb[data_ptr[(i * 3) + 0]];
+			data_ptr[(i * 3) + 1] = lin2srgb[data_ptr[(i * 3) + 1]];
+			data_ptr[(i * 3) + 2] = lin2srgb[data_ptr[(i * 3) + 2]];
 		}
 	}
 }
