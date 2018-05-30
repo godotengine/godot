@@ -3188,9 +3188,24 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				name = tokenizer->get_token_identifier(1);
 				tokenizer->advance(2);
 
+				// Check if name is shadowing something else
+				if (ClassDB::class_exists(name)) {
+					_set_error("Class '" + String(name) + "' shadows a native class.");
+					return;
+				}
 				if (ScriptServer::is_global_class(name)) {
 					_set_error("Can't override name of unique global class '" + name + "' already exists at path: " + ScriptServer::get_global_class_path(p_class->name));
 					return;
+				}
+				if (class_map.has(name)) {
+					_set_error("Class '" + String(name) + "' shadows another class in the file.");
+					return;
+				}
+				for (int i = 0; i < p_class->constant_expressions.size(); i++) {
+					if (p_class->constant_expressions[i].identifier == name) {
+						_set_error("Class '" + String(name) + "' shadows a constant of the outer class.");
+						return;
+					}
 				}
 
 				ClassNode *newclass = alloc_node<ClassNode>();
@@ -3202,6 +3217,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				newclass->owner = p_class;
 
 				p_class->subclasses.push_back(newclass);
+				class_map.insert(name, newclass);
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_EXTENDS) {
 
@@ -4337,6 +4353,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
+				int line = tokenizer->get_token_line();
+
 				tokenizer->advance();
 
 				Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
@@ -4348,14 +4366,15 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				if (subexpr->type != Node::TYPE_CONSTANT) {
-					_set_error("Expected constant expression");
+					_set_error("Expected constant expression", line);
+					return;
 				}
 				constant.expression = subexpr;
 
 				p_class->constant_expressions.push_back(constant);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (constant)");
+					_set_error("Expected end of statement (constant)", line);
 					return;
 				}
 
@@ -4415,17 +4434,19 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 								_set_error("Expected constant expression");
+								return;
 							}
 
-							const ConstantNode *subexpr_const = static_cast<const ConstantNode *>(subexpr);
+							ConstantNode *subexpr_const = static_cast<ConstantNode *>(subexpr);
 
 							if (subexpr_const->value.get_type() != Variant::INT) {
 								_set_error("Expected an int value for enum");
+								return;
 							}
 
 							last_assign = subexpr_const->value;
 
-							constant.expression = subexpr;
+							constant.expression = subexpr_const;
 
 						} else {
 							last_assign = last_assign + 1;
@@ -4480,6 +4501,212 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 			} break;
 		}
+	}
+}
+
+void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
+
+	if (p_class->extends_used) {
+		//do inheritance
+		String path = p_class->extends_file;
+
+		Ref<GDScript> script;
+		StringName native;
+		ClassNode *base_class = NULL;
+
+		if (path != "") {
+			//path (and optionally subclasses)
+
+			if (path.is_rel_path()) {
+
+				String base = self_path;
+
+				if (base == "" || base.is_rel_path()) {
+					_set_error("Could not resolve relative path for parent class: " + path, p_class->line);
+					return;
+				}
+				path = base.get_base_dir().plus_file(path).simplify_path();
+			}
+			script = ResourceLoader::load(path);
+			if (script.is_null()) {
+				_set_error("Could not load base class: " + path, p_class->line);
+				return;
+			}
+			if (!script->is_valid()) {
+
+				_set_error("Script not fully loaded (cyclic preload?): " + path, p_class->line);
+				return;
+			}
+
+			if (p_class->extends_class.size()) {
+
+				for (int i = 0; i < p_class->extends_class.size(); i++) {
+
+					String sub = p_class->extends_class[i];
+					if (script->get_subclasses().has(sub)) {
+
+						Ref<Script> subclass = script->get_subclasses()[sub]; //avoid reference from disappearing
+						script = subclass;
+					} else {
+
+						_set_error("Could not find subclass: " + sub, p_class->line);
+						return;
+					}
+				}
+			}
+
+		} else {
+
+			if (p_class->extends_class.size() == 0) {
+				_set_error("Parser bug: undecidable inheritance.", p_class->line);
+				ERR_FAIL();
+			}
+			//look around for the subclasses
+
+			int extend_iter = 1;
+			String base = p_class->extends_class[0];
+			ClassNode *p = p_class->owner;
+			Ref<GDScript> base_script;
+
+			if (ScriptServer::is_global_class(base)) {
+				base_script = ResourceLoader::load(ScriptServer::get_global_class_path(base));
+				if (!base_script.is_valid()) {
+					_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+					return;
+				}
+				p = NULL;
+			}
+
+			while (p) {
+
+				bool found = false;
+
+				for (int i = 0; i < p->subclasses.size(); i++) {
+					if (p->subclasses[i]->name == base) {
+						ClassNode *test = p->subclasses[i];
+						while (test) {
+							if (test == p_class) {
+								_set_error("Cyclic inheritance.", test->line);
+								return;
+							}
+							if (test->base_type.kind == DataType::CLASS) {
+								test = test->base_type.class_type;
+							} else {
+								break;
+							}
+						}
+						found = true;
+						if (extend_iter < p_class->extends_class.size()) {
+							// Keep looking at current classes if possible
+							base = p_class->extends_class[extend_iter++];
+							p = p->subclasses[i];
+						} else {
+							base_class = p->subclasses[i];
+						}
+						break;
+					}
+				}
+
+				if (base_class) break;
+				if (found) continue;
+
+				for (int i = 0; i < p->constant_expressions.size(); i++) {
+					if (p->constant_expressions[i].identifier == base) {
+						if (!p->constant_expressions[i].expression->type == Node::TYPE_CONSTANT) {
+							_set_error("Could not resolve constant '" + base + "'.", p_class->line);
+							return;
+						}
+						const ConstantNode *cn = static_cast<const ConstantNode *>(p->constant_expressions[i].expression);
+						base_script = cn->value;
+						if (base_script.is_null()) {
+							_set_error("Constant is not a class: " + base, p_class->line);
+							return;
+						}
+						found = true;
+					}
+				}
+
+				if (found) break;
+
+				p = p->owner;
+			}
+
+			if (base_script.is_valid()) {
+
+				String ident = base;
+
+				for (int i = extend_iter; i < p_class->extends_class.size(); i++) {
+
+					String subclass = p_class->extends_class[i];
+
+					ident += ("." + subclass);
+
+					if (base_script->get_subclasses().has(subclass)) {
+
+						base_script = base_script->get_subclasses()[subclass];
+					} else if (base_script->get_constants().has(subclass)) {
+
+						Ref<GDScript> new_base_class = base_script->get_constants()[subclass];
+						if (new_base_class.is_null()) {
+							_set_error("Constant is not a class: " + ident, p_class->line);
+							return;
+						}
+						base_script = new_base_class;
+					} else {
+
+						_set_error("Could not find subclass: " + ident, p_class->line);
+						return;
+					}
+				}
+
+				script = base_script;
+
+			} else if (!base_class) {
+
+				if (p_class->extends_class.size() > 1) {
+
+					_set_error("Invalid inheritance (unknown class + subclasses)", p_class->line);
+					return;
+				}
+				//if not found, try engine classes
+				if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
+
+					_set_error("Unknown class: '" + base + "'", p_class->line);
+					return;
+				}
+
+				native = base;
+			}
+		}
+
+		if (base_class) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::CLASS;
+			p_class->base_type.class_type = base_class;
+		} else if (script.is_valid()) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::GDSCRIPT;
+			p_class->base_type.script_type = script;
+			p_class->base_type.native_type = script->get_instance_base_type();
+		} else if (native != StringName()) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::NATIVE;
+			p_class->base_type.native_type = native;
+		} else {
+			_set_error("Could not determine inheritance", p_class->line);
+			return;
+		}
+
+	} else {
+		// without extends, implicitly extend Reference
+		p_class->base_type.has_type = true;
+		p_class->base_type.kind = DataType::NATIVE;
+		p_class->base_type.native_type = "Reference";
+	}
+
+	// Recursively determine subclasses
+	for (int i = 0; i < p_class->subclasses.size(); i++) {
+		_determine_inheritance(p_class->subclasses[i]);
 	}
 }
 
@@ -4553,9 +4780,15 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	}
 
 	if (error_set) {
-
 		return ERR_PARSE_ERROR;
 	}
+
+	_determine_inheritance(main_class);
+
+	if (error_set) {
+		return ERR_PARSE_ERROR;
+	}
+
 	return OK;
 }
 
