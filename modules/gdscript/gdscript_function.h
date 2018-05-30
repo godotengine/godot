@@ -42,6 +42,22 @@
 class GDScriptInstance;
 class GDScript;
 
+struct GDScriptDataType {
+	bool has_type;
+	enum {
+		BUILTIN,
+		NATIVE,
+		SCRIPT,
+		GDSCRIPT
+	} kind;
+	Variant::Type builtin_type;
+	StringName native_type;
+	Ref<Script> script_type;
+
+	GDScriptDataType() :
+			has_type(false) {}
+};
+
 class GDScriptFunction {
 public:
 	enum Opcode {
@@ -139,6 +155,8 @@ private:
 #endif
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<GDScriptDataType> argument_types;
+	GDScriptDataType return_type;
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
@@ -199,6 +217,8 @@ public:
 	int get_max_stack_size() const;
 	int get_default_argument_count() const;
 	int get_default_argument_addr(int p_idx) const;
+	GDScriptDataType get_return_type() const;
+	GDScriptDataType get_argument_type(int p_idx) const;
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 

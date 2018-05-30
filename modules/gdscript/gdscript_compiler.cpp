@@ -777,14 +777,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptParser::OperatorNode::OP_BIT_INVERT: {
 					if (!_create_unary_operator(codegen, on, Variant::OP_BIT_NEGATE, p_stack_level)) return -1;
 				} break;
-				case GDScriptParser::OperatorNode::OP_PREINC: {
-				} break; //?
-				case GDScriptParser::OperatorNode::OP_PREDEC: {
-				} break;
-				case GDScriptParser::OperatorNode::OP_INC: {
-				} break;
-				case GDScriptParser::OperatorNode::OP_DEC: {
-				} break;
 				//binary operators (in precedence order)
 				case GDScriptParser::OperatorNode::OP_IN: {
 					if (!_create_binary_operator(codegen, on, Variant::OP_IN, p_stack_level)) return -1;
@@ -1520,6 +1512,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	if (p_func) {
 		gdfunc->_static = p_func->_static;
 		gdfunc->rpc_mode = p_func->rpc_mode;
+		gdfunc->argument_types.resize(p_func->argument_types.size());
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1770,24 +1763,24 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 #endif
 	}
 
-	for (int i = 0; i < p_class->constant_expressions.size(); i++) {
+	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 
-		StringName name = p_class->constant_expressions[i].identifier;
+		StringName name = E->key();
 
-		ERR_CONTINUE(p_class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT);
+		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
 		if (_is_class_member_property(p_script, name)) {
 			_set_error("Member '" + name + "' already exists as a class property.", p_class);
 			return ERR_ALREADY_EXISTS;
 		}
 
-		GDScriptParser::ConstantNode *constant = static_cast<GDScriptParser::ConstantNode *>(p_class->constant_expressions[i].expression);
+		GDScriptParser::ConstantNode *constant = static_cast<GDScriptParser::ConstantNode *>(E->get().expression);
 
 		p_script->constants.insert(name, constant->value);
 //p_script->constants[constant->value].make_const();
 #ifdef TOOLS_ENABLED
 
-		p_script->member_lines[name] = p_class->constant_expressions[i].expression->line;
+		p_script->member_lines[name] = E->get().expression->line;
 #endif
 	}
 

@@ -1236,15 +1236,11 @@ static bool _guess_identifier_type(GDScriptCompletionContext &context, int p_lin
 	}
 
 	//guess type in constant
+	if (context._class->constant_expressions.has(p_identifier)) {
 
-	for (int i = 0; i < context._class->constant_expressions.size(); i++) {
-
-		if (context._class->constant_expressions[i].identifier == p_identifier) {
-
-			ERR_FAIL_COND_V(context._class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT, false);
-			r_type = _get_type_from_variant(static_cast<const GDScriptParser::ConstantNode *>(context._class->constant_expressions[i].expression)->value);
-			return true;
-		}
+		ERR_FAIL_COND_V(context._class->constant_expressions[p_identifier].expression->type != GDScriptParser::Node::TYPE_CONSTANT, false);
+		r_type = _get_type_from_variant(static_cast<const GDScriptParser::ConstantNode *>(context._class->constant_expressions[p_identifier].expression)->value);
+		return true;
 	}
 
 	if (!(context.function && context.function->_static)) {
@@ -1372,8 +1368,8 @@ static void _find_identifiers_in_class(GDScriptCompletionContext &context, bool 
 	}
 	if (!p_only_functions) {
 
-		for (int i = 0; i < context._class->constant_expressions.size(); i++) {
-			result.insert(context._class->constant_expressions[i].identifier);
+		for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = context._class->constant_expressions.front(); E; E = E->next()) {
+			result.insert(E->key());
 		}
 
 		for (int i = 0; i < context._class->subclasses.size(); i++) {
@@ -2320,9 +2316,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 												options.insert(String(cl->variables[i].identifier));
 											}
 
-											for (int i = 0; i < cl->constant_expressions.size(); i++) {
-
-												options.insert(String(cl->constant_expressions[i].identifier));
+											for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = cl->constant_expressions.front(); E; E = E->next()) {
+												options.insert(String(E->key()));
 											}
 										}
 
@@ -2816,13 +2811,10 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 				//guess in class constants
 
-				for (int i = 0; i < context._class->constant_expressions.size(); i++) {
-
-					if (context._class->constant_expressions[i].identifier == p_symbol) {
-						r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
-						r_result.location = context._class->constant_expressions[i].expression->line;
-						return OK;
-					}
+				if (context._class->constant_expressions.has(p_symbol)) {
+					r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+					r_result.location = context._class->constant_expressions[p_symbol].expression->line;
+					return OK;
 				}
 
 				//guess in class variables
