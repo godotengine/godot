@@ -2209,10 +2209,6 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			argss += String(" \"") + E->get() + "\"";
 		}
 
-		//print_line("ARGS: "+argss);
-		//argss+"\"";
-		//argss+=" 2>nul";
-
 		FILE *f = _wpopen(argss.c_str(), L"r");
 
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
@@ -2239,15 +2235,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		I = I->next();
 	};
 
-	//cmdline+="\"";
-
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
 	pi.si.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	print_line("running cmdline: " + cmdline);
 	Vector<CharType> modstr; //windows wants to change this no idea why
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
