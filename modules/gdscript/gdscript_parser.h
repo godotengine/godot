@@ -107,6 +107,7 @@ public:
 
 	struct FunctionNode;
 	struct BlockNode;
+	struct ConstantNode;
 
 	struct ClassNode : public Node {
 
@@ -115,6 +116,7 @@ public:
 		bool extends_used;
 		StringName extends_file;
 		Vector<StringName> extends_class;
+		DataType base_type;
 
 		struct Member {
 			PropertyInfo _export;
@@ -446,6 +448,7 @@ private:
 	ClassNode *current_class;
 	FunctionNode *current_function;
 	BlockNode *current_block;
+	Map<StringName, ClassNode *> class_map;
 
 	bool _get_completable_identifier(CompletionType p_type, StringName &identifier);
 	void _make_completable_call(int p_arg);
@@ -487,6 +490,7 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
+	void _determine_inheritance(ClassNode *p_class);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
 
 	Error _parse(const String &p_base_path);
