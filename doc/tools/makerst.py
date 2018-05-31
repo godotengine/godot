@@ -155,9 +155,19 @@ def rstize_text(text, cclass):
             text = pre_text + "\n\n" + post_text
             pos += 2
 
+    next_brac_pos = text.find('[')
+
+    # Escape \ character, otherwise it ends up as an escape character in rst
+    pos = 0
+    while True:
+        pos = text.find('\\', pos, next_brac_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\\\\" + text[pos + 1:]
+        pos += 2
+
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
-    next_brac_pos = text.find('[')
     while True:
         pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
