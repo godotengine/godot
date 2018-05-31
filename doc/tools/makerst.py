@@ -172,7 +172,6 @@ def rstize_text(text, cclass):
 
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
-    next_brac_pos = text.find('[')
     while True:
         pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
