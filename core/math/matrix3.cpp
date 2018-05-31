@@ -828,7 +828,7 @@ void Basis::set_diagonal(const Vector3 p_diag) {
 }
 
 Basis Basis::slerp(const Basis &target, const real_t &t) const {
-	// TODO: implement this directly without using quaternions to make it more efficient
+// TODO: implement this directly without using quaternions to make it more efficient
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(is_rotation() == false, Basis());
 	ERR_FAIL_COND_V(target.is_rotation() == false, Basis());

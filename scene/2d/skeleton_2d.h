@@ -38,12 +38,13 @@ class Skeleton2D;
 class Bone2D : public Node2D {
 	GDCLASS(Bone2D, Node2D)
 
+	friend class Skeleton2D;
+
 	Bone2D *parent_bone;
 	Skeleton2D *skeleton;
 	Transform2D rest;
 	float default_length;
 
-friend class Skeleton2D;
 	int skeleton_index;
 
 protected:

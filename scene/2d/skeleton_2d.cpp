@@ -89,8 +89,8 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
 	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"rest"),"set_rest","get_rest");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"default_length",PROPERTY_HINT_RANGE,"1,1024,1"),"set_default_length","get_default_length");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_length", PROPERTY_HINT_RANGE, "1,1024,1"), "set_default_length", "get_default_length");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
@@ -120,8 +120,7 @@ void Bone2D::apply_rest() {
 
 void Bone2D::set_default_length(float p_length) {
 
-	default_length=p_length;
-
+	default_length = p_length;
 }
 
 float Bone2D::get_default_length() const {
@@ -129,7 +128,7 @@ float Bone2D::get_default_length() const {
 }
 
 int Bone2D::get_index_in_skeleton() const {
-	ERR_FAIL_COND_V(!skeleton,-1);
+	ERR_FAIL_COND_V(!skeleton, -1);
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
@@ -137,22 +136,21 @@ String Bone2D::get_configuration_warning() const {
 
 	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
-		if (warning!=String()) {
-			warning+="\n";
+		if (warning != String()) {
+			warning += "\n";
 		}
 		if (parent_bone) {
-			warning+=TTR("This Bone2D chain should end at a Skeleton2D node.");
+			warning += TTR("This Bone2D chain should end at a Skeleton2D node.");
 		} else {
-			warning+=TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
+			warning += TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
 		}
 	}
 
-	if (rest==Transform2D(0,0,0,0,0,0)) {
-		if (warning!=String()) {
-			warning+="\n";
+	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
+		if (warning != String()) {
+			warning += "\n";
 		}
-		warning+=TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
-
+		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
 	}
 
 	return warning;
@@ -161,12 +159,12 @@ String Bone2D::get_configuration_warning() const {
 Bone2D::Bone2D() {
 	skeleton = NULL;
 	parent_bone = NULL;
-	skeleton_index=-1;
-	default_length=16;
+	skeleton_index = -1;
+	default_length = 16;
 	set_notify_local_transform(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
-	for(int i=0;i<3;i++) {
-		rest[i]=Vector2(0,0);
+	for (int i = 0; i < 3; i++) {
+		rest[i] = Vector2(0, 0);
 	}
 }
 
@@ -194,12 +192,12 @@ void Skeleton2D::_update_bone_setup() {
 
 	for (int i = 0; i < bones.size(); i++) {
 		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
-		bones[i].bone->skeleton_index=i;
+		bones[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
 		if (parent_bone) {
-			bones[i].parent_index=parent_bone->skeleton_index;
+			bones[i].parent_index = parent_bone->skeleton_index;
 		} else {
-			bones[i].parent_index=-1;
+			bones[i].parent_index = -1;
 		}
 	}
 
@@ -230,8 +228,8 @@ void Skeleton2D::_update_transform() {
 
 	for (int i = 0; i < bones.size(); i++) {
 
-		ERR_CONTINUE(bones[i].parent_index>=i);
-		if (bones[i].parent_index>=0) {
+		ERR_CONTINUE(bones[i].parent_index >= i);
+		if (bones[i].parent_index >= 0) {
 			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
 		} else {
 			bones[i].accum_transform = bones[i].bone->get_transform();
@@ -277,7 +275,7 @@ void Skeleton2D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		VS::get_singleton()->skeleton_set_base_transform_2d(skeleton,get_global_transform());
+		VS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
 	}
 }
 
