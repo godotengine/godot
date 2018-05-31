@@ -30,8 +30,8 @@
 
 #include "register_types.h"
 
-#include "csg_shape.h"
 #include "csg_gizmos.h"
+#include "csg_shape.h"
 
 void register_csg_types() {
 
@@ -51,9 +51,7 @@ void register_csg_types() {
 	EditorPlugins::add_by_type<EditorPluginCSG>();
 #endif
 #endif
-
 }
 
 void unregister_csg_types() {
-
 }

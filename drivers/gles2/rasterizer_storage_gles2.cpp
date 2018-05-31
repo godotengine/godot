@@ -1303,7 +1303,6 @@ Transform2D RasterizerStorageGLES2::skeleton_bone_get_transform_2d(RID p_skeleto
 }
 
 void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
-
 }
 
 void RasterizerStorageGLES2::update_dirty_skeletons() {
