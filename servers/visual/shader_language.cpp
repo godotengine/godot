@@ -1625,14 +1625,14 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
 
 	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
