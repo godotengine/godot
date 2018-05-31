@@ -30,8 +30,6 @@
 
 #include "navigation_mesh_generator.h"
 
-#ifdef RECAST_ENABLED
-
 void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
 	p_verticies.push_back(p_vec3.x);
 	p_verticies.push_back(p_vec3.y);
@@ -304,5 +302,3 @@ void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
 		p_nav_mesh->set_vertices(PoolVector<Vector3>());
 	}
 }
-
-#endif //RECAST_ENABLED
