@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShaderMaterial" inherits="Material" category="Core" version="3.0.2">
+<class name="ShaderMaterial" inherits="Material" category="Core" version="3.0.3">
 	<brief_description>
 		A material that uses a custom [Shader] program
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="0" name="param" type="String">
 			</argument>
 			<description>
-				Returns the current value set for this material of a uniform in the shader 
+				Returns the current value set for this material of a uniform in the shader
 			</description>
 		</method>
 		<method name="set_shader_param">
