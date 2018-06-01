@@ -526,7 +526,7 @@ static double _bicubic_interp_kernel(double x) {
 }
 
 template <int CC>
-static void _scale_cubic(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	// get source image size
 	int width = p_src_width;
@@ -556,7 +556,7 @@ static void _scale_cubic(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_wi
 
 			// initial pixel value
 
-			uint8_t *dst = p_dst + (y * p_dst_width + x) * CC;
+			uint8_t *__restrict dst = p_dst + (y * p_dst_width + x) * CC;
 
 			double color[CC];
 			for (int i = 0; i < CC; i++) {
@@ -584,7 +584,7 @@ static void _scale_cubic(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_wi
 						ox2 = xmax;
 
 					// get pixel of original image
-					const uint8_t *p = p_src + (oy2 * p_src_width + ox2) * CC;
+					const uint8_t *__restrict p = p_src + (oy2 * p_src_width + ox2) * CC;
 
 					for (int i = 0; i < CC; i++) {
 
@@ -601,7 +601,7 @@ static void _scale_cubic(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_wi
 }
 
 template <int CC>
-static void _scale_bilinear(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	enum {
 		FRAC_BITS = 8,
@@ -656,7 +656,7 @@ static void _scale_bilinear(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src
 }
 
 template <int CC>
-static void _scale_nearest(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 
@@ -677,7 +677,7 @@ static void _scale_nearest(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_
 	}
 }
 
-static void _overlay(const uint8_t *p_src, uint8_t *p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
+static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
 
 	uint16_t alpha = CLAMP((uint16_t)(p_alpha * 256.0f), 0, 256);
 
