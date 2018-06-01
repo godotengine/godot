@@ -33,6 +33,7 @@
 #include "core/io/image_loader.h"
 #include "core/os/copymem.h"
 #include "hash_map.h"
+#include "math_funcs.h"
 #include "print_string.h"
 
 #include "thirdparty/misc/hq2x.h"
@@ -676,6 +677,16 @@ static void _scale_nearest(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_src_
 	}
 }
 
+static void _overlay(const uint8_t *p_src, uint8_t *p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
+
+	uint16_t alpha = CLAMP((uint16_t)(p_alpha * 256.0f), 0, 256);
+
+	for (uint32_t i = 0; i < p_width * p_height * p_pixel_size; i++) {
+
+		p_dst[i] = (p_dst[i] * (256 - alpha) + p_src[i] * alpha) >> 8;
+	}
+}
+
 void Image::resize_to_po2(bool p_square) {
 
 	if (!_can_modify(format)) {
@@ -707,6 +718,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		ERR_FAIL();
 	}
 
+	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
+
 	ERR_FAIL_COND(p_width <= 0);
 	ERR_FAIL_COND(p_height <= 0);
 	ERR_FAIL_COND(p_width > MAX_WIDTH);
@@ -716,6 +729,32 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		return;
 
 	Image dst(p_width, p_height, 0, format);
+
+	// Setup mipmap-aware scaling
+	Image dst2;
+	int mip1;
+	int mip2;
+	float mip1_weight;
+	if (mipmap_aware) {
+		float avg_scale = ((float)p_width / width + (float)p_height / height) * 0.5f;
+		if (avg_scale >= 1.0f) {
+			mipmap_aware = false;
+		} else {
+			float level = Math::log(1.0f / avg_scale) / Math::log(2.0f);
+			mip1 = CLAMP((int)Math::floor(level), 0, get_mipmap_count());
+			mip2 = CLAMP((int)Math::ceil(level), 0, get_mipmap_count());
+			mip1_weight = 1.0f - (level - mip1);
+		}
+	}
+	bool interpolate_mipmaps = mipmap_aware && mip1 != mip2;
+	if (interpolate_mipmaps) {
+		dst2.create(p_width, p_height, 0, format);
+	}
+	bool had_mipmaps = mipmaps;
+	if (interpolate_mipmaps && !had_mipmaps) {
+		generate_mipmaps();
+	}
+	// --
 
 	PoolVector<uint8_t>::Read r = data.read();
 	const unsigned char *r_ptr = r.ptr();
@@ -734,13 +773,57 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 				case 4: _scale_nearest<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 			}
 		} break;
-		case INTERPOLATE_BILINEAR: {
+		case INTERPOLATE_BILINEAR:
+		case INTERPOLATE_TRILINEAR: {
 
-			switch (get_format_pixel_size(format)) {
-				case 1: _scale_bilinear<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 2: _scale_bilinear<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 3: _scale_bilinear<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 4: _scale_bilinear<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+			for (int i = 0; i < 2; ++i) {
+				int src_width;
+				int src_height;
+				const unsigned char *src_ptr;
+
+				if (!mipmap_aware) {
+					if (i == 0) {
+						// Standard behavior
+						src_width = width;
+						src_height = height;
+						src_ptr = r_ptr;
+					} else {
+						// No need for a second iteration
+						break;
+					}
+				} else {
+					if (i == 0) {
+						// Read from the first mipmap that will be interpolated
+						// (if both levels are the same, we will not interpolate, but at least we'll sample from the right level)
+						int offs;
+						_get_mipmap_offset_and_size(mip1, offs, src_width, src_height);
+						src_ptr = r_ptr + offs;
+					} else if (!interpolate_mipmaps) {
+						// No need generate a second image
+						break;
+					} else {
+						// Switch to read from the second mipmap that will be interpolated
+						int offs;
+						_get_mipmap_offset_and_size(mip2, offs, src_width, src_height);
+						src_ptr = r_ptr + offs;
+						// Switch to write to the second destination image
+						w = dst2.data.write();
+						w_ptr = w.ptr();
+					}
+				}
+
+				switch (get_format_pixel_size(format)) {
+					case 1: _scale_bilinear<1>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					case 2: _scale_bilinear<2>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					case 3: _scale_bilinear<3>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					case 4: _scale_bilinear<4>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+				}
+			}
+
+			if (interpolate_mipmaps) {
+				// Switch to read again from the first scaled mipmap to overlay it over the second
+				r = dst.data.read();
+				_overlay(r.ptr(), w.ptr(), mip1_weight, p_width, p_height, get_format_pixel_size(format));
 			}
 
 		} break;
@@ -759,7 +842,11 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	r = PoolVector<uint8_t>::Read();
 	w = PoolVector<uint8_t>::Write();
 
-	if (mipmaps > 0)
+	if (interpolate_mipmaps) {
+		dst._copy_internals_from(dst2);
+	}
+
+	if (had_mipmaps)
 		dst.generate_mipmaps();
 
 	_copy_internals_from(dst);
@@ -2404,6 +2491,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATE_BILINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATE_CUBIC);
+	BIND_ENUM_CONSTANT(INTERPOLATE_TRILINEAR);
 
 	BIND_ENUM_CONSTANT(ALPHA_NONE);
 	BIND_ENUM_CONSTANT(ALPHA_BIT);
