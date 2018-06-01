@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollContainer" inherits="Container" category="Core" version="3.0.2">
+<class name="ScrollContainer" inherits="Container" category="Core" version="3.0.3">
 	<brief_description>
 		A helper node for displaying scrollable elements (e.g. lists).
 	</brief_description>
@@ -13,6 +13,8 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone">
+		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll">
 			The current horizontal scroll value.
 		</member>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer2D" inherits="Node2D" category="Core" version="3.0.2">
+<class name="AudioStreamPlayer2D" inherits="Node2D" category="Core" version="3.0.3">
 	<brief_description>
 		Plays audio in 2D.
 	</brief_description>
@@ -61,6 +61,8 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 			Maximum distance from which audio is still hearable.
+		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 			If [code]true[/code] audio is playing.

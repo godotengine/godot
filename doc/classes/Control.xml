@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" category="Core" version="3.0.2">
+<class name="Control" inherits="CanvasItem" category="Core" version="3.0.3">
 	<brief_description>
 		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
 	</brief_description>
@@ -772,6 +772,10 @@
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
+		</constant>
+		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
+		</constant>
+		<constant name="NOTIFICATION_SCROLL_END" value="48">
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].

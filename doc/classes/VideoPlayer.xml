@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoPlayer" inherits="Control" category="Core" version="3.0.2">
+<class name="VideoPlayer" inherits="Control" category="Core" version="3.0.3">
 	<brief_description>
 		Control for playing video streams.
 	</brief_description>
@@ -78,13 +78,6 @@
 			Audio volume in dB.
 		</member>
 	</members>
-	<signals>
-		<signal name="finished">
-			<description>
-				Emitted when playback is finished.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2" category="Built-In Types" version="3.0.2">
+<class name="Vector2" category="Built-In Types" version="3.0.3">
 	<brief_description>
 		Vector used for 2D math.
 	</brief_description>
@@ -34,7 +34,7 @@
 			<return type="float">
 			</return>
 			<description>
-                Returns the vector's angle in radians with respect to the x-axis, or [code](1, 0)[/code] vector.
+				Returns the vector's angle in radians with respect to the x-axis, or [code](1, 0)[/code] vector.
 				Equivalent to the result of atan2 when called with the vector's x and y as parameters: [code]atan2(x, y)[/code].
 			</description>
 		</method>
@@ -70,6 +70,12 @@
 			</argument>
 			<description>
 				Returns the vector "bounced off" from a plane defined by the given normal.
+			</description>
+		</method>
+		<method name="ceil">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="clamped">
@@ -175,7 +181,7 @@
 			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-                Returns the vector reflected from a plane defined by the given normal.
+				Returns the vector reflected from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="rotated">
@@ -185,6 +191,12 @@
 			</argument>
 			<description>
 				Returns the vector rotated by [code]phi[/code] radians.
+			</description>
+		</method>
+		<method name="round">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="slide">
