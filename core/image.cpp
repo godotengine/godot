@@ -677,7 +677,7 @@ static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict 
 	}
 }
 
-static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
+static void _overlay(const uint8_t *p_src, uint8_t *p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
 
 	uint16_t alpha = CLAMP((uint16_t)(p_alpha * 256.0f), 0, 256);
 
