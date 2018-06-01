@@ -35,6 +35,7 @@
 #include "editor/editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -77,6 +78,8 @@ class TileMapEditor : public VBoxContainer {
 	};
 
 	TileMap *node;
+	bool manual_autotile;
+	Vector2 manual_position;
 
 	EditorNode *editor;
 	UndoRedo *undo_redo;
@@ -85,6 +88,7 @@ class TileMapEditor : public VBoxContainer {
 	LineEdit *search_box;
 	HSlider *size_slider;
 	ItemList *palette;
+	ItemList *manual_palette;
 
 	HBoxContainer *toolbar;
 
@@ -97,6 +101,7 @@ class TileMapEditor : public VBoxContainer {
 	ToolButton *rotate_90;
 	ToolButton *rotate_180;
 	ToolButton *rotate_270;
+	CheckBox *manual_button;
 
 	Tool tool;
 
@@ -171,11 +176,13 @@ class TileMapEditor : public VBoxContainer {
 	int get_selected_tile() const;
 	void set_selected_tile(int p_tile);
 
+	void _manual_toggled(bool p_enabled);
 	void _text_entered(const String &p_text);
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_palette();
 	void _menu_option(int p_option);
+	void _palette_selected(int index);
 
 	void _start_undo(const String &p_action);
 	void _finish_undo();
