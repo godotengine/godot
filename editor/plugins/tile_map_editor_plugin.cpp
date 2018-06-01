@@ -167,6 +167,13 @@ void TileMapEditor::_menu_option(int p_option) {
 	}
 }
 
+void TileMapEditor::_palette_selected(int index) {
+
+	if (manual_autotile) {
+		_update_palette();
+	}
+}
+
 void TileMapEditor::_canvas_mouse_enter() {
 
 	mouse_over = true;
@@ -475,17 +482,14 @@ void TileMapEditor::_update_palette() {
 		palette->set_item_metadata(palette->get_item_count() - 1, entries[i].id);
 	}
 
-	int sel_tile = selected.get(0);
-	if (selected.get(0) != TileMap::INVALID_CELL) {
-		set_selected_tiles(selected);
-		sel_tile = selected.get(Math::rand() % selected.size());
-	} else {
+	if (selected != -1)
+		set_selected_tile(selected);
+	else
 		palette->select(0);
-	}
 
-	if (manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
+	if (manual_autotile && tileset->tile_get_tile_mode(get_selected_tile()) == TileSet::AUTO_TILE) {
 
-		const Map<Vector2, uint16_t> &tiles = tileset->autotile_get_bitmask_map(sel_tile);
+		const Map<Vector2, uint16_t> &tiles = tileset->autotile_get_bitmask_map(get_selected_tile());
 
 		Vector<Vector2> entries;
 		for (const Map<Vector2, uint16_t>::Element *E = tiles.front(); E; E = E->next()) {
@@ -493,7 +497,7 @@ void TileMapEditor::_update_palette() {
 		}
 		entries.sort();
 
-		Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
+		Ref<Texture> tex = tileset->tile_get_texture(get_selected_tile());
 
 		for (int i = 0; i < entries.size(); i++) {
 
@@ -501,9 +505,9 @@ void TileMapEditor::_update_palette() {
 
 			if (tex.is_valid()) {
 
-				Rect2 region = tileset->tile_get_region(sel_tile);
-				int spacing = tileset->autotile_get_spacing(sel_tile);
-				region.size = tileset->autotile_get_size(sel_tile); // !!
+				Rect2 region = tileset->tile_get_region(get_selected_tile());
+				int spacing = tileset->autotile_get_spacing(get_selected_tile());
+				region.size = tileset->autotile_get_size(get_selected_tile());
 				region.position += (region.size + Vector2(spacing, spacing)) * entries[i];
 
 				if (!region.has_no_area())
@@ -710,6 +714,14 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 
 	Rect2 r = node->get_tileset()->tile_get_region(p_cell);
 	if (node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::AUTO_TILE) {
+		Vector2 offset;
+		int selected = manual_palette->get_current();
+		if (manual_autotile && selected != -1) {
+			offset = manual_palette->get_item_metadata(selected);
+		} else {
+			offset = node->get_tileset()->autotile_get_icon_coordinate(p_cell);
+		}
+
 		int spacing = node->get_tileset()->autotile_get_spacing(p_cell);
 		r.size = node->get_tileset()->autotile_get_size(p_cell);
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;
@@ -1816,7 +1828,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->set_max_columns(0);
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
-	palette->set_select_mode(ItemList::SELECT_MULTI);
 	palette->connect("item_selected", this, "_palette_selected");
 	palette_container->add_child(palette);
 
