@@ -68,6 +68,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_UP,
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
+		TOOL_COPY,
+		TOOL_PASTE,
+		TOOL_PASTE_KGT,
 		TOOL_REPARENT,
 		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
@@ -142,12 +145,15 @@ class SceneTreeDock : public VBoxContainer {
 	void _create();
 	Node *scene_root;
 	Node *edited_scene;
+	List<Node *> copied_nodes;
 	EditorNode *editor;
 
 	VBoxContainer *create_root_dialog;
 	String selected_favorite_root;
 
 	void _add_children_to_popup(Object *p_obj, int p_depth);
+
+	void _node_paste(List<Node *> p_selection, bool p_keep_global_xform);
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   version="1.1"
+   viewBox="0 0 16 16"
+   id="svg2912"
+   sodipodi:docname="icon_paste.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <metadata
+     id="metadata2918">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2916" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1440"
+     inkscape:window-height="877"
+     id="namedview2914"
+     showgrid="false"
+     inkscape:zoom="29.831067"
+     inkscape:cx="14.156403"
+     inkscape:cy="7.1170124"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2912" />
+  <path
+     style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:0.89224684"
+     d="M 6.359375 1.6582031 L 6.359375 2.859375 L 5.3535156 2.859375 L 5.3535156 4.890625 L 10.646484 4.890625 L 10.646484 2.859375 L 9.6386719 2.859375 L 9.6386719 1.6582031 L 6.359375 1.6582031 z M 3.5859375 3.4257812 L 3.5859375 14.341797 L 12.414062 14.341797 L 12.414062 3.4257812 L 11.146484 3.4257812 L 11.146484 5.390625 L 4.8535156 5.390625 L 4.8535156 3.4257812 L 3.5859375 3.4257812 z "
+     id="rect2908" />
+</svg>
