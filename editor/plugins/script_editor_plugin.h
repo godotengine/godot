@@ -199,8 +199,8 @@ class ScriptEditor : public PanelContainer {
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	ItemList *members_overview;
-	VBoxContainer *members_overview_vbox;
-	HBoxContainer *members_overview_buttons_hbox;
+	VBoxContainer *overview_vbox;
+	HBoxContainer *buttons_hbox;
 	Label *filename;
 	ToolButton *members_overview_alphabeta_sort_button;
 	bool members_overview_enabled;
