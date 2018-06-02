@@ -1788,14 +1788,48 @@ void Control::set_size(const Size2 &p_size) {
 	float pw = _get_parent_range(0);
 	float ph = _get_parent_range(1);
 
-	float x = _a2s(data.margin[0], data.anchor[0], pw);
-	float y = _a2s(data.margin[1], data.anchor[1], ph);
+	if (data.use_new_resize) {
+		float scale_w_from = (data.anchor[0] + data.anchor[2]) / 2.0f;
+		float scale_h_from = (data.anchor[1] + data.anchor[3]) / 2.0f;
 
-	float w = new_size.width;
-	float h = new_size.height;
+		float add_w_to_left_ratio = scale_w_from;
+		float add_w_to_right_ratio = 1 - scale_w_from;
+		float add_h_to_top_ratio = scale_h_from;
+		float add_h_to_bottom_ratio = 1 - scale_h_from;
 
-	data.margin[2] = _s2a(x + w, data.anchor[2], pw);
-	data.margin[3] = _s2a(y + h, data.anchor[3], ph);
+		float old_left_x = _a2s(data.margin[0], data.anchor[0], pw);
+		float old_top_y = _a2s(data.margin[1], data.anchor[1], ph);
+		float old_right_x = _a2s(data.margin[2], data.anchor[2], pw);
+		float old_bottom_y = _a2s(data.margin[3], data.anchor[3], ph);
+
+		float old_width = old_right_x - old_left_x;
+		float old_height = old_bottom_y - old_top_y;
+		float new_width = new_size.width;
+		float new_height = new_size.height;
+
+		float width_added = new_width - old_width;
+		float height_added = new_height - old_height;
+
+		float add_to_left = add_w_to_left_ratio * width_added;
+		float add_to_right = add_w_to_right_ratio * width_added;
+		float add_to_top = add_h_to_top_ratio * height_added;
+		float add_to_bottom = add_h_to_bottom_ratio * height_added;
+
+		data.margin[0] = _s2a(old_left_x - add_to_left, data.anchor[0], pw);
+		data.margin[1] = _s2a(old_top_y - add_to_top, data.anchor[1], ph);
+		data.margin[2] = _s2a(old_right_x + add_to_right, data.anchor[2], pw);
+		data.margin[3] = _s2a(old_bottom_y + add_to_bottom, data.anchor[3], ph);
+	}
+	else {
+		float x = _a2s(data.margin[0], data.anchor[0], pw);
+		float y = _a2s(data.margin[1], data.anchor[1], ph);
+
+		float w = new_size.width;
+		float h = new_size.height;
+
+		data.margin[2] = _s2a(x + w, data.anchor[2], pw);
+		data.margin[3] = _s2a(y + h, data.anchor[3], ph);
+	}
 
 	_size_changed();
 }
@@ -2699,6 +2733,14 @@ bool Control::is_clipping_contents() {
 	return data.clip_contents;
 }
 
+void Control::set_use_new_resize(bool p_new_resize) {
+	data.use_new_resize = p_new_resize;
+}
+
+bool Control::get_use_new_resize() {
+	return data.use_new_resize;
+}
+
 void Control::set_h_grow_direction(GrowDirection p_direction) {
 
 	data.h_grow = p_direction;
@@ -2837,6 +2879,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+
+	ClassDB::bind_method(D_METHOD("set_use_new_resize", "enable"), &Control::set_use_new_resize);
+	ClassDB::bind_method(D_METHOD("get_use_new_resize"), &Control::get_use_new_resize);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -2860,6 +2906,7 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 
 	ADD_GROUP("Anchor", "anchor_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anchor_use_new_resize"), "set_use_new_resize", "get_use_new_resize");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_top", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_RIGHT);
@@ -3010,6 +3057,7 @@ Control::Control() {
 	data.v_size_flags = SIZE_FILL;
 	data.expand = 1;
 	data.rotation = 0;
+	data.use_new_resize = false;
 	data.parent_canvas_item = NULL;
 	data.scale = Vector2(1, 1);
 	data.drag_owner = 0;
