@@ -485,7 +485,9 @@ bool SceneTree::idle(float p_time) {
 
 	idle_process_time = p_time;
 
-	multiplayer->poll();
+	if (multiplayer_poll) {
+		multiplayer->poll();
+	}
 
 	emit_signal("idle_frame");
 
@@ -1672,6 +1674,14 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer() const {
 	return multiplayer;
 }
 
+void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
+	multiplayer_poll = p_enabled;
+}
+
+bool SceneTree::is_multiplayer_poll_enabled() const {
+	return multiplayer_poll;
+}
+
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
@@ -1802,6 +1812,8 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer"), &SceneTree::set_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &SceneTree::get_multiplayer);
+	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
+	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &SceneTree::set_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_peer"), &SceneTree::get_network_peer);
 	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
@@ -1830,6 +1842,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node")));
@@ -1934,6 +1947,7 @@ SceneTree::SceneTree() {
 		root->set_world(Ref<World>(memnew(World)));
 
 	// Initialize network state
+	multiplayer_poll = true;
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
