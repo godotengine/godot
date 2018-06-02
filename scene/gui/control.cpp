@@ -162,6 +162,7 @@ void Control::_update_minimum_size_cache() {
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
+	minimum_size_changed();
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -452,10 +453,8 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (is_visible_in_tree()) {
-				data.minimum_size_valid = false;
-				_size_changed();
-			}
+			data.minimum_size_valid = false;
+			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
