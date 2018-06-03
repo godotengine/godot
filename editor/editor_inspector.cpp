@@ -1759,9 +1759,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
-		changing++;
 		undo_redo->commit_action();
-		changing--;
 	}
 
 	if (editor_property_map.has(p_name)) {
