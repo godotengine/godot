@@ -269,6 +269,10 @@
 		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
 			The default [MultiplayerAPI] instance for this SceneTree.
 		</member>
+		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
+			If [code]true[/code] (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protecion when accessing the [MultiplayerAPI] from threads.
+		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
 		</member>
