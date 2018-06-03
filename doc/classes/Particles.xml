@@ -22,6 +22,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Restarts the particle emmission, clearing existing particles.
 			</description>
 		</method>
 	</methods>
@@ -33,14 +34,19 @@
 			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [code]DRAW_ORDER_INDEX[/code].
 		</member>
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the first draw pass.
 		</member>
 		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the second draw pass.
 		</member>
 		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the third draw pass.
 		</member>
 		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the fourth draw pass.
 		</member>
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes">
+			The number of draw passes when rendering particles.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
@@ -62,6 +68,7 @@
 			If [code]true[/code] only [code]amount[/code] particles will be emitted. Default value: [code]false[/code].
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
+			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
 			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
@@ -73,6 +80,7 @@
 			Speed scaling ratio. Default value: [code]1[/code].
 		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb">
+			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
 		</member>
 	</members>
 	<constants>
@@ -86,6 +94,7 @@
 			Particles are drawn in order of depth.
 		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4">
+			Maximum number of draw passes supported.
 		</constant>
 	</constants>
 </class>
