@@ -160,6 +160,8 @@ private:
 		GrowDirection h_grow;
 		GrowDirection v_grow;
 
+		bool use_new_resize;
+
 		float rotation;
 		Vector2 scale;
 		Vector2 pivot_offset;
@@ -476,6 +478,9 @@ public:
 
 	void set_clip_contents(bool p_clip);
 	bool is_clipping_contents();
+
+	void set_use_new_resize(bool p_new_resize);
+	bool get_use_new_resize();
 
 	void set_block_minimum_size_adjust(bool p_block);
 	bool is_minimum_size_adjust_blocked() const;
