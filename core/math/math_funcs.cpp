@@ -30,14 +30,13 @@
 
 #include "math_funcs.h"
 
-#include "core/os/os.h"
-
-pcg32_random_t Math::default_pcg = { 12047754176567800795ULL, PCG_DEFAULT_INC_64 };
+RandomBase Math::default_rand(RandomBase::DEFAULT_SEED, RandomBase::DEFAULT_INC);
 
 #define PHI 0x9e3779b9
 
 // TODO: we should eventually expose pcg.inc too
 uint32_t Math::rand_from_seed(uint64_t *seed) {
+	// TODO: create a RandomBase instance
 	pcg32_random_t pcg = { *seed, PCG_DEFAULT_INC_64 };
 	uint32_t r = pcg32_random_r(&pcg);
 	*seed = pcg.state;
@@ -45,15 +44,15 @@ uint32_t Math::rand_from_seed(uint64_t *seed) {
 }
 
 void Math::seed(uint64_t x) {
-	default_pcg.state = x;
+	default_rand.seed(x);
 }
 
 void Math::randomize() {
-	seed(OS::get_singleton()->get_ticks_usec() * default_pcg.state + PCG_DEFAULT_INC_64);
+	default_rand.randomize();
 }
 
 uint32_t Math::rand() {
-	return pcg32_random_r(&default_pcg);
+	return default_rand.rand();
 }
 
 int Math::step_decimals(double p_step) {
@@ -167,13 +166,9 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 }
 
 double Math::random(double from, double to) {
-	unsigned int r = Math::rand();
-	double ret = (double)r / (double)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return default_rand.random(from, to);
 }
 
 float Math::random(float from, float to) {
-	unsigned int r = Math::rand();
-	float ret = (float)r / (float)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return default_rand.random(from, to);
 }

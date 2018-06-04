@@ -34,6 +34,7 @@
 #include "math_defs.h"
 #include "typedefs.h"
 
+#include "randombase.h"
 #include "thirdparty/misc/pcg.h"
 
 #include <float.h>
@@ -48,7 +49,7 @@
 
 class Math {
 
-	static pcg32_random_t default_pcg;
+	static RandomBase default_rand;
 
 public:
 	Math() {} // useless to instance

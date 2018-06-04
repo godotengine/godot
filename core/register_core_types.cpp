@@ -53,6 +53,7 @@
 #include "io/tcp_server.h"
 #include "io/translation_loader_po.h"
 #include "math/a_star.h"
+#include "math/random.h"
 #include "math/triangle_mesh.h"
 #include "os/input.h"
 #include "os/main_loop.h"
@@ -173,6 +174,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PackedDataContainerRef>();
 	ClassDB::register_class<AStar>();
 	ClassDB::register_class<EncodedObjectAsID>();
+	ClassDB::register_class<Random>();
 
 	ClassDB::register_class<JSONParseResult>();
 
