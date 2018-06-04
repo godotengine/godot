@@ -1023,8 +1023,8 @@ void EditorPropertyRect2::_value_changed(double val) {
 
 	Rect2 r2;
 	r2.position.x = spin[0]->get_value();
-	r2.position.x = spin[1]->get_value();
-	r2.size.y = spin[2]->get_value();
+	r2.position.y = spin[1]->get_value();
+	r2.size.x = spin[2]->get_value();
 	r2.size.y = spin[3]->get_value();
 	emit_signal("property_changed", get_edited_property(), r2);
 }
