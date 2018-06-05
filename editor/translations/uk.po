@@ -924,11 +924,11 @@ msgstr "Перемістити аудіо шину"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Зберегти компонування аудіо шини як..."
+msgstr "Зберегти макет аудіо шини як..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr "Розташування для нового компонування..."
+msgstr "Розташування для нового макета..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1663,7 +1663,7 @@ msgstr "Зберегти зміни, внесені до '%s' перед зак�
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Зберегти сцену як..."
+msgstr "Зберегти сцени, як..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -5703,8 +5703,9 @@ msgid "Options"
 msgstr "Параметри"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Має,Багато,Параметрів"
+msgstr "Має,Багато,Декілька,Параметрів!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5991,8 +5992,9 @@ msgid "Imported Project"
 msgstr "Імпортований проект"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Некоректна назва проекту."
+msgstr "Назва проекту:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6195,8 +6197,8 @@ msgstr "Кнопка миші"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

@@ -1064,8 +1064,8 @@ msgid "Storing local changes..."
 msgstr "Helyi módosítások eltárolása..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Scene frissítése.."
+msgid "Updating scene..."
+msgstr "Scene frissítése..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1644,11 +1644,11 @@ msgid "Open Base Scene"
 msgstr "Alap Scene megnyitás"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Scene gyors megnyitás"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Szkript gyors megnyitás"
 
 #: editor/editor_node.cpp
@@ -1660,7 +1660,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Scene mentés másként"
 
 #: editor/editor_node.cpp
@@ -1712,7 +1712,7 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Ez a művelet nem vonható vissza. Visszaállítja mindenképp?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Scene gyors futtatás"
 
 #: editor/editor_node.cpp
@@ -1886,11 +1886,11 @@ msgid "New Scene"
 msgstr "Új Scene"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
+msgid "New Inherited Scene..."
 msgstr "Új örökölt Scene"
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
+msgid "Open Scene..."
 msgstr "Scene megnyitása"
 
 #: editor/editor_node.cpp
@@ -2292,8 +2292,8 @@ msgid "Creating Mesh Previews"
 msgstr "Háló Előnézetek Létrehozása"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Indexkép.."
+msgid "Thumbnail..."
+msgstr "Indexkép..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2445,8 +2445,8 @@ msgid "(Current)"
 msgstr "(Jelenlegi)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
-msgstr "Tükrök letöltése, kérjük várjon.."
+msgid "Retrieving mirrors, please wait..."
+msgstr "Tükrök letöltése, kérjük várjon..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2523,8 +2523,8 @@ msgid "Error requesting url: "
 msgstr "Hiba történt az url lekérdezésekor: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
-msgstr "Csatlakozás Tükörhöz.."
+msgid "Connecting to Mirror..."
+msgstr "Csatlakozás Tükörhöz..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2540,8 +2540,8 @@ msgstr "Nem Megoldható"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Csatlakozás.."
+msgid "Connecting..."
+msgstr "Csatlakozás..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2553,8 +2553,8 @@ msgstr "Csatlakozva"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Lekérdezés.."
+msgid "Requesting..."
+msgstr "Lekérdezés..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2689,12 +2689,12 @@ msgid "Collapse all"
 msgstr "Összes összecsukása"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
-msgstr "Átnevezés.."
+msgid "Rename..."
+msgstr "Átnevezés..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "Áthelyezés.."
+msgid "Move To..."
+msgstr "Áthelyezés..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2705,16 +2705,16 @@ msgid "Instance"
 msgstr "Példány"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Függőségek Szerkesztése.."
+msgid "Edit Dependencies..."
+msgstr "Függőségek Szerkesztése..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
-msgstr "Tulajdonosok Megtekintése.."
+msgid "View Owners..."
+msgstr "Tulajdonosok Megtekintése..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Megkettőzés.."
+msgid "Duplicate..."
+msgstr "Megkettőzés..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2742,7 +2742,7 @@ msgid ""
 "Please Wait..."
 msgstr ""
 "Fájlok Vizsgálata,\n"
-"Kérem Várjon.."
+"Kérem Várjon..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2807,7 +2807,7 @@ msgid "Import Scene"
 msgstr "Scene importálás"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Scene importálás"
 
 #: editor/import/resource_importer_scene.cpp
@@ -2819,8 +2819,8 @@ msgid "Generating for Mesh: "
 msgstr "Létrehozás a Következő Hálóhoz: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
-msgstr "Tetszőleges Szkript Futtatása.."
+msgid "Running Custom Script..."
+msgstr "Tetszőleges Szkript Futtatása..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2836,8 +2836,8 @@ msgid "Error running post-import script:"
 msgstr "Hiba történt az importálás utána szkript futtatásakor:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
-msgstr "Mentés.."
+msgid "Saving..."
+msgstr "Mentés..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2856,8 +2856,8 @@ msgid "Import As:"
 msgstr "Importálás Mint:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
-msgstr "Beépített Beállítások.."
+msgid "Preset..."
+msgstr "Beépített Beállítások..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3275,16 +3275,16 @@ msgid "Transition Node"
 msgstr "Átmenet Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Animációk Importálása.."
+msgid "Import Animations..."
+msgstr "Animációk Importálása..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
 msgstr "Node szűrők szerkesztés"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Szűrők.."
+msgid "Filters..."
+msgstr "Szűrők..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3353,8 +3353,8 @@ msgid "Fetching:"
 msgstr "Lekérés:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr "Megoldás.."
+msgid "Resolving..."
+msgstr "Megoldás..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3420,8 +3420,8 @@ msgid "Site:"
 msgstr "Oldal:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Támogatás.."
+msgid "Support..."
+msgstr "Támogatás..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -4049,8 +4049,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Konvex Ütközési Testvér Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
-msgstr "Körvonalháló Létrehozása.."
+msgid "Create Outline Mesh..."
+msgstr "Körvonalháló Létrehozása..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4255,8 +4255,8 @@ msgid "Error loading image:"
 msgstr "Hiba a kép betöltésekor:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4616,8 +4616,8 @@ msgid "Import Theme"
 msgstr "Téma Importálása"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Téma Mentése Másként.."
+msgid "Save Theme As..."
+msgstr "Téma Mentése Másként..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4713,8 +4713,8 @@ msgstr "Szkript Panel Megjelenítése"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Keresés.."
+msgid "Find..."
+msgstr "Keresés..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4923,16 +4923,16 @@ msgid "Find Previous"
 msgstr "Előző Keresése"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Csere.."
+msgid "Replace..."
+msgstr "Csere..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Ugrás Funkcióra.."
+msgid "Goto Function..."
+msgstr "Ugrás Funkcióra..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Ugrás Sorra.."
+msgid "Goto Line..."
+msgstr "Ugrás Sorra..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5982,6 +5982,11 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Érvénytelen név."
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -6168,8 +6173,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

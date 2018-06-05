@@ -3620,7 +3620,7 @@ msgstr "Користи лепљење ротације"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Поставке лепљења..."
+msgstr "Конфигуриши лепљење..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -6018,6 +6018,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Invalid Project Name."
+msgstr "Неважеће име."
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Неуспех при прављењу директоријума."
 
@@ -6207,8 +6212,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

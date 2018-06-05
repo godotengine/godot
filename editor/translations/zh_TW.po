@@ -5974,6 +5974,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Invalid Project Name."
+msgstr "不能使用的名稱。"
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "無法新增資料夾"
 
@@ -6165,8 +6170,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

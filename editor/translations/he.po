@@ -2456,7 +2456,7 @@ msgstr "לא ניתן לפתור"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
+msgid "Connecting..."
 msgstr "מתבצעת התחברות…"
 
 #: editor/export_template_manager.cpp
@@ -2469,7 +2469,7 @@ msgstr "מחובר"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "מוגשת בקשה…"
 
 #: editor/export_template_manager.cpp
@@ -2602,11 +2602,11 @@ msgid "Collapse all"
 msgstr "לצמצם הכול"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
+msgid "Rename..."
 msgstr "שינוי שם…"
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "העברה אל…"
 
 #: editor/filesystem_dock.cpp
@@ -2618,15 +2618,15 @@ msgid "Instance"
 msgstr "עותק"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "עריכת תלויות…"
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "צפייה בבעלים…"
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "שכפול…"
 
 #: editor/filesystem_dock.cpp
@@ -2720,7 +2720,7 @@ msgid "Import Scene"
 msgstr "ייבוא סצנה"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "סצנה מיובאת…"
 
 #: editor/import/resource_importer_scene.cpp
@@ -2732,7 +2732,7 @@ msgid "Generating for Mesh: "
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "מופעל סקריפט מותאם אישית…"
 
 #: editor/import/resource_importer_scene.cpp
@@ -2748,7 +2748,7 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "שמירה…"
 
 #: editor/import_dock.cpp
@@ -2768,7 +2768,7 @@ msgid "Import As:"
 msgstr "ייבוא בתור:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
+msgid "Preset..."
 msgstr "ערכה מוגדרת…"
 
 #: editor/import_dock.cpp
@@ -4500,7 +4500,7 @@ msgid "Import Theme"
 msgstr "ייבוא ערכת עיצוב"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
+msgid "Save Theme As..."
 msgstr "שמירת ערכת עיצוב בשם…"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4597,7 +4597,7 @@ msgstr "החלפת תצוגת חלונית סקריפטים"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
+msgid "Find..."
 msgstr "איתור…"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4805,15 +4805,15 @@ msgid "Find Previous"
 msgstr "איתור הקודם"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
+msgid "Replace..."
 msgstr "החלפה…"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
+msgid "Goto Function..."
 msgstr "מעבר לפונקציה…"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
+msgid "Goto Line..."
 msgstr "מעבר לשורה…"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5267,11 +5267,7 @@ msgid "Transform"
 msgstr "התמרה"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "הגדרת הצמדה…"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5870,6 +5866,11 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "שם שגוי."
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -6058,8 +6059,8 @@ msgstr "כפתור עכבר"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6087,7 +6088,7 @@ msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr "נא ללחוץ על מקש…"
 
 #: editor/project_settings_editor.cpp
