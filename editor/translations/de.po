@@ -1920,7 +1920,7 @@ msgstr "Neue Szene"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "Neue geerbte Szene..."
+msgstr "Neue gererbte Szene..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
@@ -1948,7 +1948,7 @@ msgstr "Umwandeln zu..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Mesh-Bibliothek..."
+msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -5741,8 +5741,9 @@ msgid "Options"
 msgstr "Optionen"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Einstellungen"
+msgstr "Enthalten,Viele,Einige,Optionen!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6027,8 +6028,9 @@ msgid "Imported Project"
 msgstr "Importiertes Projekt"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Ungültiger Projektname."
+msgstr "Projektname:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6233,8 +6235,8 @@ msgstr "Maustaste"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

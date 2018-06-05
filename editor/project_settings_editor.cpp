@@ -164,7 +164,7 @@ void ProjectSettingsEditor::_action_edited() {
 
 		if (new_name == "" || !_validate_action_name(new_name)) {
 
-		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\', or '\"'."));
+		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
@@ -916,7 +916,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 
 		if (!_validate_action_name(p_action)) {
 
-			action_add_error->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			action_add_error->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
