@@ -503,7 +503,7 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Katkaise yhteys '%s' '%s':n"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
+msgid "Connect..."
 msgstr "Yhdistä..."
 
 #: editor/connections_dialog.cpp
@@ -932,11 +932,11 @@ msgid "Move Audio Bus"
 msgstr "Siirrä ääniväylää"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
+msgid "Save Audio Bus Layout As..."
 msgstr "Tallenna ääniväylän asettelu nimellä..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
+msgid "Location for New Layout..."
 msgstr "Sijainti uudelle asettelulle..."
 
 #: editor/editor_audio_buses.cpp
@@ -1082,11 +1082,11 @@ msgid "Updating Scene"
 msgstr "Päivitetään skeneä"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
+msgid "Storing local changes..."
 msgstr "Varastoidaan paikalliset muutokset..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
+msgid "Updating scene..."
 msgstr "Päivitetään skeneä..."
 
 #: editor/editor_data.cpp
@@ -1158,7 +1158,7 @@ msgid "Show In File Manager"
 msgstr "Näytä tiedostonhallinnassa"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
+msgid "New Folder..."
 msgstr "Luo kansio..."
 
 #: editor/editor_file_dialog.cpp
@@ -1446,12 +1446,12 @@ msgid "Error saving resource!"
 msgstr "Virhe tallennettaessa resurssia!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
+msgid "Save Resource As..."
 msgstr "Tallenna resurssi nimellä..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
+msgid "I see..."
 msgstr "Ymmärrän..."
 
 #: editor/editor_node.cpp
@@ -1688,11 +1688,11 @@ msgid "Open Base Scene"
 msgstr "Avaa kantascene"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Nopea skenen avaus..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Nopea skriptin avaus..."
 
 #: editor/editor_node.cpp
@@ -1705,7 +1705,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Tallennetaanko muutokset '%s' ennen sulkemista?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Tallenna scene nimellä..."
 
 #: editor/editor_node.cpp
@@ -1757,7 +1757,7 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Tätä toimintoa ei voida peruttaa. Palauta joka tapauksessa?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Nopea skenen käynnistys..."
 
 #: editor/editor_node.cpp
@@ -1911,7 +1911,7 @@ msgid "Previous tab"
 msgstr "Edellinen välilehti"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
+msgid "Filter Files..."
 msgstr "Suodata tiedostot..."
 
 #: editor/editor_node.cpp
@@ -1923,11 +1923,11 @@ msgid "New Scene"
 msgstr "Uusi skene"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
+msgid "New Inherited Scene..."
 msgstr "Uusi peritty skene..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
+msgid "Open Scene..."
 msgstr "Avaa skene..."
 
 #: editor/editor_node.cpp
@@ -1947,15 +1947,15 @@ msgid "Open Recent"
 msgstr "Avaa viimeaikainen"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
+msgid "Convert To..."
 msgstr "Muunna..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
+msgid "MeshLibrary..."
 msgstr "MalliKirjasto..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
+msgid "TileSet..."
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
@@ -2226,7 +2226,7 @@ msgid "Save the currently edited resource."
 msgstr "Tallenna tällä hetkellä muokattu resurssi."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
+msgid "Save As..."
 msgstr "Tallenna nimellä..."
 
 #: editor/editor_node.cpp
@@ -2336,7 +2336,7 @@ msgid "Creating Mesh Previews"
 msgstr "Luodaan mallien esikatseluita"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
+msgid "Thumbnail..."
 msgstr "Pienoiskuva..."
 
 #: editor/editor_plugin_settings.cpp
@@ -2493,7 +2493,7 @@ msgid "(Current)"
 msgstr "(Nykyinen)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "Noudetaan peilipalvelimia, hetkinen..."
 
 #: editor/export_template_manager.cpp
@@ -2576,7 +2576,7 @@ msgstr "Virhe tallennettaessa atlas-kuvaa:"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Connecting to Mirror.."
+msgid "Connecting to Mirror..."
 msgstr "Yhdistä..."
 
 #: editor/export_template_manager.cpp
@@ -2596,7 +2596,7 @@ msgstr "Yhdistäminen epäonnistui"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
-msgid "Connecting.."
+msgid "Connecting..."
 msgstr "Yhdistä..."
 
 #: editor/export_template_manager.cpp
@@ -2611,7 +2611,7 @@ msgstr "Yhdistä"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "Pyydetään..."
 
 #: editor/export_template_manager.cpp
@@ -2766,11 +2766,11 @@ msgstr "Pienennä kaikki"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Rename.."
+msgid "Rename..."
 msgstr "Nimeä uudelleen"
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "Siirrä..."
 
 #: editor/filesystem_dock.cpp
@@ -2783,16 +2783,16 @@ msgid "Instance"
 msgstr "Instanssi"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "Muokkaa riippuvuuksia..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "Tarkastele omistajia..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "Monista"
 
 #: editor/filesystem_dock.cpp
@@ -2819,7 +2819,7 @@ msgstr "Luo valituista skeneistä instanssi valitun noden alle."
 #, fuzzy
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Selataan tiedostoja,\n"
 "Hetkinen..."
@@ -2896,7 +2896,7 @@ msgid "Import Scene"
 msgstr "Tuo Scene"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Tuodaan Scene..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2910,7 +2910,7 @@ msgid "Generating for Mesh: "
 msgstr "Luo AABB"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "Suorita valitsemasi skripti..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2926,7 +2926,7 @@ msgid "Error running post-import script:"
 msgstr "Virhe ajettaessa tuonnin jälkeistä skriptiä: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "Tallennetaan..."
 
 #: editor/import_dock.cpp
@@ -2946,7 +2946,7 @@ msgid "Import As:"
 msgstr "Tuo nimellä:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
+msgid "Preset..."
 msgstr "Esiasetus..."
 
 #: editor/import_dock.cpp
@@ -3364,7 +3364,7 @@ msgid "Transition Node"
 msgstr "Siirtymänode"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
+msgid "Import Animations..."
 msgstr "Tuo animaatiot..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3372,7 +3372,7 @@ msgid "Edit Node Filters"
 msgstr "Muokkaa noden suodattimia"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
+msgid "Filters..."
 msgstr "Suodattimet..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3445,7 +3445,7 @@ msgstr "Noudetaan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
-msgid "Resolving.."
+msgid "Resolving..."
 msgstr "Tallennetaan..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3514,7 +3514,7 @@ msgid "Site:"
 msgstr "Sivu:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
+msgid "Support..."
 msgstr "Tuki..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3713,6 +3713,7 @@ msgid "Use Rotation Snap"
 msgstr "Tartu käännettäessä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Määrittele tarttuminen..."
 
@@ -4151,7 +4152,7 @@ msgid "Create Convex Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
+msgid "Create Outline Mesh..."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4362,7 +4363,7 @@ msgid "Error loading image:"
 msgstr "Virhe ladattaessa kuvaa:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
+msgid "No pixels with transparency > 128 in image..."
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -4740,7 +4741,7 @@ msgid "Import Theme"
 msgstr "Tuo teema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
+msgid "Save Theme As..."
 msgstr "Tallenna teema nimellä..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4840,7 +4841,7 @@ msgstr "Näytä/piilota skriptipaneeli"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
+msgid "Find..."
 msgstr "Etsi..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5056,15 +5057,15 @@ msgid "Find Previous"
 msgstr "Etsi edellinen"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
+msgid "Replace..."
 msgstr "Korvaa..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
+msgid "Goto Function..."
 msgstr "Mene funktioon..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
+msgid "Goto Line..."
 msgstr "Mene riville..."
 
 #: editor/plugins/script_text_editor.cpp
@@ -5539,11 +5540,7 @@ msgid "Transform"
 msgstr "Muunna"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Määrittele tarttuminen..."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5804,7 +5801,7 @@ msgid "Remove All"
 msgstr "Poista kaikki"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
+msgid "Edit theme..."
 msgstr "Muokkaa teemaa..."
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5876,7 +5873,7 @@ msgstr "Asetukset"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Have,Many,Several,Options!"
+msgid "Has,Many,Options"
 msgstr "On,Monia,Useita,Asetuksia"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6069,7 +6066,7 @@ msgid "Presets"
 msgstr "Esiasetukset"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
+msgid "Add..."
 msgstr "Lisää..."
 
 #: editor/project_export.cpp
@@ -6164,6 +6161,11 @@ msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Tuotu projekti"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Projektin nimi:"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6372,8 +6374,8 @@ msgstr "Hiiren painike"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6401,7 +6403,7 @@ msgid "Control+"
 msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr "Paina näppäintä..."
 
 #: editor/project_settings_editor.cpp
@@ -6590,7 +6592,7 @@ msgid "Property:"
 msgstr "Ominaisuus:"
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6686,11 +6688,11 @@ msgid "Easing Out-In"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "File.."
+msgid "File..."
 msgstr "Tiedosto..."
 
 #: editor/property_editor.cpp
-msgid "Dir.."
+msgid "Dir..."
 msgstr "Hakemisto..."
 
 #: editor/property_editor.cpp
@@ -6865,7 +6867,7 @@ msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
+msgid "Save New Scene As..."
 msgstr "Tallenna uusi scene nimellä..."
 
 #: editor/scene_tree_dock.cpp
@@ -8564,7 +8566,7 @@ msgstr "Virheellinen fonttikoko."
 #~ msgid "Info"
 #~ msgstr "Tietoja"
 
-#~ msgid "Re-Import.."
+#~ msgid "Re-Import..."
 #~ msgstr "Tuo uudelleen..."
 
 #~ msgid "Target path is empty."
@@ -8816,13 +8818,13 @@ msgstr "Virheellinen fonttikoko."
 #~ msgid "Zoom (%):"
 #~ msgstr "Lähennä (%):"
 
-#~ msgid "Skeleton.."
+#~ msgid "Skeleton..."
 #~ msgstr "Luuranko..."
 
 #~ msgid "Zoom Reset"
 #~ msgstr "Palauta lähennys"
 
-#~ msgid "Zoom Set.."
+#~ msgid "Zoom Set..."
 #~ msgstr "Aseta Zoomaus..."
 
 #~ msgid "Set a Value"

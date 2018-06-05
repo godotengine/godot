@@ -511,8 +511,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Отключить '%s' от '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
-msgstr "Присоединить.."
+msgid "Connect..."
+msgstr "Присоединить..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -931,12 +931,12 @@ msgid "Move Audio Bus"
 msgstr "Переместить аудио шину"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
-msgstr "Сохранить раскладку звуковой шины как.."
+msgid "Save Audio Bus Layout As..."
+msgstr "Сохранить раскладку звуковой шины как..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
-msgstr "Местоположение новой раскладки.."
+msgid "Location for New Layout..."
+msgstr "Местоположение новой раскладки..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1077,12 +1077,12 @@ msgid "Updating Scene"
 msgstr "Обновление сцены"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
-msgstr "Сохранение локальных изменений.."
+msgid "Storing local changes..."
+msgstr "Сохранение локальных изменений..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Обновление сцены.."
+msgid "Updating scene..."
+msgstr "Обновление сцены..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1150,8 +1150,8 @@ msgid "Show In File Manager"
 msgstr "Просмотреть в проводнике"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "Новая папка.."
+msgid "New Folder..."
+msgstr "Новая папка..."
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1419,13 +1419,13 @@ msgid "Error saving resource!"
 msgstr "Ошибка при сохранении ресурса!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
-msgstr "Сохранить ресурс как.."
+msgid "Save Resource As..."
+msgstr "Сохранить ресурс как..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
-msgstr "Ясно.."
+msgid "I see..."
+msgstr "Ясно..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1655,12 +1655,12 @@ msgid "Open Base Scene"
 msgstr "Открыть основную сцену"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
-msgstr "Быстро открыть сцену.."
+msgid "Quick Open Scene..."
+msgstr "Быстро открыть сцену..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
-msgstr "Быстро открыть скрипт.."
+msgid "Quick Open Script..."
+msgstr "Быстро открыть скрипт..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1671,8 +1671,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Сохранить изменения в «%s» перед закрытием?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
-msgstr "Сохранить сцену как.."
+msgid "Save Scene As..."
+msgstr "Сохранить сцену как..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1723,8 +1723,8 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Это действие нельзя отменить. Восстановить в любом случае?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
-msgstr "Быстро запустить сцену.."
+msgid "Quick Run Scene..."
+msgstr "Быстро запустить сцену..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1880,8 +1880,8 @@ msgid "Previous tab"
 msgstr "Предыдущая вкладка"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
-msgstr "Отсортировать файлы.."
+msgid "Filter Files..."
+msgstr "Отсортировать файлы..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1892,12 +1892,12 @@ msgid "New Scene"
 msgstr "Новая сцена"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
-msgstr "Новая унаследованная Сцена.."
+msgid "New Inherited Scene..."
+msgstr "Новая унаследованная Сцена..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
-msgstr "Открыть сцену.."
+msgid "Open Scene..."
+msgstr "Открыть сцену..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1916,16 +1916,16 @@ msgid "Open Recent"
 msgstr "Открыть последнее"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
-msgstr "Конвертировать в.."
+msgid "Convert To..."
+msgstr "Конвертировать в..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
-msgstr "Библиотека полисеток.."
+msgid "MeshLibrary..."
+msgstr "Библиотека полисеток..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
-msgstr "Набор тайлов.."
+msgid "TileSet..."
+msgstr "Набор тайлов..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2188,8 +2188,8 @@ msgid "Save the currently edited resource."
 msgstr "Сохранить текущий редактируемый ресурс."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
-msgstr "Сохранить как.."
+msgid "Save As..."
+msgstr "Сохранить как..."
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2297,8 +2297,8 @@ msgid "Creating Mesh Previews"
 msgstr "Создание предпросмотра"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Миниатюра.."
+msgid "Thumbnail..."
+msgstr "Миниатюра..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2450,7 +2450,7 @@ msgid "(Current)"
 msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "Получение зеркал, пожалуйста подождите."
 
 #: editor/export_template_manager.cpp
@@ -2528,8 +2528,8 @@ msgid "Error requesting url: "
 msgstr "Ошибка запроса адреса ссылки: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
-msgstr "Подключение к зеркалам.."
+msgid "Connecting to Mirror..."
+msgstr "Подключение к зеркалам..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2545,8 +2545,8 @@ msgstr "Не удаётся разрешить"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Подключение.."
+msgid "Connecting..."
+msgstr "Подключение..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2558,8 +2558,8 @@ msgstr "Подключен"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Запрашиваю.."
+msgid "Requesting..."
+msgstr "Запрашиваю..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2695,12 +2695,12 @@ msgid "Collapse all"
 msgstr "Свернуть все"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
-msgstr "Переименовать.."
+msgid "Rename..."
+msgstr "Переименовать..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "Переместить в.."
+msgid "Move To..."
+msgstr "Переместить в..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2711,16 +2711,16 @@ msgid "Instance"
 msgstr "Добавить экземпляр"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Редактировать зависимости.."
+msgid "Edit Dependencies..."
+msgstr "Редактировать зависимости..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
-msgstr "Просмотреть владельцев.."
+msgid "View Owners..."
+msgstr "Просмотреть владельцев..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Дублировать.."
+msgid "Duplicate..."
+msgstr "Дублировать..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2745,7 +2745,7 @@ msgstr "Добавить выбранную сцену(ы), в качестве 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Сканирование файлов,\n"
 "пожалуйста, подождите..."
@@ -2813,8 +2813,8 @@ msgid "Import Scene"
 msgstr "Импортировать сцену"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
-msgstr "Импортирование сцены.."
+msgid "Importing Scene..."
+msgstr "Импортирование сцены..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2825,8 +2825,8 @@ msgid "Generating for Mesh: "
 msgstr "Создание для полисетки: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
-msgstr "Запуск пользовательского скрипта.."
+msgid "Running Custom Script..."
+msgstr "Запуск пользовательского скрипта..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2841,8 +2841,8 @@ msgid "Error running post-import script:"
 msgstr "Ошибка запуска пост-импорт скрипта:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
-msgstr "Сохранение.."
+msgid "Saving..."
+msgstr "Сохранение..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2861,8 +2861,8 @@ msgid "Import As:"
 msgstr "Импортировать как:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
-msgstr "Предустановка.."
+msgid "Preset..."
+msgstr "Предустановка..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3282,16 +3282,16 @@ msgid "Transition Node"
 msgstr "Transition узел"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Импортировать анимации.."
+msgid "Import Animations..."
+msgstr "Импортировать анимации..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
 msgstr "Редактировать фильтры узла"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Фильтры.."
+msgid "Filters..."
+msgstr "Фильтры..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3358,7 +3358,7 @@ msgid "Fetching:"
 msgstr "Извлечение:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
+msgid "Resolving..."
 msgstr "Инициализация..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3425,8 +3425,8 @@ msgid "Site:"
 msgstr "Сайт:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Поддержка.."
+msgid "Support..."
+msgstr "Поддержка..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3622,6 +3622,7 @@ msgid "Use Rotation Snap"
 msgstr "Использовать привязку вращения"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Настроить привязку..."
 
@@ -4049,8 +4050,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Создать выпуклую область столкновения"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
-msgstr "Создать полисетку обводки.."
+msgid "Create Outline Mesh..."
+msgstr "Создать полисетку обводки..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4254,8 +4255,8 @@ msgid "Error loading image:"
 msgstr "Ошибка при загрузке изображения:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "Никаких пикселей с прозрачностью > 128 в изображении.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Никаких пикселей с прозрачностью > 128 в изображении..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4615,8 +4616,8 @@ msgid "Import Theme"
 msgstr "Импортировать тему"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Сохранить тему как.."
+msgid "Save Theme As..."
+msgstr "Сохранить тему как..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4712,8 +4713,8 @@ msgstr "Переключить панель скриптов"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Найти.."
+msgid "Find..."
+msgstr "Найти..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4922,16 +4923,16 @@ msgid "Find Previous"
 msgstr "Найти предыдущее"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Заменить.."
+msgid "Replace..."
+msgstr "Заменить..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Перейти к функции.."
+msgid "Goto Function..."
+msgstr "Перейти к функции..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Перейти к строке.."
+msgid "Goto Line..."
+msgstr "Перейти к строке..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5384,12 +5385,8 @@ msgid "Transform"
 msgstr "Преобразование"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Настроить привязку.."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
-msgstr "Окно преобразования.."
+msgid "Transform Dialog..."
+msgstr "Окно преобразования..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5641,8 +5638,8 @@ msgid "Remove All"
 msgstr "Удалить все"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
-msgstr "Редактировать тему.."
+msgid "Edit theme..."
+msgstr "Редактировать тему..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -5711,7 +5708,8 @@ msgid "Options"
 msgstr "Параметры"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "Имеет,Много,Разных,Опций!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5903,8 +5901,8 @@ msgid "Presets"
 msgstr "Предустановки"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
-msgstr "Добавить.."
+msgid "Add..."
+msgstr "Добавить..."
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -5993,6 +5991,11 @@ msgstr "Пожалуйста, выберите пустую папку."
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Импортированный проект"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Название проекта:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6194,8 +6197,8 @@ msgstr "Кнопка мыши"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6223,7 +6226,7 @@ msgid "Control+"
 msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr "Нажмите любую клавишу..."
 
 #: editor/project_settings_editor.cpp
@@ -6407,7 +6410,7 @@ msgid "Property:"
 msgstr "Параметр:"
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
 msgstr "Переопределить для..."
 
 #: editor/project_settings_editor.cpp
@@ -6503,12 +6506,12 @@ msgid "Easing Out-In"
 msgstr "Переход ИЗ-В"
 
 #: editor/property_editor.cpp
-msgid "File.."
-msgstr "Файл.."
+msgid "File..."
+msgstr "Файл..."
 
 #: editor/property_editor.cpp
-msgid "Dir.."
-msgstr "Папка.."
+msgid "Dir..."
+msgstr "Папка..."
 
 #: editor/property_editor.cpp
 msgid "Assign"
@@ -6682,8 +6685,8 @@ msgid "This operation can't be done on instanced scenes."
 msgstr "Эта операция не может быть сделана на редактируемой сцене."
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
-msgstr "Сохранить новую Сцену как.."
+msgid "Save New Scene As..."
+msgstr "Сохранить новую Сцену как..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -8398,8 +8401,8 @@ msgstr "Недопустимый размер шрифта."
 #~ msgid "Exporting for %s"
 #~ msgstr "Экспортирование для %s"
 
-#~ msgid "Setting Up.."
-#~ msgstr "Настройка.."
+#~ msgid "Setting Up..."
+#~ msgstr "Настройка..."
 
 #~ msgid "Error loading scene."
 #~ msgstr "Ошибка загрузки сцены."
@@ -8459,8 +8462,8 @@ msgstr "Недопустимый размер шрифта."
 #~ msgid "Info"
 #~ msgstr "Информация"
 
-#~ msgid "Re-Import.."
-#~ msgstr "Переимпортировать.."
+#~ msgid "Re-Import..."
+#~ msgstr "Переимпортировать..."
 
 #~ msgid "No bit masks to import!"
 #~ msgstr "Нет битовой маски для импорта!"
@@ -8856,14 +8859,14 @@ msgstr "Недопустимый размер шрифта."
 #~ msgid "Zoom (%):"
 #~ msgstr "Масштаб (%):"
 
-#~ msgid "Skeleton.."
-#~ msgstr "Скелет.."
+#~ msgid "Skeleton..."
+#~ msgstr "Скелет..."
 
 #~ msgid "Zoom Reset"
 #~ msgstr "Сбросить масштаб"
 
-#~ msgid "Zoom Set.."
-#~ msgstr "Установить масштаб.."
+#~ msgid "Zoom Set..."
+#~ msgstr "Установить масштаб..."
 
 #~ msgid "Set a Value"
 #~ msgstr "Установить значение"
@@ -9336,8 +9339,8 @@ msgstr "Недопустимый размер шрифта."
 #~ msgid "Export Project PCK"
 #~ msgstr "Экспортировать PCK проекта"
 
-#~ msgid "Export.."
-#~ msgstr "Экспортировать.."
+#~ msgid "Export..."
+#~ msgstr "Экспортировать..."
 
 #~ msgid "Project Export"
 #~ msgstr "Экспортирование проекта"
@@ -9457,8 +9460,8 @@ msgstr "Недопустимый размер шрифта."
 #~ msgid "Reload Tool Script (Soft)"
 #~ msgstr "Перезагрузить инструм. скрипт (мягко)"
 
-#~ msgid "Edit Connections.."
-#~ msgstr "Изменить связи.."
+#~ msgid "Edit Connections..."
+#~ msgstr "Изменить связи..."
 
 #~ msgid "Set Params"
 #~ msgstr "Назначить параметры"

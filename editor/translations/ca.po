@@ -498,8 +498,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Desconnecta '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
-msgstr "Connecta.."
+msgid "Connect..."
+msgstr "Connecta..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -919,11 +919,11 @@ msgid "Move Audio Bus"
 msgstr "Mou el Bus d'Àudio"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
+msgid "Save Audio Bus Layout As..."
 msgstr "Anomena i Desa el Disseny del Bus d'Àudio..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
+msgid "Location for New Layout..."
 msgstr "Ubicació del Nou Disseny..."
 
 #: editor/editor_audio_buses.cpp
@@ -1065,12 +1065,12 @@ msgid "Updating Scene"
 msgstr "Actualitzant l'Escena"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
+msgid "Storing local changes..."
 msgstr "Emmagatzemant canvis locals..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "S'està actualitzant l'escena.."
+msgid "Updating scene..."
+msgstr "S'està actualitzant l'escena..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1138,8 +1138,8 @@ msgid "Show In File Manager"
 msgstr "Mostra en el Gestor de Fitxers"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "Nou Directori.."
+msgid "New Folder..."
+msgstr "Nou Directori..."
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1407,12 +1407,12 @@ msgid "Error saving resource!"
 msgstr "Error en desar recurs!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
+msgid "Save Resource As..."
 msgstr "Anomena i Desa el Recurs..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
+msgid "I see..."
 msgstr "Vaja..."
 
 #: editor/editor_node.cpp
@@ -1642,11 +1642,11 @@ msgid "Open Base Scene"
 msgstr "Obre una Escena Base"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Obertura Ràpida d'Escenes..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Obertura Ràpida d'Scripts..."
 
 #: editor/editor_node.cpp
@@ -1658,7 +1658,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Desar els canvis a '%s' abans de tancar?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Anomena i Desa l'Escena..."
 
 #: editor/editor_node.cpp
@@ -1711,7 +1711,7 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Aquesta acció no es pot desfer. N'esteu segur?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Execució Ràpida de l'Escena..."
 
 #: editor/editor_node.cpp
@@ -1872,7 +1872,7 @@ msgid "Previous tab"
 msgstr "Pestanya Anterior"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
+msgid "Filter Files..."
 msgstr "Filtrat de Fitxers..."
 
 #: editor/editor_node.cpp
@@ -1884,11 +1884,11 @@ msgid "New Scene"
 msgstr "Nova Escena"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
+msgid "New Inherited Scene..."
 msgstr "Nova Escena heretada..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
+msgid "Open Scene..."
 msgstr "Obre Escena..."
 
 #: editor/editor_node.cpp
@@ -1908,15 +1908,15 @@ msgid "Open Recent"
 msgstr "Obre Recent"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
+msgid "Convert To..."
 msgstr "Converteix a..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
+msgid "MeshLibrary..."
 msgstr "Biblioteca de Models (MeshLibrary)..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
+msgid "TileSet..."
 msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
@@ -2181,7 +2181,7 @@ msgid "Save the currently edited resource."
 msgstr "Desa el recurs editat ara."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
+msgid "Save As..."
 msgstr "Anomena i Desa..."
 
 #: editor/editor_node.cpp
@@ -2290,8 +2290,8 @@ msgid "Creating Mesh Previews"
 msgstr "Creant Previsualitzacions de Malles"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Miniatura.."
+msgid "Thumbnail..."
+msgstr "Miniatura..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2443,7 +2443,7 @@ msgid "(Current)"
 msgstr "(Actual)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "S'estan buscant rèpliques..."
 
 #: editor/export_template_manager.cpp
@@ -2490,7 +2490,7 @@ msgstr "No es pot resoldre."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr "No es pot connectar.."
+msgstr "No es pot connectar..."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2521,7 +2521,7 @@ msgid "Error requesting url: "
 msgstr "Error en la sol·licitud de l'url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
+msgid "Connecting to Mirror..."
 msgstr "Connexió amb la Rèplica..."
 
 #: editor/export_template_manager.cpp
@@ -2538,7 +2538,7 @@ msgstr "No es pot resoldre"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
+msgid "Connecting..."
 msgstr "Connexió en marxa..."
 
 #: editor/export_template_manager.cpp
@@ -2551,7 +2551,7 @@ msgstr "Connectat"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "Sol·licitud en marxa..."
 
 #: editor/export_template_manager.cpp
@@ -2685,11 +2685,11 @@ msgid "Collapse all"
 msgstr "Col·lapsar tot"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
-msgstr "Reanomena.."
+msgid "Rename..."
+msgstr "Reanomena..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "Mou cap a..."
 
 #: editor/filesystem_dock.cpp
@@ -2701,16 +2701,16 @@ msgid "Instance"
 msgstr "Instància"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "Edita Dependències..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "Mostra Propietaris..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Duplica.."
+msgid "Duplicate..."
+msgstr "Duplica..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2735,7 +2735,7 @@ msgstr "Instancia les escenes seleccionades com a filles del node seleccionat."
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr "Analitzant Fitxers..."
 
 #: editor/filesystem_dock.cpp
@@ -2801,7 +2801,7 @@ msgid "Import Scene"
 msgstr "Importa Escena"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Important Escena..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2813,7 +2813,7 @@ msgid "Generating for Mesh: "
 msgstr "S'està generant per a la Malla: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "Executant Script Personalitzat..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2829,7 +2829,7 @@ msgid "Error running post-import script:"
 msgstr "Error en l'execució de l'Script de post-importació:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "Desant..."
 
 #: editor/import_dock.cpp
@@ -2849,8 +2849,8 @@ msgid "Import As:"
 msgstr "Importar com a:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
-msgstr "Configuració.."
+msgid "Preset..."
+msgstr "Configuració..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3268,7 +3268,7 @@ msgid "Transition Node"
 msgstr "Node de Transició"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
+msgid "Import Animations..."
 msgstr "Importa animacions..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3276,7 +3276,7 @@ msgid "Edit Node Filters"
 msgstr "Edita els filtres de Node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
+msgid "Filters..."
 msgstr "Filtres..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3344,8 +3344,8 @@ msgid "Fetching:"
 msgstr "Recollida:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr "s'està resolent.."
+msgid "Resolving..."
+msgstr "s'està resolent..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3411,7 +3411,7 @@ msgid "Site:"
 msgstr "Lloc:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
+msgid "Support..."
 msgstr "Suport..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3610,6 +3610,7 @@ msgid "Use Rotation Snap"
 msgstr "Rotació alineada"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Configura l'Alineament..."
 
@@ -4037,7 +4038,7 @@ msgid "Create Convex Collision Sibling"
 msgstr "Crea col·lisions convexes entre nodes germans"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
+msgid "Create Outline Mesh..."
 msgstr "Crea una malla de contorn..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4242,7 +4243,7 @@ msgid "Error loading image:"
 msgstr "Error en carregar la imatge:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
+msgid "No pixels with transparency > 128 in image..."
 msgstr "Cap píxel amb transparència > 128 en la imatge..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -4603,7 +4604,7 @@ msgid "Import Theme"
 msgstr "Importa un Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
+msgid "Save Theme As..."
 msgstr "Desa el Tema com a..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4700,7 +4701,7 @@ msgstr "Panell d'Scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
+msgid "Find..."
 msgstr "Cerca..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4910,15 +4911,15 @@ msgid "Find Previous"
 msgstr "Cerca l'Anterior"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
+msgid "Replace..."
 msgstr "Substitueix..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Vés a la Funció.."
+msgid "Goto Function..."
+msgstr "Vés a la Funció..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
+msgid "Goto Line..."
 msgstr "Vés a la Línia..."
 
 #: editor/plugins/script_text_editor.cpp
@@ -5372,11 +5373,7 @@ msgid "Transform"
 msgstr "Transforma"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Configura l'Alineament..."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr "Diàleg de Transformació..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5629,7 +5626,7 @@ msgid "Remove All"
 msgstr "Treu-los tots"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
+msgid "Edit theme..."
 msgstr "Edita el Tema..."
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5699,7 +5696,8 @@ msgid "Options"
 msgstr "Opcions"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "Tens,Moltes,Diverses,Opcions!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5892,7 +5890,7 @@ msgid "Presets"
 msgstr "Configuracions prestablertes"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
+msgid "Add..."
 msgstr "Afegeix..."
 
 #: editor/project_export.cpp
@@ -5984,6 +5982,11 @@ msgstr "Selecciona un directori buit."
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Project importat"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Nom del Projecte:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6185,8 +6188,8 @@ msgstr "Botó del ratolí"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6214,8 +6217,8 @@ msgid "Control+"
 msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
-msgstr "Premeu una Tecla.."
+msgid "Press a Key..."
+msgstr "Premeu una Tecla..."
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
@@ -6398,7 +6401,7 @@ msgid "Property:"
 msgstr "Propietat:"
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
 msgstr "Substitutiu per a..."
 
 #: editor/project_settings_editor.cpp
@@ -6494,11 +6497,11 @@ msgid "Easing Out-In"
 msgstr "Esmorteeix Sortida-Entrada"
 
 #: editor/property_editor.cpp
-msgid "File.."
+msgid "File..."
 msgstr "Fitxer..."
 
 #: editor/property_editor.cpp
-msgid "Dir.."
+msgid "Dir..."
 msgstr "Directori..."
 
 #: editor/property_editor.cpp
@@ -6671,7 +6674,7 @@ msgid "This operation can't be done on instanced scenes."
 msgstr "Aquesta operació no es pot dur a terme en escenes instanciadas."
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
+msgid "Save New Scene As..."
 msgstr "Anomena i Desa la Nova Escena..."
 
 #: editor/scene_tree_dock.cpp
@@ -8375,8 +8378,8 @@ msgstr "La mida de la lletra no és vàlida."
 #~ msgid "Exporting for %s"
 #~ msgstr "Exportació per a %s"
 
-#~ msgid "Setting Up.."
-#~ msgstr "Instal·lant.."
+#~ msgid "Setting Up..."
+#~ msgstr "Instal·lant..."
 
 #~ msgid "Error loading scene."
 #~ msgstr "No s'ha pogut carregar l'escena."
@@ -8433,7 +8436,7 @@ msgstr "La mida de la lletra no és vàlida."
 #~ msgid "Info"
 #~ msgstr "Informació"
 
-#~ msgid "Re-Import.."
+#~ msgid "Re-Import..."
 #~ msgstr "ReImporta..."
 
 #~ msgid "No bit masks to import!"
