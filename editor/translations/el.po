@@ -1133,7 +1133,7 @@ msgstr "Εμφάνιση στη διαχείριση αρχείων"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Νέος φάκελος..."
+msgstr "Νέος φάκελος"
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -2696,7 +2696,7 @@ msgstr "Μετονομασία..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Μετακίνηση σε..."
+msgstr "Μετακίνηση σε"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2708,15 +2708,15 @@ msgstr "Στιγμιότυπο"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Επεξεργασία εξαρτήσεων..."
+msgstr "Επεξεργασία εξαρτήσεων"
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "Προβολή ιδιοκτητών..."
+msgstr "Προβολή ιδιοκτητών"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr "Αναπαραγωγή..."
+msgstr "Αναπαραγωγή"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -5714,8 +5714,9 @@ msgid "Options"
 msgstr "Επιλογές"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Έχει,Πολλές,Επιλογές"
+msgstr "Έχει,Πάρα,Πολλές,Επιλογές!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6002,8 +6003,9 @@ msgid "Imported Project"
 msgstr "Εισαγμένο έργο"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Άκυρο όνομα έργου."
+msgstr "Όνομα έργου:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6208,8 +6210,8 @@ msgstr "Κουμπί ποντικιού"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
