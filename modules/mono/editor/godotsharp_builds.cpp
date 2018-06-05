@@ -461,12 +461,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	exit_code = -1;
 
-	String logs_dir = GodotSharpDirs::get_build_logs_dir().plus_file(build_info.solution.md5_text() + "_" + build_info.configuration);
+	String log_dirpath = build_info.get_log_dirpath();
 
 	if (build_tab) {
 		build_tab->on_build_start();
 	} else {
-		build_tab = memnew(MonoBuildTab(build_info, logs_dir));
+		build_tab = memnew(MonoBuildTab(build_info, log_dirpath));
 		MonoBottomPanel::get_singleton()->add_build_tab(build_tab);
 	}
 
@@ -488,12 +488,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	// Remove old issues file
 
 	String issues_file = "msbuild_issues.csv";
-	DirAccessRef d = DirAccess::create_for_path(logs_dir);
+	DirAccessRef d = DirAccess::create_for_path(log_dirpath);
 	if (d->file_exists(issues_file)) {
 		Error err = d->remove(issues_file);
 		if (err != OK) {
 			exited = true;
-			String file_path = ProjectSettings::get_singleton()->localize_path(logs_dir).plus_file(issues_file);
+			String file_path = ProjectSettings::get_singleton()->localize_path(log_dirpath).plus_file(issues_file);
 			String message = "Cannot remove issues file: " + file_path;
 			build_tab->on_build_exec_failed(message);
 			ERR_EXPLAIN(message);
@@ -527,8 +527,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	// Call Build
 
-	Variant logger_assembly = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(EDITOR_TOOLS_ASSEMBLY_NAME) + ".dll";
-	Variant logger_output_dir = logs_dir;
+	String logger_assembly_path = GDMono::get_singleton()->get_editor_tools_assembly()->get_path();
+	Variant logger_assembly = ProjectSettings::get_singleton()->globalize_path(logger_assembly_path);
+	Variant logger_output_dir = log_dirpath;
 	Variant custom_props = build_info.custom_props;
 
 	const Variant *args[3] = { &logger_assembly, &logger_output_dir, &custom_props };

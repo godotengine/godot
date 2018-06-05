@@ -606,6 +606,8 @@ MonoArray *Array_to_mono_array(const Array &p_array) {
 
 Array mono_array_to_Array(MonoArray *p_array) {
 	Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -631,6 +633,8 @@ MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
 
 PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array) {
 	PoolIntArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	for (int i = 0; i < length; i++) {
@@ -653,6 +657,8 @@ MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array) {
 
 PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array) {
 	PoolByteArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -676,6 +682,8 @@ MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array) {
 
 PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array) {
 	PoolRealArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -700,6 +708,8 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 
 PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array) {
 	PoolStringArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -732,6 +742,8 @@ MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
 
 PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
 	PoolColorArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -763,6 +775,8 @@ MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
 
 PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
 	PoolVector2Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -795,6 +809,8 @@ MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
 
 PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 	PoolVector3Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -834,6 +850,9 @@ MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
 
 Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
 	Dictionary ret;
+
+	if (!p_dict)
+		return ret;
 
 	GDMonoUtils::MarshalUtils_DictToArrays dict_to_arrays = CACHED_METHOD_THUNK(MarshalUtils, DictionaryToArrays);
 

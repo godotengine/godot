@@ -53,16 +53,18 @@ class MonoBottomPanel : public VBoxContainer {
 
 	Button *warnings_btn;
 	Button *errors_btn;
+	Button *view_log_btn;
 
 	void _update_build_tabs_list();
 
-	void _build_tab_item_selected(int p_idx);
-	void _build_tab_changed(int p_idx);
+	void _build_tabs_item_selected(int p_idx);
+	void _build_tabs_nothing_selected();
 
 	void _warnings_toggled(bool p_pressed);
 	void _errors_toggled(bool p_pressed);
 
 	void _build_project_pressed();
+	void _view_log_pressed();
 
 	static MonoBottomPanel *singleton;
 
