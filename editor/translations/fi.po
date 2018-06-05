@@ -6,20 +6,22 @@
 # Bastian Salmela <bastian.salmela@gmail.com>, 2017, 2018.
 # ekeimaja <ekeimaja@gmail.com>, 2017-2018.
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
+# Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
+# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-31 04:36+0000\n"
-"Last-Translator: Sami Lehtilä <sami.lehtila@gmail.com>\n"
+"PO-Revision-Date: 2018-06-05 19:27+0000\n"
+"Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -47,7 +49,7 @@ msgstr "Animaatio: muuta avainruudun arvoa"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Animaatio: muuta kutsua"
+msgstr "Animaatio: Muuta kutsua"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
@@ -1403,10 +1405,6 @@ msgstr "Tyhjennä tuloste"
 msgid "Project export failed with error code %d."
 msgstr "Projektin vienti epäonnistui virhekoodilla %d."
 
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Virhe tallennettaessa resurssia!"
@@ -2044,7 +2042,7 @@ msgid ""
 msgstr ""
 "Jos tämä on valittu, kaikki tallennetut skriptit ladataan uudelleen pelin "
 "käynnistyessä.\n"
-"Mikäli peliä ajetaan etälaitteella, on tehokkaampaa käyttää verkkolevyä."
+"Mikäli peli ajetaan etälaitteella, on tehokkaampaa käyttää verkkolevyä."
 
 #: editor/editor_node.cpp
 msgid "Editor"
@@ -2506,7 +2504,6 @@ msgid "Failed:"
 msgstr "Epäonnistui:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Complete."
 msgstr "Lataus valmis."
 
@@ -2515,9 +2512,8 @@ msgid "Error requesting url: "
 msgstr "Virhe pyydettäessä osoitetta: "
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to Mirror..."
-msgstr "Yhdistä..."
+msgstr "Yhdistetään peilipalvelimeen..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2533,9 +2529,8 @@ msgstr "Yhdistäminen epäonnistui"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting..."
-msgstr "Yhdistä..."
+msgstr "Yhdistetään..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2684,9 +2679,8 @@ msgid "Collapse all"
 msgstr "Pienennä kaikki"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Rename..."
-msgstr "Nimeä uudelleen"
+msgstr "Nimeä uudelleen..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
@@ -2709,9 +2703,8 @@ msgid "View Owners..."
 msgstr "Tarkastele omistajia..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate..."
-msgstr "Monista"
+msgstr "Kahdenna..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2731,7 +2724,7 @@ msgstr "Merkitse kansio suosikkeihin"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Luo valituista skeneistä ilmentymä valitun solmun alle."
+msgstr "Luo valituista skeneistä ilmentymä valitun noden alle."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -3022,7 +3015,7 @@ msgstr "Animaation kohta (sekunneissa)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr "Skaalaa animaation toistoa globaalisti solmulle."
+msgstr "Skaalaa animaation toistoa globaalisti nodelle."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
@@ -3252,11 +3245,11 @@ msgstr "2-sulautussolmu"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "3-sulautussolmu"
+msgstr "Sulautus3 node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "4-sulautussolmu"
+msgstr "Sulautus4 node"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
@@ -3347,9 +3340,8 @@ msgid "Fetching:"
 msgstr "Noudetaan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Resolving..."
-msgstr "Tallennetaan..."
+msgstr "Selvitetään..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3639,7 +3631,7 @@ msgstr "Tartu solmun ankkuriin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr "Tartu solmun reunoihin"
+msgstr "Tartu noden reunoihin"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
@@ -3698,9 +3690,8 @@ msgid "Show Grid"
 msgstr "Näytä ruudukko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Helpers"
-msgstr "Näytä luut"
+msgstr "Näytä avustimet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
@@ -3711,14 +3702,12 @@ msgid "Show Guides"
 msgstr "Näytä apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
 msgstr "Näytä origo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 näyttöruutu"
+msgstr "Näytä näyttöikkuna"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3782,7 +3771,7 @@ msgstr "Ok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Ei voida luoda ilmentymiä useasta solmusta ilman juurta."
+msgstr "Ei voida luoda ilmentymiä useasta nodesta ilman juurta."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3930,8 +3919,8 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
-"Tälle solmulle ei ole OccluderPolygon2D resurssia.\n"
-"Luodaanko ja asetetaanko sellainen?"
+"Tälle nodelle ei ole OccluderPolygon2D resurssia.\n"
+"Luodaanko sellainen?"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -4003,7 +3992,7 @@ msgstr "Mallilla ei ole UV-kanavaa tällä kerroksella"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "MeshInstance solmulta puuttuu Mesh!"
+msgstr "MeshInstance nodelta puuttuu Mesh!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
@@ -4012,10 +4001,6 @@ msgstr "Meshillä ei ole pintaa, josta ääriviivat voitaisiin luoda!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr "Meshin primitiivityyppi ei ole PRIMITIVE_TRIANGLES!"
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4255,7 +4240,7 @@ msgstr "Virhe ladattaessa kuvaa:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr ""
+msgstr "Kuvassa ei ole pikseleitä, joiden läpinäkyvyys on enemmän kuin 128."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4301,7 +4286,7 @@ msgstr "Solmu ei sisällä geometriaa."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr "Solmulta puuttuu geometria (tahkot)."
+msgstr "Nodelta puuttuu geometria (tahkot)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -4325,7 +4310,7 @@ msgstr "Luo säteilypisteet meshistä"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr "Luo säteilypisteet solmusta"
+msgstr "Luo säteilypisteet nodesta"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4562,7 +4547,7 @@ msgstr "Avaa editorissa"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr ""
+msgstr "Ilmentymä:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
@@ -4857,7 +4842,6 @@ msgid "Toggle Comment"
 msgstr "Näytä/Piilota kommentit"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "Laskosta tai avaa rivi"
 
@@ -5032,11 +5016,11 @@ msgstr "Vaihda syötteen nimi"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr "Yhdistä graafin solmut"
+msgstr "Yhdistä graafin nodet"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr "Erota graafin solmut"
+msgstr "Erota graafin nodet"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
@@ -5048,7 +5032,7 @@ msgstr "Siirrä sävytingraafin solmua"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr "Kahdenna graafin solmut(t)"
+msgstr "Kahdenna graafin node(t)"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
@@ -5116,7 +5100,7 @@ msgstr "Animaatioavain lisätty."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr "Objekteja piirretty"
+msgstr "Kappaleita piirretty"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -5386,7 +5370,7 @@ msgstr "Muunna"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr ""
+msgstr "Muunnosikkuna..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5988,7 +5972,7 @@ msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr "Ole hyvä ja valitse 'project.godot' tiedosto."
+msgstr "Ole hyvä ja valitse tyhjä kansio."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6000,7 +5984,6 @@ msgid "Invalid Project Name."
 msgstr "Projektin nimi:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kansiota ei voitu luoda."
 
@@ -6197,10 +6180,13 @@ msgid "Mouse Button"
 msgstr "Hiiren painike"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Virheellinen toiminnon nimi. Se ei voi olla tyhjä eikä voi sisältää merkkejä "
+"'/', ':', '=', '\\' tai '\"'"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6340,7 +6326,7 @@ msgstr "Asetus '%s' on sisäinen, eikä sitä voi poistaa."
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
-msgstr "Poista syöte"
+msgstr "Poista kohde"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -6412,7 +6398,7 @@ msgstr "Ominaisuus:"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr ""
+msgstr "Ohita alustalle..."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -6520,7 +6506,7 @@ msgstr "Aseta"
 
 #: editor/property_editor.cpp
 msgid "Select Node"
-msgstr "Valitse solmu"
+msgstr "Valitse node"
 
 #: editor/property_editor.cpp
 msgid "New Script"
@@ -6532,7 +6518,7 @@ msgstr "Uusi %s"
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
-msgstr "Tee yksilölliseksi"
+msgstr "Tee ainutkertaiseksi"
 
 #: editor/property_editor.cpp
 msgid "Show in File System"
@@ -6637,7 +6623,7 @@ msgstr "OK"
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr "Solmua, jonka alle skenen ilmentymä luodaan, ei ole valittu."
+msgstr "Nodea, jonka alle skenen ilmentymä luodaan, ei ole valittu."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -6649,7 +6635,7 @@ msgid ""
 "of its nodes."
 msgstr ""
 "Skenestä '%s' ei voida luoda ilmentymää, koska nykyinen skene on olemassa "
-"jossakin sen solmuista."
+"jossakin sen nodeista."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -6661,11 +6647,11 @@ msgstr "Tätä toimenpidettä ei voi tehdä puun juurelle."
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr "Siirrä solmu isännän alle"
+msgstr "Siirrä node isännän alle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Siirrä solmut isännän alle"
+msgstr "Siirrä nodet isännän alle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -6677,7 +6663,7 @@ msgstr "Poista solmu(t)?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr "Ei voi tehdä juurisolmulle."
+msgstr "Ei voi tehdä juurinodelle."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -6689,7 +6675,7 @@ msgstr "Tallenna uusi scene nimellä..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
-msgstr "Muokattavat alisolmut"
+msgstr "Muokattavat alinodet"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
@@ -6737,7 +6723,7 @@ msgstr "Aliresurssit"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr ""
+msgstr "Poista perintä"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -6788,20 +6774,20 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Luo skenetiedostosta ilmentymän solmuksi. Luo periytetyn skenen jos "
-"juurisolmua ei ole olemassa."
+"Luo skenetiedostosta ilmentymän nodeksi. Luo periytetyn skenen jos "
+"juurinodea ei ole olemassa."
 
 #: editor/scene_tree_dock.cpp
 msgid "Filter nodes"
-msgstr "Suodata solmuja"
+msgstr "Suodata nodeja"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "Liitä uusi tai olemassa oleva skripti valitulle solmulle."
+msgstr "Liitä uusi tai olemassa oleva skripti valitulle nodelle."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr "Poista skripti valitulta solmulta."
+msgstr "Poista skripti valitulta nodelta."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -6829,14 +6815,14 @@ msgstr "Aseta CanvasItem näkyvyys päälle/pois"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr "Solmun konfiguroinnin varoitus:"
+msgstr "Noden konfiguroinnin varoitus:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node has connection(s) and group(s)\n"
 "Click to show signals dock."
 msgstr ""
-"Solmulla on liitäntöjä ja ryhmiä\n"
+"Nodella on liitäntöjä ja ryhmiä\n"
 "Napsauta näyttääksesi signaalitelakan."
 
 #: editor/scene_tree_editor.cpp
@@ -6844,7 +6830,7 @@ msgid ""
 "Node has connections.\n"
 "Click to show signals dock."
 msgstr ""
-"Solmulla on liitäntöjä.\n"
+"Nodella on liitäntöjä.\n"
 "Napsauta näyttääksesi signaalitelakan."
 
 #: editor/scene_tree_editor.cpp
@@ -6852,11 +6838,10 @@ msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"Solmu kuuluu ryhmään.\n"
+"Node kuuluu ryhmään.\n"
 "Napsauta näyttääksesi ryhmätelakan."
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Open script"
 msgstr "Avaa skripti"
 
@@ -6865,7 +6850,7 @@ msgid ""
 "Node is locked.\n"
 "Click to unlock"
 msgstr ""
-"Solmu on lukittu.\n"
+"Node on lukittu.\n"
 "Napsauta lukituksen avaamiseksi"
 
 #: editor/scene_tree_editor.cpp
@@ -6873,7 +6858,7 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make selectable"
 msgstr ""
-"Alisolmut eivät ole valittavissa.\n"
+"Alinodet eivät ole valittavissa.\n"
 "Napsauta niiden tekemiseksi valittavaksi"
 
 #: editor/scene_tree_editor.cpp
@@ -6882,7 +6867,7 @@ msgstr "Aseta näkyvyys"
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Virheellinen solmun nimi, seuraavat merkit eivät ole sallittuja:"
+msgstr "Virheellinen noden nimi, seuraavat merkit eivät ole sallittuja:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -6890,11 +6875,11 @@ msgstr "Nimeä solmu uudelleen"
 
 #: editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr "Skenepuu (solmut):"
+msgstr "Skenepuu (nodet):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
-msgstr "Solmun konfigurointivaroitus!"
+msgstr "Noden konfigurointivaroitus!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
@@ -7142,7 +7127,7 @@ msgstr "Muuta valon sädettä"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Muuta AudioStreamPlayer3D solmun suuntausta"
+msgstr "Muuta AudioStreamPlayer3D noden suuntausta"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -7233,6 +7218,7 @@ msgid "Libraries: "
 msgstr "Kirjastot: "
 
 #: modules/gdnative/register_types.cpp
+#, fuzzy
 msgid "GDNative"
 msgstr "GDNative"
 
@@ -7288,41 +7274,36 @@ msgid "Object can't provide a length."
 msgstr "Objektille ei voida määrittää pituutta."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Next Plane"
-msgstr "Seuraava välilehti"
+msgstr "Seuraava taso"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Plane"
-msgstr "Edellinen välilehti"
+msgstr "Edellinen taso"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "Taso:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
-msgstr ""
+msgstr "Seuraava kerros"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
-msgstr "Edellinen välilehti"
+msgstr "Edellinen kerros"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
 msgstr "Kerros:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "Poista valitut"
+msgstr "Poista valinta"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Duplicate Selection"
-msgstr "Monista valinta"
+msgstr "Kahdenna valinta"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -7336,7 +7317,7 @@ msgstr "Huippunäkymä"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
-msgstr "Leikkaus pois käytöstä"
+msgstr "Leikkaus poistettu käytöstä"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Above"
@@ -7408,15 +7389,11 @@ msgstr "Ruudukon asetukset"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
-msgstr "Poimintaetäisyys:"
+msgstr "Poimi etäisyys:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
-
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -7451,11 +7428,6 @@ msgid "About C# support"
 msgstr "Lisätietoja C# tuesta"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
 msgstr "Luo C# ratkaisu"
 
@@ -7474,10 +7446,6 @@ msgstr "Varoitukset"
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Sisemmän poikkeuksen kutsupinon loppu"
-
-#: modules/mono/mono_gd/gd_mono_utils.cpp
-msgid "End of inner exception stack trace"
-msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7501,7 +7469,7 @@ msgid ""
 "your node please."
 msgstr ""
 "Paluuarvo täytyy sijoittaa työmuistin ensimmäiselle elementille! Ole hyvä ja "
-"korjaa solmusi."
+"korjaa nodesi."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
@@ -7585,11 +7553,11 @@ msgstr "Lisää solmu"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
-msgstr "Poista VisualScript solmut"
+msgstr "Poista VisualScript nodet"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Duplicate VisualScript Nodes"
-msgstr "Kahdenna VisualScript solmut"
+msgstr "Kahdenna VisualScript nodet"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
@@ -7622,7 +7590,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr "Lisää esiladattu solmu"
+msgstr "Lisää esiladattu node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -7642,15 +7610,15 @@ msgstr "Muuta kantatyyppiä"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Move Node(s)"
-msgstr "Siirrä solmu(t)"
+msgstr "Siirrä node(t)"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Node"
-msgstr "Poista VisualScript solmu"
+msgstr "Poista VisualScript node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
-msgstr "Kytke solmut"
+msgstr "Kytke nodet"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
@@ -7694,7 +7662,7 @@ msgstr "Vaihda syötteen arvo"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
-msgstr "Ei voida kopioida funktiosolmua."
+msgstr "Ei voida kopioida funktionodea."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -7702,7 +7670,7 @@ msgstr "Leikepöytä on tyhjä!"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
-msgstr "Liitä VisualScript solmut"
+msgstr "Liitä VisualScript nodet"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -7790,7 +7758,7 @@ msgstr "Virheellinen osoitinominaisuuden nimi."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "Kantaobjekti ei ole solmu!"
+msgstr "Kantaobjekti ei ole Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
@@ -7798,7 +7766,7 @@ msgstr "Polku ei johda solmuun!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "Virheellinen osoitinominaisuuden nimi '%s' solmussa %s."
+msgstr "Virheellinen osoitinominaisuuden nimi '%s' nodessa %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -7819,7 +7787,7 @@ msgstr "VariableSet ei löytynyt skriptistä: "
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
 msgstr ""
-"Mukautetulla solmulla ei ole _step() metodia, graafia ei voida käsitellä."
+"Mukautetulla nodella ei ole _step() metodia, graafia ei voida käsitellä."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
@@ -7883,10 +7851,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define its shape."
 msgstr ""
-"Tämän solmun alaisuudessa ei ole muotoja, joten se ei voi olla "
+"Tämän noden alaisuudessa ei ole muotoja, joten se ei voi olla "
 "vuorovaikutuksessa avaruuden kanssa.\n"
-"Harkitse CollisionShape2D tai CollisionPolygon2D solmun lisäämistä "
-"alisolmuksi muodon määrittämiseksi."
+"Harkitse CollisionShape2D tai CollisionPolygon2D noden lisäämistä alinodeksi "
+"muodon määrittämiseksi."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7895,7 +7863,7 @@ msgid ""
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
 "CollisionPolygon2D toimii törmäysmuotona ainoastaan CollisionObject2D "
-"solmusta perityille solmuille. Käytä sitä ainoastaan Area2D, StaticBody2D, "
+"nodesta perityille nodeille. Käytä sitä ainoastaan Area2D, StaticBody2D, "
 "RigidBody2D, KinematicBody2D, jne. alla antaaksesi niille muodon."
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -7908,8 +7876,8 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D toimii törmäysmuotona ainoastaan CollisionObject2D solmusta "
-"perityille solmuille. Käytä sitä ainoastaan Area2D, StaticBody2D, "
+"CollisionShape2D toimii törmäysmuotona ainoastaan CollisionObject2D nodesta "
+"perityille nodeille. Käytä sitä ainoastaan Area2D, StaticBody2D, "
 "RigidBody2D, KinematicBody2D, jne. alla antaaksesi niille muodon."
 
 #: scene/2d/collision_shape_2d.cpp
@@ -7917,7 +7885,7 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"CollisionShape2D solmulla täytyy olla muoto, jotta se toimisi. Ole hyvä ja "
+"CollisionShape2D nodella täytyy olla muoto, jotta se toimisi. Ole hyvä ja "
 "luo sille muotoresurssi!"
 
 #: scene/2d/light_2d.cpp
@@ -7945,22 +7913,22 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Tälle solmulle on asetettava tai luotava NavigationPolygon resurssi, jotta "
-"se toimisi. Ole hyvä ja aseta ominaisuus tai piirrä monikulmio."
+"Tälle nodelle on asetettava tai luotava NavigationPolygon resurssi, jotta se "
+"toimisi. Ole hyvä ja aseta ominaisuus tai piirrä monikulmio."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance solmun täytyy olla Navigation2D solmun "
-"alaisuudessa. Se tarjoaa vain navigointidataa."
+"NavigationPolygonInstance noden täytyy olla Navigation2D noden alaisuudessa. "
+"Se tarjoaa vain navigointidataa."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"ParallaxLayer solmu toimii ainoastaan, jos se on ParallaxBackground solmun "
+"ParallaxLayer node toimii ainoastaan, jos se on ParallaxBackground noden "
 "alla."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -8001,11 +7969,11 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr "ARVRCamera solmun isännän täytyy olla ARVROrigin solmu"
+msgstr "ARVRCamera noden isännän täytyy olla ARVROrigin"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent"
-msgstr "ARVRController solmun isännän täytyy olla ARVROrigin solmu"
+msgstr "ARVRController noden isännän täytyy olla ARVROrigin node"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -8017,7 +7985,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent"
-msgstr "ARVRAnchor solmun isännän täytyy olla ARVROrigin solmu"
+msgstr "ARVRAnchor noden isännän täytyy olla ARVROrigin node"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -8029,23 +7997,15 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node"
-msgstr "ARVROrigin solmu tarvitsee ARVRCamera alisolmun"
+msgstr "ARVROrigin tarvitsee ARVRCamera noden alinodeksi"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr "%d%%"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
 msgstr "(Aikaa jäljellä: %d:%02d s)"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8069,10 +8029,10 @@ msgid ""
 "Consider adding CollisionShape or CollisionPolygon children nodes to define "
 "its shape."
 msgstr ""
-"Tällä solmulla ei ole alimuotoja, joten se ei voi olla vuorovaikutuksessa "
+"Tällä nodella ei ole alimuotoja, joten se ei voi olla vuorovaikutuksessa "
 "avaruuden kanssa.\n"
-"Harkitse CollisionShape tai CollisionPolygon solmun lisäämistä sen "
-"alisolmuksi määritelläksesi sen muodon."
+"Harkitse CollisionShape tai CollisionPolygon noden lisäämistä sen alinodeksi "
+"määritelläksesi sen muodon."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -8080,9 +8040,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon solmu antaa ainoastaan törmäysmuodon CollisionObject "
-"solmusta periytyville solmuille. Käytä sitä Area, StaticBody, RigidBody, "
-"KinematicBody, jne. solmujen alla antaaksesi niille muodon."
+"CollisionPolygon node antaa ainoastaan törmäysmuodon CollisionObject nodesta "
+"periytyville nodeille. Käytä sitä Area, StaticBody, RigidBody, "
+"KinematicBody, jne. nodejen alla antaaksesi niille muodon."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -8094,17 +8054,17 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape solmu antaa ainoastaan törmäysmuodon CollisionObject solmusta "
-"periytyville solmuille. Käytä sitä Area, StaticBody, RigidBody, "
-"KinematicBody, jne. solmujen alla antaaksesi niille muodon."
+"CollisionShape node antaa ainoastaan törmäysmuodon CollisionObject nodesta "
+"periytyville nodeille. Käytä sitä Area, StaticBody, RigidBody, "
+"KinematicBody, jne. nodejen alla antaaksesi niille muodon."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"CollisionShape solmulle täytyy antaa muoto, jotta se toimisi. Ole hyvä ja "
-"luo sille muotoresurssi!"
+"CollisionShape nodelle täytyy antaa muoto, jotta se toimisi. Ole hyvä ja luo "
+"sille muotoresurssi!"
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -8113,7 +8073,7 @@ msgstr "Piirretään meshejä"
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
-"Tälle solmulle täytyy asettaa tai luoda NavigationMesh resurssi, jotta se "
+"Tälle nodelle täytyy asettaa tai luoda NavigationMesh resurssi, jotta se "
 "toimisi."
 
 #: scene/3d/navigation_mesh.cpp
@@ -8121,7 +8081,7 @@ msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance solmun täytyy olla Navigation solmun alaisuudessa. Se "
+"NavigationMeshInstance noden täytyy olla Navigation noden alaisuudessa. Se "
 "tarjoaa vain navigointidataa."
 
 #: scene/3d/particles.cpp
@@ -8143,15 +8103,11 @@ msgstr ""
 
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
-msgstr "Polkuominaisuuden täytyy osoittaa Spatial solmuun toimiakseen."
+msgstr "Polkuominaisuuden täytyy osoittaa Spatial nodeen toimiakseen."
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
 msgstr "WorldEnvironment tarvitsee Environment resurssin."
-
-#: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -8169,18 +8125,12 @@ msgstr ""
 "skeneille) tai aseta tälle ympäristölle Background Mode asetukseksi Canvas "
 "(2D-skeneille)."
 
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
-msgstr ""
-
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite3D solmulle täytyy luoda tai asettaa 'Frames' ominaisuudeksi "
+"AnimatedSprite3D nodelle täytyy luoda tai asettaa 'Frames' ominaisuudeksi "
 "SpriteFrames resurssi ruutujen näyttämiseksi."
 
 #: scene/3d/vehicle_body.cpp
@@ -8188,8 +8138,8 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
-"VehicleWheel solmu tarjoaa rengasjärjestelmän VehicleBody solmulle. Ole hyvä "
-"ja käytä sitä VehicleBody solmun alla."
+"VehicleWheel node tarjoaa rengasjärjestelmän VehicleBody nodelle. Ole hyvä "
+"ja käytä sitä VehicleBody noden alla."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"

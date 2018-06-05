@@ -13,19 +13,20 @@
 # Shinsuke Masuda <shinsuke.masuda@gmail.com>, 2018.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
+# zukkun <zukkun@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-02 08:38+0000\n"
-"Last-Translator: Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>\n"
+"PO-Revision-Date: 2018-05-30 15:39+0000\n"
+"Last-Translator: Shinsuke Masuda <shinsuke.masuda@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"

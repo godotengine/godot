@@ -11,9 +11,12 @@
 # Daeran Wereld <daeran@gmail.com>, 2017.
 # Dzejkop <jakubtrad@gmail.com>, 2017.
 # Ferdinand de Coninck <ferdinand.deconinck@gmail.com>, 2018.
+# frank <frankvprive@gmail.com>, 2018.
+# Johannes Smit <smitjohannes96@gmail.com>, 2018.
 # Jorn Theunissen <jorn-theunissen@hotmail.com>, 2018.
 # Maikel <maikel_martens_1@hotmail.com>, 2017.
 # millenniumproof <millenniumproof@gmail.com>, 2018.
+# nee <lespam@protonmail.com>, 2018.
 # Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017-2018.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
@@ -25,15 +28,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-06 15:35+0000\n"
-"Last-Translator: millenniumproof <millenniumproof@gmail.com>\n"
+"PO-Revision-Date: 2018-05-21 18:36+0000\n"
+"Last-Translator: Johannes Smit <smitjohannes96@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1415,7 +1418,7 @@ msgstr "Maak Uitvoer Leeg"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Project exporteren faalt door foutcode %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3736,14 +3739,12 @@ msgid "Show Guides"
 msgstr "Toon hulplijnen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Raster Weergeven"
+msgstr "Toon Oorsprongspunt"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "Toon helpers"
+msgstr "Toon Aanzicht Portaal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4043,7 +4044,7 @@ msgstr "Mesh heeft geen oppervlakte om omlijning van te maken!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "Mesh grondtype is niet PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5417,7 +5418,7 @@ msgstr "Transformatie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr ""
+msgstr "Transformatie Dialoog..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5670,7 +5671,7 @@ msgstr "Verwijder Alles"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme..."
-msgstr ""
+msgstr "Bewerk Thema..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -5727,7 +5728,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
-msgstr ""
+msgstr "Had"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -5742,8 +5743,9 @@ msgid "Options"
 msgstr "Opties"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr ""
+msgstr "Opties"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5755,7 +5757,7 @@ msgstr "Tabblad 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "Tabblad 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -5932,7 +5934,7 @@ msgstr "Voorinstelling"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
-msgstr ""
+msgstr "Toevoegen..."
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6014,7 +6016,7 @@ msgstr "Kies alstublieft een 'project.godot' bestand."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr ""
+msgstr "Kies alstublieft een lege map."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6026,7 +6028,6 @@ msgid "Invalid Project Name."
 msgstr "Ongeldige naam."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kon map niet creëren."
 

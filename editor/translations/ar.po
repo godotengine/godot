@@ -21,8 +21,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-30 16:34+0000\n"
-"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"PO-Revision-Date: 2018-05-28 18:34+0000\n"
+"Last-Translator: Rached Noureddine <rached.noureddine@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -1405,7 +1405,7 @@ msgstr "أخلاء الخرج"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "تصدير المشروع فشل, رمز الخطأ % d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3694,14 +3694,12 @@ msgid "Show Guides"
 msgstr "أظهر الموجهات"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "إظهار الشبكة"
+msgstr "إظهار المركز"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "أظهر المساعدات"
+msgstr "أظهر الشاشة"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3994,7 +3992,7 @@ msgstr "الميش ليس لديه سطح لكي ينشئ حدود منه!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "شبكة بسيطة ليست PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4231,7 +4229,7 @@ msgstr "خطأ تحميل الصورة:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr ""
+msgstr "لا بيكسل بشفافية > 128 في الصورة..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -5669,15 +5667,6 @@ msgid "Checked Radio Item"
 msgstr "عنصر انتقاء مَضْبُوط"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Radio Item"
-msgstr "إضافة عنصر"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Checked Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -5691,8 +5680,9 @@ msgid "Options"
 msgstr "الخيارات"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr ""
+msgstr "بكثير، خيارات عديدة،!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5704,7 +5694,7 @@ msgstr "علامة التبويب 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "علامة التبويب 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"

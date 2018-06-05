@@ -10,6 +10,7 @@
 # Fatih Mert Doğancan <fatihmertdogancan@hotmail.com>, 2017.
 # hubbyist <hub@legrud.net>, 2017.
 # H.Hüseyin CİHANGİR <hashusfb@gmail.com>, 2018.
+# Kaan Gül <qaantum@hotmail.com>, 2018.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # monolifed <monolifed@gmail.com>, 2018.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
@@ -19,15 +20,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-19 12:41+0000\n"
-"Last-Translator: H.Hüseyin CİHANGİR <hashusfb@gmail.com>\n"
+"PO-Revision-Date: 2018-06-05 05:45+0000\n"
+"Last-Translator: Kaan Gül <qaantum@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1404,7 +1405,7 @@ msgstr "Çıktıyı Temizle"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Proje dışa aktarımı %d hata koduyla başarısız."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1966,9 +1967,8 @@ msgid "Debug"
 msgstr "Hata Ayıklama"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Deploy with Remote Debug"
-msgstr "Uzaktan Hata Ayıklama ile Aç"
+msgstr "Uzaktan Hata Ayıklama ile Dağıt"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3711,14 +3711,12 @@ msgid "Show Guides"
 msgstr "Kılavuzları göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Başlatım Görünümü"
+msgstr "Başlatımı Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 Görüntükapısı"
+msgstr "Görüntükapısını Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4011,7 +4009,7 @@ msgstr "Örüntü anahat oluşturmak için bir yüzeye sahip değil!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "Örüntü ilkel türü PRIMITIVE_TRIANGLES değil!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5678,14 +5676,12 @@ msgid "Checked Item"
 msgstr "Denetlenen Öğe"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "Öğe Ekle"
+msgstr "Radyo Ögesi"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Radio Item"
-msgstr "Denetlenen Öğe"
+msgstr "Seçili Radyo Ögesi"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7392,7 +7388,7 @@ msgstr "Uzaklık Seç:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr ""
+msgstr "Sınıf ismi ayrılmış anahtar kelime olamaz"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -7445,7 +7441,7 @@ msgstr "Uyarılar"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "İç özel durum yığını izlemesinin sonu"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

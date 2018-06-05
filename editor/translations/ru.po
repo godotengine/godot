@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-04-27 16:39+0000\n"
-"Last-Translator: Chaosus89 <chaosus89@gmail.com>\n"
+"PO-Revision-Date: 2018-05-22 17:41+0000\n"
+"Last-Translator: ijet <my-ijet@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -1413,7 +1413,7 @@ msgstr "Очистить вывод"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Экспорт проекта не удался, код %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2360,7 +2360,7 @@ msgstr "Включительно"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Self"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3720,14 +3720,12 @@ msgid "Show Guides"
 msgstr "Показывать направляющие"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Отображать начало координат"
+msgstr "Отображать центр"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 Окно"
+msgstr "Показать окно просмотра"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4020,7 +4018,7 @@ msgstr "Полиcетка не имеет поверхности для созд
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "Тип полисетки не PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5556,7 +5554,7 @@ msgstr "Переместить (после)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
-msgstr "SpriteFrames"
+msgstr "Спрайт кадры"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5564,7 +5562,7 @@ msgstr "Предпросмотр StyleBox:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox"
-msgstr "StyleBox"
+msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -6197,10 +6195,13 @@ msgid "Mouse Button"
 msgstr "Кнопка мыши"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Недопустимое имя действия. Оно не может быть пустым или содержать '/', ':', "
+"'=', '\\' или '\"'"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7403,7 +7404,7 @@ msgstr "Расстояние выбора:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr ""
+msgstr "Имя класса не может быть зарезервированным ключевым словом"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -8115,7 +8116,7 @@ msgstr "Свойство Path должно указывать на действ�
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
+msgstr "WorldEnvironment необходим Environment ресурс."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -8129,6 +8130,8 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"Этот WorldEnvironment игнорируется. Либо добавьте Camera (для 3D-сцен), либо "
+"установите в Environment ресурсе Background режим в Canvas (для 2D сцен)."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
