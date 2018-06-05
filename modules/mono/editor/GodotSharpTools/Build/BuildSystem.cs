@@ -78,6 +78,8 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
+            bool debugMSBuild = IsDebugMSBuildRequested();
+
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
@@ -92,9 +94,10 @@ namespace GodotSharpTools.Build
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            // No console output, thanks
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            bool redirectOutput = !debugMSBuild;
+
+            startInfo.RedirectStandardOutput = redirectOutput;
+            startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
 
             if (UsingMonoMSBuildOnWindows)
@@ -116,8 +119,11 @@ namespace GodotSharpTools.Build
 
                 process.Start();
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                if (redirectOutput)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
 
                 process.WaitForExit();
 
@@ -129,6 +135,8 @@ namespace GodotSharpTools.Build
 
         public bool BuildAsync(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
+            bool debugMSBuild = IsDebugMSBuildRequested();
+
             if (process != null)
                 throw new InvalidOperationException("Already in use");
 
@@ -146,9 +154,10 @@ namespace GodotSharpTools.Build
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            // No console output, thanks
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            bool redirectOutput = !debugMSBuild;
+
+            startInfo.RedirectStandardOutput = redirectOutput;
+            startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
 
             if (UsingMonoMSBuildOnWindows)
@@ -171,8 +180,11 @@ namespace GodotSharpTools.Build
 
             process.Start();
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            if (redirectOutput)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
 
             return true;
         }
@@ -218,6 +230,11 @@ namespace GodotSharpTools.Build
             godot_icall_BuildInstance_ExitCallback(solution, config, exitCode);
 
             Dispose();
+        }
+
+        private static bool IsDebugMSBuildRequested()
+        {
+            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD").Trim() == "1";
         }
 
         public void Dispose()

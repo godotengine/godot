@@ -527,8 +527,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	// Call Build
 
-	Variant logger_assembly = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(EDITOR_TOOLS_ASSEMBLY_NAME) + ".dll";
-	Variant logger_output_dir = logs_dir;
+	String logger_assembly_path = GDMono::get_singleton()->get_editor_tools_assembly()->get_path();
+	Variant logger_assembly = ProjectSettings::get_singleton()->globalize_path(logger_assembly_path);
+	Variant logger_output_dir = log_dirpath;
 	Variant custom_props = build_info.custom_props;
 
 	const Variant *args[3] = { &logger_assembly, &logger_output_dir, &custom_props };
