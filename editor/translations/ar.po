@@ -3,6 +3,7 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Adel <dragonhunter250@gmail.com>, 2018.
 # athomield <athomield@hotmail.com>, 2017.
 # Basil Al-Khateeb <basil.y.alkhateeb@gmail.com>, 2017.
 # Jamal Alyafei <jamal.qassim@gmail.com>, 2017.
@@ -13,14 +14,15 @@
 # noureldin sharaf <sharaf.noureldin@yahoo.com>, 2017.
 # omar anwar aglan <omar.aglan91@yahoo.com>, 2017-2018.
 # OWs Tetra <owstetra@gmail.com>, 2017.
+# Rached Noureddine <rached.noureddine@gmail.com>, 2018.
 # Rex_sa <asd1234567890m@gmail.com>, 2017.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-01-30 16:34+0000\n"
-"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"PO-Revision-Date: 2018-05-28 18:34+0000\n"
+"Last-Translator: Rached Noureddine <rached.noureddine@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -28,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.19-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1403,7 +1405,7 @@ msgstr "أخلاء الخرج"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "تصدير المشروع فشل, رمز الخطأ % d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3692,14 +3694,12 @@ msgid "Show Guides"
 msgstr "أظهر الموجهات"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "إظهار الشبكة"
+msgstr "إظهار المركز"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "أظهر المساعدات"
+msgstr "أظهر الشاشة"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3759,11 +3759,11 @@ msgstr "إضافة %s..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ok"
-msgstr ""
+msgstr "حسنا"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "لا يمكن إنشاء عقد متعددة بدون العقدة الجذر."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3992,7 +3992,7 @@ msgstr "الميش ليس لديه سطح لكي ينشئ حدود منه!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "شبكة بسيطة ليست PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4217,101 +4217,101 @@ msgstr "إنشاء مُضلع التنقل"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr "يُنشئ AABB"
+msgstr "توليد AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
-msgstr ""
+msgstr "لا يمكن إنشاء سوى نقطة وحيدة داخل ParticlesMaterial معالج المواد"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr ""
+msgstr "خطأ تحميل الصورة:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr ""
+msgstr "لا بيكسل بشفافية > 128 في الصورة..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "توليد Rect الرؤية"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr ""
+msgstr "حمل قناع الانبعاث"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr ""
+msgstr "إمسح قناع الانبعاث"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr ""
+msgstr "جسيمات"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
-msgstr ""
+msgstr "عدد النقاط المولدة:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
-msgstr ""
+msgstr "وقت التوليد (تانية):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr ""
+msgstr "قناع الانبعاث"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
-msgstr ""
+msgstr "التقط من البيكسل"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr ""
+msgstr "الوان الانبعاث"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
-msgstr ""
+msgstr "العقدة لا تحتوي على هندسة."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr ""
+msgstr "العقدة لا تحتوي على هندسة (الوجوه)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "معالج المواد من نوع 'ParticlesMaterial' مطلوب."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
-msgstr ""
+msgstr "الوجوه لا تحتوي على منطقة!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "No faces!"
-msgstr ""
+msgstr "لا وجوه!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate AABB"
-msgstr ""
+msgstr "ولد AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr ""
+msgstr "أنشئ نقاط إنبعاث من الشبكة"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr ""
+msgstr "أنشئ نقاط إنبعاث من العقدة"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
-msgstr ""
+msgstr "أنشئ باعث"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
-msgstr ""
+msgstr "نقاط الانبعاث:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points"
-msgstr ""
+msgstr "نقاط المساحة"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
@@ -4319,15 +4319,15 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
-msgstr ""
+msgstr "حجم"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr ""
+msgstr "مصدر الانبعاث: "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
+msgstr "ولد رؤية AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4339,39 +4339,39 @@ msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove In-Control from Curve"
-msgstr ""
+msgstr "أزل In-Control من المنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point to Curve"
-msgstr ""
+msgstr "أضف نقطة للمنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
-msgstr ""
+msgstr "حرك النقطة داخل المنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
-msgstr ""
+msgstr "حرك In-Control داخل المنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Out-Control in Curve"
-msgstr ""
+msgstr "حرك Out-Control داخل المنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Select Points"
-msgstr ""
+msgstr "إختر النقاط"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Shift+Drag: Select Control Points"
-msgstr ""
+msgstr "Shift+سحب: إختر نقاط التحكم"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Click: Add Point"
-msgstr ""
+msgstr "إظغط: أضف نقطة"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5632,33 +5632,39 @@ msgid "Create From Current Editor Theme"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "CheckBox Radio1"
-msgstr ""
+msgstr "صندوق تأشير ١"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "CheckBox Radio2"
-msgstr ""
+msgstr "صندوق تأشير٢"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Item"
-msgstr ""
+msgstr "عنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Check Item"
-msgstr ""
+msgstr "اختار العنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Checked Item"
-msgstr ""
+msgstr "عنصر مَضْبُوط"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Radio Item"
-msgstr "إضافة عنصر"
+msgstr "عنصر انتقاء"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Checked Radio Item"
-msgstr ""
+msgstr "عنصر انتقاء مَضْبُوط"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -5669,24 +5675,26 @@ msgid "Many"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#, fuzzy
 msgid "Options"
-msgstr ""
+msgstr "الخيارات"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr ""
+msgstr "بكثير، خيارات عديدة،!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
-msgstr ""
+msgstr "علامة التبويب 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 2"
-msgstr ""
+msgstr "علامة التبويب 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "علامة التبويب 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"

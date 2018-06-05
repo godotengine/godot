@@ -4,138 +4,165 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Jóhannes G. Þorsteinsson <johannesg@johannesg.com>, 2017.
+# Kaan Gül <qaantum@hotmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-05 21:47+0000\n"
-"Last-Translator: Jóhannes G. Þorsteinsson <johannesg@johannesg.com>\n"
+"PO-Revision-Date: 2018-06-05 05:39+0000\n"
+"Last-Translator: Kaan Gül <qaantum@hotmail.com>\n"
 "Language-Team: Icelandic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/is/>\n"
 "Language: is\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Disabled"
 msgstr "Óvirkt"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Allt Val"
+msgstr "Allt úrvalið"
 
 #: editor/animation_editor.cpp
 #, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Hreyfimynd Breyta Gildi"
+msgstr "Anim breyta lyklagrind tími"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Transition"
-msgstr "Hreyfimynd Breyta Stöðuskiptum"
+msgstr "Anim breyting umskipti"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Transform"
-msgstr "Hreyfimynd Breyta Ummyndun"
+msgstr "Breyta umbreytingu"
 
 #: editor/animation_editor.cpp
 #, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Hreyfimynd Breyta Gildi"
+msgstr "Anim breyta lyklagrind gildi"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Call"
-msgstr "Hreyfimynd Breyta Kalli"
+msgstr "Útkall breyting símtal"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Add Track"
-msgstr "Hreyfimynd Bæta Við Rás"
+msgstr "Anim bæta við lag"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "Hreyfimynd Tvöfalda Lykla"
+msgstr "Tvíteknir lyklar"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Move Anim Track Up"
-msgstr "Færa Hreyfimynda Rás Upp"
+msgstr "Færa Anim track upp"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Move Anim Track Down"
-msgstr "Færa Hreyfimynda Rás Niður"
+msgstr "Færa Anim track niður"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Remove Anim Track"
-msgstr "Fjarlægja Hreyfimynda Rás"
+msgstr "Fjarlægja Anim track"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Set Transitions to:"
-msgstr "Sitja Stöðuskipti á:"
+msgstr "Stillið breyting á:"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Track Rename"
-msgstr "Endurnefna Hreyfimyndarás"
+msgstr "Endurnefning Anim track"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Track Change Interpolation"
-msgstr "Breyta Brúun á Hreyfimyndarás"
+msgstr "Breytingar á Anim track"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Breyta gildisstilling í Anim track"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr ""
+msgstr "Anim track breyta hulum ham"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Breyta hnútnum Ferill"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Breyta valferil"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Anim DELETE-lyklar"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Afrita val"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "Tvískipt transposed"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Remove Selection"
-msgstr ""
+msgstr "Fjarlægja val"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Continuous"
-msgstr ""
+msgstr "Samfellt"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Discrete"
-msgstr ""
+msgstr "Afmarkað"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Trigger"
-msgstr ""
+msgstr "Kveikja:"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Add Key"
-msgstr ""
+msgstr "Anim bæta við lykli"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Færa lykla af Anim"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Scale Selection"
-msgstr ""
+msgstr "Val á kvarða"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"

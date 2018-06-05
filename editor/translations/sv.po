@@ -3,21 +3,23 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# bergmarklund <davemcgroin@gmail.com>, 2017.
+# bergmarklund <davemcgroin@gmail.com>, 2017, 2018.
 # Christoffer Sundbom <christoffer_karlsson@live.se>, 2017.
+# Jakob Sinclair <sinclair.jakob@mailbox.org>, 2018.
+# . <grenoscar@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-12-01 23:50+0000\n"
-"Last-Translator: bergmarklund <davemcgroin@gmail.com>\n"
+"PO-Revision-Date: 2018-05-07 11:42+0000\n"
+"Last-Translator: anonymous <>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -41,17 +43,16 @@ msgid "Anim Change Transform"
 msgstr "Anim Ändra Transformation"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Ändra Värde"
+msgstr "Anim Ändra Värde På Tidsnyckeln"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Anim Ändra Samtal"
+msgstr "Anim Ändra Anrop"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "Lägg till spår"
+msgstr "Anim Lägg till spår"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -59,11 +60,11 @@ msgstr "Anim Duplicera Nycklar"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "Flytta Anim Spåra Upp"
+msgstr "Flytta Anim Spåra Uppåt"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Flytta Anim Spår Ner"
+msgstr "Flytta Anim Spår Neråt"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
@@ -83,16 +84,15 @@ msgstr "Anim Ändra Spårets Interpolation"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Ändra Anim Spårets Värde Läge"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
 msgstr ""
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Edit Node Curve"
-msgstr "Redigera Node-Kurva"
+msgstr "Redigera Nodkurva"
 
 #: editor/animation_editor.cpp
 #, fuzzy
@@ -491,7 +491,7 @@ msgstr "Skapa Funktion"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Uppskjuten"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -733,7 +733,7 @@ msgstr "Resurser Utan Explicit Ägande:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Föräldralös Resursutforskare"
 
 #: editor/dependency_editor.cpp
 msgid "Delete selected files?"
@@ -988,7 +988,7 @@ msgstr "Ta bort Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Ljud"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
@@ -1285,7 +1285,7 @@ msgstr "Uppdatera"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "Alla Erkända"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
@@ -1348,7 +1348,7 @@ msgstr "Växla Läge"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr ""
+msgstr "Fokusera på Sökväg"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
@@ -1360,7 +1360,7 @@ msgstr "Flytta Favorit Ner"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
-msgstr ""
+msgstr "Gå till överordnad mapp"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
@@ -1464,11 +1464,11 @@ msgstr "Signaler:"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
+msgstr "Enumerations"
 
 #: editor/editor_help.cpp
 msgid "Enumerations:"
-msgstr ""
+msgstr "Enumerations:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1570,7 +1570,7 @@ msgstr "Output:"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Projekt exporten misslyckades med följande felmeddelande %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -2340,7 +2340,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr ""
+msgstr "Spela"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
@@ -2366,7 +2366,7 @@ msgstr "Spela den redigerade scenen."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Spela Scen"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
@@ -2564,7 +2564,7 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "Bildrutetid (sek)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -3156,25 +3156,26 @@ msgstr ""
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Edit Poly"
-msgstr ""
+msgstr "Redigera Polygon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "Infoga Punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Edit Poly (Remove Point)"
-msgstr ""
+msgstr "Redigera Polygon (ta bort punkt)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Poly And Point"
-msgstr ""
+msgstr "Ta bort Polygon och Punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid "Create a new polygon from scratch"
-msgstr ""
+msgstr "Skapa ny polygon från grunden"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -3186,7 +3187,7 @@ msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Delete points"
-msgstr ""
+msgstr "Radera punkter"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3194,7 +3195,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Nytt Animationsnamn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
@@ -3202,7 +3203,7 @@ msgstr "Ny Anim"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Ändra Animationsnamn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Delete Animation?"
@@ -3215,11 +3216,11 @@ msgstr "Ta bort Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr ""
+msgstr "ERROR: Ogiltigt animationsnamn!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr ""
+msgstr "ERROR: Animationsnamn finns redan!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp

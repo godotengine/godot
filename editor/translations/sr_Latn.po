@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-25 14:41+0000\n"
+"PO-Revision-Date: 2018-05-15 08:41+0000\n"
 "Last-Translator: Milos Ponjavusic <brane@branegames.com>\n"
 "Language-Team: Serbian (latin) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/sr_Latn/>\n"
@@ -215,7 +215,7 @@ msgstr "Animacija dodaj ključ"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Promijeni Dužinu Animacije"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -223,15 +223,15 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Animacija Napravit Tip Vrijednosni Ključ"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Animacija Umetni"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Animacija Skaliraj Ključeve"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
