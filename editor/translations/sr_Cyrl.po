@@ -3620,7 +3620,7 @@ msgstr "Користи лепљење ротације"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Конфигуриши лепљење..."
+msgstr "Поставке лепљења..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
