@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-03-05 16:04+0000\n"
+"PO-Revision-Date: 2018-05-20 09:37+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1396,7 +1396,7 @@ msgstr "Εκκαθάριση εξόδου"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3721,14 +3721,12 @@ msgid "Show Guides"
 msgstr "Εμφάνιση οδηγών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Προβολή Αρχής"
+msgstr "Προβολή πηγής"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 Οπτική γωνία"
+msgstr "Προβολή οπτικής γωνίας"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4021,7 +4019,7 @@ msgstr "Το πλέγμα δεν έχει επιφάνει από την οπο�
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "O πρωταρχικός τύπος δεν είναι PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5694,14 +5692,12 @@ msgid "Checked Item"
 msgstr "Επιλεγμένο στοιχείο"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "Προσθήκη στοιχείου"
+msgstr "Στοιχείο επιλογής"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Radio Item"
-msgstr "Επιλεγμένο στοιχείο"
+msgstr "Επιλεγμένο στοιχείο επιλογής"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -6192,7 +6188,7 @@ msgid ""
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
 "Δεν έχετε κανένα έργο.\n"
-"Θα θέλατε να εξερευνήσετε μερικά παραδείγματα στην βιβλιοθήκη πόρων;"
+"Θέλετε να εξερευνήσετε μερικά παραδείγματα στην βιβλιοθήκη πόρων;"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -6211,10 +6207,13 @@ msgid "Mouse Button"
 msgstr "Κουμπί ποντικιού"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Άκυρο όνομα ενέργειας. Δεν μπορεί να είναι άδειο ή να περιέχει '/', ':', "
+"'=', '\\' ή '\"'"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7425,7 +7424,7 @@ msgstr "Επιλογή απόστασης:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr ""
+msgstr "Το όνομα της κλάσης δεν μπορεί να είναι λέξη-κλειδί"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -8147,7 +8146,7 @@ msgstr ""
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
+msgstr "Το WorldEnvironment χρειάζεται έναν πόρο Environment."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -8161,6 +8160,8 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"Αυτό το WorldEnvironment θα αγνοηθεί. Προσθέστε μια κάμερα (για 3d) ή ορίστε "
+"το Background Mode αυτού του περιβάλλοντος σε Canvas (για 2d)."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""

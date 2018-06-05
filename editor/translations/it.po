@@ -3,6 +3,7 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Alessio Corridori <alessiocorridori@hotmail.com>, 2018.
 # Dario Bonfanti <bonfi.96@hotmail.it>, 2016-2017.
 # Dario D'Ambra <legione0@gmail.com>, 2017.
 # dariocavada <cavada@ectrlsolutions.com>, 2017.
@@ -19,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-02 10:38+0000\n"
-"Last-Translator: Samuele Zolfanelli <samdazel@gmail.com>\n"
+"PO-Revision-Date: 2018-05-18 16:39+0000\n"
+"Last-Translator: Alessio Corridori <alessiocorridori@hotmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -6533,7 +6534,7 @@ msgstr "Impostazioni Progetto (project.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "Generali"
+msgstr "Informazioni Generali"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"

@@ -11,6 +11,7 @@
 # Dariusz Król <rexioweb@gmail.com>, 2018.
 # heya10 <igor.gielzak@gmail.com>, 2017.
 # holistyczny interlokutor <jakubowesmieci@gmail.com>, 2017.
+# Igor <igor.gielzak@gmail.com>, 2018.
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
 # Kamil Lewan <lewan.kamil@gmail.com>, 2016.
 # Karol Walasek <coreconviction@gmail.com>, 2016.
@@ -19,6 +20,7 @@
 # NeverK <neverkoxu@gmail.com>, 2018.
 # Rafal Brozio <rafal.brozio@gmail.com>, 2016.
 # Rafał Ziemniak <synaptykq@gmail.com>, 2017.
+# RM <synaptykq@gmail.com>, 2018.
 # Sebastian Krzyszkowiak <dos@dosowisko.net>, 2017.
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017.
 # siatek papieros <sbigneu@gmail.com>, 2016.
@@ -27,8 +29,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-23 15:40+0000\n"
-"Last-Translator: Dariusz Król <rexioweb@gmail.com>\n"
+"PO-Revision-Date: 2018-06-05 13:41+0000\n"
+"Last-Translator: RM <synaptykq@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -36,7 +38,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -48,19 +50,19 @@ msgstr "Wszystkie zaznaczenia"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Zmień czas klatki kluczowej"
+msgstr "Zmiana czasu klatki kluczowej"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Zmiana przejścia animacji"
+msgstr "Zmiana przejścia"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Animacja transformacji"
+msgstr "Zmiana transformacji"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Zmień wartość klatki kluczowej"
+msgstr "Zmiana wartości klatki kluczowej"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -84,7 +86,7 @@ msgstr "Przesuń ścieżkę animacji w dół"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Usuń animację"
+msgstr "Usuń ścieżkę animacji"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -92,7 +94,7 @@ msgstr "Ustaw przejścia na:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "Zmień nazwę animacji"
+msgstr "Zmień nazwę ściezki animacji"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
@@ -1343,9 +1345,8 @@ msgid "Description"
 msgstr "Opis"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Poradniki"
+msgstr "Poradniki online:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1354,8 +1355,9 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Obecnie nie ma opisu dla tej metody. Pomóż nam, [color=$color][url="
-"$url]wysyłając ją[/url][/color]!"
+"Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color][url="
+"$url]dodać jeden[/url][/kolor] lub [color=$color] [url=$url2]poprosić o "
+"jeden[/url][/barl]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1414,7 +1416,7 @@ msgstr "Wyczyść dane wyjściowe"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Eksport projektu nie powiódł się, kod błędu to %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2114,7 +2116,7 @@ msgstr "Społeczność"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "O programie"
+msgstr "O silniku"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3081,12 +3083,11 @@ msgstr "Tryb łusek cebuli"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Enable Onion Skinning"
-msgstr "Włącz tryb łusek cebuli"
+msgstr "Włącz tryb warstw cebuli"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Kategorie:"
+msgstr "Kierunki"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
@@ -3342,9 +3343,10 @@ msgid "Request failed, too many redirects"
 msgstr "Żądanie nieudane, zbyt dużo przekierowań"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Zły hash pobranego pliku. Zakładamy, że ktoś przy nim majstrował."
+msgstr ""
+"Zły hash pobranego pliku. Zakładamy, że ktoś przy nim majstrował, lub został "
+"niepoprawnie pobrany."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -3371,9 +3373,8 @@ msgid "Resolving..."
 msgstr "Rozwiązywanie..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Error making request"
-msgstr "Wystąpił błąd podczas tworzenia żądania"
+msgstr "Wystąpił błąd podczas żądania"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -3475,9 +3476,8 @@ msgstr ""
 "jedynie do odczytu."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Wypal Lightmaps"
+msgstr "Stwórz Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3585,9 +3585,8 @@ msgstr ""
 "poruszania)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+RMB: Depth list selection"
-msgstr "Alt+PPM: Lista wyboru głębi"
+msgstr "Alt + RMB: Głębokość listy"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Mode"
@@ -3732,14 +3731,12 @@ msgid "Show Guides"
 msgstr "Pokaż prowadnice"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
 msgstr "Pokaż pozycję początkową"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 widok"
+msgstr "Pokaż widok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3783,11 +3780,11 @@ msgstr "Ustaw pivot w pozycji myszy"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "Podwój wielkość siatki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "Zmniejsz wielkość siatki dwukrotnie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3803,7 +3800,7 @@ msgstr "Ok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Nie można utworzyć wielu wezłów bez węzła głównego."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3859,11 +3856,11 @@ msgstr "Aktualizuj ze sceny"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat0"
-msgstr ""
+msgstr "Flat0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat1"
-msgstr ""
+msgstr "Flat1"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Ease in"
@@ -4043,7 +4040,6 @@ msgid "Could not create outline!"
 msgstr "Nie udało się utworzyć zarysu!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Outline"
 msgstr "Utwórz zarys"
 
@@ -5062,11 +5058,11 @@ msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add/Remove to Curve Map"
-msgstr ""
+msgstr "Dodaj/Usuń do mapy krzywej"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Curve Map"
-msgstr ""
+msgstr "Edytuj mape krzywej"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 #, fuzzy
@@ -5300,34 +5296,31 @@ msgstr "Efekt Dopplera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr ""
+msgstr "\"Wolny widok\" w lewo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr ""
+msgstr "\"Wolny widok\" w prawo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Forward"
-msgstr "Dalej"
+msgstr "\"Wolny widok\" w przód"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Backwards"
-msgstr "Wstecz"
+msgstr "\"Wolny widok\" w tył"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr ""
+msgstr "\"Wolny widok\" w góre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Down"
-msgstr "Kółko myszy w dół."
+msgstr "\"Wolny widok\" w dół"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr ""
+msgstr "Zmiennik prędkości \"Wolnego widoku\""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -5343,6 +5336,9 @@ msgid ""
 "Alt+Drag: Move\n"
 "Alt+RMB: Depth list selection"
 msgstr ""
+"Pociągnięcie: Obrót\n"
+"Alt+Pociągnięcie: Poruszenie\n"
+"Alt+PPM: Lista wyboru głębi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode (W)"
@@ -6067,7 +6063,7 @@ msgstr "Nie można utworzyć katalogu."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "Folder o podanej nazwie istnieje już w tej lokalizacji."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6258,10 +6254,13 @@ msgid "Mouse Button"
 msgstr "Przycisk myszy"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Niepoprawna nazwa akcji. Nazwa nie może być pusta ani zawierać znaki takie "
+"jak: '/', ':', '=', '\\' lub '\"'"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6361,7 +6360,7 @@ msgstr "Urządzenie"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Przycisk"
+msgstr "Button"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -6465,7 +6464,7 @@ msgstr "Ustawienia projektu (project.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "Ogólny"
+msgstr "Ogólne"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
@@ -6684,7 +6683,7 @@ msgstr "Aktualna scena"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene"
-msgstr "Główna scena"
+msgstr "Scena główna"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene Arguments:"
@@ -6712,6 +6711,7 @@ msgid ""
 "Cannot instance the scene '%s' because the current scene exists within one "
 "of its nodes."
 msgstr ""
+"Nie można utworzyć sceny '%s' ponieważ obecna scena jest jednym z jej wezłów."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -7199,7 +7199,7 @@ msgstr "Skróty"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr ""
+msgstr "Wiązanie"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -7477,7 +7477,7 @@ msgstr "Wybierz odległość:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr ""
+msgstr "Nazwa klasy nie może być słowem zastrzeżonym"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -7485,7 +7485,7 @@ msgstr "Generowanie solucji..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating C# project..."
-msgstr ""
+msgstr "Generowanie projektu C#..."
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Failed to create solution."
@@ -7509,7 +7509,7 @@ msgstr "Mono"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "About C# support"
-msgstr ""
+msgstr "O wsparciu języka C#"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7710,7 +7710,7 @@ msgstr "Przełącznik"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterator"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
@@ -7932,6 +7932,10 @@ msgid ""
 "Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
 "define its shape."
 msgstr ""
+"Ten węzeł nie posiada podwezła, który definiował by jego kształt, więc nie "
+"może wchodzić w interakcje.\n"
+"Powinieneś dodać węzeł \"CollisionShape2D\" lub \"CollisionPolygon2D\" jako "
+"podwęzeł aby zdefiniować kształt."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -8011,6 +8015,8 @@ msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
 msgstr ""
+"Nie przypisano materiału do przetwarzania cząsteczek, więc zmiany nie będą "
+"widoczne."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -8053,6 +8059,8 @@ msgid ""
 "The controller id must not be 0 or this controller will not be bound to an "
 "actual controller"
 msgstr ""
+"Id kontrolera nie może być '0' w innym przypadku kontroler nie zostanie "
+"przypisany do żadnego rzeczywistego kontrolera"
 
 #: scene/3d/arvr_nodes.cpp
 #, fuzzy
@@ -8075,7 +8083,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Pozostały czas: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "

@@ -9,6 +9,7 @@
 # Damar Inderajati <damarind@gmail.com>, 2017.
 # Damar S. M <the.last.walla@gmail.com>, 2017.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
+# Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>, 2018.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017.
 # Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018.
 # Tito <ijavadroid@gmail.com>, 2018.
@@ -18,8 +19,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-18 16:38+0000\n"
-"Last-Translator: Tito <ijavadroid@gmail.com>\n"
+"PO-Revision-Date: 2018-05-31 16:39+0000\n"
+"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -701,9 +702,8 @@ msgid "Change Dictionary Key"
 msgstr "Ubah Kunci Kamus"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "Ubah Nilai Dictionary"
+msgstr "Ubah Nilai Kamus"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -1411,7 +1411,7 @@ msgstr "Bersihkan Luaran"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Ekspor proyek gagal dengan kode kesalahan% d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1571,11 +1571,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Expand all properties"
-msgstr ""
+msgstr "Perluas semua properti"
 
 #: editor/editor_node.cpp
 msgid "Collapse all properties"
-msgstr ""
+msgstr "Ciutkan semua properti"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1802,9 +1802,8 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Ugh"
-msgstr "Wadoo"
+msgstr "Duh"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1926,7 +1925,7 @@ msgstr "Ubah ke..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "PerpustakaanMesh..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -1976,7 +1975,7 @@ msgstr "Keluar ke daftar proyek"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "\"Debug\""
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2223,7 +2222,7 @@ msgstr "Impor"
 
 #: editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "Node"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -2303,7 +2302,7 @@ msgstr "Buat Pratinjau Mesh"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr ""
+msgstr "Thumbnail..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2348,7 +2347,7 @@ msgstr "Waktu Rata-rata (sec)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr ""
+msgstr "Bingkai %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
@@ -2516,8 +2515,9 @@ msgstr "Permintaan Gagal."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Redirect Loop."
-msgstr ""
+msgstr "Mengarahkan Loop"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2542,11 +2542,11 @@ msgstr "Terputus"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
-msgstr ""
+msgstr "Menyelesaikan"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr ""
+msgstr "Tidak Bisa Menyelesaikan"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2693,11 +2693,11 @@ msgstr "Menggandakan folder:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
-msgstr ""
+msgstr "Perluas semua"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "Ciutkan semua"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename..."
@@ -2877,7 +2877,7 @@ msgstr "Impor ulang"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr ""
+msgstr "Set MultiNode"
 
 #: editor/node_dock.cpp
 msgid "Groups"
@@ -2987,7 +2987,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Ubah Waktu Blend"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -3093,8 +3093,9 @@ msgid "Copy Animation"
 msgstr "Salin Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Onion Skinning"
-msgstr ""
+msgstr "Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
@@ -8286,9 +8287,8 @@ msgid "Please Confirm..."
 msgstr "Mohon konfirmasi..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select this Folder"
-msgstr "Metode Publik:"
+msgstr "Pilih Folder ini"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -8309,7 +8309,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Yang Lain)"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -8321,7 +8321,6 @@ msgstr ""
 "> Lingkungan Baku) tidak dapat dimuat"
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
 "its contents directly to the screen, make it a child of a Control so it can "
@@ -8330,9 +8329,9 @@ msgid ""
 msgstr ""
 "Viewport ini tidak diatur sebagai target render. Jika anda berniat untuk "
 "menampilkan konten-kontennya secara langsung ke layar, buatlah sebuah child "
-"dari kontrol jadi hal tersebut bisa memperoleh ukuran. Jika tidak, buatlah "
-"sebuah RenderTarget dan tetapkannya tekstur internal untuk beberapa node "
-"untuk ditampilkan."
+"dari Kontrol jadi hal tersebut bisa memperoleh ukuran. Jika tidak, buatlah "
+"sebuah RenderTarget dan tetapkan tekstur internal untuk beberapa node untuk "
+"ditampilkan."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."

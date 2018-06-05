@@ -4,28 +4,30 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # akirakido <achts.y@gmail.com>, 2016-2017.
-# D_first <dntk.daisei@gmail.com>, 2017.
-# Daisuke Saito <d.saito@coriginate.com>, 2017.
+# D_first <dntk.daisei@gmail.com>, 2017, 2018.
+# Daisuke Saito <d.saito@coriginate.com>, 2017, 2018.
 # h416 <shinichiro.hirama@gmail.com>, 2017.
-# hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016-2017.
-# Jun Shiozawa <haresecret@gmail.com>, 2017.
+# hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016-2017, 2018.
+# Jun Shiozawa <haresecret@gmail.com>, 2017, 2018.
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # NoahDigital <taku_58@hotmail.com>, 2017.
+# Shinsuke Masuda <shinsuke.masuda@gmail.com>, 2018.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
+# zukkun <zukkun@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-02 08:38+0000\n"
-"Last-Translator: Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>\n"
+"PO-Revision-Date: 2018-05-30 15:39+0000\n"
+"Last-Translator: Shinsuke Masuda <shinsuke.masuda@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -41,14 +43,12 @@ msgid "Anim Change Keyframe Time"
 msgstr "Anim 値を変更"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "Anim 遷移（トランジション）"
+msgstr "アニメーション 変化とその移り変わり（トランジション）"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transform"
-msgstr "Anim 変形（トランスフォーム）"
+msgstr "アニメーションのトランスフォーム（変形）"
 
 #: editor/animation_editor.cpp
 #, fuzzy
@@ -66,9 +66,8 @@ msgid "Anim Add Track"
 msgstr "Anim トラックを追加"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "Anim キーを複製"
+msgstr "アニメーションのキーフレームを複製"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
@@ -84,7 +83,7 @@ msgstr "Anim トラックを削除"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "これにトランジションを設定:"
+msgstr "トランジションを設定:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -114,7 +113,7 @@ msgstr "選択曲線を編集"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim キー削除"
+msgstr "アニメーションのキーフレームを削除"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -855,14 +854,12 @@ msgstr ""
 "ポーネントの著作権およびライセンス条項の完全なリストです。"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "All Components"
-msgstr "コンテンツ:"
+msgstr "すべてのコンポーネント(構成部分)"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Components"
-msgstr "コンテンツ:"
+msgstr "コンポーネント(構成部分)"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -870,9 +867,8 @@ msgid "Licenses"
 msgstr "ライセンス"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in zip format."
-msgstr "zip形式でないためパッケージをファイルを開く際にエラーが発生しました。"
+msgstr "パッケージファイルを開けませんでした。 zip 形式ではありません。"
 
 #: editor/editor_asset_installer.cpp
 #, fuzzy
@@ -896,9 +892,8 @@ msgid "Install"
 msgstr "インストール"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Installer"
-msgstr "パッケージインストール成功!"
+msgstr "パッケージインストーラー"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -922,24 +917,23 @@ msgstr "オーディオバスをソロに切り替え"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "オーディオバスをミュートに切り替え"
+msgstr "オーディオバスをミュート(無音)に切り替え"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "オーディオバスのバイパスエフェクト切り替え"
+msgstr "オーディオバスのバイパスエフェクトの切り替え"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "オーディオバスの送信先を選択"
+msgstr "オーディオバスの出力先の選択"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
 msgstr "オーディオバスエフェクトを追加"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Bus Effect"
-msgstr "バスエフェクトの移動"
+msgstr "バスエフェクトを移動"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
@@ -951,11 +945,11 @@ msgstr "オーディオバスをドラッグ・アンド・ドロップで(再)�
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr "ソロ"
+msgstr "ソロ(独立)"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "ミュート"
+msgstr "ミュート(無音)"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
@@ -1023,7 +1017,8 @@ msgstr "オーディオバスのレイアウトを開く"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr "'res://default_bus_layout.tres' ファイルがありません."
+msgstr ""
+"リソースディレクトリに「res://default_bus_layout.tres」ファイルがありません!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -1187,7 +1182,7 @@ msgstr "（空）"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "(未保存)"
 
 #: editor/editor_dir_dialog.cpp
 #, fuzzy
@@ -2358,7 +2353,6 @@ msgid "Issue Tracker"
 msgstr "課題（バグ）管理システム"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Community"
 msgstr "コミュニティ"
 
@@ -2914,7 +2908,7 @@ msgstr "サムネイル表示"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a list"
-msgstr "リスト表示"
+msgstr "リストでアイテムを見る"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -5219,7 +5213,7 @@ msgstr "ファイル"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New"
-msgstr "新しい"
+msgstr "新規作成"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -9074,15 +9068,14 @@ msgstr ""
 "らは実行時に非表示になります。"
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox,HBox,etc), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"スクロールコンテナは子コントロールが動作に必要です.　VBox,HBoxなどのコンテナ"
-"を子とするか、コントロールをカスタム最小サイズにマニュアルで指定して使用して"
-"ください."
+"ScrollContainerは単一の子コントロールで動作するように意図されています。コンテ"
+"ナ(VBox, HBoxなど)を子として使用するか、コントロールを使用してカスタム最小サ"
+"イズを手動で設定してください。"
 
 #: scene/gui/tree.cpp
 #, fuzzy

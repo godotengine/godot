@@ -6,14 +6,14 @@
 # Dankse Memes <purplelops@gmail.com>, 2018.
 # David Lamhauge <davidlamhauge@gmail.com>, 2016.
 # Esben Damkjær Sørensen <esben@damkjaergaard.com>, 2018.
-# Kim Nielsen <kimmowich@stofanet.dk>, 2017.
+# Kim Nielsen <kimmowich@stofanet.dk>, 2017, 2018.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-22 07:35+0000\n"
-"Last-Translator: Dankse Memes <purplelops@gmail.com>\n"
+"PO-Revision-Date: 2018-05-17 19:35+0000\n"
+"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -829,9 +829,8 @@ msgid "Rename Audio Bus"
 msgstr "Omdøb Audio Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Skifter Audio Bus Solo"
+msgstr "Skift Audio Bus Volume"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1335,18 +1334,16 @@ msgid "Description"
 msgstr "Beskrivelse"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Online Dokumentation:"
+msgstr "Online Undervisning:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There are currently no tutorials for this class, you can [color=$color][url="
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Der er i øjeblikket ingen beskrivelse af denne metode. Det vil være en stor "
+"Der er i øjeblikket ingen beskrivelse af denne klasse. Det vil være en stor "
 "hjælp, hvis du kan [color=$color][url=$url]bidrage[/url][/color] med en "
 "beskrivelse!"
 
@@ -1404,13 +1401,12 @@ msgid "Clear"
 msgstr "Clear"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Output"
+msgstr "Ryd Output"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Projekt eksport fejlede med fejlkode %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1427,7 +1423,6 @@ msgid "I see..."
 msgstr "Jeg ser..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Can't open file for writing:"
 msgstr "Kan ikke åbne fil til skrivning:"
 
@@ -1448,7 +1443,6 @@ msgid "Error while parsing '%s'."
 msgstr "Error ved parsing af '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unexpected end of file '%s'."
 msgstr "Uventet afslutning af fil '%s'."
 
@@ -1478,12 +1472,11 @@ msgid "This operation can't be done without a tree root."
 msgstr "Denne handling kan ikke foretages uden tree root"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Kunne ikke gemme scene. Der er nogle afhængigheder (forekomster) some ikke "
+"Kunne ikke gemme scene. Der er nogle afhængigheder (forekomster) som ikke "
 "kunne opfyldes."
 
 #: editor/editor_node.cpp
@@ -2847,11 +2840,11 @@ msgstr "Importerer Scene..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
-msgstr ""
+msgstr "Generering af lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
-msgstr ""
+msgstr "Generering til Mesh: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -2981,21 +2974,21 @@ msgstr "Fjern Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr ""
+msgstr "FEJL: Ugyldig animationsnavn!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr ""
+msgstr "FEJL: Animationsnavn eksisterer allerede!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Omdøb animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "Tilføj animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -3007,19 +3000,19 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Indlæs animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Lav en kopi af animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to copy!"
-msgstr ""
+msgstr "FEJL: Der er ingen animation der kan kopieres!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation resource on clipboard!"
-msgstr ""
+msgstr "FEJL: Ingen animationsressource i udklipsholder!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
@@ -3031,31 +3024,31 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to edit!"
-msgstr ""
+msgstr "FEJL: Der er ingen animation som kan redigeres!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Afspil valgte animation baglæns fra nuværende position. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Afspil valgt animation baglæns fra slutningen. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Stop animation afspilning. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Afspil valgt animation fra start. (Shift+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Afspil valgt animation fra nuværende position. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "Animationsposition (i sekunder)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
