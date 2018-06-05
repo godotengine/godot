@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mono_build_info.h                                                    */
+/*  mono_build_info.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MONO_BUILD_INFO_H
-#define MONO_BUILD_INFO_H
+#include "mono_build_info.h"
 
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "../godotsharp_dirs.h"
+#include "../mono_gd/gd_mono_utils.h"
 
-struct MonoBuildInfo {
+uint32_t MonoBuildInfo::Hasher::hash(const MonoBuildInfo &p_key) {
 
-	struct Hasher {
-		static uint32_t hash(const MonoBuildInfo &p_key);
-	};
+	uint32_t hash = 0;
 
-	String solution;
-	String configuration;
-	Vector<String> custom_props;
+	GDMonoUtils::hash_combine(hash, p_key.solution.hash());
+	GDMonoUtils::hash_combine(hash, p_key.configuration.hash());
 
-	bool operator==(const MonoBuildInfo &p_b) const;
+	return hash;
+}
 
-	String get_log_dirpath();
+bool MonoBuildInfo::operator==(const MonoBuildInfo &p_b) const {
 
-	MonoBuildInfo();
-	MonoBuildInfo(const String &p_solution, const String &p_config);
-};
+	return p_b.solution == solution && p_b.configuration == configuration;
+}
 
-#endif // MONO_BUILD_INFO_H
+String MonoBuildInfo::get_log_dirpath() {
+
+	return GodotSharpDirs::get_build_logs_dir().plus_file(solution.md5_text() + "_" + configuration);
+}
+
+MonoBuildInfo::MonoBuildInfo() {}
+
+MonoBuildInfo::MonoBuildInfo(const String &p_solution, const String &p_config) {
+
+	solution = p_solution;
+	configuration = p_config;
+}
