@@ -6360,6 +6360,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Invalid Project Name."
+msgstr "Projektnamn:"
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kunde inte skapa mapp."
 
@@ -6570,8 +6575,8 @@ msgstr "Musknapp"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

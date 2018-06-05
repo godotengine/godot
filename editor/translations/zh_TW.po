@@ -938,12 +938,11 @@ msgstr "移動 Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "另存 Audio Bus 配置為..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Location for New Layout..."
-msgstr "新配置的位置..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1158,8 +1157,9 @@ msgid "Show In File Manager"
 msgstr "在檔案管理員內顯示"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
 msgid "New Folder..."
-msgstr "新增資料夾..."
+msgstr "新增資料夾"
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1433,7 +1433,7 @@ msgstr "儲存資源錯誤!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "另存資源為..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -5974,6 +5974,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Invalid Project Name."
+msgstr "不能使用的名稱。"
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "無法新增資料夾"
 
@@ -6165,8 +6170,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
