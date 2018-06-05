@@ -2,24 +2,24 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
+#
 # bergmarklund <davemcgroin@gmail.com>, 2017, 2018.
 # Christoffer Sundbom <christoffer_karlsson@live.se>, 2017.
 # Jakob Sinclair <sinclair.jakob@mailbox.org>, 2018.
 # . <grenoscar@gmail.com>, 2018.
-# Kristoffer Grundström <kristoffer.grundstrom1983@gmail.com>, 2018.
-# Magnus Helander <helander@fastmail.net>, 2018.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-24 12:44+0000\n"
-"Last-Translator: Magnus Helander <helander@fastmail.net>\n"
+"PO-Revision-Date: 2018-05-07 11:42+0000\n"
+"Last-Translator: anonymous <>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1568,7 +1568,7 @@ msgstr "Output:"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Projekt exporten misslyckades med följande felmeddelande %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
