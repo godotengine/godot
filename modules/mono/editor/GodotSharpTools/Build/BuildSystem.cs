@@ -78,6 +78,8 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
+            bool debugMSBuild = IsDebugMSBuildRequested();
+
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
@@ -91,6 +93,8 @@ namespace GodotSharpTools.Build
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
+
+            bool redirectOutput = !debugMSBuild;
 
             startInfo.RedirectStandardOutput = redirectOutput;
             startInfo.RedirectStandardError = redirectOutput;
@@ -230,7 +234,7 @@ namespace GodotSharpTools.Build
 
         private static bool IsDebugMSBuildRequested()
         {
-            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD")?.Trim() == "1";
+            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD").Trim() == "1";
         }
 
         public void Dispose()
