@@ -74,6 +74,7 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/image_loader.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
 #include "main/input_default.h"
@@ -1928,6 +1929,8 @@ void Main::cleanup() {
 		// cleanup now before we pull the rug from underneath...
 		memdelete(arvr_server);
 	}
+
+    ImageLoader::cleanup();
 
 	unregister_driver_types();
 	unregister_module_types();

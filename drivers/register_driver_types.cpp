@@ -56,8 +56,9 @@ void register_core_driver_types() {
 
 void unregister_core_driver_types() {
 
-	if (image_loader_png)
+    if (image_loader_png)
 		memdelete(image_loader_png);
+
 	if (resource_saver_png)
 		memdelete(resource_saver_png);
 }
