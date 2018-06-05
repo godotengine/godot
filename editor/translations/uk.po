@@ -13,8 +13,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-04-20 18:42+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2018-05-18 10:42+0000\n"
+"Last-Translator: Максим Якимчук <xpinovo@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -924,11 +924,11 @@ msgstr "Перемістити аудіо шину"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Зберегти макет аудіо шини як..."
+msgstr "Зберегти компонування аудіо шини як..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr "Розташування для нового макета..."
+msgstr "Розташування для нового компонування..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1402,7 +1402,7 @@ msgstr "Очистити вивід"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Не вдалося експортувати проект, код помилки — %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1663,7 +1663,7 @@ msgstr "Зберегти зміни, внесені до '%s' перед зак�
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Зберегти сцени, як..."
+msgstr "Зберегти сцену як..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -2107,7 +2107,7 @@ msgstr "Спільнота"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "Про програму"
+msgstr "Про"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3712,14 +3712,12 @@ msgid "Show Guides"
 msgstr "Показати напрямні"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Перегляд центра"
+msgstr "Показати центр"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "1 панель перегляду"
+msgstr "Показати панель перегляду"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4013,7 +4011,7 @@ msgstr "Сітка не має поверхні, щоб створити кон�
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "Типом сітки примітива не є PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5681,14 +5679,12 @@ msgid "Checked Item"
 msgstr "Позначений елемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "Додати елемент"
+msgstr "Пункт варіанта"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Radio Item"
-msgstr "Позначений елемент"
+msgstr "Позначений пункт варіанта"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -6196,10 +6192,13 @@ msgid "Mouse Button"
 msgstr "Кнопка миші"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Некоректна назва дії. Назва не може бути порожньою і не може містити "
+"символів «/», «:», «=», «\\» та «\"»"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7402,7 +7401,7 @@ msgstr "Відстань вибору:"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr ""
+msgstr "Назвою класу не може бути зарезервоване ключове слово"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -8115,7 +8114,7 @@ msgstr ""
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
+msgstr "WorldEnvironment потребує ресурсу Environment."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -8129,6 +8128,9 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"Цей запис WorldEnvironment проігноровано. Або додайте запис Camera (для "
+"просторових сцен) або встановіть для Background Mode цього середовища "
+"значення Canvas (для двовимірних сцен)."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
