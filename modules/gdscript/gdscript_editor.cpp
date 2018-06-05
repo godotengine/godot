@@ -115,11 +115,11 @@ void GDScriptLanguage::make_template(const String &p_class_name, const String &p
 	p_script->set_source_code(src);
 }
 
-bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, Set<int> *r_safe_lines) const {
 
 	GDScriptParser parser;
 
-	Error err = parser.parse(p_script, p_path.get_base_dir(), true, p_path);
+	Error err = parser.parse(p_script, p_path.get_base_dir(), true, p_path, false, r_safe_lines);
 	if (err) {
 		r_line_error = parser.get_error_line();
 		r_col_error = parser.get_error_column();

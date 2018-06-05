@@ -476,6 +476,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("symbol_color", "TextEdit", control_font_color_hover);
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
 	theme->set_color("line_number_color", "TextEdit", Color::html("66aaaaaa"));
+	theme->set_color("safe_line_number_color", "TextEdit", Color::html("99aac8aa"));
 	theme->set_color("function_color", "TextEdit", Color::html("66a2ce"));
 	theme->set_color("member_variable_color", "TextEdit", Color::html("e64e59"));
 	theme->set_color("number_color", "TextEdit", Color::html("EB9532"));
