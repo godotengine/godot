@@ -498,8 +498,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Αποσύνδεση του '%s' απο το '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
-msgstr "Σύνδεση.."
+msgid "Connect..."
+msgstr "Σύνδεση..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -919,12 +919,12 @@ msgid "Move Audio Bus"
 msgstr "Μετακίνηση διαύλου ήχου"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
-msgstr "Αποθήκευση διάταξης διαύλων ήχου ώς.."
+msgid "Save Audio Bus Layout As..."
+msgstr "Αποθήκευση διάταξης διαύλων ήχου ώς..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
-msgstr "Τοποθεσία για νέα διάταξη.."
+msgid "Location for New Layout..."
+msgstr "Τοποθεσία για νέα διάταξη..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1061,12 +1061,12 @@ msgid "Updating Scene"
 msgstr "Ενημέρωση σκηνής"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
-msgstr "Αποθήκευση τοπικών αλλαγών.."
+msgid "Storing local changes..."
+msgstr "Αποθήκευση τοπικών αλλαγών..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Ενημέρωση σκηνής.."
+msgid "Updating scene..."
+msgstr "Ενημέρωση σκηνής..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1134,7 +1134,7 @@ msgid "Show In File Manager"
 msgstr "Εμφάνιση στη διαχείριση αρχείων"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
+msgid "New Folder..."
 msgstr "Νέος φάκελος"
 
 #: editor/editor_file_dialog.cpp
@@ -1403,13 +1403,13 @@ msgid "Error saving resource!"
 msgstr "Σφάλμα κατά την αποθήκευση πόρου!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
-msgstr "Αποθήκευση πόρου ως.."
+msgid "Save Resource As..."
+msgstr "Αποθήκευση πόρου ως..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
-msgstr "Εντάξει.."
+msgid "I see..."
+msgstr "Εντάξει..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1643,11 +1643,11 @@ msgid "Open Base Scene"
 msgstr "Άνοιγμα σκηνής βάσης"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Γρήγορο άνοιγμα σκηνής..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Γρήγορη άνοιγμα δεσμής ενεργειών..."
 
 #: editor/editor_node.cpp
@@ -1659,7 +1659,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Αποθήκευση αλλαγών στο '%s' πριν το κλείσιμο;"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Αποθήκευση σκηνή ως..."
 
 #: editor/editor_node.cpp
@@ -1714,7 +1714,7 @@ msgstr ""
 "επαναφορά;"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Γρήγορη εκτέλεση σκηνής..."
 
 #: editor/editor_node.cpp
@@ -1877,7 +1877,7 @@ msgid "Previous tab"
 msgstr "Προηγούμενη καρτέλα"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
+msgid "Filter Files..."
 msgstr "Φιλτράρισμα αρχείων..."
 
 #: editor/editor_node.cpp
@@ -1889,12 +1889,12 @@ msgid "New Scene"
 msgstr "Νέα σκηνή"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
-msgstr "Νέα κληρονομημένη σκηνή.."
+msgid "New Inherited Scene..."
+msgstr "Νέα κληρονομημένη σκηνή..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
-msgstr "Άνοιγμα σκηνής.."
+msgid "Open Scene..."
+msgstr "Άνοιγμα σκηνής..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1913,15 +1913,15 @@ msgid "Open Recent"
 msgstr "Άνοιγμα πρόσφατων"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
+msgid "Convert To..."
 msgstr "Μετατροπή σε..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
+msgid "MeshLibrary..."
 msgstr "Βιβλιοθήκη πλεγμάτων..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
+msgid "TileSet..."
 msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
@@ -2186,7 +2186,7 @@ msgid "Save the currently edited resource."
 msgstr "Αποθήκευσε το τρέχων επεξεργαζόμενο πόρο."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
+msgid "Save As..."
 msgstr "Αποθήκευση ως..."
 
 #: editor/editor_node.cpp
@@ -2295,8 +2295,8 @@ msgid "Creating Mesh Previews"
 msgstr "Δημιουργία προεπισκοπήσεων πλεγμάτων"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Μικρογραφία.."
+msgid "Thumbnail..."
+msgstr "Μικρογραφία..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2448,8 +2448,8 @@ msgid "(Current)"
 msgstr "(Τρέχων)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
-msgstr "Ανάκτηση δεδοένων κατοπτρισμού, παρακαλώ περιμένετε.."
+msgid "Retrieving mirrors, please wait..."
+msgstr "Ανάκτηση δεδοένων κατοπτρισμού, παρακαλώ περιμένετε..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2526,8 +2526,8 @@ msgid "Error requesting url: "
 msgstr "Σφάλμα κατά τo αίτημα για διεύθηνση url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
-msgstr "Σύνδεση σε διακομιστή κατοπτρισμού.."
+msgid "Connecting to Mirror..."
+msgstr "Σύνδεση σε διακομιστή κατοπτρισμού..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2543,8 +2543,8 @@ msgstr "Δεν είναι δυνατή η επίλυση"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Σύνδεση.."
+msgid "Connecting..."
+msgstr "Σύνδεση..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2556,8 +2556,8 @@ msgstr "Συνδέθηκε"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Γίνεται αίτημα.."
+msgid "Requesting..."
+msgstr "Γίνεται αίτημα..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2693,11 +2693,11 @@ msgid "Collapse all"
 msgstr "Σύμπτηξη όλων"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
+msgid "Rename..."
 msgstr "Μετονομασία..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "Μετακίνηση σε"
 
 #: editor/filesystem_dock.cpp
@@ -2709,15 +2709,15 @@ msgid "Instance"
 msgstr "Στιγμιότυπο"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "Επεξεργασία εξαρτήσεων"
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "Προβολή ιδιοκτητών"
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "Αναπαραγωγή"
 
 #: editor/filesystem_dock.cpp
@@ -2745,10 +2745,10 @@ msgstr ""
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Σάρωση αρχείων,\n"
-"Παρακαλώ περιμένετε.."
+"Παρακαλώ περιμένετε..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2813,7 +2813,7 @@ msgid "Import Scene"
 msgstr "Εισαγωγή σκηνής"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Εισαγωγή σκηνής..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2825,7 +2825,7 @@ msgid "Generating for Mesh: "
 msgstr "Δημιουρία για πλέγμα: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "Εκτέλεση προσαρμοσμένης δέσμης ενεργειών..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2843,7 +2843,7 @@ msgid "Error running post-import script:"
 msgstr "Σφάλμα κατά την εκτέλεση της δέσμης ενεργειών μετ-εισαγωγής:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "Αποθήκευση..."
 
 #: editor/import_dock.cpp
@@ -2863,7 +2863,7 @@ msgid "Import As:"
 msgstr "Εισαγωγή ώς:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
+msgid "Preset..."
 msgstr "Διαμόρφωση..."
 
 #: editor/import_dock.cpp
@@ -3281,16 +3281,16 @@ msgid "Transition Node"
 msgstr "Κόμβος μετάβασης"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Εισαγωγή κινήσεων.."
+msgid "Import Animations..."
+msgstr "Εισαγωγή κινήσεων..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
 msgstr "Επεξεργασία φίλτρων κόμβων"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Φίλτρα.."
+msgid "Filters..."
+msgstr "Φίλτρα..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3358,7 +3358,7 @@ msgid "Fetching:"
 msgstr "Λήψη:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
+msgid "Resolving..."
 msgstr "Επίλυση..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3425,8 +3425,8 @@ msgid "Site:"
 msgstr "Διεύθυνση:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Υποστήριξη.."
+msgid "Support..."
+msgstr "Υποστήριξη..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3624,6 +3624,7 @@ msgid "Use Rotation Snap"
 msgstr "Χρήση κουμπώματος περιστροφής"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Διαμόρφωση κουμπώματος..."
 
@@ -4051,8 +4052,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Δημιουργία αδελφού σύγκρουσης κυρτού σώματος"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
-msgstr "Δημιουργία πλέγματος περιγράμματος.."
+msgid "Create Outline Mesh..."
+msgstr "Δημιουργία πλέγματος περιγράμματος..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4260,8 +4261,8 @@ msgid "Error loading image:"
 msgstr "Σφάλμα κατά την φόρτωση εικόνας:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "Δεν υπάρχουν εικονοστοιχεία με διαφάνεια >128 στην εικόνα.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Δεν υπάρχουν εικονοστοιχεία με διαφάνεια >128 στην εικόνα..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4621,8 +4622,8 @@ msgid "Import Theme"
 msgstr "Εισαγωγή θέματος"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Αποθήκευση θέματος ως.."
+msgid "Save Theme As..."
+msgstr "Αποθήκευση θέματος ως..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4718,8 +4719,8 @@ msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Εύρεση.."
+msgid "Find..."
+msgstr "Εύρεση..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4928,16 +4929,16 @@ msgid "Find Previous"
 msgstr "Έυρεση προηγούμενου"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Αντικατάσταση.."
+msgid "Replace..."
+msgstr "Αντικατάσταση..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Πήγαινε σε συνάρτηση.."
+msgid "Goto Function..."
+msgstr "Πήγαινε σε συνάρτηση..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Πήγαινε σε γραμμή.."
+msgid "Goto Line..."
+msgstr "Πήγαινε σε γραμμή..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5392,12 +5393,8 @@ msgid "Transform"
 msgstr "Μετασχηματισμός"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Διαμόρφωση κουμπώματος.."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
-msgstr "Διάλογος μετασχηματισμού.."
+msgid "Transform Dialog..."
+msgstr "Διάλογος μετασχηματισμού..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5649,8 +5646,8 @@ msgid "Remove All"
 msgstr "Αφαίρεση όλων"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
-msgstr "Επεξεργασία θέματος.."
+msgid "Edit theme..."
+msgstr "Επεξεργασία θέματος..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -5719,7 +5716,8 @@ msgid "Options"
 msgstr "Επιλογές"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "Έχει,Πάρα,Πολλές,Επιλογές!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5912,8 +5910,8 @@ msgid "Presets"
 msgstr "Διαμορφώσεις"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
-msgstr "Προσθήκη.."
+msgid "Add..."
+msgstr "Προσθήκη..."
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6005,6 +6003,11 @@ msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Εισαγμένο έργο"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Όνομα έργου:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6209,8 +6212,8 @@ msgstr "Κουμπί ποντικιού"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6238,8 +6241,8 @@ msgid "Control+"
 msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
-msgstr "Πατήστε ένα κουμπί.."
+msgid "Press a Key..."
+msgstr "Πατήστε ένα κουμπί..."
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
@@ -6422,7 +6425,7 @@ msgid "Property:"
 msgstr "Ιδιότητα:"
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
 msgstr "Παράκαμψη για..."
 
 #: editor/project_settings_editor.cpp
@@ -6518,12 +6521,12 @@ msgid "Easing Out-In"
 msgstr "Ομαλή κίνηση από έξω προς τα μέσα"
 
 #: editor/property_editor.cpp
-msgid "File.."
-msgstr "Αρχείο.."
+msgid "File..."
+msgstr "Αρχείο..."
 
 #: editor/property_editor.cpp
-msgid "Dir.."
-msgstr "Κατάλογος.."
+msgid "Dir..."
+msgstr "Κατάλογος..."
 
 #: editor/property_editor.cpp
 msgid "Assign"
@@ -6699,8 +6702,8 @@ msgstr ""
 "δημιουργηθεί στιγμιότυπα."
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
-msgstr "Αποθήκευση νέας σκηνής ως.."
+msgid "Save New Scene As..."
+msgstr "Αποθήκευση νέας σκηνής ως..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -8431,8 +8434,8 @@ msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 #~ msgid "Exporting for %s"
 #~ msgstr "Εξαγωγή για %s"
 
-#~ msgid "Setting Up.."
-#~ msgstr "Αρχικοποίηση.."
+#~ msgid "Setting Up..."
+#~ msgstr "Αρχικοποίηση..."
 
 #~ msgid "Error loading scene."
 #~ msgstr "Σφάλμα κατά τη φόρτωση σκηνής."
@@ -8494,7 +8497,7 @@ msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 #~ msgid "Info"
 #~ msgstr "Πληροφορίες"
 
-#~ msgid "Re-Import.."
+#~ msgid "Re-Import..."
 #~ msgstr "Εκ νέου εισαγωγή..."
 
 #~ msgid "No bit masks to import!"
@@ -8894,14 +8897,14 @@ msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 #~ msgid "Zoom (%):"
 #~ msgstr "Μεγέθυνση (%):"
 
-#~ msgid "Skeleton.."
-#~ msgstr "Σκελετός.."
+#~ msgid "Skeleton..."
+#~ msgstr "Σκελετός..."
 
 #~ msgid "Zoom Reset"
 #~ msgstr "Επαναφορά μεγέθυνσης"
 
-#~ msgid "Zoom Set.."
-#~ msgstr "Ορισμός μεγέθυνσης.."
+#~ msgid "Zoom Set..."
+#~ msgstr "Ορισμός μεγέθυνσης..."
 
 #~ msgid "Set a Value"
 #~ msgstr "Ορισμός τιμής"

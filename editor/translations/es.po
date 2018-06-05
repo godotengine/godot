@@ -523,8 +523,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Desconectar '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
-msgstr "Conectar.."
+msgid "Connect..."
+msgstr "Conectar..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -946,12 +946,12 @@ msgid "Move Audio Bus"
 msgstr "Mover Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
+msgid "Save Audio Bus Layout As..."
 msgstr "Guardar configuración de los Buses de Audio como..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
-msgstr "Ruta para nueva configuración.."
+msgid "Location for New Layout..."
+msgstr "Ruta para nueva configuración..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1092,12 +1092,12 @@ msgid "Updating Scene"
 msgstr "Actualizando escena"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
-msgstr "Guardando cambios locales.."
+msgid "Storing local changes..."
+msgstr "Guardando cambios locales..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Actualizando escena.."
+msgid "Updating scene..."
+msgstr "Actualizando escena..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1165,7 +1165,7 @@ msgid "Show In File Manager"
 msgstr "Mostrar en el navegador de archivos"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
+msgid "New Folder..."
 msgstr "Nueva carpeta..."
 
 #: editor/editor_file_dialog.cpp
@@ -1434,13 +1434,13 @@ msgid "Error saving resource!"
 msgstr "¡Hubo un error al guardar el recurso!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
-msgstr "Guardar recurso como.."
+msgid "Save Resource As..."
+msgstr "Guardar recurso como..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
-msgstr "Ya veo.."
+msgid "I see..."
+msgstr "Ya veo..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1672,12 +1672,12 @@ msgid "Open Base Scene"
 msgstr "Abrir escena base"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
-msgstr "Apertura rápida de escena.."
+msgid "Quick Open Scene..."
+msgstr "Apertura rápida de escena..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
-msgstr "Apertura rápida de script.."
+msgid "Quick Open Script..."
+msgstr "Apertura rápida de script..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1688,8 +1688,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "¿Guardar cambios de '%s' antes de cerrar?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
-msgstr "Guardar escena como.."
+msgid "Save Scene As..."
+msgstr "Guardar escena como..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1743,8 +1743,8 @@ msgstr ""
 "modos?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
-msgstr "Ejecución rápida de escena.."
+msgid "Quick Run Scene..."
+msgstr "Ejecución rápida de escena..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1905,8 +1905,8 @@ msgid "Previous tab"
 msgstr "Pestaña anterior"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
-msgstr "Filtrado de archivos.."
+msgid "Filter Files..."
+msgstr "Filtrado de archivos..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1917,12 +1917,12 @@ msgid "New Scene"
 msgstr "Nueva escena"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
-msgstr "Nueva escena heredada.."
+msgid "New Inherited Scene..."
+msgstr "Nueva escena heredada..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
-msgstr "Abrir escena.."
+msgid "Open Scene..."
+msgstr "Abrir escena..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1941,16 +1941,16 @@ msgid "Open Recent"
 msgstr "Abrir reciente"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
-msgstr "Convertir a.."
+msgid "Convert To..."
+msgstr "Convertir a..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
-msgstr "Librería de mallas.."
+msgid "MeshLibrary..."
+msgstr "Librería de mallas..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
-msgstr "\"TileSet\".."
+msgid "TileSet..."
+msgstr "\"TileSet\"..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2213,8 +2213,8 @@ msgid "Save the currently edited resource."
 msgstr "Guardar el recurso editado actualmente."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
-msgstr "Guardar como.."
+msgid "Save As..."
+msgstr "Guardar como..."
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2322,8 +2322,8 @@ msgid "Creating Mesh Previews"
 msgstr "Creando vistas previas de las mallas"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Miniatura.."
+msgid "Thumbnail..."
+msgstr "Miniatura..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2476,7 +2476,7 @@ msgid "(Current)"
 msgstr "(Actual)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "Obteniendo mirrors, por favor espere..."
 
 #: editor/export_template_manager.cpp
@@ -2554,8 +2554,8 @@ msgid "Error requesting url: "
 msgstr "Error al solicitar url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
-msgstr "Intentando conexión alternativa.."
+msgid "Connecting to Mirror..."
+msgstr "Intentando conexión alternativa..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2571,8 +2571,8 @@ msgstr "No se puede resolver"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Conectando.."
+msgid "Connecting..."
+msgstr "Conectando..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2584,8 +2584,8 @@ msgstr "Conectado"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Solicitando.."
+msgid "Requesting..."
+msgstr "Solicitando..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2722,12 +2722,12 @@ msgid "Collapse all"
 msgstr "Colapsar todo"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
-msgstr "Renombrar.."
+msgid "Rename..."
+msgstr "Renombrar..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "Mover a.."
+msgid "Move To..."
+msgstr "Mover a..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2738,16 +2738,16 @@ msgid "Instance"
 msgstr "Instanciar"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Editar dependencias.."
+msgid "Edit Dependencies..."
+msgstr "Editar dependencias..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
-msgstr "Ver propietarios.."
+msgid "View Owners..."
+msgstr "Ver propietarios..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Duplicar.."
+msgid "Duplicate..."
+msgstr "Duplicar..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2773,7 +2773,7 @@ msgstr ""
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Escaneando archivos,\n"
 "Por favor, espere..."
@@ -2841,8 +2841,8 @@ msgid "Import Scene"
 msgstr "Importar escena"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
-msgstr "Importando escena.."
+msgid "Importing Scene..."
+msgstr "Importando escena..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2853,8 +2853,8 @@ msgid "Generating for Mesh: "
 msgstr "Generando para modelo: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
-msgstr "Ejecutando script personalizado.."
+msgid "Running Custom Script..."
+msgstr "Ejecutando script personalizado..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2870,8 +2870,8 @@ msgid "Error running post-import script:"
 msgstr "Error ejecutando el script de posimportacion:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
-msgstr "Guardando.."
+msgid "Saving..."
+msgstr "Guardando..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2890,8 +2890,8 @@ msgid "Import As:"
 msgstr "Importar como:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
-msgstr "Ajuste.."
+msgid "Preset..."
+msgstr "Ajuste..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3310,16 +3310,16 @@ msgid "Transition Node"
 msgstr "Nodo de transición"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Importar animaciones.."
+msgid "Import Animations..."
+msgstr "Importar animaciones..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
 msgstr "Editar filtros de nodo"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Filtros.."
+msgid "Filters..."
+msgstr "Filtros..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3386,7 +3386,7 @@ msgid "Fetching:"
 msgstr "Buscando:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
+msgid "Resolving..."
 msgstr "Resolviendo..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3453,8 +3453,8 @@ msgid "Site:"
 msgstr "Sitio:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Soporte.."
+msgid "Support..."
+msgstr "Soporte..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3651,8 +3651,9 @@ msgid "Use Rotation Snap"
 msgstr "Ajustar rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configurar Cuadrícula..."
+msgstr "Configurar ajuste..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -4080,8 +4081,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Crear colisión hermanada convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
-msgstr "Crear contorno de malla.."
+msgid "Create Outline Mesh..."
+msgstr "Crear contorno de malla..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4288,8 +4289,8 @@ msgid "Error loading image:"
 msgstr "Error al cargar la imagen:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "No hay píxeles con transparencia > 128 en la imagen.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "No hay píxeles con transparencia > 128 en la imagen..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4649,8 +4650,8 @@ msgid "Import Theme"
 msgstr "Importar tema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Guardar tema como.."
+msgid "Save Theme As..."
+msgstr "Guardar tema como..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4746,8 +4747,8 @@ msgstr "Alternar panel de scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Buscar.."
+msgid "Find..."
+msgstr "Buscar..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4956,16 +4957,16 @@ msgid "Find Previous"
 msgstr "Buscar anterior"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Reemplazar.."
+msgid "Replace..."
+msgstr "Reemplazar..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Ir a función.."
+msgid "Goto Function..."
+msgstr "Ir a función..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Ir a línea.."
+msgid "Goto Line..."
+msgstr "Ir a línea..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5418,12 +5419,8 @@ msgid "Transform"
 msgstr "Transformar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Configurar ajuste.."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
-msgstr "Ventana de transformación.."
+msgid "Transform Dialog..."
+msgstr "Ventana de transformación..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5675,8 +5672,8 @@ msgid "Remove All"
 msgstr "Quitar todos"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
-msgstr "Editar tema.."
+msgid "Edit theme..."
+msgstr "Editar tema..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -5745,7 +5742,8 @@ msgid "Options"
 msgstr "Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "¡Tienes,Muchas,Y,Variadas,Opciones!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5938,8 +5936,8 @@ msgid "Presets"
 msgstr "Preajustes"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
-msgstr "Añadir.."
+msgid "Add..."
+msgstr "Añadir..."
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6031,6 +6029,11 @@ msgstr "Por favor elija una carpeta vacía."
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Proyecto importado"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Nombre del proyecto:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6235,8 +6238,8 @@ msgstr "Botón del ratón"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6264,8 +6267,8 @@ msgid "Control+"
 msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
-msgstr "Presiona una tecla.."
+msgid "Press a Key..."
+msgstr "Presiona una tecla..."
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
@@ -6448,8 +6451,8 @@ msgid "Property:"
 msgstr "Propiedad:"
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
-msgstr "Sobre escribir por.."
+msgid "Override For..."
+msgstr "Sobre escribir por..."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -6544,12 +6547,12 @@ msgid "Easing Out-In"
 msgstr "Transición salida-entrada"
 
 #: editor/property_editor.cpp
-msgid "File.."
-msgstr "Archivo.."
+msgid "File..."
+msgstr "Archivo..."
 
 #: editor/property_editor.cpp
-msgid "Dir.."
-msgstr "Directorio.."
+msgid "Dir..."
+msgstr "Directorio..."
 
 #: editor/property_editor.cpp
 msgid "Assign"
@@ -6722,8 +6725,8 @@ msgid "This operation can't be done on instanced scenes."
 msgstr "Esta operación no puede realizarse en escenas instanciadas."
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
-msgstr "Guardar nueva escena como.."
+msgid "Save New Scene As..."
+msgstr "Guardar nueva escena como..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -8459,8 +8462,8 @@ msgstr "Tamaño de tipografía incorrecto."
 #~ msgid "Exporting for %s"
 #~ msgstr "Exportando para %s"
 
-#~ msgid "Setting Up.."
-#~ msgstr "Configurando.."
+#~ msgid "Setting Up..."
+#~ msgstr "Configurando..."
 
 #~ msgid "Error loading scene."
 #~ msgstr "Hubo un error al cargar la escena."
@@ -8525,8 +8528,8 @@ msgstr "Tamaño de tipografía incorrecto."
 #~ msgid "Info"
 #~ msgstr "Info"
 
-#~ msgid "Re-Import.."
-#~ msgstr "Reimportar.."
+#~ msgid "Re-Import..."
+#~ msgstr "Reimportar..."
 
 #~ msgid "No bit masks to import!"
 #~ msgstr "¡Sin máscaras de bits para importar!"
@@ -8925,14 +8928,14 @@ msgstr "Tamaño de tipografía incorrecto."
 #~ msgid "Zoom (%):"
 #~ msgstr "Zoom (%):"
 
-#~ msgid "Skeleton.."
-#~ msgstr "Esqueleto.."
+#~ msgid "Skeleton..."
+#~ msgstr "Esqueleto..."
 
 #~ msgid "Zoom Reset"
 #~ msgstr "Restablecer zoom"
 
-#~ msgid "Zoom Set.."
-#~ msgstr "Ajustar zoom.."
+#~ msgid "Zoom Set..."
+#~ msgstr "Ajustar zoom..."
 
 #~ msgid "Set a Value"
 #~ msgstr "Establecer valor"
@@ -9443,7 +9446,7 @@ msgstr "Tamaño de tipografía incorrecto."
 #~ msgid "Export Project PCK"
 #~ msgstr "Exportar PCK del proyecto"
 
-#~ msgid "Export.."
+#~ msgid "Export..."
 #~ msgstr "Exportar…"
 
 #~ msgid "Project Export"
@@ -9557,8 +9560,8 @@ msgstr "Tamaño de tipografía incorrecto."
 #~ msgid "Reload Tool Script (Soft)"
 #~ msgstr "Volver a Cargar Script de Herramientas (Soft)"
 
-#~ msgid "Edit Connections.."
-#~ msgstr "Editar Conecciones.."
+#~ msgid "Edit Connections..."
+#~ msgstr "Editar Conecciones..."
 
 #~ msgid "Set Params"
 #~ msgstr "Setear Params"
