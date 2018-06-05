@@ -477,6 +477,7 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+	call_deferred("_validate_script");
 }
 
 void ScriptTextEditor::_validate_script() {

@@ -512,6 +512,9 @@ private:
 	int error_line;
 	int error_column;
 	bool check_types;
+#ifdef DEBUG_ENABLED
+	Set<int> *safe_lines;
+#endif // DEBUG_ENABLED
 
 	int pending_newline;
 
@@ -583,6 +586,16 @@ private:
 	void _check_class_blocks_types(ClassNode *p_class);
 	void _check_function_types(FunctionNode *p_function);
 	void _check_block_types(BlockNode *p_block);
+	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->insert(p_line);
+#endif // DEBUG_ENABLED
+	}
+	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->erase(p_line);
+#endif // DEBUG_ENABLED
+	}
 
 	Error _parse(const String &p_base_path);
 

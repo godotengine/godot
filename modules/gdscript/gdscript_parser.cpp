@@ -2471,6 +2471,11 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 	id->name = "#match_value";
 	id->line = p_match_statement->line;
 	id->datatype = _reduce_node_type(p_match_statement->val_to_match);
+	if (id->datatype.has_type) {
+		_mark_line_as_safe(id->line);
+	} else {
+		_mark_line_as_unsafe(id->line);
+	}
 
 	if (error_set) {
 		return;
@@ -5738,6 +5743,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						return DataType();
 					}
 				}
+			} else {
+				_mark_line_as_unsafe(cn->line);
 			}
 
 			node_type = cn->cast_type;
@@ -5849,6 +5856,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					DataType argument_a_type = _reduce_node_type(op->arguments[0]);
 					DataType argument_b_type = _reduce_node_type(op->arguments[1]);
 					if (!argument_a_type.has_type || !argument_b_type.has_type) {
+						_mark_line_as_unsafe(op->line);
 						break;
 					}
 
@@ -5947,6 +5955,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						} else {
 							node_type = _reduce_identifier_type(&base_type, member_id->name, op->line);
 						}
+					} else {
+						_mark_line_as_unsafe(op->line);
 					}
 					if (error_set) {
 						return DataType();
@@ -5973,6 +5983,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					DataType index_type = _reduce_node_type(op->arguments[1]);
 
 					if (!base_type.has_type) {
+						_mark_line_as_unsafe(op->line);
 						break;
 					}
 
@@ -6058,6 +6069,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 										}
 									} break;
 								}
+							} else {
+								_mark_line_as_unsafe(op->line);
 							}
 						} else if (!for_completion && (index_type.kind != DataType::BUILTIN || index_type.builtin_type != Variant::STRING)) {
 							_set_error("Only strings can be used as index in the base type '" + base_type.to_string() + "'.", op->line);
@@ -6431,6 +6444,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			}
 
 			if (!base_type.has_type || (base_type.kind == DataType::BUILTIN && base_type.builtin_type == Variant::NIL)) {
+				_mark_line_as_unsafe(p_call->line);
 				return DataType();
 			}
 
@@ -6440,7 +6454,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 				if (check_types) {
 					if (!tmp.has_method(callee_name)) {
-						_set_error("Method '" + String(callee_name) + "()' is not declared in base '" + base_type.to_string() + "'.", p_call->line);
+						_set_error("Method '" + callee_name + "' is not declared on base '" + base_type.to_string() + "'.", p_call->line);
 						return DataType();
 					}
 
@@ -6491,12 +6505,6 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 						default_args_count, is_static, is_vararg);
 			}
 
-			String base_name;
-			if (p_call->arguments[0]->type == Node::TYPE_SELF) {
-				base_name = current_class->name == StringName() ? "self" : current_class->name;
-			} else {
-				base_name = original_type.to_string();
-			}
 			if (!valid) {
 				if (p_call->arguments[0]->type == Node::TYPE_SELF) {
 					_set_error("Method '" + callee_name + "' is not declared in the current class.", p_call->line);
@@ -6541,12 +6549,19 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			continue;
 		}
 
-		if (!_is_type_compatible(arg_types[i - arg_diff], par_type, true)) {
-			_set_error("At '" + callee_name + "()' call, argument " + itos(i - arg_diff + 1) + ". Assigned type (" +
-							   par_type.to_string() + ") doesn't match the function argument's type (" +
-							   arg_types[i - arg_diff].to_string() + ").",
-					p_call->line);
-			return DataType();
+		if (!par_type.has_type) {
+			_mark_line_as_unsafe(p_call->line);
+		} else if (!_is_type_compatible(arg_types[i - arg_diff], par_type, true)) {
+			// Supertypes are acceptable for dynamic compliance
+			if (!_is_type_compatible(par_type, arg_types[i - arg_diff])) {
+				_set_error("At '" + callee_name + "()' call, argument " + itos(i - arg_diff + 1) + ". Assigned type (" +
+								   par_type.to_string() + ") doesn't match the function argument's type (" +
+								   arg_types[i - arg_diff].to_string() + ").",
+						p_call->line);
+				return DataType();
+			} else {
+				_mark_line_as_unsafe(p_call->line);
+			}
 		}
 	}
 
@@ -6903,23 +6918,23 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 		return member_type;
 	}
 
-	if (!check_types) {
-		return DataType();
+	if (!p_base_type) {
+		// This means looking in the current class, which type is always known
+		_set_error("Identifier '" + p_identifier.operator String() + "' is not declared in the current scope.", p_line);
 	}
 
-	if (!p_base_type) {
-		_set_error("Identifier '" + String(p_identifier) + "' is not declared in the current scope.", p_line);
-	} else {
-		_set_error("Identifier '" + String(p_identifier) + "' is not declared in base '" + p_base_type->to_string() + "'.", p_line);
-	}
+	_mark_line_as_unsafe(p_line);
 	return DataType();
 }
 
 void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
+	_mark_line_as_safe(p_class->line);
+
 	// Constants
 	for (Map<StringName, ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 		ClassNode::Constant &c = E->get();
+		_mark_line_as_safe(c.expression->line);
 		DataType cont = _resolve_type(c.type, c.expression->line);
 		DataType expr = _resolve_type(c.expression->get_datatype(), c.expression->line);
 
@@ -6955,40 +6970,44 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			return;
 		}
 
-		if (!v.data_type.has_type) continue;
-
+		_mark_line_as_safe(v.line);
 		v.data_type = _resolve_type(v.data_type, v.line);
 
 		if (v.expression) {
 			DataType expr_type = _reduce_node_type(v.expression);
 
 			if (!_is_type_compatible(v.data_type, expr_type)) {
-				// Try with implicit conversion
-				if (v.data_type.kind != DataType::BUILTIN || !_is_type_compatible(v.data_type, expr_type, true)) {
-					_set_error("Assigned expression type (" + expr_type.to_string() + ") doesn't match the variable's type (" +
-									   v.data_type.to_string() + ").",
-							v.line);
-					return;
+				// Try supertype test
+				if (_is_type_compatible(expr_type, v.data_type)) {
+					_mark_line_as_unsafe(v.line);
+				} else {
+					// Try with implicit conversion
+					if (v.data_type.kind != DataType::BUILTIN || !_is_type_compatible(v.data_type, expr_type, true)) {
+						_set_error("Assigned expression type (" + expr_type.to_string() + ") doesn't match the variable's type (" +
+										   v.data_type.to_string() + ").",
+								v.line);
+						return;
+					}
+
+					// Replace assigment with implict conversion
+					BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+					convert->line = v.line;
+					convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+					ConstantNode *tgt_type = alloc_node<ConstantNode>();
+					tgt_type->line = v.line;
+					tgt_type->value = (int)v.data_type.builtin_type;
+
+					OperatorNode *convert_call = alloc_node<OperatorNode>();
+					convert_call->line = v.line;
+					convert_call->op = OperatorNode::OP_CALL;
+					convert_call->arguments.push_back(convert);
+					convert_call->arguments.push_back(v.expression);
+					convert_call->arguments.push_back(tgt_type);
+
+					v.expression = convert_call;
+					v.initial_assignment->arguments[1] = convert_call;
 				}
-
-				// Replace assigment with implict conversion
-				BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
-				convert->line = v.line;
-				convert->function = GDScriptFunctions::TYPE_CONVERT;
-
-				ConstantNode *tgt_type = alloc_node<ConstantNode>();
-				tgt_type->line = v.line;
-				tgt_type->value = (int)v.data_type.builtin_type;
-
-				OperatorNode *convert_call = alloc_node<OperatorNode>();
-				convert_call->line = v.line;
-				convert_call->op = OperatorNode::OP_CALL;
-				convert_call->arguments.push_back(convert);
-				convert_call->arguments.push_back(v.expression);
-				convert_call->arguments.push_back(tgt_type);
-
-				v.expression = convert_call;
-				v.initial_assignment->arguments[1] = convert_call;
 			}
 		} else if (v.data_type.has_type && v.data_type.kind == DataType::BUILTIN) {
 			// Create default value based on the type
@@ -7017,7 +7036,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		}
 
 		// Check export hint
-		if (v._export.type != Variant::NIL) {
+		if (v.data_type.has_type && v._export.type != Variant::NIL) {
 			DataType export_type = _type_from_property(v._export);
 			if (!_is_type_compatible(v.data_type, export_type, true)) {
 				_set_error("Export hint type (" + export_type.to_string() + ") doesn't match the variable's type (" +
@@ -7194,6 +7213,7 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 	for (int i = 0; i < p_class->static_functions.size(); i++) {
 		current_function = p_class->static_functions[i];
 		current_block = current_function->body;
+		_mark_line_as_safe(current_function->line);
 		_check_block_types(current_block);
 		current_block = NULL;
 		current_function = NULL;
@@ -7203,6 +7223,7 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 	for (int i = 0; i < p_class->functions.size(); i++) {
 		current_function = p_class->functions[i];
 		current_block = current_function->body;
+		_mark_line_as_safe(current_function->line);
 		_check_block_types(current_block);
 		current_block = NULL;
 		current_function = NULL;
@@ -7220,6 +7241,8 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 
 void GDScriptParser::_check_block_types(BlockNode *p_block) {
 
+	Node *last_var_assign = NULL;
+
 	// Check each statement
 	for (List<Node *>::Element *E = p_block->statements.front(); E; E = E->next()) {
 		Node *statement = E->get();
@@ -7232,37 +7255,47 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 			case Node::TYPE_LOCAL_VAR: {
 				LocalVarNode *lv = static_cast<LocalVarNode *>(statement);
 				lv->datatype = _resolve_type(lv->datatype, lv->line);
+				_mark_line_as_safe(lv->line);
 
 				if (lv->assign) {
 					DataType assign_type = _reduce_node_type(lv->assign);
 					if (!_is_type_compatible(lv->datatype, assign_type)) {
-						// Try implict conversion
-						if (lv->datatype.kind != DataType::BUILTIN || !_is_type_compatible(lv->datatype, assign_type, true)) {
-							_set_error("Assigned value type (" + assign_type.to_string() + ") doesn't match the variable's type (" +
-											   lv->datatype.to_string() + ").",
-									lv->line);
-							return;
+						// Try supertype test
+						if (_is_type_compatible(assign_type, lv->datatype)) {
+							_mark_line_as_unsafe(lv->line);
+						} else {
+							// Try implict conversion
+							if (lv->datatype.kind != DataType::BUILTIN || !_is_type_compatible(lv->datatype, assign_type, true)) {
+								_set_error("Assigned value type (" + assign_type.to_string() + ") doesn't match the variable's type (" +
+												   lv->datatype.to_string() + ").",
+										lv->line);
+								return;
+							}
+							// Replace assigment with implict conversion
+							BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+							convert->line = lv->line;
+							convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+							ConstantNode *tgt_type = alloc_node<ConstantNode>();
+							tgt_type->line = lv->line;
+							tgt_type->value = (int)lv->datatype.builtin_type;
+
+							OperatorNode *convert_call = alloc_node<OperatorNode>();
+							convert_call->line = lv->line;
+							convert_call->op = OperatorNode::OP_CALL;
+							convert_call->arguments.push_back(convert);
+							convert_call->arguments.push_back(lv->assign);
+							convert_call->arguments.push_back(tgt_type);
+
+							lv->assign = convert_call;
+							lv->assign_op->arguments[1] = convert_call;
 						}
-						// Replace assigment with implict conversion
-						BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
-						convert->line = lv->line;
-						convert->function = GDScriptFunctions::TYPE_CONVERT;
-
-						ConstantNode *tgt_type = alloc_node<ConstantNode>();
-						tgt_type->line = lv->line;
-						tgt_type->value = (int)lv->datatype.builtin_type;
-
-						OperatorNode *convert_call = alloc_node<OperatorNode>();
-						convert_call->line = lv->line;
-						convert_call->op = OperatorNode::OP_CALL;
-						convert_call->arguments.push_back(convert);
-						convert_call->arguments.push_back(lv->assign);
-						convert_call->arguments.push_back(tgt_type);
-
-						lv->assign = convert_call;
-						lv->assign_op->arguments[1] = convert_call;
+					}
+					if (lv->datatype.has_type && !assign_type.has_type) {
+						_mark_line_as_unsafe(lv->line);
 					}
 				}
+				last_var_assign = lv->assign;
 
 				// TODO: Make a warning
 				/*
@@ -7292,6 +7325,13 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							return;
 						}
 
+						if (op->arguments[1] == last_var_assign) {
+							// Assignment was already checked
+							break;
+						}
+
+						_mark_line_as_safe(op->line);
+
 						DataType lh_type = _reduce_node_type(op->arguments[0]);
 
 						if (error_set) {
@@ -7299,10 +7339,10 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						}
 
 						if (!lh_type.has_type) {
-							break;
-						}
-
-						if (lh_type.is_constant) {
+							if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
+								_mark_line_as_unsafe(op->line);
+							}
+						} else if (lh_type.is_constant) {
 							_set_error("Cannot assign a new value to a constant.", op->line);
 							return;
 						}
@@ -7312,6 +7352,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							// Validate operation
 							DataType arg_type = _reduce_node_type(op->arguments[1]);
 							if (!arg_type.has_type) {
+								_mark_line_as_unsafe(op->line);
 								break;
 							}
 
@@ -7330,38 +7371,49 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						}
 
 						if (!_is_type_compatible(lh_type, rh_type)) {
-							// Try implict conversion
-							if (lh_type.kind != DataType::BUILTIN || !_is_type_compatible(lh_type, rh_type, true)) {
-								_set_error("Assigned value type (" + rh_type.to_string() + ") doesn't match the variable's type (" +
-												   lh_type.to_string() + ").",
-										op->line);
-								return;
+							// Try supertype test
+							if (_is_type_compatible(rh_type, lh_type)) {
+								_mark_line_as_unsafe(op->line);
+							} else {
+								// Try implict conversion
+								if (lh_type.kind != DataType::BUILTIN || !_is_type_compatible(lh_type, rh_type, true)) {
+									_set_error("Assigned value type (" + rh_type.to_string() + ") doesn't match the variable's type (" +
+													   lh_type.to_string() + ").",
+											op->line);
+									return;
+								}
+								// Replace assigment with implict conversion
+								BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+								convert->line = op->line;
+								convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+								ConstantNode *tgt_type = alloc_node<ConstantNode>();
+								tgt_type->line = op->line;
+								tgt_type->value = (int)lh_type.builtin_type;
+
+								OperatorNode *convert_call = alloc_node<OperatorNode>();
+								convert_call->line = op->line;
+								convert_call->op = OperatorNode::OP_CALL;
+								convert_call->arguments.push_back(convert);
+								convert_call->arguments.push_back(op->arguments[1]);
+								convert_call->arguments.push_back(tgt_type);
+
+								op->arguments[1] = convert_call;
 							}
-							// Replace assigment with implict conversion
-							BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
-							convert->line = op->line;
-							convert->function = GDScriptFunctions::TYPE_CONVERT;
-
-							ConstantNode *tgt_type = alloc_node<ConstantNode>();
-							tgt_type->line = op->line;
-							tgt_type->value = (int)lh_type.builtin_type;
-
-							OperatorNode *convert_call = alloc_node<OperatorNode>();
-							convert_call->line = op->line;
-							convert_call->op = OperatorNode::OP_CALL;
-							convert_call->arguments.push_back(convert);
-							convert_call->arguments.push_back(op->arguments[1]);
-							convert_call->arguments.push_back(tgt_type);
-
-							op->arguments[1] = convert_call;
+						}
+						if (!rh_type.has_type && (op->op != OperatorNode::OP_ASSIGN || lh_type.has_type || op->arguments[0]->type == Node::TYPE_OPERATOR)) {
+							_mark_line_as_unsafe(op->line);
 						}
 					} break;
 					case OperatorNode::OP_CALL:
 					case OperatorNode::OP_PARENT_CALL: {
+						_mark_line_as_safe(op->line);
 						_reduce_function_call_type(op);
 						if (error_set) return;
 					} break;
 					default: {
+						_mark_line_as_safe(op->line);
+						_reduce_node_type(op); // Test for safety anyway
 						// TODO: Make this a warning
 						/*_set_error("Standalone expression, nothing is done in this line.", statement->line);
 						return; */
@@ -7370,10 +7422,19 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 			} break;
 			case Node::TYPE_CONTROL_FLOW: {
 				ControlFlowNode *cf = static_cast<ControlFlowNode *>(statement);
+				_mark_line_as_safe(cf->line);
 
 				switch (cf->cf_type) {
 					case ControlFlowNode::CF_RETURN: {
 						DataType function_type = current_function->get_datatype();
+
+						DataType ret_type;
+						if (cf->arguments.size() > 0) {
+							ret_type = _reduce_node_type(cf->arguments[0]);
+							if (error_set) {
+								return;
+							}
+						}
 
 						if (!function_type.has_type) break;
 
@@ -7390,10 +7451,6 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 								return;
 							}
 
-							DataType ret_type = _reduce_node_type(cf->arguments[0]);
-							if (error_set) {
-								return;
-							}
 							if (!_is_type_compatible(function_type, ret_type)) {
 								_set_error("Returned value type (" + ret_type.to_string() + ") doesn't match the function return type (" +
 												   function_type.to_string() + ").",
@@ -7406,6 +7463,14 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						MatchNode *match_node = cf->match;
 						_transform_match_statment(match_node);
 					} break;
+					default: {
+						if (cf->body_else) {
+							_mark_line_as_safe(cf->body_else->line);
+						}
+						for (int i = 0; i < cf->arguments.size(); i++) {
+							_reduce_node_type(cf->arguments[i]);
+						}
+					} break;
 				}
 			} break;
 			case Node::TYPE_CONSTANT: {
@@ -7416,6 +7481,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 				}
 			} // falthrough
 			default: {
+				_mark_line_as_safe(statement->line);
+				_reduce_node_type(statement); // Test for safety anyway
 				// TODO: Make this a warning
 				/* _set_error("Standalone expression, nothing is done in this line.", statement->line);
 				return; */

@@ -76,6 +76,7 @@ public:
 			bool marked : 1;
 			bool breakpoint : 1;
 			bool hidden : 1;
+			bool safe : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
 			String data;
@@ -106,6 +107,8 @@ public:
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
+		void set_safe(int p_line, bool p_safe) { text[p_line].safe = p_safe; }
+		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
