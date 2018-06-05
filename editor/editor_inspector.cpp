@@ -1638,6 +1638,7 @@ void EditorInspector::register_text_enter(Node *p_line_edit) {
 
 void EditorInspector::_filter_changed(const String &p_text) {
 
+	_clear();
 	update_tree();
 }
 
