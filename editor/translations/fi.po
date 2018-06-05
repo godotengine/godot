@@ -1140,7 +1140,7 @@ msgstr "Näytä tiedostonhallinnassa"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Uusi kansio..."
+msgstr "Luo kansio..."
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1646,11 +1646,11 @@ msgstr "Avaa kantaskene"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Skenen pika-avaus..."
+msgstr "Nopea skenen avaus..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Skriptin pika-avaus..."
+msgstr "Nopea skriptin avaus..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1662,7 +1662,7 @@ msgstr "Tallennetaanko muutokset tiedostoon '%s' ennen sulkemista?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Tallenna skene nimellä..."
+msgstr "Tallenna scene nimellä..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1714,7 +1714,7 @@ msgstr "Tätä toimintoa ei voida peruttaa. Palauta joka tapauksessa?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Skenen pikakäynnistys..."
+msgstr "Nopea skenen käynnistys..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1908,11 +1908,11 @@ msgstr "Muunna..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Mesh-kirjastoksi..."
+msgstr "MalliKirjasto..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "Ruutuvalikoimaksi..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2515,8 +2515,9 @@ msgid "Error requesting url: "
 msgstr "Virhe pyydettäessä osoitetta: "
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Connecting to Mirror..."
-msgstr "Yhdistetään peilipalvelimeen..."
+msgstr "Yhdistä..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2532,8 +2533,9 @@ msgstr "Yhdistäminen epäonnistui"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Connecting..."
-msgstr "Yhdistetään..."
+msgstr "Yhdistä..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2682,8 +2684,9 @@ msgid "Collapse all"
 msgstr "Pienennä kaikki"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Rename..."
-msgstr "Nimeä uudelleen..."
+msgstr "Nimeä uudelleen"
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
@@ -2706,8 +2709,9 @@ msgid "View Owners..."
 msgstr "Tarkastele omistajia..."
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Duplicate..."
-msgstr "Kahdenna..."
+msgstr "Monista"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2801,7 +2805,7 @@ msgstr "Tuo skene"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Tuodaan skene..."
+msgstr "Tuodaan Scene..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -3343,8 +3347,9 @@ msgid "Fetching:"
 msgstr "Noudetaan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Resolving..."
-msgstr "Selvitetään..."
+msgstr "Tallennetaan..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -4042,7 +4047,7 @@ msgstr "Luo konveksi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
-msgstr "Luo reunoista Mesh..."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4250,7 +4255,7 @@ msgstr "Virhe ladattaessa kuvaa:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr "Kuvassa ei ole pikseleitä, joiden läpinäkyvyys on enemmän kuin 128…"
+msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -5381,7 +5386,7 @@ msgstr "Muunna"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr "Muunnosikkuna..."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5703,8 +5708,9 @@ msgid "Options"
 msgstr "Asetuksia"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "On,Useita,Asetuksia"
+msgstr "On,Monia,Useita,Asetuksia"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5989,10 +5995,12 @@ msgid "Imported Project"
 msgstr "Tuotu projekti"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Virheellinen projektin nimi."
+msgstr "Projektin nimi:"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kansiota ei voitu luoda."
 
@@ -6190,8 +6198,8 @@ msgstr "Hiiren painike"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6404,7 +6412,7 @@ msgstr "Ominaisuus:"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr "Ohita alustalle..."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -6677,7 +6685,7 @@ msgstr "Tätä toimintoa ei voi tehdä skenejen ilmentymille."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
-msgstr "Tallenna uusi skene nimellä..."
+msgstr "Tallenna uusi scene nimellä..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"

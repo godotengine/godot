@@ -2744,8 +2744,8 @@ msgid "View Owners..."
 msgstr "Vedi Proprietari..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Duplica.."
+msgid "Duplicate..."
+msgstr "Duplica..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -6322,8 +6322,8 @@ msgstr "Pulsante Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

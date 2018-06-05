@@ -5711,8 +5711,9 @@ msgid "Options"
 msgstr "Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tiene,Muchas,Opciones"
+msgstr "Tienes, Muchas, Variadas, Opciones!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6001,8 +6002,9 @@ msgid "Imported Project"
 msgstr "Proyecto Importado"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nombre de Proyecto Inválido."
+msgstr "Nombre del Proyecto:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6208,8 +6210,8 @@ msgstr "Botón de Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

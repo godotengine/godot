@@ -503,7 +503,7 @@ msgstr "Odklopite '%s' iz '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "Poveži..."
+msgstr ""
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -923,11 +923,11 @@ msgstr "Premakni Zvočno Vodilo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Shrani Postavitev Zvočnega Vodila Kot..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr "Lokacija za Novo Postavitev..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1065,11 +1065,11 @@ msgstr "Posodabljanje Scene"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes..."
-msgstr "Shranjevanje lokalnih sprememb..."
+msgstr ""
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Posodabljanje scene.."
+msgid "Updating scene..."
+msgstr "Posodabljanje scene..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1138,7 +1138,7 @@ msgstr "Pokaži V Upravitelju Datotek"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Nova Mapa..."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1410,12 +1410,12 @@ msgstr "Napaka pri shranjevanju virov!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "Shrani Vire Kot..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "I see..."
-msgstr "Vidim..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1641,12 +1641,12 @@ msgid "Open Base Scene"
 msgstr "Odpri Osnovno Sceno"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
-msgstr "Hitro Odpri Sceno.."
+msgid "Quick Open Scene..."
+msgstr "Hitro Odpri Sceno..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
-msgstr "Hitro Odpri Skripto.."
+msgid "Quick Open Script..."
+msgstr "Hitro Odpri Skripto..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1657,8 +1657,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Shranim spremembe v '%s' pred zapiranjem?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
-msgstr "Shrani Sceno Kot.."
+msgid "Save Scene As..."
+msgstr "Shrani Sceno Kot..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1709,8 +1709,8 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
-msgstr "Hitro Zaženi Sceno.."
+msgid "Quick Run Scene..."
+msgstr "Hitro Zaženi Sceno..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1868,7 +1868,7 @@ msgstr "Prejšnji zavihek"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr "Filtriraj datoteke..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1879,12 +1879,12 @@ msgid "New Scene"
 msgstr "Nova Scena"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
-msgstr "Nova Podedovana Scena.."
+msgid "New Inherited Scene..."
+msgstr "Nova Podedovana Scena..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
-msgstr "Odpri Sceno.."
+msgid "Open Scene..."
+msgstr "Odpri Sceno..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1903,12 +1903,12 @@ msgid "Open Recent"
 msgstr "Odpri Nedavno"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
-msgstr "Pretvori V.."
+msgid "Convert To..."
+msgstr "Pretvori V..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Knjižnica Modelov..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -2174,7 +2174,7 @@ msgstr "Shrani trenutno urejani vir."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr "Shrani Kot..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2283,7 +2283,7 @@ msgstr "Ustvari Predogled Modela"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr "Sličica..."
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2436,7 +2436,7 @@ msgstr "(Trenutno)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Pridobivanje virov, počakajte..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2514,7 +2514,7 @@ msgstr "Napaka pri zahtevi URL-ja: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "Povezovanje z Virom..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2531,7 +2531,7 @@ msgstr "Ni Mogoče Razrešiti"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting..."
-msgstr "Povezovanje..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2544,7 +2544,7 @@ msgstr "Povezano"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting..."
-msgstr "Zahtevam..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2681,11 +2681,11 @@ msgstr "Skrči vse"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename..."
-msgstr "Preimenuj..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Premakni V..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2697,15 +2697,16 @@ msgstr "Primer"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Uredi Odvisnosti..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "Poglej Lastnike..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Duplicate..."
-msgstr "Podvoji..."
+msgstr "Podvoji Izbrano"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2800,7 +2801,7 @@ msgstr "Uvozi Prizor"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Uvažanje Prizora..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2812,7 +2813,7 @@ msgstr "Ustvarjanje za Model: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr "Izvajanje Skripte Po Meri..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2828,7 +2829,7 @@ msgstr "Napaka pri zagonu skripte po uvozu:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr "Shranjevanje..."
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2848,7 +2849,7 @@ msgstr "Uvozi Kot:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset..."
-msgstr "Prednastavitev..."
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3266,7 +3267,7 @@ msgstr "Gradnik Prehod"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr "Uvozi Animacije..."
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3274,7 +3275,7 @@ msgstr "Uredi Gradnike Filtri"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters..."
-msgstr "Filtri..."
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3342,7 +3343,7 @@ msgstr "Pridobivanje:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr "Razreševanje..."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3408,8 +3409,8 @@ msgid "Site:"
 msgstr "Stran:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Podpora.."
+msgid "Support..."
+msgstr "Podpora..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5353,12 +5354,8 @@ msgid "Transform"
 msgstr "Preoblikovanje"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Preoblikuj Zaskok.."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
-msgstr "Preoblikovanje Dialoga.."
+msgid "Transform Dialog..."
+msgstr "Preoblikovanje Dialoga..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5956,6 +5953,11 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Ime Projekta:"
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -6144,8 +6146,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

@@ -958,7 +958,7 @@ msgstr "Déplacer le bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Enregistrer la disposition des bus audio sous…"
+msgstr "Enregistrer l'agencement du transport audio sous..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -2572,7 +2572,7 @@ msgstr "Erreur lors de la requête de l’URL : "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "Connexion au Miroir..."
+msgstr "Connexion au miroir"
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2763,7 +2763,7 @@ msgid "View Owners..."
 msgstr "Voir les propriétaires…"
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "Dupliquer…"
 
 #: editor/filesystem_dock.cpp
@@ -3671,7 +3671,7 @@ msgstr "Rotation alignée"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configurer le magnétisme…"
+msgstr "Configurer la grille…"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5763,8 +5763,9 @@ msgid "Options"
 msgstr "Options"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Possède,Plusieurs,Options"
+msgstr "Ont,Plusieurs,Possibilités,D'options !"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6049,6 +6050,11 @@ msgid "Imported Project"
 msgstr "Projet importé"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Nom du projet :"
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr "Impossible de créer le dossier."
 
@@ -6252,8 +6258,8 @@ msgstr "Bouton de souris"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6466,7 +6472,7 @@ msgstr "Propriété :"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr "Écraser pour…"
+msgstr "Remplacement pour..."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"

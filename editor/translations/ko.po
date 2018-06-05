@@ -5680,8 +5680,9 @@ msgid "Options"
 msgstr "옵션"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "가진다,많은,옵션들"
+msgstr "가진다,많은,여러,옵션들!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5962,8 +5963,9 @@ msgid "Imported Project"
 msgstr "가져온 프로젝트"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "인식할수 없는 프로젝트 명입니다."
+msgstr "프로젝트 명:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6164,8 +6166,8 @@ msgstr "마우스 버튼"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

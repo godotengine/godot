@@ -5896,6 +5896,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Invalid Project Name."
+msgstr "Ongeldige naam."
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kon nie vouer skep nie."
 
@@ -6084,8 +6089,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

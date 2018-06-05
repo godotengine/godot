@@ -5905,6 +5905,10 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Invalid Project Name."
+msgstr ""
+
+#: editor/project_manager.cpp
 #, fuzzy
 msgid "Couldn't create folder."
 msgstr "Vytvoriť adresár"
@@ -6096,8 +6100,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

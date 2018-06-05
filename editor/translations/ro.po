@@ -497,8 +497,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Deconectați '%s' de la '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
-msgstr "Conectați.."
+msgid "Connect..."
+msgstr "Conectați..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -918,11 +918,11 @@ msgid "Move Audio Bus"
 msgstr "Mutați Pista Audio"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
-msgstr "Salvați Pista Audio Șablon Ca.."
+msgid "Save Audio Bus Layout As..."
+msgstr "Salvați Pista Audio Șablon Ca..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
+msgid "Location for New Layout..."
 msgstr "Locație pentru Noul Șablon..."
 
 #: editor/editor_audio_buses.cpp
@@ -1063,12 +1063,12 @@ msgid "Updating Scene"
 msgstr "Scena se Actualizează"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
+msgid "Storing local changes..."
 msgstr "Modificările locale se stochează..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Scena se Actualizează.."
+msgid "Updating scene..."
+msgstr "Scena se Actualizează..."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
@@ -1137,7 +1137,7 @@ msgstr "Arătați în Administratorul de Fișiere"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Director Nou..."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1411,12 +1411,12 @@ msgstr "Eroare la salvarea resursei!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "Salvați Resursa Ca..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "I see..."
-msgstr "Am înțeles..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1647,11 +1647,11 @@ msgstr "Deschide o scenă de bază"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Deschide o scenă rapid..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Deschide un script rapid..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1663,7 +1663,7 @@ msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Salvează scena ca..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1715,7 +1715,7 @@ msgstr "Această acțiune nu poate fi recuperată. Te reîntorci oricum?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Execută Rapid Scena..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1876,7 +1876,7 @@ msgstr "Fila anterioară"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr "Filtrează fișierele..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1888,11 +1888,11 @@ msgstr "Scenă Nouă"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "Scenă Derivată Nouă..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr "Deschide Scena..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1912,15 +1912,15 @@ msgstr "Deschide Recente"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "Convertește În..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Librărie_de_Structuri..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "Set_de_Plăci..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2184,7 +2184,7 @@ msgstr "Salvează resursa editată curentă."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr "Salvează Ca..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2293,7 +2293,7 @@ msgstr "Se creează Previzualizările Mesh-ului"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr "Miniatură..."
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2447,7 +2447,7 @@ msgstr "(Curent)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Se recuperează oglinzile, te rog așteaptă..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2525,7 +2525,7 @@ msgstr "Eroare la solicitarea URL: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "Se conectează la Oglinda..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2542,7 +2542,7 @@ msgstr "Nu se poate Soluționa"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting..."
-msgstr "Conectare..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2555,7 +2555,7 @@ msgstr "Conectat"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting..."
-msgstr "Se Solicită..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2693,11 +2693,11 @@ msgstr "Restrânge toate"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename..."
-msgstr "Redenumește..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Mută În..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2709,15 +2709,15 @@ msgstr "Instanță"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Editează Dependințele..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "Vizualizează Proprietarii..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr "Duplicați..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2811,7 +2811,7 @@ msgstr "Importă Scena"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Se Importa Scena..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2823,7 +2823,7 @@ msgstr "Se Generează pentru Mesh: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr "Se Execută un Script Personalizat..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2839,7 +2839,7 @@ msgstr "Eroare la executarea scripyului post-importare:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr "Se Salvează..."
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2859,7 +2859,7 @@ msgstr "Importă Ca:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset..."
-msgstr "Presetare..."
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3277,7 +3277,7 @@ msgstr "Nod Tranziție"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr "Importă Animații..."
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3285,7 +3285,7 @@ msgstr "Editează Filtrele Nodurilor"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters..."
-msgstr "Filtre..."
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3353,7 +3353,7 @@ msgstr "Se Preia(u):"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr "Se Rezolvă..."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3420,7 +3420,7 @@ msgstr "Site:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support..."
-msgstr "Suport..."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -4048,7 +4048,7 @@ msgstr "Creează un Frate de Coliziune Convex"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
-msgstr "Se Creează un Mesh de Contur..."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -5974,6 +5974,11 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Nume nevalid."
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr ""
 
@@ -6168,8 +6173,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

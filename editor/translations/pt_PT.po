@@ -925,8 +925,8 @@ msgid "Move Audio Bus"
 msgstr "Mover barramento de áudio"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
-msgstr "Guardar Modelo do barramento de áudio como.."
+msgid "Save Audio Bus Layout As..."
+msgstr "Guardar Modelo do barramento de áudio como..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -5699,8 +5699,9 @@ msgid "Options"
 msgstr "Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tem,Muitas,Opções"
+msgstr "Tem,Muitos,Vários,Opções!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5987,8 +5988,9 @@ msgid "Imported Project"
 msgstr "Projeto importado"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nome do Projeto Inválido."
+msgstr "Nome do Projeto:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6190,8 +6192,8 @@ msgstr "Botão do rato"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

@@ -2307,8 +2307,8 @@ msgid "Creating Mesh Previews"
 msgstr "Creëren van Mesh Previews"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Voorbeeld.."
+msgid "Thumbnail..."
+msgstr "Voorbeeld..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -4227,7 +4227,7 @@ msgstr "Hoogteveld aan het creëeren..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
-msgstr "Markeer loopbare driehoeken.."
+msgstr "Markeer loopbare driehoeken..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
@@ -4284,8 +4284,8 @@ msgid "Error loading image:"
 msgstr "Error bij het laden van afbeelding:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "Geen pixels met transparantie > 128 in afbeelding.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Geen pixels met transparantie > 128 in afbeelding..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4645,8 +4645,8 @@ msgid "Import Theme"
 msgstr "Importeer Thema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Thema Opslaan Als.."
+msgid "Save Theme As..."
+msgstr "Thema Opslaan Als..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
@@ -4742,8 +4742,8 @@ msgstr "Schakel Scripten Paneel"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Vind.."
+msgid "Find..."
+msgstr "Vind..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4952,16 +4952,16 @@ msgid "Find Previous"
 msgstr "Vind Vorige"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Vervang.."
+msgid "Replace..."
+msgstr "Vervang..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Ga Naar Functie.."
+msgid "Goto Function..."
+msgstr "Ga Naar Functie..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Ga Naar Regel.."
+msgid "Goto Line..."
+msgstr "Ga Naar Regel..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5417,7 +5417,7 @@ msgstr "Transformatie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr "Transformatie Dialoog..."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -5670,7 +5670,7 @@ msgstr "Verwijder Alles"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme..."
-msgstr "Bewerk Thema..."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -5742,9 +5742,8 @@ msgid "Options"
 msgstr "Opties"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Opties"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5933,7 +5932,7 @@ msgstr "Voorinstelling"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
-msgstr "Toevoegen..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6027,6 +6026,7 @@ msgid "Invalid Project Name."
 msgstr "Ongeldige naam."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create folder."
 msgstr "Kon map niet creëren."
 
@@ -6221,8 +6221,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

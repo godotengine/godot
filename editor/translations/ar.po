@@ -4231,7 +4231,7 @@ msgstr "خطأ تحميل الصورة:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr "لا بيكسل بشفافية > 128 في الصورة..."
+msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -5691,9 +5691,8 @@ msgid "Options"
 msgstr "الخيارات"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "بكثير، خيارات عديدة،!"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5970,6 +5969,11 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "اسم غير صالح."
+
+#: editor/project_manager.cpp
 msgid "Couldn't create folder."
 msgstr "لا يمكن إنشاء المجلد."
 
@@ -6156,8 +6160,8 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp

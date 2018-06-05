@@ -2413,7 +2413,7 @@ msgid "(Current)"
 msgstr "(当前)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "检索镜像，请等待..."
 
 #: editor/export_template_manager.cpp
@@ -2489,7 +2489,7 @@ msgid "Error requesting url: "
 msgstr "请求链接错误: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
+msgid "Connecting to Mirror..."
 msgstr "正在连接镜像网站。。"
 
 #: editor/export_template_manager.cpp
@@ -2519,7 +2519,7 @@ msgstr "已连接"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "正在请求。。"
 
 #: editor/export_template_manager.cpp
@@ -5652,8 +5652,9 @@ msgid "Options"
 msgstr "选项"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Has,Many,Options"
-msgstr "有，很多，选项"
+msgstr "有，很多，几个，选项(Have,Many,Several,Options)！"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5933,8 +5934,9 @@ msgid "Imported Project"
 msgstr "已导入的项目"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid Project Name."
-msgstr "无效项目名称。"
+msgstr "项目名称:"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6132,8 +6134,8 @@ msgstr "鼠标按键"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
