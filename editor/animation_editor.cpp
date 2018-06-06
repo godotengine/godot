@@ -3199,14 +3199,8 @@ void AnimationKeyEditor::_query_insert(const InsertData &p_id) {
 
 	if (p_id.track_idx == -1) {
 		if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true))) {
-			//potential new key, does not exist
-			if (insert_data.size() == 1)
-				insert_confirm->set_text(vformat(TTR("Create NEW track for %s and insert key?"), p_id.query));
-			else
-				insert_confirm->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), insert_data.size()));
-
-			insert_confirm->get_ok()->set_text(TTR("Create"));
-			insert_confirm->popup_centered_minsize();
+			//we may get called multiple times so delay the insert_confirm dialog
+			call_deferred("_show_insert_confirm");
 			insert_query = true;
 		} else {
 			call_deferred("_insert_delay");
@@ -3565,6 +3559,27 @@ void AnimationKeyEditor::_pane_drag(const Point2 &p_delta) {
 	ec->set_custom_minimum_size(ecs);
 }
 
+void AnimationKeyEditor::_show_insert_confirm() {
+
+	if (insert_confirm->is_visible_in_tree())
+		return; //dialog already showing, do nothing
+
+	int tracks_to_insert = 0;
+	for (List<InsertData>::Element *E = insert_data.front(); E; E = E->next()) {
+		if (E->get().track_idx == -1) {
+			tracks_to_insert++;
+		}
+	}
+
+	if (tracks_to_insert == 1)
+		insert_confirm->set_text(vformat(TTR("Create NEW track for %s and insert key?"), insert_data[0].query));
+	else
+		insert_confirm->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), tracks_to_insert));
+
+	insert_confirm->get_ok()->set_text(TTR("Create"));
+	insert_confirm->popup_centered_minsize();
+}
+
 void AnimationKeyEditor::_insert_delay() {
 
 	if (insert_query) {
@@ -3779,6 +3794,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"), &AnimationKeyEditor::_clear_selection_for_anim);
 	ClassDB::bind_method(D_METHOD("_select_at_anim"), &AnimationKeyEditor::_select_at_anim);
 	ClassDB::bind_method(D_METHOD("_track_position_draw"), &AnimationKeyEditor::_track_position_draw);
+	ClassDB::bind_method(D_METHOD("_show_insert_confirm"), &AnimationKeyEditor::_show_insert_confirm);
 	ClassDB::bind_method(D_METHOD("_insert_delay"), &AnimationKeyEditor::_insert_delay);
 	ClassDB::bind_method(D_METHOD("_step_changed"), &AnimationKeyEditor::_step_changed);
 
