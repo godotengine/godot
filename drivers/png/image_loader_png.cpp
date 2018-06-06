@@ -126,7 +126,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	}
 
 	if (depth > 8) {
-		png_set_strip_16(png);
+		png_set_swap(png);
 		update_info = true;
 	}
 
@@ -142,40 +142,79 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	}
 
 	int components = 0;
+	int byte_count = 1;
 
 	Image::Format fmt;
-	switch (color) {
+	if (depth == 8) {
+		switch (color) {
 
-		case PNG_COLOR_TYPE_GRAY: {
+			case PNG_COLOR_TYPE_GRAY: {
 
-			fmt = Image::FORMAT_L8;
-			components = 1;
-		} break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA: {
+				fmt = Image::FORMAT_L8;
+				components = 1;
+			} break;
+			case PNG_COLOR_TYPE_GRAY_ALPHA: {
 
-			fmt = Image::FORMAT_LA8;
-			components = 2;
-		} break;
-		case PNG_COLOR_TYPE_RGB: {
+				fmt = Image::FORMAT_LA8;
+				components = 2;
+			} break;
+			case PNG_COLOR_TYPE_RGB: {
 
-			fmt = Image::FORMAT_RGB8;
-			components = 3;
-		} break;
-		case PNG_COLOR_TYPE_RGB_ALPHA: {
+				fmt = Image::FORMAT_RGB8;
+				components = 3;
+			} break;
+			case PNG_COLOR_TYPE_RGB_ALPHA: {
 
-			fmt = Image::FORMAT_RGBA8;
-			components = 4;
-		} break;
-		default: {
+				fmt = Image::FORMAT_RGBA8;
+				components = 4;
+			} break;
+			default: {
 
-			ERR_PRINT("INVALID PNG TYPE");
-			png_destroy_read_struct(&png, &info, NULL);
-			return ERR_UNAVAILABLE;
-		} break;
+				ERR_PRINT("INVALID PNG TYPE");
+				png_destroy_read_struct(&png, &info, NULL);
+				return ERR_UNAVAILABLE;
+			} break;
+		}
+	} else { // 16-bit support
+		byte_count = 2;
+
+		switch (color) {
+
+			case PNG_COLOR_TYPE_GRAY: {
+
+				fmt = Image::FORMAT_RH;
+				components = 1;
+			} break;
+			case PNG_COLOR_TYPE_GRAY_ALPHA: {
+
+				fmt = Image::FORMAT_RGH;
+				components = 2;
+			} break;
+			case PNG_COLOR_TYPE_RGB: {
+
+				fmt = Image::FORMAT_RGBH;
+				components = 3;
+			} break;
+			case PNG_COLOR_TYPE_RGB_ALPHA: {
+
+				fmt = Image::FORMAT_RGBAH;
+				components = 4;
+			} break;
+			default: {
+
+				ERR_PRINT("INVALID PNG TYPE");
+				png_destroy_read_struct(&png, &info, NULL);
+				return ERR_UNAVAILABLE;
+			} break;
+		}
 	}
 
-	//int rowsize = png_get_rowbytes(png, info);
-	int rowsize = components * width;
+	int rowsize_t = png_get_rowbytes(png, info);
+	int rowsize = components * width * byte_count;
+	if (rowsize_t != rowsize) {
+		ERR_PRINT("PNG rowsize error");
+		return ERR_FILE_CORRUPT;
+	}
 
 	PoolVector<uint8_t> dstbuff;
 
@@ -188,10 +227,22 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	uint8_t **row_p = memnew_arr(uint8_t *, height);
 
 	for (unsigned int i = 0; i < height; i++) {
-		row_p[i] = &data[components * width * i];
+		row_p[i] = &data[rowsize * i];
 	}
 
 	png_read_image(png, (png_bytep *)row_p);
+
+	// convert from uint16 to half-float
+	if (depth > 8) {
+		uint16_t *data16 = (uint16_t *)data;
+		unsigned int num_components = components * width * height;
+		for (unsigned int i = 0; i < num_components; ++i) {
+			float fval = data16[i] / 65535.0;
+			//print_line("x,y" + itos(x) + "," + itos(y) + " - c" + itos(c) + " = " + itos(ival) + " = " + String::num(fval));
+			uint16_t hval = Math::make_half_float(fval);
+			data16[i] = hval;
+		}
+	}
 
 	memdelete_arr(row_p);
 
