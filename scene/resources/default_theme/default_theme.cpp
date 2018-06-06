@@ -844,7 +844,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
 	theme->set_constant("separation", "VBoxContainer", 4 * scale);
-	theme->set_constant("margin_left", "MarginContainer", 8 * scale);
+	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
