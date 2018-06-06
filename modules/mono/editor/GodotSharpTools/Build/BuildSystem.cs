@@ -234,7 +234,7 @@ namespace GodotSharpTools.Build
 
         private static bool IsDebugMSBuildRequested()
         {
-            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD").Trim() == "1";
+            return Environment.GetEnvironmentVariable("GODOT_DEBUG_MSBUILD")?.Trim() == "1";
         }
 
         public void Dispose()
