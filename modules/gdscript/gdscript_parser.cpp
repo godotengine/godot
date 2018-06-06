@@ -267,6 +267,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			bool need_identifier = true;
 			bool done = false;
+			int line = tokenizer->get_token_line();
 
 			while (!done) {
 
@@ -334,17 +335,19 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			OperatorNode *op = alloc_node<OperatorNode>();
 			op->op = OperatorNode::OP_CALL;
-
+			op->line = line;
 			op->arguments.push_back(alloc_node<SelfNode>());
+			op->arguments[0]->line = line;
 
 			IdentifierNode *funcname = alloc_node<IdentifierNode>();
 			funcname->name = "get_node";
-
+			funcname->line = line;
 			op->arguments.push_back(funcname);
 
 			ConstantNode *nodepath = alloc_node<ConstantNode>();
 			nodepath->value = NodePath(StringName(path));
 			nodepath->datatype = _type_from_variant(nodepath->value);
+			nodepath->line = line;
 			op->arguments.push_back(nodepath);
 
 			expr = op;
@@ -2459,6 +2462,7 @@ void GDScriptParser::_generate_pattern(PatternNode *p_pattern, Node *p_node_to_m
 void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 	IdentifierNode *id = alloc_node<IdentifierNode>();
 	id->name = "#match_value";
+	id->line = p_match_statement->line;
 	id->datatype = _reduce_node_type(p_match_statement->val_to_match);
 
 	if (error_set) {
@@ -2701,6 +2705,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					} else {
 						c->value = Variant();
 					}
+					c->line = var_line;
 					assigned = c;
 				}
 				//must be added later, to avoid self-referencing.
@@ -2709,11 +2714,13 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				IdentifierNode *id = alloc_node<IdentifierNode>();
 				id->name = n;
 				id->declared_block = p_block;
+				id->line = var_line;
 
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = OperatorNode::OP_ASSIGN;
 				op->arguments.push_back(id);
 				op->arguments.push_back(assigned);
+				op->line = var_line;
 				p_block->statements.push_back(op);
 				lv->assign_op = op;
 				lv->assign = assigned;
@@ -3051,6 +3058,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				tokenizer->advance();
 				ControlFlowNode *cf_return = alloc_node<ControlFlowNode>();
 				cf_return->cf_type = ControlFlowNode::CF_RETURN;
+				cf_return->line = tokenizer->get_token_line(-1);
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_SEMICOLON || tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE || tokenizer->get_token() == GDScriptTokenizer::TK_EOF) {
 					//expect end of statement
@@ -3547,9 +3555,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							OperatorNode *on = alloc_node<OperatorNode>();
 							on->op = OperatorNode::OP_ASSIGN;
+							on->line = fnline;
 
 							IdentifierNode *in = alloc_node<IdentifierNode>();
 							in->name = argname;
+							in->line = fnline;
 
 							on->arguments.push_back(in);
 							on->arguments.push_back(defval);
@@ -4569,6 +4579,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				StringName const_id = tokenizer->get_token_literal();
+				int line = tokenizer->get_token_line();
 
 				if (current_class->constant_expressions.has(const_id)) {
 					_set_error("Constant '" + String(const_id) + "' alread exists in this class (at line: " +
@@ -4598,8 +4609,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				int line = tokenizer->get_token_line();
-
 				tokenizer->advance();
 
 				Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
@@ -4614,6 +4623,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					_set_error("Expected constant expression", line);
 					return;
 				}
+				subexpr->line = line;
 				constant.expression = subexpr;
 
 				p_class->constant_expressions.insert(const_id, constant);
