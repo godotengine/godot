@@ -32,6 +32,7 @@
 #include "lws_client.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer_ssl.h"
+#include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
@@ -140,7 +141,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			destroy_context();
 			return -1; // we should close the connection (would probably happen anyway)
 
-		case LWS_CALLBACK_CLOSED:
+		case LWS_CALLBACK_CLIENT_CLOSED:
 			peer_data->in_count = 0;
 			peer_data->out_count = 0;
 			peer_data->rbw.resize(0);
