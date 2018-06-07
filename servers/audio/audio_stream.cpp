@@ -89,6 +89,7 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 	}
 }
+
 ////////////////////////////////
 
 void AudioStream::_bind_methods() {

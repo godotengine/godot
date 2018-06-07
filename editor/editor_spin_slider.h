@@ -55,6 +55,8 @@ class EditorSpinSlider : public Range {
 
 	bool grabbing_spinner_attempt;
 	bool grabbing_spinner;
+
+	bool read_only;
 	Vector2 grabbing_spinner_mouse_pos;
 
 	LineEdit *value_input;
@@ -79,6 +81,9 @@ public:
 
 	void set_hide_slider(bool p_hide);
 	bool is_hiding_slider() const;
+
+	void set_read_only(bool p_enable);
+	bool is_read_only() const;
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();

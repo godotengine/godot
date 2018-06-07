@@ -60,6 +60,8 @@ class PropertySelector : public ConfirmationDialog {
 
 	void _item_selected();
 
+	Vector<Variant::Type> type_filter;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -74,6 +76,8 @@ public:
 	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
 	void select_property_from_basic_type(Variant::Type p_type, const String &p_current = "");
 	void select_property_from_instance(Object *p_instance, const String &p_current = "");
+
+	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
 	PropertySelector();
 };

@@ -100,17 +100,13 @@ public:
 	EditorScriptPreviewPlugin();
 };
 
-// FIXME: Needs to be rewritten for AudioStream in Godot 3.0+
-#if 0
-class EditorSamplePreviewPlugin : public EditorResourcePreviewGenerator {
+class EditorAudioStreamPreviewPlugin : public EditorResourcePreviewGenerator {
 public:
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
-
-	EditorSamplePreviewPlugin();
+	EditorAudioStreamPreviewPlugin();
 };
-#endif
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 

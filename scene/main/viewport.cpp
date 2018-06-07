@@ -1308,13 +1308,37 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 }
 
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos) {
+
+	Vector2 pos = p_pos;
+	String tooltip;
+
+	while (p_control) {
+
+		tooltip = p_control->get_tooltip(pos);
+
+		if (tooltip != String())
+			break;
+		pos = p_control->get_transform().xform(pos);
+
+		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+			break;
+		if (p_control->is_set_as_toplevel())
+			break;
+
+		p_control = p_control->get_parent_control();
+	}
+
+	return tooltip;
+}
+
 void Viewport::_gui_show_tooltip() {
 
 	if (!gui.tooltip) {
 		return;
 	}
 
-	String tooltip = gui.tooltip->get_tooltip(gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
 	if (tooltip.length() == 0)
 		return; // bye
 
@@ -1390,12 +1414,14 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
+			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev);
+			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
 			if (gui.key_event_accepted)
@@ -1866,7 +1892,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (gui.tooltip_popup) {
 				if (can_tooltip) {
-					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)
 						_gui_cancel_tooltip();
@@ -1888,7 +1914,23 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		mm->set_position(pos);
 
-		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
+		Control::CursorShape cursor_shape = Control::CURSOR_ARROW;
+		{
+			Control *c = over;
+			Vector2 cpos = pos;
+			while (c) {
+				cursor_shape = c->get_cursor_shape();
+				cpos = c->get_transform().xform(cpos);
+				if (cursor_shape != Control::CURSOR_ARROW)
+					break;
+				if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+					break;
+				if (c->is_set_as_toplevel())
+					break;
+				c = c->get_parent_control();
+			}
+		}
+
 		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
 
 		if (over->can_process()) {

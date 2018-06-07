@@ -1,41 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	  package="com.godot.game"
-      android:versionCode="1"
-      android:versionName="1.0"
-      android:installLocation="auto"
-      >
-<supports-screens android:smallScreens="true"
-                      android:normalScreens="true"
-                      android:largeScreens="true"
-                      android:xlargeScreens="true"/>
+duplicate, 
+delete 
+options, 
+unite equal tracks
+fix (harcode) seek
+biziers
+sound tracks
+play icons on key tracks
 
-    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
-        <activity android:name="org.godotengine.godot.Godot"
-                  android:label="@string/godot_project_name_string"
-                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-                  android:launchMode="singleTask"
-                  android:screenOrientation="landscape"
-                  android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
-                  android:resizeableActivity="false">
+Siempre quise se parte de un equipo que desarrolle un juego, lo publique en Steam y consiga un Overwhelmingly Positive. 
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-	<service android:name="org.godotengine.godot.GodotDownloaderService" />
-
-
-
-
-$$ADD_APPLICATION_CHUNKS$$
-
-    </application>
-    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
-
-$$ADD_PERMISSION_CHUNKS$$
-
-<uses-sdk android:minSdkVersion="18" android:targetSdkVersion="27"/>
-
-</manifest>
+Posiblemente eso no me de nunca.. pero esto es muchísimo mejor! Gracias a todos por tenerle fé a este proyecto hermoso!

@@ -30,6 +30,7 @@
 
 #include "scene_tree_editor.h"
 
+#include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor_node.h"
 #include "message_queue.h"
@@ -89,6 +90,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			n->set_meta("_edit_lock_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
+		}
+	} else if (p_id == BUTTON_PIN) {
+
+		if (n->is_class("AnimationPlayer")) {
+			AnimationPlayerEditor::singleton->unpin();
+			_update_tree();
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
@@ -284,6 +291,13 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
 
 			_update_visibility_color(p_node, item);
+		} else if (p_node->is_class("AnimationPlayer")) {
+
+			bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
+
+			if (is_pinned) {
+				item->add_button(0, get_icon("Pin", "EditorIcons"), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
+			}
 		}
 	}
 

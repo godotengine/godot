@@ -120,33 +120,33 @@ void PropertySelector::_update_search() {
 		bool found = false;
 
 		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("MiniVariant", "EditorIcons"),
-			Control::get_icon("MiniBoolean", "EditorIcons"),
-			Control::get_icon("MiniInteger", "EditorIcons"),
-			Control::get_icon("MiniFloat", "EditorIcons"),
-			Control::get_icon("MiniString", "EditorIcons"),
-			Control::get_icon("MiniVector2", "EditorIcons"),
-			Control::get_icon("MiniRect2", "EditorIcons"),
-			Control::get_icon("MiniVector3", "EditorIcons"),
-			Control::get_icon("MiniMatrix2", "EditorIcons"),
-			Control::get_icon("MiniPlane", "EditorIcons"),
-			Control::get_icon("MiniQuat", "EditorIcons"),
-			Control::get_icon("MiniAabb", "EditorIcons"),
-			Control::get_icon("MiniMatrix3", "EditorIcons"),
-			Control::get_icon("MiniTransform", "EditorIcons"),
-			Control::get_icon("MiniColor", "EditorIcons"),
-			Control::get_icon("MiniPath", "EditorIcons"),
-			Control::get_icon("MiniRid", "EditorIcons"),
-			Control::get_icon("MiniObject", "EditorIcons"),
-			Control::get_icon("MiniDictionary", "EditorIcons"),
-			Control::get_icon("MiniArray", "EditorIcons"),
-			Control::get_icon("MiniRawArray", "EditorIcons"),
-			Control::get_icon("MiniIntArray", "EditorIcons"),
-			Control::get_icon("MiniFloatArray", "EditorIcons"),
-			Control::get_icon("MiniStringArray", "EditorIcons"),
-			Control::get_icon("MiniVector2Array", "EditorIcons"),
-			Control::get_icon("MiniVector3Array", "EditorIcons"),
-			Control::get_icon("MiniColorArray", "EditorIcons")
+			Control::get_icon("Variant", "EditorIcons"),
+			Control::get_icon("bool", "EditorIcons"),
+			Control::get_icon("int", "EditorIcons"),
+			Control::get_icon("float", "EditorIcons"),
+			Control::get_icon("String", "EditorIcons"),
+			Control::get_icon("Vector2", "EditorIcons"),
+			Control::get_icon("Rect2", "EditorIcons"),
+			Control::get_icon("Vector3", "EditorIcons"),
+			Control::get_icon("Transform2D", "EditorIcons"),
+			Control::get_icon("Plane", "EditorIcons"),
+			Control::get_icon("Quat", "EditorIcons"),
+			Control::get_icon("AABB", "EditorIcons"),
+			Control::get_icon("Basis", "EditorIcons"),
+			Control::get_icon("Transform", "EditorIcons"),
+			Control::get_icon("Color", "EditorIcons"),
+			Control::get_icon("Path", "EditorIcons"),
+			Control::get_icon("RID", "EditorIcons"),
+			Control::get_icon("Object", "EditorIcons"),
+			Control::get_icon("Dictionary", "EditorIcons"),
+			Control::get_icon("Array", "EditorIcons"),
+			Control::get_icon("PoolByteArray", "EditorIcons"),
+			Control::get_icon("PoolIntArray", "EditorIcons"),
+			Control::get_icon("PoolRealArray", "EditorIcons"),
+			Control::get_icon("PoolStringArray", "EditorIcons"),
+			Control::get_icon("PoolVector2Array", "EditorIcons"),
+			Control::get_icon("PoolVector3Array", "EditorIcons"),
+			Control::get_icon("PoolColorArray", "EditorIcons")
 		};
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -175,6 +175,10 @@ void PropertySelector::_update_search() {
 
 			if (search_box->get_text() != String() && E->get().name.find(search_box->get_text()) == -1)
 				continue;
+
+			if (type_filter.size() && type_filter.find(E->get().type) == -1)
+				continue;
+
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, E->get().name);
 			item->set_metadata(0, E->get().name);
@@ -532,6 +536,10 @@ void PropertySelector::select_property_from_instance(Object *p_instance, const S
 	search_box->set_text("");
 	search_box->grab_focus();
 	_update_search();
+}
+
+void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filter) {
+	type_filter = p_type_filter;
 }
 
 void PropertySelector::_bind_methods() {

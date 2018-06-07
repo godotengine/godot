@@ -1331,8 +1331,9 @@ void EditorInspector::update_tree() {
 		} else if (!(p.usage & PROPERTY_USAGE_EDITOR))
 			continue;
 
-		if (hide_script && p.name == "script")
+		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
 			continue;
+		}
 
 		String basename = p.name;
 		if (group != "") {
