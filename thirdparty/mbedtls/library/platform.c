@@ -28,14 +28,7 @@
 #if defined(MBEDTLS_PLATFORM_C)
 
 #include "mbedtls/platform.h"
-
-#if defined(MBEDTLS_ENTROPY_NV_SEED) && \
-    !defined(MBEDTLS_PLATFORM_NO_STD_FUNCTIONS) && defined(MBEDTLS_FS_IO)
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
-#endif
+#include "mbedtls/platform_util.h"
 
 #if defined(MBEDTLS_PLATFORM_MEMORY)
 #if !defined(MBEDTLS_PLATFORM_STD_CALLOC)
@@ -241,7 +234,7 @@ int mbedtls_platform_std_nv_seed_read( unsigned char *buf, size_t buf_len )
     if( ( n = fread( buf, 1, buf_len, file ) ) != buf_len )
     {
         fclose( file );
-        mbedtls_zeroize( buf, buf_len );
+        mbedtls_platform_zeroize( buf, buf_len );
         return( -1 );
     }
 
