@@ -1404,16 +1404,15 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
-		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
 		return;
 	}
 
 	if (members_overview_enabled && se->show_members_overview()) {
 		members_overview_alphabeta_sort_button->set_visible(true);
+		members_overview_buttons_hbox->set_visible(true);
 		members_overview->set_visible(true);
 	} else {
-		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
 	}
 }
@@ -1451,6 +1450,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 
 	int selected = tab_container->get_current_tab();
 	if (selected < 0 || selected >= tab_container->get_child_count()) {
+		members_overview_buttons_hbox->set_visible(false);
 		help_overview->set_visible(false);
 		return;
 	}
@@ -1464,6 +1464,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 
 	if (help_overview_enabled) {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		members_overview_buttons_hbox->set_visible(true);
 		help_overview->set_visible(true);
 		filename->set_text(se->get_name());
 	} else {
