@@ -221,7 +221,7 @@ License: BSD-3-clause
 Files: ./thirdparty/libwebsockets/
 Comment: libwebsockets
 Copyright: 2010-2017, Andy Green
-License: LGPL-2.1+SLE (lws)
+License: LGPL-2.1+SLE (libwebsockets)
 
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
@@ -1061,7 +1061,7 @@ License: ISC
  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-License: LGPL-2.1+SLE (lws)
+License: LGPL-2.1+SLE (libwebsockets)
  Libwebsockets and included programs are provided under the terms of the GNU
  Library General Public License (LGPL) 2.1, with the following exceptions:
  .
@@ -1097,19 +1097,21 @@ License: LGPL-2.1+SLE (lws)
  .
  Original liberal license retained
  .
-   - lib/sha-1.c         - 3-clause BSD license retained, link to original
+   - lib/misc/sha-1.c    - 3-clause BSD license retained, link to original
    - win32port/zlib      - ZLIB license (see zlib.h)
+   - lib/tls/mbedtls/wrapper - Apache 2.0 (only built if linked against mbedtls)
  .
  Relicensed to libwebsocket license
  .
-   - lib/base64-decode.c - relicensed to LGPL2.1+SLE, link to original
-   - lib/daemonize.c     - relicensed from Public Domain to LGPL2.1+SLE,
-                           link to original Public Domain version
+   - lib/misc/base64-decode.c - relicensed to LGPL2.1+SLE, link to original
+   - lib/misc/daemonize.c     - relicensed from Public Domain to LGPL2.1+SLE,
+                                link to original Public Domain version
  .
  Public Domain (CC-zero) to simplify reuse
  .
-   - test-server/*.c
-   - test-server/*.h
+   - test-apps/*.c
+   - test-apps/*.h
+   - minimal-examples/*
    - lwsws/*
  .
  ------ end of exceptions

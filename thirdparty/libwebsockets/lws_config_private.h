@@ -100,6 +100,8 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define LWS_HAVE_UNISTD_H
 
+#define LWS_HAVE_TCP_USER_TIMEOUT
+
 /* Define to 1 if you have the `vfork' function. */
 #define LWS_HAVE_VFORK
 

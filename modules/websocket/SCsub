@@ -10,44 +10,54 @@ env_lws = env_modules.Clone()
 thirdparty_dir = "#thirdparty/libwebsockets/"
 helper_dir = "win32helpers/"
 thirdparty_sources = [
-    "client/client.c",
-    "client/client-handshake.c",
-    "client/client-parser.c",
-    "client/ssl-client.c",
 
-    "ext/extension.c",
-    "ext/extension-permessage-deflate.c",
+    "core/alloc.c",
+    "core/context.c",
+    "core/libwebsockets.c",
+    "core/output.c",
+    "core/pollfd.c",
+    "core/service.c",
 
-    "server/fops-zip.c",
-    "server/lejp-conf.c",
-    "server/parsers.c",
-    "server/ranges.c",
-    "server/server.c",
-    "server/server-handshake.c",
-    "server/ssl-server.c",
+    "event-libs/poll/poll.c",
 
     "misc/base64-decode.c",
     "misc/lejp.c",
     "misc/sha-1.c",
 
-    "alloc.c",
-    "context.c",
-    "handshake.c",
-    "header.c",
-    "libwebsockets.c",
-    "output.c",
-    "pollfd.c",
-    "service.c",
-    "ssl.c",
+    "roles/h1/ops-h1.c",
+    "roles/http/header.c",
+    "roles/http/client/client.c",
+    "roles/http/client/client-handshake.c",
+    "roles/http/server/fops-zip.c",
+    "roles/http/server/lejp-conf.c",
+    "roles/http/server/parsers.c",
+    "roles/http/server/server.c",
+    "roles/listen/ops-listen.c",
+    "roles/pipe/ops-pipe.c",
+    "roles/raw/ops-raw.c",
 
-    "mbedtls_wrapper/library/ssl_cert.c",
-    "mbedtls_wrapper/library/ssl_pkey.c",
-    "mbedtls_wrapper/library/ssl_stack.c",
-    "mbedtls_wrapper/library/ssl_methods.c",
-    "mbedtls_wrapper/library/ssl_lib.c",
-    "mbedtls_wrapper/library/ssl_x509.c",
-    "mbedtls_wrapper/platform/ssl_port.c",
-    "mbedtls_wrapper/platform/ssl_pm.c",
+    "roles/ws/client-ws.c",
+    "roles/ws/client-parser-ws.c",
+    "roles/ws/ops-ws.c",
+    "roles/ws/server-ws.c",
+
+    "tls/tls.c",
+    "tls/tls-client.c",
+    "tls/tls-server.c",
+
+    "tls/mbedtls/wrapper/library/ssl_cert.c",
+    "tls/mbedtls/wrapper/library/ssl_pkey.c",
+    "tls/mbedtls/wrapper/library/ssl_stack.c",
+    "tls/mbedtls/wrapper/library/ssl_methods.c",
+    "tls/mbedtls/wrapper/library/ssl_lib.c",
+    "tls/mbedtls/wrapper/library/ssl_x509.c",
+    "tls/mbedtls/wrapper/platform/ssl_port.c",
+    "tls/mbedtls/wrapper/platform/ssl_pm.c",
+    "tls/mbedtls/lws-genhash.c",
+    "tls/mbedtls/mbedtls-client.c",
+    "tls/mbedtls/lws-genrsa.c",
+    "tls/mbedtls/ssl.c",
+    "tls/mbedtls/mbedtls-server.c"
 ]
 
 if env_lws["platform"] == "android": # Builtin getifaddrs
@@ -67,7 +77,7 @@ else:
     env_lws.add_source_files(env.modules_sources, thirdparty_sources)
     env_lws.Append(CPPPATH=[thirdparty_dir])
 
-    wrapper_includes = ["#thirdparty/libwebsockets/mbedtls_wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
+    wrapper_includes = ["#thirdparty/libwebsockets/tls/mbedtls/wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
     env_lws.Prepend(CPPPATH=wrapper_includes)
 
     if env['builtin_mbedtls']:

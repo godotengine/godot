@@ -32,7 +32,7 @@
  * implemented by Jun-ichiro itojun Itoh <itojun@itojun.org>
  */
 
-#include "private-libwebsockets.h"
+#include "core/private.h"
 
 #ifdef LWS_HAVE_SYS_TYPES_H
 #include <sys/types.h>

@@ -38,6 +38,9 @@
 #include <string.h>
 #include "getopt.h"
 
+#define lws_ptr_diff(head, tail) \
+			((int)((char *)(head) - (char *)(tail)))
+
 extern int	  opterr;	/* if error message should be printed */
 extern int	  optind;	/* index into parent argv vector */
 extern int	  optopt;	/* character checked for validity */
@@ -183,10 +186,10 @@ getopt_long(nargc, nargv, options, long_options, index)
 			return(-1);
 		}
 		if ((has_equal = strchr(current_argv, '=')) != NULL) {
-			current_argv_len = has_equal - current_argv;
+			current_argv_len = lws_ptr_diff(has_equal, current_argv);
 			has_equal++;
 		} else
-			current_argv_len = strlen(current_argv);
+			current_argv_len = (int)strlen(current_argv);
 
 		for (i = 0; long_options[i].name; i++) { 
 			if (strncmp(current_argv, long_options[i].name, current_argv_len))
