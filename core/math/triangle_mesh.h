@@ -92,6 +92,10 @@ public:
 	Vector3 get_area_normal(const AABB &p_aabb) const;
 	PoolVector<Face3> get_faces() const;
 
+	PoolVector<Triangle> get_triangles() const { return triangles; }
+	PoolVector<Vector3> get_vertices() const { return vertices; }
+	void get_indices(PoolVector<int> *p_triangles_indices) const;
+
 	void create(const PoolVector<Vector3> &p_faces);
 	TriangleMesh();
 };
