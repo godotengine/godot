@@ -201,6 +201,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset_all"), &Tween::reset_all);
 	ClassDB::bind_method(D_METHOD("stop", "object", "key"), &Tween::stop, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("stop_all"), &Tween::stop_all);
+	ClassDB::bind_method(D_METHOD("is_stopped"), &Tween::is_stopped);
 	ClassDB::bind_method(D_METHOD("resume", "object", "key"), &Tween::resume, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("resume_all"), &Tween::resume_all);
 	ClassDB::bind_method(D_METHOD("remove", "object", "key"), &Tween::remove, DEFVAL(""));
@@ -741,6 +742,10 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 	}
 	pending_update--;
 	return true;
+}
+
+bool Tween::is_stopped() const {
+	return tell() >= get_runtime();
 }
 
 bool Tween::stop_all() {
