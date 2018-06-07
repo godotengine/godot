@@ -36,6 +36,7 @@
 #if defined(MBEDTLS_DHM_C)
 
 #include "mbedtls/dhm.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -58,10 +59,6 @@
 #endif
 
 #if !defined(MBEDTLS_DHM_ALT)
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 /*
  * helper to validate the mbedtls_mpi size and import it
@@ -437,7 +434,7 @@ void mbedtls_dhm_free( mbedtls_dhm_context *ctx )
     mbedtls_mpi_free( &ctx->GX ); mbedtls_mpi_free( &ctx->X  );
     mbedtls_mpi_free( &ctx->G  ); mbedtls_mpi_free( &ctx->P  );
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_dhm_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_dhm_context ) );
 }
 
 #if defined(MBEDTLS_ASN1_PARSE_C)
@@ -575,7 +572,7 @@ static int load_file( const char *path, unsigned char **buf, size_t *n )
     {
         fclose( f );
 
-        mbedtls_zeroize( *buf, *n + 1 );
+        mbedtls_platform_zeroize( *buf, *n + 1 );
         mbedtls_free( *buf );
 
         return( MBEDTLS_ERR_DHM_FILE_IO_ERROR );
@@ -605,7 +602,7 @@ int mbedtls_dhm_parse_dhmfile( mbedtls_dhm_context *dhm, const char *path )
 
     ret = mbedtls_dhm_parse_dhm( dhm, buf, n );
 
-    mbedtls_zeroize( buf, n );
+    mbedtls_platform_zeroize( buf, n );
     mbedtls_free( buf );
 
     return( ret );

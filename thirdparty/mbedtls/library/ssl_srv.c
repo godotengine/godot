@@ -38,6 +38,7 @@
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/ssl_internal.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -47,13 +48,6 @@
 
 #if defined(MBEDTLS_HAVE_TIME)
 #include "mbedtls/platform_time.h"
-#endif
-
-#if defined(MBEDTLS_SSL_SESSION_TICKETS)
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 #endif
 
 #if defined(MBEDTLS_SSL_DTLS_HELLO_VERIFY)
@@ -553,7 +547,7 @@ static int ssl_parse_session_ticket_ext( mbedtls_ssl_context *ssl,
     memcpy( ssl->session_negotiate, &session, sizeof( mbedtls_ssl_session ) );
 
     /* Zeroize instead of free as we copied the content */
-    mbedtls_zeroize( &session, sizeof( mbedtls_ssl_session ) );
+    mbedtls_platform_zeroize( &session, sizeof( mbedtls_ssl_session ) );
 
     MBEDTLS_SSL_DEBUG_MSG( 3, ( "session successfully restored from ticket" ) );
 
@@ -793,7 +787,7 @@ static int ssl_ciphersuite_match( mbedtls_ssl_context *ssl, int suite_id,
     const mbedtls_ssl_ciphersuite_t *suite_info;
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_2) && \
-    defined(MBEDTLS_KEY_EXCHANGE__WITH_CERT__ENABLED)    
+    defined(MBEDTLS_KEY_EXCHANGE__WITH_CERT__ENABLED)
     mbedtls_pk_type_t sig_type;
 #endif
 
@@ -2961,7 +2955,7 @@ static int ssl_write_server_key_exchange( mbedtls_ssl_context *ssl )
             return( ret );
         }
 
-#if defined(MBEDTLS_KEY_EXCHANGE__WITH_SERVER_SIGNATURE__ENABLED)        
+#if defined(MBEDTLS_KEY_EXCHANGE__WITH_SERVER_SIGNATURE__ENABLED)
         dig_signed = p;
         dig_signed_len = len;
 #endif
@@ -3050,7 +3044,7 @@ curve_matching_done:
 
         /*
          * 3.1: Choose hash algorithm:
-         * A: For TLS 1.2, obey signature-hash-algorithm extension 
+         * A: For TLS 1.2, obey signature-hash-algorithm extension
          *    to choose appropriate hash.
          * B: For SSL3, TLS1.0, TLS1.1 and ECDHE_ECDSA, use SHA1
          *    (RFC 4492, Sec. 5.4)
@@ -3071,7 +3065,7 @@ curve_matching_done:
                                                           sig_alg ) ) == MBEDTLS_MD_NONE )
             {
                 MBEDTLS_SSL_DEBUG_MSG( 1, ( "should never happen" ) );
-                /* (... because we choose a cipher suite 
+                /* (... because we choose a cipher suite
                  *      only if there is a matching hash.) */
                 return( MBEDTLS_ERR_SSL_INTERNAL_ERROR );
             }
@@ -3750,7 +3744,10 @@ static int ssl_parse_certificate_verify( mbedtls_ssl_context *ssl )
     /* Read the message without adding it to the checksum */
     do {
 
-        if( ( ret = mbedtls_ssl_read_record_layer( ssl ) ) != 0 )
+        do ret = mbedtls_ssl_read_record_layer( ssl );
+        while( ret == MBEDTLS_ERR_SSL_CONTINUE_PROCESSING );
+
+        if( ret != 0 )
         {
             MBEDTLS_SSL_DEBUG_RET( 1, ( "mbedtls_ssl_read_record_layer" ), ret );
             return( ret );
@@ -3758,7 +3755,8 @@ static int ssl_parse_certificate_verify( mbedtls_ssl_context *ssl )
 
         ret = mbedtls_ssl_handle_message_type( ssl );
 
-    } while( MBEDTLS_ERR_SSL_NON_FATAL == ret );
+    } while( MBEDTLS_ERR_SSL_NON_FATAL           == ret ||
+             MBEDTLS_ERR_SSL_CONTINUE_PROCESSING == ret );
 
     if( 0 != ret )
     {

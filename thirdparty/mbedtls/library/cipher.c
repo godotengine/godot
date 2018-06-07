@@ -33,6 +33,7 @@
 
 #include "mbedtls/cipher.h"
 #include "mbedtls/cipher_internal.h"
+#include "mbedtls/platform_util.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -59,11 +60,6 @@
 #if defined(MBEDTLS_ARC4_C) || defined(MBEDTLS_CIPHER_NULL_CIPHER)
 #define MBEDTLS_CIPHER_MODE_STREAM
 #endif
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
 
 static int supported_init = 0;
 
@@ -141,7 +137,8 @@ void mbedtls_cipher_free( mbedtls_cipher_context_t *ctx )
 #if defined(MBEDTLS_CMAC_C)
     if( ctx->cmac_ctx )
     {
-       mbedtls_zeroize( ctx->cmac_ctx, sizeof( mbedtls_cmac_context_t ) );
+       mbedtls_platform_zeroize( ctx->cmac_ctx,
+                                 sizeof( mbedtls_cmac_context_t ) );
        mbedtls_free( ctx->cmac_ctx );
     }
 #endif
@@ -149,7 +146,7 @@ void mbedtls_cipher_free( mbedtls_cipher_context_t *ctx )
     if( ctx->cipher_ctx )
         ctx->cipher_info->base->ctx_free_func( ctx->cipher_ctx );
 
-    mbedtls_zeroize( ctx, sizeof(mbedtls_cipher_context_t) );
+    mbedtls_platform_zeroize( ctx, sizeof(mbedtls_cipher_context_t) );
 }
 
 int mbedtls_cipher_setup( mbedtls_cipher_context_t *ctx, const mbedtls_cipher_info_t *cipher_info )
@@ -325,8 +322,10 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
         /*
          * If there is not enough data for a full block, cache it.
          */
-        if( ( ctx->operation == MBEDTLS_DECRYPT &&
+        if( ( ctx->operation == MBEDTLS_DECRYPT && NULL != ctx->add_padding &&
                 ilen <= block_size - ctx->unprocessed_len ) ||
+            ( ctx->operation == MBEDTLS_DECRYPT && NULL == ctx->add_padding &&
+                ilen < block_size - ctx->unprocessed_len ) ||
              ( ctx->operation == MBEDTLS_ENCRYPT &&
                 ilen < block_size - ctx->unprocessed_len ) )
         {
@@ -372,9 +371,17 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
                 return MBEDTLS_ERR_CIPHER_INVALID_CONTEXT;
             }
 
+            /* Encryption: only cache partial blocks
+             * Decryption w/ padding: always keep at least one whole block
+             * Decryption w/o padding: only cache partial blocks
+             */
             copy_len = ilen % block_size;
-            if( copy_len == 0 && ctx->operation == MBEDTLS_DECRYPT )
+            if( copy_len == 0 &&
+                ctx->operation == MBEDTLS_DECRYPT &&
+                NULL != ctx->add_padding)
+            {
                 copy_len = block_size;
+            }
 
             memcpy( ctx->unprocessed_data, &( input[ilen - copy_len] ),
                     copy_len );
