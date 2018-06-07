@@ -348,6 +348,11 @@ bool _OS::get_borderless_window() const {
 	return OS::get_singleton()->get_borderless_window();
 }
 
+void _OS::set_ime_active(const bool p_active) {
+
+	return OS::get_singleton()->set_ime_active(p_active);
+}
+
 void _OS::set_ime_position(const Point2 &p_pos) {
 
 	return OS::get_singleton()->set_ime_position(p_pos);

@@ -959,7 +959,7 @@ static int remapKey(unsigned int key) {
 		push_to_key_event_buffer(ke);
 	}
 
-	if ((OS_OSX::singleton->im_position.x != 0) && (OS_OSX::singleton->im_position.y != 0))
+	if (OS_OSX::singleton->im_active == true)
 		[self interpretKeyEvents:[NSArray arrayWithObject:event]];
 }
 
@@ -1127,6 +1127,10 @@ String OS_OSX::get_unique_id() const {
 	}
 
 	return serial_number;
+}
+
+void OS_OSX::set_ime_active(const bool p_active) {
+	im_active = p_active;
 }
 
 void OS_OSX::set_ime_position(const Point2 &p_pos) {
@@ -2542,6 +2546,7 @@ OS_OSX::OS_OSX() {
 	mouse_mode = OS::MOUSE_MODE_VISIBLE;
 	main_loop = NULL;
 	singleton = this;
+	im_active = false;
 	im_position = Point2();
 	im_callback = NULL;
 	im_target = NULL;
