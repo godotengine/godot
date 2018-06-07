@@ -204,6 +204,8 @@ void mbedtls_mpi_free( mbedtls_mpi *X );
 /**
  * \brief          Enlarge to the specified number of limbs
  *
+ *                 This function does nothing if the MPI is already large enough.
+ *
  * \param X        MPI to grow
  * \param nblimbs  The target number of limbs
  *
@@ -215,19 +217,23 @@ int mbedtls_mpi_grow( mbedtls_mpi *X, size_t nblimbs );
 /**
  * \brief          Resize down, keeping at least the specified number of limbs
  *
+ *                 If \c X is smaller than \c nblimbs, it is resized up
+ *                 instead.
+ *
  * \param X        MPI to shrink
  * \param nblimbs  The minimum number of limbs to keep
  *
  * \return         0 if successful,
  *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed
+ *                 (this can only happen when resizing up).
  */
 int mbedtls_mpi_shrink( mbedtls_mpi *X, size_t nblimbs );
 
 /**
  * \brief          Copy the contents of Y into X
  *
- * \param X        Destination MPI
- * \param Y        Source MPI
+ * \param X        Destination MPI. It is enlarged if necessary.
+ * \param Y        Source MPI.
  *
  * \return         0 if successful,
  *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed

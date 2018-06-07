@@ -400,6 +400,9 @@ int mbedtls_ecdsa_read_signature( mbedtls_ecdsa_context *ctx,
                               &ctx->Q, &r, &s ) ) != 0 )
         goto cleanup;
 
+    /* At this point we know that the buffer starts with a valid signature.
+     * Return 0 if the buffer just contains the signature, and a specific
+     * error code if the valid signature is followed by more data. */
     if( p != end )
         ret = MBEDTLS_ERR_ECP_SIG_LEN_MISMATCH;
 

@@ -40,13 +40,13 @@
 #define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH         -0x0026  /**< Invalid data input length. */
 #define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027  /**< Camellia hardware accelerator failed. */
 
-#if !defined(MBEDTLS_CAMELLIA_ALT)
-// Regular implementation
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_CAMELLIA_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          CAMELLIA context structure
@@ -57,6 +57,10 @@ typedef struct
     uint32_t rk[68];            /*!<  CAMELLIA round keys    */
 }
 mbedtls_camellia_context;
+
+#else  /* MBEDTLS_CAMELLIA_ALT */
+#include "camellia_alt.h"
+#endif /* MBEDTLS_CAMELLIA_ALT */
 
 /**
  * \brief          Initialize CAMELLIA context
@@ -183,11 +187,53 @@ int mbedtls_camellia_crypt_cfb128( mbedtls_camellia_context *ctx,
 /**
  * \brief               CAMELLIA-CTR buffer encryption/decryption
  *
- * Warning: You have to keep the maximum use of your counter in mind!
- *
  * Note: Due to the nature of CTR you should use the same key schedule for
  * both encryption and decryption. So a context initialized with
  * mbedtls_camellia_setkey_enc() for both MBEDTLS_CAMELLIA_ENCRYPT and MBEDTLS_CAMELLIA_DECRYPT.
+ *
+ * \warning    You must never reuse a nonce value with the same key. Doing so
+ *             would void the encryption for the two messages encrypted with
+ *             the same nonce and key.
+ *
+ *             There are two common strategies for managing nonces with CTR:
+ *
+ *             1. You can handle everything as a single message processed over
+ *             successive calls to this function. In that case, you want to
+ *             set \p nonce_counter and \p nc_off to 0 for the first call, and
+ *             then preserve the values of \p nonce_counter, \p nc_off and \p
+ *             stream_block across calls to this function as they will be
+ *             updated by this function.
+ *
+ *             With this strategy, you must not encrypt more than 2**128
+ *             blocks of data with the same key.
+ *
+ *             2. You can encrypt separate messages by dividing the \p
+ *             nonce_counter buffer in two areas: the first one used for a
+ *             per-message nonce, handled by yourself, and the second one
+ *             updated by this function internally.
+ *
+ *             For example, you might reserve the first 12 bytes for the
+ *             per-message nonce, and the last 4 bytes for internal use. In that
+ *             case, before calling this function on a new message you need to
+ *             set the first 12 bytes of \p nonce_counter to your chosen nonce
+ *             value, the last 4 to 0, and \p nc_off to 0 (which will cause \p
+ *             stream_block to be ignored). That way, you can encrypt at most
+ *             2**96 messages of up to 2**32 blocks each with the same key.
+ *
+ *             The per-message nonce (or information sufficient to reconstruct
+ *             it) needs to be communicated with the ciphertext and must be unique.
+ *             The recommended way to ensure uniqueness is to use a message
+ *             counter. An alternative is to generate random nonces, but this
+ *             limits the number of messages that can be securely encrypted:
+ *             for example, with 96-bit random nonces, you should not encrypt
+ *             more than 2**32 messages with the same key.
+ *
+ *             Note that for both stategies, sizes are measured in blocks and
+ *             that a CAMELLIA block is 16 bytes.
+ *
+ * \warning    Upon return, \p stream_block contains sensitive data. Its
+ *             content must not be written to insecure storage and should be
+ *             securely discarded as soon as it's no longer needed.
  *
  * \param ctx           CAMELLIA context
  * \param length        The length of the data
@@ -210,18 +256,6 @@ int mbedtls_camellia_crypt_ctr( mbedtls_camellia_context *ctx,
                        const unsigned char *input,
                        unsigned char *output );
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_CAMELLIA_ALT */
-#include "camellia_alt.h"
-#endif /* MBEDTLS_CAMELLIA_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Checkup routine

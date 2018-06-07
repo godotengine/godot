@@ -30,15 +30,15 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#if !defined(MBEDTLS_TIMING_ALT)
-// Regular implementation
-//
-
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_TIMING_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          timer structure
@@ -57,6 +57,10 @@ typedef struct
     uint32_t                        int_ms;
     uint32_t                        fin_ms;
 } mbedtls_timing_delay_context;
+
+#else  /* MBEDTLS_TIMING_ALT */
+#include "timing_alt.h"
+#endif /* MBEDTLS_TIMING_ALT */
 
 extern volatile int mbedtls_timing_alarmed;
 
@@ -132,18 +136,6 @@ void mbedtls_timing_set_delay( void *data, uint32_t int_ms, uint32_t fin_ms );
  *                  2 if the final delay is passed.
  */
 int mbedtls_timing_get_delay( void *data );
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_TIMING_ALT */
-#include "timing_alt.h"
-#endif /* MBEDTLS_TIMING_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /**

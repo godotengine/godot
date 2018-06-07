@@ -37,6 +37,7 @@
 #if defined(MBEDTLS_CCM_C)
 
 #include "mbedtls/ccm.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -50,11 +51,6 @@
 #endif /* MBEDTLS_SELF_TEST && MBEDTLS_AES_C */
 
 #if !defined(MBEDTLS_CCM_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
 
 #define CCM_ENCRYPT 0
 #define CCM_DECRYPT 1
@@ -102,7 +98,7 @@ int mbedtls_ccm_setkey( mbedtls_ccm_context *ctx,
 void mbedtls_ccm_free( mbedtls_ccm_context *ctx )
 {
     mbedtls_cipher_free( &ctx->cipher_ctx );
-    mbedtls_zeroize( ctx, sizeof( mbedtls_ccm_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_ccm_context ) );
 }
 
 /*
@@ -343,7 +339,7 @@ int mbedtls_ccm_auth_decrypt( mbedtls_ccm_context *ctx, size_t length,
 
     if( diff != 0 )
     {
-        mbedtls_zeroize( output, length );
+        mbedtls_platform_zeroize( output, length );
         return( MBEDTLS_ERR_CCM_AUTH_FAILED );
     }
 

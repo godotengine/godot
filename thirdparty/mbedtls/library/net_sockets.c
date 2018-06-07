@@ -28,7 +28,7 @@
 #if defined(MBEDTLS_NET_C)
 
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
-    !defined(__APPLE__) && !defined(_WIN32)
+    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__)
 #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
 #endif
 
@@ -44,6 +44,8 @@
 
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && !defined(EFIX64) && \
     !defined(EFI32)
+
+#define IS_EINTR( ret ) ( ( ret ) == WSAEINTR )
 
 /* GODOT ADDITION */
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0501)
@@ -84,6 +86,8 @@ static int wsa_init_done = 0;
 #include <fcntl.h>
 #include <netdb.h>
 #include <errno.h>
+
+#define IS_EINTR( ret ) ( ( ret ) == EINTR )
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
@@ -274,7 +278,7 @@ static int net_would_block( const mbedtls_net_context *ctx )
 static int net_would_block( const mbedtls_net_context *ctx )
 {
     int err = errno;
-    
+
     /*
      * Never return 'WOULD BLOCK' on a non-blocking socket
      */
@@ -442,6 +446,72 @@ int mbedtls_net_set_nonblock( mbedtls_net_context *ctx )
 }
 
 /*
+ * Check if data is available on the socket
+ */
+
+int mbedtls_net_poll( mbedtls_net_context *ctx, uint32_t rw, uint32_t timeout )
+{
+    int ret;
+    struct timeval tv;
+
+    fd_set read_fds;
+    fd_set write_fds;
+
+    int fd = ctx->fd;
+
+    if( fd < 0 )
+        return( MBEDTLS_ERR_NET_INVALID_CONTEXT );
+
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+    /* Ensure that memory sanitizers consider read_fds and write_fds as
+     * initialized even on platforms such as Glibc/x86_64 where FD_ZERO
+     * is implemented in assembly. */
+    memset( &read_fds, 0, sizeof( read_fds ) );
+    memset( &write_fds, 0, sizeof( write_fds ) );
+#endif
+#endif
+
+    FD_ZERO( &read_fds );
+    if( rw & MBEDTLS_NET_POLL_READ )
+    {
+        rw &= ~MBEDTLS_NET_POLL_READ;
+        FD_SET( fd, &read_fds );
+    }
+
+    FD_ZERO( &write_fds );
+    if( rw & MBEDTLS_NET_POLL_WRITE )
+    {
+        rw &= ~MBEDTLS_NET_POLL_WRITE;
+        FD_SET( fd, &write_fds );
+    }
+
+    if( rw != 0 )
+        return( MBEDTLS_ERR_NET_BAD_INPUT_DATA );
+
+    tv.tv_sec  = timeout / 1000;
+    tv.tv_usec = ( timeout % 1000 ) * 1000;
+
+    do
+    {
+        ret = select( fd + 1, &read_fds, &write_fds, NULL,
+                      timeout == (uint32_t) -1 ? NULL : &tv );
+    }
+    while( IS_EINTR( ret ) );
+
+    if( ret < 0 )
+        return( MBEDTLS_ERR_NET_POLL_FAILED );
+
+    ret = 0;
+    if( FD_ISSET( fd, &read_fds ) )
+        ret |= MBEDTLS_NET_POLL_READ;
+    if( FD_ISSET( fd, &write_fds ) )
+        ret |= MBEDTLS_NET_POLL_WRITE;
+
+    return( ret );
+}
+
+/*
  * Portable usleep helper
  */
 void mbedtls_net_usleep( unsigned long usec )
@@ -500,8 +570,8 @@ int mbedtls_net_recv( void *ctx, unsigned char *buf, size_t len )
 /*
  * Read at most 'len' characters, blocking for at most 'timeout' ms
  */
-int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
-                      uint32_t timeout )
+int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf,
+                              size_t len, uint32_t timeout )
 {
     int ret;
     struct timeval tv;

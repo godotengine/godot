@@ -33,6 +33,7 @@
 #if defined(MBEDTLS_MD5_C)
 
 #include "mbedtls/md5.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -46,11 +47,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_MD5_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 /*
  * 32-bit integer manipulation macros (little endian)
@@ -85,7 +81,7 @@ void mbedtls_md5_free( mbedtls_md5_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_md5_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md5_context ) );
 }
 
 void mbedtls_md5_clone( mbedtls_md5_context *dst,
