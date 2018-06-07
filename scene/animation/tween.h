@@ -162,6 +162,7 @@ public:
 	bool reset_all();
 	bool stop(Object *p_object, StringName p_key);
 	bool stop_all();
+	bool is_stopped() const;
 	bool resume(Object *p_object, StringName p_key);
 	bool resume_all();
 	bool remove(Object *p_object, StringName p_key);
