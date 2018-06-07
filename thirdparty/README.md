@@ -237,19 +237,21 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 2.4.2
+- Version: 3.0.0
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
-- Everything in `lib/` except `minilex.c`, `http2/`, `event-libs/`.
-  - From `misc/` exclude `lws-genhash.c`, `lws-ring.c`, `romfs.{c,h}`, `smtp.c`.
-  - From `plat/` exclude `lws-plat-{esp*,optee}.c`.
-  - From `server/` exclude `access-log.c`, `cgi.c`, `daemonize.c`, `lws-spa.c`,
-`peer-limits.c`, `rewrite.c`
-- Also copy `win32helpers/` from `win32port/`
-- `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX and FreeBSD (missing `malloc.h`).
-  The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
-- You might need to apply the patch in `thirdparty/libwebsockets/mbedtls_verify.diff` (port of PR 1215) to future `2.4.x` releases if it does not get cherry picked.
+- From `lib/` into `thirdparty/libwebsockets`:
+  - Everything from `core`
+  - From `event-libs` only the `poll` subfolder
+  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c`
+  - From `plat` only `lws-plat-unix.c` and `lws-plat-win.c`
+  - From `roles` only `private.h`, `h1`, `http`, `listen`, `pipe`, `raw`, `ws`
+    - From `roles/http` exclude `minilex.c`
+    - From `roles/http/server` exclude `access-log.c`, `lws-spa.c`, `ranges.c`, and `rewrite.c`
+    - From `roles/ws` exclude `ext` folder.
+  - From `tls` exclude `openssl` folder.
+- Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
