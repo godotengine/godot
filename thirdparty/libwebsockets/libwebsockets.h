@@ -1,7 +1,7 @@
 /*
  * libwebsockets - small server side websockets and web server implementation
  *
- * Copyright (C) 2010-2016 Andy Green <andy@warmcat.com>
+ * Copyright (C) 2010-2018 Andy Green <andy@warmcat.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -27,24 +27,20 @@
 #ifdef __cplusplus
 #include <cstddef>
 #include <cstdarg>
-#
+
 extern "C" {
 #else
 #include <stdarg.h>
 #endif
+
+#include <string.h>
+#include <stdlib.h>
 
 #include "lws_config.h"
 
 /*
  * CARE: everything using cmake defines needs to be below here
  */
-
-#if defined(LWS_WITH_ESP8266)
-struct sockaddr_in;
-#define LWS_POSIX 0
-#else
-#define LWS_POSIX 1
-#endif
 
 #if defined(LWS_HAS_INTPTR_T)
 #include <stdint.h>
@@ -62,6 +58,7 @@ typedef unsigned long long lws_intptr_t;
 #include <ws2tcpip.h>
 #include <stddef.h>
 #include <basetsd.h>
+#include <io.h>
 #ifndef _WIN32_WCE
 #include <fcntl.h>
 #else
@@ -99,16 +96,8 @@ typedef unsigned long long lws_intptr_t;
 #define LWS_O_CREAT _O_CREAT
 #define LWS_O_TRUNC _O_TRUNC
 
-#if !defined(__MINGW32__) && (!defined(_MSC_VER) || _MSC_VER < 1900) /* Visual Studio 2015 already defines this in <stdio.h> */
-#define lws_snprintf _snprintf
-#endif
-
 #ifndef __func__
 #define __func__ __FUNCTION__
-#endif
-
-#if !defined(__MINGW32__) &&(!defined(_MSC_VER) || _MSC_VER < 1900) && !defined(snprintf)
-#define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
 #endif
 
 #else /* NOT WIN32 */
@@ -117,7 +106,8 @@ typedef unsigned long long lws_intptr_t;
 #include <sys/capability.h>
 #endif
 
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__QNX__) || defined(__OpenBSD__)
+#include <sys/socket.h>
 #include <netinet/in.h>
 #endif
 
@@ -127,7 +117,7 @@ typedef unsigned long long lws_intptr_t;
 #define LWS_O_CREAT O_CREAT
 #define LWS_O_TRUNC O_TRUNC
 
-#if !defined(LWS_WITH_ESP8266) && !defined(OPTEE_TA) && !defined(LWS_WITH_ESP32)
+#if !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_TA) && !defined(LWS_WITH_ESP32)
 #include <poll.h>
 #include <netdb.h>
 #define LWS_INVALID_FILE -1
@@ -166,7 +156,7 @@ typedef unsigned long long lws_intptr_t;
 
 #endif
 
-#ifdef LWS_WITH_LIBEV
+#if defined(LWS_WITH_LIBEV)
 #include <ev.h>
 #endif /* LWS_WITH_LIBEV */
 #ifdef LWS_WITH_LIBUV
@@ -175,7 +165,7 @@ typedef unsigned long long lws_intptr_t;
 #include <uv-version.h>
 #endif
 #endif /* LWS_WITH_LIBUV */
-#ifdef LWS_WITH_LIBEVENT
+#if defined(LWS_WITH_LIBEVENT)
 #include <event2/event.h>
 #endif /* LWS_WITH_LIBEVENT */
 
@@ -192,13 +182,34 @@ typedef unsigned long long lws_intptr_t;
 #endif
 #endif
 
-#ifdef LWS_OPENSSL_SUPPORT
+#if defined(LWS_WITH_TLS)
 
 #ifdef USE_WOLFSSL
 #ifdef USE_OLD_CYASSL
+#ifdef _WIN32
+/*
+ * Include user-controlled settings for windows from
+ * <wolfssl-root>/IDE/WIN/user_settings.h
+ */
+#include <IDE/WIN/user_settings.h>
+#include <cyassl/ctaocrypt/settings.h>
+#else
+#include <cyassl/options.h>
+#endif
 #include <cyassl/openssl/ssl.h>
 #include <cyassl/error-ssl.h>
+
 #else
+#ifdef _WIN32
+/*
+ * Include user-controlled settings for windows from
+ * <wolfssl-root>/IDE/WIN/user_settings.h
+ */
+#include <IDE/WIN/user_settings.h>
+#include <wolfssl/wolfcrypt/settings.h>
+#else
+#include <wolfssl/options.h>
+#endif
 #include <wolfssl/openssl/ssl.h>
 #include <wolfssl/error-ssl.h>
 #endif /* not USE_OLD_CYASSL */
@@ -210,12 +221,58 @@ typedef unsigned long long lws_intptr_t;
 #define MBEDTLS_CONFIG_FILE <mbedtls/esp_config.h>
 #endif
 #include <mbedtls/ssl.h>
-#endif
+#else
 #include <openssl/ssl.h>
 #if !defined(LWS_WITH_MBEDTLS)
 #include <openssl/err.h>
 #endif
+#endif
 #endif /* not USE_WOLFSSL */
+#endif
+
+/*
+ * Helpers for pthread mutex in user code... if lws is built for
+ * multiple service threads, these resolve to pthread mutex
+ * operations.  In the case LWS_MAX_SMP is 1 (the default), they
+ * are all NOPs and no pthread type or api is referenced.
+ */
+
+#if LWS_MAX_SMP > 1
+
+#include <pthread.h>
+
+#define lws_pthread_mutex(name) pthread_mutex_t name;
+
+static LWS_INLINE void
+lws_pthread_mutex_init(pthread_mutex_t *lock)
+{
+	pthread_mutex_init(lock, NULL);
+}
+
+static LWS_INLINE void
+lws_pthread_mutex_destroy(pthread_mutex_t *lock)
+{
+	pthread_mutex_destroy(lock);
+}
+
+static LWS_INLINE void
+lws_pthread_mutex_lock(pthread_mutex_t *lock)
+{
+	pthread_mutex_lock(lock);
+}
+
+static LWS_INLINE void
+lws_pthread_mutex_unlock(pthread_mutex_t *lock)
+{
+	pthread_mutex_unlock(lock);
+}
+
+#else
+#define lws_pthread_mutex(name)
+#define lws_pthread_mutex_init(_a)
+#define lws_pthread_mutex_destroy(_a)
+#define lws_pthread_mutex_lock(_a)
+#define lws_pthread_mutex_unlock(_a)
 #endif
 
 
@@ -280,10 +337,6 @@ lwsl_timestamp(int level, char *p, int len);
  *  active
  */
 
-#if defined(LWS_WITH_ESP8266)
-#undef _DEBUG
-#endif
-
 #ifdef _DEBUG
 #if defined(LWS_WITH_NO_LOGS)
 /* notice, warn and log are always compiled in */
@@ -313,14 +366,20 @@ lwsl_timestamp(int level, char *p, int len);
 
 #endif
 
+#define lwsl_hexdump_err(...) lwsl_hexdump_level(LLL_ERR, __VA_ARGS__)
+#define lwsl_hexdump_warn(...) lwsl_hexdump_level(LLL_WARN, __VA_ARGS__)
+#define lwsl_hexdump_notice(...) lwsl_hexdump_level(LLL_NOTICE, __VA_ARGS__)
+#define lwsl_hexdump_info(...) lwsl_hexdump_level(LLL_INFO, __VA_ARGS__)
+#define lwsl_hexdump_debug(...) lwsl_hexdump_level(LLL_DEBUG, __VA_ARGS__)
+
 /**
- * lwsl_hexdump() - helper to hexdump a buffer
+ * lwsl_hexdump_level() - helper to hexdump a buffer at a selected debug level
  *
  * \param level: one of LLL_ constants
- * \param buf: buffer start to dump
+ * \param vbuf: buffer start to dump
  * \param len: length of buffer to dump
  *
- * If \p level is visible, does a nice hexdump -C style dump of \p buf for
+ * If \p level is visible, does a nice hexdump -C style dump of \p vbuf for
  * \p len bytes.  This can be extremely convenient while debugging.
  */
 LWS_VISIBLE LWS_EXTERN void
@@ -396,11 +455,12 @@ lwsl_visible(int level);
 #define lws_container_of(P,T,M)	((T *)((char *)(P) - offsetof(T, M)))
 #endif
 
-
 struct lws;
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #endif
+
+typedef int64_t lws_usec_t;
 
 /* api change list for user code to test against */
 
@@ -422,7 +482,7 @@ struct lws;
 #if defined(_WIN32)
 typedef SOCKET lws_sockfd_type;
 typedef HANDLE lws_filefd_type;
-#define lws_sockfd_valid(sfd) (!!sfd)
+
 struct lws_pollfd {
 	lws_sockfd_type fd; /**< file descriptor */
 	SHORT events; /**< which events to respond to */
@@ -434,77 +494,11 @@ struct lws_pollfd {
 #else
 
 
-#if defined(LWS_WITH_ESP8266)
-
-#include <user_interface.h>
-#include <espconn.h>
-
-typedef struct espconn * lws_sockfd_type;
-typedef void * lws_filefd_type;
-#define lws_sockfd_valid(sfd) (!!sfd)
-struct pollfd {
-	lws_sockfd_type fd; /**< fd related to */
-	short events; /**< which POLL... events to respond to */
-	short revents; /**< which POLL... events occurred */
-};
-#define POLLIN		0x0001
-#define POLLPRI		0x0002
-#define POLLOUT		0x0004
-#define POLLERR		0x0008
-#define POLLHUP		0x0010
-#define POLLNVAL	0x0020
-
-struct lws_vhost;
-
-lws_sockfd_type esp8266_create_tcp_listen_socket(struct lws_vhost *vh);
-void esp8266_tcp_stream_accept(lws_sockfd_type fd, struct lws *wsi);
-
-#include <os_type.h>
-#include <osapi.h>
-#include "ets_sys.h"
-
-int ets_snprintf(char *str, size_t size, const char *format, ...) LWS_FORMAT(3);
-#define snprintf  ets_snprintf
-
-typedef os_timer_t uv_timer_t;
-typedef void uv_cb_t(uv_timer_t *);
-
-void os_timer_disarm(void *);
-void os_timer_setfn(os_timer_t *, os_timer_func_t *, void *);
-
-void ets_timer_arm_new(os_timer_t *, int, int, int);
-
-//void os_timer_arm(os_timer_t *, int, int);
-
-#define UV_VERSION_MAJOR 1
-
-#define lws_uv_getloop(a, b) (NULL)
-
-static inline void uv_timer_init(void *l, uv_timer_t *t)
-{
-	(void)l;
-	memset(t, 0, sizeof(*t));
-	os_timer_disarm(t);
-}
-
-static inline void uv_timer_start(uv_timer_t *t, uv_cb_t *cb, int first, int rep)
-{
-	os_timer_setfn(t, (os_timer_func_t *)cb, t);
-	/* ms, repeat */
-	os_timer_arm(t, first, !!rep);
-}
-
-static inline void uv_timer_stop(uv_timer_t *t)
-{
-	os_timer_disarm(t);
-}
-
-#else
 #if defined(LWS_WITH_ESP32)
 
 typedef int lws_sockfd_type;
 typedef int lws_filefd_type;
-#define lws_sockfd_valid(sfd) (sfd >= 0)
+
 struct pollfd {
 	lws_sockfd_type fd; /**< fd related to */
 	short events; /**< which POLL... events to respond to */
@@ -638,13 +632,14 @@ struct lws_esp32 {
 	char model[16];
 	char group[16];
 	char role[16];
-	char ssid[4][16];
-	char password[4][32];
-	char active_ssid[32];
+	char ssid[4][64];
+	char password[4][64];
+	char active_ssid[64];
 	char access_pw[16];
 	char hostname[32];
 	char mac[20];
-	mdns_server_t *mdns;
+	char le_dns[64];
+	char le_email[64];
        	char region;
        	char inet;
 	char conn_ap;
@@ -656,6 +651,11 @@ struct lws_esp32 {
 	void *scan_consumer_arg;
 	struct lws_group_member *first;
 	int extant_group_members;
+
+	char acme;
+	char upload;
+
+	volatile char button_is_down;
 };
 
 struct lws_esp32_image {
@@ -702,8 +702,6 @@ extern void lws_esp32_leds_timer_cb(TimerHandle_t th);
 #else
 typedef int lws_sockfd_type;
 typedef int lws_filefd_type;
-#define lws_sockfd_valid(sfd) (sfd >= 0)
-#endif
 #endif
 
 #define lws_pollfd pollfd
@@ -830,6 +828,8 @@ enum lws_close_status {
       connection was closed due to a failure to perform a TLS handshake
       (e.g., the server certificate can't be verified). */
 
+	LWS_CLOSE_STATUS_CLIENT_TRANSACTION_DONE		= 2000,
+
 	/****** add new things just above ---^ ******/
 
 	LWS_CLOSE_STATUS_NOSTATUS_CONTEXT_DESTROY		= 9999,
@@ -858,37 +858,6 @@ struct lws_context;
 /* needed even with extensions disabled for create context */
 struct lws_extension;
 
-/*! \defgroup lwsmeta lws-meta
- *
- * ##lws-meta protocol
- *
- * The protocol wraps other muxed connections inside one tcp connection.
- *
- * Commands are assigned from 0x41 up (so they are valid unicode)
- */
-///@{
-
-enum lws_meta_commands {
-	LWS_META_CMD_OPEN_SUBCHANNEL = 'A',
-	/**< Client requests to open new subchannel
-	 */
-	LWS_META_CMD_OPEN_RESULT,
-	/**< Result of client request to open new subchannel */
-	LWS_META_CMD_CLOSE_NOTIFY,
-	/**< Notification of subchannel closure */
-	LWS_META_CMD_CLOSE_RQ,
-	/**< client requests to close a subchannel */
-	LWS_META_CMD_WRITE,
-	/**< connection writes something to specific channel index */
-
-	/****** add new things just above ---^ ******/
-};
-
-/* channel numbers are transported offset by 0x20 so they are valid unicode */
-
-#define LWS_META_TRANSPORT_OFFSET 0x20
-
-///@}
 
 /*! \defgroup usercb User Callback
  *
@@ -908,16 +877,388 @@ struct lws_ssl_info {
 	int ret;
 };
 
+enum lws_cert_update_state {
+	LWS_CUS_IDLE,
+	LWS_CUS_STARTING,
+	LWS_CUS_SUCCESS,
+	LWS_CUS_FAILED,
+
+	LWS_CUS_CREATE_KEYS,
+	LWS_CUS_REG,
+	LWS_CUS_AUTH,
+	LWS_CUS_CHALLENGE,
+	LWS_CUS_CREATE_REQ,
+	LWS_CUS_REQ,
+	LWS_CUS_CONFIRM,
+	LWS_CUS_ISSUE,
+};
+
+enum {
+	LWS_TLS_REQ_ELEMENT_COUNTRY,
+	LWS_TLS_REQ_ELEMENT_STATE,
+	LWS_TLS_REQ_ELEMENT_LOCALITY,
+	LWS_TLS_REQ_ELEMENT_ORGANIZATION,
+	LWS_TLS_REQ_ELEMENT_COMMON_NAME,
+	LWS_TLS_REQ_ELEMENT_EMAIL,
+
+	LWS_TLS_REQ_ELEMENT_COUNT,
+
+	LWS_TLS_SET_DIR_URL = LWS_TLS_REQ_ELEMENT_COUNT,
+	LWS_TLS_SET_AUTH_PATH,
+	LWS_TLS_SET_CERT_PATH,
+	LWS_TLS_SET_KEY_PATH,
+
+	LWS_TLS_TOTAL_COUNT
+};
+
+struct lws_acme_cert_aging_args {
+	struct lws_vhost *vh;
+	const char *element_overrides[LWS_TLS_TOTAL_COUNT]; /* NULL = use pvo */
+};
+
 /*
  * NOTE: These public enums are part of the abi.  If you want to add one,
  * add it at where specified so existing users are unaffected.
  */
 /** enum lws_callback_reasons - reason you're getting a protocol callback */
 enum lws_callback_reasons {
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to wsi and protocol binding lifecycle -----
+	 */
+
+	LWS_CALLBACK_PROTOCOL_INIT				= 27,
+	/**< One-time call per protocol, per-vhost using it, so it can
+	 * do initial setup / allocations etc */
+
+	LWS_CALLBACK_PROTOCOL_DESTROY				= 28,
+	/**< One-time call per protocol, per-vhost using it, indicating
+	 * this protocol won't get used at all after this callback, the
+	 * vhost is getting destroyed.  Take the opportunity to
+	 * deallocate everything that was allocated by the protocol. */
+
+	LWS_CALLBACK_WSI_CREATE					= 29,
+	/**< outermost (earliest) wsi create notification to protocols[0] */
+
+	LWS_CALLBACK_WSI_DESTROY				= 30,
+	/**< outermost (latest) wsi destroy notification to protocols[0] */
+
+	LWS_CALLBACK_HTTP_BIND_PROTOCOL				= 49,
+	/**< By default, all HTTP handling is done in protocols[0].
+	 * However you can bind different protocols (by name) to
+	 * different parts of the URL space using callback mounts.  This
+	 * callback occurs in the new protocol when a wsi is bound
+	 * to that protocol.  Any protocol allocation related to the
+	 * http transaction processing should be created then.
+	 * These specific callbacks are necessary because with HTTP/1.1,
+	 * a single connection may perform at series of different
+	 * transactions at different URLs, thus the lifetime of the
+	 * protocol bind is just for one transaction, not connection. */
+
+	LWS_CALLBACK_HTTP_DROP_PROTOCOL				= 50,
+	/**< This is called when a transaction is unbound from a protocol.
+	 * It indicates the connection completed its transaction and may
+	 * do something different now.  Any protocol allocation related
+	 * to the http transaction processing should be destroyed. */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to Server TLS -----
+	 */
+
+	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS	= 21,
+	/**< if configured for
+	 * including OpenSSL support, this callback allows your user code
+	 * to perform extra SSL_CTX_load_verify_locations() or similar
+	 * calls to direct OpenSSL where to find certificates the client
+	 * can use to confirm the remote server identity.  user is the
+	 * OpenSSL SSL_CTX* */
+
+	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS	= 22,
+	/**< if configured for
+	 * including OpenSSL support, this callback allows your user code
+	 * to load extra certificates into the server which allow it to
+	 * verify the validity of certificates returned by clients.  user
+	 * is the server's OpenSSL SSL_CTX* and in is the lws_vhost */
+
+	LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION	= 23,
+	/**< if the libwebsockets vhost was created with the option
+	 * LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT, then this
+	 * callback is generated during OpenSSL verification of the cert
+	 * sent from the client.  It is sent to protocol[0] callback as
+	 * no protocol has been negotiated on the connection yet.
+	 * Notice that the libwebsockets context and wsi are both NULL
+	 * during this callback.  See
+	 *  http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html
+	 * to understand more detail about the OpenSSL callback that
+	 * generates this libwebsockets callback and the meanings of the
+	 * arguments passed.  In this callback, user is the x509_ctx,
+	 * in is the ssl pointer and len is preverify_ok
+	 * Notice that this callback maintains libwebsocket return
+	 * conventions, return 0 to mean the cert is OK or 1 to fail it.
+	 * This also means that if you don't handle this callback then
+	 * the default callback action of returning 0 allows the client
+	 * certificates. */
+
+	LWS_CALLBACK_OPENSSL_CONTEXT_REQUIRES_PRIVATE_KEY	= 37,
+	/**< if configured for including OpenSSL support but no private key
+	 * file has been specified (ssl_private_key_filepath is NULL), this is
+	 * called to allow the user to set the private key directly via
+	 * libopenssl and perform further operations if required; this might be
+	 * useful in situations where the private key is not directly accessible
+	 * by the OS, for example if it is stored on a smartcard.
+	 * user is the server's OpenSSL SSL_CTX* */
+
+	LWS_CALLBACK_SSL_INFO					= 67,
+	/**< SSL connections only.  An event you registered an
+	 * interest in at the vhost has occurred on a connection
+	 * using the vhost.  in is a pointer to a
+	 * struct lws_ssl_info containing information about the
+	 * event*/
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to Client TLS -----
+	 */
+
+	LWS_CALLBACK_OPENSSL_PERFORM_SERVER_CERT_VERIFICATION = 58,
+	/**< Similar to LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION
+	 * this callback is called during OpenSSL verification of the cert
+	 * sent from the server to the client. It is sent to protocol[0]
+	 * callback as no protocol has been negotiated on the connection yet.
+	 * Notice that the wsi is set because lws_client_connect_via_info was
+	 * successful.
+	 *
+	 * See http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html
+	 * to understand more detail about the OpenSSL callback that
+	 * generates this libwebsockets callback and the meanings of the
+	 * arguments passed. In this callback, user is the x509_ctx,
+	 * in is the ssl pointer and len is preverify_ok.
+	 *
+	 * THIS IS NOT RECOMMENDED BUT if a cert validation error shall be
+	 * overruled and cert shall be accepted as ok,
+	 * X509_STORE_CTX_set_error((X509_STORE_CTX*)user, X509_V_OK); must be
+	 * called and return value must be 0 to mean the cert is OK;
+	 * returning 1 will fail the cert in any case.
+	 *
+	 * This also means that if you don't handle this callback then
+	 * the default callback action of returning 0 will not accept the
+	 * certificate in case of a validation error decided by the SSL lib.
+	 *
+	 * This is expected and secure behaviour when validating certificates.
+	 *
+	 * Note: LCCSCF_ALLOW_SELFSIGNED and
+	 * LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK still work without this
+	 * callback being implemented.
+	 */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to HTTP Server  -----
+	 */
+
+	LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED		= 19,
+	/**< A new client has been accepted by the ws server.  This
+	 * callback allows setting any relevant property to it. Because this
+	 * happens immediately after the instantiation of a new client,
+	 * there's no websocket protocol selected yet so this callback is
+	 * issued only to protocol 0. Only wsi is defined, pointing to the
+	 * new client, and the return value is ignored. */
+
+	LWS_CALLBACK_HTTP					= 12,
+	/**< an http request has come from a client that is not
+	 * asking to upgrade the connection to a websocket
+	 * one.  This is a chance to serve http content,
+	 * for example, to send a script to the client
+	 * which will then open the websockets connection.
+	 * in points to the URI path requested and
+	 * lws_serve_http_file() makes it very
+	 * simple to send back a file to the client.
+	 * Normally after sending the file you are done
+	 * with the http connection, since the rest of the
+	 * activity will come by websockets from the script
+	 * that was delivered by http, so you will want to
+	 * return 1; to close and free up the connection. */
+
+	LWS_CALLBACK_HTTP_BODY					= 13,
+	/**< the next len bytes data from the http
+	 * request body HTTP connection is now available in in. */
+
+	LWS_CALLBACK_HTTP_BODY_COMPLETION			= 14,
+	/**< the expected amount of http request body has been delivered */
+
+	LWS_CALLBACK_HTTP_FILE_COMPLETION			= 15,
+	/**< a file requested to be sent down http link has completed. */
+
+	LWS_CALLBACK_HTTP_WRITEABLE				= 16,
+	/**< you can write more down the http protocol link now. */
+
+	LWS_CALLBACK_CLOSED_HTTP				=  5,
+	/**< when a HTTP (non-websocket) session ends */
+
+	LWS_CALLBACK_FILTER_HTTP_CONNECTION			= 18,
+	/**< called when the request has
+	 * been received and parsed from the client, but the response is
+	 * not sent yet.  Return non-zero to disallow the connection.
+	 * user is a pointer to the connection user space allocation,
+	 * in is the URI, eg, "/"
+	 * In your handler you can use the public APIs
+	 * lws_hdr_total_length() / lws_hdr_copy() to access all of the
+	 * headers using the header enums lws_token_indexes from
+	 * libwebsockets.h to check for and read the supported header
+	 * presence and content before deciding to allow the http
+	 * connection to proceed or to kill the connection. */
+
+	LWS_CALLBACK_ADD_HEADERS				= 53,
+	/**< This gives your user code a chance to add headers to a server
+	 * transaction bound to your protocol.  `in` points to a
+	 * `struct lws_process_html_args` describing a buffer and length
+	 * you can add headers into using the normal lws apis.
+	 *
+	 * (see LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER to add headers to
+	 * a client transaction)
+	 *
+	 * Only `args->p` and `args->len` are valid, and `args->p` should
+	 * be moved on by the amount of bytes written, if any.  Eg
+	 *
+	 * 	case LWS_CALLBACK_ADD_HEADERS:
+	 *
+	 *          struct lws_process_html_args *args =
+	 *          		(struct lws_process_html_args *)in;
+	 *
+	 *	    if (lws_add_http_header_by_name(wsi,
+	 *			(unsigned char *)"set-cookie:",
+	 *			(unsigned char *)cookie, cookie_len,
+	 *			(unsigned char **)&args->p,
+	 *			(unsigned char *)args->p + args->max_len))
+	 *		return 1;
+	 *
+	 *          break;
+	 */
+
+	LWS_CALLBACK_CHECK_ACCESS_RIGHTS			= 51,
+	/**< This gives the user code a chance to forbid an http access.
+	 * `in` points to a `struct lws_process_html_args`, which
+	 * describes the URL, and a bit mask describing the type of
+	 * authentication required.  If the callback returns nonzero,
+	 * the transaction ends with HTTP_STATUS_UNAUTHORIZED. */
+
+	LWS_CALLBACK_PROCESS_HTML				= 52,
+	/**< This gives your user code a chance to mangle outgoing
+	 * HTML.  `in` points to a `struct lws_process_html_args`
+	 * which describes the buffer containing outgoing HTML.
+	 * The buffer may grow up to `.max_len` (currently +128
+	 * bytes per buffer).
+	 */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to HTTP Client  -----
+	 */
+
+	LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP			= 44,
+	/**< The HTTP client connection has succeeded, and is now
+	 * connected to the server */
+
+	LWS_CALLBACK_CLOSED_CLIENT_HTTP				= 45,
+	/**< The HTTP client connection is closing */
+
+	LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ			= 48,
+	/**< This is generated by lws_http_client_read() used to drain
+	 * incoming data.  In the case the incoming data was chunked, it will
+	 * be split into multiple smaller callbacks for each chunk block,
+	 * removing the chunk headers. If not chunked, it will appear all in
+	 * one callback. */
+
+	LWS_CALLBACK_RECEIVE_CLIENT_HTTP			= 46,
+	/**< This simply indicates data was received on the HTTP client
+	 * connection.  It does NOT drain or provide the data.
+	 * This exists to neatly allow a proxying type situation,
+	 * where this incoming data will go out on another connection.
+	 * If the outgoing connection stalls, we should stall processing
+	 * the incoming data.  So a handler for this in that case should
+	 * simply set a flag to indicate there is incoming data ready
+	 * and ask for a writeable callback on the outgoing connection.
+	 * In the writable callback he can check the flag and then get
+	 * and drain the waiting incoming data using lws_http_client_read().
+	 * This will use callbacks to LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ
+	 * to get and drain the incoming data, where it should be sent
+	 * back out on the outgoing connection. */
+	LWS_CALLBACK_COMPLETED_CLIENT_HTTP			= 47,
+	/**< The client transaction completed... at the moment this
+	 * is the same as closing since transaction pipelining on
+	 * client side is not yet supported.  */
+
+	LWS_CALLBACK_CLIENT_HTTP_WRITEABLE			= 57,
+	/**< when doing an HTTP type client connection, you can call
+	 * lws_client_http_body_pending(wsi, 1) from
+	 * LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER to get these callbacks
+	 * sending the HTTP headers.
+	 *
+	 * From this callback, when you have sent everything, you should let
+	 * lws know by calling lws_client_http_body_pending(wsi, 0)
+	 */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to Websocket Server -----
+	 */
+
 	LWS_CALLBACK_ESTABLISHED				=  0,
 	/**< (VH) after the server completes a handshake with an incoming
 	 * client.  If you built the library with ssl support, in is a
-	 * pointer to the ssl struct associated with the connection or NULL.*/
+	 * pointer to the ssl struct associated with the connection or NULL.
+	 *
+	 * b0 of len is set if the connection was made using ws-over-h2
+	 */
+
+	LWS_CALLBACK_CLOSED					=  4,
+	/**< when the websocket session ends */
+
+	LWS_CALLBACK_SERVER_WRITEABLE				= 11,
+	/**< See LWS_CALLBACK_CLIENT_WRITEABLE */
+
+	LWS_CALLBACK_RECEIVE					=  6,
+	/**< data has appeared for this server endpoint from a
+	 * remote client, it can be found at *in and is
+	 * len bytes long */
+
+	LWS_CALLBACK_RECEIVE_PONG				=  7,
+	/**< servers receive PONG packets with this callback reason */
+
+	LWS_CALLBACK_WS_PEER_INITIATED_CLOSE			= 38,
+	/**< The peer has sent an unsolicited Close WS packet.  in and
+	 * len are the optional close code (first 2 bytes, network
+	 * order) and the optional additional information which is not
+	 * defined in the standard, and may be a string or non human-readable
+	 * data.
+	 * If you return 0 lws will echo the close and then close the
+	 * connection.  If you return nonzero lws will just close the
+	 * connection. */
+
+	LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION			= 20,
+	/**< called when the handshake has
+	 * been received and parsed from the client, but the response is
+	 * not sent yet.  Return non-zero to disallow the connection.
+	 * user is a pointer to the connection user space allocation,
+	 * in is the requested protocol name
+	 * In your handler you can use the public APIs
+	 * lws_hdr_total_length() / lws_hdr_copy() to access all of the
+	 * headers using the header enums lws_token_indexes from
+	 * libwebsockets.h to check for and read the supported header
+	 * presence and content before deciding to allow the handshake
+	 * to proceed or to kill the connection. */
+
+	LWS_CALLBACK_CONFIRM_EXTENSION_OKAY			= 25,
+	/**< When the server handshake code
+	 * sees that it does support a requested extension, before
+	 * accepting the extension by additing to the list sent back to
+	 * the client it gives this callback just to check that it's okay
+	 * to use that extension.  It calls back to the requested protocol
+	 * and with in being the extension name, len is 0 and user is
+	 * valid.  Note though at this time the ESTABLISHED callback hasn't
+	 * happened yet so if you initialize user content there, user
+	 * content during this callback might not be useful for anything. */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to Websocket Client -----
+	 */
+
 	LWS_CALLBACK_CLIENT_CONNECTION_ERROR			=  1,
 	/**< the request client connection has been unable to complete a
 	 * handshake with the remote server.  If in is non-NULL, you can
@@ -962,6 +1303,7 @@ enum lws_callback_reasons {
 	 *     	"HS: SO_SNDBUF failed"
 	 *     	"HS: Rejected at CLIENT_ESTABLISHED"
 	 */
+
 	LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH		=  2,
 	/**< this is the last chance for the client user code to examine the
 	 * http headers and decide to reject the connection.  If the
@@ -969,131 +1311,14 @@ enum lws_callback_reasons {
 	 * client (url, etc) it needs to copy it out at
 	 * this point since it will be destroyed before
 	 * the CLIENT_ESTABLISHED call */
+
 	LWS_CALLBACK_CLIENT_ESTABLISHED				=  3,
-	/**< after your client connection completed
-	 * a handshake with the remote server */
-	LWS_CALLBACK_CLOSED					=  4,
-	/**< when the websocket session ends */
-	LWS_CALLBACK_CLOSED_HTTP				=  5,
-	/**< when a HTTP (non-websocket) session ends */
-	LWS_CALLBACK_RECEIVE					=  6,
-	/**< data has appeared for this server endpoint from a
-	 * remote client, it can be found at *in and is
-	 * len bytes long */
-	LWS_CALLBACK_RECEIVE_PONG				=  7,
-	/**< servers receive PONG packets with this callback reason */
-	LWS_CALLBACK_CLIENT_RECEIVE				=  8,
-	/**< data has appeared from the server for the client connection, it
-	 * can be found at *in and is len bytes long */
-	LWS_CALLBACK_CLIENT_RECEIVE_PONG			=  9,
-	/**< clients receive PONG packets with this callback reason */
-	LWS_CALLBACK_CLIENT_WRITEABLE				= 10,
-	/**<  If you call lws_callback_on_writable() on a connection, you will
-	 * get one of these callbacks coming when the connection socket
-	 * is able to accept another write packet without blocking.
-	 * If it already was able to take another packet without blocking,
-	 * you'll get this callback at the next call to the service loop
-	 * function.  Notice that CLIENTs get LWS_CALLBACK_CLIENT_WRITEABLE
-	 * and servers get LWS_CALLBACK_SERVER_WRITEABLE. */
-	LWS_CALLBACK_SERVER_WRITEABLE				= 11,
-	/**< See LWS_CALLBACK_CLIENT_WRITEABLE */
-	LWS_CALLBACK_HTTP					= 12,
-	/**< an http request has come from a client that is not
-	 * asking to upgrade the connection to a websocket
-	 * one.  This is a chance to serve http content,
-	 * for example, to send a script to the client
-	 * which will then open the websockets connection.
-	 * in points to the URI path requested and
-	 * lws_serve_http_file() makes it very
-	 * simple to send back a file to the client.
-	 * Normally after sending the file you are done
-	 * with the http connection, since the rest of the
-	 * activity will come by websockets from the script
-	 * that was delivered by http, so you will want to
-	 * return 1; to close and free up the connection. */
-	LWS_CALLBACK_HTTP_BODY					= 13,
-	/**< the next len bytes data from the http
-	 * request body HTTP connection is now available in in. */
-	LWS_CALLBACK_HTTP_BODY_COMPLETION			= 14,
-	/**< the expected amount of http request body has been delivered */
-	LWS_CALLBACK_HTTP_FILE_COMPLETION			= 15,
-	/**< a file requested to be sent down http link has completed. */
-	LWS_CALLBACK_HTTP_WRITEABLE				= 16,
-	/**< you can write more down the http protocol link now. */
-	LWS_CALLBACK_FILTER_NETWORK_CONNECTION			= 17,
-	/**< called when a client connects to
-	 * the server at network level; the connection is accepted but then
-	 * passed to this callback to decide whether to hang up immediately
-	 * or not, based on the client IP.  in contains the connection
-	 * socket's descriptor. Since the client connection information is
-	 * not available yet, wsi still pointing to the main server socket.
-	 * Return non-zero to terminate the connection before sending or
-	 * receiving anything. Because this happens immediately after the
-	 * network connection from the client, there's no websocket protocol
-	 * selected yet so this callback is issued only to protocol 0. */
-	LWS_CALLBACK_FILTER_HTTP_CONNECTION			= 18,
-	/**< called when the request has
-	 * been received and parsed from the client, but the response is
-	 * not sent yet.  Return non-zero to disallow the connection.
-	 * user is a pointer to the connection user space allocation,
-	 * in is the URI, eg, "/"
-	 * In your handler you can use the public APIs
-	 * lws_hdr_total_length() / lws_hdr_copy() to access all of the
-	 * headers using the header enums lws_token_indexes from
-	 * libwebsockets.h to check for and read the supported header
-	 * presence and content before deciding to allow the http
-	 * connection to proceed or to kill the connection. */
-	LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED		= 19,
-	/**< A new client just had
-	 * been connected, accepted, and instantiated into the pool. This
-	 * callback allows setting any relevant property to it. Because this
-	 * happens immediately after the instantiation of a new client,
-	 * there's no websocket protocol selected yet so this callback is
-	 * issued only to protocol 0. Only wsi is defined, pointing to the
-	 * new client, and the return value is ignored. */
-	LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION			= 20,
-	/**< called when the handshake has
-	 * been received and parsed from the client, but the response is
-	 * not sent yet.  Return non-zero to disallow the connection.
-	 * user is a pointer to the connection user space allocation,
-	 * in is the requested protocol name
-	 * In your handler you can use the public APIs
-	 * lws_hdr_total_length() / lws_hdr_copy() to access all of the
-	 * headers using the header enums lws_token_indexes from
-	 * libwebsockets.h to check for and read the supported header
-	 * presence and content before deciding to allow the handshake
-	 * to proceed or to kill the connection. */
-	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS	= 21,
-	/**< if configured for
-	 * including OpenSSL support, this callback allows your user code
-	 * to perform extra SSL_CTX_load_verify_locations() or similar
-	 * calls to direct OpenSSL where to find certificates the client
-	 * can use to confirm the remote server identity.  user is the
-	 * OpenSSL SSL_CTX* */
-	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS	= 22,
-	/**< if configured for
-	 * including OpenSSL support, this callback allows your user code
-	 * to load extra certificates into the server which allow it to
-	 * verify the validity of certificates returned by clients.  user
-	 * is the server's OpenSSL SSL_CTX* */
-	LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION	= 23,
-	/**< if the libwebsockets vhost was created with the option
-	 * LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT, then this
-	 * callback is generated during OpenSSL verification of the cert
-	 * sent from the client.  It is sent to protocol[0] callback as
-	 * no protocol has been negotiated on the connection yet.
-	 * Notice that the libwebsockets context and wsi are both NULL
-	 * during this callback.  See
-	 *  http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html
-	 * to understand more detail about the OpenSSL callback that
-	 * generates this libwebsockets callback and the meanings of the
-	 * arguments passed.  In this callback, user is the x509_ctx,
-	 * in is the ssl pointer and len is preverify_ok
-	 * Notice that this callback maintains libwebsocket return
-	 * conventions, return 0 to mean the cert is OK or 1 to fail it.
-	 * This also means that if you don't handle this callback then
-	 * the default callback action of returning 0 allows the client
-	 * certificates. */
+	/**< after your client connection completed the websocket upgrade
+	 * handshake with the remote server */
+
+	LWS_CALLBACK_CLIENT_CLOSED				=  75,
+	/**< when a client websocket session ends */
+
 	LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER		= 24,
 	/**< this callback happens
 	 * when a client handshake is being compiled.  user is NULL,
@@ -1117,19 +1342,30 @@ enum lws_callback_reasons {
 	 * optional, if you don't handle it everything is fine.
 	 *
 	 * Notice the callback is coming to protocols[0] all the time,
-	 * because there is no specific protocol negotiated yet. */
-	LWS_CALLBACK_CONFIRM_EXTENSION_OKAY			= 25,
-	/**< When the server handshake code
-	 * sees that it does support a requested extension, before
-	 * accepting the extension by additing to the list sent back to
-	 * the client it gives this callback just to check that it's okay
-	 * to use that extension.  It calls back to the requested protocol
-	 * and with in being the extension name, len is 0 and user is
-	 * valid.  Note though at this time the ESTABLISHED callback hasn't
-	 * happened yet so if you initialize user content there, user
-	 * content during this callback might not be useful for anything. */
+	 * because there is no specific protocol negotiated yet.
+	 *
+	 * See LWS_CALLBACK_ADD_HEADERS for adding headers to server
+	 * transactions.
+	 */
+
+	LWS_CALLBACK_CLIENT_RECEIVE				=  8,
+	/**< data has appeared from the server for the client connection, it
+	 * can be found at *in and is len bytes long */
+
+	LWS_CALLBACK_CLIENT_RECEIVE_PONG			=  9,
+	/**< clients receive PONG packets with this callback reason */
+
+	LWS_CALLBACK_CLIENT_WRITEABLE				= 10,
+	/**<  If you call lws_callback_on_writable() on a connection, you will
+	 * get one of these callbacks coming when the connection socket
+	 * is able to accept another write packet without blocking.
+	 * If it already was able to take another packet without blocking,
+	 * you'll get this callback at the next call to the service loop
+	 * function.  Notice that CLIENTs get LWS_CALLBACK_CLIENT_WRITEABLE
+	 * and servers get LWS_CALLBACK_SERVER_WRITEABLE. */
+
 	LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED		= 26,
-	/**< When a client
+	/**< When a ws client
 	 * connection is being prepared to start a handshake to a server,
 	 * each supported extension is checked with protocols[0] callback
 	 * with this reason, giving the user code a chance to suppress the
@@ -1137,18 +1373,32 @@ enum lws_callback_reasons {
 	 * unhandled, by default 0 will be returned and the extension
 	 * support included in the header to the server.  Notice this
 	 * callback comes to protocols[0]. */
-	LWS_CALLBACK_PROTOCOL_INIT				= 27,
-	/**< One-time call per protocol, per-vhost using it, so it can
-	 * do initial setup / allocations etc */
-	LWS_CALLBACK_PROTOCOL_DESTROY				= 28,
-	/**< One-time call per protocol, per-vhost using it, indicating
-	 * this protocol won't get used at all after this callback, the
-	 * vhost is getting destroyed.  Take the opportunity to
-	 * deallocate everything that was allocated by the protocol. */
-	LWS_CALLBACK_WSI_CREATE					= 29,
-	/**< outermost (earliest) wsi create notification to protocols[0] */
-	LWS_CALLBACK_WSI_DESTROY				= 30,
-	/**< outermost (latest) wsi destroy notification to protocols[0] */
+
+	LWS_CALLBACK_WS_EXT_DEFAULTS				= 39,
+	/**< Gives client connections an opportunity to adjust negotiated
+	 * extension defaults.  `user` is the extension name that was
+	 * negotiated (eg, "permessage-deflate").  `in` points to a
+	 * buffer and `len` is the buffer size.  The user callback can
+	 * set the buffer to a string describing options the extension
+	 * should parse.  Or just ignore for defaults. */
+
+
+	LWS_CALLBACK_FILTER_NETWORK_CONNECTION			= 17,
+	/**< called when a client connects to
+	 * the server at network level; the connection is accepted but then
+	 * passed to this callback to decide whether to hang up immediately
+	 * or not, based on the client IP.  in contains the connection
+	 * socket's descriptor. Since the client connection information is
+	 * not available yet, wsi still pointing to the main server socket.
+	 * Return non-zero to terminate the connection before sending or
+	 * receiving anything. Because this happens immediately after the
+	 * network connection from the client, there's no websocket protocol
+	 * selected yet so this callback is issued only to protocol 0. */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to external poll loop integration  -----
+	 */
+
 	LWS_CALLBACK_GET_THREAD_ID				= 31,
 	/**< lws can accept callback when writable requests from other
 	 * threads, if you implement this callback and return an opaque
@@ -1171,12 +1421,14 @@ enum lws_callback_reasons {
 	 *
 	 * If you are using the internal lws polling / event loop
 	 * you can just ignore these callbacks. */
+
 	LWS_CALLBACK_DEL_POLL_FD				= 33,
 	/**< This callback happens when a socket descriptor
 	 * needs to be removed from an external polling array.  in is
 	 * again the struct lws_pollargs containing the fd member
 	 * to be removed.  If you are using the internal polling
 	 * loop, you can just ignore it. */
+
 	LWS_CALLBACK_CHANGE_MODE_POLL_FD			= 34,
 	/**< This callback happens when lws wants to modify the events for
 	 * a connection.
@@ -1185,6 +1437,7 @@ enum lws_callback_reasons {
 	 * the prev_events member.
 	 * If you are using the internal polling loop, you can just ignore
 	 * it. */
+
 	LWS_CALLBACK_LOCK_POLL					= 35,
 	/**< These allow the external poll changes driven
 	 * by lws to participate in an external thread locking
@@ -1197,135 +1450,46 @@ enum lws_callback_reasons {
 	 * len == 1 allows external threads to be synchronized against
 	 * wsi lifecycle changes if it acquires the same lock for the
 	 * duration of wsi dereference from the other thread context. */
+
 	LWS_CALLBACK_UNLOCK_POLL				= 36,
 	/**< See LWS_CALLBACK_LOCK_POLL, ignore if using lws internal poll */
 
-	LWS_CALLBACK_OPENSSL_CONTEXT_REQUIRES_PRIVATE_KEY	= 37,
-	/**< if configured for including OpenSSL support but no private key
-	 * file has been specified (ssl_private_key_filepath is NULL), this is
-	 * called to allow the user to set the private key directly via
-	 * libopenssl and perform further operations if required; this might be
-	 * useful in situations where the private key is not directly accessible
-	 * by the OS, for example if it is stored on a smartcard.
-	 * user is the server's OpenSSL SSL_CTX* */
-	LWS_CALLBACK_WS_PEER_INITIATED_CLOSE			= 38,
-	/**< The peer has sent an unsolicited Close WS packet.  in and
-	 * len are the optional close code (first 2 bytes, network
-	 * order) and the optional additional information which is not
-	 * defined in the standard, and may be a string or non-human- readable data.
-	 * If you return 0 lws will echo the close and then close the
-	 * connection.  If you return nonzero lws will just close the
-	 * connection. */
-
-	LWS_CALLBACK_WS_EXT_DEFAULTS				= 39,
-	/**< Gives client connections an opportunity to adjust negotiated
-	 * extension defaults.  `user` is the extension name that was
-	 * negotiated (eg, "permessage-deflate").  `in` points to a
-	 * buffer and `len` is the buffer size.  The user callback can
-	 * set the buffer to a string describing options the extension
-	 * should parse.  Or just ignore for defaults. */
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to CGI serving -----
+	 */
 
 	LWS_CALLBACK_CGI					= 40,
 	/**< CGI: CGI IO events on stdin / out / err are sent here on
 	 * protocols[0].  The provided `lws_callback_http_dummy()`
 	 * handles this and the callback should be directed there if
 	 * you use CGI. */
+
 	LWS_CALLBACK_CGI_TERMINATED				= 41,
 	/**< CGI: The related CGI process ended, this is called before
 	 * the wsi is closed.  Used to, eg, terminate chunking.
 	 * The provided `lws_callback_http_dummy()`
 	 * handles this and the callback should be directed there if
 	 * you use CGI.  The child PID that terminated is in len. */
+
 	LWS_CALLBACK_CGI_STDIN_DATA				= 42,
 	/**< CGI: Data is, to be sent to the CGI process stdin, eg from
 	 * a POST body.  The provided `lws_callback_http_dummy()`
 	 * handles this and the callback should be directed there if
 	 * you use CGI. */
+
 	LWS_CALLBACK_CGI_STDIN_COMPLETED			= 43,
 	/**< CGI: no more stdin is coming.  The provided
 	 * `lws_callback_http_dummy()` handles this and the callback
 	 * should be directed there if you use CGI. */
-	LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP			= 44,
-	/**< The HTTP client connection has succeeded, and is now
-	 * connected to the server */
-	LWS_CALLBACK_CLOSED_CLIENT_HTTP				= 45,
-	/**< The HTTP client connection is closing */
-	LWS_CALLBACK_RECEIVE_CLIENT_HTTP			= 46,
-	/**< This simply indicates data was received on the HTTP client
-	 * connection.  It does NOT drain or provide the data.
-	 * This exists to neatly allow a proxying type situation,
-	 * where this incoming data will go out on another connection.
-	 * If the outgoing connection stalls, we should stall processing
-	 * the incoming data.  So a handler for this in that case should
-	 * simply set a flag to indicate there is incoming data ready
-	 * and ask for a writeable callback on the outgoing connection.
-	 * In the writable callback he can check the flag and then get
-	 * and drain the waiting incoming data using lws_http_client_read().
-	 * This will use callbacks to LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ
-	 * to get and drain the incoming data, where it should be sent
-	 * back out on the outgoing connection. */
-	LWS_CALLBACK_COMPLETED_CLIENT_HTTP			= 47,
-	/**< The client transaction completed... at the moment this
-	 * is the same as closing since transaction pipelining on
-	 * client side is not yet supported.  */
-	LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ			= 48,
-	/**< This is generated by lws_http_client_read() used to drain
-	 * incoming data.  In the case the incoming data was chunked,
-	 * it will be split into multiple smaller callbacks for each
-	 * chunk block, removing the chunk headers. If not chunked,
-	 * it will appear all in one callback. */
-	LWS_CALLBACK_HTTP_BIND_PROTOCOL				= 49,
-	/**< By default, all HTTP handling is done in protocols[0].
-	 * However you can bind different protocols (by name) to
-	 * different parts of the URL space using callback mounts.  This
-	 * callback occurs in the new protocol when a wsi is bound
-	 * to that protocol.  Any protocol allocation related to the
-	 * http transaction processing should be created then.
-	 * These specific callbacks are necessary because with HTTP/1.1,
-	 * a single connection may perform at series of different
-	 * transactions at different URLs, thus the lifetime of the
-	 * protocol bind is just for one transaction, not connection. */
-	LWS_CALLBACK_HTTP_DROP_PROTOCOL				= 50,
-	/**< This is called when a transaction is unbound from a protocol.
-	 * It indicates the connection completed its transaction and may
-	 * do something different now.  Any protocol allocation related
-	 * to the http transaction processing should be destroyed. */
-	LWS_CALLBACK_CHECK_ACCESS_RIGHTS			= 51,
-	/**< This gives the user code a chance to forbid an http access.
-	 * `in` points to a `struct lws_process_html_args`, which
-	 * describes the URL, and a bit mask describing the type of
-	 * authentication required.  If the callback returns nonzero,
-	 * the transaction ends with HTTP_STATUS_UNAUTHORIZED. */
-	LWS_CALLBACK_PROCESS_HTML				= 52,
-	/**< This gives your user code a chance to mangle outgoing
-	 * HTML.  `in` points to a `struct lws_process_html_args`
-	 * which describes the buffer containing outgoing HTML.
-	 * The buffer may grow up to `.max_len` (currently +128
-	 * bytes per buffer).
-	 *  */
-	LWS_CALLBACK_ADD_HEADERS				= 53,
-	/**< This gives your user code a chance to add headers to a
-	 * transaction bound to your protocol.  `in` points to a
-	 * `struct lws_process_html_args` describing a buffer and length
-	 * you can add headers into using the normal lws apis.
-	 *
-	 * Only `args->p` and `args->len` are valid, and `args->p` should
-	 * be moved on by the amount of bytes written, if any.  Eg
-	 *
-	 * 	case LWS_CALLBACK_ADD_HEADERS:
-	 *
-	 *          struct lws_process_html_args *args =
-	 *          		(struct lws_process_html_args *)in;
-	 *
-	 *	    if (lws_add_http_header_by_name(wsi,
-	 *			(unsigned char *)"set-cookie:",
-	 *			(unsigned char *)cookie, cookie_len,
-	 *			(unsigned char **)&args->p,
-	 *			(unsigned char *)args->p + args->max_len))
-	 *		return 1;
-	 *
-	 *          break;
+
+	LWS_CALLBACK_CGI_PROCESS_ATTACH				= 70,
+	/**< CGI: Sent when the CGI process is spawned for the wsi.  The
+	 * len parameter is the PID of the child process */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to Generic Sessions -----
 	 */
+
 	LWS_CALLBACK_SESSION_INFO				= 54,
 	/**< This is only generated by user code using generic sessions.
 	 * It's used to get a `struct lws_session_info` filled in by
@@ -1335,85 +1499,103 @@ enum lws_callback_reasons {
 	LWS_CALLBACK_GS_EVENT					= 55,
 	/**< Indicates an event happened to the Generic Sessions session.
 	 * `in` contains a `struct lws_gs_event_args` describing the event. */
+
 	LWS_CALLBACK_HTTP_PMO					= 56,
 	/**< per-mount options for this connection, called before
 	 * the normal LWS_CALLBACK_HTTP when the mount has per-mount
 	 * options.
 	 */
-	LWS_CALLBACK_CLIENT_HTTP_WRITEABLE			= 57,
-	/**< when doing an HTTP type client connection, you can call
-	 * lws_client_http_body_pending(wsi, 1) from
-	 * LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER to get these callbacks
-	 * sending the HTTP headers.
-	 *
-	 * From this callback, when you have sent everything, you should let
-	 * lws know by calling lws_client_http_body_pending(wsi, 0)
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to RAW sockets -----
 	 */
-	LWS_CALLBACK_OPENSSL_PERFORM_SERVER_CERT_VERIFICATION = 58,
-	/**< Similar to LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION
-	 * this callback is called during OpenSSL verification of the cert
-	 * sent from the server to the client. It is sent to protocol[0]
-	 * callback as no protocol has been negotiated on the connection yet.
-	 * Notice that the wsi is set because lws_client_connect_via_info was
-	 * successful.
-	 *
-	 * See http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html
-	 * to understand more detail about the OpenSSL callback that
-	 * generates this libwebsockets callback and the meanings of the
-	 * arguments passed. In this callback, user is the x509_ctx,
-	 * in is the ssl pointer and len is preverify_ok.
-	 *
-	 * THIS IS NOT RECOMMENDED BUT if a cert validation error shall be
-	 * overruled and cert shall be accepted as ok,
-	 * X509_STORE_CTX_set_error((X509_STORE_CTX*)user, X509_V_OK); must be
-	 * called and return value must be 0 to mean the cert is OK;
-	 * returning 1 will fail the cert in any case.
-	 *
-	 * This also means that if you don't handle this callback then
-	 * the default callback action of returning 0 will not accept the
-	 * certificate in case of a validation error decided by the SSL lib.
-	 *
-	 * This is expected and secure behaviour when validating certificates.
-	 *
-	 * Note: LCCSCF_ALLOW_SELFSIGNED and
-	 * LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK still work without this
-	 * callback being implemented.
-	 */
+
 	LWS_CALLBACK_RAW_RX					= 59,
 	/**< RAW mode connection RX */
+
 	LWS_CALLBACK_RAW_CLOSE					= 60,
 	/**< RAW mode connection is closing */
+
 	LWS_CALLBACK_RAW_WRITEABLE				= 61,
 	/**< RAW mode connection may be written */
+
 	LWS_CALLBACK_RAW_ADOPT					= 62,
 	/**< RAW mode connection was adopted (equivalent to 'wsi created') */
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to RAW file handles -----
+	 */
+
 	LWS_CALLBACK_RAW_ADOPT_FILE				= 63,
 	/**< RAW mode file was adopted (equivalent to 'wsi created') */
+
 	LWS_CALLBACK_RAW_RX_FILE				= 64,
-	/**< RAW mode file has something to read */
+	/**< This is the indication the RAW mode file has something to read.
+	 *   This doesn't actually do the read of the file and len is always
+	 *   0... your code should do the read having been informed there is
+	 *   something to read now. */
+
 	LWS_CALLBACK_RAW_WRITEABLE_FILE				= 65,
 	/**< RAW mode file is writeable */
+
 	LWS_CALLBACK_RAW_CLOSE_FILE				= 66,
 	/**< RAW mode wsi that adopted a file is closing */
-	LWS_CALLBACK_SSL_INFO					= 67,
-	/**< SSL connections only.  An event you registered an
-	 * interest in at the vhost has occurred on a connection
-	 * using the vhost.  in is a pointer to a
-	 * struct lws_ssl_info containing information about the
-	 * event*/
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to generic wsi events -----
+	 */
+
+	LWS_CALLBACK_TIMER					= 73,
+	/**< When the time elapsed after a call to
+	 * lws_set_timer_usecs(wsi, usecs) is up, the wsi will get one of
+	 * these callbacks.  The deadline can be continuously extended into the
+	 * future by later calls to lws_set_timer_usecs() before the deadline
+	 * expires, or cancelled by lws_set_timer_usecs(wsi, -1);
+	 * See the note on lws_set_timer_usecs() about which event loops are
+	 * supported. */
+
+	LWS_CALLBACK_EVENT_WAIT_CANCELLED			= 71,
+	/**< This is sent to every protocol of every vhost in response
+	 * to lws_cancel_service() or lws_cancel_service_pt().  This
+	 * callback is serialized in the lws event loop normally, even
+	 * if the lws_cancel_service[_pt]() call was from a different
+	 * thread. */
+
+	LWS_CALLBACK_CHILD_CLOSING				= 69,
+	/**< Sent to parent to notify them a child is closing / being
+	 * destroyed.  in is the child wsi.
+	 */
+
 	LWS_CALLBACK_CHILD_WRITE_VIA_PARENT			= 68,
 	/**< Child has been marked with parent_carries_io attribute, so
 	 * lws_write directs the to this callback at the parent,
 	 * in is a struct lws_write_passthru containing the args
 	 * the lws_write() was called with.
 	 */
-	LWS_CALLBACK_CHILD_CLOSING				= 69,
-	/**< Sent to parent to notify them a child is closing / being
-	 * destroyed.  in is the child wsi.
+
+	/* ---------------------------------------------------------------------
+	 * ----- Callbacks related to TLS certificate management -----
 	 */
-	LWS_CALLBACK_CGI_PROCESS_ATTACH				= 70,
-	/**< CGI: Sent when the CGI process is spawned for the wsi.  The
-	 * len parameter is the PID of the child process */
+
+	LWS_CALLBACK_VHOST_CERT_AGING				= 72,
+	/**< When a vhost TLS cert has its expiry checked, this callback
+	 * is broadcast to every protocol of every vhost in case the
+	 * protocol wants to take some action with this information.
+	 * \p in is a pointer to a struct lws_acme_cert_aging_args,
+	 * and \p len is the number of days left before it expires, as
+	 * a (ssize_t).  In the struct lws_acme_cert_aging_args, vh
+	 * points to the vhost the cert aging information applies to,
+	 * and element_overrides[] is an optional way to update information
+	 * from the pvos... NULL in an index means use the information from
+	 * from the pvo for the cert renewal, non-NULL in the array index
+	 * means use that pointer instead for the index. */
+
+	LWS_CALLBACK_VHOST_CERT_UPDATE				= 74,
+	/**< When a vhost TLS cert is being updated, progress is
+	 * reported to the vhost in question here, including completion
+	 * and failure.  in points to optional JSON, and len represents the
+	 * connection state using enum lws_cert_update_state */
+
 
 	/****** add new things just above ---^ ******/
 
@@ -1448,6 +1630,8 @@ lws_callback_function(struct lws *wsi, enum lws_callback_reasons reason,
 #define LWS_CB_REASON_AUX_BF__CGI_HEADERS	8
 ///@}
 
+struct lws_vhost;
+
 /*! \defgroup generic hash
  * ## Generic Hash related functions
  *
@@ -1459,7 +1643,7 @@ lws_callback_function(struct lws *wsi, enum lws_callback_reasons reason,
  */
 ///@{
 
-#ifdef LWS_OPENSSL_SUPPORT
+#if defined(LWS_WITH_TLS)
 
 #if defined(LWS_WITH_MBEDTLS)
 #include <mbedtls/sha1.h>
@@ -1467,9 +1651,20 @@ lws_callback_function(struct lws *wsi, enum lws_callback_reasons reason,
 #include <mbedtls/sha512.h>
 #endif
 
-#define LWS_GENHASH_TYPE_SHA1		0
-#define LWS_GENHASH_TYPE_SHA256		1
-#define LWS_GENHASH_TYPE_SHA512		2
+enum lws_genhash_types {
+	LWS_GENHASH_TYPE_SHA1,
+	LWS_GENHASH_TYPE_SHA256,
+	LWS_GENHASH_TYPE_SHA384,
+	LWS_GENHASH_TYPE_SHA512,
+};
+
+enum lws_genhmac_types {
+	LWS_GENHMAC_TYPE_SHA256,
+	LWS_GENHMAC_TYPE_SHA384,
+	LWS_GENHMAC_TYPE_SHA512,
+};
+
+#define LWS_GENHASH_LARGEST 64
 
 struct lws_genhash_ctx {
         uint8_t type;
@@ -1477,11 +1672,23 @@ struct lws_genhash_ctx {
         union {
 		mbedtls_sha1_context sha1;
 		mbedtls_sha256_context sha256;
-		mbedtls_sha512_context sha512;
+		mbedtls_sha512_context sha512; /* 384 also uses this */
+		const mbedtls_md_info_t *hmac;
         } u;
 #else
         const EVP_MD *evp_type;
         EVP_MD_CTX *mdctx;
+#endif
+};
+
+struct lws_genhmac_ctx {
+        uint8_t type;
+#if defined(LWS_WITH_MBEDTLS)
+	const mbedtls_md_info_t *hmac;
+	mbedtls_md_context_t ctx;
+#else
+        const EVP_MD *evp_type;
+        EVP_MD_CTX *ctx;
 #endif
 };
 
@@ -1492,7 +1699,16 @@ struct lws_genhash_ctx {
  * Returns number of bytes in this type of hash
  */
 LWS_VISIBLE LWS_EXTERN size_t LWS_WARN_UNUSED_RESULT
-lws_genhash_size(int type);
+lws_genhash_size(enum lws_genhash_types type);
+
+/** lws_genhmac_size() - get hash size in bytes
+ *
+ * \param type:	one of LWS_GENHASH_TYPE_...
+ *
+ * Returns number of bytes in this type of hmac
+ */
+LWS_VISIBLE LWS_EXTERN size_t LWS_WARN_UNUSED_RESULT
+lws_genhmac_size(enum lws_genhmac_types type);
 
 /** lws_genhash_init() - prepare your struct lws_genhash_ctx for use
  *
@@ -1502,7 +1718,7 @@ lws_genhash_size(int type);
  * Initializes the hash context for the type you requested
  */
 LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
-lws_genhash_init(struct lws_genhash_ctx *ctx, int type);
+lws_genhash_init(struct lws_genhash_ctx *ctx, enum lws_genhash_types type);
 
 /** lws_genhash_update() - digest len bytes of the buffer starting at in
  *
@@ -1529,9 +1745,385 @@ lws_genhash_update(struct lws_genhash_ctx *ctx, const void *in, size_t len);
 LWS_VISIBLE LWS_EXTERN int
 lws_genhash_destroy(struct lws_genhash_ctx *ctx, void *result);
 
-#endif
+/** lws_genhmac_init() - prepare your struct lws_genhmac_ctx for use
+ *
+ * \param ctx: your struct lws_genhmac_ctx
+ * \param type:	one of LWS_GENHMAC_TYPE_...
+ * \param key: pointer to the start of the HMAC key
+ * \param key_len: length of the HMAC key
+ *
+ * Initializes the hash context for the type you requested
+ *
+ * If the return is nonzero, it failed and there is nothing needing to be
+ * destroyed.
+ */
+int
+lws_genhmac_init(struct lws_genhmac_ctx *ctx, enum lws_genhmac_types type,
+		const uint8_t *key, size_t key_len);
 
+/** lws_genhmac_update() - digest len bytes of the buffer starting at in
+ *
+ * \param ctx: your struct lws_genhmac_ctx
+ * \param in: start of the bytes to digest
+ * \param len: count of bytes to digest
+ *
+ * Updates the state of your hash context to reflect digesting len bytes from in
+ *
+ * If the return is nonzero, it failed and needs destroying.
+ */
+int
+lws_genhmac_update(struct lws_genhmac_ctx *ctx, const void *in, size_t len);
+
+/** lws_genhmac_destroy() - copy out the result digest and destroy the ctx
+ *
+ * \param ctx: your struct lws_genhmac_ctx
+ * \param result: NULL, or where to copy the result hash
+ *
+ * Finalizes the hash and copies out the digest.  Destroys any allocations such
+ * that ctx can safely go out of scope after calling this.
+ *
+ * NULL result is supported so that you can destroy the ctx cleanly on error
+ * conditions, where there is no valid result.
+ */
+int
+lws_genhmac_destroy(struct lws_genhmac_ctx *ctx, void *result);
 ///@}
+
+/*! \defgroup generic RSA
+ * ## Generic RSA related functions
+ *
+ * Lws provides generic RSA functions that abstract the ones
+ * provided by whatever OpenSSL library you are linking against.
+ *
+ * It lets you use the same code if you build against mbedtls or OpenSSL
+ * for example.
+ */
+///@{
+
+enum enum_jwk_tok {
+	JWK_KEY_E,
+	JWK_KEY_N,
+	JWK_KEY_D,
+	JWK_KEY_P,
+	JWK_KEY_Q,
+	JWK_KEY_DP,
+	JWK_KEY_DQ,
+	JWK_KEY_QI,
+	JWK_KTY, /* also serves as count of real elements */
+	JWK_KEY,
+};
+
+#define LWS_COUNT_RSA_ELEMENTS JWK_KTY
+
+struct lws_genrsa_ctx {
+#if defined(LWS_WITH_MBEDTLS)
+	mbedtls_rsa_context *ctx;
+#else
+	BIGNUM *bn[LWS_COUNT_RSA_ELEMENTS];
+	RSA *rsa;
+#endif
+};
+
+struct lws_genrsa_element {
+	uint8_t *buf;
+	uint16_t len;
+};
+
+struct lws_genrsa_elements {
+	struct lws_genrsa_element e[LWS_COUNT_RSA_ELEMENTS];
+};
+
+/** lws_jwk_destroy_genrsa_elements() - Free allocations in genrsa_elements
+ *
+ * \param el: your struct lws_genrsa_elements
+ *
+ * This is a helper for user code making use of struct lws_genrsa_elements
+ * where the elements are allocated on the heap, it frees any non-NULL
+ * buf element and sets the buf to NULL.
+ *
+ * NB: lws_genrsa_public_... apis do not need this as they take care of the key
+ * creation and destruction themselves.
+ */
+LWS_VISIBLE LWS_EXTERN void
+lws_jwk_destroy_genrsa_elements(struct lws_genrsa_elements *el);
+
+/** lws_genrsa_public_decrypt_create() - Create RSA public decrypt context
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param el: struct prepared with key element data
+ *
+ * Creates an RSA context with a public key associated with it, formed from
+ * the key elements in \p el.
+ *
+ * Returns 0 for OK or nonzero for error.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_create(struct lws_genrsa_ctx *ctx, struct lws_genrsa_elements *el);
+
+/** lws_genrsa_new_keypair() - Create new RSA keypair
+ *
+ * \param context: your struct lws_context (may be used for RNG)
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param el: struct to get the new key element data allocated into it
+ * \param bits: key size, eg, 4096
+ *
+ * Creates a new RSA context and generates a new keypair into it, with \p bits
+ * bits.
+ *
+ * Returns 0 for OK or nonzero for error.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_new_keypair(struct lws_context *context, struct lws_genrsa_ctx *ctx,
+		       struct lws_genrsa_elements *el, int bits);
+
+/** lws_genrsa_public_decrypt() - Perform RSA public decryption
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param in: encrypted input
+ * \param in_len: length of encrypted input
+ * \param out: decrypted output
+ * \param out_max: size of output buffer
+ *
+ * Performs the decryption.
+ *
+ * Returns <0 for error, or length of decrypted data.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_public_decrypt(struct lws_genrsa_ctx *ctx, const uint8_t *in,
+			  size_t in_len, uint8_t *out, size_t out_max);
+
+/** lws_genrsa_public_verify() - Perform RSA public verification
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param in: unencrypted payload (usually a recomputed hash)
+ * \param hash_type: one of LWS_GENHASH_TYPE_
+ * \param sig: pointer to the signature we received with the payload
+ * \param sig_len: length of the signature we are checking in bytes
+ *
+ * Returns <0 for error, or 0 if signature matches the payload + key.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_public_verify(struct lws_genrsa_ctx *ctx, const uint8_t *in,
+			 enum lws_genhash_types hash_type,
+			 const uint8_t *sig, size_t sig_len);
+
+/** lws_genrsa_public_sign() - Create RSA signature
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param in: precomputed hash
+ * \param hash_type: one of LWS_GENHASH_TYPE_
+ * \param sig: pointer to buffer to take signature
+ * \param sig_len: length of the buffer (must be >= length of key N)
+ *
+ * Returns <0 for error, or 0 for success.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_public_sign(struct lws_genrsa_ctx *ctx, const uint8_t *in,
+			 enum lws_genhash_types hash_type, uint8_t *sig,
+			 size_t sig_len);
+
+/** lws_genrsa_public_decrypt_destroy() - Destroy RSA public decrypt context
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ *
+ * Destroys any allocations related to \p ctx.
+ *
+ * This and related APIs operate identically with OpenSSL or mbedTLS backends.
+ */
+LWS_VISIBLE LWS_EXTERN void
+lws_genrsa_destroy(struct lws_genrsa_ctx *ctx);
+
+/** lws_genrsa_render_pkey_asn1() - Exports public or private key to ASN1/DER
+ *
+ * \param ctx: your struct lws_genrsa_ctx
+ * \param _private: 0 = public part only, 1 = all parts of the key
+ * \param pkey_asn1: pointer to buffer to take the ASN1
+ * \param pkey_asn1_len: max size of the pkey_asn1_len
+ *
+ * Returns length of pkey_asn1 written, or -1 for error.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_genrsa_render_pkey_asn1(struct lws_genrsa_ctx *ctx, int _private,
+			    uint8_t *pkey_asn1, size_t pkey_asn1_len);
+///@}
+
+/*! \defgroup jwk JSON Web Keys
+ * ## JSON Web Keys API
+ *
+ * Lws provides an API to parse JSON Web Keys into a struct lws_genrsa_elements.
+ *
+ * "oct" and "RSA" type keys are supported.  For "oct" keys, they are held in
+ * the "e" member of the struct lws_genrsa_elements.
+ *
+ * Keys elements are allocated on the heap.  You must destroy the allocations
+ * in the struct lws_genrsa_elements by calling
+ * lws_jwk_destroy_genrsa_elements() when you are finished with it.
+ */
+///@{
+
+struct lws_jwk {
+	char keytype[5];		/**< "oct" or "RSA" */
+	struct lws_genrsa_elements el;	/**< OCTet key is in el.e */
+};
+
+/** lws_jwk_import() - Create a JSON Web key from the textual representation
+ *
+ * \param s: the JWK object to create
+ * \param in: a single JWK JSON stanza in utf-8
+ * \param len: the length of the JWK JSON stanza in bytes
+ *
+ * Creates an lws_jwk struct filled with data from the JSON representation.
+ * "oct" and "rsa" key types are supported.
+ *
+ * For "oct" type keys, it is loaded into el.e.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_jwk_import(struct lws_jwk *s, const char *in, size_t len);
+
+/** lws_jwk_destroy() - Destroy a JSON Web key
+ *
+ * \param s: the JWK object to destroy
+ *
+ * All allocations in the lws_jwk are destroyed
+ */
+LWS_VISIBLE LWS_EXTERN void
+lws_jwk_destroy(struct lws_jwk *s);
+
+/** lws_jwk_export() - Export a JSON Web key to a textual representation
+ *
+ * \param s: the JWK object to export
+ * \param _private: 0 = just export public parts, 1 = export everything
+ * \param p: the buffer to write the exported JWK to
+ * \param len: the length of the buffer \p p in bytes
+ *
+ * Returns length of the used part of the buffer if OK, or -1 for error.
+ *
+ * Serializes the content of the JWK into a char buffer.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_jwk_export(struct lws_jwk *s, int _private, char *p, size_t len);
+
+/** lws_jwk_load() - Import a JSON Web key from a file
+ *
+ * \param s: the JWK object to load into
+ * \param filename: filename to load from
+ *
+ * Returns 0 for OK or -1 for failure
+ */
+LWS_VISIBLE int
+lws_jwk_load(struct lws_jwk *s, const char *filename);
+
+/** lws_jwk_save() - Export a JSON Web key to a file
+ *
+ * \param s: the JWK object to save from
+ * \param filename: filename to save to
+ *
+ * Returns 0 for OK or -1 for failure
+ */
+LWS_VISIBLE int
+lws_jwk_save(struct lws_jwk *s, const char *filename);
+
+/** lws_jwk_rfc7638_fingerprint() - jwk to RFC7638 compliant fingerprint
+ *
+ * \param s: the JWK object to fingerprint
+ * \param digest32: buffer to take 32-byte digest
+ *
+ * Returns 0 for OK or -1 for failure
+ */
+LWS_VISIBLE int
+lws_jwk_rfc7638_fingerprint(struct lws_jwk *s, char *digest32);
+///@}
+
+
+/*! \defgroup jws JSON Web Signature
+ * ## JSON Web Signature API
+ *
+ * Lws provides an API to check and create RFC7515 JSON Web Signatures
+ *
+ * SHA256/384/512 HMAC, and RSA 256/384/512 are supported.
+ *
+ * The API uses your TLS library crypto, but works exactly the same no matter
+ * what you TLS backend is.
+ */
+///@{
+
+LWS_VISIBLE LWS_EXTERN int
+lws_jws_confirm_sig(const char *in, size_t len, struct lws_jwk *jwk);
+
+/**
+ * lws_jws_sign_from_b64() - add b64 sig to b64 hdr + payload
+ *
+ * \param b64_hdr: protected header encoded in b64, may be NULL
+ * \param hdr_len: bytes in b64 coding of protected header
+ * \param b64_pay: payload encoded in b64
+ * \param pay_len: bytes in b64 coding of payload
+ * \param b64_sig: buffer to write the b64 encoded signature into
+ * \param sig_len: max bytes we can write at b64_sig
+ * \param hash_type: one of LWS_GENHASH_TYPE_SHA[256|384|512]
+ * \param jwk: the struct lws_jwk containing the signing key
+ *
+ * This adds a b64-coded JWS signature of the b64-encoded protected header
+ * and b64-encoded payload, at \p b64_sig.  The signature will be as large
+ * as the N element of the RSA key when the RSA key is used, eg, 512 bytes for
+ * a 4096-bit key, and then b64-encoding on top.
+ *
+ * In some special cases, there is only payload to sign and no header, in that
+ * case \p b64_hdr may be NULL, and only the payload will be hashed before
+ * signing.
+ *
+ * Returns the length of the encoded signature written to \p b64_sig, or -1.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_jws_sign_from_b64(const char *b64_hdr, size_t hdr_len, const char *b64_pay,
+		      size_t pay_len, char *b64_sig, size_t sig_len,
+		      enum lws_genhash_types hash_type, struct lws_jwk *jwk);
+
+/**
+ * lws_jws_create_packet() - add b64 sig to b64 hdr + payload
+ *
+ * \param jwk: the struct lws_jwk containing the signing key
+ * \param payload: unencoded payload JSON
+ * \param len: length of unencoded payload JSON
+ * \param nonce: Nonse string to include in protected header
+ * \param out: buffer to take signed packet
+ * \param out_len: size of \p out buffer
+ *
+ * This creates a "flattened" JWS packet from the jwk and the plaintext
+ * payload, and signs it.  The packet is written into \p out.
+ *
+ * This does the whole packet assembly and signing, calling through to
+ * lws_jws_sign_from_b64() as part of the process.
+ *
+ * Returns the length written to \p out, or -1.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_jws_create_packet(struct lws_jwk *jwk, const char *payload, size_t len,
+		      const char *nonce, char *out, size_t out_len);
+
+/**
+ * lws_jws_base64_enc() - encode input data into b64url data
+ *
+ * \param in: the incoming plaintext
+ * \param in_len: the length of the incoming plaintext in bytes
+ * \param out: the buffer to store the b64url encoded data to
+ * \param out_max: the length of \p out in bytes
+ *
+ * Returns either -1 if problems, or the number of bytes written to \p out.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_jws_base64_enc(const char *in, size_t in_len, char *out, size_t out_max);
+///@}
+#endif
 
 /*! \defgroup extensions Extension related functions
  * ##Extension releated functions
@@ -1548,27 +2140,10 @@ lws_genhash_destroy(struct lws_genhash_ctx *ctx, void *result);
  * add it at where specified so existing users are unaffected.
  */
 enum lws_extension_callback_reasons {
-	LWS_EXT_CB_SERVER_CONTEXT_CONSTRUCT		=  0,
-	LWS_EXT_CB_CLIENT_CONTEXT_CONSTRUCT		=  1,
-	LWS_EXT_CB_SERVER_CONTEXT_DESTRUCT		=  2,
-	LWS_EXT_CB_CLIENT_CONTEXT_DESTRUCT		=  3,
 	LWS_EXT_CB_CONSTRUCT				=  4,
 	LWS_EXT_CB_CLIENT_CONSTRUCT			=  5,
-	LWS_EXT_CB_CHECK_OK_TO_REALLY_CLOSE		=  6,
-	LWS_EXT_CB_CHECK_OK_TO_PROPOSE_EXTENSION	=  7,
 	LWS_EXT_CB_DESTROY				=  8,
-	LWS_EXT_CB_DESTROY_ANY_WSI_CLOSING		=  9,
-	LWS_EXT_CB_ANY_WSI_ESTABLISHED			= 10,
-	LWS_EXT_CB_PACKET_RX_PREPARSE			= 11,
 	LWS_EXT_CB_PACKET_TX_PRESEND			= 12,
-	LWS_EXT_CB_PACKET_TX_DO_SEND			= 13,
-	LWS_EXT_CB_HANDSHAKE_REPLY_TX			= 14,
-	LWS_EXT_CB_FLUSH_PENDING_TX			= 15,
-	LWS_EXT_CB_EXTENDED_PAYLOAD_RX			= 16,
-	LWS_EXT_CB_CAN_PROXY_CLIENT_CONNECTION		= 17,
-	LWS_EXT_CB_1HZ					= 18,
-	LWS_EXT_CB_REQUEST_ON_WRITEABLE			= 19,
-	LWS_EXT_CB_IS_WRITEABLE				= 20,
 	LWS_EXT_CB_PAYLOAD_TX				= 21,
 	LWS_EXT_CB_PAYLOAD_RX				= 22,
 	LWS_EXT_CB_OPTION_DEFAULT			= 23,
@@ -1646,18 +2221,6 @@ struct lws_ext_option_arg {
  *		user data is deleted.  This same callback is used whether you
  *		are in client or server instantiation context.
  *
- *	LWS_EXT_CB_PACKET_RX_PREPARSE: when this extension was active on
- *		a connection, and a packet of data arrived at the connection,
- *		it is passed to this callback to give the extension a chance to
- *		change the data, eg, decompress it.  user is pointing to the
- *		extension's private connection context data, in is pointing
- *		to an lws_tokens struct, it consists of a char * pointer called
- *		token, and an int called token_len.  At entry, these are
- *		set to point to the received buffer and set to the content
- *		length.  If the extension will grow the content, it should use
- *		a new buffer allocated in its private user context data and
- *		set the pointed-to lws_tokens members to point to its buffer.
- *
  *	LWS_EXT_CB_PACKET_TX_PRESEND: this works the same way as
  *		LWS_EXT_CB_PACKET_RX_PREPARSE above, except it gives the
  *		extension a chance to change websocket data just before it will
@@ -1697,16 +2260,6 @@ LWS_VISIBLE LWS_EXTERN int
 lws_set_extension_option(struct lws *wsi, const char *ext_name,
 			 const char *opt_name, const char *opt_val);
 
-#ifndef LWS_NO_EXTENSIONS
-/* lws_get_internal_extensions() - DEPRECATED
- *
- * \Deprecated There is no longer a set internal extensions table.  The table is provided
- * by user code along with application-specific settings.  See the test
- * client and server for how to do.
- */
-static LWS_INLINE LWS_WARN_DEPRECATED const struct lws_extension *
-lws_get_internal_extensions(void) { return NULL; }
-
 /**
  * lws_ext_parse_options() - deal with parsing negotiated extension options
  *
@@ -1721,7 +2274,6 @@ LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_ext_parse_options(const struct lws_extension *ext, struct lws *wsi,
 		       void *ext_user, const struct lws_ext_options *opts,
 		       const char *o, int len);
-#endif
 
 /** lws_extension_callback_pm_deflate() - extension for RFC7692
  *
@@ -1785,8 +2337,8 @@ struct lws_protocols {
 	 * be able to consume it all without having to return to the event
 	 * loop.  That is supported in lws.
 	 *
-	 * If .tx_packet_size is 0, this also controls how much may be sent at once
-	 * for backwards compatibility.
+	 * If .tx_packet_size is 0, this also controls how much may be sent at
+	 * once for backwards compatibility.
 	 */
 	unsigned int id;
 	/**< ignored by lws, but useful to contain user information bound
@@ -1810,8 +2362,6 @@ struct lws_protocols {
 	/* Add new things just above here ---^
 	 * This is part of the ABI, don't needlessly break compatibility */
 };
-
-struct lws_vhost;
 
 /**
  * lws_vhost_name_to_protocol() - get vhost's protocol object from its name
@@ -1893,6 +2443,17 @@ lws_adjust_protocol_psds(struct lws *wsi, size_t new_size);
  */
 LWS_VISIBLE LWS_EXTERN int
 lws_finalize_startup(struct lws_context *context);
+
+/**
+ * lws_pvo_search() - helper to find a named pvo in a linked-list
+ *
+ * \param pvo:	the first pvo in the linked-list
+ * \param name: the name of the pvo to return if found
+ *
+ * Returns NULL, or a pointer to the name pvo in the linked-list
+ */
+LWS_VISIBLE LWS_EXTERN const struct lws_protocol_vhost_options *
+lws_pvo_search(const struct lws_protocol_vhost_options *pvo, const char *name);
 
 LWS_VISIBLE LWS_EXTERN int
 lws_protocol_init(struct lws_context *context);
@@ -2088,6 +2649,17 @@ enum lws_context_options {
 	 * LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS callback, which
 	 * provides the vhost SSL_CTX * in the user parameter.
 	 */
+	LWS_SERVER_OPTION_SKIP_PROTOCOL_INIT			= (1 << 25),
+	/**< (VH) You probably don't want this.  It forces this vhost to not
+	 * call LWS_CALLBACK_PROTOCOL_INIT on its protocols.  It's used in the
+	 * special case of a temporary vhost bound to a single protocol.
+	 */
+	LWS_SERVER_OPTION_IGNORE_MISSING_CERT			= (1 << 26),
+	/**< (VH) Don't fail if the vhost TLS cert or key are missing, just
+	 * continue.  The vhost won't be able to serve anything, but if for
+	 * example the ACME plugin was configured to fetch a cert, this lets
+	 * you bootstrap your vhost from having no cert to start with.
+	 */
 
 	/****** add new things just above ---^ ******/
 };
@@ -2110,7 +2682,11 @@ struct lws_context_creation_info {
 	/**< VHOST: Port to listen on. Use CONTEXT_PORT_NO_LISTEN to suppress
 	 * listening for a client. Use CONTEXT_PORT_NO_LISTEN_SERVER if you are
 	 * writing a server but you are using \ref sock-adopt instead of the
-	 * built-in listener */
+	 * built-in listener.
+	 *
+	 * You can also set port to 0, in which case the kernel will pick
+	 * a random port that is not already in use.  You can find out what
+	 * port the vhost is listening on using lws_get_vhost_listen_port() */
 	const char *iface;
 	/**< VHOST: NULL to bind the listen socket to all interfaces, or the
 	 * interface name, eg, "eth2"
@@ -2191,12 +2767,12 @@ struct lws_context_creation_info {
 	int ka_interval;
 	/**< CONTEXT: if ka_time was nonzero, how long to wait before each ka_probes
 	 * attempt */
-#ifdef LWS_OPENSSL_SUPPORT
+#if defined(LWS_WITH_TLS) && !defined(LWS_WITH_MBEDTLS)
 	SSL_CTX *provided_client_ssl_ctx;
 	/**< CONTEXT: If non-null, swap out libwebsockets ssl
- *		implementation for the one provided by provided_ssl_ctx.
- *		Libwebsockets no longer is responsible for freeing the context
- *		if this option is selected. */
+	  * implementation for the one provided by provided_ssl_ctx.
+	  * Libwebsockets no longer is responsible for freeing the context
+	  * if this option is selected. */
 #else /* maintain structure layout either way */
 	void *provided_client_ssl_ctx; /**< dummy if ssl disabled */
 #endif
@@ -2207,9 +2783,10 @@ struct lws_context_creation_info {
 	short max_http_header_pool;
 	/**< CONTEXT: The max number of connections with http headers that
 	 * can be processed simultaneously (the corresponding memory is
-	 * allocated for the lifetime of the context).  If the pool is
-	 * busy new incoming connections must wait for accept until one
-	 * becomes free. */
+	 * allocated and deallocated dynamically as needed).  If the pool is
+	 * fully busy new incoming connections must wait for accept until one
+	 * becomes free. 0 = allow as many ah as number of availble fds for
+	 * the process */
 
 	unsigned int count_threads;
 	/**< CONTEXT: how many contexts to create in an array, 0 = 1 */
@@ -2372,12 +2949,41 @@ struct lws_context_creation_info {
 	 *	      given here.
 	 */
 	uint32_t	http2_settings[7];
-	/**< CONTEXT: after context creation http2_settings[1] thru [6] have
-	 *	      been set to the lws platform default values.
-	 *   VHOST:   if http2_settings[0] is nonzero, the values given in
+	/**< VHOST:  if http2_settings[0] is nonzero, the values given in
 	 *	      http2_settings[1]..[6] are used instead of the lws
 	 *	      platform default values.
 	 *	      Just leave all at 0 if you don't care.
+	 */
+	const char *error_document_404;
+	/**< VHOST: If non-NULL, when asked to serve a non-existent file,
+	 *          lws attempts to server this url path instead.  Eg,
+	 *          "/404.html" */
+	const char *alpn;
+	/**< CONTEXT: If non-NULL, default list of advertised alpn, comma-
+	 *	      separated
+	 *
+	 *     VHOST: If non-NULL, per-vhost list of advertised alpn, comma-
+	 *	      separated
+	 */
+	void **foreign_loops;
+	/**< CONTEXT: This is ignored if the context is not being started with
+	 *		an event loop, ie, .options has a flag like
+	 *		LWS_SERVER_OPTION_LIBUV.
+	 *
+	 *		NULL indicates lws should start its own even loop for
+	 *		each service thread, and deal with closing the loops
+	 *		when the context is destroyed.
+	 *
+	 *		Non-NULL means it points to an array of external
+	 *		("foreign") event loops that are to be used in turn for
+	 *		each service thread.  In the default case of 1 service
+	 *		thread, it can just point to one foreign event loop.
+	 */
+	void (*signal_cb)(void *event_lib_handle, int signum);
+	/**< CONTEXT: NULL: default signal handling.  Otherwise this receives
+	 *		the signal handler callback.  event_lib_handle is the
+	 *		native event library signal handle, eg uv_signal_t *
+	 *		for libuv.
 	 */
 
 	/* Add new things just above here ---^
@@ -2387,8 +2993,14 @@ struct lws_context_creation_info {
 	 * members added above will see 0 (default) even if the app
 	 * was not built against the newer headers.
 	 */
+	struct lws_context **pcontext;
+	/**< CONTEXT: if non-NULL, at the end of context destroy processing,
+	 * the pointer pointed to by pcontext is written with NULL.  You can
+	 * use this to let foreign event loops know that lws context destruction
+	 * is fully completed.
+	 */
 
-	void *_unused[8]; /**< dummy */
+	void *_unused[4]; /**< dummy */
 };
 
 /**
@@ -2426,7 +3038,8 @@ struct lws_context_creation_info {
  *	one place; they're all handled in the user callback.
  */
 LWS_VISIBLE LWS_EXTERN struct lws_context *
-lws_create_context(struct lws_context_creation_info *info);
+lws_create_context(const struct lws_context_creation_info *info);
+
 
 /**
  * lws_context_destroy() - Destroy the websocket context
@@ -2438,9 +3051,6 @@ lws_create_context(struct lws_context_creation_info *info);
  */
 LWS_VISIBLE LWS_EXTERN void
 lws_context_destroy(struct lws_context *context);
-
-LWS_VISIBLE LWS_EXTERN void
-lws_context_destroy2(struct lws_context *context);
 
 typedef int (*lws_reload_func)(void);
 
@@ -2529,7 +3139,7 @@ struct lws_vhost;
  */
 LWS_VISIBLE LWS_EXTERN struct lws_vhost *
 lws_create_vhost(struct lws_context *context,
-		 struct lws_context_creation_info *info);
+		 const struct lws_context_creation_info *info);
 
 /**
  * lws_vhost_destroy() - Destroy a vhost (virtual server context)
@@ -2596,6 +3206,38 @@ lws_vhost_get(struct lws *wsi) LWS_WARN_DEPRECATED;
  */
 LWS_VISIBLE LWS_EXTERN struct lws_vhost *
 lws_get_vhost(struct lws *wsi);
+
+/**
+ * lws_get_vhost_name() - returns the name of a vhost
+ *
+ * \param vhost: which vhost
+ */
+LWS_VISIBLE LWS_EXTERN const char *
+lws_get_vhost_name(struct lws_vhost *vhost);
+
+/**
+ * lws_get_vhost_port() - returns the port a vhost listens on, or -1
+ *
+ * \param vhost: which vhost
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_get_vhost_port(struct lws_vhost *vhost);
+
+/**
+ * lws_get_vhost_user() - returns the user pointer for the vhost
+ *
+ * \param vhost: which vhost
+ */
+LWS_VISIBLE LWS_EXTERN void *
+lws_get_vhost_user(struct lws_vhost *vhost);
+
+/**
+ * lws_get_vhost_iface() - returns the binding for the vhost listen socket
+ *
+ * \param vhost: which vhost
+ */
+LWS_VISIBLE LWS_EXTERN const char *
+lws_get_vhost_iface(struct lws_vhost *vhost);
 
 /**
  * lws_json_dump_vhost() - describe vhost state and stats in JSON
@@ -2748,7 +3390,16 @@ enum lws_client_connect_ssl_connection_flags {
 	LCCSCF_USE_SSL 				= (1 << 0),
 	LCCSCF_ALLOW_SELFSIGNED			= (1 << 1),
 	LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK	= (1 << 2),
-	LCCSCF_ALLOW_EXPIRED			= (1 << 3)
+	LCCSCF_ALLOW_EXPIRED			= (1 << 3),
+
+	LCCSCF_PIPELINE				= (1 << 16),
+		/**< Serialize / pipeline multiple client connections
+		 * on a single connection where possible.
+		 *
+		 * HTTP/1.0: possible if Keep-Alive: yes sent by server
+		 * HTTP/1.1: always possible... uses pipelining
+		 * HTTP/2:   always possible... uses parallel streams
+		 * */
 };
 
 /** struct lws_client_connect_info - parameters to connect with when using
@@ -2762,7 +3413,7 @@ struct lws_client_connect_info {
 	int port;
 	/**< remote port to connect to */
 	int ssl_connection;
-	/**< nonzero for ssl */
+	/**< 0, or a combination of LCCSCF_ flags */
 	const char *path;
 	/**< uri path */
 	const char *host;
@@ -2779,7 +3430,9 @@ struct lws_client_connect_info {
 	/**< UNUSED... provide in info.extensions at context creation time */
 	const char *method;
 	/**< if non-NULL, do this http method instead of ws[s] upgrade.
-	 * use "GET" to be a simple http client connection */
+	 * use "GET" to be a simple http client connection.  "RAW" gets
+	 * you a connected socket that lws itself will leave alone once
+	 * connected. */
 	struct lws *parent_wsi;
 	/**< if another wsi is responsible for this connection, give it here.
 	 * this is used to make sure if the parent closes so do any
@@ -2805,6 +3458,13 @@ struct lws_client_connect_info {
 	const char *iface;
 	/**< NULL to allow routing on any interface, or interface name or IP
 	 * to bind the socket to */
+	const char *local_protocol_name;
+	/**< NULL: .protocol is used both to select the local protocol handler
+	 *         to bind to and as the list of remote ws protocols we could
+	 *         accept.
+	 *   non-NULL: this protocol name is used to bind the connection to
+	 *             the local protocol handler.  .protocol is used for the
+	 *             list of remote ws protocols we could accept */
 
 	/* Add new things just above here ---^
 	 * This is part of the ABI, don't needlessly break compatibility
@@ -2812,6 +3472,12 @@ struct lws_client_connect_info {
 	 * The below is to ensure later library versions with new
 	 * members added above will see 0 (default) even if the app
 	 * was not built against the newer headers.
+	 */
+	const char *alpn;
+	/* NULL: allow lws default ALPN list, from vhost if present or from
+	 *       list of roles built into lws
+	 * non-NULL: require one from provided comma-separated list of alpn
+	 *           tokens
 	 */
 
 	void *_unused[4]; /**< dummy */
@@ -2938,6 +3604,10 @@ lws_http_client_read(struct lws *wsi, char **buf, int *len);
  * \param wsi: client connection
  *
  * Returns the last server response code, eg, 200 for client http connections.
+ *
+ * You should capture this during the LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP
+ * callback, because after that the memory reserved for storing the related
+ * headers is freed and this value is lost.
  */
 LWS_VISIBLE LWS_EXTERN unsigned int
 lws_http_client_http_response(struct lws *wsi);
@@ -3030,15 +3700,8 @@ lws_service_tsi(struct lws_context *context, int timeout_ms, int tsi);
  *				on one thread
  * \param wsi:	Cancel service on the thread this wsi is serviced by
  *
- *	This function lets a call to lws_service() waiting for a timeout
- *	immediately return.
- *
- *	It works by creating a phony event and then swallowing it silently.
- *
- *	The reason it may be needed is when waiting in poll(), changes to
- *	the event masks are ignored by the OS until poll() is reentered.  This
- *	lets you halt the poll() wait and make the reentry happen immediately
- *	instead of having the wait out the rest of the poll timeout.
+ * Same as lws_cancel_service(), but targets a single service thread, the one
+ * the wsi belongs to.  You probably want to use lws_cancel_service() instead.
  */
 LWS_VISIBLE LWS_EXTERN void
 lws_cancel_service_pt(struct lws *wsi);
@@ -3047,12 +3710,13 @@ lws_cancel_service_pt(struct lws *wsi);
  * lws_cancel_service() - Cancel wait for new pending socket activity
  * \param context:	Websocket context
  *
- *	This function let a call to lws_service() waiting for a timeout
- *	immediately return.
+ * This function creates an immediate "synchronous interrupt" to the lws poll()
+ * wait or event loop.  As soon as possible in the serialzed service sequencing,
+ * a LWS_CALLBACK_EVENT_WAIT_CANCELLED callback is sent to every protocol on
+ * every vhost.
  *
- *	What it basically does is provide a fake event that will be swallowed,
- *	so the wait in poll() is ended.  That's useful because poll() doesn't
- *	attend to changes in POLLIN/OUT/ERR until it re-enters the wait.
+ * lws_cancel_service() may be called from another thread while the context
+ * exists, and its effect will be immediately serialized.
  */
 LWS_VISIBLE LWS_EXTERN void
 lws_cancel_service(struct lws_context *context);
@@ -3235,6 +3899,7 @@ struct lws_process_html_args {
 	int len; /**< length of the original data at p */
 	int max_len; /**< maximum length we can grow the data to */
 	int final; /**< set if this is the last chunk of the file */
+	int chunked; /**< 0 == unchunked, 1 == produce chunk headers (incompatible with HTTP/2) */
 };
 
 typedef const char *(*lws_process_html_state_cb)(void *data, int index);
@@ -3296,12 +3961,12 @@ lws_chunked_html_process(struct lws_process_html_args *args,
 /** struct lws_tokens
  * you need these to look at headers that have been parsed if using the
  * LWS_CALLBACK_FILTER_CONNECTION callback.  If a header from the enum
- * list below is absent, .token = NULL and token_len = 0.  Otherwise .token
- * points to .token_len chars containing that header content.
+ * list below is absent, .token = NULL and len = 0.  Otherwise .token
+ * points to .len chars containing that header content.
  */
 struct lws_tokens {
 	char *token; /**< pointer to start of the token */
-	int token_len; /**< length of the token's value */
+	int len; /**< length of the token's value */
 };
 
 /* enum lws_token_indexes
@@ -3399,6 +4064,10 @@ enum lws_token_indexes {
 	WSI_TOKEN_CONNECT					= 81,
 	WSI_TOKEN_HEAD_URI					= 82,
 	WSI_TOKEN_TE						= 83,
+	WSI_TOKEN_REPLAY_NONCE					= 84,
+	WSI_TOKEN_COLON_PROTOCOL				= 85,
+	WSI_TOKEN_X_AUTH_TOKEN					= 86,
+
 	/****** add new things just above ---^ ******/
 
 	/* use token storage to stash these internally, not for
@@ -3411,6 +4080,7 @@ enum lws_token_indexes {
 	_WSI_TOKEN_CLIENT_ORIGIN,
 	_WSI_TOKEN_CLIENT_METHOD,
 	_WSI_TOKEN_CLIENT_IFACE,
+	_WSI_TOKEN_CLIENT_ALPN,
 
 	/* always last real token index*/
 	WSI_TOKEN_COUNT,
@@ -3605,6 +4275,54 @@ lws_add_http_header_content_length(struct lws *wsi,
 LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_finalize_http_header(struct lws *wsi, unsigned char **p,
 			 unsigned char *end);
+
+/**
+ * lws_finalize_write_http_header() - Helper finializing and writing http headers
+ *
+ * \param wsi: the connection to check
+ * \param start: pointer to the start of headers in the buffer, eg &buf[LWS_PRE]
+ * \param p: pointer to current position in buffer pointer
+ * \param end: pointer to end of buffer
+ *
+ * Terminates the headers correctly accoring to the protocol in use (h1 / h2)
+ * and writes the headers.  Returns nonzero for error.
+ */
+LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
+lws_finalize_write_http_header(struct lws *wsi, unsigned char *start,
+			       unsigned char **p, unsigned char *end);
+
+#define LWS_ILLEGAL_HTTP_CONTENT_LEN ((lws_filepos_t)-1ll)
+
+/**
+ * lws_add_http_common_headers() - Helper preparing common http headers
+ *
+ * \param wsi: the connection to check
+ * \param code: an HTTP code like 200, 404 etc (see enum http_status)
+ * \param content_type: the content type, like "text/html"
+ * \param content_len: the content length, in bytes
+ * \param p: pointer to current position in buffer pointer
+ * \param end: pointer to end of buffer
+ *
+ * Adds the initial response code, so should be called first.
+ *
+ * Code may additionally take OR'd flags:
+ *
+ *    LWSAHH_FLAG_NO_SERVER_NAME:  don't apply server name header this time
+ *
+ * This helper just calls public apis to simplify adding headers that are
+ * commonly needed.  If it doesn't fit your case, or you want to add additional
+ * headers just call the public apis directly yourself for what you want.
+ *
+ * You can miss out the content length header by providing the constant
+ * LWS_ILLEGAL_HTTP_CONTENT_LEN for the content_len.
+ *
+ * It does not call lws_finalize_http_header(), to allow you to add further
+ * headers after calling this.  You will need to call that yourself at the end.
+ */
+LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
+lws_add_http_common_headers(struct lws *wsi, unsigned int code,
+			    const char *content_type, lws_filepos_t content_len,
+			    unsigned char **p, unsigned char *end);
 ///@}
 
 /** \defgroup form-parsing  Form Parsing
@@ -3787,7 +4505,7 @@ lws_return_http_status(struct lws *wsi, unsigned int code,
 		       const char *html_body);
 
 /**
- * lws_http_redirect() - write http redirect into buffer
+ * lws_http_redirect() - write http redirect out on wsi
  *
  * \param wsi:	websocket connection
  * \param code:	HTTP response code (eg, 301)
@@ -3795,6 +4513,8 @@ lws_return_http_status(struct lws *wsi, unsigned int code,
  * \param len:	length of loc
  * \param p:	pointer current position in buffer (updated as we write)
  * \param end:	pointer to end of buffer
+ *
+ * Returns amount written, or < 0 indicating fatal write failure.
  */
 LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_http_redirect(struct lws *wsi, int code, const unsigned char *loc, int len,
@@ -3845,30 +4565,29 @@ lws_sql_purify(char *escaped, const char *string, int len);
  */
 LWS_VISIBLE LWS_EXTERN const char *
 lws_json_purify(char *escaped, const char *string, int len);
-///@}
 
-/*! \defgroup ev libev helpers
+/**
+ * lws_filename_purify_inplace() - replace scary filename chars with underscore
  *
- * ##libev helpers
+ * \param filename: filename to be purified
  *
- * APIs specific to libev event loop itegration
+ * Replace scary characters in the filename (it should not be a path)
+ * with underscore, so it's safe to use.
  */
-///@{
-
-#ifdef LWS_WITH_LIBEV
-typedef void (lws_ev_signal_cb_t)(EV_P_ struct ev_signal *w, int revents);
-
-LWS_VISIBLE LWS_EXTERN int
-lws_ev_sigint_cfg(struct lws_context *context, int use_ev_sigint,
-		  lws_ev_signal_cb_t *cb);
-
-LWS_VISIBLE LWS_EXTERN int
-lws_ev_initloop(struct lws_context *context, struct ev_loop *loop, int tsi);
-
 LWS_VISIBLE LWS_EXTERN void
-lws_ev_sigint_cb(struct ev_loop *loop, struct ev_signal *watcher, int revents);
-#endif /* LWS_WITH_LIBEV */
+lws_filename_purify_inplace(char *filename);
 
+LWS_VISIBLE LWS_EXTERN int
+lws_plat_write_cert(struct lws_vhost *vhost, int is_key, int fd, void *buf,
+			int len);
+LWS_VISIBLE LWS_EXTERN int
+lws_plat_write_file(const char *filename, void *buf, int len);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_plat_read_file(const char *filename, void *buf, int len);
+
+LWS_VISIBLE LWS_EXTERN int
+lws_plat_recommended_rsa_bits(void);
 ///@}
 
 /*! \defgroup uv libuv helpers
@@ -3879,59 +4598,37 @@ lws_ev_sigint_cb(struct ev_loop *loop, struct ev_signal *watcher, int revents);
  */
 ///@{
 #ifdef LWS_WITH_LIBUV
-LWS_VISIBLE LWS_EXTERN int
-lws_uv_sigint_cfg(struct lws_context *context, int use_uv_sigint,
-		  uv_signal_cb cb);
-
-LWS_VISIBLE LWS_EXTERN void
-lws_libuv_run(const struct lws_context *context, int tsi);
-
-LWS_VISIBLE LWS_EXTERN void
-lws_libuv_stop(struct lws_context *context);
-
-LWS_VISIBLE LWS_EXTERN void
-lws_libuv_stop_without_kill(const struct lws_context *context, int tsi);
-
-LWS_VISIBLE LWS_EXTERN int
-lws_uv_initloop(struct lws_context *context, uv_loop_t *loop, int tsi);
+/*
+ * Any direct libuv allocations in lws protocol handlers must participate in the
+ * lws reference counting scheme.  Two apis are provided:
+ *
+ * - lws_libuv_static_refcount_add(handle, context) to mark the handle with
+ *  a pointer to the context and increment the global uv object counter
+ *
+ * - lws_libuv_static_refcount_del() which should be used as the close callback
+ *   for your own libuv objects declared in the protocol scope.
+ *
+ * Using the apis allows lws to detach itself from a libuv loop completely
+ * cleanly and at the moment all of its libuv objects have completed close.
+ */
 
 LWS_VISIBLE LWS_EXTERN uv_loop_t *
 lws_uv_getloop(struct lws_context *context, int tsi);
 
 LWS_VISIBLE LWS_EXTERN void
-lws_uv_sigint_cb(uv_signal_t *watcher, int signum);
+lws_libuv_static_refcount_add(uv_handle_t *, struct lws_context *context);
 
 LWS_VISIBLE LWS_EXTERN void
-lws_close_all_handles_in_loop(uv_loop_t *loop);
+lws_libuv_static_refcount_del(uv_handle_t *);
+
 #endif /* LWS_WITH_LIBUV */
+
+#if defined(LWS_WITH_ESP32)
+#define lws_libuv_static_refcount_add(_a, _b)
+#define lws_libuv_static_refcount_del NULL
+#endif
 ///@}
 
-/*! \defgroup event libevent helpers
- *
- * ##libevent helpers
- *
- * APIs specific to libevent event loop itegration
- */
-///@{
-
-#ifdef LWS_WITH_LIBEVENT
-typedef void (lws_event_signal_cb_t) (evutil_socket_t sock_fd, short revents,
-		  void *ctx);
-
-LWS_VISIBLE LWS_EXTERN int
-lws_event_sigint_cfg(struct lws_context *context, int use_event_sigint,
-		  lws_event_signal_cb_t cb);
-
-LWS_VISIBLE LWS_EXTERN int
-lws_event_initloop(struct lws_context *context, struct event_base *loop,
-		  int tsi);
-
-LWS_VISIBLE LWS_EXTERN void
-lws_event_sigint_cb(evutil_socket_t sock_fd, short revents,
-		  void *ctx);
-#endif /* LWS_WITH_LIBEVENT */
-
-///@}
 
 /*! \defgroup timeout Connection timeouts
 
@@ -3951,7 +4648,7 @@ enum pending_timeout {
 	PENDING_TIMEOUT_AWAITING_SERVER_RESPONSE		=  4,
 	PENDING_TIMEOUT_AWAITING_PING				=  5,
 	PENDING_TIMEOUT_CLOSE_ACK				=  6,
-	PENDING_TIMEOUT_AWAITING_EXTENSION_CONNECT_RESPONSE	=  7,
+	PENDING_TIMEOUT_UNUSED1					=  7,
 	PENDING_TIMEOUT_SENT_CLIENT_HANDSHAKE			=  8,
 	PENDING_TIMEOUT_SSL_ACCEPT				=  9,
 	PENDING_TIMEOUT_HTTP_CONTENT				= 10,
@@ -3970,6 +4667,9 @@ enum pending_timeout {
 	PENDING_TIMEOUT_KILLED_BY_PARENT			= 23,
 	PENDING_TIMEOUT_CLOSE_SEND				= 24,
 	PENDING_TIMEOUT_HOLDING_AH				= 25,
+	PENDING_TIMEOUT_UDP_IDLE				= 26,
+	PENDING_TIMEOUT_CLIENT_CONN_IDLE			= 27,
+	PENDING_TIMEOUT_LAGGING					= 28,
 
 	/****** add new things just above ---^ ******/
 
@@ -4003,6 +4703,60 @@ enum pending_timeout {
  */
 LWS_VISIBLE LWS_EXTERN void
 lws_set_timeout(struct lws *wsi, enum pending_timeout reason, int secs);
+
+#define LWS_SET_TIMER_USEC_CANCEL ((lws_usec_t)-1ll)
+#define LWS_USEC_PER_SEC (1000000ll)
+
+/**
+ * lws_set_timer_usecs() - schedules a callback on the wsi in the future
+ *
+ * \param wsi:	Websocket connection instance
+ * \param usecs:  LWS_SET_TIMER_USEC_CANCEL removes any existing scheduled
+ *		  callback, otherwise number of microseconds in the future
+ *		  the callback will occur at.
+ *
+ * NOTE: event loop support for this:
+ *
+ *  default poll() loop:   yes
+ *  libuv event loop:      yes
+ *  libev:    not implemented (patch welcome)
+ *  libevent: not implemented (patch welcome)
+ *
+ * After the deadline expires, the wsi will get a callback of type
+ * LWS_CALLBACK_TIMER and the timer is exhausted.  The deadline may be
+ * continuously deferred by further calls to lws_set_timer_usecs() with a later
+ * deadline, or cancelled by lws_set_timer_usecs(wsi, -1).
+ *
+ * If the timer should repeat, lws_set_timer_usecs() must be called again from
+ * LWS_CALLBACK_TIMER.
+ *
+ * Accuracy depends on the platform and the load on the event loop or system...
+ * all that's guaranteed is the callback will come after the requested wait
+ * period.
+ */
+LWS_VISIBLE LWS_EXTERN void
+lws_set_timer_usecs(struct lws *wsi, lws_usec_t usecs);
+
+/*
+ * lws_timed_callback_vh_protocol() - calls back a protocol on a vhost after
+ * 					the specified delay
+ *
+ * \param vh:	 the vhost to call back
+ * \param protocol: the protocol to call back
+ * \param reason: callback reason
+ * \param secs:	how many seconds in the future to do the callback.  Set to
+ *		-1 to cancel the timer callback.
+ *
+ * Callback the specified protocol with a fake wsi pointing to the specified
+ * vhost and protocol, with the specified reason, at the specified time in the
+ * future.
+ *
+ * Returns 0 if OK.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_timed_callback_vh_protocol(struct lws_vhost *vh,
+			       const struct lws_protocols *prot,
+			       int reason, int secs);
 ///@}
 
 /*! \defgroup sending-data Sending data
@@ -4011,7 +4765,7 @@ lws_set_timeout(struct lws *wsi, enum pending_timeout reason, int secs);
 */
 //@{
 #if !defined(LWS_SIZEOFPTR)
-#define LWS_SIZEOFPTR (sizeof (void *))
+#define LWS_SIZEOFPTR ((int)sizeof (void *))
 #endif
 
 #if defined(__x86_64__)
@@ -4026,6 +4780,8 @@ lws_set_timeout(struct lws *wsi, enum pending_timeout reason, int secs);
 /* used prior to 1.7 and retained for backward compatibility */
 #define LWS_SEND_BUFFER_PRE_PADDING LWS_PRE
 #define LWS_SEND_BUFFER_POST_PADDING 0
+
+#define LWS_WRITE_RAW LWS_WRITE_HTTP
 
 /*
  * NOTE: These public enums are part of the abi.  If you want to add one,
@@ -4185,6 +4941,23 @@ lws_write(struct lws *wsi, unsigned char *buf, size_t len,
 /* helper for case where buffer may be const */
 #define lws_write_http(wsi, buf, len) \
 	lws_write(wsi, (unsigned char *)(buf), len, LWS_WRITE_HTTP)
+
+/* helper for multi-frame ws message flags */
+static inline int
+lws_write_ws_flags(int initial, int is_start, int is_end)
+{
+	int r;
+
+	if (is_start)
+		r = initial;
+	else
+		r = LWS_WRITE_CONTINUATION;
+
+	if (!is_end)
+		r |= LWS_WRITE_NO_FIN;
+
+	return r;
+}
 ///@}
 
 /** \defgroup callback-when-writeable Callback when writeable
@@ -4324,9 +5097,31 @@ lws_callback_all_protocol_vhost_args(struct lws_vhost *vh,
  * - Which:  connections using this protocol on same VHOST as wsi ONLY
  * - When:   now
  * - What:   reason
+ *
+ * This is deprecated since v2.5, use lws_callback_vhost_protocols_vhost()
+ * which takes the pointer to the vhost directly without using or needing the
+ * wsi.
  */
 LWS_VISIBLE LWS_EXTERN int
-lws_callback_vhost_protocols(struct lws *wsi, int reason, void *in, int len);
+lws_callback_vhost_protocols(struct lws *wsi, int reason, void *in, int len)
+LWS_WARN_DEPRECATED;
+
+/**
+ * lws_callback_vhost_protocols_vhost() - Callback all protocols enabled on a vhost
+ *					with the given reason
+ *
+ * \param vh:		vhost that will get callbacks
+ * \param reason:	Callback reason index
+ * \param in:		in argument to callback
+ * \param len:		len argument to callback
+ *
+ * - Which:  connections using this protocol on same VHOST as wsi ONLY
+ * - When:   now
+ * - What:   reason
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_callback_vhost_protocols_vhost(struct lws_vhost *vh, int reason, void *in,
+				   size_t len);
 
 LWS_VISIBLE LWS_EXTERN int
 lws_callback_http_dummy(struct lws *wsi, enum lws_callback_reasons reason,
@@ -4335,11 +5130,11 @@ lws_callback_http_dummy(struct lws *wsi, enum lws_callback_reasons reason,
 /**
  * lws_get_socket_fd() - returns the socket file descriptor
  *
- * You will not need this unless you are doing something special
+ * This is needed to use sendto() on UDP raw sockets
  *
  * \param wsi:	Websocket connection instance
  */
-LWS_VISIBLE LWS_EXTERN int
+LWS_VISIBLE LWS_EXTERN lws_sockfd_type
 lws_get_socket_fd(struct lws *wsi);
 
 /**
@@ -4363,7 +5158,7 @@ lws_get_socket_fd(struct lws *wsi);
  * automatically, so this number reflects the situation at the peer or
  * intermediary dynamically.
  */
-LWS_VISIBLE LWS_EXTERN size_t
+LWS_VISIBLE LWS_EXTERN lws_fileofs_t
 lws_get_peer_write_allowance(struct lws *wsi);
 ///@}
 
@@ -4422,19 +5217,22 @@ lws_rx_flow_allow_all_protocol(const struct lws_context *context,
 
 /**
  * lws_remaining_packet_payload() - Bytes to come before "overall"
- *					      rx packet is complete
+ *					      rx fragment is complete
  * \param wsi:		Websocket instance (available from user callback)
  *
- *	This function is intended to be called from the callback if the
- *  user code is interested in "complete packets" from the client.
- *  libwebsockets just passes through payload as it comes and issues a buffer
- *  additionally when it hits a built-in limit.  The LWS_CALLBACK_RECEIVE
- *  callback handler can use this API to find out if the buffer it has just
- *  been given is the last piece of a "complete packet" from the client --
- *  when that is the case lws_remaining_packet_payload() will return
- *  0.
+ * This tracks how many bytes are left in the current ws fragment, according
+ * to the ws length given in the fragment header.
  *
- *  Many protocols won't care becuse their packets are always small.
+ * If the message was in a single fragment, and there is no compression, this
+ * is the same as "how much data is left to read for this message".
+ *
+ * However, if the message is being sent in multiple fragments, this will
+ * reflect the unread amount of the current **fragment**, not the message.  With
+ * ws, it is legal to not know the length of the message before it completes.
+ *
+ * Additionally if the message is sent via the negotiated permessage-deflate
+ * extension, this number only tells the amount of **compressed** data left to
+ * be read, since that is the only information available at the ws layer.
  */
 LWS_VISIBLE LWS_EXTERN size_t
 lws_remaining_packet_payload(struct lws *wsi);
@@ -4488,14 +5286,26 @@ typedef enum {
 	LWS_ADOPT_ALLOW_SSL = 4,	/* flag: if set requires LWS_ADOPT_SOCKET */
 	LWS_ADOPT_WS_PARENTIO = 8,	/* flag: ws mode parent handles IO
 					 *   if given must be only flag
-					 *   wsi put directly into ws mode
-					 */
+					 *   wsi put directly into ws mode */
+	LWS_ADOPT_FLAG_UDP = 16,	/* flag: socket is UDP */
+
+	LWS_ADOPT_RAW_SOCKET_UDP = LWS_ADOPT_SOCKET | LWS_ADOPT_FLAG_UDP,
 } lws_adoption_type;
 
 typedef union {
 	lws_sockfd_type sockfd;
 	lws_filefd_type filefd;
 } lws_sock_file_fd_type;
+
+#if !defined(LWS_WITH_ESP32)
+struct lws_udp {
+	struct sockaddr sa;
+	socklen_t salen;
+
+	struct sockaddr sa_pending;
+	socklen_t salen_pending;
+};
+#endif
 
 /*
 * lws_adopt_descriptor_vhost() - adopt foreign socket or file descriptor
@@ -4573,6 +5383,24 @@ lws_adopt_socket_readbuf(struct lws_context *context, lws_sockfd_type accept_fd,
 LWS_VISIBLE LWS_EXTERN struct lws *
 lws_adopt_socket_vhost_readbuf(struct lws_vhost *vhost, lws_sockfd_type accept_fd,
                                const char *readbuf, size_t len);
+
+#define LWS_CAUDP_BIND 1
+
+/**
+ * lws_create_adopt_udp() - create, bind and adopt a UDP socket
+ *
+ * \param vhost:	 lws vhost
+ * \param port:		 UDP port to bind to, -1 means unbound
+ * \param flags:	 0 or LWS_CAUDP_NO_BIND
+ * \param protocol_name: Name of protocol on vhost to bind wsi to
+ * \param parent_wsi:	 NULL or parent wsi new wsi will be a child of
+ *
+ * Either returns new wsi bound to accept_fd, or closes accept_fd and
+ * returns NULL, having cleaned up any new wsi pieces.
+ * */
+LWS_VISIBLE LWS_EXTERN struct lws *
+lws_create_adopt_udp(struct lws_vhost *vhost, int port, int flags,
+		     const char *protocol_name, struct lws *parent_wsi);
 ///@}
 
 /** \defgroup net Network related helper APIs
@@ -4624,17 +5452,31 @@ lws_get_peer_addresses(struct lws *wsi, lws_sockfd_type fd, char *name,
  */
 LWS_VISIBLE LWS_EXTERN const char *
 lws_get_peer_simple(struct lws *wsi, char *name, int namelen);
-#if !defined(LWS_WITH_ESP8266) && !defined(LWS_WITH_ESP32)
+
+
+#define LWS_ITOSA_NOT_EXIST -1
+#define LWS_ITOSA_NOT_USABLE -2
+#define LWS_ITOSA_USABLE 0
+#if !defined(LWS_WITH_ESP32)
 /**
  * lws_interface_to_sa() - Convert interface name or IP to sockaddr struct
  *
- * \param ipv6:	Allow IPV6 addresses
+ * \param ipv6:		Allow IPV6 addresses
  * \param ifname:	Interface name or IP
- * \param addr:	struct sockaddr_in * to be written
+ * \param addr:		struct sockaddr_in * to be written
  * \param addrlen:	Length of addr
  *
  * This converts a textual network interface name to a sockaddr usable by
- * other network functions
+ * other network functions.
+ *
+ * If the network interface doesn't exist, it will return LWS_ITOSA_NOT_EXIST.
+ *
+ * If the network interface is not usable, eg ethernet cable is removed, it
+ * may logically exist but not have any IP address.  As such it will return
+ * LWS_ITOSA_NOT_USABLE.
+ *
+ * If the network interface exists and is usable, it will return
+ * LWS_ITOSA_USABLE.
  */
 LWS_VISIBLE LWS_EXTERN int
 lws_interface_to_sa(int ipv6, const char *ifname, struct sockaddr_in *addr,
@@ -4702,6 +5544,13 @@ lws_interface_to_sa(int ipv6, const char *ifname, struct sockaddr_in *addr,
 	type it = &(start); \
 	while (*(it)) {
 
+#define lws_start_foreach_llp_safe(type, it, start, nxt)\
+{ \
+	type it = &(start); \
+	type next; \
+	while (*(it)) { \
+		next = &((*(it))->nxt); \
+
 /**
  * lws_end_foreach_llp(): linkedlist pointer iterator helper end
  *
@@ -4717,6 +5566,170 @@ lws_interface_to_sa(int ipv6, const char *ifname, struct sockaddr_in *addr,
 	} \
 }
 
+#define lws_end_foreach_llp_safe(it) \
+		it = next; \
+	} \
+}
+
+#define lws_ll_fwd_insert(\
+	___new_object,	/* pointer to new object */ \
+	___m_list,	/* member for next list object ptr */ \
+	___list_head	/* list head */ \
+		) {\
+		___new_object->___m_list = ___list_head; \
+		___list_head = ___new_object; \
+	}
+
+#define lws_ll_fwd_remove(\
+	___type,	/* type of listed object */ \
+	___m_list,	/* member for next list object ptr */ \
+	___target,	/* object to remove from list */ \
+	___list_head	/* list head */ \
+	) { \
+                lws_start_foreach_llp(___type **, ___ppss, ___list_head) { \
+                        if (*___ppss == ___target) { \
+                                *___ppss = ___target->___m_list; \
+                                break; \
+                        } \
+                } lws_end_foreach_llp(___ppss, ___m_list); \
+	}
+
+/*
+ * doubly linked-list
+ */
+
+struct lws_dll { /* abstract */
+	struct lws_dll *prev;
+	struct lws_dll *next;
+};
+
+/*
+ * these all point to the composed list objects... you have to use the
+ * lws_container_of() helper to recover the start of the containing struct
+ */
+
+LWS_VISIBLE LWS_EXTERN void
+lws_dll_add_front(struct lws_dll *d, struct lws_dll *phead);
+
+LWS_VISIBLE LWS_EXTERN void
+lws_dll_remove(struct lws_dll *d);
+
+struct lws_dll_lws { /* typed as struct lws * */
+	struct lws_dll_lws *prev;
+	struct lws_dll_lws *next;
+};
+
+#define lws_dll_is_null(___dll) (!(___dll)->prev && !(___dll)->next)
+
+static inline void
+lws_dll_lws_add_front(struct lws_dll_lws *_a, struct lws_dll_lws *_head)
+{
+	lws_dll_add_front((struct lws_dll *)_a, (struct lws_dll *)_head);
+}
+
+static inline void
+lws_dll_lws_remove(struct lws_dll_lws *_a)
+{
+	lws_dll_remove((struct lws_dll *)_a);
+}
+
+/*
+ * these are safe against the current container object getting deleted,
+ * since the hold his next in a temp and go to that next.  ___tmp is
+ * the temp.
+ */
+
+#define lws_start_foreach_dll_safe(___type, ___it, ___tmp, ___start) \
+{ \
+	___type ___it = ___start; \
+	while (___it) { \
+		___type ___tmp = (___it)->next;
+
+#define lws_end_foreach_dll_safe(___it, ___tmp) \
+		___it = ___tmp; \
+	} \
+}
+
+#define lws_start_foreach_dll(___type, ___it, ___start) \
+{ \
+	___type ___it = ___start; \
+	while (___it) {
+
+#define lws_end_foreach_dll(___it) \
+		___it = (___it)->next; \
+	} \
+}
+
+struct lws_buflist;
+
+/**
+ * lws_buflist_append_segment(): add buffer to buflist at head
+ *
+ * \param head: list head
+ * \param buf: buffer to stash
+ * \param len: length of buffer to stash
+ *
+ * Returns -1 on OOM, 1 if this was the first segment on the list, and 0 if
+ * it was a subsequent segment.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_buflist_append_segment(struct lws_buflist **head, const uint8_t *buf,
+			   size_t len);
+/**
+ * lws_buflist_next_segment_len(): number of bytes left in current segment
+ *
+ * \param head: list head
+ * \param buf: if non-NULL, *buf is written with the address of the start of
+ *		the remaining data in the segment
+ *
+ * Returns the number of bytes left in the current segment.  0 indicates
+ * that the buflist is empty (there are no segments on the buflist).
+ */
+LWS_VISIBLE LWS_EXTERN size_t
+lws_buflist_next_segment_len(struct lws_buflist **head, uint8_t **buf);
+/**
+ * lws_buflist_use_segment(): remove len bytes from the current segment
+ *
+ * \param head: list head
+ * \param len: number of bytes to mark as used
+ *
+ * If len is less than the remaining length of the current segment, the position
+ * in the current segment is simply advanced and it returns.
+ *
+ * If len uses up the remaining length of the current segment, then the segment
+ * is deleted and the list head moves to the next segment if any.
+ *
+ * Returns the number of bytes left in the current segment.  0 indicates
+ * that the buflist is empty (there are no segments on the buflist).
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_buflist_use_segment(struct lws_buflist **head, size_t len);
+/**
+ * lws_buflist_destroy_all_segments(): free all segments on the list
+ *
+ * \param head: list head
+ *
+ * This frees everything on the list unconditionally.  *head is always
+ * NULL after this.
+ */
+LWS_VISIBLE LWS_EXTERN void
+lws_buflist_destroy_all_segments(struct lws_buflist **head);
+
+void
+lws_buflist_describe(struct lws_buflist **head, void *id);
+
+/**
+ * lws_ptr_diff(): helper to report distance between pointers as an int
+ *
+ * \param head: the pointer with the larger address
+ * \param tail: the pointer with the smaller address
+ *
+ * This helper gives you an int representing the number of bytes further
+ * forward the first pointer is compared to the second pointer.
+ */
+#define lws_ptr_diff(head, tail) \
+			((int)((char *)(head) - (char *)(tail)))
+
 /**
  * lws_snprintf(): snprintf that truncates the returned length too
  *
@@ -4730,6 +5743,19 @@ lws_interface_to_sa(int ipv6, const char *ifname, struct sockaddr_in *addr,
  */
 LWS_VISIBLE LWS_EXTERN int
 lws_snprintf(char *str, size_t size, const char *format, ...) LWS_FORMAT(3);
+
+/**
+ * lws_strncpy(): strncpy that guarantees NUL on truncated copy
+ *
+ * \param dest: destination buffer
+ * \param src: source buffer
+ * \param size: bytes left in destination buffer
+ *
+ * This lets you correctly truncate buffers by concatenating lengths, if you
+ * reach the limit the reported length doesn't exceed the limit.
+ */
+LWS_VISIBLE LWS_EXTERN char *
+lws_strncpy(char *dest, const char *src, size_t size);
 
 /**
  * lws_get_random(): fill a buffer with platform random data
@@ -4797,12 +5823,51 @@ lws_set_wsi_user(struct lws *wsi, void *user);
 LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_parse_uri(char *p, const char **prot, const char **ads, int *port,
 	      const char **path);
+/**
+ * lws_cmdline_option():	simple commandline parser
+ *
+ * \param argc:		count of argument strings
+ * \param argv:		argument strings
+ * \param val:		string to find
+ *
+ * Returns NULL if the string \p val is not found in the arguments.
+ *
+ * If it is found, then it returns a pointer to the next character after \p val.
+ * So if \p val is "-d", then for the commandlines "myapp -d15" and
+ * "myapp -d 15", in both cases the return will point to the "15".
+ *
+ * In the case there is no argument, like "myapp -d", the return will
+ * either point to the '\\0' at the end of -d, or to the start of the
+ * next argument, ie, will be non-NULL.
+ */
+LWS_VISIBLE LWS_EXTERN const char *
+lws_cmdline_option(int argc, const char **argv, const char *val);
 
 /**
  * lws_now_secs(): return seconds since 1970-1-1
  */
 LWS_VISIBLE LWS_EXTERN unsigned long
 lws_now_secs(void);
+
+/**
+ * lws_compare_time_t(): return relationship between two time_t
+ *
+ * \param context: struct lws_context
+ * \param t1: time_t 1
+ * \param t2: time_t 2
+ *
+ * returns <0 if t2 > t1; >0 if t1 > t2; or == 0 if t1 == t2.
+ *
+ * This is aware of clock discontiguities that may have affected either t1 or
+ * t2 and adapts the comparison for them.
+ *
+ * For the discontiguity detection to work, you must avoid any arithmetic on
+ * the times being compared.  For example to have a timeout that triggers
+ * 15s from when it was set, store the time it was set and compare like
+ * `if (lws_compare_time_t(context, now, set_time) > 15)`
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_compare_time_t(struct lws_context *context, time_t t1, time_t t2);
 
 /**
  * lws_get_context - Allow getting lws_context from a Websocket connection
@@ -4815,6 +5880,18 @@ lws_now_secs(void);
  */
 LWS_VISIBLE LWS_EXTERN struct lws_context * LWS_WARN_UNUSED_RESULT
 lws_get_context(const struct lws *wsi);
+
+/**
+ * lws_get_vhost_listen_port - Find out the port number a vhost is listening on
+ *
+ * In the case you passed 0 for the port number at context creation time, you
+ * can discover the port number that was actually chosen for the vhost using
+ * this api.
+ *
+ * \param vhost:	Vhost to get listen port from
+ */
+LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
+lws_get_vhost_listen_port(struct lws_vhost *vhost);
 
 /**
  * lws_get_count_threads(): how many service threads the context uses
@@ -4846,6 +5923,16 @@ lws_get_parent(const struct lws *wsi);
  */
 LWS_VISIBLE LWS_EXTERN struct lws * LWS_WARN_UNUSED_RESULT
 lws_get_child(const struct lws *wsi);
+
+/**
+ * lws_get_udp() - get wsi's udp struct
+ *
+ * \param wsi: lws connection
+ *
+ * Returns NULL or pointer to the wsi's UDP-specific information
+ */
+LWS_VISIBLE LWS_EXTERN const struct lws_udp * LWS_WARN_UNUSED_RESULT
+lws_get_udp(const struct lws *wsi);
 
 /**
  * lws_parent_carries_io() - mark wsi as needing to send messages via parent
@@ -4886,14 +5973,6 @@ lws_get_close_payload(struct lws *wsi);
  */
 LWS_VISIBLE LWS_EXTERN
 struct lws *lws_get_network_wsi(struct lws *wsi);
-
-/*
- * \deprecated DEPRECATED Note: this is not normally needed as a user api.
- * It's provided in case it is
- * useful when integrating with other app poll loop service code.
- */
-LWS_VISIBLE LWS_EXTERN int
-lws_read(struct lws *wsi, unsigned char *buf, lws_filepos_t len);
 
 /**
  * lws_set_allocator() - custom allocator support
@@ -4992,7 +6071,18 @@ lws_is_ssl(struct lws *wsi);
 LWS_VISIBLE LWS_EXTERN int
 lws_is_cgi(struct lws *wsi);
 
-#ifdef LWS_OPENSSL_SUPPORT
+
+struct lws_wifi_scan { /* generic wlan scan item */
+	struct lws_wifi_scan *next;
+	char ssid[32];
+	int32_t rssi; /* divide by .count to get db */
+	uint8_t bssid[6];
+	uint8_t count;
+	uint8_t channel;
+	uint8_t authmode;
+};
+
+#if defined(LWS_WITH_TLS) && !defined(LWS_WITH_MBEDTLS)
 /**
  * lws_get_ssl() - Return wsi's SSL context structure
  * \param wsi:	websocket connection
@@ -5002,6 +6092,160 @@ lws_is_cgi(struct lws *wsi);
 LWS_VISIBLE LWS_EXTERN SSL*
 lws_get_ssl(struct lws *wsi);
 #endif
+
+enum lws_tls_cert_info {
+	LWS_TLS_CERT_INFO_VALIDITY_FROM,
+	/**< fills .time with the time_t the cert validity started from */
+	LWS_TLS_CERT_INFO_VALIDITY_TO,
+	/**< fills .time with the time_t the cert validity ends at */
+	LWS_TLS_CERT_INFO_COMMON_NAME,
+	/**< fills up to len bytes of .ns.name with the cert common name */
+	LWS_TLS_CERT_INFO_ISSUER_NAME,
+	/**< fills up to len bytes of .ns.name with the cert issuer name */
+	LWS_TLS_CERT_INFO_USAGE,
+	/**< fills verified with a bitfield asserting the valid uses */
+	LWS_TLS_CERT_INFO_VERIFIED,
+	/**< fills .verified with a bool representing peer cert validity,
+	 *   call returns -1 if no cert */
+	LWS_TLS_CERT_INFO_OPAQUE_PUBLIC_KEY,
+	/**< the certificate's public key, as an opaque bytestream.  These
+	 * opaque bytestreams can only be compared with each other using the
+	 * same tls backend, ie, OpenSSL or mbedTLS.  The different backends
+	 * produce different, incompatible representations for the same cert.
+	 */
+};
+
+union lws_tls_cert_info_results {
+	unsigned int verified;
+	time_t time;
+	unsigned int usage;
+	struct {
+		int len;
+		/* KEEP LAST... notice the [64] is only there because
+		 * name[] is not allowed in a union.  The actual length of
+		 * name[] is arbitrary and is passed into the api using the
+		 * len parameter.  Eg
+		 *
+		 * char big[1024];
+		 * union lws_tls_cert_info_results *buf =
+		 * 	(union lws_tls_cert_info_results *)big;
+		 *
+		 * lws_tls_peer_cert_info(wsi, type, buf, sizeof(big) -
+		 *			  sizeof(*buf) + sizeof(buf->ns.name));
+		 */
+		char name[64];
+	} ns;
+};
+
+/**
+ * lws_tls_peer_cert_info() - get information from the peer's TLS cert
+ *
+ * \param wsi: the connection to query
+ * \param type: one of LWS_TLS_CERT_INFO_
+ * \param buf: pointer to union to take result
+ * \param len: when result is a string, the true length of buf->ns.name[]
+ *
+ * lws_tls_peer_cert_info() lets you get hold of information from the peer
+ * certificate.
+ *
+ * Return 0 if there is a result in \p buf, or -1 indicating there was no cert
+ * or another problem.
+ *
+ * This function works the same no matter if the TLS backend is OpenSSL or
+ * mbedTLS.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_tls_peer_cert_info(struct lws *wsi, enum lws_tls_cert_info type,
+		       union lws_tls_cert_info_results *buf, size_t len);
+
+/**
+ * lws_tls_vhost_cert_info() - get information from the vhost's own TLS cert
+ *
+ * \param vhost: the vhost to query
+ * \param type: one of LWS_TLS_CERT_INFO_
+ * \param buf: pointer to union to take result
+ * \param len: when result is a string, the true length of buf->ns.name[]
+ *
+ * lws_tls_vhost_cert_info() lets you get hold of information from the vhost
+ * certificate.
+ *
+ * Return 0 if there is a result in \p buf, or -1 indicating there was no cert
+ * or another problem.
+ *
+ * This function works the same no matter if the TLS backend is OpenSSL or
+ * mbedTLS.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_tls_vhost_cert_info(struct lws_vhost *vhost, enum lws_tls_cert_info type,
+		        union lws_tls_cert_info_results *buf, size_t len);
+
+/**
+ * lws_tls_acme_sni_cert_create() - creates a temp selfsigned cert
+ *				    and attaches to a vhost
+ *
+ * \param vhost: the vhost to acquire the selfsigned cert
+ * \param san_a: SAN written into the certificate
+ * \param san_b: second SAN written into the certificate
+ *
+ *
+ * Returns 0 if created and attached to the vhost.  Returns -1 if problems and
+ * frees all allocations before returning.
+ *
+ * On success, any allocations are destroyed at vhost destruction automatically.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_tls_acme_sni_cert_create(struct lws_vhost *vhost, const char *san_a,
+			     const char *san_b);
+
+/**
+ * lws_tls_acme_sni_csr_create() - creates a CSR and related private key PEM
+ *
+ * \param context: lws_context used for random
+ * \param elements: array of LWS_TLS_REQ_ELEMENT_COUNT const char *
+ * \param csr: buffer that will get the b64URL(ASN-1 CSR)
+ * \param csr_len: max length of the csr buffer
+ * \param privkey_pem: pointer to pointer allocated to hold the privkey_pem
+ * \param privkey_len: pointer to size_t set to the length of the privkey_pem
+ *
+ * Creates a CSR according to the information in \p elements, and a private
+ * RSA key used to sign the CSR.
+ *
+ * The outputs are the b64URL(ASN-1 CSR) into csr, and the PEM private key into
+ * privkey_pem.
+ *
+ * Notice that \p elements points to an array of const char *s pointing to the
+ * information listed in the enum above.  If an entry is NULL or an empty
+ * string, the element is set to "none" in the CSR.
+ *
+ * Returns 0 on success or nonzero for failure.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_tls_acme_sni_csr_create(struct lws_context *context, const char *elements[],
+			    uint8_t *csr, size_t csr_len, char **privkey_pem,
+			    size_t *privkey_len);
+
+/**
+ * lws_tls_cert_updated() - update every vhost using the given cert path
+ *
+ * \param context: our lws_context
+ * \param certpath: the filepath to the certificate
+ * \param keypath: the filepath to the private key of the certificate
+ * \param mem_cert: copy of the cert in memory
+ * \param len_mem_cert: length of the copy of the cert in memory
+ * \param mem_privkey: copy of the private key in memory
+ * \param len_mem_privkey: length of the copy of the private key in memory
+ *
+ * Checks every vhost to see if it is the using certificate described by the
+ * the given filepaths.  If so, it attempts to update the vhost ssl_ctx to use
+ * the new certificate.
+ *
+ * Returns 0 on success or nonzero for failure.
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_tls_cert_updated(struct lws_context *context, const char *certpath,
+		     const char *keypath,
+		     const char *mem_cert, size_t len_mem_cert,
+		     const char *mem_privkey, size_t len_mem_privkey);
 ///@}
 
 /** \defgroup lws_ring LWS Ringbuffer APIs
@@ -5226,6 +6470,65 @@ lws_ring_next_linear_insert_range(struct lws_ring *ring, void **start,
  */
 LWS_VISIBLE LWS_EXTERN void
 lws_ring_bump_head(struct lws_ring *ring, size_t bytes);
+
+LWS_VISIBLE LWS_EXTERN void
+lws_ring_dump(struct lws_ring *ring, uint32_t *tail);
+
+/*
+ * This is a helper that combines the common pattern of needing to consume
+ * some ringbuffer elements, move the consumer tail on, and check if that
+ * has moved any ringbuffer elements out of scope, because it was the last
+ * consumer that had not already consumed them.
+ *
+ * Elements that go out of scope because the oldest tail is now after them
+ * get garbage-collected by calling the destroy_element callback on them
+ * defined when the ringbuffer was created.
+ */
+
+#define lws_ring_consume_and_update_oldest_tail(\
+		___ring,    /* the lws_ring object */ \
+		___type,    /* type of objects with tails */ \
+		___ptail,   /* ptr to tail of obj with tail doing consuming */ \
+		___count,   /* count of payload objects being consumed */ \
+		___list_head,	/* head of list of objects with tails */ \
+		___mtail,   /* member name of tail in ___type */ \
+		___mlist  /* member name of next list member ptr in ___type */ \
+	) { \
+		int ___n, ___m; \
+	\
+	___n = lws_ring_get_oldest_tail(___ring) == *(___ptail); \
+	lws_ring_consume(___ring, ___ptail, NULL, ___count); \
+	if (___n) { \
+		uint32_t ___oldest; \
+		___n = 0; \
+		___oldest = *(___ptail); \
+		lws_start_foreach_llp(___type **, ___ppss, ___list_head) { \
+			___m = lws_ring_get_count_waiting_elements( \
+					___ring, &(*___ppss)->tail); \
+			if (___m >= ___n) { \
+				___n = ___m; \
+				___oldest = (*___ppss)->tail; \
+			} \
+		} lws_end_foreach_llp(___ppss, ___mlist); \
+	\
+		lws_ring_update_oldest_tail(___ring, ___oldest); \
+	} \
+}
+
+/*
+ * This does the same as the lws_ring_consume_and_update_oldest_tail()
+ * helper, but for the simpler case there is only one consumer, so one
+ * tail, and that tail is always the oldest tail.
+ */
+
+#define lws_ring_consume_single_tail(\
+		___ring,  /* the lws_ring object */ \
+		___ptail, /* ptr to tail of obj with tail doing consuming */ \
+		___count  /* count of payload objects being consumed */ \
+	) { \
+	lws_ring_consume(___ring, ___ptail, NULL, ___count); \
+	lws_ring_update_oldest_tail(___ring, *(___ptail)); \
+}
 ///@}
 
 /** \defgroup sha SHA and B64 helpers
@@ -5262,16 +6565,40 @@ lws_SHA1(const unsigned char *d, size_t n, unsigned char *md);
 LWS_VISIBLE LWS_EXTERN int
 lws_b64_encode_string(const char *in, int in_len, char *out, int out_size);
 /**
+ * lws_b64_encode_string_url(): encode a string into base 64
+ *
+ * \param in: incoming buffer
+ * \param in_len: length of incoming buffer
+ * \param out: result buffer
+ * \param out_size: length of result buffer
+ *
+ * Encodes a string using b64 with the "URL" variant (+ -> -, and / -> _)
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_b64_encode_string_url(const char *in, int in_len, char *out, int out_size);
+/**
  * lws_b64_decode_string(): decode a string from base 64
  *
  * \param in: incoming buffer
  * \param out: result buffer
  * \param out_size: length of result buffer
  *
- * Decodes a string using b64
+ * Decodes a NUL-terminated string using b64
  */
 LWS_VISIBLE LWS_EXTERN int
 lws_b64_decode_string(const char *in, char *out, int out_size);
+/**
+ * lws_b64_decode_string_len(): decode a string from base 64
+ *
+ * \param in: incoming buffer
+ * \param in_len: length of incoming buffer
+ * \param out: result buffer
+ * \param out_size: length of result buffer
+ *
+ * Decodes a range of chars using b64
+ */
+LWS_VISIBLE LWS_EXTERN int
+lws_b64_decode_string_len(const char *in, int in_len, char *out, int out_size);
 ///@}
 
 
@@ -5727,6 +7054,248 @@ lws_email_destroy(struct lws_email *email);
 #endif
 //@}
 
+
+/** \defgroup lejp JSON parser
+ * ##JSON parsing related functions
+ * \ingroup lwsapi
+ *
+ * LEJP is an extremely lightweight JSON stream parser included in lws.
+ */
+//@{
+struct lejp_ctx;
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_x) (sizeof(_x) / sizeof(_x[0]))
+#endif
+#define LWS_ARRAY_SIZE(_x) (sizeof(_x) / sizeof(_x[0]))
+#define LEJP_FLAG_WS_KEEP 64
+#define LEJP_FLAG_WS_COMMENTLINE 32
+
+enum lejp_states {
+	LEJP_IDLE = 0,
+	LEJP_MEMBERS = 1,
+	LEJP_M_P = 2,
+	LEJP_MP_STRING = LEJP_FLAG_WS_KEEP | 3,
+	LEJP_MP_STRING_ESC = LEJP_FLAG_WS_KEEP | 4,
+	LEJP_MP_STRING_ESC_U1 = LEJP_FLAG_WS_KEEP | 5,
+	LEJP_MP_STRING_ESC_U2 = LEJP_FLAG_WS_KEEP | 6,
+	LEJP_MP_STRING_ESC_U3 = LEJP_FLAG_WS_KEEP | 7,
+	LEJP_MP_STRING_ESC_U4 = LEJP_FLAG_WS_KEEP | 8,
+	LEJP_MP_DELIM = 9,
+	LEJP_MP_VALUE = 10,
+	LEJP_MP_VALUE_NUM_INT = LEJP_FLAG_WS_KEEP | 11,
+	LEJP_MP_VALUE_NUM_EXP = LEJP_FLAG_WS_KEEP | 12,
+	LEJP_MP_VALUE_TOK = LEJP_FLAG_WS_KEEP | 13,
+	LEJP_MP_COMMA_OR_END = 14,
+	LEJP_MP_ARRAY_END = 15,
+};
+
+enum lejp_reasons {
+	LEJP_CONTINUE = -1,
+	LEJP_REJECT_IDLE_NO_BRACE = -2,
+	LEJP_REJECT_MEMBERS_NO_CLOSE = -3,
+	LEJP_REJECT_MP_NO_OPEN_QUOTE = -4,
+	LEJP_REJECT_MP_STRING_UNDERRUN = -5,
+	LEJP_REJECT_MP_ILLEGAL_CTRL = -6,
+	LEJP_REJECT_MP_STRING_ESC_ILLEGAL_ESC = -7,
+	LEJP_REJECT_ILLEGAL_HEX = -8,
+	LEJP_REJECT_MP_DELIM_MISSING_COLON = -9,
+	LEJP_REJECT_MP_DELIM_BAD_VALUE_START = -10,
+	LEJP_REJECT_MP_VAL_NUM_INT_NO_FRAC = -11,
+	LEJP_REJECT_MP_VAL_NUM_FORMAT = -12,
+	LEJP_REJECT_MP_VAL_NUM_EXP_BAD_EXP = -13,
+	LEJP_REJECT_MP_VAL_TOK_UNKNOWN = -14,
+	LEJP_REJECT_MP_C_OR_E_UNDERF = -15,
+	LEJP_REJECT_MP_C_OR_E_NOTARRAY = -16,
+	LEJP_REJECT_MP_ARRAY_END_MISSING = -17,
+	LEJP_REJECT_STACK_OVERFLOW = -18,
+	LEJP_REJECT_MP_DELIM_ISTACK = -19,
+	LEJP_REJECT_NUM_TOO_LONG = -20,
+	LEJP_REJECT_MP_C_OR_E_NEITHER = -21,
+	LEJP_REJECT_UNKNOWN = -22,
+	LEJP_REJECT_CALLBACK = -23
+};
+
+#define LEJP_FLAG_CB_IS_VALUE 64
+
+enum lejp_callbacks {
+	LEJPCB_CONSTRUCTED	= 0,
+	LEJPCB_DESTRUCTED	= 1,
+
+	LEJPCB_START		= 2,
+	LEJPCB_COMPLETE		= 3,
+	LEJPCB_FAILED		= 4,
+
+	LEJPCB_PAIR_NAME	= 5,
+
+	LEJPCB_VAL_TRUE		= LEJP_FLAG_CB_IS_VALUE | 6,
+	LEJPCB_VAL_FALSE	= LEJP_FLAG_CB_IS_VALUE | 7,
+	LEJPCB_VAL_NULL		= LEJP_FLAG_CB_IS_VALUE | 8,
+	LEJPCB_VAL_NUM_INT	= LEJP_FLAG_CB_IS_VALUE | 9,
+	LEJPCB_VAL_NUM_FLOAT	= LEJP_FLAG_CB_IS_VALUE | 10,
+	LEJPCB_VAL_STR_START	= 11, /* notice handle separately */
+	LEJPCB_VAL_STR_CHUNK	= LEJP_FLAG_CB_IS_VALUE | 12,
+	LEJPCB_VAL_STR_END	= LEJP_FLAG_CB_IS_VALUE | 13,
+
+	LEJPCB_ARRAY_START	= 14,
+	LEJPCB_ARRAY_END	= 15,
+
+	LEJPCB_OBJECT_START	= 16,
+	LEJPCB_OBJECT_END	= 17
+};
+
+/**
+ * _lejp_callback() - User parser actions
+ * \param ctx:	LEJP context
+ * \param reason:	Callback reason
+ *
+ *	Your user callback is associated with the context at construction time,
+ *	and receives calls as the parsing progresses.
+ *
+ *	All of the callbacks may be ignored and just return 0.
+ *
+ *	The reasons it might get called, found in @reason, are:
+ *
+ *  LEJPCB_CONSTRUCTED:  The context was just constructed... you might want to
+ *		perform one-time allocation for the life of the context.
+ *
+ *  LEJPCB_DESTRUCTED:	The context is being destructed... if you made any
+ *		allocations at construction-time, you can free them now
+ *
+ *  LEJPCB_START:	Parsing is beginning at the first byte of input
+ *
+ *  LEJPCB_COMPLETE:	Parsing has completed successfully.  You'll get a 0 or
+ *			positive return code from lejp_parse indicating the
+ *			amount of unused bytes left in the input buffer
+ *
+ *  LEJPCB_FAILED:	Parsing failed.  You'll get a negative error code
+ *  			returned from lejp_parse
+ *
+ *  LEJPCB_PAIR_NAME:	When a "name":"value" pair has had the name parsed,
+ *			this callback occurs.  You can find the new name at
+ *			the end of ctx->path[]
+ *
+ *  LEJPCB_VAL_TRUE:	The "true" value appeared
+ *
+ *  LEJPCB_VAL_FALSE:	The "false" value appeared
+ *
+ *  LEJPCB_VAL_NULL:	The "null" value appeared
+ *
+ *  LEJPCB_VAL_NUM_INT:	A string representing an integer is in ctx->buf
+ *
+ *  LEJPCB_VAL_NUM_FLOAT: A string representing a float is in ctx->buf
+ *
+ *  LEJPCB_VAL_STR_START: We are starting to parse a string, no data yet
+ *
+ *  LEJPCB_VAL_STR_CHUNK: We parsed LEJP_STRING_CHUNK -1 bytes of string data in
+ *			ctx->buf, which is as much as we can buffer, so we are
+ *			spilling it.  If all your strings are less than
+ *			LEJP_STRING_CHUNK - 1 bytes, you will never see this
+ *			callback.
+ *
+ *  LEJPCB_VAL_STR_END:	String parsing has completed, the last chunk of the
+ *			string is in ctx->buf.
+ *
+ *  LEJPCB_ARRAY_START:	An array started
+ *
+ *  LEJPCB_ARRAY_END:	An array ended
+ *
+ *  LEJPCB_OBJECT_START: An object started
+ *
+ *  LEJPCB_OBJECT_END:	An object ended
+ */
+LWS_EXTERN signed char _lejp_callback(struct lejp_ctx *ctx, char reason);
+
+typedef signed char (*lejp_callback)(struct lejp_ctx *ctx, char reason);
+
+#ifndef LEJP_MAX_DEPTH
+#define LEJP_MAX_DEPTH 12
+#endif
+#ifndef LEJP_MAX_INDEX_DEPTH
+#define LEJP_MAX_INDEX_DEPTH 5
+#endif
+#ifndef LEJP_MAX_PATH
+#define LEJP_MAX_PATH 128
+#endif
+#ifndef LEJP_STRING_CHUNK
+/* must be >= 30 to assemble floats */
+#define LEJP_STRING_CHUNK 255
+#endif
+
+enum num_flags {
+	LEJP_SEEN_MINUS = (1 << 0),
+	LEJP_SEEN_POINT = (1 << 1),
+	LEJP_SEEN_POST_POINT = (1 << 2),
+	LEJP_SEEN_EXP = (1 << 3)
+};
+
+struct _lejp_stack {
+	char s; /* lejp_state stack*/
+	char p;	/* path length */
+	char i; /* index array length */
+	char b; /* user bitfield */
+};
+
+struct lejp_ctx {
+
+	/* sorted by type for most compact alignment
+	 *
+	 * pointers
+	 */
+
+	signed char (*callback)(struct lejp_ctx *ctx, char reason);
+	void *user;
+	const char * const *paths;
+
+	/* arrays */
+
+	struct _lejp_stack st[LEJP_MAX_DEPTH];
+	uint16_t i[LEJP_MAX_INDEX_DEPTH]; /* index array */
+	uint16_t wild[LEJP_MAX_INDEX_DEPTH]; /* index array */
+	char path[LEJP_MAX_PATH];
+	char buf[LEJP_STRING_CHUNK];
+
+	/* int */
+
+	uint32_t line;
+
+	/* short */
+
+	uint16_t uni;
+
+	/* char */
+
+	uint8_t npos;
+	uint8_t dcount;
+	uint8_t f;
+	uint8_t sp; /* stack head */
+	uint8_t ipos; /* index stack depth */
+	uint8_t ppos;
+	uint8_t count_paths;
+	uint8_t path_match;
+	uint8_t path_match_len;
+	uint8_t wildcount;
+};
+
+LWS_VISIBLE LWS_EXTERN void
+lejp_construct(struct lejp_ctx *ctx,
+	       signed char (*callback)(struct lejp_ctx *ctx, char reason),
+	       void *user, const char * const *paths, unsigned char paths_count);
+
+LWS_VISIBLE LWS_EXTERN void
+lejp_destruct(struct lejp_ctx *ctx);
+
+LWS_VISIBLE LWS_EXTERN int
+lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len);
+
+LWS_VISIBLE LWS_EXTERN void
+lejp_change_callback(struct lejp_ctx *ctx,
+		     signed char (*callback)(struct lejp_ctx *ctx, char reason));
+
+LWS_VISIBLE LWS_EXTERN int
+lejp_get_wildcard(struct lejp_ctx *ctx, int wildcard, char *dest, int len);
+//@}
+
 /*
  * Stats are all uint64_t numbers that start at 0.
  * Index names here have the convention
@@ -5775,9 +7344,9 @@ LWS_VISIBLE LWS_EXTERN void
 lws_stats_log_dump(struct lws_context *context);
 #else
 static LWS_INLINE uint64_t
-lws_stats_get(struct lws_context *context, int index) { return 0; }
+lws_stats_get(struct lws_context *context, int index) { (void)context; (void)index;  return 0; }
 static LWS_INLINE void
-lws_stats_log_dump(struct lws_context *context) { }
+lws_stats_log_dump(struct lws_context *context) { (void)context; }
 #endif
 
 #ifdef __cplusplus
