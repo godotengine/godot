@@ -232,6 +232,7 @@ public:
 	virtual Size2 get_layered_buffer_size() { return Size2(0, 0); }
 	virtual void swap_layered_buffer() {}
 
+	virtual void set_ime_active(const bool p_active) {}
 	virtual void set_ime_position(const Point2 &p_pos) {}
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
 

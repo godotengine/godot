@@ -391,6 +391,9 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
 
+	im_active = false;
+	im_position = Vector2();
+
 	if (xim && xim_style) {
 
 		xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, x11_window, XNFocusWindow, x11_window, (char *)NULL);
@@ -400,7 +403,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			xic = NULL;
 		}
 		if (xic) {
-			XSetICFocus(xic);
+			XUnsetICFocus(xic);
 		} else {
 			WARN_PRINT("XCreateIC couldn't create xic");
 		}
@@ -541,7 +544,24 @@ void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 	os->xic = NULL;
 }
 
+void OS_X11::set_ime_active(const bool p_active) {
+
+	im_active = p_active;
+
+	if (!xic)
+		return;
+
+	if (p_active) {
+		XSetICFocus(xic);
+		set_ime_position(im_position);
+	} else {
+		XUnsetICFocus(xic);
+	}
+}
+
 void OS_X11::set_ime_position(const Point2 &p_pos) {
+
+	im_position = p_pos;
 
 	if (!xic)
 		return;
