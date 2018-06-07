@@ -1145,6 +1145,10 @@ String OS_OSX::get_unique_id() const {
 	return serial_number;
 }
 
+void OS_OSX::set_ime_active(const bool p_active) {
+	im_active = p_active;
+}
+
 void OS_OSX::set_ime_position(const Point2 &p_pos) {
 	im_position = p_pos;
 }

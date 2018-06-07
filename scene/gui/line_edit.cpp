@@ -770,7 +770,7 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 
 				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
+				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
 				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
