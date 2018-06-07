@@ -1919,7 +1919,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *c = over;
 			Vector2 cpos = pos;
 			while (c) {
-				cursor_shape = c->get_cursor_shape();
+				cursor_shape = c->get_cursor_shape(cpos);
 				cpos = c->get_transform().xform(cpos);
 				if (cursor_shape != Control::CURSOR_ARROW)
 					break;
