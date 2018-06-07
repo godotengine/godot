@@ -32,7 +32,7 @@
 
 #include "camera_matrix.h"
 #include "core/os/input.h"
-#include "editor/animation_editor.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -1829,7 +1829,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE)
 				return;
 
-			if (!AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
+			if (!AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
 				set_message(TTR("Keying is disabled (no key inserted)."));
 				return;
 			}

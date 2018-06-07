@@ -440,6 +440,8 @@ void PopupMenu::_notification(int p_what) {
 				float h;
 				Size2 icon_size;
 
+				Color icon_color(1, 1, 1, items[i].disabled ? 0.5 : 1);
+
 				item_ofs.x += items[i].h_ofs;
 				if (!items[i].icon.is_null()) {
 
@@ -463,18 +465,18 @@ void PopupMenu::_notification(int p_what) {
 
 				if (items[i].checkable_type) {
 					Texture *icon = (items[i].checked ? check[items[i].checkable_type - 1] : uncheck[items[i].checkable_type - 1]).ptr();
-					icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon->get_height()) / 2.0)));
+					icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
 					item_ofs.x += icon->get_width() + hseparation;
 				}
 
 				if (!items[i].icon.is_null()) {
-					items[i].icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon_size.height) / 2.0)));
+					items[i].icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
 					item_ofs.x += items[i].icon->get_width();
 					item_ofs.x += hseparation;
 				}
 
 				if (items[i].submenu != "") {
-					submenu->draw(ci, Point2(size.width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2));
+					submenu->draw(ci, Point2(size.width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 				}
 
 				item_ofs.y += font->get_ascent();
@@ -913,6 +915,13 @@ void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 	update();
 }
 
+void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+	items[p_idx].shortcut_is_disabled = p_disabled;
+	update();
+}
+
 void PopupMenu::toggle_item_multistate(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
@@ -935,6 +944,12 @@ bool PopupMenu::is_item_checkable(int p_idx) const {
 bool PopupMenu::is_item_radio_checkable(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
 	return items[p_idx].checkable_type == Item::CHECKABLE_TYPE_RADIO_BUTTON;
+}
+
+bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+	return items[p_idx].shortcut_is_disabled;
 }
 
 int PopupMenu::get_item_count() const {
@@ -963,7 +978,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 
 	int il = items.size();
 	for (int i = 0; i < il; i++) {
-		if (is_item_disabled(i))
+		if (is_item_disabled(i) || items[i].shortcut_is_disabled)
 			continue;
 
 		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
@@ -1248,6 +1263,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &PopupMenu::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "idx", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "idx", "state"), &PopupMenu::set_item_multistate);
+	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "idx", "disabled"), &PopupMenu::set_item_shortcut_disabled);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "idx"), &PopupMenu::toggle_item_checked);
 	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "idx"), &PopupMenu::toggle_item_multistate);
@@ -1264,6 +1280,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &PopupMenu::is_item_separator);
 	ClassDB::bind_method(D_METHOD("is_item_checkable", "idx"), &PopupMenu::is_item_checkable);
 	ClassDB::bind_method(D_METHOD("is_item_radio_checkable", "idx"), &PopupMenu::is_item_radio_checkable);
+	ClassDB::bind_method(D_METHOD("is_item_shortcut_disabled", "idx"), &PopupMenu::is_item_shortcut_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
 

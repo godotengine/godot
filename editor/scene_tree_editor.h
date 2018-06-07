@@ -55,6 +55,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_WARNING = 5,
 		BUTTON_SIGNALS = 6,
 		BUTTON_GROUPS = 7,
+		BUTTON_PIN = 8,
 	};
 
 	Tree *tree;

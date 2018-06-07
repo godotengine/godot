@@ -312,6 +312,7 @@ private:
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
