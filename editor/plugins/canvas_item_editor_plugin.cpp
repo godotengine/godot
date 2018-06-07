@@ -363,7 +363,7 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 
 void CanvasItemEditor::_keying_changed() {
 
-	if (AnimationPlayerEditor::singleton->get_key_editor()->is_visible_in_tree())
+	if (AnimationPlayerEditor::singleton->get_track_editor()->is_visible_in_tree())
 		animation_hb->show();
 	else
 		animation_hb->hide();
@@ -3861,7 +3861,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 						ctrl->set_position(Point2());
 					/*
                                    if (key_scale)
-                                   AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
+				   AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
                                    */
 				}
 			}

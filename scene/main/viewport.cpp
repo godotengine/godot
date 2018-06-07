@@ -1312,7 +1312,7 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 }
 
-String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which) {
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos) {
 
 	Vector2 pos = p_pos;
 	String tooltip;
@@ -1320,10 +1320,6 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	while (p_control) {
 
 		tooltip = p_control->get_tooltip(pos);
-
-		if (r_which) {
-			*r_which = p_control;
-		}
 
 		if (tooltip != String())
 			break;
@@ -1346,8 +1342,7 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	Control *which = NULL;
-	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
 	if (tooltip.length() == 0)
 		return; // bye
 
@@ -1936,7 +1931,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool is_tooltip_shown = false;
 
 			if (gui.tooltip_popup) {
-				if (can_tooltip && gui.tooltip) {
+				if (can_tooltip) {
 					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)
@@ -1969,7 +1964,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *c = over;
 			Vector2 cpos = pos;
 			while (c) {
-				cursor_shape = c->get_cursor_shape(cpos);
+				cursor_shape = c->get_cursor_shape();
 				cpos = c->get_transform().xform(cpos);
 				if (cursor_shape != Control::CURSOR_ARROW)
 					break;

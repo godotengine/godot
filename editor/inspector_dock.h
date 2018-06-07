@@ -31,7 +31,7 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "editor/animation_editor.h"
+#include "editor/animation_track_editor.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -121,6 +121,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void go_back();
 	void update_keying();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);

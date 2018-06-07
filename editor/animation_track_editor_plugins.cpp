@@ -271,8 +271,8 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i - from_x;
-			lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+			lines[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+			lines[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 		}
 
 		Vector<Color> color;
@@ -357,26 +357,12 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 		}
 	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 
+		int frame = get_animation()->track_get_key_value(get_track(), p_index);
+		String animation = "default"; //may be smart and go through other tracks to find if animation is set
+
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
-		}
-
-		List<StringName> animations;
-		sf->get_animation_list(&animations);
-
-		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-		String animation;
-		if (animations.size() == 1) {
-			animation = animations.front()->get();
-		} else {
-			// Go through other track to find if animation is set
-			String animation_path = get_animation()->track_get_path(get_track());
-			animation_path = animation_path.replace(":frame", ":animation");
-			int animation_track = get_animation()->find_track(animation_path);
-			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
-			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
-			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
 		Ref<Texture> texture = sf->get_frame(animation, frame);
@@ -444,27 +430,13 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 
+		int frame = get_animation()->track_get_key_value(get_track(), p_index);
+		String animation = "default"; //may be smart and go through other tracks to find if animation is set
+
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;
-		}
-
-		List<StringName> animations;
-		sf->get_animation_list(&animations);
-
-		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-		String animation;
-		if (animations.size() == 1) {
-			animation = animations.front()->get();
-		} else {
-			// Go through other track to find if animation is set
-			String animation_path = get_animation()->track_get_path(get_track());
-			animation_path = animation_path.replace(":frame", ":animation");
-			int animation_track = get_animation()->find_track(animation_path);
-			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
-			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
-			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
 		texture = sf->get_frame(animation, frame);
@@ -883,8 +855,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i - from_x;
-		lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		lines[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+		lines[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 	}
 
 	Vector<Color> color;

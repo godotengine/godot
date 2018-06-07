@@ -112,7 +112,7 @@ public:
 class EditorAudioStreamPreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorAudioStreamPreviewPlugin();
 };

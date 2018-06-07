@@ -57,7 +57,6 @@ class EditorSpinSlider : public Range {
 	bool grabbing_spinner;
 
 	bool read_only;
-	float grabbing_spinner_dist_cache;
 	Vector2 grabbing_spinner_mouse_pos;
 
 	LineEdit *value_input;
@@ -91,11 +90,6 @@ public:
 
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
-
-	void set_flat(bool p_enable);
-	bool is_flat() const;
-
-	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();

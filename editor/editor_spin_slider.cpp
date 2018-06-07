@@ -37,6 +37,9 @@ String EditorSpinSlider::get_text_value() const {
 }
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
+	if (read_only)
+		return;
+
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
 
@@ -301,9 +304,22 @@ void EditorSpinSlider::_grabber_mouse_exited() {
 	update();
 }
 
+void EditorSpinSlider::set_read_only(bool p_enable) {
+
+	read_only = p_enable;
+	update();
+}
+
+bool EditorSpinSlider::is_read_only() const {
+	return read_only;
+}
+
 void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_label", "label"), &EditorSpinSlider::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorSpinSlider::get_label);
+
+	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorSpinSlider::set_read_only);
+	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorSpinSlider::is_read_only);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
@@ -313,6 +329,7 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_input_entered"), &EditorSpinSlider::_value_input_entered);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 }
 
 EditorSpinSlider::EditorSpinSlider() {
@@ -342,4 +359,5 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input->connect("modal_closed", this, "_value_input_closed");
 	value_input->connect("text_entered", this, "_value_input_entered");
 	hide_slider = false;
+	read_only = false;
 }

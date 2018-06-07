@@ -84,7 +84,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 					}
 				}
 				frame->set_value(player->get_current_animation_position());
-				key_editor->set_anim_pos(player->get_current_animation_position());
+				track_editor->set_anim_pos(player->get_current_animation_position());
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (last_active) {
@@ -144,7 +144,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_DUPLICATE_ANIM, "Duplicate");
 			ITEM_ICON(TOOL_RENAME_ANIM, "Rename");
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
-			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
 			//ITEM_ICON(TOOL_COPY_ANIM, "Copy");
 			//ITEM_ICON(TOOL_PASTE_ANIM, "Paste");
@@ -1111,12 +1110,9 @@ void AnimationPlayerEditor::_animation_about_to_show_menu() {
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
-	String current;
-	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count())
-		current = animation->get_item_text(animation->get_selected());
-
+	String current = animation->get_item_text(animation->get_selected());
 	Ref<Animation> anim;
-	if (current != String()) {
+	if (current != "") {
 		anim = player->get_animation(current);
 	}
 
@@ -1473,7 +1469,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		float pos = cpos + step_off * anim->get_step();
 
 		bool valid = anim->has_loop() || (pos >= 0 && pos <= anim->get_length());
-		onion.captures_valid.write[cidx] = valid;
+		onion.captures_valid[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Spatials
@@ -1653,26 +1649,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
 	scale->hide();
 
-	add_anim = memnew(ToolButton);
-	ED_SHORTCUT("animation_player_editor/add_animation", TTR("Create new animation in player."));
-	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/add_animation"));
-	add_anim->set_tooltip(TTR("Create new animation in player."));
-
-	hb->add_child(add_anim);
-
-	load_anim = memnew(ToolButton);
-	ED_SHORTCUT("animation_player_editor/load_from_disk", TTR("Load animation from disk."));
-	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/load_from_disk"));
-	load_anim->set_tooltip(TTR("Load an animation from disk."));
-	hb->add_child(load_anim);
-
-	save_anim = memnew(MenuButton);
-	save_anim->set_tooltip(TTR("Save the current animation."));
-	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save", TTR("Save")), ANIM_SAVE);
-	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as", TTR("Save As")), ANIM_SAVE_AS);
-	save_anim->set_focus_mode(Control::FOCUS_NONE);
-	hb->add_child(save_anim);
-
 	accept = memnew(AcceptDialog);
 	add_child(accept);
 	accept->connect("confirmed", this, "_menu_confirm_current");
@@ -1685,12 +1661,12 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->set_flat(false);
 	//tool_anim->set_flat(false);
 	tool_anim->set_tooltip(TTR("Animation Tools"));
-	tool_anim->set_text(TTR("Animation"));
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New")), TOOL_NEW_ANIM);
+	tool_anim->set_text("Animation");
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New...")), TOOL_NEW_ANIM);
 	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation", TTR("Load")), TOOL_LOAD_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation", TTR("Load...")), TOOL_LOAD_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_animation", TTR("Save")), TOOL_SAVE_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as_animation", TTR("Save As...")), TOOL_SAVE_AS_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as_animation", TTR("Save As..")), TOOL_SAVE_AS_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
@@ -1699,7 +1675,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename...")), TOOL_RENAME_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
 	hb->add_child(tool_anim);
@@ -1716,8 +1691,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	//tool_anim->get_popup()->add_separator();
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
-
-	hb->add_child(memnew(VSeparator));
 
 	track_editor = memnew(AnimationTrackEditor);
 

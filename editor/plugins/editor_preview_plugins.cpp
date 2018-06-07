@@ -613,7 +613,7 @@ bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "AudioStream");
 }
 
-Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) const {
+Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) {
 
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture>());
@@ -682,7 +682,7 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) const {
 	}
 
 	imgdata = PoolVector<uint8_t>::Write();
-	post_process_preview(img);
+	//post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;

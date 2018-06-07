@@ -331,7 +331,11 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
 				TrackNodeCache::BezierAnim ba;
-				ba.bezier_property = leftover_path;
+				String path = leftover_path[leftover_path.size() - 1];
+				Vector<String> index = path.split(".");
+				for (int j = 0; j < index.size(); j++) {
+					ba.bezier_property.push_back(index[j]);
+				}
 				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				ba.owner = p_anim->node_cache[i];
 
@@ -415,26 +419,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						pa->capture = pa->object->get_indexed(pa->subpath);
 					}
 
-					int key_count = a->track_get_key_count(i);
-					if (key_count == 0)
+					if (a->track_get_key_count(i) == 0)
 						continue; //eeh not worth it
 
 					float first_key_time = a->track_get_key_time(i, 0);
-					float transition = 1.0;
-					int first_key = 0;
-
-					if (first_key_time == 0.0) {
-						//ignore, use for transition
-						if (key_count == 1)
-							continue; //with one key we cant do anything
-						transition = a->track_get_key_transition(i, 0);
-						first_key_time = a->track_get_key_time(i, 1);
-						first_key = 1;
-					}
 
 					if (p_time < first_key_time) {
-						float c = Math::ease(p_time / first_key_time, transition);
-						Variant first_value = a->track_get_key_value(i, first_key);
+						float c = p_time / first_key_time;
+						Variant first_value = a->track_get_key_value(i, 0);
 						Variant interp_value;
 						Variant::interpolate(pa->capture, first_value, c, interp_value);
 
@@ -662,22 +654,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							nc->audio_start = p_time;
 						}
 					} else if (nc->audio_playing) {
-
-						bool loop = a->has_loop();
-
-						bool stop = false;
-
-						if (!loop && p_time < nc->audio_start) {
-							stop = true;
-						} else if (nc->audio_len > 0) {
-							float len = nc->audio_start > p_time ? (a->get_length() - nc->audio_start) + p_time : p_time - nc->audio_start;
-
-							if (len > nc->audio_len) {
-								stop = true;
-							}
-						}
-
-						if (stop) {
+						if (nc->audio_start > p_time || (nc->audio_len > 0 && p_time - nc->audio_start < nc->audio_len)) {
 							//time to stop
 							nc->node->call("stop");
 							nc->audio_playing = false;
@@ -1357,6 +1334,24 @@ void AnimationPlayer::_animation_changed() {
 
 	clear_caches();
 	emit_signal("caches_cleared");
+}
+
+void AnimationPlayer::_stop_playing_caches() {
+
+	for (Set<TrackNodeCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
+
+		if (E->get()->node && E->get()->audio_playing) {
+			E->get()->node->call("stop");
+		}
+		if (E->get()->node && E->get()->animation_playing) {
+			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
+			if (!player)
+				continue;
+			player->stop();
+		}
+	}
+
+	playing_caches.clear();
 }
 
 void AnimationPlayer::_stop_playing_caches() {
