@@ -171,11 +171,11 @@ opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during comp
 opts.Add(BoolVariable('progress', "Show a progress indicator during build", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 opts.Add(EnumVariable('macports_clang', "Build using clang from MacPorts", 'no', ('no', '5.0', 'devel')))
+opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_bullet', "Use the builtin bullet library", True))
 opts.Add(BoolVariable('builtin_enet', "Use the builtin enet library", True))
-opts.Add(BoolVariable('builtin_miniupnpc', "Use the builtin miniupnpc library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the builtin freetype library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the builtin libogg library", True))
 opts.Add(BoolVariable('builtin_libpng', "Use the builtin libpng library", True))
@@ -183,7 +183,9 @@ opts.Add(BoolVariable('builtin_libtheora', "Use the builtin libtheora library", 
 opts.Add(BoolVariable('builtin_libvorbis', "Use the builtin libvorbis library", True))
 opts.Add(BoolVariable('builtin_libvpx', "Use the builtin libvpx library", True))
 opts.Add(BoolVariable('builtin_libwebp', "Use the builtin libwebp library", True))
+opts.Add(BoolVariable('builtin_libwebsockets', "Use the builtin libwebsockets library", True))
 opts.Add(BoolVariable('builtin_mbedtls', "Use the builtin mbedTLS library", True))
+opts.Add(BoolVariable('builtin_miniupnpc', "Use the builtin miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the builtin opus library", True))
 opts.Add(BoolVariable('builtin_pcre2', "Use the builtin pcre2 library)", True))
 opts.Add(BoolVariable('builtin_recast', "Use the builtin recast library", True))
@@ -191,7 +193,6 @@ opts.Add(BoolVariable('builtin_squish', "Use the builtin squish library", True))
 opts.Add(BoolVariable('builtin_thekla_atlas', "Use the builtin thekla_altas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the builtin zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the builtin zstd library", True))
-opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 
 # Compilation environment setup
 opts.Add("CXX", "C++ compiler")
