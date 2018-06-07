@@ -1,26 +1,14 @@
 /*
  * Lightweight Embedded JSON Parser
  *
- * Copyright (C) 2013-2017 Andy Green <andy@warmcat.com>
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation:
- *  version 2.1 of the License.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- *  MA  02110-1301  USA
+ * Copyright (C) 2013 Andy Green <andy@warmcat.com>
+ * This code is licensed under LGPL 2.1
+ * http://www.gnu.org/licenses/lgpl-2.1.html
  */
 
-#include <libwebsockets.h>
 #include <string.h>
+#include "lejp.h"
+
 #include <stdio.h>
 
 /**
@@ -160,8 +148,7 @@ lejp_get_wildcard(struct lejp_ctx *ctx, int wildcard, char *dest, int len)
 
 	n = ctx->wild[wildcard];
 
-	while (--len && n < ctx->ppos &&
-	       (n == ctx->wild[wildcard] || ctx->path[n] != '.'))
+	while (--len && n < ctx->ppos && (n == ctx->wild[wildcard] || ctx->path[n] != '.'))
 		*dest++ = ctx->path[n++];
 
 	*dest = '\0';
@@ -199,6 +186,7 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 
 	while (len--) {
 		c = *json++;
+
 		s = ctx->st[ctx->sp].s;
 
 		/* skip whitespace unless we should care */
@@ -423,26 +411,6 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 				}
 				goto add_stack_level;
 
-			case ']':
-				/* pop */
-				ctx->sp--;
-				if (ctx->st[ctx->sp].s != LEJP_MP_ARRAY_END) {
-					ret = LEJP_REJECT_MP_C_OR_E_NOTARRAY;
-					goto reject;
-				}
-				/* drop the path [n] bit */
-				ctx->ppos = ctx->st[ctx->sp - 1].p;
-				ctx->ipos = ctx->st[ctx->sp - 1].i;
-				ctx->path[ctx->ppos] = '\0';
-				if (ctx->path_match &&
-					       ctx->ppos <= ctx->path_match_len)
-					/*
-					 * we shrank the path to be
-					 * smaller than the matching point
-					 */
-					ctx->path_match = 0;
-				goto array_end;
-
 			case 't': /* true */
 				ctx->uni = 0;
 				ctx->st[ctx->sp].s = LEJP_MP_VALUE_TOK;
@@ -614,10 +582,8 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 					goto reject;
 				}
 				/* drop the path [n] bit */
-				if (ctx->sp) {
-					ctx->ppos = ctx->st[ctx->sp - 1].p;
-					ctx->ipos = ctx->st[ctx->sp - 1].i;
-				}
+				ctx->ppos = ctx->st[ctx->sp - 1].p;
+				ctx->ipos = ctx->st[ctx->sp - 1].i;
 				ctx->path[ctx->ppos] = '\0';
 				if (ctx->path_match &&
 					       ctx->ppos <= ctx->path_match_len)
@@ -643,10 +609,8 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 				}
 				/* pop */
 				ctx->sp--;
-				if (ctx->sp) {
-					ctx->ppos = ctx->st[ctx->sp - 1].p;
-					ctx->ipos = ctx->st[ctx->sp - 1].i;
-				}
+				ctx->ppos = ctx->st[ctx->sp - 1].p;
+				ctx->ipos = ctx->st[ctx->sp - 1].i;
 				ctx->path[ctx->ppos] = '\0';
 				if (ctx->path_match &&
 					       ctx->ppos <= ctx->path_match_len)
@@ -667,7 +631,6 @@ lejp_parse(struct lejp_ctx *ctx, const unsigned char *json, int len)
 			goto reject;
 
 		case LEJP_MP_ARRAY_END:
-array_end:
 			ctx->path[ctx->ppos] = '\0';
 			if (c == ',') {
 				/* increment this stack level's index */

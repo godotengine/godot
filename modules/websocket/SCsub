@@ -7,7 +7,7 @@ Import('env_modules')
 
 env_lws = env_modules.Clone()
 
-thirdparty_dir = "#thirdparty/lws/"
+thirdparty_dir = "#thirdparty/libwebsockets/"
 helper_dir = "win32helpers/"
 thirdparty_sources = [
     "client/client.c",
@@ -67,7 +67,7 @@ else:
     env_lws.add_source_files(env.modules_sources, thirdparty_sources)
     env_lws.Append(CPPPATH=[thirdparty_dir])
 
-    wrapper_includes = ["#thirdparty/lws/mbedtls_wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
+    wrapper_includes = ["#thirdparty/libwebsockets/mbedtls_wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
     env_lws.Prepend(CPPPATH=wrapper_includes)
 
     if env['builtin_mbedtls']:
