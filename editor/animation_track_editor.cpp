@@ -643,6 +643,8 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	if (editing)
 		return;
 
+	p_new_len = MAX(0.001, p_new_len);
+
 	editing = true;
 	*block_animation_update_ptr = true;
 	undo_redo->create_action("Change animation length");
@@ -1059,7 +1061,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	time_icon->set_tooltip(TTR("Animation Length Time (seconds)"));
 	len_hb->add_child(time_icon);
 	length = memnew(EditorSpinSlider);
-	length->set_min(0);
+	length->set_min(0.001);
 	length->set_max(3600);
 	length->set_step(0.01);
 	length->set_allow_greater(true);
