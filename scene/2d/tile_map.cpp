@@ -977,6 +977,14 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
 	c.autotile_coord_x = p_coord.x;
 	c.autotile_coord_y = p_coord.y;
 	tile_map[pk] = c;
+
+	PosKey qk(p_x / _get_quadrant_size(), p_y / _get_quadrant_size());
+	Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
+
+	if (!Q)
+		return;
+
+	_make_quadrant_dirty(Q);
 }
 
 Vector2 TileMap::get_cell_autotile_coord(int p_x, int p_y) const {
