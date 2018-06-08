@@ -88,6 +88,26 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 	return index;
 }
 
+void TriangleMesh::get_indices(PoolVector<int> *r_triangles_indices) const {
+
+	if (!valid)
+		return;
+
+	const int triangles_num = triangles.size();
+
+	// Parse vertices indices
+	PoolVector<Triangle>::Read triangles_read = triangles.read();
+
+	r_triangles_indices->resize(triangles_num * 3);
+	PoolVector<int>::Write r_indices_write = r_triangles_indices->write();
+
+	for (int i = 0; i < triangles_num; ++i) {
+		r_indices_write[3 * i + 0] = triangles_read[i].indices[0];
+		r_indices_write[3 * i + 1] = triangles_read[i].indices[1];
+		r_indices_write[3 * i + 2] = triangles_read[i].indices[2];
+	}
+}
+
 void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 
 	valid = false;
