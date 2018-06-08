@@ -3535,6 +3535,11 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
+			if (node == AnimationPlayerEditor::singleton->get_player()) {
+				EditorNode::get_singleton()->show_warning(TTR("An animation player can't animate itself, only other players."));
+				return;
+			}
+
 			undo_redo->create_action("Add Track");
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
