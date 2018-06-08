@@ -399,21 +399,29 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
+	if (k.is_valid() && k->get_scancode() != 0) {
 
-		last_wait_for_key = p_event;
-		String str = keycode_get_string(k->get_scancode()).capitalize();
-		if (k->get_metakey())
-			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-		if (k->get_shift())
-			str = TTR("Shift+") + str;
-		if (k->get_alt())
-			str = TTR("Alt+") + str;
-		if (k->get_control())
-			str = TTR("Control+") + str;
+		if (k->is_pressed())
+		{
+			last_wait_for_key = p_event;
+			String str = keycode_get_string(k->get_scancode()).capitalize();
+			if (k->get_metakey())
+				str = vformat("%s+", find_keycode_name(KEY_META)) + str;
+			if (k->get_shift())
+				str = TTR("Shift+") + str;
+			if (k->get_alt())
+				str = TTR("Alt+") + str;
+			if (k->get_control())
+				str = TTR("Control+") + str;
 
-		press_a_key_label->set_text(str);
-		press_a_key->accept_event();
+			press_a_key_label->set_text(str);
+			press_a_key->accept_event();
+		}
+		else
+		{
+			press_a_key->hide();
+			_press_a_key_confirm();
+		}
 	}
 }
 
