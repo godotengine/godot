@@ -234,6 +234,7 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 			if (!preview_images[i].is_video) {
 				if (preview_images[i].image.is_valid()) {
 					preview->set_texture(preview_images[i].image);
+					minimum_size_changed();
 				}
 			} else {
 				_link_click(preview_images[i].video_link);

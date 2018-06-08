@@ -1409,15 +1409,18 @@ void ScriptEditor::_update_members_overview_visibility() {
 	if (!se) {
 		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 		return;
 	}
 
 	if (members_overview_enabled && se->show_members_overview()) {
 		members_overview_alphabeta_sort_button->set_visible(true);
 		members_overview->set_visible(true);
+		overview_vbox->set_visible(true);
 	} else {
 		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 	}
 }
 
@@ -1468,9 +1471,11 @@ void ScriptEditor::_update_help_overview_visibility() {
 	if (help_overview_enabled) {
 		members_overview_alphabeta_sort_button->set_visible(false);
 		help_overview->set_visible(true);
+		overview_vbox->set_visible(true);
 		filename->set_text(se->get_name());
 	} else {
 		help_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 	}
 }
 
@@ -2682,19 +2687,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_menu_option");
 
-	members_overview_vbox = memnew(VBoxContainer);
-	members_overview_vbox->set_custom_minimum_size(Size2(0, 90));
-	members_overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	overview_vbox = memnew(VBoxContainer);
+	overview_vbox->set_custom_minimum_size(Size2(0, 90));
+	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	list_split->add_child(members_overview_vbox);
-	members_overview_buttons_hbox = memnew(HBoxContainer);
-	members_overview_vbox->add_child(members_overview_buttons_hbox);
+	list_split->add_child(overview_vbox);
+	buttons_hbox = memnew(HBoxContainer);
+	overview_vbox->add_child(buttons_hbox);
 
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
 	filename->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
-	members_overview_buttons_hbox->add_child(filename);
+	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(ToolButton);
 	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
@@ -2702,10 +2707,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
 
-	members_overview_buttons_hbox->add_child(members_overview_alphabeta_sort_button);
+	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
 	members_overview = memnew(ItemList);
-	members_overview_vbox->add_child(members_overview);
+	overview_vbox->add_child(members_overview);
 
 	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
@@ -2714,7 +2719,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview->set_drag_forwarding(this);
 
 	help_overview = memnew(ItemList);
-	members_overview_vbox->add_child(help_overview);
+	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
 	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
