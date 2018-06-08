@@ -732,29 +732,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		if (l <= 0)
 			l = 0.001; //avoid crashor
 
-		int end_px = (l - get_value()) * scale;
-		int begin_px = -get_value() * scale;
-		Color notimecol = get_color("dark_color_2", "Editor");
-		Color timecolor = color;
-		timecolor.a = 0.2;
-		Color linecolor = color;
-		linecolor.a = 0.2;
-
-		{
-
-			draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
-
-			if (begin_px < zoomw && end_px > 0) {
-
-				if (begin_px < 0)
-					begin_px = 0;
-				if (end_px > zoomw)
-					end_px = zoomw;
-
-				draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px - 1, h)), timecolor);
-			}
-		}
-
 		Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
 		draw_texture(hsize_icon, hsize_rect.position);
@@ -770,17 +747,17 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				if (animation->track_get_key_count(i) > 0) {
 
 					float beg = animation->track_get_key_time(i, 0);
-					if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
+					/*if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 						beg += animation->bezier_track_get_key_in_handle(i, 0).x;
-					}
+					}* not worth it since they have no use */
 
 					if (beg < time_min)
 						time_min = beg;
 
 					float end = animation->track_get_key_time(i, animation->track_get_key_count(i) - 1);
-					if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
+					/*if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 						end += animation->bezier_track_get_key_out_handle(i, animation->track_get_key_count(i) - 1).x;
-					}
+					} not worth it since they have no use */
 
 					if (end > time_max)
 						time_max = end;
@@ -805,6 +782,29 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		}
 
 		set_page(zoomw / scale);
+
+		int end_px = (l - get_value()) * scale;
+		int begin_px = -get_value() * scale;
+		Color notimecol = get_color("dark_color_2", "Editor");
+		Color timecolor = color;
+		timecolor.a = 0.2;
+		Color linecolor = color;
+		linecolor.a = 0.2;
+
+		{
+
+			draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
+
+			if (begin_px < zoomw && end_px > 0) {
+
+				if (begin_px < 0)
+					begin_px = 0;
+				if (end_px > zoomw)
+					end_px = zoomw;
+
+				draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px - 1, h)), timecolor);
+			}
+		}
 
 		Color color_time_sec = color;
 		Color color_time_dec = color;
@@ -964,7 +964,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (!panning_timeline && mb->get_button_index() == BUTTON_LEFT) {
 			int x = mb->get_position().x - get_name_limit();
 
-			float ofs = x / get_zoom_scale();
+			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal("timeline_changed", ofs, false);
 			dragging_timeline = true;
 		}
@@ -997,7 +997,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
-			float ofs = x / get_zoom_scale();
+			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal("timeline_changed", ofs, false);
 		}
 		if (panning_timeline) {
@@ -1941,7 +1941,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				offset = offset * scale + limit;
 				rect.position.x += offset;
 
-				print_line("rect: " + rect + " pos: " + pos);
 				if (rect.has_point(pos)) {
 
 					if (is_key_selectable_by_distance()) {
@@ -3391,6 +3390,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 void AnimationTrackEditor::_animation_changed() {
 
+	timeline->update();
 	timeline->update_values();
 	if (block_animation_update) {
 		for (int i = 0; i < track_edits.size(); i++) {
