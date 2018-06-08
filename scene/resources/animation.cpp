@@ -32,6 +32,8 @@
 
 #include "geometry.h"
 
+#define ANIM_MIN_LENGTH 0.001
+
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;
@@ -2524,7 +2526,9 @@ StringName Animation::animation_track_get_key_animation(int p_track, int p_key) 
 
 void Animation::set_length(float p_length) {
 
-	ERR_FAIL_COND(length < 0);
+	if (p_length < ANIM_MIN_LENGTH) {
+		p_length = ANIM_MIN_LENGTH;
+	}
 	length = p_length;
 	emit_changed();
 }
