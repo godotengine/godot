@@ -401,8 +401,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid() && k->get_scancode() != 0) {
 
-		if (k->is_pressed())
-		{
+		if (k->is_pressed()) {
 			last_wait_for_key = p_event;
 			String str = keycode_get_string(k->get_scancode()).capitalize();
 			if (k->get_metakey())
@@ -416,9 +415,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 			press_a_key_label->set_text(str);
 			press_a_key->accept_event();
-		}
-		else
-		{
+		} else {
 			press_a_key->hide();
 			_press_a_key_confirm();
 		}
@@ -671,7 +668,7 @@ void ProjectSettingsEditor::_update_actions() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+	for (List<PropertyInfo>::Element *E = props.back(); E; E = E->prev()) {
 
 		const PropertyInfo &pi = E->get();
 		if (!pi.name.begins_with("input/"))
@@ -956,7 +953,7 @@ void ProjectSettingsEditor::_action_add() {
 	if (!r)
 		return;
 	r->select(0);
-	input_editor->ensure_cursor_is_visible();
+	input_editor->scroll_to_item(input_editor->get_root());
 	action_add_error->hide();
 	action_name->clear();
 }

@@ -945,84 +945,31 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 
 	key.instance();
-	key->set_scancode(KEY_ENTER);
+	key->set_scancode(KEY_END);
 	va.push_back(key);
-	key.instance();
-	key->set_scancode(KEY_KP_ENTER);
-	va.push_back(key);
-	key.instance();
-	key->set_scancode(KEY_SPACE);
-	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_0);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_accept", va);
-	input_presets.push_back("input/ui_accept");
+	GLOBAL_DEF("input/ui_end", va);
+	input_presets.push_back("input/ui_end");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_SPACE);
+	key->set_scancode(KEY_HOME);
 	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_3);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_select", va);
-	input_presets.push_back("input/ui_select");
+	GLOBAL_DEF("input/ui_home", va);
+	input_presets.push_back("input/ui_home");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_ESCAPE);
+	key->set_scancode(KEY_PAGEDOWN);
 	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_1);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_cancel", va);
-	input_presets.push_back("input/ui_cancel");
+	GLOBAL_DEF("input/ui_page_down", va);
+	input_presets.push_back("input/ui_page_down");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_TAB);
+	key->set_scancode(KEY_PAGEUP);
 	va.push_back(key);
-	GLOBAL_DEF("input/ui_focus_next", va);
-	input_presets.push_back("input/ui_focus_next");
-
-	va = Array();
-	key.instance();
-	key->set_scancode(KEY_TAB);
-	key->set_shift(true);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_focus_prev", va);
-	input_presets.push_back("input/ui_focus_prev");
-
-	va = Array();
-	key.instance();
-	key->set_scancode(KEY_LEFT);
-	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_DPAD_LEFT);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_left", va);
-	input_presets.push_back("input/ui_left");
-
-	va = Array();
-	key.instance();
-	key->set_scancode(KEY_RIGHT);
-	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_DPAD_RIGHT);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_right", va);
-	input_presets.push_back("input/ui_right");
-
-	va = Array();
-	key.instance();
-	key->set_scancode(KEY_UP);
-	va.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_DPAD_UP);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_up", va);
-	input_presets.push_back("input/ui_up");
+	GLOBAL_DEF("input/ui_page_up", va);
+	input_presets.push_back("input/ui_page_up");
 
 	va = Array();
 	key.instance();
@@ -1036,31 +983,84 @@ ProjectSettings::ProjectSettings() {
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_PAGEUP);
+	key->set_scancode(KEY_UP);
 	va.push_back(key);
-	GLOBAL_DEF("input/ui_page_up", va);
-	input_presets.push_back("input/ui_page_up");
+	joyb.instance();
+	joyb->set_button_index(JOY_DPAD_UP);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_up", va);
+	input_presets.push_back("input/ui_up");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_PAGEDOWN);
+	key->set_scancode(KEY_RIGHT);
 	va.push_back(key);
-	GLOBAL_DEF("input/ui_page_down", va);
-	input_presets.push_back("input/ui_page_down");
+	joyb.instance();
+	joyb->set_button_index(JOY_DPAD_RIGHT);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_right", va);
+	input_presets.push_back("input/ui_right");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_HOME);
+	key->set_scancode(KEY_LEFT);
 	va.push_back(key);
-	GLOBAL_DEF("input/ui_home", va);
-	input_presets.push_back("input/ui_home");
+	joyb.instance();
+	joyb->set_button_index(JOY_DPAD_LEFT);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_left", va);
+	input_presets.push_back("input/ui_left");
 
 	va = Array();
 	key.instance();
-	key->set_scancode(KEY_END);
+	key->set_scancode(KEY_TAB);
+	key->set_shift(true);
 	va.push_back(key);
-	GLOBAL_DEF("input/ui_end", va);
-	input_presets.push_back("input/ui_end");
+	GLOBAL_DEF("input/ui_focus_prev", va);
+	input_presets.push_back("input/ui_focus_prev");
+
+	va = Array();
+	key.instance();
+	key->set_scancode(KEY_TAB);
+	va.push_back(key);
+	GLOBAL_DEF("input/ui_focus_next", va);
+	input_presets.push_back("input/ui_focus_next");
+
+	va = Array();
+	key.instance();
+	key->set_scancode(KEY_ESCAPE);
+	va.push_back(key);
+	joyb.instance();
+	joyb->set_button_index(JOY_BUTTON_1);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_cancel", va);
+	input_presets.push_back("input/ui_cancel");
+
+	va = Array();
+	key.instance();
+	key->set_scancode(KEY_SPACE);
+	va.push_back(key);
+	joyb.instance();
+	joyb->set_button_index(JOY_BUTTON_3);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_select", va);
+	input_presets.push_back("input/ui_select");
+
+	va = Array();
+	key.instance();
+	key->set_scancode(KEY_ENTER);
+	va.push_back(key);
+	key.instance();
+	key->set_scancode(KEY_KP_ENTER);
+	va.push_back(key);
+	key.instance();
+	key->set_scancode(KEY_SPACE);
+	va.push_back(key);
+	joyb.instance();
+	joyb->set_button_index(JOY_BUTTON_0);
+	va.push_back(joyb);
+	GLOBAL_DEF("input/ui_accept", va);
+	input_presets.push_back("input/ui_accept");
 
 	//GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
