@@ -624,6 +624,7 @@ public:
 void AnimationTimelineEdit::_zoom_changed(double) {
 
 	update();
+	play_position->update();
 	emit_signal("zoom_changed");
 }
 
@@ -1607,6 +1608,7 @@ void AnimationTrackEdit::set_undo_redo(UndoRedo *p_undo_redo) {
 void AnimationTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", this, "_zoom_changed");
+	timeline->connect("name_limit_changed", this, "_zoom_changed");
 }
 void AnimationTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
@@ -1643,6 +1645,7 @@ void AnimationTrackEdit::set_root(Node *p_root) {
 }
 void AnimationTrackEdit::_zoom_changed() {
 	update();
+	play_position->update();
 }
 
 void AnimationTrackEdit::_path_entered(const String &p_text) {
@@ -2381,6 +2384,7 @@ Size2 AnimationTrackEditGroup::get_minimum_size() const {
 void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", this, "_zoom_changed");
+	timeline->connect("name_limit_changed", this, "_zoom_changed");
 }
 
 void AnimationTrackEditGroup::set_root(Node *p_root) {
