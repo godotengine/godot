@@ -610,8 +610,8 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	i = 0;
 
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", E->get().name, orders[i++]);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", E->get().name, E->get().order);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + E->get().name, orders[i++]);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + E->get().name, E->get().order);
 	}
 
 	orders.clear();
