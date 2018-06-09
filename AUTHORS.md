@@ -38,6 +38,7 @@ name is available.
     Ariel Manzur (punto-)
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
+    Benjamin (Nallebeorn)
     Bernard Liebl (poke1024)
     Bojidar Marinov (bojidar-bg)
     Błażej Szczygieł (zaps166)
@@ -61,6 +62,7 @@ name is available.
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
+    Ibrahn Sahir (ibrahn)
     Ignacio Etcheverry (neikeq)
     Indah Sylvia (ISylvox)
     J08nY
@@ -71,6 +73,7 @@ name is available.
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Justo Delgado (mrcdk)
+    Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
     Leon Krause (eska014)
     Marc Gilleron (Zylann)
@@ -85,6 +88,7 @@ name is available.
     Nathan Warden (NathanWarden)
     Nuno Donato (nunodonato)
     Ovnuniarchos
+    Pascal Richter (ShyRed)
     Patrick (firefly2442)
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
