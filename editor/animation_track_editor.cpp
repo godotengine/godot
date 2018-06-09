@@ -3421,6 +3421,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 		snap->set_icon(get_icon("Snap", "EditorIcons"));
 		view_group->set_icon(get_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
 		selected_filter->set_icon(get_icon("AnimationFilter", "EditorIcons"));
+		main_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -4762,8 +4763,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	block_animation_update = false;
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+	main_panel = memnew(PanelContainer);
+	add_child(main_panel);
+	main_panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
-	add_child(timeline_scroll);
+	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	VBoxContainer *timeline_vbox = memnew(VBoxContainer);
@@ -4815,7 +4820,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->set_enable_v_scroll(true);
 	track_vbox->add_constant_override("separation", 0);
 
-	timeline_vbox->add_child(memnew(HSeparator));
+	//timeline_vbox->add_child(memnew(HSeparator));
 	HBoxContainer *bottom_hb = memnew(HBoxContainer);
 	add_child(bottom_hb);
 	bottom_hb->add_spacer();
