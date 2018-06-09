@@ -3772,6 +3772,10 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 
 	List<MethodInfo> minfo;
 	base->get_method_list(&minfo);
+	Ref<Script> script(base->get_script());
+	if (script.is_valid()) {
+		script.ptr()->get_script_method_list(&minfo);
+	}
 
 	for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
 		if (E->get().name == p_method) {
