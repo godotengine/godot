@@ -268,6 +268,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	MenuButton *edit;
 
+	PanelContainer *main_panel;
 	HScrollBar *hscroll;
 	ScrollContainer *scroll;
 	VBoxContainer *track_vbox;
