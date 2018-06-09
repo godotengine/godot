@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_track_editor.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_track_editor.h"
 #include "animation_track_editor_plugins.h"
 #include "editor/animation_bezier_editor.h"
@@ -714,6 +744,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
 		len_hb->set_size(Size2(get_buttons_width(), get_size().height));
 	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 
 		int key_range = get_size().width - get_buttons_width() - get_name_limit();
@@ -1663,7 +1694,7 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 	if (check_rect.has_point(p_pos)) {
-		return TTR("Toggle this track on/off");
+		return TTR("Toggle this track on/off.");
 	}
 
 	if (path_rect.has_point(p_pos)) {
@@ -1671,7 +1702,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	if (update_mode_rect.has_point(p_pos)) {
-		return TTR("Update Mode (How this property is set).");
+		return TTR("Update Mode (How this property is set)");
 	}
 
 	if (interp_mode_rect.has_point(p_pos)) {
@@ -1679,11 +1710,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	if (loop_mode_rect.has_point(p_pos)) {
-		return TTR("Loop Wrap Mode (Interpolate end with beginning on loop");
+		return TTR("Loop Wrap Mode (Interpolate end with beginning on loop)");
 	}
 
 	if (remove_rect.has_point(p_pos)) {
-		return TTR("Remove this track");
+		return TTR("Remove this track.");
 	}
 
 	if (p_pos.x >= timeline->get_name_limit() && p_pos.x <= (get_size().width - timeline->get_buttons_width())) {
@@ -2435,12 +2466,16 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 	if (animation.is_valid()) {
 		animation->connect("changed", this, "_animation_changed");
 
+		hscroll->show();
+		edit->set_disabled(false);
 		step->set_block_signals(true);
 		step->set_value(animation->get_step());
 		step->set_block_signals(false);
 		step->set_read_only(false);
 		snap->set_disabled(false);
 	} else {
+		hscroll->hide();
+		edit->set_disabled(true);
 		step->set_block_signals(true);
 		step->set_value(0);
 		step->set_block_signals(false);
@@ -3416,7 +3451,6 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 
 void AnimationTrackEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-
 		zoom_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 		snap->set_icon(get_icon("Snap", "EditorIcons"));
 		view_group->set_icon(get_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
@@ -3429,7 +3463,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		update_keying();
 		EditorNode::get_singleton()->update_keying();
 		emit_signal("keying_changed");
@@ -4808,9 +4841,10 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
 	hscroll = memnew(HScrollBar);
-	timeline_vbox->add_child(hscroll);
 	hscroll->share(timeline);
+	hscroll->hide();
 	hscroll->connect("value_changed", this, "_update_scroll");
+	timeline_vbox->add_child(hscroll);
 	timeline->set_hscroll(hscroll);
 
 	track_vbox = memnew(VBoxContainer);
@@ -4853,6 +4887,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_step(0.01);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	step->set_tooltip(TTR("Animation step value."));
 	bottom_hb->add_child(step);
 	step->connect("value_changed", this, "_update_step");
 	step->set_read_only(true);
@@ -4875,6 +4910,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit = memnew(MenuButton);
 	edit->set_text(TTR("Edit"));
 	edit->set_flat(false);
+	edit->set_disabled(true);
+	edit->set_tooltip(TTR("Animation properties."));
 	edit->get_popup()->add_item(TTR("Copy Tracks"), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
 	edit->get_popup()->add_separator();

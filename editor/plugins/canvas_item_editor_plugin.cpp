@@ -4479,7 +4479,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
-	key_insert_button->set_tooltip(TTR("Insert Keys"));
+	key_insert_button->set_tooltip(TTR("Insert keys."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTR("Insert Key"), KEY_INSERT));
 
 	animation_hb->add_child(key_insert_button);

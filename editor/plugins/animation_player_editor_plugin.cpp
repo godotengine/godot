@@ -1684,6 +1684,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	//tool_anim->get_popup()->add_separator();
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 
+	hb->add_child(memnew(VSeparator));
+
 	track_editor = memnew(AnimationTrackEditor);
 
 	hb->add_child(track_editor->get_edit_menu());
