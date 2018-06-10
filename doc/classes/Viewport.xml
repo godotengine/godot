@@ -6,7 +6,7 @@
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
-		If a viewport is a child of a [Control], it will automatically take up its same rect and position, otherwise they must be set manually.
+		If a viewport is a child of a [ViewportContainer], it will automatically take up its size, otherwise it must be set manually.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
@@ -276,7 +276,7 @@
 			Do not update the render target.
 		</constant>
 		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
-			Update the render target once, then switch to [code]UPDATE_DISABLED[/code]
+			Update the render target once, then switch to [code]UPDATE_DISABLED[/code].
 		</constant>
 		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
 			Update the render target only when it is visible. This is the default value.
@@ -329,6 +329,7 @@
 			Objects are displayed without light information.
 		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="2" enum="DebugDraw">
+			Objected are displayed semi-transparent with additive blending so you can see where they intersect.
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="3" enum="DebugDraw">
 			Objects are displayed in wireframe style.
@@ -353,10 +354,13 @@
 		<constant name="USAGE_3D_NO_EFFECTS" value="3" enum="Usage">
 		</constant>
 		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
+			Always clear the render target before drawing.
 		</constant>
 		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
+			Never clear the render target.
 		</constant>
 		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
+			Clear the render target next frame, then switch to [code]CLEAR_MODE_NEVER[/code].
 		</constant>
 	</constants>
 </class>
