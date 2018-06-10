@@ -162,6 +162,10 @@ CSGBrush *CSGShape::_get_brush() {
 void CSGShape::_update_shape() {
 
 	//print_line("updating shape for " + String(get_path()));
+
+	if (parent)
+		return;
+
 	set_base(RID());
 	root_mesh.unref(); //byebye root mesh
 
@@ -349,6 +353,10 @@ void CSGShape::_notification(int p_what) {
 		Node *parentn = get_parent();
 		if (parentn) {
 			parent = Object::cast_to<CSGShape>(parentn);
+			if (parent) {
+				set_base(RID());
+				root_mesh.unref();
+			}
 		}
 
 		if (use_collision && is_root_shape()) {
@@ -371,6 +379,7 @@ void CSGShape::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+
 		if (parent)
 			parent->_make_dirty();
 		parent = NULL;
