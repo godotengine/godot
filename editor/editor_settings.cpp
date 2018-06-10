@@ -593,7 +593,6 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/text_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/line_number_color", Color::html("66aaaaaa"));
-	_initial_set("text_editor/highlighting/safe_line_number_color", Color::html("99aac8aa"));
 	_initial_set("text_editor/highlighting/caret_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/caret_background_color", Color::html("000000"));
 	_initial_set("text_editor/highlighting/text_selected_color", Color::html("000000"));
@@ -610,10 +609,6 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
-
-	// GDScript highlighter
-	_initial_set("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
-	_initial_set("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
