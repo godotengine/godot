@@ -138,16 +138,6 @@ namespace Godot
             return (real_t)Math.Floor(s);
         }
 
-        public static real_t Fposmod(real_t x, real_t y)
-        {
-            if (x >= 0f)
-            {
-                return x % y;
-            }
-
-            return y - -x % y;
-        }
-
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
            return (Clamp(weight, 0f, 1f) - from) / (to - from);
@@ -208,6 +198,32 @@ namespace Godot
         public static Vector2 Polar2Cartesian(real_t r, real_t th)
         {
             return new Vector2(r * Cos(th), r * Sin(th));
+        }
+
+        /// <summary>
+        /// Performs a canonical Modulus operation, where the output is on the range [0, b).
+        /// </summary>
+        public static real_t PosMod(real_t a, real_t b)
+        {
+            real_t c = a % b;
+            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            {
+                c += b;
+            }
+            return c;
+        }
+
+        /// <summary>
+        /// Performs a canonical Modulus operation, where the output is on the range [0, b).
+        /// </summary>
+        public static int PosMod(int a, int b)
+        {
+            int c = a % b;
+            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            {
+                c += b;
+            }
+            return c;
         }
 
         public static real_t Pow(real_t x, real_t y)
