@@ -631,10 +631,6 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 		}
 	}
 
-	//GDScript highlighter
-	cf->set_value(theme_section, "gdscript/function_definition_color", ((Color)get("text_editor/highlighting/gdscript/function_definition_color")).to_html());
-	cf->set_value(theme_section, "gdscript/node_path_color", ((Color)get("text_editor/highlighting/gdscript/node_path_color")).to_html());
-
 	Error err = cf->save(p_file);
 
 	if (err == OK) {
