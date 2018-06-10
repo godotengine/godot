@@ -182,8 +182,22 @@ public:
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
 	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
 
-	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) { return (p_x >= 0) ? Math::fmod(p_x, p_y) : p_y - Math::fmod(-p_x, p_y); }
-	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) { return (p_x >= 0) ? Math::fmod(p_x, p_y) : p_y - Math::fmod(-p_x, p_y); }
+	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
+		double value = Math::fmod(p_x, p_y);
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) {
+		float value = Math::fmod(p_x, p_y);
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
 	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
