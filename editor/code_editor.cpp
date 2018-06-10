@@ -95,7 +95,7 @@ void FindReplaceBar::_notification(int p_what) {
 
 		set_process_unhandled_input(is_visible_in_tree());
 		if (is_visible_in_tree()) {
-			call_deferred("_update_size");
+			_update_size();
 		}
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 

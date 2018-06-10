@@ -367,7 +367,7 @@ void TabContainer::_child_renamed_callback() {
 
 void TabContainer::add_child_notify(Node *p_child) {
 
-	Control::add_child_notify(p_child);
+	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c)
@@ -475,7 +475,7 @@ Control *TabContainer::get_current_tab_control() const {
 
 void TabContainer::remove_child_notify(Node *p_child) {
 
-	Control::remove_child_notify(p_child);
+	Container::remove_child_notify(p_child);
 
 	call_deferred("_update_current_tab");
 
