@@ -312,8 +312,24 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	number_color = text_editor->get_color("number_color");
 	member_color = text_editor->get_color("member_variable_color");
 
-	function_definition_color = EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
-	node_path_color = EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
+	EditorSettings *settings = EditorSettings::get_singleton();
+	String text_editor_color_theme = settings->get("text_editor/theme/color_theme");
+
+	bool default_theme = text_editor_color_theme == "Default";
+	bool dark_theme = settings->is_dark_theme();
+
+	function_definition_color = Color::html(default_theme ? "#01e1ff" : dark_theme ? "#01e1ff" : "#00a5ba");
+	node_path_color = Color::html(default_theme ? "#64c15a" : dark_theme ? "64c15a" : "#518b4b");
+
+	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
+	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
+	if (text_editor_color_theme == "Adaptive" || default_theme) {
+		settings->set_initial_value("text_editor/highlighting/gdscript/function_definition_color", function_definition_color, true);
+		settings->set_initial_value("text_editor/highlighting/gdscript/node_path_color", node_path_color, true);
+	}
+
+	function_definition_color = EDITOR_GET("text_editor/highlighting/gdscript/function_definition_color");
+	node_path_color = EDITOR_GET("text_editor/highlighting/gdscript/node_path_color");
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
