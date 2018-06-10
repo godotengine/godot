@@ -72,7 +72,6 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_bytep *row_pointers;
 
 	/* initialize stuff */
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -102,6 +101,8 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	int pngf = 0;
 	int cs = 0;
+	int bit_depth = 8;
+	int component_bytes = 1;
 
 	switch (img->get_format()) {
 
@@ -109,6 +110,13 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 			pngf = PNG_COLOR_TYPE_GRAY;
 			cs = 1;
+		} break;
+		case Image::FORMAT_R16: {
+
+			pngf = PNG_COLOR_TYPE_GRAY;
+			cs = 1;
+			bit_depth = 16;
+			component_bytes = 2;
 		} break;
 		case Image::FORMAT_LA8: {
 
@@ -144,10 +152,15 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int w = img->get_width();
 	int h = img->get_height();
 	png_set_IHDR(png_ptr, info_ptr, w, h,
-			8, pngf, PNG_INTERLACE_NONE,
+			bit_depth, pngf, PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	png_write_info(png_ptr, info_ptr);
+
+	if (component_bytes > 1) {
+		// the library expects most significant bits first
+		png_set_swap(png_ptr);
+	}
 
 	/* write bytes */
 	if (setjmp(png_jmpbuf(png_ptr))) {
@@ -157,10 +170,11 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	PoolVector<uint8_t>::Read r = img->get_data().read();
 
-	row_pointers = (png_bytep *)memalloc(sizeof(png_bytep) * h);
+	png_bytep *row_pointers = (png_bytep *)memalloc(sizeof(png_bytep) * h);
+	int row_size = w * cs * component_bytes;
 	for (int i = 0; i < h; i++) {
 
-		row_pointers[i] = (png_bytep)&r[i * w * cs];
+		row_pointers[i] = (png_bytep)&r[i * row_size];
 	}
 	png_write_image(png_ptr, row_pointers);
 

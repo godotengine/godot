@@ -126,7 +126,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	}
 
 	if (depth > 8) {
-		png_set_strip_16(png);
+		png_set_swap(png);
 		update_info = true;
 	}
 
@@ -144,38 +144,65 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	int components = 0;
 
 	Image::Format fmt;
-	switch (color) {
 
-		case PNG_COLOR_TYPE_GRAY: {
+	if (depth == 8) {
 
-			fmt = Image::FORMAT_L8;
-			components = 1;
-		} break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA: {
+		switch (color) {
 
-			fmt = Image::FORMAT_LA8;
-			components = 2;
-		} break;
-		case PNG_COLOR_TYPE_RGB: {
+			case PNG_COLOR_TYPE_GRAY: {
 
-			fmt = Image::FORMAT_RGB8;
-			components = 3;
-		} break;
-		case PNG_COLOR_TYPE_RGB_ALPHA: {
+				fmt = Image::FORMAT_L8;
+				components = 1;
+			} break;
+			case PNG_COLOR_TYPE_GRAY_ALPHA: {
 
-			fmt = Image::FORMAT_RGBA8;
-			components = 4;
-		} break;
-		default: {
+				fmt = Image::FORMAT_LA8;
+				components = 2;
+			} break;
+			case PNG_COLOR_TYPE_RGB: {
 
-			ERR_PRINT("INVALID PNG TYPE");
-			png_destroy_read_struct(&png, &info, NULL);
-			return ERR_UNAVAILABLE;
-		} break;
+				fmt = Image::FORMAT_RGB8;
+				components = 3;
+			} break;
+			case PNG_COLOR_TYPE_RGB_ALPHA: {
+
+				fmt = Image::FORMAT_RGBA8;
+				components = 4;
+			} break;
+			default: {
+
+				ERR_PRINT("INVALID PNG TYPE");
+				png_destroy_read_struct(&png, &info, NULL);
+				return ERR_UNAVAILABLE;
+			} break;
+		}
+
+	} else if (depth == 16) {
+
+		switch (color) {
+
+			case PNG_COLOR_TYPE_GRAY: {
+
+				fmt = Image::FORMAT_R16;
+				components = 1;
+			} break;
+			default: {
+
+				ERR_PRINT("INVALID PNG TYPE");
+				png_destroy_read_struct(&png, &info, NULL);
+				return ERR_UNAVAILABLE;
+			} break;
+		}
 	}
 
 	//int rowsize = png_get_rowbytes(png, info);
-	int rowsize = components * width;
+	int rowsize = components * width * (depth / 8);
+	int rowsize_t = png_get_rowbytes(png, info);
+	if (rowsize != rowsize_t) {
+		ERR_PRINT("PNG rowsize error");
+		png_destroy_read_struct(&png, &info, NULL);
+		return ERR_FILE_CORRUPT;
+	}
 
 	PoolVector<uint8_t> dstbuff;
 
@@ -188,7 +215,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	uint8_t **row_p = memnew_arr(uint8_t *, height);
 
 	for (unsigned int i = 0; i < height; i++) {
-		row_p[i] = &data[components * width * i];
+		row_p[i] = &data[rowsize * i];
 	}
 
 	png_read_image(png, (png_bytep *)row_p);

@@ -195,6 +195,13 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
 
 		} break;
+		case Image::FORMAT_R16: {
+
+			r_gl_internal_format = GL_R16;
+			r_gl_format = GL_RED;
+			r_gl_type = GL_UNSIGNED_SHORT;
+
+		} break;
 		case Image::FORMAT_RF: {
 
 			r_gl_internal_format = GL_R32F;

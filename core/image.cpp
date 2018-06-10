@@ -48,6 +48,7 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"RGBA8",
 	"RGBA4444",
 	"RGBA5551",
+	"Red16", //16-bit integer
 	"RFloat", //float
 	"RGFloat",
 	"RGBFloat",
@@ -124,6 +125,8 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGBH: return 6;
 		case FORMAT_RGBAH: return 8;
 		case FORMAT_RGBE9995: return 4;
+		case FORMAT_R16:
+			return 2; //ushort
 		case FORMAT_DXT1:
 			return 1; //s3tc bc1
 		case FORMAT_DXT3:
@@ -417,7 +420,7 @@ void Image::convert(Format p_new_format) {
 	if (p_new_format == format)
 		return;
 
-	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
+	if (is_compressed_format(format) || is_compressed_format(p_new_format)) {
 
 		ERR_EXPLAIN("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 		ERR_FAIL();
@@ -937,7 +940,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 
 bool Image::_can_modify(Format p_format) const {
 
-	return p_format <= FORMAT_RGBE9995;
+	return !is_compressed_format(p_format);
 }
 
 template <int CC, bool renormalize>
@@ -1367,8 +1370,7 @@ void Image::create(const char **p_xpm) {
 
 bool Image::is_invisible() const {
 
-	if (format == FORMAT_L8 ||
-			format == FORMAT_RGB8 || format == FORMAT_RG8)
+	if (format == FORMAT_L8 || format == FORMAT_R16 || format == FORMAT_RGB8 || format == FORMAT_RG8)
 		return false;
 
 	int len = data.size();
@@ -1488,8 +1490,12 @@ int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format
 	return mm;
 }
 
+bool Image::is_compressed_format(Format format) {
+	return format >= FORMAT_DXT1;
+}
+
 bool Image::is_compressed() const {
-	return format > FORMAT_RGBE9995;
+	return is_compressed_format(format);
 }
 
 Error Image::decompress() {
@@ -2008,6 +2014,11 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			float a = ((u >> 15) & 0x1) / 1.0;
 			return Color(r, g, b, a);
 		} break;
+		case FORMAT_R16: {
+
+			float l = ((uint16_t *)ptr)[ofs] / 65535.0;
+			return Color(l, l, l, 1.0);
+		} break;
 		case FORMAT_RF: {
 
 			float r = ((float *)ptr)[ofs];
@@ -2156,6 +2167,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 			((uint16_t *)ptr)[ofs] = rgba;
 
+		} break;
+		case FORMAT_R16: {
+
+			((uint16_t *)ptr)[ofs] = uint16_t(CLAMP(p_color.gray() * 65535.0, 0, 65535));
 		} break;
 		case FORMAT_RF: {
 
@@ -2338,6 +2353,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_RGBA8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA4444);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA5551);
+	BIND_ENUM_CONSTANT(FORMAT_R16); //16-bit integer
 	BIND_ENUM_CONSTANT(FORMAT_RF); //float
 	BIND_ENUM_CONSTANT(FORMAT_RGF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBF);

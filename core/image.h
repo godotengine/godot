@@ -66,9 +66,11 @@ public:
 		FORMAT_R8,
 		FORMAT_RG8,
 		FORMAT_RGB8,
-		FORMAT_RGBA8,
+		FORMAT_RGBA8, // beware, it's also used as separator for non-byte formats
+
 		FORMAT_RGBA4444,
 		FORMAT_RGBA5551,
+		FORMAT_R16, //16-bit integer
 		FORMAT_RF, //float
 		FORMAT_RGF,
 		FORMAT_RGBF,
@@ -78,6 +80,7 @@ public:
 		FORMAT_RGBH,
 		FORMAT_RGBAH,
 		FORMAT_RGBE9995,
+
 		FORMAT_DXT1, //s3tc bc1
 		FORMAT_DXT3, //bc2
 		FORMAT_DXT5, //bc3
@@ -267,6 +270,8 @@ public:
 
 	static int get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps = 0);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
+
+	static bool is_compressed_format(Format format);
 
 	enum CompressMode {
 		COMPRESS_S3TC,
