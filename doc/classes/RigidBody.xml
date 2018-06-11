@@ -10,7 +10,7 @@
 		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<demos>
 	</demos>

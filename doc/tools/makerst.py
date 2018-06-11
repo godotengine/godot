@@ -4,10 +4,14 @@
 import codecs
 import sys
 import os
+import re
 import xml.etree.ElementTree as ET
 
 input_list = []
 cur_file = ""
+
+# http(s)://docs.godotengine.org/<langcode>/<tag>/path/to/page.html(#fragment-tag)
+godot_docs_pattern = re.compile('^http(?:s)?:\/\/docs\.godotengine\.org\/(?:[a-zA-Z0-9\.\-_]*)\/(?:[a-zA-Z0-9\.\-_]*)\/(.*)\.html(#.*)?$')
 
 for arg in sys.argv[1:]:
     if arg.endswith(os.sep):
@@ -587,6 +591,32 @@ def make_rst_class(node):
     if descr != None and descr.text.strip() != '':
         f.write(make_heading('Description', '-'))
         f.write(rstize_text(descr.text.strip(), name) + "\n\n")
+
+    global godot_docs_pattern
+    tutorials = node.find('tutorials')
+    if tutorials != None and len(tutorials) > 0:
+        f.write(make_heading('Tutorials', '-'))
+        for t in tutorials:
+            link = t.text.strip()
+            match = godot_docs_pattern.search(link);
+            if match:
+                groups = match.groups()
+                if match.lastindex == 2:
+                    # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
+                    # `#calling-javascript-from-script in Exporting For Web`
+                    f.write("- `" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n")
+                    # Commented out alternative: Instead just emit:
+                    # `Subsection in Exporting For Web`
+                    # f.write("- `Subsection <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n")
+                elif match.lastindex == 1:
+                    # Doc reference, for example:
+                    # `Math`
+                    f.write("- :doc:`../" + groups[0] + "`\n")
+            else:
+                # External link, for example:
+                # `http://enet.bespin.org/usergroup0.html`
+                f.write("- `" + link + " <" + link + ">`_\n")
+        f.write("\n")
 
     methods = node.find('methods')
     if methods != None and len(list(methods)) > 0:
