@@ -7,7 +7,7 @@
 		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/math/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>

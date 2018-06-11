@@ -10,8 +10,8 @@
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions
-		http://docs.godotengine.org/en/latest/tutorials/math/rotations.html
+		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
+		<link>http://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
 	</tutorials>
 	<demos>
 	</demos>

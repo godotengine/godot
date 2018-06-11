@@ -12,8 +12,8 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html
-	http://docs.godotengine.org/en/3.0/tutorials/viewports/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/viewports/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
