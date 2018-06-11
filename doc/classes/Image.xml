@@ -393,6 +393,12 @@
 				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same.
 			</description>
 		</method>
+		<method name="rgbe_to_srgb">
+			<return type="Image">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error">
 			</return>

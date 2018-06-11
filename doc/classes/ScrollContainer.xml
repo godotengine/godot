@@ -11,6 +11,18 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_h_scrollbar">
+			<return type="HScrollBar">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_scrollbar">
+			<return type="VScrollBar">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone">

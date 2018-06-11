@@ -1160,7 +1160,7 @@
 		<constant name="INF" value="inf">
 			A positive infinity. (For negative infinity, use -INF).
 		</constant>
-		<constant name="NAN" value="nan">
+		<constant name="NAN" value="-nan(ind)">
 			Macro constant that expands to an expression of type float that represents a NaN.
 			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>
