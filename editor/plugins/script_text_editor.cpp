@@ -1598,6 +1598,8 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 
 ScriptTextEditor::ScriptTextEditor() {
 
+	set_custom_minimum_size(Vector2(610 * EDSCALE, 0));
+
 	theme_loaded = false;
 
 	code_editor = memnew(CodeTextEditor);
