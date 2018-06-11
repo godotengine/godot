@@ -1632,8 +1632,13 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_MASK_CMD | KEY_G);
+	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
+#else
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
+#endif
 	ED_SHORTCUT("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
 
 	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
