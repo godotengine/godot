@@ -181,6 +181,12 @@
 				Returns [code]true[/code] if any tweens are currently running. Note that this method doesn't consider tweens that have ended.
 			</description>
 		</method>
+		<method name="is_stopped" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="remove">
 			<return type="bool">
 			</return>
