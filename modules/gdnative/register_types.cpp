@@ -299,8 +299,8 @@ GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
 Vector<Ref<GDNative> > singleton_gdnatives;
 
-GDNativeLibraryResourceLoader *resource_loader_gdnlib = NULL;
-GDNativeLibraryResourceSaver *resource_saver_gdnlib = NULL;
+Ref<GDNativeLibraryResourceLoader> resource_loader_gdnlib;
+Ref<GDNativeLibraryResourceSaver> resource_saver_gdnlib;
 
 void register_gdnative_types() {
 
@@ -312,8 +312,8 @@ void register_gdnative_types() {
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
 
-	resource_loader_gdnlib = memnew(GDNativeLibraryResourceLoader);
-	resource_saver_gdnlib = memnew(GDNativeLibraryResourceSaver);
+	resource_loader_gdnlib.instance();
+	resource_saver_gdnlib.instance();
 
 	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
 	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
@@ -391,8 +391,11 @@ void unregister_gdnative_types() {
 	}
 #endif
 
-	memdelete(resource_loader_gdnlib);
-	memdelete(resource_saver_gdnlib);
+	ResourceLoader::remove_resource_format_loader(resource_loader_gdnlib);
+	ResourceSaver::remove_resource_format_saver(resource_saver_gdnlib);
+
+	resource_loader_gdnlib.unref();
+	resource_saver_gdnlib.unref();
 
 	// This is for printing out the sizes of the core types
 

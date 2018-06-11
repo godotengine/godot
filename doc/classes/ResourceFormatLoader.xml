@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatLoader" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		Loads a specific resource type from a file.
+	</brief_description>
+	<description>
+		Godot loads resources in the editor or in exported games using ResourceFormatLoaders. They get queried when you call `load`, or when a resource with internal dependencies is loaded. Each file type may load as a different resource type, so multiple ResourceFormatLoader are registered in the engine.
+		Extending this class allows you to define your own. You should give it a global class name with `class_name` for it to be registered. You may as well implement a [ResourceFormatSaver].
+		Note: you can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends if the format is suitable or not for the final exported game. Example: it's better to import .PNG textures as .STEX first, so they can be loaded with better efficiency on the graphics card.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_dependencies" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="add_types" type="String">
+			</argument>
+			<description>
+				If implemented, gets the dependencies of a given resource. If add_types is true, paths should be appended "::TypeName", where `TypeName` is the class name of the dependency. Note that custom resource types defined by scripts aren't known by the [ClassDB], so you might just return "Resource" for them.
+			</description>
+		</method>
+		<method name="get_recognized_extensions" qualifiers="virtual">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Gets the list of extensions for files this loader is able to read.
+			</description>
+		</method>
+		<method name="get_resource_type" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Gets the class name of the resource associated with the given path. If the loader cannot handle it, it should return "". Note that custom resource types defined by scripts aren't known by the [ClassDB], so you might just return "Resource" for them.
+			</description>
+		</method>
+		<method name="handles_type" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="typename" type="String">
+			</argument>
+			<description>
+				Tells which resource class this loader can load. Note that custom resource types defined by scripts aren't known by the [ClassDB], so you might just return "Resource" for them.
+			</description>
+		</method>
+		<method name="load" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="original_path" type="String">
+			</argument>
+			<description>
+				Loads a resource when the engine finds this loader to be compatible. original_path: If the loaded resource is the result of an import, original_path will target the source file. Returns a resource object if succeeded, or an ERR_* constant listed in [@GlobalScope] if it failed.
+			</description>
+		</method>
+		<method name="rename_dependencies" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="renames" type="String">
+			</argument>
+			<description>
+				If implemented, renames dependencies within the given resource and saves it. renames is a dictionary { String => String } mapping old dependency paths to new paths. Returns OK on success, or an ERR_* constant listed in [@GlobalScope] in case of failure.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -77,7 +77,7 @@ class OS_Server : public OS_Unix {
 
 	int video_driver_index;
 
-	ResourceFormatDummyTexture *resource_loader_dummy;
+	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
 
 protected:
 	virtual int get_video_driver_count() const;

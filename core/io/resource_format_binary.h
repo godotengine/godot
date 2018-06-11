@@ -100,6 +100,7 @@ public:
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderBinary, ResourceFormatLoader)
 public:
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -152,7 +153,7 @@ public:
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
-
+	GDCLASS(ResourceFormatSaverBinary, ResourceFormatSaver)
 public:
 	static ResourceFormatSaverBinary *singleton;
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

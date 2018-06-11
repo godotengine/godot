@@ -32,7 +32,7 @@
 
 #include "audio_stream_opus.h"
 
-static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader = NULL;
+static Ref<ResourceFormatLoaderAudioStreamOpus> opus_stream_loader;
 
 void register_opus_types() {
 	// Sorry guys, do not enable this unless you can figure out a way

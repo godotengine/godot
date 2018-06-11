@@ -38,8 +38,8 @@
 #include "gdscript_tokenizer.h"
 
 GDScriptLanguage *script_language_gd = NULL;
-ResourceFormatLoaderGDScript *resource_loader_gd = NULL;
-ResourceFormatSaverGDScript *resource_saver_gd = NULL;
+Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
+Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
@@ -87,9 +87,11 @@ void register_gdscript_types() {
 
 	script_language_gd = memnew(GDScriptLanguage);
 	ScriptServer::register_language(script_language_gd);
-	resource_loader_gd = memnew(ResourceFormatLoaderGDScript);
+
+	resource_loader_gd.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
-	resource_saver_gd = memnew(ResourceFormatSaverGDScript);
+
+	resource_saver_gd.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
 #ifdef TOOLS_ENABLED
@@ -104,8 +106,14 @@ void unregister_gdscript_types() {
 
 	if (script_language_gd)
 		memdelete(script_language_gd);
-	if (resource_loader_gd)
-		memdelete(resource_loader_gd);
-	if (resource_saver_gd)
-		memdelete(resource_saver_gd);
+
+	if (resource_loader_gd.is_valid()) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_gd);
+		resource_loader_gd.unref();
+	}
+
+	if (resource_saver_gd.is_valid()) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_gd);
+		resource_saver_gd.unref();
+	}
 }
