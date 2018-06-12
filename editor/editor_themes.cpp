@@ -272,39 +272,49 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 			preset_base_color = Color::html("#323b4f");
 			preset_contrast = default_contrast;
 		} break;
-		case 1: { // Grey
+		case 1: { // Custom
+			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
+			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
+			contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+		} break;
+		case 2: { // Grey
 			preset_accent_color = Color::html("#b8e4ff");
 			preset_base_color = Color::html("#3d3d3d");
 			preset_contrast = 0.2;
 		} break;
-		case 2: { // Godot 2
+		case 3: { // Godot 2
 			preset_accent_color = Color::html("#86ace2");
 			preset_base_color = Color::html("#3C3A44");
 			preset_contrast = 0.25;
 		} break;
-		case 3: { // Arc
+		case 4: { // Arc
 			preset_accent_color = Color::html("#5294e2");
 			preset_base_color = Color::html("#383c4a");
 			preset_contrast = 0.25;
 		} break;
-		case 4: { // Light
+		case 5: { // Light
 			preset_accent_color = Color::html("#2070ff");
 			preset_base_color = Color::html("#ffffff");
 			preset_contrast = 0.08;
 		} break;
-		case 5: { // Alien
+		case 6: { // Alien
 			preset_accent_color = Color::html("#1bfe99");
 			preset_base_color = Color::html("#2f373f");
 			preset_contrast = 0.25;
-		}
-		default: { // Custom
-			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
-			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
-			contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
-		}
+		} break;
+		case 7: { // Solarized (Dark)
+			preset_accent_color = Color::html("#268bd2");
+			preset_base_color = Color::html("#002b36");
+			preset_contrast = 0.2;
+		} break;
+		case 8: { // Solarized (Light)
+			preset_accent_color = Color::html("#268bd2");
+			preset_base_color = Color::html("#fdf6e3");
+			preset_contrast = 0.06;
+		} break;
 	}
 
-	if (preset != 6) {
+	if (preset != 1) {
 		accent_color = preset_accent_color;
 		base_color = preset_base_color;
 		contrast = preset_contrast;
@@ -1050,7 +1060,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color function_definition_color = Color::html(dark_theme ? "#01e1ff" : "#00a5ba");
 	const Color node_path_color = Color::html(dark_theme ? "64c15a" : "#518b4b");
 
-	const Color te_background_color = dark_theme ? background_color : Color::html("#ffffff");
+	const Color te_background_color = dark_theme ? background_color : base_color;
 	const Color completion_background_color = base_color;
 	const Color completion_selected_color = alpha1;
 	const Color completion_existing_color = alpha2;
