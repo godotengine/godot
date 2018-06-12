@@ -113,6 +113,10 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 
 			shape = bulletnew(CapsuleShapeBullet);
 		} break;
+		case SHAPE_CYLINDER: {
+
+			shape = bulletnew(CylinderShapeBullet);
+		} break;
 		case SHAPE_CONVEX_POLYGON: {
 
 			shape = bulletnew(ConvexPolygonShapeBullet);

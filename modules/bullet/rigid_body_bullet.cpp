@@ -230,6 +230,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer::SHAPE_SPHERE:
 			case PhysicsServer::SHAPE_BOX:
 			case PhysicsServer::SHAPE_CAPSULE:
+			case PhysicsServer::SHAPE_CYLINDER:
 			case PhysicsServer::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer::SHAPE_RAY: {
 				shapes[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
