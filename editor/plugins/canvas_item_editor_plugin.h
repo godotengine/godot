@@ -257,9 +257,15 @@ class CanvasItemEditor : public VBoxContainer {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
 	};
-
 	Vector<_SelectResult> selection_results;
-	Vector<_SelectResult> hovering_results;
+
+	struct _HoverResult {
+
+		Point2 position;
+		Ref<Texture> icon;
+		String name;
+	};
+	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
 
