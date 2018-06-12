@@ -143,6 +143,42 @@ void TabContainer::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_RESIZED: {
+
+			Vector<Control *> tabs = _get_tabs();
+			int side_margin = get_constant("side_margin");
+			Ref<Texture> menu = get_icon("menu");
+			Ref<Texture> increment = get_icon("increment");
+			Ref<Texture> decrement = get_icon("decrement");
+			int header_width = get_size().width - side_margin * 2;
+
+			// Find the width of the header area.
+			if (popup)
+				header_width -= menu->get_width();
+			if (buttons_visible_cache)
+				header_width -= increment->get_width() + decrement->get_width();
+			if (popup || buttons_visible_cache)
+				header_width += side_margin;
+
+			// Find the width of all tabs after first_tab_cache.
+			int all_tabs_width = 0;
+			for (int i = first_tab_cache; i < tabs.size(); i++) {
+				int tab_width = _get_tab_width(i);
+				all_tabs_width += tab_width;
+			}
+
+			// Check if tabs before first_tab_cache would fit into the header area.
+			for (int i = first_tab_cache - 1; i >= 0; i--) {
+				int tab_width = _get_tab_width(i);
+
+				if (all_tabs_width + tab_width > header_width)
+					break;
+
+				all_tabs_width += tab_width;
+				first_tab_cache--;
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 
 			RID canvas = get_canvas_item();
@@ -195,6 +231,10 @@ void TabContainer::_notification(int p_what) {
 			// With buttons, a right side margin does not need to be respected.
 			if (popup || buttons_visible_cache) {
 				header_width += side_margin;
+			}
+
+			if (!buttons_visible_cache) {
+				first_tab_cache = 0;
 			}
 
 			// Go through the visible tabs to find the width they occupy.
