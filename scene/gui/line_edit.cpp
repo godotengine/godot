@@ -615,7 +615,8 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			int cached_text_width = text.empty() ? cached_placeholder_width : cached_width;
+			bool using_placeholder = text.empty();
+			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -770,7 +771,7 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 
 				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
+				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
 				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
