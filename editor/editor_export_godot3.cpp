@@ -538,7 +538,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				// Check if it's a rotation and save the track number to fix its assigned values
 				if (path_value.find("transform/rot") != -1) {
 					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
-					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+					found_track_number = prop_name.get_slice("/", 1);
 					print_line("Found Animation track with 2D rotations: " + prop_name + " = " + path_value);
 				}
 
@@ -562,7 +562,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 					E->get().value = NodePath(track_nodepath + ":" + track_prop);
 				}
-			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
+			} else if (found_track_number != "" && prop_name == "tracks/" + found_track_number + "/keys") {
 				// Bingo! We found keys matching the track number we had spotted
 				print_line("Fixing sign of 2D rotations in animation track " + found_track_number);
 				Dictionary track_keys = E->get().value;
@@ -844,11 +844,9 @@ void EditorExportGodot3::_unpack_packed_scene(ExportData &resource) {
 			node_data.name = names[name];
 			if (type == 0x7FFFFFFF) {
 				node_data.instanced = true;
-				print_line("name: " + node_data.name + " is instanced");
 			} else {
 				node_data.instanced = false;
 				node_data.type = names[type];
-				print_line("name: " + node_data.name + " type" + node_data.type);
 			}
 
 			node_data.parent_int = parent;
@@ -952,7 +950,6 @@ void EditorExportGodot3::_pack_packed_scene(ExportData &resource) {
 			node_data.push_back(0x7FFFFFFF);
 		} else {
 			int name = _pack_name(node.type);
-			print_line("packing type: " + String(node.type) + " goes to name " + itos(name));
 			node_data.push_back(name);
 		}
 
@@ -1717,12 +1714,10 @@ void EditorExportGodot3::_save_binary_property(const Variant &p_property, FileAc
 				f->store_32(VARIANT_OBJECT);
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
 				f->store_32(str.get_slice(":", 1).to_int());
-				print_line("SAVE RES LOCAL: " + itos(str.get_slice(":", 1).to_int()));
 			} else if (str.begins_with("@RESEXTERNAL:")) {
 				f->store_32(VARIANT_OBJECT);
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(str.get_slice(":", 1).to_int());
-				print_line("SAVE RES EXTERNAL: " + itos(str.get_slice(":", 1).to_int()));
 			} else {
 
 				f->store_32(VARIANT_STRING);
@@ -2663,7 +2658,7 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 
 		progress.step(target_path.get_file(), idx++);
 
-		print_line("exporting: " + target_path);
+		print_line("-- Exporting file: " + target_path);
 
 		if (directory->make_dir_recursive(target_path.get_base_dir()) != OK) {
 			memdelete(directory);

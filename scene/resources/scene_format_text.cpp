@@ -714,8 +714,6 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 
 	while (true) {
 
-		print_line("next tag is: " + next_tag.name);
-
 		if (next_tag.name == "ext_resource") {
 
 			if (!next_tag.fields.has("path")) {
@@ -786,7 +784,6 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 				Variant value;
 
 				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_export);
-				print_line("get prop: " + assign);
 
 				if (error) {
 					_printerr();
@@ -918,8 +915,6 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 
 				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_export);
 
-				print_line("get prop: " + assign);
-
 				if (error) {
 
 					if (error != ERR_FILE_EOF) {
@@ -939,10 +934,8 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 					node_data.properties.push_back(pdata);
 					//it's assignment
 				} else if (next_tag.name != String()) {
-					print_line("found something else?");
 					break; //something else
 				} else {
-					print_line("done i guess?");
 					//all done?
 					return OK;
 				}
