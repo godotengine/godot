@@ -1459,21 +1459,26 @@ void SceneTreeDock::_create() {
 			ERR_FAIL_COND(!parent);
 		}
 
+		// user selects node type to create
 		Object *c = create_dialog->instance_selected();
 
 		ERR_FAIL_COND(!c);
 		Node *child = Object::cast_to<Node>(c);
 		ERR_FAIL_COND(!child);
 
+		// begin recording "Create Node" do/undo action
 		editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
 		if (edited_scene) {
-
+	
+			// record actions to create this node
 			editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
 			editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_scene);
 			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
 			editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", child);
+			// mark reference to child as belonging to do action
 			editor_data->get_undo_redo().add_do_reference(child);
+			// record actions to undo creation of this node
 			editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
 
 			String new_name = parent->validate_child_name(child);
@@ -1483,13 +1488,17 @@ void SceneTreeDock::_create() {
 
 		} else {
 
+			// if edited scene not set, set edited_scene to scene containing child
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			// mark reference to child as belonging to do action
 			editor_data->get_undo_redo().add_do_reference(child);
+			// record action to unset edited_scene back to NULL
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
 		}
 
 		editor_data->get_undo_redo().commit_action();
+		// end recording "Create Node do/undo action"
 		editor->push_item(c);
 		editor_selection->clear();
 		editor_selection->add_node(child);
@@ -1506,20 +1515,32 @@ void SceneTreeDock::_create() {
 		}
 
 	} else if (current_option == TOOL_REPLACE) {
+		// replacement a.k.a. "change type": swap existing node(s) for one of new type
 		List<Node *> selection = editor_selection->get_selected_node_list();
+		// abort if nothing selected
 		ERR_FAIL_COND(selection.size() <= 0);
+
+		// begin recording undo/redo of node type changes for entire selection at once
+		editor_data->get_undo_redo().create_action(TTR("Change Node Type"));
+		
+		// iterate through selected nodes and replace each one with new node of selected type
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			// get a pointer to current node in selection
 			Node *n = E->get();
-			ERR_FAIL_COND(!n);
+			ERR_FAIL_COND(!n); // abort if current node is null
 
+			// user selects new node type
 			Object *c = create_dialog->instance_selected();
-
+			// attempt to instantiate new node of selected type
 			ERR_FAIL_COND(!c);
 			Node *newnode = Object::cast_to<Node>(c);
-			ERR_FAIL_COND(!newnode);
+			ERR_FAIL_COND(!newnode); // abort if resulting pointer is NULL
 
+			// bugfix: editor recording for current node continues in subroutine replace_node
 			replace_node(n, newnode);
 		}
+		// end recording of undo/redo of node type changes
+		editor_data->get_undo_redo().commit_action();
 	}
 }
 
@@ -1527,50 +1548,16 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 	Node *n = p_node;
 	Node *newnode = p_by_node;
-	Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
-	List<PropertyInfo> pinfo;
-	n->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-			continue;
-		if (E->get().name == "__meta__")
-			continue;
-		if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
-			newnode->set(E->get().name, n->get(E->get().name));
-		}
-	}
-	memdelete(default_oldnode);
-
-	editor->push_item(NULL);
-
-	//reconnect signals
-	List<MethodInfo> sl;
-
-	n->get_signal_list(&sl);
-	for (List<MethodInfo>::Element *E = sl.front(); E; E = E->next()) {
-
-		List<Object::Connection> cl;
-		n->get_signal_connection_list(E->get().name, &cl);
-
-		for (List<Object::Connection>::Element *F = cl.front(); F; F = F->next()) {
-
-			Object::Connection &c = F->get();
-			if (!(c.flags & Object::CONNECT_PERSIST))
-				continue;
-			newnode->connect(c.signal, c.target, c.method, varray(), Object::CONNECT_PERSIST);
-		}
-	}
-
+	// copy old node's name to replacement new node
 	String newname = n->get_name();
 
-	List<Node *> to_erase;
-	for (int i = 0; i < n->get_child_count(); i++) {
-		if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
-			to_erase.push_back(n->get_child(i));
-		}
-	}
-	n->replace_by(newnode, true);
+	/* Swap nodes, keeping old data (p_keep_data = true). Do NOT free the nodes!
+	   This makes undo/redo functionality impossible. */
+	editor_data->get_undo_redo().add_do_method(n, "replace_by", newnode, true);
+	editor_data->get_undo_redo().add_do_reference(newnode);
+	editor_data->get_undo_redo().add_undo_reference(n);
+	editor_data->get_undo_redo().add_undo_method(newnode, "replace_by", n, true);
 
 	if (n == edited_scene) {
 		edited_scene = newnode;
@@ -1578,22 +1565,10 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 		newnode->set_editable_instances(n->get_editable_instances());
 	}
 
-	//small hack to make collisionshapes and other kind of nodes to work
-	for (int i = 0; i < newnode->get_child_count(); i++) {
-		Node *c = newnode->get_child(i);
-		c->call("set_transform", c->call("get_transform"));
-	}
-	editor_data->get_undo_redo().clear_history();
+	// rename the newnode
 	newnode->set_name(newname);
 
 	editor->push_item(newnode);
-
-	memdelete(n);
-
-	while (to_erase.front()) {
-		memdelete(to_erase.front()->get());
-		to_erase.pop_front();
-	}
 }
 
 void SceneTreeDock::set_edited_scene(Node *p_scene) {
