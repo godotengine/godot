@@ -2355,7 +2355,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.KEY => var is InputEventKey
-			regexp.compile("(.*)\\.type == InputEvent.KEY(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.KEY(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventKey" + regexp.get_capture(2);
@@ -2364,7 +2364,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_MOTION => var is InputEventMouseMotion
-			regexp.compile("(.*)\\.type == InputEvent.MOUSE_MOTION(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.MOUSE_MOTION(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventMouseMotion" + regexp.get_capture(2);
@@ -2373,7 +2373,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_BUTTON => var is InputEventMouseButton
-			regexp.compile("(.*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.MOUSE_BUTTON(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventMouseButton" + regexp.get_capture(2);
@@ -2382,7 +2382,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_MOTION => var is InputEventJoypadMotion
-			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.JOYSTICK_MOTION(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventJoypadMotion" + regexp.get_capture(2);
@@ -2391,10 +2391,28 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_BUTTON => var is InputEventJoypadButton
-			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.JOYSTICK_BUTTON(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventJoypadButton" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert var.type == InputEvent.SCREEN_TOUCH => var is InputEventScreenTouch
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.SCREEN_TOUCH(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventScreenTouch" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert var.type == InputEvent.SCREEN_DRAG => var is InputEventScreenDrag
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.SCREEN_DRAG(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventScreenDrag" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
