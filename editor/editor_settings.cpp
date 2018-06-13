@@ -568,79 +568,55 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 }
 
 void EditorSettings::_load_default_text_editor_theme() {
-	_initial_set("text_editor/highlighting/background_color", Color::html("3b000000"));
+
+	bool dark_theme = is_dark_theme();
+
+	_initial_set("text_editor/highlighting/symbol_color", Color::html("badfff"));
+	_initial_set("text_editor/highlighting/keyword_color", Color::html("ffffb3"));
+	_initial_set("text_editor/highlighting/base_type_color", Color::html("a4ffd4"));
+	_initial_set("text_editor/highlighting/engine_type_color", Color::html("83d3ff"));
+	_initial_set("text_editor/highlighting/comment_color", Color::html("676767"));
+	_initial_set("text_editor/highlighting/string_color", Color::html("ef6ebe"));
+	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color::html("3b000000") : Color::html("#323b4f"));
 	_initial_set("text_editor/highlighting/completion_background_color", Color::html("2C2A32"));
 	_initial_set("text_editor/highlighting/completion_selected_color", Color::html("434244"));
 	_initial_set("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"));
 	_initial_set("text_editor/highlighting/completion_scroll_color", Color::html("ffffff"));
 	_initial_set("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"));
+	_initial_set("text_editor/highlighting/text_color", Color::html("aaaaaa"));
+	_initial_set("text_editor/highlighting/line_number_color", Color::html("66aaaaaa"));
 	_initial_set("text_editor/highlighting/caret_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/caret_background_color", Color::html("000000"));
-	_initial_set("text_editor/highlighting/line_number_color", Color::html("66aaaaaa"));
-	_initial_set("text_editor/highlighting/text_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/text_selected_color", Color::html("000000"));
-	_initial_set("text_editor/highlighting/keyword_color", Color::html("ffffb3"));
-	_initial_set("text_editor/highlighting/base_type_color", Color::html("a4ffd4"));
-	_initial_set("text_editor/highlighting/engine_type_color", Color::html("83d3ff"));
-	_initial_set("text_editor/highlighting/function_color", Color::html("66a2ce"));
-	_initial_set("text_editor/highlighting/member_variable_color", Color::html("e64e59"));
-	_initial_set("text_editor/highlighting/comment_color", Color::html("676767"));
-	_initial_set("text_editor/highlighting/string_color", Color::html("ef6ebe"));
-	_initial_set("text_editor/highlighting/number_color", Color::html("EB9532"));
-	_initial_set("text_editor/highlighting/symbol_color", Color::html("badfff"));
 	_initial_set("text_editor/highlighting/selection_color", Color::html("6ca9c2"));
 	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
 	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
+	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
+	_initial_set("text_editor/highlighting/number_color", Color::html("EB9532"));
+	_initial_set("text_editor/highlighting/function_color", Color::html("66a2ce"));
+	_initial_set("text_editor/highlighting/member_variable_color", Color::html("e64e59"));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
 	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
-	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
-
-	// GDScript highlighter
-	_initial_set("text_editor/highlighting/gdscript/function_definition_color", Color::html("#01e1ff"));
-	_initial_set("text_editor/highlighting/gdscript/node_path_color", Color::html("#64c15a"));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew(ConfigFile); // hex is better?
-	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/highlighting/background_color")).to_html());
-	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/highlighting/completion_background_color")).to_html());
-	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/highlighting/completion_selected_color")).to_html());
-	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/highlighting/completion_existing_color")).to_html());
-	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/highlighting/completion_scroll_color")).to_html());
-	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/highlighting/completion_font_color")).to_html());
-	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/highlighting/caret_color")).to_html());
-	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/highlighting/caret_background_color")).to_html());
-	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/highlighting/line_number_color")).to_html());
-	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/highlighting/text_color")).to_html());
-	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/highlighting/text_selected_color")).to_html());
-	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/highlighting/keyword_color")).to_html());
-	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/highlighting/base_type_color")).to_html());
-	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/highlighting/engine_type_color")).to_html());
-	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/highlighting/function_color")).to_html());
-	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/highlighting/member_variable_color")).to_html());
-	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/highlighting/comment_color")).to_html());
-	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/highlighting/string_color")).to_html());
-	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/highlighting/number_color")).to_html());
-	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/highlighting/symbol_color")).to_html());
-	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/highlighting/selection_color")).to_html());
-	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/highlighting/brace_mismatch_color")).to_html());
-	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/highlighting/current_line_color")).to_html());
-	cf->set_value(theme_section, "line_length_guideline_color", ((Color)get("text_editor/highlighting/line_length_guideline_color")).to_html());
-	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/highlighting/mark_color")).to_html());
-	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/highlighting/breakpoint_color")).to_html());
-	cf->set_value(theme_section, "code_folding_color", ((Color)get("text_editor/highlighting/code_folding_color")).to_html());
-	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());
-	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/highlighting/search_result_color")).to_html());
-	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/highlighting/search_result_border_color")).to_html());
 
-	//GDScript highlighter
-	cf->set_value(theme_section, "gdscript/function_definition_color", ((Color)get("text_editor/highlighting/gdscript/function_definition_color")).to_html());
-	cf->set_value(theme_section, "gdscript/node_path_color", ((Color)get("text_editor/highlighting/gdscript/node_path_color")).to_html());
+	List<String> keys;
+	props.get_key_list(&keys);
+	keys.sort();
+
+	for (const List<String>::Element *E = keys.front(); E; E = E->next()) {
+		String key = E->get();
+		if (key.begins_with("text_editor/highlighting/") && key.find("color") >= 0) {
+			cf->set_value(theme_section, key.replace("text_editor/highlighting/", ""), ((Color)props[key].variant).to_html());
+		}
+	}
 
 	Error err = cf->save(p_file);
 
@@ -1214,6 +1190,14 @@ void EditorSettings::load_favorites() {
 		}
 		memdelete(f);
 	}
+}
+
+bool EditorSettings::is_dark_theme() {
+	int AUTO_COLOR = 0;
+	int LIGHT_COLOR = 2;
+	Color base_color = get("interface/theme/base_color");
+	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
+	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
