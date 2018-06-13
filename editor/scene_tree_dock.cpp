@@ -1452,7 +1452,6 @@ void SceneTreeDock::_create() {
 			parent = scene_tree->get_selected();
 			if (!parent)
 				parent = edited_scene;
-
 		} else {
 			// If no root exist in edited scene
 			parent = scene_root;
@@ -1470,7 +1469,6 @@ void SceneTreeDock::_create() {
 		editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
 		if (edited_scene) {
-	
 			// record actions to create this node
 			editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
 			editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_scene);
