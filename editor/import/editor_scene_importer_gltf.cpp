@@ -863,6 +863,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
+		Dictionary extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 
 		for (int j = 0; j < primitives.size(); j++) {
 
@@ -1000,8 +1001,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				Array targets = p["targets"];
 
 				if (j == 0) {
+					Array target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
 					for (int k = 0; k < targets.size(); k++) {
-						mesh.mesh->add_blend_shape(String("morph_") + itos(k));
+						String name = k < target_names.size() ? (String)target_names[k] : String("morph_") + itos(k);
+						mesh.mesh->add_blend_shape(name);
 					}
 				}
 
