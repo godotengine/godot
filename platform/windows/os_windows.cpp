@@ -1181,6 +1181,15 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (p_desired.layered_splash) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
+
+	// IME
+	im_himc = ImmGetContext(hWnd);
+	ImmReleaseContext(hWnd, im_himc);
+
+	im_position = Vector2();
+
+	set_ime_active(false);
+
 	return OK;
 }
 
@@ -2659,13 +2668,29 @@ String OS_Windows::get_unique_id() const {
 	return String(HwProfInfo.szHwProfileGuid);
 }
 
+void OS_Windows::set_ime_active(const bool p_active) {
+
+	if (p_active) {
+		ImmAssociateContext(hWnd, im_himc);
+
+		set_ime_position(im_position);
+	} else {
+		ImmAssociateContext(hWnd, (HIMC)0);
+	}
+}
+
 void OS_Windows::set_ime_position(const Point2 &p_pos) {
 
+	im_position = p_pos;
+
 	HIMC himc = ImmGetContext(hWnd);
+	if (himc == (HIMC)0)
+		return;
+
 	COMPOSITIONFORM cps;
 	cps.dwStyle = CFS_FORCE_POSITION;
-	cps.ptCurrentPos.x = p_pos.x;
-	cps.ptCurrentPos.y = p_pos.y;
+	cps.ptCurrentPos.x = im_position.x;
+	cps.ptCurrentPos.y = im_position.y;
 	ImmSetCompositionWindow(himc, &cps);
 	ImmReleaseContext(hWnd, himc);
 }

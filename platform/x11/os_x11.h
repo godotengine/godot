@@ -116,6 +116,10 @@ class OS_X11 : public OS_Unix {
 	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
+	// IME
+	bool im_active;
+	Vector2 im_position;
+
 	Point2i last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
@@ -269,6 +273,7 @@ public:
 	virtual bool get_window_per_pixel_transparency_enabled() const;
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
 
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;

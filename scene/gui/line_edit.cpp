@@ -756,6 +756,7 @@ void LineEdit::_notification(int p_what) {
 
 			if (has_focus()) {
 
+				OS::get_singleton()->set_ime_active(true);
 				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
 				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
@@ -766,6 +767,7 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
+			OS::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
@@ -778,6 +780,7 @@ void LineEdit::_notification(int p_what) {
 
 			OS::get_singleton()->set_ime_position(Point2());
 			OS::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
+			OS::get_singleton()->set_ime_active(false);
 			ime_text = "";
 			ime_selection = Point2();
 
