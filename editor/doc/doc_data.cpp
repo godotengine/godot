@@ -233,14 +233,12 @@ void DocData::generate(bool p_basic_types) {
 		c.category = ClassDB::get_category(name);
 
 		List<PropertyInfo> properties;
-		if (name=="ProjectSettings") {
+		if (name == "ProjectSettings") {
 			//special case for project settings, so settings can be documented
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 		} else {
 			ClassDB::get_property_list(name, &properties, true);
 		}
-
-
 
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 			if (E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_INTERNAL)
