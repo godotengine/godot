@@ -1643,6 +1643,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";
+			} else {
+				header += " index=\"0\"";
 			}
 
 			if (groups.size()) {
