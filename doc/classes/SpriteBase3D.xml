@@ -11,6 +11,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
