@@ -233,12 +233,14 @@ void DocData::generate(bool p_basic_types) {
 		c.category = ClassDB::get_category(name);
 
 		List<PropertyInfo> properties;
-		if (name == "ProjectSettings") {
+		if (name=="ProjectSettings") {
 			//special case for project settings, so settings can be documented
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 		} else {
 			ClassDB::get_property_list(name, &properties, true);
 		}
+
+
 
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 			if (E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_INTERNAL)
@@ -815,24 +817,9 @@ Error DocData::_load(Ref<XMLParser> parser) {
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
 						c.description = parser->get_node_data();
 				} else if (name == "tutorials") {
-					while (parser->read() == OK) {
-
-						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-
-							String name = parser->get_node_name();
-
-							if (name == "link") {
-
-								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									c.tutorials.push_back(parser->get_node_data().strip_edges());
-							} else {
-								ERR_EXPLAIN("Invalid tag in doc file: " + name);
-								ERR_FAIL_V(ERR_FILE_CORRUPT);
-							}
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials")
-							break; //end of <tutorials>
-					}
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT)
+						c.tutorials = parser->get_node_data();
 				} else if (name == "demos") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
@@ -1007,9 +994,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		_write_string(f, 2, c.description.strip_edges().xml_escape());
 		_write_string(f, 1, "</description>");
 		_write_string(f, 1, "<tutorials>");
-		for (int i = 0; i < c.tutorials.size(); i++) {
-			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
-		}
+		_write_string(f, 2, c.tutorials.strip_edges().xml_escape());
 		_write_string(f, 1, "</tutorials>");
 		_write_string(f, 1, "<demos>");
 		_write_string(f, 2, c.demos.strip_edges().xml_escape());

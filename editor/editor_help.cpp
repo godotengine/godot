@@ -1280,10 +1280,11 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->add_newline();
 		//	class_desc->add_newline();
 
-		if (cd.tutorials.size() != 0) {
+		Vector<String> tutorials = cd.tutorials.split_spaces();
+		if (tutorials.size() != 0) {
 
-			for (int i = 0; i < cd.tutorials.size(); i++) {
-				String link = cd.tutorials[i];
+			for (int i = 0; i < tutorials.size(); i++) {
+				String link = tutorials[i];
 				String linktxt = link;
 				int seppos = linktxt.find("//");
 				if (seppos != -1) {

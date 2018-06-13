@@ -332,7 +332,7 @@ def configure(env):
 
     # First figure out which compiler, version, and target arch we're using
     if os.getenv("VCINSTALLDIR"):
-        # Manual setup of MSVC
+	# Manual setup of MSVC
         setup_msvc_manual(env)
         env.msvc = True
         manual_msvc_config = True

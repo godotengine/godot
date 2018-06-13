@@ -111,10 +111,6 @@ class OS_Windows : public OS {
 
 	WNDPROC user_proc;
 
-	// IME
-	HIMC im_himc;
-	Vector2 im_position;
-
 	MouseMode mouse_mode;
 	bool alt_mem;
 	bool gr_mem;
@@ -286,7 +282,6 @@ public:
 
 	virtual String get_unique_id() const;
 
-	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual void release_rendering_thread();

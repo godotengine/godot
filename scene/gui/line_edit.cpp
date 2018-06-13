@@ -610,8 +610,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			bool using_placeholder = text.empty();
-			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
+			int cached_text_width = text.empty() ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -646,9 +645,9 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
-			const String &t = using_placeholder ? placeholder : text;
+			const String &t = text.empty() ? placeholder : text;
 			// draw placeholder color
-			if (using_placeholder)
+			if (text.empty())
 				font_color.a *= placeholder_alpha;
 			font_color.a *= disabled_alpha;
 
@@ -757,8 +756,7 @@ void LineEdit::_notification(int p_what) {
 
 			if (has_focus()) {
 
-				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
+				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
 				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
@@ -768,7 +766,6 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
@@ -781,7 +778,6 @@ void LineEdit::_notification(int p_what) {
 
 			OS::get_singleton()->set_ime_position(Point2());
 			OS::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
-			OS::get_singleton()->set_ime_active(false);
 			ime_text = "";
 			ime_selection = Point2();
 
