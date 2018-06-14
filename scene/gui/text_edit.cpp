@@ -461,7 +461,7 @@ void TextEdit::_update_selection_mode_pointer() {
 	select(selection.selecting_line, selection.selecting_column, row, col);
 
 	cursor_set_line(row, false);
-	cursor_set_column(col, false);
+	cursor_set_column(col);
 	update();
 
 	click_select_held->start();
@@ -517,7 +517,6 @@ void TextEdit::_update_selection_mode_word() {
 			cursor_set_column(selection.to_column);
 		}
 	}
-	cursor_set_line(row, false);
 
 	update();
 
@@ -541,7 +540,7 @@ void TextEdit::_update_selection_mode_line() {
 		selection.selecting_column = 0;
 		col = text[row].length();
 	}
-	cursor_set_column(0, false);
+	cursor_set_column(0);
 
 	select(selection.selecting_line, selection.selecting_column, row, col);
 	update();
@@ -1673,14 +1672,17 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	rows /= get_row_height();
 	rows += get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
+	int last_vis_line = get_last_visible_line();
 	int row = first_vis_line + Math::floor(rows);
 	int wrap_index = 0;
 
 	if (is_wrap_enabled() || is_hiding_enabled()) {
 
-		int f_ofs = num_lines_from_rows(first_vis_line, cursor.wrap_ofs, rows + 1, wrap_index) - 1;
-		row = first_vis_line + f_ofs;
-		row = CLAMP(row, 0, get_last_visible_line() + 1);
+		int f_ofs = num_lines_from_rows(first_vis_line, cursor.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
+		if (rows < 0)
+			row = first_vis_line - f_ofs;
+		else
+			row = first_vis_line + f_ofs;
 	}
 
 	if (row < 0)
