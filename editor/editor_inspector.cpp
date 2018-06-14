@@ -1654,6 +1654,10 @@ void EditorInspector::set_use_folding(bool p_enable) {
 	update_tree();
 }
 
+bool EditorInspector::is_using_folding() {
+	return use_folding;
+}
+
 void EditorInspector::collapse_all_folding() {
 
 	for (List<EditorInspectorSection *>::Element *E = sections.front(); E; E = E->next()) {

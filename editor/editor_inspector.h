@@ -314,6 +314,7 @@ public:
 	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
+	bool is_using_folding();
 
 	void collapse_all_folding();
 	void expand_all_folding();
