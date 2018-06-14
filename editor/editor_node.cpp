@@ -1347,7 +1347,8 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
-	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
+	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
@@ -1403,6 +1404,7 @@ void EditorNode::_edit_current() {
 		if (current_obj->is_class("ScriptEditorDebuggerInspectedObject")) {
 			editable_warning = TTR("This is a remote object so changes to it will not be kept.\nPlease read the documentation relevant to debugging to better understand this workflow.");
 			capitalize = false;
+			disable_folding = true;
 		}
 
 		get_inspector()->edit(current_obj);
@@ -1413,6 +1415,10 @@ void EditorNode::_edit_current() {
 
 	if (get_inspector()->is_capitalize_paths_enabled() != capitalize) {
 		get_inspector()->set_enable_capitalize_paths(capitalize);
+	}
+
+	if (get_inspector()->is_using_folding() == disable_folding) {
+		get_inspector()->set_use_folding(!disable_folding);
 	}
 
 	/* Take care of PLUGIN EDITOR */
@@ -4587,6 +4593,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/scene_tabs/restore_scenes_on_load", false);
 	EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF("interface/inspector/capitalize_properties", true);
+	EDITOR_DEF("interface/inspector/disable_folding", false);
 	EDITOR_DEF("interface/inspector/open_resources_in_new_inspector", false);
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
