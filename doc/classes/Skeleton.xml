@@ -5,6 +5,11 @@
 	</brief_description>
 	<description>
 		Skeleton provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). Skeleton will support rag doll dynamics in the future.
+
+		The overall transform of a bone with respect to the skeleton is determined by the following hierarchical order: rest pose, custom pose and pose.
+
+		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it not the actual global/world transform of the bone.
+
 	</description>
 	<tutorials>
 	</tutorials>
@@ -60,6 +65,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
+				Return the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
 			</description>
 		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
@@ -68,6 +74,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
+				Return the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -76,7 +83,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the name of the bone at index "index"
+				Return the name of the bone at index "index".
 			</description>
 		</method>
 		<method name="get_bone_parent" qualifiers="const">
@@ -94,7 +101,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Return the pose transform for bone "bone_idx".
+				Return the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
@@ -112,6 +119,7 @@
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
+				Return the combination of custom pose and pose. The returned transform is in skeleton's reference frame.
 			</description>
 		</method>
 		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
