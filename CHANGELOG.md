@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [3.0.3] - 2018-07-13
+
+### Added
+
+- C# projects can now be exported for Windows, Linux, and MacOS targets.
+- Universal translation of touch to mouse.
+- Dynamic fonts can now have a hinting mode set.
+- print_tree_pretty() was added allowing a graphical view of the scene tree.
+- Restore purchases feature for iOS.
+- AudioStreamPlayer, AudioStreamPlayer2D, and AudioStreamPlayer3D now have a pitch scale property.
+- Show origin and Show viewport setting in 2D editor.
+- You can now set Godot windows as 'always on top'.
+- --print-fps options to print FPS to stdout.
+
+### Fixed
+
+- Mono: Signal parameters no longer crash the engine.
+- Asset library thread usage, this makes the asset library more responsive.
+- Several GLTF import fixes.
+- Several memory leaks.
+- iPhone X support.
+- Several fixes to audio drivers (WASAPI and PulseAudio).
+- Several crashes.
+- Export PCK/ZIP now works again.
+
 ## [3.0.2] - 2018-03-03
 
 ### Added
