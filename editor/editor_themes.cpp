@@ -1082,7 +1082,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color string_color = Color::html(dark_theme ? "#ffd942" : "#ffd118").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 
 	const Color te_background_color = dark_theme ? background_color : base_color;
-	const Color completion_background_color = base_color;
+	const Color completion_background_color = dark_theme ? base_color : background_color;
 	const Color completion_selected_color = alpha1;
 	const Color completion_existing_color = alpha2;
 	const Color completion_scroll_color = alpha1;
