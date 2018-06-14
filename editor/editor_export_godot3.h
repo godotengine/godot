@@ -83,6 +83,7 @@ class EditorExportGodot3 {
 	void _save_config(const String &p_path);
 
 	void _rename_properties(const String &p_type, List<ExportData::PropertyData> *p_props);
+	void _add_new_properties(const String &p_type, List<ExportData::PropertyData> *p_props);
 	void _convert_resources(ExportData &resource);
 	void _unpack_packed_scene(ExportData &resource);
 	void _pack_packed_scene(ExportData &resource);
