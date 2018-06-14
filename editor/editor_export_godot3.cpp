@@ -278,6 +278,7 @@ static const char *prop_renames[][2] = {
 	{ "input/ray_pickable", "input_ray_pickable" }, // CollisionObject
 	{ "invert/border", "invert_border" }, // Polygon2D
 	{ "invert/enable", "invert_enable" }, // Polygon2D
+	{ "is_pressed", "pressed" }, // BaseButton
 	{ "limit/bottom", "limit_bottom" }, // Camera2D
 	{ "limit/left", "limit_left" }, // Camera2D
 	{ "limit/right", "limit_right" }, // Camera2D
@@ -670,6 +671,16 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 		if ((p_type == "Sprite" || p_type == "Sprite3D") && E->get().name == "region") {
 			E->get().name = "region_enabled";
 		}
+
+		// "click_on_pressed" was renamed to "action_mode" and is now a enum
+		if (E->get().name == "click_on_press") {
+			E->get().name = "action_mode";
+			if (E->get().value) {
+				E->get().value = 0; // ACTION_MODE_BUTTON_PRESS
+			} else {
+				E->get().value = 1; // ACTION_MODE_BUTTON_RELEASE
+			}
+		}
 	}
 
 	// Flip margins based on the previously fixed anchor modes
@@ -689,10 +700,46 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 	}
 }
 
+void EditorExportGodot3::_add_new_properties(const String &p_type, List<ExportData::PropertyData> *p_props) {
+	bool add_mouse_filter = false;
+
+	bool ignore_mouse = false;
+	bool stop_mouse = false;
+
+	for (List<ExportData::PropertyData>::Element *E = p_props->front(); E; E = E->next()) {
+		String prop_name = E->get().name;
+		if (prop_name == "focus/ignore_mouse" || prop_name == "focus/stop_mouse") {
+			add_mouse_filter = true;
+
+			if (prop_name == "focus/ignore_mouse") {
+				ignore_mouse = E->get().value;
+			} else if (prop_name == "focus/stop_mouse") {
+				stop_mouse = E->get().value;
+			}
+		}
+	}
+
+	if (add_mouse_filter) {
+		ExportData::PropertyData pdata;
+		pdata.name = "mouse_filter";
+
+		if (ignore_mouse && stop_mouse) {
+			pdata.value = 1; // MOUSE_FILTER_PASS
+		} else if (ignore_mouse && !stop_mouse) {
+			pdata.value = 2; // MOUSE_FILTER_IGNORE
+		} else {
+			pdata.value = 0; // MOUSE_FILTER_STOP
+		}
+
+		p_props->push_back(pdata);
+	}
+}
+
 void EditorExportGodot3::_convert_resources(ExportData &resource) {
 
 	for (int i = 0; i < resource.resources.size(); i++) {
 
+		_add_new_properties(resource.resources[i].type, &resource.resources[i].properties);
 		_rename_properties(resource.resources[i].type, &resource.resources[i].properties);
 
 		if (type_rename_map.has(resource.resources[i].type)) {
@@ -702,6 +749,7 @@ void EditorExportGodot3::_convert_resources(ExportData &resource) {
 
 	for (int i = 0; i < resource.nodes.size(); i++) {
 
+		_add_new_properties(resource.nodes[i].type, &resource.nodes[i].properties);
 		_rename_properties(resource.nodes[i].type, &resource.nodes[i].properties);
 
 		if (type_rename_map.has(resource.nodes[i].type)) {
