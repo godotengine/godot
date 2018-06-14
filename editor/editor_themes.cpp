@@ -304,8 +304,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		} break;
 		case 7: { // Solarized (Dark)
 			preset_accent_color = Color::html("#268bd2");
-			preset_base_color = Color::html("#002b36");
-			preset_contrast = 0.2;
+			preset_base_color = Color::html("#073642");
+			preset_contrast = 0.15;
 		} break;
 		case 8: { // Solarized (Light)
 			preset_accent_color = Color::html("#268bd2");
