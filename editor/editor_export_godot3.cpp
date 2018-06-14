@@ -538,7 +538,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 				// Check if it's a rotation and save the track number to fix its assigned values
 				if (path_value.find("transform/rot") != -1) {
 					// We found a track 'path' with a "transform/rot" NodePath, its 'keys' need to be fixed
-					found_track_number = prop_name.substr(prop_name.find("/path") - 1, 1);
+					found_track_number = prop_name.get_slice("/", 1);
 					print_line("Found Animation track with 2D rotations: " + prop_name + " = " + path_value);
 				}
 
@@ -562,7 +562,7 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 					E->get().value = NodePath(track_nodepath + ":" + track_prop);
 				}
-			} else if (found_track_number != "" && prop_name.begins_with("tracks/") && prop_name.ends_with("/keys") && prop_name.find(found_track_number) != -1) {
+			} else if (found_track_number != "" && prop_name == "tracks/" + found_track_number + "/keys") {
 				// Bingo! We found keys matching the track number we had spotted
 				print_line("Fixing sign of 2D rotations in animation track " + found_track_number);
 				Dictionary track_keys = E->get().value;
@@ -844,11 +844,9 @@ void EditorExportGodot3::_unpack_packed_scene(ExportData &resource) {
 			node_data.name = names[name];
 			if (type == 0x7FFFFFFF) {
 				node_data.instanced = true;
-				print_line("name: " + node_data.name + " is instanced");
 			} else {
 				node_data.instanced = false;
 				node_data.type = names[type];
-				print_line("name: " + node_data.name + " type" + node_data.type);
 			}
 
 			node_data.parent_int = parent;
@@ -952,7 +950,6 @@ void EditorExportGodot3::_pack_packed_scene(ExportData &resource) {
 			node_data.push_back(0x7FFFFFFF);
 		} else {
 			int name = _pack_name(node.type);
-			print_line("packing type: " + String(node.type) + " goes to name " + itos(name));
 			node_data.push_back(name);
 		}
 
@@ -1717,12 +1714,10 @@ void EditorExportGodot3::_save_binary_property(const Variant &p_property, FileAc
 				f->store_32(VARIANT_OBJECT);
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
 				f->store_32(str.get_slice(":", 1).to_int());
-				print_line("SAVE RES LOCAL: " + itos(str.get_slice(":", 1).to_int()));
 			} else if (str.begins_with("@RESEXTERNAL:")) {
 				f->store_32(VARIANT_OBJECT);
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(str.get_slice(":", 1).to_int());
-				print_line("SAVE RES EXTERNAL: " + itos(str.get_slice(":", 1).to_int()));
 			} else {
 
 				f->store_32(VARIANT_STRING);
@@ -2355,7 +2350,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.KEY => var is InputEventKey
-			regexp.compile("(.*)\\.type == InputEvent.KEY(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.KEY(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventKey" + regexp.get_capture(2);
@@ -2364,7 +2359,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_MOTION => var is InputEventMouseMotion
-			regexp.compile("(.*)\\.type == InputEvent.MOUSE_MOTION(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.MOUSE_MOTION(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventMouseMotion" + regexp.get_capture(2);
@@ -2373,7 +2368,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.MOUSE_BUTTON => var is InputEventMouseButton
-			regexp.compile("(.*)\\.type == InputEvent.MOUSE_BUTTON(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.MOUSE_BUTTON(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventMouseButton" + regexp.get_capture(2);
@@ -2382,7 +2377,7 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_MOTION => var is InputEventJoypadMotion
-			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_MOTION(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.JOYSTICK_MOTION(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventJoypadMotion" + regexp.get_capture(2);
@@ -2391,10 +2386,28 @@ Error EditorExportGodot3::_convert_script(const String &p_path, const String &p_
 			regexp.clear();
 
 			// Convert var.type == InputEvent.JOYSTICK_BUTTON => var is InputEventJoypadButton
-			regexp.compile("(.*)\\.type == InputEvent.JOYSTICK_BUTTON(.*)");
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.JOYSTICK_BUTTON(.*)");
 			res = regexp.find(line);
 			if (res >= 0 && regexp.get_capture_count() == 3) {
 				line = regexp.get_capture(1) + " is InputEventJoypadButton" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert var.type == InputEvent.SCREEN_TOUCH => var is InputEventScreenTouch
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.SCREEN_TOUCH(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventScreenTouch" + regexp.get_capture(2);
+				count++;
+			}
+			regexp.clear();
+
+			// Convert var.type == InputEvent.SCREEN_DRAG => var is InputEventScreenDrag
+			regexp.compile("(.*)\\.type[ ]*==[ ]*InputEvent.SCREEN_DRAG(.*)");
+			res = regexp.find(line);
+			if (res >= 0 && regexp.get_capture_count() == 3) {
+				line = regexp.get_capture(1) + " is InputEventScreenDrag" + regexp.get_capture(2);
 				count++;
 			}
 			regexp.clear();
@@ -2645,7 +2658,7 @@ Error EditorExportGodot3::export_godot3(const String &p_path, bool convert_scrip
 
 		progress.step(target_path.get_file(), idx++);
 
-		print_line("exporting: " + target_path);
+		print_line("-- Exporting file: " + target_path);
 
 		if (directory->make_dir_recursive(target_path.get_base_dir()) != OK) {
 			memdelete(directory);
