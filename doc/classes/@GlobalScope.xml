@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.0.3">
+<class name="@GlobalScope" category="Core" version="3.0.4">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
@@ -30,7 +30,6 @@
 			[Geometry] singleton
 		</member>
 		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			[GodotSharp] singleton
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
