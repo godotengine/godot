@@ -6,7 +6,6 @@
 	<description>
 		A unit quaternion used for representing 3D rotations.
 		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating point errors.
-
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>

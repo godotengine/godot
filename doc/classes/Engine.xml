@@ -16,7 +16,6 @@
 			</return>
 			<description>
 				Returns engine author information in a Dictionary.
-
 				"lead_developers" - Array of Strings, lead developer names
 				"founders" - Array of Strings, founder names
 				"project_managers" - Array of Strings, project manager names
@@ -28,7 +27,6 @@
 			</return>
 			<description>
 				Returns an Array of copyright information Dictionaries.
-
 				"name" - String, component name
 				"parts" - Array of Dictionaries {"files", "copyright", "license"} describing subsections of the component
 			</description>
@@ -89,7 +87,6 @@
 			</return>
 			<description>
 				Returns the current engine version information in a Dictionary.
-
 				"major"    - Holds the major version number as an int
 				"minor"    - Holds the minor version number as an int
 				"patch"    - Holds the patch version number as an int
