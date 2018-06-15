@@ -9,7 +9,7 @@ env:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
     - OPTIONS="verbose=yes progress=no gdnative_wrapper=yes"
-    - secure: AnjB84ZZYDxDQdWwsT9PJrD5tEnwcauzvVeSG+us2GxgfyJ2HFArkZ/IjlvbsfYIiiHghJ2Ssy9yPtUT921BtNNHoWuN/8YQziGrlwiSfLGmS/n8GFH22OYwzDSa7UC7ODts5La2I4+JzrdtF933TwE+4QzH4E3GyaKbznh402E=
+    - secure: "QLFRizqry/Y5pnEZvDlQz5S3YydQ+600u4rHEzFgUTd0heYeQaETXAQeMzp0ymuG1BkdRAl5YJoLVJgAzjwI9hrvugvoUlh2//SfpqZCHN/Q1fYbtGgNTn01R3VFEpcfYQL93I2EjrxVm0WTM4PwCvMO+hU0aWTRDvCt1Lty0kMR+RMDQOO/woqunoXh5wvFNxTJJkAmuLe0v962DJYOIwJAnqMLR0aFYjmeQJ20bc/2X5oLt+WuJDuf/lGj6WSlD6z/o/kL3YxHoUyw4A/HAZ2IX0IfNHKuay60ESWzl/NlobnePiPwHAE2pdDVu//q16fanb9VeYnBYRFse49TpFRb86Lo+Qz8nKDJqpQEIY0YKNCFqekrubqTM++Lj6QvGpykQZNxUhybmELcEsRG4PS0UMvCpebdnJD46nNB+DtO2Lgb4xXDLQwpq19z1wizq/XDQ5hz61TIIx8+i8TsgdSQKCTeWovd4HcD4CVjAD5XTLGgyRmI/zC2d+lTnKo6W9diLq/bX/Goq2QPeaTPABqv817IaJka2JyugQ7Qal/+gNTjYRRsimRCL9B2tVh+Uh8rWhTFhQL4QbP5P65HF+p8qojUzqtAhPMbZ8mxUtNukUI3liVgPgiMss96sG0nTVglFgkkAkEjIMFnqMSKnTfG812K4jIhp2jCO2Q3NeI="
 
 cache:
   directories:
@@ -20,21 +20,16 @@ matrix:
     - env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools"
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
       compiler: clang
-      addons:
-        apt:
-          packages:
-            - *linux_deps
-
     - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
-      compiler: gcc
-    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
+      compiler: clang
+    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-clang
       os: osx
       osx_image: xcode9.3
       compiler: clang
@@ -42,9 +37,9 @@ matrix:
       os: osx
       osx_image: xcode9.3
       compiler: clang
-    - env: GODOT_TARGET=server TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+    - env: GODOT_TARGET=server TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
       os: linux
-      compiler: clang
+      compiler: gcc
 
 addons:
   apt:
@@ -52,9 +47,12 @@ addons:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-5.0
     packages:
+      # General build deps
       - build-essential
       - scons
       - pkg-config
+
+      # Linux/X11 build deps
       - libx11-dev
       - libxcursor-dev
       - libxi-dev
@@ -65,18 +63,8 @@ addons:
       - libasound2-dev
       - libfreetype6-dev
 
-    - env: GODOT_TARGET=server TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
-      os: linux
-      compiler: gcc
-      addons:
-        apt:
-          packages:
-            - *linux_deps
-
-before_install:
-  - if [ "$STATIC_CHECKS" = "yes" ]; then
-      unset SCONS_CACHE;
-    fi
+      # For style checks.
+      - clang-format-5.0
 
   coverity_scan:
     project:
