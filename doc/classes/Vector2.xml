@@ -76,6 +76,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the vector with all components rounded up.
 			</description>
 		</method>
 		<method name="clamped">
@@ -142,7 +143,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Remove the fractional part of x and y.
+				Returns the vector with all components rounded down.
 			</description>
 		</method>
 		<method name="is_normalized">
