@@ -536,6 +536,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
+			editor = true;
 #endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
