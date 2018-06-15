@@ -20,69 +20,63 @@ matrix:
     - env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-format-5.0
+
+        coverity_scan:
+          project:
+            name: "godotengine/godot"
+            description: "Godot Engine Coverity scans"
+          notification_email: coverity@godotengine.org
+          build_command_prepend: ""
+          build_command: "scons p=x11 -j2 $OPTIONS"
+          branch_pattern: coverity_scan
+
     - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
       os: linux
       compiler: gcc
+      addons:
+        apt:
+          packages:
+            - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+
     - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
       compiler: clang
+      addons:
+        apt:
+          packages:
+            - *linux_deps
+
     - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
       compiler: clang
+
     - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-clang
       os: osx
       osx_image: xcode9.3
       compiler: clang
+
     - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: osx
       osx_image: xcode9.3
       compiler: clang
+
     - env: GODOT_TARGET=server TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
       os: linux
       compiler: gcc
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-5.0
-    packages:
-      # General build deps
-      - build-essential
-      - scons
-      - pkg-config
-
-      # Linux/X11 build deps
-      - libx11-dev
-      - libxcursor-dev
-      - libxi-dev
-      - libxinerama-dev
-      - libxrandr-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
-      - libasound2-dev
-      - libfreetype6-dev
-
-      # For style checks.
-      - clang-format-5.0
-
-  coverity_scan:
-    project:
-      name: "godotengine/godot"
-      description: "Godot Engine Coverity scans"
-    notification_email: coverity@godotengine.org
-    build_command_prepend: ""
-    build_command: "scons p=x11 -j2 $OPTIONS"
-    branch_pattern: coverity_scan
+      addons:
+        apt:
+          packages:
+            - *linux_deps
 
 before_install:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       unset SCONS_CACHE;
-    else
-      if [ "$TRAVIS_BRANCH" = "coverity_scan" ]; then
-        echo "This job runs in the Coverity Scan branch and is not the STATIC_CHECKS job meant for it, so aborting with exit code 0.";
-        travis_terminate 0;
-      fi;
     fi
 
 install:
