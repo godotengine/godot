@@ -84,34 +84,19 @@ StringName PluginScript::get_instance_base_type() const {
 }
 
 void PluginScript::update_exports() {
-// TODO
 #ifdef TOOLS_ENABLED
-#if 0
 	ASSERT_SCRIPT_VALID();
-	if (/*changed &&*/ placeholders.size()) { //hm :(
+	if (placeholders.size()) {
 
 		//update placeholders if any
 		Map<StringName, Variant> propdefvalues;
 		List<PropertyInfo> propinfos;
-		const String *props = (const String *)pybind_get_prop_list(_py_exposed_class);
-		for (int i = 0; props[i] != ""; ++i) {
-			const String propname = props[i];
-			pybind_get_prop_default_value(_py_exposed_class, propname.c_str(), (godot_variant *)&propdefvalues[propname]);
-			pybind_prop_info raw_info;
-			pybind_get_prop_info(_py_exposed_class, propname.c_str(), &raw_info);
-			PropertyInfo info;
-			info.type = (Variant::Type)raw_info.type;
-			info.name = propname;
-			info.hint = (PropertyHint)raw_info.hint;
-			info.hint_string = *(String *)&raw_info.hint_string;
-			info.usage = raw_info.usage;
-			propinfos.push_back(info);
-		}
+
+		get_script_property_list(&propinfos);
 		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propinfos, propdefvalues);
+			E->get()->update(propinfos, _properties_default_values);
 		}
 	}
-#endif
 #endif
 }
 
