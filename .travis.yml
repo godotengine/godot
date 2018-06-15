@@ -36,13 +36,16 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no"
       os: linux
       compiler: gcc
       addons:
         apt:
+          sources:
+            - mono
           packages:
             - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - &linux_mono_deps [mono-devel, msbuild]
 
     - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
@@ -100,5 +103,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $OPTIONS;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $EXTRA_ARGS $OPTIONS;
     fi
