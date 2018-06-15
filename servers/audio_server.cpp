@@ -939,9 +939,6 @@ void AudioServer::finish() {
 	buses.clear();
 }
 
-void AudioServer::update() {
-}
-
 /* MISC config */
 
 void AudioServer::lock() {
