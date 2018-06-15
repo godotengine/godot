@@ -1813,9 +1813,6 @@ bool Main::iteration() {
 		}
 	}
 
-	if (AudioServer::get_singleton())
-		AudioServer::get_singleton()->update();
-
 	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
 	idle_process_max = MAX(idle_process_ticks, idle_process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
