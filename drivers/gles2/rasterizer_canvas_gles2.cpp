@@ -733,6 +733,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 							int w = current_clip->final_clip_rect.size.x;
 							int h = current_clip->final_clip_rect.size.y;
 
+							if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+								y = current_clip->final_clip_rect.position.y;
+
 							glScissor(x, y, w, h);
 
 							reclip = false;
@@ -821,7 +824,10 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 			if (current_clip) {
 				glEnable(GL_SCISSOR_TEST);
-				glScissor(current_clip->final_clip_rect.position.x, (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
+				int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.y);
+				if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+					y = current_clip->final_clip_rect.position.y;
+				glScissor(current_clip->final_clip_rect.position.x, y, current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
 			} else {
 				glDisable(GL_SCISSOR_TEST);
 			}
@@ -969,7 +975,10 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		if (reclip) {
 			glEnable(GL_SCISSOR_TEST);
-			glScissor(current_clip->final_clip_rect.position.x, (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
+			int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.y);
+			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+				y = current_clip->final_clip_rect.position.y;
+			glScissor(current_clip->final_clip_rect.position.x, y, current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
 		}
 
 		p_item_list = p_item_list->next;
