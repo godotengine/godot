@@ -349,4 +349,5 @@ def configure(env):
         configure_msvc(env, manual_msvc_config)
 
     else: # MinGW
+        env.extra_suffix = ".mingw" + env.extra_suffix
         configure_mingw(env)
