@@ -332,6 +332,14 @@ public:
 	~PlaceHolderScriptInstance();
 };
 
+struct FrameTimeData {
+	float frame_time;
+	float visual_time;
+	float idle_time;
+	float physics_time;
+	float physics_frame_time;
+};
+
 class ScriptDebugger {
 
 	int lines_left;
@@ -403,7 +411,7 @@ public:
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;
 	virtual void profiling_start() = 0;
 	virtual void profiling_end() = 0;
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) = 0;
+	virtual void profiling_set_frame_times(const FrameTimeData &p_ftd) = 0;
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() { singleton = NULL; }

@@ -742,15 +742,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "profile_frame" || p_msg == "profile_total") {
 
+		int idx = 0;
 		EditorProfiler::Metric metric;
 		metric.valid = true;
-		metric.frame_number = p_data[0];
-		metric.frame_time = p_data[1];
-		metric.idle_time = p_data[2];
-		metric.physics_time = p_data[3];
-		metric.physics_frame_time = p_data[4];
-		int frame_data_amount = p_data[6];
-		int frame_function_amount = p_data[7];
+		metric.frame_number = p_data[idx++];
+		metric.frame_time = p_data[idx++];
+		metric.visual_time = p_data[idx++];
+		metric.idle_time = p_data[idx++];
+		metric.physics_time = p_data[idx++];
+		metric.physics_frame_time = p_data[idx++];
+		float script_time = p_data[idx++];
+		int frame_data_amount = p_data[idx++];
+		int frame_function_amount = p_data[idx++];
 
 		if (frame_data_amount) {
 			EditorProfiler::Metric::Category frame_time;
@@ -766,6 +769,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			item.total = metric.physics_time;
 			item.self = item.total;
 			item.signature = "physics_time";
+
+			frame_time.items.push_back(item);
+
+			item.name = "Visual Time";
+			item.total = metric.visual_time;
+			item.self = item.total;
+			item.signature = "visual_time";
 
 			frame_time.items.push_back(item);
 
@@ -786,7 +796,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			metric.categories.push_back(frame_time);
 		}
 
-		int idx = 8;
 		for (int i = 0; i < frame_data_amount; i++) {
 
 			EditorProfiler::Metric::Category c;
@@ -813,7 +822,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		}
 
 		EditorProfiler::Metric::Category funcs;
-		funcs.total_time = p_data[5]; //script time
+		funcs.total_time = script_time;
 		funcs.items.resize(frame_function_amount);
 		funcs.name = "Script Functions";
 		funcs.signature = "script_functions";

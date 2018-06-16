@@ -37,7 +37,8 @@
 class ScriptDebuggerLocal : public ScriptDebugger {
 
 	bool profiling;
-	float frame_time, idle_time, physics_time, physics_frame_time;
+
+	FrameTimeData ftd;
 	uint64_t idle_accum;
 	String target_function;
 	Map<String, String> options;
@@ -59,7 +60,7 @@ public:
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	virtual void profiling_set_frame_times(const FrameTimeData &p_ftd);
 
 	ScriptDebuggerLocal();
 };

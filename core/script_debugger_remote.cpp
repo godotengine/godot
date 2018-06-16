@@ -743,10 +743,11 @@ void ScriptDebuggerRemote::_poll_events() {
 			max_frame_functions = cmd[1];
 			profiler_function_signature_map.clear();
 			profiling = true;
-			frame_time = 0;
-			idle_time = 0;
-			physics_time = 0;
-			physics_frame_time = 0;
+			ftd.frame_time = 0;
+			ftd.visual_time = 0;
+			ftd.idle_time = 0;
+			ftd.physics_time = 0;
+			ftd.physics_frame_time = 0;
 
 			print_line("PROFILING ALRIGHT!");
 
@@ -816,17 +817,18 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	if (p_for_frame) {
 		packet_peer_stream->put_var("profile_frame");
-		packet_peer_stream->put_var(8 + profile_frame_data.size() * 2 + to_send * 4);
+		packet_peer_stream->put_var(9 + profile_frame_data.size() * 2 + to_send * 4);
 	} else {
 		packet_peer_stream->put_var("profile_total");
-		packet_peer_stream->put_var(8 + to_send * 4);
+		packet_peer_stream->put_var(9 + to_send * 4);
 	}
 
 	packet_peer_stream->put_var(Engine::get_singleton()->get_frames_drawn()); //total frame time
-	packet_peer_stream->put_var(frame_time); //total frame time
-	packet_peer_stream->put_var(idle_time); //idle frame time
-	packet_peer_stream->put_var(physics_time); //fixed frame time
-	packet_peer_stream->put_var(physics_frame_time); //fixed frame time
+	packet_peer_stream->put_var(ftd.frame_time); //total frame time
+	packet_peer_stream->put_var(ftd.visual_time); //visual frame time
+	packet_peer_stream->put_var(ftd.idle_time); //idle frame time
+	packet_peer_stream->put_var(ftd.physics_time); //fixed frame time
+	packet_peer_stream->put_var(ftd.physics_frame_time); //fixed frame time
 
 	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); //total script execution time
 
@@ -1062,12 +1064,9 @@ void ScriptDebuggerRemote::profiling_end() {
 	//ignores this, uses it via connection
 }
 
-void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+void ScriptDebuggerRemote::profiling_set_frame_times(const FrameTimeData &p_ftd) {
 
-	frame_time = p_frame_time;
-	idle_time = p_idle_time;
-	physics_time = p_physics_time;
-	physics_frame_time = p_physics_frame_time;
+	ftd = p_ftd;
 }
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;

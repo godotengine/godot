@@ -1720,7 +1720,6 @@ bool Main::force_redraw_requested = false;
 
 //for performance metrics
 static uint64_t physics_process_max = 0;
-static uint64_t idle_process_max = 0;
 
 bool Main::iteration() {
 
@@ -1746,6 +1745,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
+	uint64_t visual_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -1794,10 +1794,9 @@ bool Main::iteration() {
 
 	Engine::get_singleton()->_in_physics = false;
 
-	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
-
-	OS::get_singleton()->get_main_loop()->idle(step * time_scale);
 	message_queue->flush();
+
+	uint64_t visual_begin = OS::get_singleton()->get_ticks_usec();
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -1815,8 +1814,33 @@ bool Main::iteration() {
 		}
 	}
 
+	visual_process_ticks = OS::get_singleton()->get_ticks_usec() - visual_begin;
+	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
+
+	OS::get_singleton()->get_main_loop()->idle(step * time_scale);
+
+	if (fixed_fps == -1) {
+		if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw()) {
+			// Apply some delay to force idle time (results in about 60 FPS max)
+			OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec());
+		} else {
+			uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+			if (frame_delay)
+				OS::get_singleton()->delay_usec(Engine::get_singleton()->get_frame_delay() * 1000);
+		}
+
+		int target_fps = Engine::get_singleton()->get_target_fps();
+		if (target_fps > 0) {
+			uint64_t time_step = 1000000L / target_fps;
+			target_ticks += time_step;
+			uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
+			if (current_ticks < target_ticks) OS::get_singleton()->delay_usec(target_ticks - current_ticks);
+			current_ticks = OS::get_singleton()->get_ticks_usec();
+			target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
+		}
+	}
+
 	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
-	idle_process_max = MAX(idle_process_ticks, idle_process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -1825,7 +1849,14 @@ bool Main::iteration() {
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
-			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
+			FrameTimeData ftd = {
+				USEC_TO_SEC(frame_time),
+				USEC_TO_SEC(visual_process_ticks),
+				USEC_TO_SEC(idle_process_ticks),
+				USEC_TO_SEC(physics_process_ticks),
+				frame_slice
+			};
+			script_debugger->profiling_set_frame_times(ftd);
 		}
 		script_debugger->idle_poll();
 	}
@@ -1844,34 +1875,12 @@ bool Main::iteration() {
 		}
 
 		Engine::get_singleton()->_fps = frames;
-		performance->set_process_time(USEC_TO_SEC(idle_process_max));
+		performance->set_process_time(USEC_TO_SEC(frame_time));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
-		idle_process_max = 0;
 		physics_process_max = 0;
 
 		frame %= 1000000;
 		frames = 0;
-	}
-
-	if (fixed_fps != -1)
-		return exit;
-
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time (results in about 60 FPS max)
-	else {
-		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-		if (frame_delay)
-			OS::get_singleton()->delay_usec(Engine::get_singleton()->get_frame_delay() * 1000);
-	}
-
-	int target_fps = Engine::get_singleton()->get_target_fps();
-	if (target_fps > 0) {
-		uint64_t time_step = 1000000L / target_fps;
-		target_ticks += time_step;
-		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-		if (current_ticks < target_ticks) OS::get_singleton()->delay_usec(target_ticks - current_ticks);
-		current_ticks = OS::get_singleton()->get_ticks_usec();
-		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
 	}
 
 #ifdef TOOLS_ENABLED

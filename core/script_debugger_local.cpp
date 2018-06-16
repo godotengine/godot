@@ -303,12 +303,9 @@ struct _ScriptDebuggerLocalProfileInfoSort {
 	}
 };
 
-void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+void ScriptDebuggerLocal::profiling_set_frame_times(const FrameTimeData &p_ftd) {
 
-	frame_time = p_frame_time;
-	idle_time = p_idle_time;
-	physics_time = p_physics_time;
-	physics_frame_time = p_physics_frame_time;
+	ftd = p_ftd;
 }
 
 void ScriptDebuggerLocal::idle_poll() {
@@ -342,11 +339,11 @@ void ScriptDebuggerLocal::idle_poll() {
 
 	float script_time = USEC_TO_SEC(script_time_us);
 
-	float total_time = frame_time;
+	float total_time = ftd.frame_time;
 
 	//print script total
 
-	print_line("FRAME: total: " + rtos(frame_time) + " script: " + rtos(script_time) + "/" + itos(script_time * 100 / total_time) + " %");
+	print_line("FRAME: total: " + rtos(ftd.frame_time) + " script: " + rtos(script_time) + "/" + itos(script_time * 100 / total_time) + " %");
 
 	for (int i = 0; i < ofs; i++) {
 
@@ -366,10 +363,11 @@ void ScriptDebuggerLocal::profiling_start() {
 	print_line("BEGIN PROFILING");
 	profiling = true;
 	pinfo.resize(32768);
-	frame_time = 0;
-	physics_time = 0;
-	idle_time = 0;
-	physics_frame_time = 0;
+	ftd.frame_time = 0;
+	ftd.physics_time = 0;
+	ftd.visual_time = 0;
+	ftd.idle_time = 0;
+	ftd.physics_frame_time = 0;
 }
 
 void ScriptDebuggerLocal::profiling_end() {
