@@ -5,6 +5,7 @@ Import('env')
 gdn_env = env.Clone()
 gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
 gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
+gdn_env.add_source_files(env.modules_sources, "android/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
@@ -49,6 +50,7 @@ def _build_gdnative_api_struct_header(api):
         '#define GODOT_GDNATIVE_API_STRUCT_H',
         '',
         '#include <gdnative/gdnative.h>',
+        '#include <android/godot_android.h>',
         '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
