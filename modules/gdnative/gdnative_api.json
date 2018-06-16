@@ -5962,6 +5962,29 @@
       ]
     },
     {
+      "name": "android",
+      "type": "ANDROID",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_android_get_env",
+          "return_type": "JNIEnv*",
+          "arguments": [
+          ]
+        },
+        {
+          "name": "godot_android_get_activity",
+          "return_type": "jobject",
+          "arguments": [
+          ]
+        }
+      ]
+    },
+    {
       "name": "arvr",
       "type": "ARVR",
       "version": {
