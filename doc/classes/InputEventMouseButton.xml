@@ -21,7 +21,7 @@
 			If [code]true[/code] the mouse button's state is a double-click. If [code]false[/code] the mouse button's state is released.
 		</member>
 		<member name="factor" type="float" setter="set_factor" getter="get_factor">
-			TO TALK in PR, reduz said : i think it's used for apple touch but i don't remember what it does
+			Magnitude. Amount (or delta) of the event. Used for scroll events, indicates scroll amount (vertically or horizontally). Only supported on some platforms, sensitivity varies by platform. May be 0 if not supported.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			If [code]true[/code] the mouse button's state is pressed. If [code]false[/code] the mouse button's state is released.
