@@ -1048,18 +1048,24 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
 
 	Map<String, String> file_renames;
 	Map<String, String> folder_renames;
+	bool is_moved = false;
 	for (int i = 0; i < to_move.size(); i++) {
 		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
 		String new_path = p_to_path.plus_file(old_path.get_file());
-		_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+		if (old_path != new_path) {
+			_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			is_moved = true;
+		}
 	}
 
-	_update_dependencies_after_move(file_renames);
-	_update_resource_paths_after_move(file_renames);
-	_update_favorite_dirs_list_after_move(folder_renames);
+	if (is_moved) {
+		_update_dependencies_after_move(file_renames);
+		_update_resource_paths_after_move(file_renames);
+		_update_favorite_dirs_list_after_move(folder_renames);
 
-	print_line("call rescan!");
-	_rescan();
+		print_line("call rescan!");
+		_rescan();
+	}
 }
 
 void FileSystemDock::_file_option(int p_option) {
