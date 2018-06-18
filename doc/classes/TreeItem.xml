@@ -308,7 +308,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
-				Removes the child TreeItem at index [code]index[/code].
+				Removes the given child TreeItem.
 			</description>
 		</method>
 		<method name="select">
