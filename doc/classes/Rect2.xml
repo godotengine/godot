@@ -42,6 +42,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns an equivalent [code]Rect2[/code] with a positive width and height.
 			</description>
 		</method>
 		<method name="clip">
