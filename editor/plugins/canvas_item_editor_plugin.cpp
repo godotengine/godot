@@ -4353,7 +4353,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_button->set_toggle_mode(true);
 	snap_button->connect("toggled", this, "_button_toggle_snap");
 	snap_button->set_tooltip(TTR("Toggle snapping."));
-	snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap"), KEY_S));
+	snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap"), KEY_MASK_SHIFT | KEY_S));
 
 	snap_config_menu = memnew(MenuButton);
 	hb->add_child(snap_config_menu);
