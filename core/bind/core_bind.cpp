@@ -799,6 +799,11 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+uint64_t _OS::get_ticks_usec() const {
+
+	return OS::get_singleton()->get_ticks_usec();
+}
+
 uint32_t _OS::get_splash_tick_msec() const {
 
 	return OS::get_singleton()->get_splash_tick_msec();
@@ -1131,6 +1136,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &_OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &_OS::get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_OS::get_ticks_usec);
 	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"), &_OS::get_splash_tick_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &_OS::get_latin_keyboard_variant);
