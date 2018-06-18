@@ -4,7 +4,7 @@
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		This contains the list of built-in gdscript functions. Mostly math functions and other utilities. Everything else is expanded by objects.
+		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
 	</description>
 	<tutorials>
 	</tutorials>
