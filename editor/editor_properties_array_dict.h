@@ -62,6 +62,7 @@ class EditorPropertyArray : public EditorProperty {
 	EditorSpinSlider *length;
 	EditorSpinSlider *page;
 	HBoxContainer *page_hb;
+	Variant::Type array_type;
 
 	void _page_changed(double p_page);
 	void _length_changed(double p_page);
@@ -75,6 +76,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void setup(Variant::Type p_array_type);
 	virtual void update_property();
 	EditorPropertyArray();
 };
