@@ -134,6 +134,11 @@
 				Emitted when the user presses KEY_ENTER on the [code]LineEdit[/code].
 			</description>
 		</signal>
+		<signal name="caret_moved">
+			<description>
+				Emitted when the caret moves without an associated edit/delete.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="Align">

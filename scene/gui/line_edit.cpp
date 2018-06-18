@@ -217,10 +217,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 #ifdef APPLE_STYLE_KEYS
 				case (KEY_LEFT): { // Go to start of text - like HOME key
+					bool should_emit_caret_moved = get_cursor_position() != 0;
 					set_cursor_position(0);
+					if (should_emit_caret_moved)
+						emit_signal("caret_moved");
 				} break;
 				case (KEY_RIGHT): { // Go to end of text - like END key
+					int old_position = get_cursor_position();
 					set_cursor_position(text.length());
+					if (get_cursor_position() != old_position)
+						emit_signal("caret_moved");
 				} break;
 #endif
 				default: { handled = false; }
@@ -304,7 +310,10 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
+						bool should_emit_caret_moved = get_cursor_position() != 0;
 						set_cursor_position(0);
+						if (should_emit_caret_moved)
+							emit_signal("caret_moved");
 					} else if (k->get_alt()) {
 
 #else
@@ -326,10 +335,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 							cc--;
 						}
 
+						int old_position = get_cursor_position();
 						set_cursor_position(cc);
+						if (get_cursor_position() != old_position)
+							emit_signal("caret_moved");
 
 					} else {
+						int old_position = get_cursor_position();
 						set_cursor_position(get_cursor_position() - 1);
+						if (get_cursor_position() != old_position)
+							emit_signal("caret_moved");
 					}
 
 					shift_selection_check_post(k->get_shift());
@@ -348,7 +363,10 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
+						int old_position = get_cursor_position();
 						set_cursor_position(text.length());
+						if (get_cursor_position() != old_position)
+							emit_signal("caret_moved");
 					} else if (k->get_alt()) {
 #else
 					if (k->get_alt()) {
@@ -369,10 +387,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 							cc++;
 						}
 
+						int old_position = get_cursor_position();
 						set_cursor_position(cc);
+						if (get_cursor_position() != old_position)
+							emit_signal("caret_moved");
 
 					} else {
+						int old_position = get_cursor_position();
 						set_cursor_position(get_cursor_position() + 1);
+						if (get_cursor_position() != old_position)
+							emit_signal("caret_moved");
 					}
 
 					shift_selection_check_post(k->get_shift());
@@ -382,14 +406,20 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 					shift_selection_check_pre(k->get_shift());
 					if (get_cursor_position() == 0) handled = false;
+					bool should_emit_caret_moved = get_cursor_position() != 0;
 					set_cursor_position(0);
+					if (should_emit_caret_moved)
+						emit_signal("caret_moved");
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DOWN: {
 
 					shift_selection_check_pre(k->get_shift());
 					if (get_cursor_position() == text.length()) handled = false;
+					int old_position = get_cursor_position();
 					set_cursor_position(text.length());
+					if (get_cursor_position() != old_position)
+						emit_signal("caret_moved");
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DELETE: {
@@ -452,7 +482,10 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_HOME: {
 
 					shift_selection_check_pre(k->get_shift());
+					bool should_emit_caret_moved = get_cursor_position() != 0;
 					set_cursor_position(0);
+					if (should_emit_caret_moved)
+						emit_signal("caret_moved");
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_KP_1: {
@@ -465,7 +498,10 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_END: {
 
 					shift_selection_check_pre(k->get_shift());
+					int old_position = get_cursor_position();
 					set_cursor_position(text.length());
+					if (get_cursor_position() != old_position)
+						emit_signal("caret_moved");
 					shift_selection_check_post(k->get_shift());
 				} break;
 
@@ -1469,6 +1505,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("caret_moved"));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
