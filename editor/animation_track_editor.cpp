@@ -4116,7 +4116,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 					track_edits[i]->append_to_selection(local_rect);
 				}
 
-				if (_get_track_selected() == -1) { //minimal hack to make shortcuts work
+				if (_get_track_selected() == -1 && track_edits.size() > 0) { //minimal hack to make shortcuts work
 					track_edits[track_edits.size() - 1]->grab_focus();
 				}
 			} else {
