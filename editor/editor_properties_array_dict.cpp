@@ -1,6 +1,7 @@
 #include "editor_properties_array_dict.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
+#include "scene/gui/margin_container.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -241,6 +242,7 @@ void EditorPropertyArray::update_property() {
 	if (unfolded) {
 
 		updating = true;
+		draw_grouped = true;
 
 		if (!vbox) {
 
@@ -249,10 +251,9 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(vbox);
 			HBoxContainer *hbc = memnew(HBoxContainer);
 			vbox->add_child(hbc);
-			Label *label = memnew(Label(TTR("Size: ")));
-			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbc->add_child(label);
+			hbc->add_spacer(); // not really a good solution
 			length = memnew(EditorSpinSlider);
+			length->set_label(TTR("Size"));
 			length->set_step(1);
 			length->set_max(1000000);
 			length->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -261,10 +262,9 @@ void EditorPropertyArray::update_property() {
 
 			page_hb = memnew(HBoxContainer);
 			vbox->add_child(page_hb);
-			label = memnew(Label(TTR("Page: ")));
-			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			page_hb->add_child(label);
+			page_hb->add_spacer();
 			page = memnew(EditorSpinSlider);
+			page->set_label(TTR("Page"));
 			page->set_step(1);
 			page_hb->add_child(page);
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -456,6 +456,8 @@ void EditorPropertyArray::update_property() {
 				} break;
 				default: {}
 			}
+			add_color_override("depth_color", get_color("depth" + itos(depth), "Inspector"));
+			prop->set_depth(depth + 1);
 
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
@@ -484,6 +486,7 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(NULL);
 			memdelete(vbox);
 			vbox = NULL;
+			draw_grouped = false;
 		}
 	}
 #endif
@@ -492,6 +495,18 @@ void EditorPropertyArray::update_property() {
 void EditorPropertyArray::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	}
+	if (p_what == NOTIFICATION_DRAW) {
+		if (draw_grouped) {
+
+			Size2 size = get_size();
+			int rsize = get_constant("group_ruler_size", "Inspector");
+			draw_rect(Rect2(rsize * depth, 0, rsize, size.height), get_color("depth_color"));
+
+			// draw over the previous lines
+			if (depth > 0)
+				draw_rect(Rect2(0, 0, rsize * depth, size.height), get_color("base_color", "Editor"));
+		}
 	}
 }
 void EditorPropertyArray::_edit_pressed() {
@@ -659,6 +674,7 @@ void EditorPropertyDictionary::update_property() {
 	if (unfolded) {
 
 		updating = true;
+		draw_grouped = true;
 
 		if (!vbox) {
 
@@ -668,10 +684,9 @@ void EditorPropertyDictionary::update_property() {
 
 			page_hb = memnew(HBoxContainer);
 			vbox->add_child(page_hb);
-			Label *label = memnew(Label(TTR("Page: ")));
-			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			page_hb->add_child(label);
+			page_hb->add_spacer();
 			page = memnew(EditorSpinSlider);
+			page->set_label(TTR("Page"));
 			page->set_step(1);
 			page_hb->add_child(page);
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -873,16 +888,18 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				default: {}
 			}
+			add_color_override("depth_color", get_color("depth" + itos(depth), "Inspector"));
+			prop->set_depth(depth + 1);
 
 			if (i == amount) {
+				MarginContainer *mc = memnew(MarginContainer);
+				vbox->add_child(mc);
+				mc->add_constant_override("margin_left", get_constant("group_ruler_size", "Inspector") * depth + get_constant("hseparation", "Inspector"));
 				PanelContainer *pc = memnew(PanelContainer);
-				vbox->add_child(pc);
-				Ref<StyleBoxFlat> flat;
-				flat.instance();
-				for (int j = 0; j < 4; j++) {
-					flat->set_default_margin(Margin(j), 2 * EDSCALE);
-				}
-				flat->set_bg_color(get_color("prop_subsection", "Editor"));
+				mc->add_child(pc);
+				Ref<StyleBoxFlat> flat = get_stylebox("Empty", "EditorStyles");
+				flat->duplicate();
+				flat->set_bg_color(get_color("section_bg_color", "Inspector"));
 
 				pc->add_style_override("panel", flat);
 				add_vbox = memnew(VBoxContainer);
@@ -897,10 +914,10 @@ void EditorPropertyDictionary::update_property() {
 				prop->set_tooltip(cs);
 				change_index = i + offset;
 			} else if (i == amount) {
-				prop->set_label(TTR("New Key:"));
+				prop->set_label(TTR("Key:"));
 				change_index = -1;
 			} else if (i == amount + 1) {
-				prop->set_label(TTR("New Value:"));
+				prop->set_label(TTR("Value:"));
 				change_index = -2;
 			}
 
@@ -924,7 +941,7 @@ void EditorPropertyDictionary::update_property() {
 
 			if (i == amount + 1) {
 				Button *add_item = memnew(Button);
-				add_item->set_text(TTR("Add Key/Value Pair"));
+				add_item->set_text(TTR("Add Pair"));
 				add_vbox->add_child(add_item);
 				add_item->connect("pressed", this, "_add_key_value");
 			}
@@ -937,6 +954,7 @@ void EditorPropertyDictionary::update_property() {
 			set_bottom_editor(NULL);
 			memdelete(vbox);
 			vbox = NULL;
+			draw_grouped = false;
 		}
 	}
 #endif
@@ -945,6 +963,18 @@ void EditorPropertyDictionary::update_property() {
 void EditorPropertyDictionary::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	}
+	if (p_what == NOTIFICATION_DRAW) {
+		if (vbox) {
+
+			Size2 size = get_size();
+			int rsize = get_constant("group_ruler_size", "Inspector");
+			draw_rect(Rect2(rsize * depth, 0, rsize, size.height), get_color("depth_color"));
+
+			// draw over the previous lines
+			if (depth > 0)
+				draw_rect(Rect2(0, 0, rsize * depth, size.height), get_color("base_color", "Editor"));
+		}
 	}
 }
 void EditorPropertyDictionary::_edit_pressed() {

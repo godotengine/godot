@@ -81,6 +81,9 @@ private:
 	Control *bottom_editor;
 
 protected:
+	int depth;
+	bool draw_grouped; // used only for when we have sub inspector
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -133,6 +136,8 @@ public:
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
+
+	void set_depth(int p_depth) { depth = p_depth; };
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	EditorProperty();
@@ -191,6 +196,7 @@ class EditorInspectorSection : public Container {
 	VBoxContainer *vbox;
 	Color bg_color;
 	bool foldable;
+	int depth;
 
 protected:
 	void _notification(int p_what);
@@ -207,7 +213,7 @@ public:
 
 	Object *get_edited_object();
 
-	EditorInspectorSection();
+	EditorInspectorSection(int p_depth = 0);
 };
 
 class EditorInspector : public ScrollContainer {
@@ -250,6 +256,8 @@ class EditorInspector : public ScrollContainer {
 	StringName _prop_edited;
 	StringName property_selected;
 	int property_focusable;
+
+	int depth;
 
 	Map<StringName, Map<StringName, String> > descr_cache;
 	Map<StringName, String> class_descr_cache;
@@ -322,7 +330,9 @@ public:
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
 
-	EditorInspector();
+	int get_depth() const { return depth; };
+
+	EditorInspector(int p_depth = 0);
 };
 
 #endif // INSPECTOR_H

@@ -39,6 +39,14 @@
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
 
+// A simple wrapper around Grid container, to make styling easy
+class EditorMultiInput : public GridContainer {
+	GDCLASS(EditorMultiInput, GridContainer)
+
+public:
+	EditorMultiInput();
+};
+
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty)
 	LineEdit *text;
@@ -280,6 +288,7 @@ class EditorPropertyEasing : public EditorProperty {
 	ToolButton *button_out, *button_in, *button_linear, *button_constant;
 	ToolButton *button_in_out, *button_out_in;
 	VBoxContainer *vb;
+	HBoxContainer *hb;
 
 	bool flip;
 

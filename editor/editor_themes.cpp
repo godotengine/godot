@@ -212,7 +212,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		}
 
 	// generate thumb files with the given thumb size
-	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we don't need filter with original resolution
+	bool force_filter = !(p_thumb_size == 64 || p_thumb_size == 32); // we don't need filter with original resolution
 	if (p_thumb_size >= 64) {
 		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
@@ -245,7 +245,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
-	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
+	Ref<Theme> theme = p_theme != NULL ? p_theme : Ref<Theme>(memnew(Theme));
 
 	const float default_contrast = 0.25;
 
@@ -366,6 +366,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("highlighted_font_color", "Editor", font_color_hl);
 	theme->set_color("disabled_font_color", "Editor", font_color_disabled);
 
+	theme->set_color("select_color", "Editor", accent_color);
+
 	theme->set_color("mono_color", "Editor", mono_color);
 
 	Color success_color = accent_color.linear_interpolate(Color(0.2, 1, 0.2), 0.6) * 1.2;
@@ -382,6 +384,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
 
+	// label colors
+	theme->set_color("x", "Editor", Color(1, .1, .1).linear_interpolate(accent_color, 0.3));
+	theme->set_color("y", "Editor", Color(.1, .9, .1).linear_interpolate(accent_color, 0.3));
+	theme->set_color("z", "Editor", Color(0, 0.3, 1).linear_interpolate(accent_color, 0.3));
+
 	// 2d grid color
 	const Color grid_minor_color = mono_color * Color(1.0, 1.0, 1.0, 0.07);
 	const Color grid_major_color = Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.15);
@@ -389,25 +396,29 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("grid_minor_color", "Editor", grid_minor_color);
 
 	const int thumb_size = EDITOR_DEF("filesystem/file_dialog/thumbnail_size", 64);
+
+	bool keep_icons = false;
+	bool keep_thumbs = false;
+	if (p_theme != NULL) {
+		if (p_theme->has_constant("scale", "Editor") && p_theme->has_constant("dark_theme", "Editor"))
+			keep_icons = (fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && p_theme->get_constant("dark_theme", "Editor") == dark_theme);
+		if (p_theme->has_constant("thumb_size", "Editor"))
+			keep_thumbs = (fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) < 0.00001);
+	}
+
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 
 	//Register icons + font
 
-	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
-		// register already generated icons
-		for (int i = 0; i < editor_icons_count; i++) {
-			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
-		}
-	} else {
+	// the resolution and the icon color (dark_theme bool) has changed, so we do not regenerate the icons
+	if (!keep_icons)
 		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
-	}
+
 	// thumbnail size has changed, so we regenerate the medium sizes
-	if (p_theme != NULL && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
-		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
-	}
+	if (!keep_thumbs)
+		editor_register_and_generate_icons(theme, dark_theme, thumb_size, true);
 
 	editor_register_fonts(theme);
 
@@ -467,7 +478,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup_separator->set_grow(popup_margin_size - MAX(EDSCALE, border_width));
 	style_popup_separator->set_thickness(MAX(EDSCALE, border_width));
 
-	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
+	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size * EDSCALE, default_margin_size * EDSCALE, default_margin_size * EDSCALE, default_margin_size * EDSCALE);
+	Ref<StyleBoxFlat> style_fempty = make_flat_stylebox(Color(0, 0, 0, 0), default_margin_size * EDSCALE, default_margin_size * EDSCALE, default_margin_size * EDSCALE, default_margin_size * EDSCALE);
+	theme->set_stylebox("Empty", "EditorStyles", style_fempty);
 
 	// Tabs
 
@@ -943,6 +956,47 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("bg", "ProgressBar", make_stylebox(theme->get_icon("GuiProgressBar", "EditorIcons"), 4, 4, 4, 4, 0, 0, 0, 0));
 	theme->set_stylebox("fg", "ProgressBar", make_stylebox(theme->get_icon("GuiProgressFill", "EditorIcons"), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
+
+	// EditorSpinSlider
+	theme->set_font("label", "EditorSpinSlider", theme->get_font("monospace", "EditorFonts"));
+
+	// Inspector
+	theme->set_constant("hseparation", "Inspector", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "Inspector", default_margin_size * EDSCALE);
+	theme->set_constant("item_separation", "Inspector", default_margin_size * EDSCALE);
+	theme->set_constant("category_separation", "Inspector", default_margin_size * EDSCALE * 4);
+	theme->set_constant("group_ruler_size", "Inspector", 2 * EDSCALE);
+	theme->set_font("font", "Inspector", theme->get_font("small", "EditorFonts"));
+	theme->set_color("font_color", "Inspector", font_color);
+	//depth colors
+	int max_depth = 10;
+	for (int depth = 0; depth < max_depth; depth++) {
+		Color depth_color = accent_color;
+		float h = (float)(depth + 1) / (float)(max_depth + 1);
+		float s = depth_color.get_s() * 0.7;
+		float v = depth_color.get_v() * 1.2;
+		depth_color.set_hsv(h, s, v);
+		theme->set_color("depth" + itos(depth), "Inspector", depth_color);
+	}
+
+	Ref<StyleBoxFlat> style_inspector_category = style_default->duplicate();
+	style_inspector_category->set_draw_center(false);
+	style_inspector_category->set_border_color_all(base_color);
+	theme->set_stylebox("category", "Inspector", style_inspector_category);
+	theme->set_color("category_bg", "Inspector", Color(0.0, 0.0, 0.0, 0.5));
+	theme->set_color("category_font_color", "Inspector", font_color);
+	theme->set_font("category_font", "Inspector", theme->get_font("bold", "EditorFonts"));
+
+	Ref<StyleBoxFlat> style_inspector_section = style_default->duplicate();
+	style_inspector_section->set_draw_center(false);
+	style_inspector_section->set_border_width(MARGIN_LEFT, 0);
+	style_inspector_section->set_border_width(MARGIN_RIGHT, 0);
+	//style_inspector_section->set_border_color_all(base_color);
+	theme->set_stylebox("section", "Inspector", style_inspector_section);
+	theme->set_color("section_bg_color", "Inspector", mono_color * Color(1, 1, 1, 0.03));
+	theme->set_color("section_font_color", "Inspector", mono_color * Color(1, 1, 1, 0.3));
+	theme->set_color("section_font_hl_color", "Inspector", mono_color * Color(1, 1, 1, 0.4));
+	theme->set_font("section_font", "Inspector", theme->get_default_theme_font());
 
 	// GraphEdit
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);

@@ -34,6 +34,11 @@
 #include "editor_properties_array_dict.h"
 #include "scene/main/viewport.h"
 
+EditorMultiInput::EditorMultiInput() {
+	add_constant_override("hseparation", 0);
+	add_constant_override("vseparation", 0);
+}
+
 ///////////////////// NULL /////////////////////////
 
 void EditorPropertyNil::update_property() {
@@ -380,7 +385,6 @@ void EditorPropertyCheck::_bind_methods() {
 
 EditorPropertyCheck::EditorPropertyCheck() {
 	checkbox = memnew(CheckBox);
-	checkbox->set_text(TTR("On"));
 	add_child(checkbox);
 	add_focusable(checkbox);
 	checkbox->connect("pressed", this, "_checkbox_pressed");
@@ -880,19 +884,17 @@ void EditorPropertyEasing::setup(bool p_full, bool p_flip) {
 
 	flip = p_flip;
 	if (p_full) {
-		HBoxContainer *hb2 = memnew(HBoxContainer);
-		vb->add_child(hb2);
 		button_out_in = memnew(ToolButton);
 		button_out_in->set_tooltip(TTR("Out-In"));
 		button_out_in->set_h_size_flags(SIZE_EXPAND_FILL);
 		button_out_in->connect("pressed", this, "_set_preset", varray(-0.5));
-		hb2->add_child(button_out_in);
+		hb->add_child(button_out_in);
 
 		button_in_out = memnew(ToolButton);
 		button_in_out->set_tooltip(TTR("In"));
 		button_in_out->set_h_size_flags(SIZE_EXPAND_FILL);
 		button_in_out->connect("pressed", this, "_set_preset", varray(-2));
-		hb2->add_child(button_in_out);
+		hb->add_child(button_in_out);
 	}
 }
 
@@ -925,10 +927,11 @@ EditorPropertyEasing::EditorPropertyEasing() {
 
 	vb = memnew(VBoxContainer);
 	add_child(vb);
-	HBoxContainer *hb = memnew(HBoxContainer);
-	set_label_reference(hb);
-
+	set_bottom_editor(vb);
+	// buttons
+	hb = memnew(HBoxContainer);
 	vb->add_child(hb);
+	//set_label_reference(hb);
 
 	button_linear = memnew(ToolButton);
 	button_linear->set_tooltip(TTR("Linear"));
@@ -1001,13 +1004,16 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector2::EditorPropertyVector2() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	set_bottom_editor(cont);
+	cont->set_columns(2);
+
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
@@ -1054,13 +1060,16 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyRect2::EditorPropertyRect2() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	cont->set_columns(2);
+	set_bottom_editor(cont);
+
 	static const char *desc[4] = { "x", "y", "w", "h" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
@@ -1104,13 +1113,16 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector3::EditorPropertyVector3() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	cont->set_columns(3);
+	set_bottom_editor(cont);
+
 	static const char *desc[3] = { "x", "y", "z" };
 	for (int i = 0; i < 3; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
@@ -1156,13 +1168,16 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyPlane::EditorPropertyPlane() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	cont->set_columns(4);
+	set_bottom_editor(cont);
+
 	static const char *desc[4] = { "x", "y", "z", "d" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
@@ -1209,13 +1224,16 @@ void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p
 }
 
 EditorPropertyQuat::EditorPropertyQuat() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	cont->set_columns(4);
+	set_bottom_editor(cont);
+
 	static const char *desc[4] = { "x", "y", "z", "w" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
@@ -1268,20 +1286,20 @@ void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p
 }
 
 EditorPropertyAABB::EditorPropertyAABB() {
-	GridContainer *g = memnew(GridContainer);
-	g->set_columns(3);
-	add_child(g);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	add_child(cont);
+	cont->set_columns(3);
+	set_bottom_editor(cont);
 
 	static const char *desc[6] = { "x", "y", "z", "w", "h", "d" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		g->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1330,20 +1348,20 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 }
 
 EditorPropertyTransform2D::EditorPropertyTransform2D() {
-	GridContainer *g = memnew(GridContainer);
-	g->set_columns(2);
-	add_child(g);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	cont->set_columns(2);
+	add_child(cont);
+	set_bottom_editor(cont);
 
 	static const char *desc[6] = { "xx", "xy", "yx", "yy", "ox", "oy" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		g->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1398,20 +1416,20 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyBasis::EditorPropertyBasis() {
-	GridContainer *g = memnew(GridContainer);
-	g->set_columns(3);
-	add_child(g);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	cont->set_columns(3);
+	add_child(cont);
+	set_bottom_editor(cont);
 
 	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		g->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1472,20 +1490,20 @@ void EditorPropertyTransform::setup(double p_min, double p_max, double p_step, b
 }
 
 EditorPropertyTransform::EditorPropertyTransform() {
-	GridContainer *g = memnew(GridContainer);
-	g->set_columns(3);
-	add_child(g);
+	EditorMultiInput *cont = memnew(EditorMultiInput);
+	cont->set_columns(3);
+	add_child(cont);
+	set_bottom_editor(cont);
 
 	static const char *desc[12] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz", "ox", "oy", "oz" };
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		g->add_child(spin[i]);
+		cont->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
 	}
-	set_bottom_editor(g);
 	setting = false;
 }
 
@@ -1999,7 +2017,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 
 			if (!sub_inspector) {
-				sub_inspector = memnew(EditorInspector);
+				sub_inspector = memnew(EditorInspector(depth + 1));
 				sub_inspector->set_enable_v_scroll(false);
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
@@ -2012,6 +2030,9 @@ void EditorPropertyResource::update_property() {
 				add_child(sub_inspector);
 				set_bottom_editor(sub_inspector);
 				assign->set_pressed(true);
+
+				add_color_override("depth_color", get_color("depth" + itos(depth), "Inspector"));
+				draw_grouped = true;
 			}
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
@@ -2023,6 +2044,7 @@ void EditorPropertyResource::update_property() {
 				set_bottom_editor(NULL);
 				memdelete(sub_inspector);
 				sub_inspector = NULL;
+				draw_grouped = false;
 			}
 		}
 #endif
@@ -2102,6 +2124,19 @@ void EditorPropertyResource::_notification(int p_what) {
 		if (dropping) {
 			dropping = false;
 			assign->update();
+		}
+	}
+
+	if (p_what == NOTIFICATION_DRAW) {
+		if (use_sub_inspector && sub_inspector) {
+
+			Size2 size = get_size();
+			int rsize = get_constant("group_ruler_size", "Inspector");
+			draw_rect(Rect2(rsize * depth, 0, rsize, size.height), get_color("depth_color"));
+
+			// draw over the previous lines
+			if (depth > 0)
+				draw_rect(Rect2(0, 0, rsize * depth, size.height), get_color("base_color", "Editor"));
 		}
 	}
 }
