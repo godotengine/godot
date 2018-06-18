@@ -331,11 +331,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
 				TrackNodeCache::BezierAnim ba;
-				String path = leftover_path[leftover_path.size() - 1];
-				Vector<String> index = path.split(".");
-				for (int j = 0; j < index.size(); j++) {
-					ba.bezier_property.push_back(index[j]);
-				}
+				ba.bezier_property = leftover_path;
 				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				ba.owner = p_anim->node_cache[i];
 
