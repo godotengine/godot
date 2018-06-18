@@ -172,28 +172,9 @@ void EditorPropertyArray::update_property() {
 
 	Variant array = get_edited_object()->get(get_edited_property());
 
-	if ((!array.is_array()) != edit->is_disabled()) {
-
-		if (array.is_array()) {
-			edit->set_disabled(false);
-			edit->set_pressed(false);
-
-		} else {
-			edit->set_disabled(true);
-			if (vbox) {
-				memdelete(vbox);
-			}
-		}
-	}
-
-	if (!array.is_array()) {
-		return;
-	}
-
-	String arrtype;
-	switch (array.get_type()) {
+	String arrtype = "";
+	switch (array_type) {
 		case Variant::ARRAY: {
-
 			arrtype = "Array";
 
 		} break;
@@ -227,6 +208,15 @@ void EditorPropertyArray::update_property() {
 			arrtype = "ColArray";
 		} break;
 		default: {}
+	}
+
+	if (!array.is_array()) {
+		edit->set_text(arrtype + "[" + Variant::get_type_name(array.get_type()) + "]");
+		edit->set_pressed(false);
+		if (vbox) {
+			memdelete(vbox);
+		}
+		return;
 	}
 
 	edit->set_text(arrtype + "[" + itos(array.call("size")) + "]");
@@ -419,40 +409,55 @@ void EditorPropertyArray::update_property() {
 					prop = memnew(EditorPropertyDictionary);
 
 				} break;
-				case Variant::ARRAY: {
-
-					prop = memnew(EditorPropertyArray);
-
-				} break;
 
 				// arrays
+				case Variant::ARRAY: {
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::ARRAY);
+					prop = editor;
+
+				} break;
 				case Variant::POOL_BYTE_ARRAY: {
-					prop = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_BYTE_ARRAY);
+					prop = editor;
 
 				} break;
 				case Variant::POOL_INT_ARRAY: {
-					prop = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_INT_ARRAY);
+					prop = editor;
 
 				} break;
 				case Variant::POOL_REAL_ARRAY: {
 
-					prop = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_REAL_ARRAY);
+					prop = editor;
 				} break;
 				case Variant::POOL_STRING_ARRAY: {
 
-					prop = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_STRING_ARRAY);
+					prop = editor;
 				} break;
 				case Variant::POOL_VECTOR2_ARRAY: {
 
-					prop = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_VECTOR2_ARRAY);
+					prop = editor;
 				} break;
 				case Variant::POOL_VECTOR3_ARRAY: {
-					prop = memnew(EditorPropertyArray);
 
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_VECTOR3_ARRAY);
+					prop = editor;
 				} break;
 				case Variant::POOL_COLOR_ARRAY: {
-					prop = memnew(EditorPropertyArray);
 
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::POOL_COLOR_ARRAY);
+					prop = editor;
 				} break;
 				default: {}
 			}
@@ -496,6 +501,14 @@ void EditorPropertyArray::_notification(int p_what) {
 }
 void EditorPropertyArray::_edit_pressed() {
 
+	Variant array = get_edited_object()->get(get_edited_property());
+	if (!array.is_array()) {
+		Variant::CallError ce;
+		array = Variant::construct(array_type, NULL, 0, ce);
+
+		get_edited_object()->set(get_edited_property(), array);
+	}
+
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
 	update_property();
 }
@@ -520,6 +533,11 @@ void EditorPropertyArray::_length_changed(double p_page) {
 	}
 	object->set_array(array);
 	update_property();
+}
+
+void EditorPropertyArray::setup(Variant::Type p_array_type) {
+
+	array_type = p_array_type;
 }
 
 void EditorPropertyArray::_bind_methods() {
