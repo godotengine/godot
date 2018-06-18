@@ -742,12 +742,30 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.name = name;
 		info.path = path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
-		info.node = _create_autoload(path);
+
+		if (info.is_singleton) {
+			// Make sure name references work before parsing scripts
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_named_global_constant(info.name, Variant());
+			}
+		}
+
+		autoload_cache.push_back(info);
+	}
+
+	List<Node *> to_add;
+	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
+		AutoLoadInfo &info = E->get();
+
+		info.node = _create_autoload(info.path);
 
 		if (info.node) {
 			Ref<Script> scr = info.node->get_script();
 			info.in_editor = scr.is_valid() && scr->is_tool();
 			info.node->set_name(info.name);
+			if (info.in_editor) {
+				to_add.push_back(info.node);
+			}
 		}
 
 		if (info.is_singleton) {
@@ -760,8 +778,10 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			memdelete(info.node);
 			info.node = NULL;
 		}
+	}
 
-		autoload_cache.push_back(info);
+	for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
+		get_tree()->get_root()->add_child(E->get());
 	}
 
 	autoload_changed = "autoload_changed";
