@@ -199,6 +199,8 @@ public:
 
 	StringName node_configuration_warning_changed;
 
+	StringName output;
+
 	enum {
 		MAX_MATERIALS = 32
 	};

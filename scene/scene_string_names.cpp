@@ -187,6 +187,8 @@ SceneStringNames::SceneStringNames() {
 
 	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
 
+	output = StaticCString::create("output");
+
 	path_pp = NodePath("..");
 
 	_default = StaticCString::create("default");

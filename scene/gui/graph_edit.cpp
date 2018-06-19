@@ -58,6 +58,7 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 	c.from_port = p_from_port;
 	c.to = p_to;
 	c.to_port = p_to_port;
+	c.activity = 0;
 	connections.push_back(c);
 	top_layer->update();
 	update();
@@ -624,6 +625,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 
 void GraphEdit::_connections_layer_draw() {
 
+	Color activity_color = get_color("activity");
 	//draw connections
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -661,6 +663,11 @@ void GraphEdit::_connections_layer_draw() {
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
 		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * zoom;
 		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+
+		if (E->get().activity > 0) {
+			color = color.linear_interpolate(activity_color, E->get().activity);
+			tocolor = tocolor.linear_interpolate(activity_color, E->get().activity);
+		}
 		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
 	}
 
@@ -980,6 +987,23 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
+void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
+
+	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+
+		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
+
+			if (ABS(E->get().activity != p_activity)) {
+				//update only if changed
+				top_layer->update();
+				connections_layer->update();
+			}
+			E->get().activity = p_activity;
+			return;
+		}
+	}
+}
+
 void GraphEdit::clear_connections() {
 
 	connections.clear();
@@ -1141,11 +1165,16 @@ void GraphEdit::_snap_value_changed(double) {
 	update();
 }
 
+HBoxContainer *GraphEdit::get_zoom_hbox() {
+	return zoom_hb;
+}
+
 void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("connect_node", "from", "from_port", "to", "to_port"), &GraphEdit::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected", "from", "from_port", "to", "to_port"), &GraphEdit::is_node_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from", "from_port", "to", "to_port"), &GraphEdit::disconnect_node);
+	ClassDB::bind_method(D_METHOD("set_connection_activity", "from", "from_port", "to", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("get_scroll_ofs"), &GraphEdit::get_scroll_ofs);
@@ -1186,6 +1215,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
 	ClassDB::bind_method(D_METHOD("_connections_layer_draw"), &GraphEdit::_connections_layer_draw);
+
+	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
@@ -1253,7 +1284,7 @@ GraphEdit::GraphEdit() {
 
 	zoom = 1;
 
-	HBoxContainer *zoom_hb = memnew(HBoxContainer);
+	zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);
 	zoom_hb->set_position(Vector2(10, 10));
 

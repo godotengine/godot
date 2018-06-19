@@ -948,6 +948,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
 	theme->set_color("grid_major", "GraphEdit", grid_major_color);
 	theme->set_color("grid_minor", "GraphEdit", grid_minor_color);
+	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
