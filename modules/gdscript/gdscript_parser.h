@@ -56,6 +56,7 @@ public:
 		bool has_type;
 		bool is_constant;
 		bool is_meta_type; // Whether the value can be used as a type
+		bool infer_type;
 
 		Variant::Type builtin_type;
 		StringName native_type;
@@ -93,6 +94,7 @@ public:
 				has_type(false),
 				is_constant(false),
 				is_meta_type(false),
+				infer_type(false),
 				builtin_type(Variant::NIL),
 				class_type(NULL) {}
 	};
