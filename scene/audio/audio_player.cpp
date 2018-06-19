@@ -176,7 +176,6 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 
 	if (p_stream.is_valid() && stream_playback.is_null()) {
 		stream.unref();
-		ERR_FAIL_COND(stream_playback.is_null());
 	}
 }
 
