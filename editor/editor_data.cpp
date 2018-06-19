@@ -78,7 +78,7 @@ void EditorHistory::cleanup_history() {
 		current = history.size() - 1;
 }
 
-void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change) {
+void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
 
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
@@ -88,6 +88,7 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 		o.ref = REF(r);
 	o.object = p_object;
 	o.property = p_property;
+	o.inspector_only = p_inspector_only;
 
 	History h;
 
@@ -120,6 +121,11 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 	current++;
 }
 
+void EditorHistory::add_object_inspector_only(ObjectID p_object) {
+
+	_add_object(p_object, "", -1, true);
+}
+
 void EditorHistory::add_object(ObjectID p_object) {
 
 	_add_object(p_object, "", -1);
@@ -140,6 +146,13 @@ int EditorHistory::get_history_len() {
 }
 int EditorHistory::get_history_pos() {
 	return current;
+}
+
+bool EditorHistory::is_history_obj_inspector_only(int p_obj) const {
+
+	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
+	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
+	return history[p_obj].path[history[p_obj].level].inspector_only;
 }
 
 ObjectID EditorHistory::get_history_obj(int p_obj) const {
@@ -180,6 +193,14 @@ bool EditorHistory::previous() {
 	return true;
 }
 
+bool EditorHistory::is_current_inspector_only() const {
+
+	if (current < 0 || current >= history.size())
+		return false;
+
+	const History &h = history[current];
+	return h.path[h.level].inspector_only;
+}
 ObjectID EditorHistory::get_current() {
 
 	if (current < 0 || current >= history.size())

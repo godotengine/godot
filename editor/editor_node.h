@@ -634,7 +634,9 @@ public:
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 
-	void push_item(Object *p_object, const String &p_property = "");
+	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void edit_item(Object *p_object);
+	bool item_has_editor(Object *p_object);
 
 	void open_request(const String &p_path);
 

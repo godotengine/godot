@@ -1986,6 +1986,13 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 	emit_signal("object_id_selected", get_edited_property(), p_id);
 }
 
+void EditorPropertyResource::_open_editor_pressed() {
+	RES res = get_edited_object()->get(get_edited_property());
+	if (res.is_valid()) {
+		EditorNode::get_singleton()->edit_item(res.ptr());
+	}
+}
+
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
@@ -2009,9 +2016,29 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
 
-				add_child(sub_inspector);
-				set_bottom_editor(sub_inspector);
+				sub_inspector_vbox = memnew(VBoxContainer);
+				add_child(sub_inspector_vbox);
+				set_bottom_editor(sub_inspector_vbox);
+
+				sub_inspector_vbox->add_child(sub_inspector);
 				assign->set_pressed(true);
+
+				bool use_editor = false;
+				for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_editor_plugin_count(); i++) {
+					EditorPlugin *ep = EditorNode::get_singleton()->get_editor_data().get_editor_plugin(i);
+					if (ep->handles(res.ptr())) {
+						use_editor = true;
+					}
+				}
+
+				if (use_editor) {
+					Button *open_in_editor = memnew(Button);
+					open_in_editor->set_text(TTR("Open Editor"));
+					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
+					sub_inspector_vbox->add_child(open_in_editor);
+					open_in_editor->connect("pressed", this, "_open_editor_pressed");
+					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
+				}
 			}
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
@@ -2021,8 +2048,9 @@ void EditorPropertyResource::update_property() {
 		} else {
 			if (sub_inspector) {
 				set_bottom_editor(NULL);
-				memdelete(sub_inspector);
+				memdelete(sub_inspector_vbox);
 				sub_inspector = NULL;
+				sub_inspector_vbox = NULL;
 			}
 		}
 #endif
@@ -2242,11 +2270,13 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyResource::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyResource::drop_data_fw);
 	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorPropertyResource::_button_draw);
+	ClassDB::bind_method(D_METHOD("_open_editor_pressed"), &EditorPropertyResource::_open_editor_pressed);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
 
 	sub_inspector = NULL;
+	sub_inspector_vbox = NULL;
 	use_sub_inspector = !bool(EDITOR_GET("interface/inspector/open_resources_in_new_inspector"));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);

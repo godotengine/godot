@@ -187,7 +187,6 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 
 void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
 
-	print_line("configure for local: " + get_class());
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 

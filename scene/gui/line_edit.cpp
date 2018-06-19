@@ -565,6 +565,9 @@ void LineEdit::_notification(int p_what) {
 #endif
 		case NOTIFICATION_RESIZED: {
 
+			if (expand_to_text_length) {
+				window_pos = 0; //force scroll back since it's expanding to text length
+			}
 			set_cursor_position(get_cursor_position());
 
 		} break;
@@ -1098,11 +1101,12 @@ void LineEdit::set_cursor_position(int p_pos) {
 			for (int i = cursor_pos; i >= window_pos; i--) {
 
 				if (i >= text.length()) {
-					accum_width = font->get_char_size(' ').width; //anything should do
+					//do not do this, because if the cursor is at the end, its just fine that it takes no space
+					//accum_width = font->get_char_size(' ').width; //anything should do
 				} else {
 					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; //anything should do
 				}
-				if (accum_width >= window_width)
+				if (accum_width > window_width)
 					break;
 
 				wp = i;
@@ -1169,7 +1173,7 @@ Size2 LineEdit::get_minimum_size() const {
 	int mstext = get_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {
-		mstext = MAX(mstext, font->get_string_size(text).x + space_size); //add a spce because some fonts are too exact
+		mstext = MAX(mstext, font->get_string_size(text).x + space_size); //add a spce because some fonts are too exact, and because cursor needs a bit more when at the end
 	}
 
 	min.width += mstext;

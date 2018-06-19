@@ -50,6 +50,7 @@ class EditorHistory {
 		REF ref;
 		ObjectID object;
 		String property;
+		bool inspector_only;
 	};
 
 	struct History {
@@ -70,7 +71,7 @@ class EditorHistory {
 		Variant value;
 	};
 
-	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
+	void _add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only = false);
 
 public:
 	void cleanup_history();
@@ -78,6 +79,7 @@ public:
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 
+	void add_object_inspector_only(ObjectID p_object);
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object, const String &p_subprop);
 	void add_object(ObjectID p_object, int p_relevel);
@@ -85,10 +87,12 @@ public:
 	int get_history_len();
 	int get_history_pos();
 	ObjectID get_history_obj(int p_obj) const;
+	bool is_history_obj_inspector_only(int p_obj) const;
 
 	bool next();
 	bool previous();
 	ObjectID get_current();
+	bool is_current_inspector_only() const;
 
 	int get_path_size() const;
 	ObjectID get_path_object(int p_index) const;
