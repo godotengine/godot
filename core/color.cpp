@@ -37,38 +37,38 @@
 
 uint32_t Color::to_argb32() const {
 
-	uint32_t c = (uint8_t)(a * 255);
+	uint32_t c = (uint8_t)Math::round(a * 255);
 	c <<= 8;
-	c |= (uint8_t)(r * 255);
+	c |= (uint8_t)Math::round(r * 255);
 	c <<= 8;
-	c |= (uint8_t)(g * 255);
+	c |= (uint8_t)Math::round(g * 255);
 	c <<= 8;
-	c |= (uint8_t)(b * 255);
+	c |= (uint8_t)Math::round(b * 255);
 
 	return c;
 }
 
 uint32_t Color::to_abgr32() const {
-	uint32_t c = (uint8_t)(a * 255);
+	uint32_t c = (uint8_t)Math::round(a * 255);
 	c <<= 8;
-	c |= (uint8_t)(b * 255);
+	c |= (uint8_t)Math::round(b * 255);
 	c <<= 8;
-	c |= (uint8_t)(g * 255);
+	c |= (uint8_t)Math::round(g * 255);
 	c <<= 8;
-	c |= (uint8_t)(r * 255);
+	c |= (uint8_t)Math::round(r * 255);
 
 	return c;
 }
 
 uint32_t Color::to_rgba32() const {
 
-	uint32_t c = (uint8_t)(r * 255);
+	uint32_t c = (uint8_t)Math::round(r * 255);
 	c <<= 8;
-	c |= (uint8_t)(g * 255);
+	c |= (uint8_t)Math::round(g * 255);
 	c <<= 8;
-	c |= (uint8_t)(b * 255);
+	c |= (uint8_t)Math::round(b * 255);
 	c <<= 8;
-	c |= (uint8_t)(a * 255);
+	c |= (uint8_t)Math::round(a * 255);
 
 	return c;
 }
@@ -368,7 +368,7 @@ Color Color::named(const String &p_name) {
 
 String _to_hex(float p_val) {
 
-	int v = p_val * 255;
+	int v = Math::round(p_val * 255);
 	v = CLAMP(v, 0, 255);
 	String ret;
 
