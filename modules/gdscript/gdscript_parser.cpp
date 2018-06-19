@@ -2684,7 +2684,13 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				Node *assigned = NULL;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (!_parse_type(lv->datatype)) {
+					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						lv->datatype = DataType();
+#ifdef DEBUG_ENABLED
+						lv->datatype.infer_type = true;
+#endif
+						tokenizer->advance();
+					} else if (!_parse_type(lv->datatype)) {
 						_set_error("Expected type for variable.");
 						return;
 					}
@@ -4414,7 +4420,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (!_parse_type(member.data_type)) {
+					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						member.data_type = DataType();
+#ifdef DEBUG_ENABLED
+						member.data_type.infer_type = true;
+#endif
+						tokenizer->advance();
+					} else if (!_parse_type(member.data_type)) {
 						_set_error("Expected type for class variable.");
 						return;
 					}
@@ -4606,7 +4618,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (!_parse_type(constant.type)) {
+					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						constant.type = DataType();
+#ifdef DEBUG_ENABLED
+						constant.type.infer_type = true;
+#endif
+						tokenizer->advance();
+					} else if (!_parse_type(constant.type)) {
 						_set_error("Expected type for class constant.");
 						return;
 					}
@@ -6464,14 +6482,17 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			}
 
 			if (!valid) {
+#ifdef DEBUG_ENABLED
 				if (p_call->arguments[0]->type == Node::TYPE_SELF) {
 					_set_error("Method '" + callee_name + "' is not declared in the current class.", p_call->line);
 					return DataType();
 				}
 				_mark_line_as_unsafe(p_call->line);
+#endif
 				return DataType();
 			}
 
+#ifdef DEBUG_ENABLED
 			if (current_function && !for_completion && !is_static && p_call->arguments[0]->type == Node::TYPE_SELF && current_function->_static) {
 				if (current_function && current_function->_static && p_call->arguments[0]->type == Node::TYPE_SELF) {
 					_set_error("Can't call non-static function from a static function.", p_call->line);
@@ -6483,6 +6504,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				_set_error("Non-static function '" + String(callee_name) + "' can only be called from an instance.", p_call->line);
 				return DataType();
 			}
+#endif
 		} break;
 	}
 
@@ -6967,6 +6989,15 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					v.initial_assignment->arguments[1] = convert_call;
 				}
 			}
+
+			if (v.data_type.infer_type) {
+				if (!expr_type.has_type) {
+					_set_error("Assigned value does not have a set type, variable type cannot be inferred.", v.line);
+					return;
+				}
+				v.data_type = expr_type;
+				v.data_type.is_constant = false;
+			}
 		} else if (v.data_type.has_type && v.data_type.kind == DataType::BUILTIN) {
 			// Create default value based on the type
 			IdentifierNode *id = alloc_node<IdentifierNode>();
@@ -7249,6 +7280,14 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							lv->assign_op->arguments[1] = convert_call;
 						}
 					}
+					if (lv->datatype.infer_type) {
+						if (!assign_type.has_type) {
+							_set_error("Assigned value does not have a set type, variable type cannot be inferred.", lv->line);
+							return;
+						}
+						lv->datatype = assign_type;
+						lv->datatype.is_constant = false;
+					}
 					if (lv->datatype.has_type && !assign_type.has_type) {
 						_mark_line_as_unsafe(lv->line);
 					}
@@ -7514,7 +7553,11 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	current_class = main_class;
 	current_function = NULL;
 	current_block = NULL;
+#ifdef DEBUG_ENABLED
 	if (for_completion) check_types = false;
+#else
+	check_types = false;
+#endif
 
 	if (check_types) {
 		// Resolve all class-level stuff before getting into function blocks
