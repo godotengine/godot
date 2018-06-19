@@ -1,11 +1,11 @@
 #ifndef ANIMATION_BLEND_TREE_H
 #define ANIMATION_BLEND_TREE_H
 
-#include "scene/animation/animation_tree.h"
+#include "scene/animation/animation_graph_player.h"
 
-class AnimationNodeAnimation : public AnimationRootNode {
+class AnimationNodeAnimation : public AnimationNode {
 
-	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
+	GDCLASS(AnimationNodeAnimation, AnimationNode);
 
 	StringName animation;
 
@@ -94,8 +94,8 @@ public:
 
 VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 
-class AnimationNodeAdd2 : public AnimationNode {
-	GDCLASS(AnimationNodeAdd2, AnimationNode);
+class AnimationNodeAdd : public AnimationNode {
+	GDCLASS(AnimationNodeAdd, AnimationNode);
 
 	float amount;
 	bool sync;
@@ -115,31 +115,7 @@ public:
 	virtual bool has_filter() const;
 	virtual float process(float p_time, bool p_seek);
 
-	AnimationNodeAdd2();
-};
-
-class AnimationNodeAdd3 : public AnimationNode {
-	GDCLASS(AnimationNodeAdd3, AnimationNode);
-
-	float amount;
-	bool sync;
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual String get_caption() const;
-
-	void set_amount(float p_amount);
-	float get_amount() const;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
-	virtual bool has_filter() const;
-	virtual float process(float p_time, bool p_seek);
-
-	AnimationNodeAdd3();
+	AnimationNodeAdd();
 };
 
 class AnimationNodeBlend2 : public AnimationNode {
@@ -290,8 +266,8 @@ public:
 
 /////
 
-class AnimationNodeBlendTree : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendTree, AnimationRootNode)
+class AnimationNodeBlendTree : public AnimationNode {
+	GDCLASS(AnimationNodeBlendTree, AnimationNode)
 
 	Map<StringName, Ref<AnimationNode> > nodes;
 
@@ -342,7 +318,7 @@ public:
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual void set_tree(AnimationTree *p_player);
+	virtual void set_graph_player(AnimationGraphPlayer *p_player);
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();
 };

@@ -1477,6 +1477,9 @@ void EditorInspector::update_tree() {
 
 					ep->object = object;
 					ep->connect("property_changed", this, "_property_changed");
+					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
+						ep->connect("property_changed", this, "_property_changed_update_all", varray(), CONNECT_DEFERRED);
+					}
 					ep->connect("property_keyed", this, "_property_keyed");
 					ep->connect("property_keyed_with_value", this, "_property_keyed_with_value");
 					ep->connect("property_checked", this, "_property_checked");
@@ -1782,6 +1785,10 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	_edit_set(p_path, p_value, false, "");
 }
 
+void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value) {
+	update_tree();
+}
+
 void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values) {
 
 	ERR_FAIL_COND(p_paths.size() == 0 || p_values.size() == 0);
@@ -1951,6 +1958,8 @@ void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_method("_multiple_properties_changed", &EditorInspector::_multiple_properties_changed);
 	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed);
+	ClassDB::bind_method("_property_changed_update_all", &EditorInspector::_property_changed_update_all);
+
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("_node_removed", &EditorInspector::_node_removed);
 	ClassDB::bind_method("_filter_changed", &EditorInspector::_filter_changed);

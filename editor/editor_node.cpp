@@ -67,8 +67,6 @@
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_wav.h"
-#include "editor/plugins/animation_blend_space_1d_editor.h"
-#include "editor/plugins/animation_blend_space_2d_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/animation_state_machine_editor.h"
@@ -1322,11 +1320,7 @@ bool EditorNode::item_has_editor(Object *p_object) {
 
 void EditorNode::edit_item(Object *p_object) {
 
-	Vector<EditorPlugin *> sub_plugins;
-
-	if (p_object) {
-		sub_plugins = editor_data.get_subeditors(p_object);
-	}
+	Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(p_object);
 
 	if (!sub_plugins.empty()) {
 		_display_top_editors(false);
@@ -1334,8 +1328,6 @@ void EditorNode::edit_item(Object *p_object) {
 		_set_top_editors(sub_plugins);
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
-	} else {
-		_hide_top_editors();
 	}
 }
 
@@ -1407,6 +1399,7 @@ void EditorNode::_edit_current() {
 
 	uint32_t current = editor_history.get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	bool inspector_only = editor_history.is_current_inspector_only();
 
 	this->current = current_obj;
 
@@ -1500,26 +1493,12 @@ void EditorNode::_edit_current() {
 
 	if (!inspector_only) {
 
-		// special case if use of external editor is true
-		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
-			if (!changing_scene)
-				main_plugin->edit(current_obj);
-		}
-
-		else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
-			// update screen main_plugin
-
-			if (!changing_scene) {
-
-				if (editor_plugin_screen)
-					editor_plugin_screen->make_visible(false);
-				editor_plugin_screen = main_plugin;
-				editor_plugin_screen->edit(current_obj);
+		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
 		if (main_plugin) {
 
 			// special case if use of external editor is true
-			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene)
 					main_plugin->edit(current_obj);
 			}
@@ -1527,7 +1506,45 @@ void EditorNode::_edit_current() {
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// update screen main_plugin
 
-		_hide_top_editors();
+				if (!changing_scene) {
+
+					if (editor_plugin_screen)
+						editor_plugin_screen->make_visible(false);
+					editor_plugin_screen = main_plugin;
+					editor_plugin_screen->edit(current_obj);
+
+					editor_plugin_screen->make_visible(true);
+
+					int plugin_count = editor_data.get_editor_plugin_count();
+					for (int i = 0; i < plugin_count; i++) {
+						editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
+					}
+
+					for (int i = 0; i < editor_table.size(); i++) {
+
+						main_editor_buttons[i]->set_pressed(editor_table[i] == main_plugin);
+					}
+				}
+
+			} else {
+
+				editor_plugin_screen->edit(current_obj);
+			}
+		}
+
+		Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(current_obj);
+
+		if (!sub_plugins.empty()) {
+			_display_top_editors(false);
+
+			_set_top_editors(sub_plugins);
+			_set_editing_top_editors(current_obj);
+			_display_top_editors(true);
+
+		} else if (!editor_plugins_over->get_plugins_list().empty()) {
+
+			_hide_top_editors();
+		}
 	}
 
 	inspector_dock->update(current_obj);
@@ -5482,6 +5499,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
 	add_editor_plugin(memnew(SpatialEditorPlugin(this)));
 	add_editor_plugin(memnew(ScriptEditorPlugin(this)));
+
+	add_editor_plugin(memnew(AnimationNodeBlendTreeEditorPlugin(this)));
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 

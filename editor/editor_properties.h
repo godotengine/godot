@@ -491,6 +491,7 @@ class EditorPropertyResource : public EditorProperty {
 	EditorFileDialog *file;
 	Vector<String> inheritors_array;
 	EditorInspector *sub_inspector;
+	VBoxContainer *sub_inspector_vbox;
 
 	bool use_sub_inspector;
 	bool dropping;
@@ -515,6 +516,8 @@ class EditorPropertyResource : public EditorProperty {
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+	void _open_editor_pressed();
 
 protected:
 	static void _bind_methods();

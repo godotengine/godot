@@ -17,7 +17,7 @@ class AnimationNodeBlendTreeEditor : public VBoxContainer {
 
 	GDCLASS(AnimationNodeBlendTreeEditor, VBoxContainer);
 
-	Ref<AnimationNodeBlendTree> blend_tree;
+	AnimationNodeBlendTree *blend_tree;
 	GraphEdit *graph;
 	MenuButton *add_node;
 	Button *goto_parent;
@@ -77,8 +77,6 @@ class AnimationNodeBlendTreeEditor : public VBoxContainer {
 	Ref<AnimationNode> _filter_edit;
 
 	void _node_changed(ObjectID p_node);
-
-	void _removed_from_graph();
 
 protected:
 	void _notification(int p_what);
