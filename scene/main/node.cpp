@@ -1095,6 +1095,10 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 }
 
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_child);
+
 	add_child(p_child, p_legible_unique_name);
 
 	if (is_a_parent_of(p_node)) {
