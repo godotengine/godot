@@ -68,13 +68,13 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 	}
 	updating_frame = false;
 
-	if (!frame_delay->is_processing()) {
+	if (frame_delay->is_stopped()) {
 
 		frame_delay->set_wait_time(p_final ? 0.1 : 1);
 		frame_delay->start();
 	}
 
-	if (!plot_delay->is_processing()) {
+	if (plot_delay->is_stopped()) {
 		plot_delay->set_wait_time(0.1);
 		plot_delay->start();
 	}
