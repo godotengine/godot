@@ -1821,6 +1821,26 @@ GDScriptParser::Node *GDScriptParser::_parse_and_reduce_expression(Node *p_paren
 	return expr;
 }
 
+Vector<GDScriptParser::Node *> GDScriptParser::_parse_and_reduce_expression_list(Node *p_parent, bool p_static, bool p_reduce_const, bool p_allow_assign) {
+
+	Vector<GDScriptParser::Node *> nodes;
+
+	while (true) {
+		Node *expr = _parse_and_reduce_expression(p_parent, p_static, p_reduce_const, p_allow_assign);
+		if (!expr || error_set) {
+			return Vector<GDScriptParser::Node *>();
+		}
+
+		nodes.push_back(expr);
+
+		if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA)
+			break;
+		tokenizer->advance();
+	}
+
+	return nodes;
+}
+
 bool GDScriptParser::_recover_from_completion() {
 
 	if (!completion_found) {
@@ -2691,10 +2711,20 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					_set_error("identifier expected after 'for'");
 				}
 
-				IdentifierNode *id = alloc_node<IdentifierNode>();
-				id->name = tokenizer->get_token_identifier();
+				Vector<IdentifierNode *> ids;
+				while (true) {
 
-				tokenizer->advance();
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = tokenizer->get_token_identifier();
+					tokenizer->advance();
+
+					ids.push_back(id);
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+						break;
+					}
+					tokenizer->advance();
+				}
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_IN) {
 					_set_error("'in' expected after identifier");
@@ -2769,10 +2799,10 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 				}
 
-				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
+				ForNode *cf_for = alloc_node<ForNode>();
 
 				cf_for->cf_type = ControlFlowNode::CF_FOR;
-				cf_for->arguments.push_back(id);
+				cf_for->ids = ids;
 				cf_for->arguments.push_back(container);
 
 				cf_for->body = alloc_node<BlockNode>();
@@ -2789,11 +2819,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				// this is for checking variable for redefining
 				// inside this _parse_block
-				cf_for->body->variables.push_back(id->name);
-				cf_for->body->variable_lines.push_back(id->line);
+				for (int i = 0; i < ids.size(); i++) {
+					cf_for->body->variables.push_back(ids[i]->name);
+					cf_for->body->variable_lines.push_back(ids[i]->line);
+				}
 				_parse_block(cf_for->body, p_static);
-				cf_for->body->variables.remove(0);
-				cf_for->body->variable_lines.remove(0);
+				for (int i = 0; i < ids.size(); i++) {
+					cf_for->body->variables.remove(0);
+					cf_for->body->variable_lines.remove(0);
+				}
 				current_block = p_block;
 
 				if (error_set)
@@ -2836,13 +2870,21 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 				} else {
 					//expect expression
-					Node *retexpr = _parse_and_reduce_expression(p_block, p_static);
-					if (!retexpr) {
+					Node *retexpr = NULL;
+
+					Vector<Node *> retlist = _parse_and_reduce_expression_list(p_block, p_static);
+					if (retlist.empty()) {
 						if (_recover_from_completion()) {
 							break;
 						}
 						return;
+					} else if (retlist.size() == 1) {
+						retexpr = retlist[0];
+					} else {
+						retexpr = alloc_node<ArrayNode>();
+						static_cast<ArrayNode *>(retexpr)->elements = retlist;
 					}
+
 					cf_return->arguments.push_back(retexpr);
 					p_block->statements.push_back(cf_return);
 					if (!_end_statement()) {
@@ -2924,14 +2966,38 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 			} break;
 			default: {
 
-				Node *expression = _parse_and_reduce_expression(p_block, p_static, false, true);
-				if (!expression) {
+				Vector<Node *> exprlist = _parse_and_reduce_expression_list(p_block, p_static, false, true);
+				if (exprlist.empty()) {
 					if (_recover_from_completion()) {
 						break;
 					}
 					return;
 				}
-				p_block->statements.push_back(expression);
+				if (exprlist.size() > 1) {
+					bool fail = true;
+					const int n = exprlist.size();
+					if (exprlist[n - 1]->type == Node::TYPE_OPERATOR) {
+						OperatorNode *on = static_cast<OperatorNode *>(exprlist[n - 1]);
+						if (on->op == OperatorNode::OP_ASSIGN) {
+							Node *set_value = on->arguments[1];
+							exprlist[n - 1] = on->arguments[0];
+
+							OperatorNode *expr = alloc_node<OperatorNode>();
+							expr->op = OperatorNode::OP_UNPACK;
+							expr->arguments = exprlist;
+							expr->arguments.push_back(set_value);
+
+							p_block->statements.push_back(expr);
+							fail = false;
+						}
+					}
+					if (fail) {
+						_set_error("Illegal multiple assignment syntax.");
+						return;
+					}
+				} else {
+					p_block->statements.push_back(exprlist[0]);
+				}
 				if (!_end_statement()) {
 					_set_error("Expected end of statement after expression.");
 					return;

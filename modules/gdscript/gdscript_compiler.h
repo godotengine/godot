@@ -138,6 +138,7 @@ class GDScriptCompiler {
 	bool _create_unary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level);
 	bool _create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer = false);
 
+	int _parse_assign(CodeGen &codegen, GDScriptParser::OperatorNode::Operator p_op, GDScriptParser::Node *p_left, int p_set_value, int p_stack_level);
 	int _parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level);
 	int _parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root = false, bool p_initializer = false);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level = 0, int p_break_addr = -1, int p_continue_addr = -1);
