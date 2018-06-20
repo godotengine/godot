@@ -219,6 +219,10 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 			//TRY CLASS CONSTANTS
 
+			if (identifier == "Self" && codegen.script && !codegen.script->_owner && !codegen.script->constants.has("Self")) {
+				codegen.script->constants.insert("Self", codegen.script); // allow Self to self-reference script
+			}
+
 			GDScript *owner = codegen.script;
 			while (owner) {
 
