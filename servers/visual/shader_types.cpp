@@ -172,6 +172,7 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("ensure_correct_normals");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("shadows_disabled");
 
