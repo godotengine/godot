@@ -619,6 +619,58 @@ void ScriptEditor::_close_other_tabs() {
 	}
 }
 
+void ScriptEditor::_close_upward() {
+
+	int current_idx = tab_container->get_current_tab();
+	for (int i = current_idx; i >= 0; i--) {
+		if (i == current_idx) {
+			continue;
+		}
+
+		tab_container->set_current_tab(i);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+
+		if (se) {
+
+			if (se->is_unsaved()) {
+				_ask_close_current_unsaved_tab(se);
+				continue;
+			}
+		}
+
+		_close_current_tab();
+	}
+
+	tab_container->set_current_tab(0);
+}
+
+void ScriptEditor::_close_below() {
+
+	int child_count = tab_container->get_child_count();
+	int current_idx = tab_container->get_current_tab();
+	for (int i = child_count - 1; i >= 0; i--) {
+
+		if (i == current_idx) {
+			break;
+		}
+
+		tab_container->set_current_tab(i);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+
+		if (se) {
+
+			if (se->is_unsaved()) {
+				_ask_close_current_unsaved_tab(se);
+				continue;
+			}
+		}
+
+		_close_current_tab();
+	}
+
+	tab_container->set_current_tab(tab_container->get_child_count() - 1);
+}
+
 void ScriptEditor::_close_all_tabs() {
 
 	int child_count = tab_container->get_child_count();
@@ -1041,6 +1093,12 @@ void ScriptEditor::_menu_option(int p_option) {
 			case CLOSE_OTHER_TABS: {
 				_close_other_tabs();
 			} break;
+			case CLOSE_UPWARD: {
+				_close_upward();
+			} break;
+			case CLOSE_BELOW: {
+				_close_below();
+			} break;
 			case CLOSE_ALL: {
 				_close_all_tabs();
 			} break;
@@ -1118,6 +1176,12 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 				case CLOSE_OTHER_TABS: {
 					_close_other_tabs();
+				} break;
+				case CLOSE_UPWARD: {
+					_close_upward();
+				} break;
+				case CLOSE_BELOW: {
+					_close_below();
 				} break;
 				case CLOSE_ALL: {
 					_close_all_tabs();
@@ -2188,6 +2252,18 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 		_go_to_tab(script_list->get_item_metadata(next_tab));
 		_update_script_names();
 	}
+	if (ED_IS_SHORTCUT("script_editor/close_file", p_event)) {
+		_menu_option(FILE_CLOSE);
+	}
+	if (ED_IS_SHORTCUT("script_editor/close_other_tabs", p_event)) {
+		_menu_option(CLOSE_OTHER_TABS);
+	}
+	if (ED_IS_SHORTCUT("script_editor/close_upward", p_event)) {
+		_menu_option(CLOSE_UPWARD);
+	}
+	if (ED_IS_SHORTCUT("script_editor/close_below", p_event)) {
+		_menu_option(CLOSE_BELOW);
+	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
 		_menu_option(WINDOW_MOVE_UP);
 	}
@@ -2217,9 +2293,11 @@ void ScriptEditor::_make_script_list_context_menu() {
 	if (se) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), CLOSE_ALL);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), CLOSE_OTHER_TABS);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_upward"), CLOSE_UPWARD);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_below"), CLOSE_BELOW);
 		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
@@ -2737,6 +2815,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COLON);
 	set_process_unhandled_input(true);
 
+	ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W);
+	ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs"));
+	ED_SHORTCUT("script_editor/close_upward", TTR("Close Tabs Above"));
+	ED_SHORTCUT("script_editor/close_below", TTR("Close Tabs Below"));
+
 	file_menu = memnew(MenuButton);
 	menu_hb->add_child(file_menu);
 	file_menu->set_text(TTR("File"));
@@ -2763,15 +2846,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
-	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), CLOSE_OTHER_TABS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
 	file_menu->get_popup()->add_separator();
@@ -2785,6 +2861,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	script_search_menu->hide();
+
+	theme_menu = memnew(MenuButton);
+	menu_hb->add_child(theme_menu);
+	theme_menu->set_text(TTR("Theme"));
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
 
 	debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);

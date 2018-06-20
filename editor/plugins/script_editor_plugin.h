@@ -143,6 +143,8 @@ class ScriptEditor : public PanelContainer {
 		CLOSE_DOCS,
 		CLOSE_ALL,
 		CLOSE_OTHER_TABS,
+		CLOSE_UPWARD,
+		CLOSE_BELOW,
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
@@ -185,6 +187,7 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *edit_menu;
 	MenuButton *script_search_menu;
 	MenuButton *debug_menu;
+	MenuButton *theme_menu;
 	PopupMenu *context_menu;
 	Timer *autosave_timer;
 	uint64_t idle;
@@ -276,6 +279,8 @@ class ScriptEditor : public PanelContainer {
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
+	void _close_upward();
+	void _close_below();
 	void _close_all_tabs();
 
 	void _copy_script_path();
