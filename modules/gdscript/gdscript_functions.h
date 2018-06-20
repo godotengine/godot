@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_FUNCTIONS_H
 #define GDSCRIPT_FUNCTIONS_H
 
+#include "reference.h"
 #include "variant.h"
 
 class GDScriptFunctions {
@@ -101,6 +102,7 @@ public:
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
 		GEN_RANGE,
+		GEN_ENUMERATE,
 		RESOURCE_LOAD,
 		INST2DICT,
 		DICT2INST,
@@ -122,6 +124,22 @@ public:
 	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
+};
+
+class Enumerate : public Reference {
+	GDCLASS(Enumerate, Reference);
+
+	Variant _iter;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Variant _iter_init(const Array &r_iter);
+	Variant _iter_next(const Array &r_iter);
+	Variant _iter_get(const Variant &p_iter);
+
+	Enumerate(const Variant &iter);
 };
 
 #endif // GDSCRIPT_FUNCTIONS_H

@@ -110,6 +110,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"var2bytes",
 		"bytes2var",
 		"range",
+		"enumerate",
 		"load",
 		"inst2dict",
 		"dict2inst",
@@ -900,6 +901,33 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 					r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 					r_error.argument = 3;
+					r_ret = Variant();
+
+				} break;
+			}
+
+		} break;
+		case GEN_ENUMERATE: {
+
+			switch (p_arg_count) {
+
+				case 0: {
+
+					r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+					r_error.argument = 1;
+					r_ret = Variant();
+
+				} break;
+				case 1: {
+
+					VALIDATE_ARG_COUNT(1);
+					r_ret = memnew(Enumerate(*p_args[0]));
+
+				} break;
+				default: {
+
+					r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+					r_error.argument = 1;
 					r_ret = Variant();
 
 				} break;
@@ -1749,6 +1777,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 		} break;
+		case GEN_ENUMERATE: {
+
+			MethodInfo mi("enumerate", PropertyInfo(Variant::NIL, "iter"));
+			mi.return_val.type = Variant::ARRAY;
+			return mi;
+		} break;
 		case RESOURCE_LOAD: {
 
 			MethodInfo mi("load", PropertyInfo(Variant::STRING, "path"));
@@ -1837,4 +1871,71 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 #endif
 
 	return MethodInfo();
+}
+
+Variant Enumerate::_iter_init(const Array &r_iter) {
+
+	Variant init;
+	bool valid;
+
+	if (_iter.iter_init(init, valid) && valid) {
+		Array pair;
+		pair.resize(2);
+		pair[0] = 0;
+		pair[1] = init;
+		Array ref = r_iter;
+		ref[0] = pair;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant Enumerate::_iter_next(const Array &r_iter) {
+
+	Array pair = r_iter[0];
+	if (pair.size() != 2)
+		return false;
+	Variant next_iter = pair[1];
+	bool valid;
+	if (_iter.iter_next(next_iter, valid) && valid) {
+		int idx = pair[0];
+		pair[0] = idx + 1;
+		pair[1] = next_iter;
+		Array ref = r_iter;
+		ref[0] = pair;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Variant Enumerate::_iter_get(const Variant &p_iter) {
+
+	Array pair = p_iter;
+	if (pair.size() != 2)
+		return Variant();
+
+	Array result;
+	bool valid;
+	result.resize(2);
+	result[0] = pair[0];
+	result[1] = _iter.iter_get(pair[1], valid);
+
+	if (!valid)
+		return Variant();
+
+	return result;
+}
+
+void Enumerate::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_iter_init"), &Enumerate::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"), &Enumerate::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"), &Enumerate::_iter_next);
+}
+
+Enumerate::Enumerate(const Variant &iter) {
+
+	_iter = iter;
 }
