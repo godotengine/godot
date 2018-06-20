@@ -832,6 +832,9 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				if (!particles)
 					break;
 
+				if (particles->inactive && !particles->emitting)
+					break;
+
 				glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1); //not used, so keep white
 
 				VisualServerRaster::redraw_request();
