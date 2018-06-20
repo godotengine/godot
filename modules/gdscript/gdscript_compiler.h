@@ -130,6 +130,22 @@ class GDScriptCompiler {
 		int call_max;
 	};
 
+	struct ClassInfo {
+		const GDScriptParser::ClassNode *node;
+		bool keep_state;
+		mutable bool compiling;
+		mutable bool compiled;
+
+		ClassInfo() {
+			node = NULL;
+			keep_state = false;
+			compiling = false;
+			compiled = false;
+		}
+	};
+
+	typedef Map<GDScript *, ClassInfo> ClassInfos;
+
 	bool _is_class_member_property(CodeGen &codegen, const StringName &p_name);
 	bool _is_class_member_property(GDScript *owner, const StringName &p_name);
 
@@ -142,7 +158,11 @@ class GDScriptCompiler {
 	int _parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root = false, bool p_initializer = false);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level = 0, int p_break_addr = -1, int p_continue_addr = -1);
 	Error _parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false);
-	Error _parse_class(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
+	void _init_script(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class);
+	Error _compile_class_extends(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, const ClassInfos &p_class_infos);
+	Error _prepare_compile_class(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state, ClassInfos &r_class_infos);
+	Error _finish_compile_class(GDScript *p_script, const ClassInfos &p_class_infos, const GDScriptParser::ClassNode *p_dep_origin);
+	Error _compile_class_methods(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	int err_line;
 	int err_column;
 	StringName source;

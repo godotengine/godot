@@ -1618,13 +1618,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
-
-	Map<StringName, Ref<GDScript> > old_subclasses;
-
-	if (p_keep_state) {
-		old_subclasses = p_script->subclasses;
-	}
+void GDScriptCompiler::_init_script(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class) {
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
@@ -1644,6 +1638,9 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 	p_script->_owner = p_owner;
 	p_script->tool = p_class->tool;
 	p_script->name = p_class->name;
+}
+
+Error GDScriptCompiler::_compile_class_extends(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, const ClassInfos &p_class_infos) {
 
 	Ref<GDScriptNativeClass> native;
 
@@ -1740,6 +1737,11 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 			if (base_class.is_valid()) {
 
+				Error err = _finish_compile_class(base_class.ptr(), p_class_infos, p_class);
+				if (err) {
+					return err;
+				}
+
 				String ident = base;
 
 				for (int i = 1; i < p_class->extends_class.size(); i++) {
@@ -1763,6 +1765,11 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 						_set_error("Could not find subclass: " + ident, p_class);
 						return ERR_FILE_NOT_FOUND;
+					}
+
+					err = _finish_compile_class(base_class.ptr(), p_class_infos, p_class);
+					if (err) {
+						return err;
 					}
 				}
 
@@ -1909,6 +1916,25 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 		p_script->_signals[name] = p_class->_signals[i].arguments;
 	}
+
+	return OK;
+}
+
+Error GDScriptCompiler::_prepare_compile_class(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state, ClassInfos &r_class_infos) {
+
+	Map<StringName, Ref<GDScript> > old_subclasses;
+
+	if (p_keep_state) {
+		old_subclasses = p_script->subclasses;
+	}
+
+	_init_script(p_script, p_owner, p_class);
+
+	ClassInfo info;
+	info.node = p_class;
+	info.keep_state = p_keep_state;
+	r_class_infos.insert(p_script, info);
+
 	//parse sub-classes
 
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
@@ -1922,7 +1948,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 			subclass.instance();
 		}
 
-		Error err = _parse_class(subclass.ptr(), p_script, p_class->subclasses[i], p_keep_state);
+		Error err = _prepare_compile_class(subclass.ptr(), p_script, p_class->subclasses[i], p_keep_state, r_class_infos);
 		if (err)
 			return err;
 
@@ -1931,9 +1957,56 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 		p_script->member_lines[name] = p_class->subclasses[i]->line;
 #endif
 
-		p_script->constants.insert(name, subclass); //once parsed, goes to the list of constants
+		p_script->constants.insert(name, subclass);
 		p_script->subclasses.insert(name, subclass);
 	}
+
+	return OK;
+}
+
+Error GDScriptCompiler::_finish_compile_class(GDScript *p_script, const ClassInfos &p_class_infos, const GDScriptParser::ClassNode *p_dep_origin) {
+
+	const ClassInfo &info = p_class_infos[p_script];
+
+	if (info.compiled) { //  already compiled as part of a dependent compile?
+		ERR_FAIL_COND_V(!p_script->valid, ERR_BUG);
+		return OK;
+	}
+
+	if (info.compiling) { // circular reference detected?
+		ERR_FAIL_COND_V(!p_dep_origin, ERR_BUG);
+		_set_error("Circular inheritance between classes " + info.node->name + " and " + p_dep_origin->name, info.node);
+		return ERR_SCRIPT_FAILED;
+	}
+
+	GDScript *owner = p_script->_owner;
+	const GDScriptParser::ClassNode *class_node = info.node;
+
+	info.compiling = true;
+
+	Error err = _compile_class_extends(p_script, owner, class_node, p_class_infos);
+	if (err)
+		return err;
+	err = _compile_class_methods(p_script, owner, class_node, info.keep_state);
+	if (err)
+		return err;
+
+	for (Map<StringName, Ref<GDScript> >::Element *E = p_script->subclasses.front(); E; E = E->next()) {
+
+		GDScript *subclass = E->get().ptr();
+		err = _finish_compile_class(subclass, p_class_infos, p_dep_origin);
+		if (err)
+			return err;
+	}
+
+	info.compiling = false;
+	info.compiled = true;
+
+	p_script->valid = true;
+	return OK;
+}
+
+Error GDScriptCompiler::_compile_class_methods(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
 	//parse methods
 
@@ -2065,7 +2138,6 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 	}
 #endif
 
-	p_script->valid = true;
 	return OK;
 }
 
@@ -2080,8 +2152,16 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 
 	source = p_script->get_path();
 
-	Error err = _parse_class(p_script, NULL, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
+	ClassInfos nodes;
+	ClassInfo info;
+	info.node = static_cast<const GDScriptParser::ClassNode *>(root);
+	info.keep_state = p_keep_state;
+	nodes.insert(p_script, info);
 
+	Error err = _prepare_compile_class(p_script, NULL, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state, nodes);
+	if (err)
+		return err;
+	err = _finish_compile_class(p_script, nodes, NULL);
 	if (err)
 		return err;
 
