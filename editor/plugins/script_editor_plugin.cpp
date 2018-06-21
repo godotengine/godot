@@ -2763,11 +2763,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
-	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
@@ -2785,6 +2780,15 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	script_search_menu->hide();
+
+	theme_menu = memnew(MenuButton);
+	menu_hb->add_child(theme_menu);
+	theme_menu->set_text(TTR("Theme"));
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
+	theme_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
+	theme_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
