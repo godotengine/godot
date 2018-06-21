@@ -177,11 +177,11 @@ if (env["tools"] == "yes"):
 
     # API documentation
     env.Depends("#editor/doc_data_compressed.gen.h", "#doc/base/classes.xml")
-    env.Command("#editor/doc_data_compressed.gen.h", "#doc/base/classes.xml", make_doc_header)
+    env.CommandNoCache("#editor/doc_data_compressed.gen.h", "#doc/base/classes.xml", make_doc_header)
 
     # Certificates
     env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
-    env.Command("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
+    env.CommandNoCache("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
 
     import glob
     path = env.Dir('.').abspath
@@ -189,17 +189,17 @@ if (env["tools"] == "yes"):
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
     env.Depends('#editor/translations.gen.h', tlist)
-    env.Command('#editor/translations.gen.h', tlist, make_translations_header)
+    env.CommandNoCache('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     env.Depends('#editor/builtin_fonts.gen.h', flist)
-    env.Command('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
+    env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
     # Authors
     env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
-    env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
+    env.CommandNoCache('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")

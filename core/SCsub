@@ -89,7 +89,7 @@ env.add_source_files(env.core_sources, "*.cpp")
 
 # Make binders
 import make_binders
-env.Command(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', make_binders.run)
+env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', make_binders.run)
 
 
 # Chain load SCsubs
