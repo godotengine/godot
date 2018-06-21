@@ -12,16 +12,34 @@
 
 void AnimationNodeBlendSpaceEditor::edit(AnimationNodeBlendSpace *p_blend_space) {
 
-	blend_space = p_blend_space;
+	if (blend_space.is_valid()) {
+		blend_space->disconnect("removed_from_graph", this, "_removed_from_graph");
+	}
 
-	if (!blend_space) {
+	if (p_blend_space) {
+		blend_space = Ref<AnimationNodeBlendSpace>(p_blend_space);
+	} else {
+		blend_space.unref();
+	}
+
+	if (blend_space.is_null()) {
 		hide();
 	} else {
+		blend_space->connect("removed_from_graph", this, "_removed_from_graph");
+
 		_update_space();
 	}
 }
 
 void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventKey> k = p_event;
+	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+		if (selected_point != -1 || selected_triangle != -1) {
+			_erase_selected();
+			accept_event();
+		}
+	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 
@@ -136,8 +154,8 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 
 					updating = true;
 					undo_redo->create_action("Add Triangle");
-					undo_redo->add_do_method(blend_space, "add_triangle", making_triangle[0], making_triangle[1], making_triangle[2]);
-					undo_redo->add_undo_method(blend_space, "remove_triangle", blend_space->get_triangle_count());
+					undo_redo->add_do_method(blend_space.ptr(), "add_triangle", making_triangle[0], making_triangle[1], making_triangle[2]);
+					undo_redo->add_undo_method(blend_space.ptr(), "remove_triangle", blend_space->get_triangle_count());
 					undo_redo->add_do_method(this, "_update_space");
 					undo_redo->add_undo_method(this, "_update_space");
 					undo_redo->commit_action();
@@ -161,8 +179,8 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 
 			updating = true;
 			undo_redo->create_action("Move Node Point");
-			undo_redo->add_do_method(blend_space, "set_blend_point_position", selected_point, point);
-			undo_redo->add_undo_method(blend_space, "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+			undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
+			undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 			undo_redo->add_do_method(this, "_update_space");
 			undo_redo->add_undo_method(this, "_update_space");
 			undo_redo->add_do_method(this, "_update_edited_point_pos");
@@ -188,6 +206,11 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid() && !blend_space_draw->has_focus()) {
+		blend_space_draw->grab_focus();
+		blend_space_draw->update();
+	}
 
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
@@ -230,8 +253,8 @@ void AnimationNodeBlendSpaceEditor::_add_menu_type(int p_index) {
 
 	updating = true;
 	undo_redo->create_action("Add Node Point");
-	undo_redo->add_do_method(blend_space, "add_blend_point", node, add_point_pos);
-	undo_redo->add_undo_method(blend_space, "remove_blend_point", blend_space->get_blend_point_count());
+	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node, add_point_pos);
+	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -249,8 +272,8 @@ void AnimationNodeBlendSpaceEditor::_add_animation_type(int p_index) {
 
 	updating = true;
 	undo_redo->create_action("Add Animation Point");
-	undo_redo->add_do_method(blend_space, "add_blend_point", anim, add_point_pos);
-	undo_redo->add_undo_method(blend_space, "remove_blend_point", blend_space->get_blend_point_count());
+	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", anim, add_point_pos);
+	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -299,8 +322,12 @@ void AnimationNodeBlendSpaceEditor::_blend_space_draw() {
 
 	Size2 s = blend_space_draw->get_size();
 
-	blend_space_draw->draw_line(Point2(0, 0), Point2(0, s.height), linecolor);
-	blend_space_draw->draw_line(Point2(0, s.height - 1), Point2(s.width, s.height - 1), linecolor);
+	if (blend_space_draw->has_focus()) {
+		Color color = get_color("accent_color", "Editor");
+		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
+	}
+	blend_space_draw->draw_line(Point2(1, 0), Point2(1, s.height - 1), linecolor);
+	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor);
 
 	blend_space_draw->draw_line(Point2(0, 0), Point2(5 * EDSCALE, 0), linecolor);
 	if (blend_space->get_min_space().y < 0) {
@@ -514,12 +541,12 @@ void AnimationNodeBlendSpaceEditor::_config_changed(double) {
 
 	updating = true;
 	undo_redo->create_action("Change BlendSpace Limits");
-	undo_redo->add_do_method(blend_space, "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
-	undo_redo->add_undo_method(blend_space, "set_max_space", blend_space->get_max_space());
-	undo_redo->add_do_method(blend_space, "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
-	undo_redo->add_undo_method(blend_space, "set_min_space", blend_space->get_min_space());
-	undo_redo->add_do_method(blend_space, "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
-	undo_redo->add_undo_method(blend_space, "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
+	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
+	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
+	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
+	undo_redo->add_do_method(blend_space.ptr(), "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
+	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -534,10 +561,10 @@ void AnimationNodeBlendSpaceEditor::_labels_changed(String) {
 
 	updating = true;
 	undo_redo->create_action("Change BlendSpace Labels", UndoRedo::MERGE_ENDS);
-	undo_redo->add_do_method(blend_space, "set_x_label", label_x->get_text());
-	undo_redo->add_undo_method(blend_space, "set_x_label", blend_space->get_x_label());
-	undo_redo->add_do_method(blend_space, "set_y_label", label_y->get_text());
-	undo_redo->add_undo_method(blend_space, "set_y_label", blend_space->get_y_label());
+	undo_redo->add_do_method(blend_space.ptr(), "set_x_label", label_x->get_text());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_x_label", blend_space->get_x_label());
+	undo_redo->add_do_method(blend_space.ptr(), "set_y_label", label_y->get_text());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_y_label", blend_space->get_y_label());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -550,14 +577,14 @@ void AnimationNodeBlendSpaceEditor::_erase_selected() {
 
 		updating = true;
 		undo_redo->create_action("Remove BlendSpace Point");
-		undo_redo->add_do_method(blend_space, "remove_blend_point", selected_point);
-		undo_redo->add_undo_method(blend_space, "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
+		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
+		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
 
 		//restore triangles using this point
 		for (int i = 0; i < blend_space->get_triangle_count(); i++) {
 			for (int j = 0; j < 3; j++) {
 				if (blend_space->get_triangle_point(i, j) == selected_point) {
-					undo_redo->add_undo_method(blend_space, "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
+					undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
 					break;
 				}
 			}
@@ -573,8 +600,8 @@ void AnimationNodeBlendSpaceEditor::_erase_selected() {
 
 		updating = true;
 		undo_redo->create_action("Remove BlendSpace Triangle");
-		undo_redo->add_do_method(blend_space, "remove_triangle", selected_triangle);
-		undo_redo->add_undo_method(blend_space, "add_triangle", blend_space->get_triangle_point(selected_triangle, 0), blend_space->get_triangle_point(selected_triangle, 1), blend_space->get_triangle_point(selected_triangle, 2), selected_triangle);
+		undo_redo->add_do_method(blend_space.ptr(), "remove_triangle", selected_triangle);
+		undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(selected_triangle, 0), blend_space->get_triangle_point(selected_triangle, 1), blend_space->get_triangle_point(selected_triangle, 2), selected_triangle);
 
 		undo_redo->add_do_method(this, "_update_space");
 		undo_redo->add_undo_method(this, "_update_space");
@@ -610,8 +637,8 @@ void AnimationNodeBlendSpaceEditor::_edit_point_pos(double) {
 		return;
 	updating = true;
 	undo_redo->create_action("Move Node Point");
-	undo_redo->add_do_method(blend_space, "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));
-	undo_redo->add_undo_method(blend_space, "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));
+	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->add_do_method(this, "_update_edited_point_pos");
@@ -677,6 +704,10 @@ void AnimationNodeBlendSpaceEditor::_goto_parent() {
 	EditorNode::get_singleton()->edit_item(blend_space->get_parent().ptr());
 }
 
+void AnimationNodeBlendSpaceEditor::_removed_from_graph() {
+	EditorNode::get_singleton()->edit_item(NULL);
+}
+
 void AnimationNodeBlendSpaceEditor::_bind_methods() {
 
 	ClassDB::bind_method("_blend_space_gui_input", &AnimationNodeBlendSpaceEditor::_blend_space_gui_input);
@@ -697,6 +728,8 @@ void AnimationNodeBlendSpaceEditor::_bind_methods() {
 
 	ClassDB::bind_method("_open_editor", &AnimationNodeBlendSpaceEditor::_open_editor);
 	ClassDB::bind_method("_goto_parent", &AnimationNodeBlendSpaceEditor::_goto_parent);
+
+	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpaceEditor::_removed_from_graph);
 }
 
 AnimationNodeBlendSpaceEditor *AnimationNodeBlendSpaceEditor::singleton = NULL;
@@ -705,8 +738,6 @@ AnimationNodeBlendSpaceEditor::AnimationNodeBlendSpaceEditor() {
 
 	singleton = this;
 	updating = false;
-
-	blend_space = NULL;
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
@@ -844,6 +875,8 @@ AnimationNodeBlendSpaceEditor::AnimationNodeBlendSpaceEditor() {
 	blend_space_draw = memnew(Control);
 	blend_space_draw->connect("gui_input", this, "_blend_space_gui_input");
 	blend_space_draw->connect("draw", this, "_blend_space_draw");
+	blend_space_draw->set_focus_mode(FOCUS_ALL);
+
 	panel->add_child(blend_space_draw);
 	main_grid->add_child(memnew(Control)); //empty bottom left
 

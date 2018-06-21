@@ -318,6 +318,9 @@ Vector2 AnimationNode::get_position() const {
 
 void AnimationNode::set_graph_player(AnimationGraphPlayer *p_player) {
 
+	if (player != NULL && p_player == NULL) {
+		emit_signal("removed_from_graph");
+	}
 	player = p_player;
 }
 
@@ -377,6 +380,7 @@ void AnimationNode::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::REAL, "time"), PropertyInfo(Variant::BOOL, "seek")));
 
+	ADD_SIGNAL(MethodInfo("removed_from_graph"));
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
 	BIND_ENUM_CONSTANT(FILTER_STOP);

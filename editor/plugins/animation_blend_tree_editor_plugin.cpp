@@ -11,11 +11,21 @@
 
 void AnimationNodeBlendTreeEditor::edit(AnimationNodeBlendTree *p_blend_tree) {
 
-	blend_tree = p_blend_tree;
+	if (blend_tree.is_valid()) {
+		blend_tree->disconnect("removed_from_graph", this, "_removed_from_graph");
+	}
 
-	if (!blend_tree) {
+	if (p_blend_tree) {
+		blend_tree = Ref<AnimationNodeBlendTree>(p_blend_tree);
+	} else {
+		blend_tree.unref();
+	}
+
+	if (blend_tree.is_null()) {
 		hide();
 	} else {
+		blend_tree->connect("removed_from_graph", this, "_removed_from_graph");
+
 		_update_graph();
 	}
 }
@@ -247,8 +257,8 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	}
 
 	undo_redo->create_action("Add Node to BlendTree");
-	undo_redo->add_do_method(blend_tree, "add_node", name, anode);
-	undo_redo->add_undo_method(blend_tree, "remove_node", name);
+	undo_redo->add_do_method(blend_tree.ptr(), "add_node", name, anode);
+	undo_redo->add_undo_method(blend_tree.ptr(), "remove_node", name);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -276,8 +286,8 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 	}
 
 	undo_redo->create_action("Nodes Connected");
-	undo_redo->add_do_method(blend_tree, "connect_node", p_to, p_to_index, p_from);
-	undo_redo->add_undo_method(blend_tree, "disconnect_node", p_to, p_to_index, p_from);
+	undo_redo->add_do_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
+	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index, p_from);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -289,8 +299,8 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 
 	updating = true;
 	undo_redo->create_action("Nodes Disconnected");
-	undo_redo->add_do_method(blend_tree, "disconnect_node", p_to, p_to_index);
-	undo_redo->add_undo_method(blend_tree, "connect_node", p_to, p_to_index, p_from);
+	undo_redo->add_do_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index);
+	undo_redo->add_undo_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -315,15 +325,15 @@ void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, 
 void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 
 	undo_redo->create_action("Delete Node");
-	undo_redo->add_do_method(blend_tree, "remove_node", p_which);
-	undo_redo->add_undo_method(blend_tree, "add_node", p_which, blend_tree->get_node(p_which));
+	undo_redo->add_do_method(blend_tree.ptr(), "remove_node", p_which);
+	undo_redo->add_undo_method(blend_tree.ptr(), "add_node", p_which, blend_tree->get_node(p_which));
 
 	List<AnimationNodeBlendTree::NodeConnection> conns;
 	blend_tree->get_node_connections(&conns);
 
 	for (List<AnimationNodeBlendTree::NodeConnection>::Element *E = conns.front(); E; E = E->next()) {
 		if (E->get().output_node == p_which || E->get().input_node == p_which) {
-			undo_redo->add_undo_method(blend_tree, "connect_node", E->get().input_node, E->get().input_index, E->get().output_node);
+			undo_redo->add_undo_method(blend_tree.ptr(), "connect_node", E->get().input_node, E->get().input_index, E->get().output_node);
 		}
 	}
 
@@ -573,6 +583,12 @@ void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
 	filter_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
 }
 
+void AnimationNodeBlendTreeEditor::_removed_from_graph() {
+	if (is_visible()) {
+		EditorNode::get_singleton()->edit_item(NULL);
+	}
+}
+
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -674,6 +690,7 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_oneshot_start", &AnimationNodeBlendTreeEditor::_oneshot_start);
 	ClassDB::bind_method("_oneshot_stop", &AnimationNodeBlendTreeEditor::_oneshot_stop);
 	ClassDB::bind_method("_node_changed", &AnimationNodeBlendTreeEditor::_node_changed);
+	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendTreeEditor::_removed_from_graph);
 
 	ClassDB::bind_method("_anim_selected", &AnimationNodeBlendTreeEditor::_anim_selected);
 }
@@ -703,8 +720,8 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	updating = true;
 	undo_redo->create_action("Node Renamed");
-	undo_redo->add_do_method(blend_tree, "rename_node", prev_name, name);
-	undo_redo->add_undo_method(blend_tree, "rename_node", name, prev_name);
+	undo_redo->add_do_method(blend_tree.ptr(), "rename_node", prev_name, name);
+	undo_redo->add_undo_method(blend_tree.ptr(), "rename_node", name, prev_name);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -722,7 +739,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
 
-	blend_tree = NULL;
 	graph = memnew(GraphEdit);
 	add_child(graph);
 	graph->add_valid_right_disconnect_type(0);
@@ -758,6 +774,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_options.push_back(AddOption("TimeScale", "AnimationNodeTimeScale"));
 	add_options.push_back(AddOption("Transition", "AnimationNodeTransition"));
 	add_options.push_back(AddOption("BlendTree", "AnimationNodeBlendTree"));
+	add_options.push_back(AddOption("BlendSpace", "AnimationNodeBlendSpace"));
 	_update_options_menu();
 
 	error_panel = memnew(PanelContainer);
