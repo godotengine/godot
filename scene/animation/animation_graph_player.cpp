@@ -14,8 +14,13 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 
 	if (animation.is_null()) {
 
-		String name = get_tree()->get_node_name(Ref<AnimationNodeAnimation>(this));
-		make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), name, p_animation));
+		Ref<AnimationNodeBlendTree> btree = get_parent();
+		if (btree.is_valid()) {
+			String name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
+			make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), name, p_animation));
+		} else {
+			make_invalid(vformat(RTR("Invalid animation: '%s'."), p_animation));
+		}
 		return;
 	}
 
@@ -53,12 +58,14 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	ERR_FAIL_COND_V(!state, 0);
 	ERR_FAIL_COND_V(!get_graph_player(), 0); //should not happen, but used to catch bugs
 
-	if (!tree && get_graph_player()->get_graph_root().ptr() != this) {
+	Ref<AnimationNodeBlendTree> tree = get_parent();
+
+	if (!tree.is_valid() && get_graph_player()->get_graph_root().ptr() != this) {
 		make_invalid(RTR("Can't blend input because node is not in a tree"));
 		return 0;
 	}
 
-	ERR_FAIL_COND_V(!tree, 0); //should not happen
+	ERR_FAIL_COND_V(!tree.is_valid(), 0); //should not happen
 
 	StringName anim_name = inputs[p_input].connected_to;
 
@@ -66,7 +73,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 
 	if (node.is_null()) {
 
-		String name = get_tree()->get_node_name(Ref<AnimationNodeAnimation>(this));
+		String name = tree->get_node_name(Ref<AnimationNodeAnimation>(this));
 		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), name));
 		return 0;
 	}
@@ -222,6 +229,8 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
+	//root nodes cant add inputs
+	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL)
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
 	input.name = p_name;
@@ -244,12 +253,16 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-Ref<AnimationNodeBlendTree> AnimationNode::get_tree() const {
-	if (tree) {
-		return Ref<AnimationNodeBlendTree>(tree);
+void AnimationNode::set_parent(AnimationNode *p_parent) {
+	parent = p_parent; //do not use ref because parent contains children
+}
+
+Ref<AnimationNode> AnimationNode::get_parent() const {
+	if (parent) {
+		return Ref<AnimationNode>(parent);
 	}
 
-	return Ref<AnimationNodeBlendTree>();
+	return Ref<AnimationNode>();
 }
 
 AnimationGraphPlayer *AnimationNode::get_graph_player() const {
@@ -373,7 +386,7 @@ void AnimationNode::_bind_methods() {
 AnimationNode::AnimationNode() {
 
 	state = NULL;
-	tree = NULL;
+	parent = NULL;
 	player = NULL;
 	set_local_to_scene(true);
 	filter_enabled = false;
@@ -1172,7 +1185,7 @@ void AnimationGraphPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationGraphPlayer::_node_removed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "graph_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeBlendTree", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_graph_root", "get_graph_root");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "graph_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_graph_root", "get_graph_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
