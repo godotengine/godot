@@ -3,9 +3,9 @@
 
 #include "scene/animation/animation_graph_player.h"
 
-class AnimationNodeAnimation : public AnimationNode {
+class AnimationNodeAnimation : public AnimationRootNode {
 
-	GDCLASS(AnimationNodeAnimation, AnimationNode);
+	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
 	StringName animation;
 
@@ -266,8 +266,8 @@ public:
 
 /////
 
-class AnimationNodeBlendTree : public AnimationNode {
-	GDCLASS(AnimationNodeBlendTree, AnimationNode)
+class AnimationNodeBlendTree : public AnimationRootNode {
+	GDCLASS(AnimationNodeBlendTree, AnimationRootNode)
 
 	Map<StringName, Ref<AnimationNode> > nodes;
 

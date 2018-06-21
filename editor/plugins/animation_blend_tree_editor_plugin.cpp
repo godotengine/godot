@@ -66,7 +66,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 	graph->set_scroll_ofs(blend_tree->get_graph_offset() * EDSCALE);
 
-	if (blend_tree->get_tree().is_valid()) {
+	if (blend_tree->get_parent().is_valid()) {
 		goto_parent->show();
 	} else {
 		goto_parent->hide();
@@ -367,8 +367,8 @@ void AnimationNodeBlendTreeEditor::_open_in_editor(const String &p_which) {
 }
 
 void AnimationNodeBlendTreeEditor::_open_parent() {
-	if (blend_tree->get_tree().is_valid()) {
-		EditorNode::get_singleton()->edit_item(blend_tree->get_tree().ptr());
+	if (blend_tree->get_parent().is_valid()) {
+		EditorNode::get_singleton()->edit_item(blend_tree->get_parent().ptr());
 	}
 }
 
@@ -648,7 +648,7 @@ void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
 void AnimationNodeBlendTreeEditor::_node_changed(ObjectID p_node) {
 
 	AnimationNode *an = Object::cast_to<AnimationNode>(ObjectDB::get_instance(p_node));
-	if (an && an->get_tree() == blend_tree) {
+	if (an && an->get_parent() == blend_tree) {
 		_update_graph();
 	}
 }
@@ -737,18 +737,17 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->get_zoom_hbox()->add_child(vs);
 	graph->get_zoom_hbox()->move_child(vs, 0);
 
-	goto_parent = memnew(Button);
-	goto_parent->set_text(TTR("Goto Parent"));
-	graph->get_zoom_hbox()->add_child(goto_parent);
-	graph->get_zoom_hbox()->move_child(goto_parent, 0);
-	goto_parent->hide();
-	goto_parent->connect("pressed", this, "_open_parent");
-
 	add_node = memnew(MenuButton);
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node.."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("index_pressed", this, "_add_node");
+
+	goto_parent = memnew(Button);
+	graph->get_zoom_hbox()->add_child(goto_parent);
+	graph->get_zoom_hbox()->move_child(goto_parent, 0);
+	goto_parent->hide();
+	goto_parent->connect("pressed", this, "_open_parent");
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
 	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot"));

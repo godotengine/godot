@@ -36,6 +36,8 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 			}
 		}
 	}
+
+	AnimationRootNode::_validate_property(property);
 }
 
 float AnimationNodeAnimation::process(float p_time, bool p_seek) {
@@ -46,8 +48,9 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 	Ref<Animation> anim = ap->get_animation(animation);
 	if (!anim.is_valid()) {
 
-		if (get_tree().is_valid()) {
-			String name = get_tree()->get_node_name(Ref<AnimationNodeAnimation>(this));
+		Ref<AnimationNodeBlendTree> tree = get_parent();
+		if (tree.is_valid()) {
+			String name = tree->get_node_name(Ref<AnimationNodeAnimation>(this));
 			make_invalid(vformat(RTR("On BlendTree node '%s', animation not found: '%s'"), name, animation));
 
 		} else {
@@ -596,7 +599,9 @@ void AnimationNodeTransition::set_current(int p_current) {
 		return;
 	ERR_FAIL_INDEX(p_current, enabled_inputs);
 
-	if (get_tree().is_valid() && current >= 0) {
+	Ref<AnimationNodeBlendTree> tree = get_parent();
+
+	if (tree.is_valid() && current >= 0) {
 		prev = current;
 		prev_xfading = xfade;
 		prev_time = time;
@@ -692,6 +697,8 @@ void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
 			}
 		}
 	}
+
+	AnimationNode::_validate_property(property);
 }
 
 void AnimationNodeTransition::_bind_methods() {
@@ -754,14 +761,14 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(p_node->tree != NULL);
-	ERR_FAIL_COND(p_node->player != NULL);
+	ERR_FAIL_COND(p_node->get_parent().is_valid());
+	ERR_FAIL_COND(p_node->get_graph_player() != NULL);
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
 	nodes[p_name] = p_node;
 
-	p_node->tree = this;
-	p_node->player = player;
+	p_node->set_parent(this);
+	p_node->set_graph_player(get_graph_player());
 
 	emit_changed();
 }
@@ -796,8 +803,8 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 		for (int i = 0; i < node->get_input_count(); i++) {
 			node->set_input_connection(i, StringName());
 		}
-		node->tree = NULL;
-		node->player = NULL;
+		node->set_parent(NULL);
+		node->set_graph_player(NULL);
 	}
 
 	nodes.erase(p_name);
@@ -1092,14 +1099,14 @@ AnimationNodeBlendTree::AnimationNodeBlendTree() {
 	Ref<AnimationNodeOutput> output;
 	output.instance();
 	output->set_position(Vector2(300, 150));
-	output->tree = this;
+	output->set_parent(this);
 	nodes["output"] = output;
 }
 
 AnimationNodeBlendTree::~AnimationNodeBlendTree() {
 
 	for (Map<StringName, Ref<AnimationNode> >::Element *E = nodes.front(); E; E = E->next()) {
-		E->get()->tree = NULL;
-		E->get()->player = NULL;
+		E->get()->set_parent(NULL);
+		E->get()->set_graph_player(NULL);
 	}
 }

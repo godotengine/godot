@@ -61,8 +61,7 @@ public:
 	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 	Vector2 position;
 
-	friend class AnimationNodeBlendTree;
-	AnimationNodeBlendTree *tree;
+	AnimationNode *parent;
 	AnimationGraphPlayer *player;
 
 	float _blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
@@ -84,12 +83,14 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 
 public:
-	Ref<AnimationNodeBlendTree> get_tree() const;
+	void set_parent(AnimationNode *p_parent);
+	Ref<AnimationNode> get_parent() const;
 	virtual void set_graph_player(AnimationGraphPlayer *p_player);
 	AnimationGraphPlayer *get_graph_player() const;
 	AnimationPlayer *get_player() const;
 
 	virtual float process(float p_time, bool p_seek);
+	virtual String get_caption() const;
 
 	int get_input_count() const;
 	String get_input_name(int p_input);
@@ -100,8 +101,6 @@ public:
 	void add_input(const String &p_name);
 	void set_input_name(int p_input, const String &p_name);
 	void remove_input(int p_index);
-
-	virtual String get_caption() const;
 
 	void set_filter_path(const NodePath &p_path, bool p_enable);
 	bool is_path_filtered(const NodePath &p_path) const;
@@ -118,6 +117,13 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNode::FilterAction)
+
+//root node does not allow inputs
+class AnimationRootNode : public AnimationNode {
+	GDCLASS(AnimationRootNode, AnimationNode)
+public:
+	AnimationRootNode() {}
+};
 
 class AnimationGraphPlayer : public Node {
 	GDCLASS(AnimationGraphPlayer, Node)
