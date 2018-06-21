@@ -301,6 +301,7 @@ public:
 
 	virtual void init();
 	virtual void finish();
+	virtual void update();
 	virtual void load_default_bus_layout();
 
 	/* MISC config */

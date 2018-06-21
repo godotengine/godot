@@ -400,7 +400,9 @@ String AudioDriverWASAPI::get_device() {
 
 void AudioDriverWASAPI::set_device(String device) {
 
+	lock();
 	new_device = device;
+	unlock();
 }
 
 void AudioDriverWASAPI::write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample) {
@@ -524,25 +526,6 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 		ad->lock();
 		ad->start_counting_ticks();
-
-		// If we're using the Default device and it changed finish it so we'll re-init the device
-		if (ad->device_name == "Default" && default_device_changed) {
-			Error err = ad->finish_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_device error");
-			}
-
-			default_device_changed = false;
-		}
-
-		// User selected a new device, finish the current one so we'll init the new device
-		if (ad->device_name != ad->new_device) {
-			ad->device_name = ad->new_device;
-			Error err = ad->finish_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_device error");
-			}
-		}
 
 		// If we're using the Default device and it changed finish it so we'll re-init the device
 		if (ad->device_name == "Default" && default_device_changed) {
