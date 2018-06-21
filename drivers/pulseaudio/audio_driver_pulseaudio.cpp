@@ -289,17 +289,17 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 
 	while (!ad->exit_thread) {
+
+		ad->lock();
+		ad->start_counting_ticks();
+
 		if (!ad->active) {
 			for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 				ad->samples_out[i] = 0;
 			}
 
 		} else {
-			ad->lock();
-
 			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
-
-			ad->unlock();
 
 			if (ad->channels == ad->pa_map.channels) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
@@ -323,9 +323,6 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		int error_code;
 		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
-
-		ad->lock();
-
 		int ret;
 		do {
 			ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
@@ -350,11 +347,13 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					if (ret == 0) {
 						// If pa_mainloop_iterate returns 0 sleep for 1 msec to wait
 						// for the stream to be able to process more bytes
+						ad->stop_counting_ticks();
 						ad->unlock();
 
 						OS::get_singleton()->delay_usec(1000);
 
 						ad->lock();
+						ad->start_counting_ticks();
 					}
 				}
 			}
@@ -380,6 +379,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			}
 		}
 
+		ad->stop_counting_ticks();
 		ad->unlock();
 	}
 
@@ -453,7 +453,9 @@ String AudioDriverPulseAudio::get_device() {
 
 void AudioDriverPulseAudio::set_device(String device) {
 
+	lock();
 	new_device = device;
+	unlock();
 }
 
 void AudioDriverPulseAudio::lock() {
