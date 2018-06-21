@@ -4848,13 +4848,13 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 
 			if (path.is_rel_path()) {
 
-				String base = self_path;
+				String base = base_path;
 
 				if (base == "" || base.is_rel_path()) {
 					_set_error("Could not resolve relative path for parent class: " + path, p_class->line);
 					return;
 				}
-				path = base.get_base_dir().plus_file(path).simplify_path();
+				path = base.plus_file(path).simplify_path();
 			}
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {
@@ -7606,30 +7606,6 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 
 	if (error_set) {
 		return ERR_PARSE_ERROR;
-	}
-
-	_determine_inheritance(main_class);
-
-	if (error_set) {
-		return ERR_PARSE_ERROR;
-	}
-
-	current_class = main_class;
-	current_function = NULL;
-	current_block = NULL;
-#ifdef DEBUG_ENABLED
-	if (for_completion) check_types = false;
-#else
-	check_types = false;
-#endif
-
-	if (check_types) {
-		// Resolve all class-level stuff before getting into function blocks
-		_check_class_level_types(main_class);
-
-		if (error_set) {
-			return ERR_PARSE_ERROR;
-		}
 	}
 
 	// Resolve the function blocks
