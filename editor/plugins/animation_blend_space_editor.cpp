@@ -243,7 +243,7 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 void AnimationNodeBlendSpaceEditor::_add_menu_type(int p_index) {
 
 	String type = menu->get_item_metadata(p_index);
-	print_line("type: " + type);
+
 	Object *obj = ClassDB::instance(type);
 	ERR_FAIL_COND(!obj);
 	AnimationNode *an = Object::cast_to<AnimationNode>(obj);
