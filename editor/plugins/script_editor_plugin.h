@@ -134,10 +134,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
-		FILE_IMPORT_THEME,
-		FILE_RELOAD_THEME,
-		FILE_SAVE_THEME,
-		FILE_SAVE_THEME_AS,
+		FILE_THEME,
 		FILE_RUN,
 		FILE_CLOSE,
 		CLOSE_DOCS,
@@ -168,6 +165,13 @@ class ScriptEditor : public PanelContainer {
 		WINDOW_SELECT_BASE = 100
 	};
 
+	enum {
+		THEME_IMPORT,
+		THEME_RELOAD,
+		THEME_SAVE,
+		THEME_SAVE_AS
+	};
+
 	enum ScriptSortBy {
 		SORT_BY_NAME,
 		SORT_BY_PATH,
@@ -190,6 +194,7 @@ class ScriptEditor : public PanelContainer {
 	uint64_t idle;
 
 	PopupMenu *recent_scripts;
+	PopupMenu *theme_submenu;
 
 	Button *help_search;
 	Button *site_search;
@@ -251,6 +256,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
+	void _theme_option(int p_option);
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
