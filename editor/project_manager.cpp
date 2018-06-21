@@ -72,16 +72,26 @@ private:
 		MESSAGE_SUCCESS
 	};
 
+	enum InputType {
+		PROJECT_PATH,
+		INSTALL_PATH
+	};
+
 	Mode mode;
 	Button *browse;
+	Button *install_browse;
 	Button *create_dir;
 	Container *name_container;
 	Container *path_container;
+	Container *install_path_container;
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
+	LineEdit *install_path;
 	TextureRect *status_rect;
+	TextureRect *install_status_rect;
 	FileDialog *fdialog;
+	FileDialog *fdialog_install;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -89,10 +99,11 @@ private:
 
 	String created_folder_path;
 
-	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS) {
+	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH) {
 
 		msg->set_text(p_msg);
-		Ref<Texture> current_icon = status_rect->get_texture();
+		Ref<Texture> current_path_icon = status_rect->get_texture();
+		Ref<Texture> current_install_icon = install_status_rect->get_texture();
 		Ref<Texture> new_icon;
 
 		switch (p_type) {
@@ -119,8 +130,11 @@ private:
 			} break;
 		}
 
-		if (current_icon != new_icon)
+		if (current_path_icon != new_icon && input_type == PROJECT_PATH) {
 			status_rect->set_texture(new_icon);
+		} else if (current_install_icon != new_icon && input_type == INSTALL_PATH) {
+			install_status_rect->set_texture(new_icon);
+		}
 
 		set_size(Size2(500, 0) * EDSCALE);
 	}
@@ -128,11 +142,19 @@ private:
 	String _test_path() {
 
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		String valid_path;
+		String valid_path, valid_install_path;
 		if (d->change_dir(project_path->get_text()) == OK) {
 			valid_path = project_path->get_text();
 		} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
 			valid_path = project_path->get_text().strip_edges();
+		} else if (project_path->get_text().ends_with(".zip")) {
+			if (d->file_exists(project_path->get_text())) {
+				valid_path = project_path->get_text();
+			}
+		} else if (project_path->get_text().strip_edges().ends_with(".zip")) {
+			if (d->file_exists(project_path->get_text().strip_edges())) {
+				valid_path = project_path->get_text().strip_edges();
+			}
 		}
 
 		if (valid_path == "") {
@@ -142,11 +164,94 @@ private:
 			return "";
 		}
 
+		if (mode == MODE_IMPORT && valid_path.ends_with(".zip")) {
+			if (d->change_dir(install_path->get_text()) == OK) {
+				valid_install_path = install_path->get_text();
+			} else if (d->change_dir(install_path->get_text().strip_edges()) == OK) {
+				valid_install_path = install_path->get_text().strip_edges();
+			}
+
+			if (valid_install_path == "") {
+				set_message(TTR("The path does not exist."), MESSAGE_ERROR, INSTALL_PATH);
+				memdelete(d);
+				get_ok()->set_disabled(true);
+				return "";
+			}
+		}
+
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
 
 			if (valid_path != "" && !d->file_exists("project.godot")) {
 
-				set_message(TTR("Please choose a 'project.godot' file."), MESSAGE_ERROR);
+				if (valid_path.ends_with(".zip")) {
+					FileAccess *src_f = NULL;
+					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
+					if (!pkg) {
+
+						set_message(TTR("Error opening package file, not in zip format."), MESSAGE_ERROR);
+						memdelete(d);
+						get_ok()->set_disabled(true);
+						unzClose(pkg);
+						return "";
+					}
+
+					int ret = unzGoToFirstFile(pkg);
+					while (ret == UNZ_OK) {
+						unz_file_info info;
+						char fname[16384];
+						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+
+						if (String(fname).ends_with("project.godot")) {
+							break;
+						}
+
+						ret = unzGoToNextFile(pkg);
+					}
+
+					if (ret == UNZ_END_OF_LIST_OF_FILE) {
+						set_message(TTR("Invalid '.zip' project file, does not contain a 'project.godot' file."), MESSAGE_ERROR);
+						memdelete(d);
+						get_ok()->set_disabled(true);
+						unzClose(pkg);
+						return "";
+					}
+
+					unzClose(pkg);
+
+					// check if the specified install folder is empty, even though this is not an error, it is good to check here
+					d->list_dir_begin();
+					bool is_empty = true;
+					String n = d->get_next();
+					while (n != String()) {
+						if (n != "." && n != "..") {
+							is_empty = false;
+							break;
+						}
+						n = d->get_next();
+					}
+					d->list_dir_end();
+
+					if (!is_empty) {
+
+						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
+						memdelete(d);
+						get_ok()->set_disabled(true);
+						return "";
+					}
+
+				} else {
+					set_message(TTR("Please choose a 'project.godot' or '.zip' file."), MESSAGE_ERROR);
+					memdelete(d);
+					install_path_container->hide();
+					get_ok()->set_disabled(true);
+					return "";
+				}
+
+			} else if (valid_path.ends_with("zip")) {
+
+				set_message(TTR("Directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
 				get_ok()->set_disabled(true);
 				return "";
@@ -159,7 +264,7 @@ private:
 			bool is_empty = true;
 			String n = d->get_next();
 			while (n != String()) {
-				if (!n.begins_with(".")) { // i don't know if this is enough to guarantee an empty dir
+				if (n != "." && n != "..") { // i don't know if this is enough to guarantee an empty dir
 					is_empty = false;
 					break;
 				}
@@ -177,6 +282,7 @@ private:
 		}
 
 		set_message("");
+		set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
 		memdelete(d);
 		get_ok()->set_disabled(false);
 		return valid_path;
@@ -214,9 +320,14 @@ private:
 		if (mode == MODE_IMPORT) {
 			if (p.ends_with("project.godot")) {
 				p = p.get_base_dir();
+				install_path_container->hide();
+				get_ok()->set_disabled(false);
+			} else if (p.ends_with(".zip")) {
+				install_path->set_text(p.get_base_dir());
+				install_path_container->show();
 				get_ok()->set_disabled(false);
 			} else {
-				set_message(TTR("Please choose a 'project.godot' file."), MESSAGE_ERROR);
+				set_message(TTR("Please choose a 'project.godot' or '.zip' file."), MESSAGE_ERROR);
 				get_ok()->set_disabled(true);
 				return;
 			}
@@ -224,7 +335,11 @@ private:
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok()->call_deferred("grab_focus");
+		if (p.ends_with(".zip")) {
+			install_path->call_deferred("grab_focus");
+		} else {
+			get_ok()->call_deferred("grab_focus");
+		}
 	}
 
 	void _path_selected(const String &p_path) {
@@ -232,6 +347,14 @@ private:
 		String p = p_path;
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
+		_path_text_changed(sp);
+		get_ok()->call_deferred("grab_focus");
+	}
+
+	void _install_path_selected(const String &p_path) {
+		String p = p_path;
+		String sp = p.simplify_path();
+		install_path->set_text(sp);
 		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
@@ -245,10 +368,17 @@ private:
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
 			fdialog->add_filter("project.godot ; " VERSION_NAME " Project");
+			fdialog->add_filter("*.zip ; Zip File");
 		} else {
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
 		fdialog->popup_centered_ratio();
+	}
+
+	void _browse_install_path() {
+		fdialog_install->set_current_dir(install_path->get_text());
+		fdialog_install->set_mode(FileDialog::MODE_OPEN_DIR);
+		fdialog_install->popup_centered_ratio();
 	}
 
 	void _create_folder() {
@@ -328,7 +458,15 @@ private:
 		} else {
 
 			if (mode == MODE_IMPORT) {
-				// nothing to do
+
+				if (project_path->get_text().ends_with(".zip")) {
+
+					mode = MODE_INSTALL;
+					ok_pressed();
+
+					return;
+				}
+
 			} else {
 				if (mode == MODE_NEW) {
 
@@ -356,6 +494,11 @@ private:
 					}
 
 				} else if (mode == MODE_INSTALL) {
+
+					if (project_path->get_text().ends_with(".zip")) {
+						dir = install_path->get_text();
+						zip_path = project_path->get_text();
+					}
 
 					FileAccess *src_f = NULL;
 					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -444,7 +587,7 @@ private:
 						dialog_error->set_text(msg);
 						dialog_error->popup_centered_minsize();
 
-					} else {
+					} else if (!project_path->get_text().ends_with(".zip")) {
 						dialog_error->set_text(TTR("Package Installed Successfully!"));
 						dialog_error->popup_centered_minsize();
 					}
@@ -486,6 +629,9 @@ private:
 
 		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
 			msg->show();
+
+		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+			msg->show();
 	}
 
 	void _notification(int p_what) {
@@ -503,6 +649,8 @@ protected:
 		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
 		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
+		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
+		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
@@ -530,12 +678,15 @@ public:
 
 			project_path->set_editable(false);
 			browse->hide();
+			install_browse->hide();
 
 			set_title(TTR("Rename Project"));
 			get_ok()->set_text(TTR("Rename"));
 			name_container->show();
 			status_rect->hide();
 			msg->hide();
+			install_path_container->hide();
+			install_status_rect->hide();
 			get_ok()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
@@ -575,14 +726,18 @@ public:
 			project_path->set_editable(true);
 			browse->set_disabled(false);
 			browse->show();
+			install_browse->set_disabled(false);
+			install_browse->show();
 			create_dir->show();
 			status_rect->show();
+			install_status_rect->show();
 			msg->show();
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
 				get_ok()->set_text(TTR("Import & Edit"));
 				name_container->hide();
+				install_path_container->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
@@ -590,6 +745,7 @@ public:
 				set_title(TTR("Create New Project"));
 				get_ok()->set_text(TTR("Create & Edit"));
 				name_container->show();
+				install_path_container->hide();
 				project_name->grab_focus();
 
 			} else if (mode == MODE_INSTALL) {
@@ -597,6 +753,7 @@ public:
 				set_title(TTR("Install Project:") + " " + zip_title);
 				get_ok()->set_text(TTR("Install & Edit"));
 				name_container->hide();
+				install_path_container->hide();
 				project_path->grab_focus();
 			}
 
@@ -644,6 +801,20 @@ public:
 		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		pphb->add_child(project_path);
 
+		install_path_container = memnew(VBoxContainer);
+		vb->add_child(install_path_container);
+
+		l = memnew(Label);
+		l->set_text(TTR("Project Installation Path:"));
+		install_path_container->add_child(l);
+
+		HBoxContainer *iphb = memnew(HBoxContainer);
+		install_path_container->add_child(iphb);
+
+		install_path = memnew(LineEdit);
+		install_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		iphb->add_child(install_path);
+
 		// status icon
 		status_rect = memnew(TextureRect);
 		status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
@@ -654,17 +825,33 @@ public:
 		browse->connect("pressed", this, "_browse_path");
 		pphb->add_child(browse);
 
+		// install status icon
+		install_status_rect = memnew(TextureRect);
+		install_status_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		iphb->add_child(install_status_rect);
+
+		install_browse = memnew(Button);
+		install_browse->set_text(TTR("Browse"));
+		install_browse->connect("pressed", this, "_browse_install_path");
+		iphb->add_child(install_browse);
+
 		msg = memnew(Label);
 		msg->set_align(Label::ALIGN_CENTER);
 		vb->add_child(msg);
 
 		fdialog = memnew(FileDialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+		fdialog_install = memnew(FileDialog);
+		fdialog_install->set_access(FileDialog::ACCESS_FILESYSTEM);
 		add_child(fdialog);
+		add_child(fdialog_install);
 		project_name->connect("text_changed", this, "_text_changed");
 		project_path->connect("text_changed", this, "_path_text_changed");
+		install_path->connect("text_changed", this, "_path_text_changed");
 		fdialog->connect("dir_selected", this, "_path_selected");
 		fdialog->connect("file_selected", this, "_file_selected");
+		fdialog_install->connect("dir_selected", this, "_install_path_selected");
+		fdialog_install->connect("file_selected", this, "_install_path_selected");
 		set_hide_on_ok(false);
 		mode = MODE_NEW;
 
