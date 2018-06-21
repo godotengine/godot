@@ -455,6 +455,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
+			if (input->is_emulating_mouse_from_touch()) {
+				// Universal translation enabled; ignore OS translations for left button
+				LPARAM extra = GetMessageExtraInfo();
+				if (IsPenEvent(extra)) {
+					break;
+				}
+			}
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -466,14 +473,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_RBUTTONDBLCLK:
 			/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */ {
-
-				if (input->is_emulating_mouse_from_touch()) {
-					// Universal translation enabled; ignore OS translation
-					LPARAM extra = GetMessageExtraInfo();
-					if (IsPenEvent(extra)) {
-						break;
-					}
-				}
 
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
@@ -742,13 +741,18 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT))) {
 					for (UINT i = 0; i < cInputs; i++) {
 						TOUCHINPUT ti = pInputs[i];
+						POINT touch_pos = {
+							TOUCH_COORD_TO_PIXEL(ti.x),
+							TOUCH_COORD_TO_PIXEL(ti.y),
+						};
+						ScreenToClient(hWnd, &touch_pos);
 						//do something with each touch input entry
 						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
 
-							_drag_event(ti.x / 100.0f, ti.y / 100.0f, ti.dwID);
+							_drag_event(touch_pos.x, touch_pos.y, ti.dwID);
 						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
 
-							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN, ti.x / 100.0f, ti.y / 100.0f, ti.dwID);
+							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN, touch_pos.x, touch_pos.y, ti.dwID);
 						};
 					}
 					bHandled = TRUE;
