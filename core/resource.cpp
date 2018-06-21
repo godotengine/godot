@@ -287,7 +287,7 @@ uint32_t Resource::hash_edited_version() const {
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
-		if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (E->get().usage & PROPERTY_USAGE_STORAGE && E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			RES res = get(E->get().name);
 			if (res.is_valid()) {
 				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
