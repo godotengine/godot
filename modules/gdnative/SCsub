@@ -161,7 +161,7 @@ def build_gdnative_api_struct(target, source, env):
     with open(source.path, 'w') as fd:
         fd.write(_build_gdnative_api_struct_source(api))
 
-_, gensource = gdn_env.Command(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+_, gensource = gdn_env.CommandNoCache(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
                                'gdnative_api.json', build_gdnative_api_struct)
 gdn_env.add_source_files(env.modules_sources, [gensource])
 
@@ -240,7 +240,7 @@ def build_gdnative_wrapper_code(target, source, env):
 
 if ARGUMENTS.get('gdnative_wrapper', False):
     #build wrapper code
-    gensource, = gdn_env.Command('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
+    gensource, = gdn_env.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
 
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])

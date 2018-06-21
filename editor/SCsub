@@ -433,10 +433,10 @@ if env['tools']:
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
-    env.Command("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
+    env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
     # Certificates
     env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
-    env.Command("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
+    env.CommandNoCache("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
 
     import glob
     path = env.Dir('.').abspath
@@ -444,25 +444,25 @@ if env['tools']:
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
     env.Depends('#editor/translations.gen.h', tlist)
-    env.Command('#editor/translations.gen.h', tlist, make_translations_header)
+    env.CommandNoCache('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     env.Depends('#editor/builtin_fonts.gen.h', flist)
-    env.Command('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
+    env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
     # Authors
     env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
-    env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
+    env.CommandNoCache('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
 
     # Donors
     env.Depends('#editor/donors.gen.h', "../DONORS.md")
-    env.Command('#editor/donors.gen.h', "../DONORS.md", make_donors_header)
+    env.CommandNoCache('#editor/donors.gen.h', "../DONORS.md", make_donors_header)
 
     # License
     env.Depends('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
-    env.Command('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], make_license_header)
+    env.CommandNoCache('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], make_license_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")
