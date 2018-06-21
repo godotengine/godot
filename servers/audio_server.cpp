@@ -117,6 +117,10 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_mix_amount = 0;
+
+#ifdef DEBUG_ENABLED
+	prof_time = 0;
+#endif
 }
 
 AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS];
@@ -184,6 +188,10 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 	int todo = p_frames;
 
+#ifdef DEBUG_ENABLED
+	uint64_t prof_ticks = OS::get_singleton()->get_ticks_usec();
+#endif
+
 	if (channel_count != get_channel_count()) {
 		// Amount of channels changed due to a device change
 		// reinitialize the buses channels and buffers
@@ -241,6 +249,10 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		output_latency = (ticks - output_latency_ticks) / 1000000.f;
 		output_latency_ticks = ticks;
 	}
+
+#ifdef DEBUG_ENABLED
+	prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks;
+#endif
 }
 
 void AudioServer::_mix_step() {
@@ -314,6 +326,10 @@ void AudioServer::_mix_step() {
 				if (!bus->effects[j].enabled)
 					continue;
 
+#ifdef DEBUG_ENABLED
+				uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+#endif
+
 				for (int k = 0; k < bus->channels.size(); k++) {
 
 					if (!bus->channels[k].active)
@@ -328,6 +344,10 @@ void AudioServer::_mix_step() {
 						continue;
 					SWAP(bus->channels[k].buffer, temp_buffer[k]);
 				}
+
+#ifdef DEBUG_ENABLED
+				bus->effects[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
+#endif
 			}
 		}
 
@@ -768,6 +788,9 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 	fx.effect = p_effect;
 	//fx.instance=p_effect->instance();
 	fx.enabled = true;
+#ifdef DEBUG_ENABLED
+	fx.prof_time = 0;
+#endif
 
 	if (p_at_pos >= buses[p_bus]->effects.size() || p_at_pos < 0) {
 		buses[p_bus]->effects.push_back(fx);
@@ -898,6 +921,68 @@ void AudioServer::init() {
 #endif
 
 	GLOBAL_DEF("audio/video_delay_compensation_ms", 0);
+}
+
+void AudioServer::update() {
+#ifdef DEBUG_ENABLED
+	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+
+		// Driver time includes server time + effects times
+		// Server time includes effects times
+		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
+		uint64_t server_time = prof_time;
+
+		// Substract the server time from the driver time
+		if (driver_time > server_time)
+			driver_time -= server_time;
+
+		Array values;
+
+		for (int i = buses.size() - 1; i >= 0; i--) {
+			Bus *bus = buses[i];
+			if (bus->bypass)
+				continue;
+
+			for (int j = 0; j < bus->effects.size(); j++) {
+				if (!bus->effects[j].enabled)
+					continue;
+
+				values.push_back(String(bus->name) + bus->effects[j].effect->get_name());
+				values.push_back(USEC_TO_SEC(bus->effects[j].prof_time));
+
+				// Substract the effect time from the driver and server times
+				if (driver_time > bus->effects[j].prof_time)
+					driver_time -= bus->effects[j].prof_time;
+				if (server_time > bus->effects[j].prof_time)
+					server_time -= bus->effects[j].prof_time;
+			}
+		}
+
+		values.push_back("audio_server");
+		values.push_back(USEC_TO_SEC(server_time));
+		values.push_back("audio_driver");
+		values.push_back(USEC_TO_SEC(driver_time));
+
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("audio_thread", values);
+	}
+
+	// Reset profiling times
+	for (int i = buses.size() - 1; i >= 0; i--) {
+		Bus *bus = buses[i];
+		if (bus->bypass)
+			continue;
+
+		for (int j = 0; j < bus->effects.size(); j++) {
+			if (!bus->effects[j].enabled)
+				continue;
+
+			bus->effects[j].prof_time = 0;
+		}
+	}
+
+	AudioDriver::get_singleton()->reset_profiling_time();
+	prof_time = 0;
+#endif
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1187,6 +1272,9 @@ AudioServer::AudioServer() {
 	to_mix = 0;
 	output_latency = 0;
 	output_latency_ticks = 0;
+#ifdef DEBUG_ENABLED
+	prof_time = 0;
+#endif
 }
 
 AudioServer::~AudioServer() {

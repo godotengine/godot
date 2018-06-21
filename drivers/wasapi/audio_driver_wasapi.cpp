@@ -335,22 +335,6 @@ Error AudioDriverWASAPI::init() {
 	return OK;
 }
 
-Error AudioDriverWASAPI::reopen() {
-	Error err = finish_device();
-	if (err != OK) {
-		ERR_PRINT("WASAPI: finish_device error");
-	} else {
-		err = init_device();
-		if (err != OK) {
-			ERR_PRINT("WASAPI: init_device error");
-		} else {
-			start();
-		}
-	}
-
-	return err;
-}
-
 int AudioDriverWASAPI::get_mix_rate() const {
 
 	return mix_rate;
@@ -416,7 +400,9 @@ String AudioDriverWASAPI::get_device() {
 
 void AudioDriverWASAPI::set_device(String device) {
 
+	lock();
 	new_device = device;
+	unlock();
 }
 
 void AudioDriverWASAPI::write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample) {
@@ -453,24 +439,31 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 	AudioDriverWASAPI *ad = (AudioDriverWASAPI *)p_udata;
 
 	while (!ad->exit_thread) {
+
+		ad->lock();
+		ad->start_counting_ticks();
+
 		if (ad->active) {
-			ad->lock();
-
 			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
-
-			ad->unlock();
 		} else {
 			for (unsigned int i = 0; i < ad->buffer_size; i++) {
 				ad->samples_in[i] = 0;
 			}
 		}
 
+		ad->stop_counting_ticks();
+		ad->unlock();
+
 		unsigned int left_frames = ad->buffer_frames;
 		unsigned int buffer_idx = 0;
 		while (left_frames > 0 && ad->audio_client) {
 			WaitForSingleObject(ad->event, 1000);
 
+			ad->lock();
+			ad->start_counting_ticks();
+
 			UINT32 cur_frames;
+			bool invalidated = false;
 			HRESULT hr = ad->audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
 				// Check how much frames are available on the WASAPI buffer
@@ -506,33 +499,33 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					left_frames -= write_frames;
 				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-					// Device is not valid anymore, reopen it
-
-					Error err = ad->finish_device();
-					if (err != OK) {
-						ERR_PRINT("WASAPI: finish_device error");
-					} else {
-						// We reopened the device and samples_in may have resized, so invalidate the current left_frames
-						left_frames = 0;
-					}
+					invalidated = true;
 				} else {
 					ERR_PRINT("WASAPI: Get buffer error");
 					ad->exit_thread = true;
 				}
 			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-				// Device is not valid anymore, reopen it
+				invalidated = true;
+			} else {
+				ERR_PRINT("WASAPI: GetCurrentPadding error");
+			}
+
+			if (invalidated) {
+				// Device is not valid anymore
+				WARN_PRINT("WASAPI: Current device invalidated, closing device");
 
 				Error err = ad->finish_device();
 				if (err != OK) {
 					ERR_PRINT("WASAPI: finish_device error");
-				} else {
-					// We reopened the device and samples_in may have resized, so invalidate the current left_frames
-					left_frames = 0;
 				}
-			} else {
-				ERR_PRINT("WASAPI: GetCurrentPadding error");
 			}
+
+			ad->stop_counting_ticks();
+			ad->unlock();
 		}
+
+		ad->lock();
+		ad->start_counting_ticks();
 
 		// If we're using the Default device and it changed finish it so we'll re-init the device
 		if (ad->device_name == "Default" && default_device_changed) {
@@ -559,6 +552,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 				ad->start();
 			}
 		}
+
+		ad->stop_counting_ticks();
+		ad->unlock();
 	}
 
 	ad->thread_exited = true;

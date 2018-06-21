@@ -1824,6 +1824,8 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
+	AudioServer::get_singleton()->update();
+
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
 			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);

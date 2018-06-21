@@ -163,6 +163,8 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		return 0;
 	};
 
+	ad->start_counting_ticks();
+
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 
 		AudioBuffer *abuf = &ioData->mBuffers[i];
@@ -184,6 +186,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		};
 	};
 
+	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return 0;
