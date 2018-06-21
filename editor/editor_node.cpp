@@ -1309,7 +1309,11 @@ bool EditorNode::item_has_editor(Object *p_object) {
 
 void EditorNode::edit_item(Object *p_object) {
 
-	Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(p_object);
+	Vector<EditorPlugin *> sub_plugins;
+
+	if (p_object) {
+		sub_plugins = editor_data.get_subeditors(p_object);
+	}
 
 	if (!sub_plugins.empty()) {
 		_display_top_editors(false);
@@ -1317,6 +1321,8 @@ void EditorNode::edit_item(Object *p_object) {
 		_set_top_editors(sub_plugins);
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
+	} else {
+		_hide_top_editors();
 	}
 }
 
