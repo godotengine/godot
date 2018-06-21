@@ -97,15 +97,15 @@ env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_bin
 
 # Authors
 env.Depends('#core/authors.gen.h', "../AUTHORS.md")
-env.Command('#core/authors.gen.h', "../AUTHORS.md", methods.make_authors_header)
+env.CommandNoCache('#core/authors.gen.h', "../AUTHORS.md", methods.make_authors_header)
 
 # Donors
 env.Depends('#core/donors.gen.h', "../DONORS.md")
-env.Command('#core/donors.gen.h', "../DONORS.md", methods.make_donors_header)
+env.CommandNoCache('#core/donors.gen.h', "../DONORS.md", methods.make_donors_header)
 
 # License
 env.Depends('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
-env.Command('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], methods.make_license_header)
+env.CommandNoCache('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], methods.make_license_header)
 
 # Chain load SCsubs
 SConscript('os/SCsub')
