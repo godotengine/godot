@@ -131,7 +131,7 @@ env.add_source_files(env.main_sources, "*.cpp")
 controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb_204.txt", "#main/godotcontrollerdb.txt"]
 
 env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
-env.Command("#main/default_controller_mappings.gen.cpp", controller_databases, make_default_controller_mappings)
+env.CommandNoCache("#main/default_controller_mappings.gen.cpp", controller_databases, make_default_controller_mappings)
 
 env.main_sources.append("#main/default_controller_mappings.gen.cpp")
 

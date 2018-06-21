@@ -277,7 +277,7 @@ def build_gdnative_wrapper_code(target, source, env):
 
 if ARGUMENTS.get('gdnative_wrapper', False):
 #build wrapper code
-    gensource, = gdn_env.Command('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
+    gensource, = gdn_env.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
 
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
