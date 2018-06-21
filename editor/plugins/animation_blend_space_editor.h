@@ -17,7 +17,7 @@ class AnimationNodeBlendSpaceEditor : public VBoxContainer {
 
 	GDCLASS(AnimationNodeBlendSpaceEditor, VBoxContainer);
 
-	AnimationNodeBlendSpace *blend_space;
+	Ref<AnimationNodeBlendSpace> blend_space;
 
 	HBoxContainer *goto_parent_hb;
 	ToolButton *goto_parent;
@@ -92,6 +92,8 @@ class AnimationNodeBlendSpaceEditor : public VBoxContainer {
 	void _open_editor();
 
 	void _goto_parent();
+
+	void _removed_from_graph();
 
 protected:
 	void _notification(int p_what);
