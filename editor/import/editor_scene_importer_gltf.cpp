@@ -1253,12 +1253,15 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			}
 
 			if (mr.has("metallicFactor")) {
-
 				material->set_metallic(mr["metallicFactor"]);
+			} else {
+				material->set_metallic(1.0);
 			}
-			if (mr.has("roughnessFactor")) {
 
+			if (mr.has("roughnessFactor")) {
 				material->set_roughness(mr["roughnessFactor"]);
+			} else {
+				material->set_roughness(1.0);
 			}
 
 			if (mr.has("metallicRoughnessTexture")) {
