@@ -184,6 +184,7 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *file_menu;
 	MenuButton *edit_menu;
 	MenuButton *script_search_menu;
+	MenuButton *theme_menu;
 	MenuButton *debug_menu;
 	PopupMenu *context_menu;
 	Timer *autosave_timer;
