@@ -1680,3 +1680,8 @@ def add_program(env, name, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
+
+def CommandNoCache(env, target, sources, command, **args):
+    result = env.Command(target, sources, command, **args)
+    env.NoCache(result)
+    return result
