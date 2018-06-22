@@ -27,7 +27,6 @@
 		Band 19 : 11000 Hz
 		Band 20 : 16000 Hz
 		Band 21 : 22000 Hz
-
 		See also [AudioEffectEQ], [AudioEffectEQ6], [AudioEffectEQ10].
 	</description>
 	<tutorials>

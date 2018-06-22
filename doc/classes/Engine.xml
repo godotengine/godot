@@ -45,7 +45,6 @@
 			</return>
 			<description>
 				Returns the current engine version information in a Dictionary.
-
 				"major"    - Holds the major version number as an int
 				"minor"    - Holds the minor version number as an int
 				"patch"    - Holds the patch version number as an int

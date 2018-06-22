@@ -16,7 +16,6 @@
 		Band 8 : 4000 Hz
 		Band 9 : 8000 Hz
 		Band 10 : 16000 Hz
-
 		See also [AudioEffectEQ], [AudioEffectEQ6], [AudioEffectEQ21].
 	</description>
 	<tutorials>
