@@ -1965,6 +1965,7 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
+#ifdef TOUCH_ENABLED
 				// Avoidance of spurious mouse motion (see handling of touch)
 				bool filter = false;
 				// Adding some tolerance to match better Point2i to Vector2
@@ -1976,6 +1977,7 @@ void OS_X11::process_xevents() {
 				if (filter) {
 					break;
 				}
+#endif
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
