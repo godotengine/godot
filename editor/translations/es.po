@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Addiel Lucena Perez <addiell2017@gmail.com>, 2017.
 # Aleix Sanchis <aleixsanchis@hotmail.com>, 2017, 2018.
 # Alejandro Alvarez <eliluminado00@gmail.com>, 2017.
@@ -23,19 +22,19 @@
 # Lonsfor <lotharw@protonmail.com>, 2017-2018.
 # Mario Nachbaur <manachbaur@gmail.com>, 2018.
 # Oscar Carballal <oscar.carballal@protonmail.com>, 2017-2018.
+# R. Joshua Seville <rjoshua@protonmail.com>, 2018.
 # Rabid Orange <theorangerabid@gmail.com>, 2017, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
 # Sebastian Silva <sebastian@fuentelibre.org>, 2016.
 # Swyter <swyterzone@gmail.com>, 2016-2017.
 # Vazquinhos <vazquinhos@gmail.com>, 2018.
 # Yovani Damián <blackblex@gmail.com>, 2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-01 00:44+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2018-06-22 08:31+0000\n"
+"Last-Translator: R. Joshua Seville <rjoshua@protonmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -43,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -269,7 +268,7 @@ msgstr "Zoom de Animación."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Duración (seg):"
+msgstr "Duración (segs.):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -548,7 +547,7 @@ msgstr "Cambiar"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Crear nuevo %s"
+msgstr "Crear Nuevo %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -738,7 +737,7 @@ msgstr "Contribuidores de Godot"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr "Fundadores del proyecto"
+msgstr "Fundadores del Proyecto"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
@@ -1978,7 +1977,7 @@ msgstr "Proyecto"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr "Ajustes del proyecto"
+msgstr "Ajustes del Proyecto"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
@@ -2089,7 +2088,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Editor"
-msgstr "El editor"
+msgstr "Editor"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -2144,7 +2143,7 @@ msgstr "Acerca de"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Inicia el proyecto para poder jugarlo."
+msgstr "Reproducir el proyecto."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -3496,7 +3495,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Calculando «lightmaps»"
+msgstr "Calculando Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3519,7 +3518,7 @@ msgstr "Paso de Cuadrícula:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr "Desplazamiento de rotación:"
+msgstr "Desplazamiento de Rotación:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
@@ -4593,7 +4592,7 @@ msgstr "¡El portapapeles de recursos está vacío!"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr "Abrir en el editor"
+msgstr "Abrir en el Editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -5341,7 +5340,7 @@ msgstr "Modo escalado (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "Coordenadas Locales"
+msgstr "Local Coords (Coordenadas Locales)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -5741,9 +5740,8 @@ msgid "Options"
 msgstr "Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "¡Tienes,Muchas,Y,Variadas,Opciones!"
+msgstr "Tienes, Muchas, Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6027,12 +6025,11 @@ msgstr "Por favor elija una carpeta vacía."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
-msgstr "Proyecto importado"
+msgstr "Proyecto Importado"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nombre del proyecto:"
+msgstr "Nombre de Proyecto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6076,11 +6073,11 @@ msgstr "Renombrar proyecto"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
-msgstr "Nuevo proyecto de juego"
+msgstr "Nuevo Proyecto de Juego"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr "Importar proyecto existente"
+msgstr "Importar Proyecto Existente"
 
 #: editor/project_manager.cpp
 msgid "Import & Edit"
@@ -6088,7 +6085,7 @@ msgstr "Importar y editar"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr "Crear proyecto nuevo"
+msgstr "Crear Nuevo Proyecto"
 
 #: editor/project_manager.cpp
 msgid "Create & Edit"
@@ -6096,7 +6093,7 @@ msgstr "Crear y editar"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
-msgstr "Instalar proyecto:"
+msgstr "Instalar Proyecto:"
 
 #: editor/project_manager.cpp
 msgid "Install & Edit"
@@ -6104,7 +6101,7 @@ msgstr "Instalar y editar"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr "Nombre del proyecto:"
+msgstr "Nombre del Proyecto:"
 
 #: editor/project_manager.cpp
 msgid "Create folder"
@@ -6112,7 +6109,7 @@ msgstr "Crear carpeta"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr "Ruta del proyecto:"
+msgstr "Ruta del Proyecto:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -6120,7 +6117,7 @@ msgstr "Examinar"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
-msgstr "Proyecto sin nombre"
+msgstr "Proyecto sin Nombre"
 
 #: editor/project_manager.cpp
 msgid "Can't open project"
@@ -6137,8 +6134,8 @@ msgid ""
 "the \"Application\" category."
 msgstr ""
 "No hay una escena principal definida para ejecutar el proyecto.\n"
-"Por favor elija la escena principal en \"Ajustes del proyecto\" en la "
-"categoría \"Aplicación\"."
+"Por favor elija la escena principal en \"Ajustes del Proyecto\" en la "
+"categoría \"Application\"."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6155,8 +6152,8 @@ msgstr "¿Seguro que quieres ejecutar más de un proyecto?"
 #: editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
-"¿Quieres quitar proyecto de la lista? (El contenido de la carpeta no se "
-"modificarán)"
+"¿Quieres quitar el proyecto de la lista? (El contenido de la carpeta no se "
+"modificará)"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6193,7 +6190,7 @@ msgstr "Selecciona la carpeta a analizar"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr "Proyecto nuevo"
+msgstr "Nuevo Proyecto"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -6237,13 +6234,12 @@ msgid "Mouse Button"
 msgstr "Botón del ratón"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"Nombre de acción inválido. No puede estar vacío o contener '/', ':', '=', "
-"'\\' or '\"'"
+"Nombre de acción inválido. No puede estar vacío ni contener '/', ':', '=', "
+"'\\' o '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6832,7 +6828,7 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Instanciar un archivo de escena como Nodo. Crear una escena heredada si no "
+"Instanciar un archivo de escena como Nodo. Crea una escena heredada si no "
 "existe ningún nodo raíz."
 
 #: editor/scene_tree_dock.cpp
@@ -8253,8 +8249,8 @@ msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"El entorno especificado por defecto en los Ajustes del Proyecto (Renderizado "
-"-> Ventana -> Entorno por Defecto) no se ha podido cargar."
+"El Entorno por Defecto como se especifica en los Ajustes del Proyecto "
+"(Rendering -> Environment -> Default Environment) no se ha podido cargar."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -8284,6 +8280,13 @@ msgstr "Error al cargar la tipografía."
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía incorrecto."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Pestaña anterior"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "La acción no es correcta (no puedes utilizar «/» o «:»)."
 
@@ -8309,9 +8312,6 @@ msgstr "Tamaño de tipografía incorrecto."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "No se encontró project.godot en la ruta del proyecto."
-
-#~ msgid "Next"
-#~ msgstr "Siguiente"
 
 #~ msgid "Not found!"
 #~ msgstr "¡No se ha encontrado!"

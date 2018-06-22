@@ -7977,11 +7977,15 @@ msgstr "שגיאה בטעינת הגופן."
 msgid "Invalid font size."
 msgstr "גודל הגופן שגוי."
 
-#~ msgid "Can't write file."
-#~ msgstr "לא ניתן לכתוב קובץ."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "הלשונית הקודמת"
 
 #~ msgid "Next"
 #~ msgstr "הבא"
+
+#~ msgid "Can't write file."
+#~ msgstr "לא ניתן לכתוב קובץ."
 
 #~ msgid "Not found!"
 #~ msgstr "לא נמצא!"

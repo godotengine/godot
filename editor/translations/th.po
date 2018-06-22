@@ -8077,6 +8077,13 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "แท็บก่อนหน้า"
+
+#~ msgid "Next"
+#~ msgstr "ต่อไป"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "ใช้ชื่อนี้ไม่ได้ (มี '/' หรือ ':')"
 
@@ -8099,9 +8106,6 @@ msgstr "ขนาดฟอนต์ผิดพลาด"
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "ไม่พบไฟล์ project.godot"
-
-#~ msgid "Next"
-#~ msgstr "ต่อไป"
 
 #~ msgid "Not found!"
 #~ msgstr "ไม่พบ!"

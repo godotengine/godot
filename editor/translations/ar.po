@@ -8078,6 +8078,9 @@ msgstr ""
 msgid "Invalid font size."
 msgstr ""
 
+#~ msgid "Next"
+#~ msgstr "التالي"
+
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "لا يمكن أن يحتوي علي '/' أو ':'"
 
@@ -8089,9 +8092,6 @@ msgstr ""
 
 #~ msgid "Can't write file."
 #~ msgstr "لا يمكن كتابة الملف."
-
-#~ msgid "Next"
-#~ msgstr "التالي"
 
 #~ msgid "Not found!"
 #~ msgstr "لم يوجد!"

@@ -8449,6 +8449,13 @@ msgstr "Errore caricamento font."
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Scheda precedente"
+
+#~ msgid "Next"
+#~ msgstr "Successivo"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Azione invalida (va bene tutto a parte '/' o ':')."
 
@@ -8478,9 +8485,6 @@ msgstr "Dimensione font Invalida."
 #, fuzzy
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Impossibile creare project.godot nel percorso di progetto."
-
-#~ msgid "Next"
-#~ msgstr "Successivo"
 
 #~ msgid "Not found!"
 #~ msgstr "Non trovato!"

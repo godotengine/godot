@@ -2,23 +2,21 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # BennyBeat <bennybeat@gmail.com>, 2017.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-17 23:48+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2018-06-08 03:41+0000\n"
+"Last-Translator: Roger Blanco Ribera <roger.blancoribera@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5693,9 +5691,8 @@ msgid "Options"
 msgstr "Opcions"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tens,Moltes,Diverses,Opcions!"
+msgstr "Té,Moltes,Opcions"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5981,9 +5978,8 @@ msgid "Imported Project"
 msgstr "Project importat"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nom del Projecte:"
+msgstr "El nom del Projecte no és vàlid."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6184,13 +6180,12 @@ msgid "Mouse Button"
 msgstr "Botó del ratolí"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"Nom d'acció no vàlid. no pot estar buit ni contenir '/', ':', '=', '\\' o "
-"'\"'"
+"Nom d'acció no vàlid. No pot estar buit ni contenir '/', ':', '=', '\\' o "
+"'\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8218,6 +8213,13 @@ msgstr "Error carregant lletra."
 msgid "Invalid font size."
 msgstr "La mida de la lletra no és vàlida."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Pestanya Anterior"
+
+#~ msgid "Next"
+#~ msgstr "Següent"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "L'Acció no és vàlida (no es pot utilitzar ' / ' o ':')."
 
@@ -8244,9 +8246,6 @@ msgstr "La mida de la lletra no és vàlida."
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr ""
 #~ "No es pot trobat el el fitxer 'project.godot' en el camí del projecte."
-
-#~ msgid "Next"
-#~ msgstr "Següent"
 
 #~ msgid "Not found!"
 #~ msgstr "No s'ha trobat!"

@@ -3668,8 +3668,9 @@ msgid "first"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "prev"
-msgstr ""
+msgstr "förhandsgranska"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "next"
@@ -8650,6 +8651,10 @@ msgstr "Fel vid laddning av font."
 msgid "Invalid font size."
 msgstr "Ogiltig teckenstorlek."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Föregående flik"
+
 #~ msgid "Next"
 #~ msgstr "Nästa"
 
@@ -8684,10 +8689,6 @@ msgstr "Ogiltig teckenstorlek."
 
 #~ msgid "That's a BINGO!"
 #~ msgstr "Det är en BINGO!"
-
-#, fuzzy
-#~ msgid "preview"
-#~ msgstr "förhandsgranska"
 
 #~ msgid "Move Add Key"
 #~ msgstr "Flytta Lägg Till Nyckel"

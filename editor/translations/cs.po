@@ -8124,6 +8124,13 @@ msgstr "Chyba nahrávání fontu."
 msgid "Invalid font size."
 msgstr "Neplatná velikost fontu."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Předchozí záložka"
+
+#~ msgid "Next"
+#~ msgstr "Další"
+
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "Nesmí obsaovat '/' nebo ':'"
 
@@ -8136,9 +8143,6 @@ msgstr "Neplatná velikost fontu."
 
 #~ msgid "Can't write file."
 #~ msgstr "Nelze zapsat soubor."
-
-#~ msgid "Next"
-#~ msgstr "Další"
 
 #~ msgid "Not found!"
 #~ msgstr "Nenalezeno!"

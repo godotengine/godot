@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # Carlos Vieira <carlos.vieira@gmail.com>, 2017.
 # João <joao@nogordio.com>, 2018.
@@ -14,19 +13,18 @@
 # Rueben Stevens <supercell03@gmail.com>, 2017.
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-26 14:42+0000\n"
-"Last-Translator: João <joao@nogordio.com>\n"
+"PO-Revision-Date: 2018-06-10 01:02+0000\n"
+"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5697,9 +5695,8 @@ msgid "Options"
 msgstr "Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tem,Muitos,Vários,Opções!"
+msgstr "Tem,Muitas,Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5986,9 +5983,8 @@ msgid "Imported Project"
 msgstr "Projeto importado"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nome do Projeto:"
+msgstr "Nome do Projeto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6189,13 +6185,12 @@ msgid "Mouse Button"
 msgstr "Botão do rato"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Nome de ação inválido. Não pode ser vazio nem conter '/', ':', '=', '\\' ou "
-"'\"'"
+"'\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8224,6 +8219,13 @@ msgstr "Erro ao carregar letra."
 msgid "Invalid font size."
 msgstr "Tamanho de letra inválido."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Guia anterior"
+
+#~ msgid "Next"
+#~ msgstr "Proximo"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Ação inválida (tudo menos '/' ou ':')."
 
@@ -8248,9 +8250,6 @@ msgstr "Tamanho de letra inválido."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Impossível encontrar project.godot no Caminho do Projeto."
-
-#~ msgid "Next"
-#~ msgstr "Proximo"
 
 #~ msgid "Not found!"
 #~ msgstr "Não encontrado!"

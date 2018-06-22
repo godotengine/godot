@@ -8295,15 +8295,19 @@ msgid "Invalid font size."
 msgstr "無效字型"
 
 #, fuzzy
+#~ msgid "Previous"
+#~ msgstr "上一個tab"
+
+#~ msgid "Next"
+#~ msgstr "下一個"
+
+#, fuzzy
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "不能連到主機："
 
 #, fuzzy
 #~ msgid "Can't write file."
 #~ msgstr "無法新增資料夾"
-
-#~ msgid "Next"
-#~ msgstr "下一個"
 
 #~ msgid "Not found!"
 #~ msgstr "找不到!"

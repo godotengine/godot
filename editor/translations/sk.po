@@ -2,25 +2,24 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # J08nY <johnenter@gmail.com>, 2016.
-#
+# MineGame 159 <minegame459@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-25 14:16+0000\n"
-"Last-Translator: J08nY <johnenter@gmail.com>\n"
+"PO-Revision-Date: 2018-06-18 08:43+0000\n"
+"Last-Translator: MineGame 159 <minegame459@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
 "Language: sk\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "Vypnuté"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
@@ -28,11 +27,11 @@ msgstr "Všetky vybrané"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "Animácia Zmeniť Keyframe Čas"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Animácia zmeniť prechod"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -40,11 +39,12 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "Animácia Zmeniť Keyframe Hodnotu"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Animácia Zmeniť Hovor"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
@@ -68,7 +68,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "Nastaviť prechody na:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -92,7 +92,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Upraviť výber krivky"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -101,20 +101,19 @@ msgstr ""
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Duplikovať výber"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
 msgstr ""
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Remove Selection"
-msgstr "Všetky vybrané"
+msgstr "Odstrániť výber"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Priebežný"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
@@ -134,19 +133,19 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Zmeniť veľkosť výberu"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Zmeniť veľkosť od kurzora"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Prejsť na ďalší krok"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Prejsť na predchádzajúci krok"
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -159,23 +158,25 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "V"
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Von"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "In-Out"
-msgstr ""
+msgstr "V-Von"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Out-In"
-msgstr ""
+msgstr "Von-V"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Prechody"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
@@ -8050,7 +8051,7 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Nesprávna veľkosť písma."
 
 #, fuzzy
 #~ msgid "Can't write file."

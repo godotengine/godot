@@ -2,17 +2,15 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Diego López <diegodario21@gmail.com>, 2017.
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-03 14:00+0000\n"
+"PO-Revision-Date: 2018-06-06 13:28+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -21,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5709,9 +5707,8 @@ msgid "Options"
 msgstr "Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tienes, Muchas, Variadas, Opciones!"
+msgstr "Tiene,Muchas,Opciones"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6000,9 +5997,8 @@ msgid "Imported Project"
 msgstr "Proyecto Importado"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nombre del Proyecto:"
+msgstr "Nombre de Proyecto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6207,13 +6203,12 @@ msgid "Mouse Button"
 msgstr "Botón de Mouse"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Nombre de acción inválido. No puede estar vacío o contener '/', ':', '=', "
-"'\\' or '\"'"
+"'\\' o '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8244,6 +8239,13 @@ msgstr "Error cargando tipografía."
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía inválido."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Pestaña anterior"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Acción Invalida (cualquier cosa va menos '/' o ':')."
 
@@ -8269,9 +8271,6 @@ msgstr "Tamaño de tipografía inválido."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "No se pudo obtener project.godot en la ruta de proyecto."
-
-#~ msgid "Next"
-#~ msgstr "Siguiente"
 
 #~ msgid "Not found!"
 #~ msgstr "No se encontró!"
