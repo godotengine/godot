@@ -118,6 +118,7 @@ env_base.__class__.split_lib = methods.split_lib
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
+env_base.__class__.CommandNoCache = methods.CommandNoCache
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
