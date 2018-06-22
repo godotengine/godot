@@ -8185,14 +8185,18 @@ msgstr "خطای بارگذاری قلم."
 msgid "Invalid font size."
 msgstr "اندازهٔ قلم نامعتبر."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "زبانه قبلی"
+
+#~ msgid "Next"
+#~ msgstr "بعدی"
+
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "نمی‌تواند شامل '/' یا ':' باشد"
 
 #~ msgid "Can't write file."
 #~ msgstr "ناتوان در نوشتن پرونده."
-
-#~ msgid "Next"
-#~ msgstr "بعدی"
 
 #~ msgid "Not found!"
 #~ msgstr "چیزی یافت نشد!"

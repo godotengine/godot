@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
+# Аркадий Авас <savvot@gmail.com>, 2018.
 # Artem Varaksa <aymfst@gmail.com>, 2018.
 # B10nicMachine <shumik1337@gmail.com>, 2017.
 # Chaosus89 <chaosus89@gmail.com>, 2018.
@@ -14,14 +14,14 @@
 # Maxim toby3d Lebedev <mail@toby3d.ru>, 2016.
 # outbools <drag4e@yandex.ru>, 2017.
 # pitchblack <pitchblack@mail.ru>, 2017.
+# Sergey <maligin.serega2010@yandex.ru>, 2018.
 # Sergey Agarkov <zorgsoft@gmail.com>, 2017.
-# Аркадий Авас <savvot@gmail.com>, 2018.
-#
+# teriva <spirin.cos@yandex.ru>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-22 17:41+0000\n"
+"PO-Revision-Date: 2018-06-18 19:42+0000\n"
 "Last-Translator: ijet <my-ijet@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2109,7 +2109,7 @@ msgstr "Система отслеживания ошибок"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Общественные"
+msgstr "Сообщество"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -3728,7 +3728,7 @@ msgstr "Показать окно просмотра"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
-msgstr "Центрировать на выбранном"
+msgstr "Центрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
@@ -5706,9 +5706,8 @@ msgid "Options"
 msgstr "Параметры"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Имеет,Много,Разных,Опций!"
+msgstr "Есть,Много,Вариантов"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5991,9 +5990,8 @@ msgid "Imported Project"
 msgstr "Импортированный проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Название проекта:"
+msgstr "Недопустимое имя проекта."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6194,13 +6192,12 @@ msgid "Mouse Button"
 msgstr "Кнопка мыши"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Недопустимое имя действия. Оно не может быть пустым или содержать '/', ':', "
-"'=', '\\' или '\"'"
+"'=', '\\' или '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8231,6 +8228,13 @@ msgstr "Ошибка загрузки шрифта."
 msgid "Invalid font size."
 msgstr "Недопустимый размер шрифта."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Предыдущая вкладка"
+
+#~ msgid "Next"
+#~ msgstr "Следующий"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Недопустимое название действия (подойдёт всё кроме '/' или ':')."
 
@@ -8256,9 +8260,6 @@ msgstr "Недопустимый размер шрифта."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Отсутствует project.godot в папке проекта."
-
-#~ msgid "Next"
-#~ msgstr "Следующий"
 
 #~ msgid "Not found!"
 #~ msgstr "Не найдено!"

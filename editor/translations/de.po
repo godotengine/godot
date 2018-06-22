@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Alexander Mahr <alex.mahr@gmail.com>, 2016.
 # Andreas Esau <andreasesau@gmail.com>, 2016.
 # Andreas Haas <liu.gam3@gmail.com>, 2016.
@@ -18,6 +17,7 @@
 # Kim <github@aggsol.de>, 2017.
 # Metin Celik <metincelik88@gmail.com>, 2018.
 # Neicul <neicul@gmx.de>, 2018.
+# nimradium <nimra242001@gmail.com>, 2018.
 # Oliver Ruehl <oliver@ruehldesign.co>, 2016-2017.
 # Paul-Vincent Roll <paviro@me.com>, 2016.
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
@@ -27,13 +27,12 @@
 # Tim Schellenberg <smwleod@gmail.com>, 2017.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016-2018.
 # viernullvier <hannes.breul+github@gmail.com>, 2016.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-24 15:37+0000\n"
-"Last-Translator: Metin Celik <metincelik88@gmail.com>\n"
+"PO-Revision-Date: 2018-06-19 19:38+0000\n"
+"Last-Translator: nimradium <nimra242001@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -41,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -332,7 +331,8 @@ msgstr "Optimieren"
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr ""
-"AnimationPlayer aus dem Szenenbaum auswählen um Animationen zu bearbeiten."
+"Wählen Sie einen AnimationPlayer aus dem Szenenbaum aus, um Animationen zu "
+"bearbeiten."
 
 #: editor/animation_editor.cpp
 msgid "Key"
@@ -2483,7 +2483,7 @@ msgstr "Mirrors werden geladen, bitte warten..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr "Template-Version ‚%s‘ entfernen?"
+msgstr "Template-Version '%s' entfernen?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -4047,7 +4047,7 @@ msgstr "Mesh hat keine Oberfläche von der Umrisse erzeugt werden könnten!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Mesh primitive type ist nicht PRIMITIVE_TRIANGLES!"
+msgstr "Der Mesh-Grundtyp ist nicht ist nicht PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5737,9 +5737,8 @@ msgid "Options"
 msgstr "Optionen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Enthalten,Viele,Einige,Optionen!"
+msgstr "Einstellungen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6024,9 +6023,8 @@ msgid "Imported Project"
 msgstr "Importiertes Projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Projektname:"
+msgstr "Ungültiger Projektname."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6230,13 +6228,12 @@ msgid "Mouse Button"
 msgstr "Maustaste"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"Ungültiger Aktionsname. Er kann weder leer sein, noch kann er '/', ':', '=', "
-"'\\' oder '\"' enthalten"
+"Ungültiger Aktionsname. Er kann weder leer sein noch ‚/‘, ‚:‘, ‚=‘, ‘\\‘ "
+"oder ‚\"‘ enthalten."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8287,6 +8284,13 @@ msgstr "Fehler beim Laden der Schriftart."
 msgid "Invalid font size."
 msgstr "Ungültige Schriftgröße."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Vorheriger Tab"
+
+#~ msgid "Next"
+#~ msgstr "Nächste"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr ""
 #~ "Ungültiger Name für Aktion (alle Zeichen außer ‚/‘ und ‚:‘ möglich)."
@@ -8312,9 +8316,6 @@ msgstr "Ungültige Schriftgröße."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "project.godot konnte nicht im Projektpfad gefunden werden."
-
-#~ msgid "Next"
-#~ msgstr "Nächste"
 
 #~ msgid "Not found!"
 #~ msgstr "Nicht gefunden!"

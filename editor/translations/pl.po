@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adam Wolanski <adam.wolanski94@gmail.com>, 2017.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
@@ -25,11 +24,10 @@
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 # Zatherz <zatherz@linux.pl>, 2017.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-05 13:41+0000\n"
+"PO-Revision-Date: 2018-06-22 08:31+0000\n"
 "Last-Translator: RM <synaptykq@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -38,7 +36,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5354,7 +5352,7 @@ msgstr "Tryb skalowania (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "Koordynaty lokalne"
+msgstr "Local Coords"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Space Mode (%s)"
@@ -8294,6 +8292,13 @@ msgstr "Błąd ładowania fonta."
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Poprzednia zakładka"
+
+#~ msgid "Next"
+#~ msgstr "Następny"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Nieprawidłowa akcja (wszystko oprócz '/' lub ':')."
 
@@ -8318,9 +8323,6 @@ msgstr "Niepoprawny rozmiar fonta."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Nie znaleziono project.godot w ścieżce projektu."
-
-#~ msgid "Next"
-#~ msgstr "Następny"
 
 #~ msgid "Not found!"
 #~ msgstr "Nie znaleziono!"

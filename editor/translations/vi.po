@@ -7967,3 +7967,7 @@ msgstr "Lỗi tải font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Kích thước font không hợp lệ."
+
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Thư mục trước"

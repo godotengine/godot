@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Allyson Souza <allyson_as@outlook.com>, 2017.
 # Anderson Araujo <anderson.araujoprog@gmail.com>, 2018.
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
@@ -24,14 +23,12 @@
 # Renato Rotenberg <renato.rotenberg@gmail.com>, 2017.
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-05-20 21:41+0000\n"
-"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
-"com>\n"
+"PO-Revision-Date: 2018-06-16 18:43+0000\n"
+"Last-Translator: Rodolfo R Gomes <rodolforg@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -39,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -525,7 +522,7 @@ msgstr "Conectar..."
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Disconectar"
+msgstr "Desconectar"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -3308,7 +3305,7 @@ msgstr "AnimationTree"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr "Livrar"
+msgstr "Livre"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -5717,9 +5714,8 @@ msgid "Options"
 msgstr "Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tem,Muitas,Várias,Opções!"
+msgstr "Tem,Muitas,Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6008,9 +6004,8 @@ msgid "Imported Project"
 msgstr "Projeto Importado"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nome do Projeto:"
+msgstr "Nome do Projeto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6212,13 +6207,12 @@ msgid "Mouse Button"
 msgstr "Botão do Mous"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Nome de ação inválido. Ele não pode estar vazio ou conter '/', ':', '=', "
-"'\\' ou '\"'"
+"'\\' ou '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8246,6 +8240,13 @@ msgstr "Erro ao carregar fonte."
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Guia anterior"
+
+#~ msgid "Next"
+#~ msgstr "Próximo"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
 
@@ -8271,9 +8272,6 @@ msgstr "Tamanho de fonte inválido."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Não foi possível encontrar project.godot no caminho do projeto."
-
-#~ msgid "Next"
-#~ msgstr "Próximo"
 
 #~ msgid "Not found!"
 #~ msgstr "Não encontrado!"

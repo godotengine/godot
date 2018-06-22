@@ -8149,6 +8149,13 @@ msgstr ""
 msgid "Invalid font size."
 msgstr "Неважећа величина фонта."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Претходни таб"
+
+#~ msgid "Next"
+#~ msgstr "Следеће"
+
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
 #~ "identifier."
@@ -8158,9 +8165,6 @@ msgstr "Неважећа величина фонта."
 
 #~ msgid "Can't write file."
 #~ msgstr "Неуспех при записивању датотеке."
-
-#~ msgid "Next"
-#~ msgstr "Следеће"
 
 #~ msgid "Not found!"
 #~ msgstr "Није пронађено!"

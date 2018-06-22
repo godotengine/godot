@@ -2,21 +2,20 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Ch <ccwpc@hanmail.net>, 2017.
 # paijai 송 (fivejobi) <xotjq237@gmail.com>, 2018.
+# pgyage3263 <pgyage3263@naver.com>, 2018.
 # Sun Kim <perplexingsun@gmail.com>, 2018.
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
 # 송태섭 <xotjq237@gmail.com>, 2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-27 04:39+0000\n"
-"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2018-06-07 16:40+0000\n"
+"Last-Translator: pgyage3263 <pgyage3263@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -24,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5677,9 +5676,8 @@ msgid "Options"
 msgstr "옵션"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "가진다,많은,여러,옵션들!"
+msgstr "가진다,많은,옵션들"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5960,9 +5958,8 @@ msgid "Imported Project"
 msgstr "가져온 프로젝트"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "프로젝트 명:"
+msgstr "인식할수 없는 프로젝트 명입니다."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6162,13 +6159,12 @@ msgid "Mouse Button"
 msgstr "마우스 버튼"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"올바르지 않은 액션 이름. 공백이거나 '/' 이나 ':', '=', '\\', '\"' 가 포함되"
-"면 안 됩니다"
+"인식할수 없는 액션 이름입니다. 공백이거나, '/' , ':', '=', '\\', '\"' 가 포함"
+"되면 안 됩니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8177,6 +8173,13 @@ msgstr "폰트 로딩 에러."
 msgid "Invalid font size."
 msgstr "유효하지 않은 폰트 크기."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "이전 탭"
+
+#~ msgid "Next"
+#~ msgstr "다음"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "유효하지 않은 액션 ('/' 또는 ':' 문자 사용 불가)."
 
@@ -8201,9 +8204,6 @@ msgstr "유효하지 않은 폰트 크기."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "프로젝트 경로에 project.godot 파일을 찾을 수 없습니다."
-
-#~ msgid "Next"
-#~ msgstr "다음"
 
 #~ msgid "Not found!"
 #~ msgstr "찾을 수 없음!"

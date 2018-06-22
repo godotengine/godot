@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # akirakido <achts.y@gmail.com>, 2016-2017.
 # D_first <dntk.daisei@gmail.com>, 2017, 2018.
 # Daisuke Saito <d.saito@coriginate.com>, 2017, 2018.
@@ -14,20 +13,20 @@
 # Shinsuke Masuda <shinsuke.masuda@gmail.com>, 2018.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
+# yu tang <0011solo@gmail.com>, 2018.
 # zukkun <zukkun@gmail.com>, 2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-30 15:39+0000\n"
-"Last-Translator: Shinsuke Masuda <shinsuke.masuda@gmail.com>\n"
+"PO-Revision-Date: 2018-06-15 22:40+0000\n"
+"Last-Translator: yu tang <0011solo@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -579,7 +578,6 @@ msgstr "最近の:"
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
-#, fuzzy
 msgid "Search:"
 msgstr "検索:"
 
@@ -638,7 +636,6 @@ msgstr "リソース"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Path"
 msgstr "パス"
 
@@ -1144,7 +1141,7 @@ msgstr "自動読み込みを組み替える"
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Path:"
+msgstr "パス:"
 
 #: editor/editor_autoload_settings.cpp
 #, fuzzy
@@ -1153,7 +1150,6 @@ msgstr "ノードの名前:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Name"
 msgstr "名前"
 
@@ -1197,7 +1193,7 @@ msgstr "ディレクトリを選ぶ"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "フォルダを作成する"
+msgstr "フォルダーを作成"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
@@ -1236,9 +1232,8 @@ msgid "File Exists, Overwrite?"
 msgstr "ファイルが既に存在します。上書きしますか？"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "フォルダを作成する"
+msgstr "現在のフォルダーを選択"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1371,7 +1366,6 @@ msgstr "アセットを（再）インポート"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Search Help"
 msgstr "ヘルプを検索"
 
@@ -1550,7 +1544,7 @@ msgstr "出力"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "エラーコード %d により、プロジェクトのエクスポートに失敗しました。"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -1579,9 +1573,8 @@ msgid "Requested file format unknown:"
 msgstr "そのファイルは未知のフォーマットです:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while saving."
-msgstr "保存中にエラーが起きました."
+msgstr "保存中にエラーが発生しました。"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -1589,9 +1582,8 @@ msgid "Can't open '%s'."
 msgstr "'..'を処理できません"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "保存中にエラーが起きました."
+msgstr "「%s」の解析中にエラーが発生しました。"
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
@@ -1603,9 +1595,8 @@ msgid "Missing '%s' or its dependencies."
 msgstr "シーン'%s' は依存関係が壊れています:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "保存中にエラーが起きました."
+msgstr "「%s」の読込中にエラーが発生しました。"
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1924,14 +1915,12 @@ msgid "Exit the editor?"
 msgstr "エディターを終了しますか？"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Manager?"
-msgstr "プロジェクトマネージャー"
+msgstr "プロジェクトマネージャーを開きますか？"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Quit"
-msgstr "ファイルを保存"
+msgstr "ファイルを保存して終了"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
@@ -2194,7 +2183,7 @@ msgstr "ツール"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "終了してプロジェクトリストを開く"
+msgstr "終了してプロジェクト一覧を開く"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -2334,7 +2323,6 @@ msgstr "クラス"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Search"
 msgstr "検索"
 
@@ -2480,7 +2468,7 @@ msgstr "ベクトル定数を変更"
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "インポート（取り込み）"
+msgstr "インポート"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3058,7 +3046,7 @@ msgstr "移動"
 #: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Rename"
-msgstr "名前を変更する"
+msgstr "名前の変更"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -3705,12 +3693,10 @@ msgid "Connection error, please try again."
 msgstr "接続失敗　再試行を"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect to host:"
 msgstr "ホストに接続できません:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "No response from host:"
 msgstr "ホストから応答がありません:"
 
@@ -6655,9 +6641,8 @@ msgid "Please choose a 'project.godot' file."
 msgstr "'project.godot' ファイルを選択してください."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose an empty folder."
-msgstr "'project.godot' ファイルを選択してください."
+msgstr "空のフォルダーを選択してください。"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6675,7 +6660,7 @@ msgstr "フォルダを作成できませんでした。"
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr ""
+msgstr "このパスには、指定された名前のフォルダーが既に存在します。"
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -6709,9 +6694,8 @@ msgid "The following files failed extraction from package:"
 msgstr "以下のファイルをパッケージから抽出できませんでした:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Rename Project"
-msgstr "名無しのプロジェクト"
+msgstr "プロジェクト名の変更"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -6728,12 +6712,11 @@ msgstr "インポートして開く"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr "新しいプロジェクトを作る"
+msgstr "新規プロジェクトを作成"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "発光物を生成"
+msgstr "作成して編集"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
@@ -6745,14 +6728,12 @@ msgid "Install & Edit"
 msgstr "インストール"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Project Name:"
 msgstr "プロジェクト名:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create folder"
-msgstr "フォルダを作成する"
+msgstr "フォルダを作成"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
@@ -6760,16 +6741,15 @@ msgstr "プロジェクトパス:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
-msgstr "ブラウズ"
+msgstr "参照…"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "名無しのプロジェクト"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project"
-msgstr "接続失敗."
+msgstr "プロジェクトを開けません"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -6797,19 +6777,17 @@ msgid "Are you sure to run more than one project?"
 msgstr "複数のプロジェクトを本当に実行しますか？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
-"リストからプロジェクトを除去しますか？（フォルダーのコンテンツは影響を受けま"
-"せん）"
+"一覧からプロジェクトを削除しますか？（フォルダーの内容は変更されません）"
 
 #: editor/project_manager.cpp
 msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
-"言語が変更されました.\n"
-"エディタまたはプロジェクトマネジャー再開時にUIが更新されます."
+"言語が変更されました。\n"
+"エディターまたはプロジェクトマネージャー再起動後にUIが更新されます。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6823,7 +6801,7 @@ msgstr "プロジェクトマネージャー"
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr "プロジェクトのリスト"
+msgstr "プロジェクト一覧"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -6835,34 +6813,31 @@ msgstr "スキャンするフォルダーを選択"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr "新しいプロジェクト"
+msgstr "新規プロジェクト"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Templates"
-msgstr "選択しているものを削除"
+msgstr "テンプレート"
 
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "終了"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Restart Now"
-msgstr "アニメーションを最初から再生する :"
+msgstr "今すぐ再起動"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't run project"
-msgstr "接続失敗."
+msgstr "プロジェクトを実行できません"
 
 #: editor/project_manager.cpp
 msgid ""
 "You don't currently have any projects.\n"
 "Would you like to explore the official example projects in the Asset Library?"
 msgstr ""
-"あなたは現在どのプロジェクトも持っていません。\n"
-"アセットライブラリで公式のサンプルプロジェクトを探しましょうか？"
+"プロジェクトが何も登録されていません。\n"
+"アセットライブラリで公式のサンプルプロジェクトをチェックしますか？"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
@@ -9050,7 +9025,7 @@ msgstr "警告!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "確認してください。"
+msgstr "確認"
 
 #: scene/gui/file_dialog.cpp
 #, fuzzy
@@ -9119,6 +9094,13 @@ msgstr "フォント読み込みエラー。"
 msgid "Invalid font size."
 msgstr "無効なフォント サイズです。"
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "以前のタブ"
+
+#~ msgid "Next"
+#~ msgstr "次"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "不正なアクション（ '/' と':'は不可です）."
 
@@ -9146,9 +9128,6 @@ msgstr "無効なフォント サイズです。"
 #, fuzzy
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "project.godotをプロジェクトパスに生成できませんでした"
-
-#~ msgid "Next"
-#~ msgstr "次"
 
 #~ msgid "Not found!"
 #~ msgstr "見つかりません!"

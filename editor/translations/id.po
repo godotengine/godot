@@ -2,12 +2,12 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
 # Andevid Dynmyn <doyan4forum@gmail.com>, 2016.
 # Andinawan Asa <asaandinawan@gmail.com>, 2016.
 # Damar Inderajati <damarind@gmail.com>, 2017.
 # Damar S. M <the.last.walla@gmail.com>, 2017.
+# Fajar Ru <kzofajar@gmail.com>, 2018.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>, 2018.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017.
@@ -15,19 +15,18 @@
 # Tito <ijavadroid@gmail.com>, 2018.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-31 16:39+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2018-06-22 08:30+0000\n"
+"Last-Translator: Fajar Ru <kzofajar@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -6483,7 +6482,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Umum"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
@@ -8350,6 +8349,13 @@ msgid "Invalid font size."
 msgstr "Ukuran font tidak sah."
 
 #, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Tab sebelumnya"
+
+#~ msgid "Next"
+#~ msgstr "Berikutnya"
+
+#, fuzzy
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "Sambungkan Ke Node:"
 
@@ -8363,9 +8369,6 @@ msgstr "Ukuran font tidak sah."
 #, fuzzy
 #~ msgid "Can't write file."
 #~ msgstr "Tidak dapat membuat folder."
-
-#~ msgid "Next"
-#~ msgstr "Berikutnya"
 
 #~ msgid "Not found!"
 #~ msgstr "Tidak ditemukan!"

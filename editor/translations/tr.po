@@ -2,8 +2,8 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
+# Aykut YILDIRIM <aykutyildirim@windowslive.com>, 2018.
 # Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
 # Enescan Yerlikaya <enescanyerlikaya@gmail.com>, 2017.
@@ -17,19 +17,18 @@
 # razah <icnikerazah@gmail.com>, 2017-2018.
 # stnmycri <satenmeycri@gmail.com>, 2017-2018.
 # Yavuz Günay <yavuzgunay@gmail.com>, 2017.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-05 05:45+0000\n"
-"Last-Translator: Kaan Gül <qaantum@hotmail.com>\n"
+"PO-Revision-Date: 2018-06-10 09:46+0000\n"
+"Last-Translator: Aykut YILDIRIM <aykutyildirim@windowslive.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.0.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5984,9 +5983,8 @@ msgid "Imported Project"
 msgstr "İçe Aktarılan Proje"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Proje Adı:"
+msgstr "Geçersiz Proje Adı."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6191,6 +6189,7 @@ msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
+"Geçersiz işlem adı. Boş olamaz ve '/', ':', '=', '\\' veya '\"' içeremez."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7420,9 +7419,8 @@ msgid "Mono"
 msgstr "Tekli"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "About C# support"
-msgstr "C# hakkında destek"
+msgstr "C# desteği hakkında"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Create C# solution"
@@ -7995,12 +7993,11 @@ msgstr "ARVROrigin bir ARVRCamera çocuk düğümü gerektirir"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "(Time Left: %d:%02d s)"
-msgstr "(Kalan Zaman:%d:%02d s)"
+msgstr "(Kalan Zaman:%d:%02d sn)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -8102,7 +8099,7 @@ msgstr ""
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
+msgstr "WorldEnvironment bir Environment kaynağı gerektirir."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -8116,6 +8113,8 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"Bu WorldEnvironment yoksayıldı. (3B sahneler için) Bir Kamera ekleyin veya "
+"(2B sahneler için) bu ortamın Arkaplan Kipini Canvas olarak ayarlayın."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8213,6 +8212,13 @@ msgstr "Yazıtipi yükleme hatası."
 msgid "Invalid font size."
 msgstr "Geçersiz yazıtipi boyutu."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Önceki sekme"
+
+#~ msgid "Next"
+#~ msgstr "Sonraki"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Geçersiz işlem (her şey ancak şu '/' ya da şuna ':' gider)."
 
@@ -8237,9 +8243,6 @@ msgstr "Geçersiz yazıtipi boyutu."
 
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr "Proje yolunda proje.godot alınamadı."
-
-#~ msgid "Next"
-#~ msgstr "Sonraki"
 
 #~ msgid "Not found!"
 #~ msgstr "Bulunamadı!"

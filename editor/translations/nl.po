@@ -8272,6 +8272,13 @@ msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
 
 #, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Vorig tabblad"
+
+#~ msgid "Next"
+#~ msgstr "Volgende"
+
+#, fuzzy
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "Kan niet verbinden met host:"
 
@@ -8284,9 +8291,6 @@ msgstr "Ongeldige lettertype grootte."
 
 #~ msgid "Can't write file."
 #~ msgstr "Kan niet naar bestand schrijven."
-
-#~ msgid "Next"
-#~ msgstr "Volgende"
 
 #~ msgid "Not found!"
 #~ msgstr "Niet gevonden!"

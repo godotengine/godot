@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Antoine Carrier <ac.g392@gmail.com>, 2017-2018.
 # ARocherVj <a.rocher.vj@gmail.com>, 2017.
 # Arthur Templé <tuturtemple@gmail.com>, 2018.
@@ -20,6 +19,7 @@
 # LL <lu.lecocq@free.fr>, 2018.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
 # Marc <marc.gilleron@gmail.com>, 2016-2017.
+# Marc-Andre Belisle <belisle.ma@gmail.com>, 2018.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2017.
 # Nathan Vallet <nathanvalletmarseille@gmail.com>, 2018.
 # Nicolas <flaithotw@gmail.com>, 2017.
@@ -28,6 +28,7 @@
 # Nocta Senestra <nocta@net-c.com>, 2018.
 # Omicron <omicron666.dev@gmail.com>, 2016, 2018.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
+# Philippe Gervaise <blah@malvese.org>, 2018.
 # Przemyslaw Gasinski <gasinski.przemek@protonmail.ch>, 2017.
 # rafeu <duchainer@gmail.com>, 2016-2017.
 # rawida <rawida@tempinbox.com>, 2018.
@@ -39,13 +40,12 @@
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
 # Xananax <xananax@yelostudio.com>, 2017-2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-05 19:27+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2018-06-12 16:38+0000\n"
+"Last-Translator: Philippe Gervaise <blah@malvese.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1727,7 +1727,7 @@ msgstr "Exporter une bibliothèque de maillages"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Cette opération ne peut être réalisée sans noeud parent."
+msgstr "Cette opération ne peut être réalisée sans nœud racine."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -2572,7 +2572,7 @@ msgstr "Erreur lors de la requête de l’URL : "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "Connexion au miroir"
+msgstr "Connexion au Miroir..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -3763,7 +3763,7 @@ msgstr "Afficher les règles"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "Montrer les guides"
+msgstr "Afficher les guides"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
@@ -5759,9 +5759,8 @@ msgid "Options"
 msgstr "Options"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Ont,Plusieurs,Possibilités,D'options !"
+msgstr "Possède,Plusieurs,Options"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6046,9 +6045,8 @@ msgid "Imported Project"
 msgstr "Projet importé"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nom du projet :"
+msgstr "Nom du Projet Invalide."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6253,13 +6251,12 @@ msgid "Mouse Button"
 msgstr "Bouton de souris"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Nom d'action invalide. Il ne peux être vide ou contenir '/', ':', '=', '\\' "
-"ou '\"'"
+"ou '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8298,6 +8295,13 @@ msgstr "Erreur lors du chargement de la police."
 msgid "Invalid font size."
 msgstr "Taille de police invalide."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Onglet precedent"
+
+#~ msgid "Next"
+#~ msgstr "Suivant"
+
 #~ msgid "Invalid action (anything goes but '/' or ':')."
 #~ msgstr "Action invalide (tout passe, sauf « / » ou « : »)."
 
@@ -8326,9 +8330,6 @@ msgstr "Taille de police invalide."
 #~ msgid "Couldn't get project.godot in the project path."
 #~ msgstr ""
 #~ "Impossible de trouver le fichier project.godot dans le chemin du projet."
-
-#~ msgid "Next"
-#~ msgstr "Suivant"
 
 #~ msgid "Not found!"
 #~ msgstr "Non trouvé !"

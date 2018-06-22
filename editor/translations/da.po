@@ -8192,6 +8192,13 @@ msgstr "Error loading skrifttype."
 msgid "Invalid font size."
 msgstr "Ugyldig skriftstørrelse."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Forrige fane"
+
+#~ msgid "Next"
+#~ msgstr "Næste"
+
 #~ msgid "Can't contain '/' or ':'"
 #~ msgstr "Kan ikke indeholde '/' eller ':'"
 
@@ -8204,9 +8211,6 @@ msgstr "Ugyldig skriftstørrelse."
 
 #~ msgid "Can't write file."
 #~ msgstr "Kan ikke skrive til fil."
-
-#~ msgid "Next"
-#~ msgstr "Næste"
 
 #~ msgid "Not found!"
 #~ msgstr "Ikke fundet!"

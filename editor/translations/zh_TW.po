@@ -3343,8 +3343,9 @@ msgid "first"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "prev"
-msgstr ""
+msgstr "預覽:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "next"
@@ -8122,6 +8123,10 @@ msgstr "讀取字體錯誤。"
 msgid "Invalid font size."
 msgstr "無效的字體大小。"
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "上個分頁"
+
 #~ msgid "Next"
 #~ msgstr "下一個"
 
@@ -8139,10 +8144,6 @@ msgstr "無效的字體大小。"
 
 #~ msgid "Skip"
 #~ msgstr "跳過"
-
-#, fuzzy
-#~ msgid "preview"
-#~ msgstr "預覽:"
 
 #~ msgid "List:"
 #~ msgstr "列表:"
