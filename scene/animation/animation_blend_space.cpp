@@ -1,4 +1,5 @@
 #include "animation_blend_space.h"
+#include "math/delaunay.h"
 
 void AnimationNodeBlendSpace::add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index) {
 	ERR_FAIL_COND(blend_points_used >= MAX_BLEND_POINTS);
@@ -26,11 +27,18 @@ void AnimationNodeBlendSpace::add_blend_point(const Ref<AnimationRootNode> &p_no
 	blend_points[p_at_index].node->set_parent(this);
 	blend_points[p_at_index].node->set_graph_player(get_graph_player());
 	blend_points_used++;
+
+	if (auto_triangles) {
+		trianges_dirty = true;
+	}
 }
 
 void AnimationNodeBlendSpace::set_blend_point_position(int p_point, const Vector2 &p_position) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	blend_points[p_point].position = p_position;
+	if (auto_triangles) {
+		trianges_dirty = true;
+	}
 }
 void AnimationNodeBlendSpace::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
@@ -121,6 +129,8 @@ void AnimationNodeBlendSpace::add_triangle(int p_x, int p_y, int p_z, int p_at_i
 	ERR_FAIL_INDEX(p_y, blend_points_used);
 	ERR_FAIL_INDEX(p_z, blend_points_used);
 
+	_update_triangles();
+
 	BlendTriangle t;
 	t.points[0] = p_x;
 	t.points[1] = p_y;
@@ -147,6 +157,9 @@ void AnimationNodeBlendSpace::add_triangle(int p_x, int p_y, int p_z, int p_at_i
 	}
 }
 int AnimationNodeBlendSpace::get_triangle_point(int p_triangle, int p_point) {
+
+	_update_triangles();
+
 	ERR_FAIL_INDEX_V(p_point, 3, -1);
 	ERR_FAIL_INDEX_V(p_triangle, triangles.size(), -1);
 	return triangles[p_triangle].points[p_point];
@@ -227,6 +240,8 @@ void AnimationNodeBlendSpace::_add_blend_point(int p_index, const Ref<AnimationR
 
 void AnimationNodeBlendSpace::_set_triangles(const Vector<int> &p_triangles) {
 
+	if (auto_triangles)
+		return;
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
 	for (int i = 0; i < p_triangles.size(); i += 3) {
 		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
@@ -236,6 +251,9 @@ void AnimationNodeBlendSpace::_set_triangles(const Vector<int> &p_triangles) {
 Vector<int> AnimationNodeBlendSpace::_get_triangles() const {
 
 	Vector<int> t;
+	if (auto_triangles && trianges_dirty)
+		return t;
+
 	t.resize(triangles.size() * 3);
 	for (int i = 0; i < triangles.size(); i++) {
 		t[i * 3 + 0] = triangles[i].points[0];
@@ -245,7 +263,32 @@ Vector<int> AnimationNodeBlendSpace::_get_triangles() const {
 	return t;
 }
 
+void AnimationNodeBlendSpace::_update_triangles() {
+
+	if (!auto_triangles || !trianges_dirty)
+		return;
+
+	trianges_dirty = false;
+	triangles.clear();
+	if (blend_points_used < 3)
+		return;
+
+	Vector<Vector2> points;
+	points.resize(blend_points_used);
+	for (int i = 0; i < blend_points_used; i++) {
+		points[i] = blend_points[i].position;
+	}
+
+	Vector<Delaunay2D::Triangle> triangles = Delaunay2D::triangulate(points);
+
+	for (int i = 0; i < triangles.size(); i++) {
+		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);
+	}
+}
+
 Vector2 AnimationNodeBlendSpace::get_closest_point(const Vector2 &p_point) {
+
+	_update_triangles();
 
 	if (triangles.size() == 0)
 		return Vector2();
@@ -327,6 +370,8 @@ void AnimationNodeBlendSpace::_blend_triangle(const Vector2 &p_pos, const Vector
 }
 
 float AnimationNodeBlendSpace::process(float p_time, bool p_seek) {
+
+	_update_triangles();
 
 	if (triangles.size() == 0)
 		return 0;
@@ -423,6 +468,17 @@ void AnimationNodeBlendSpace::_validate_property(PropertyInfo &property) const {
 	AnimationRootNode::_validate_property(property);
 }
 
+void AnimationNodeBlendSpace::set_auto_triangles(bool p_enable) {
+	auto_triangles = p_enable;
+	if (auto_triangles) {
+		trianges_dirty = true;
+	}
+}
+
+bool AnimationNodeBlendSpace::get_auto_triangles() const {
+	return auto_triangles;
+}
+
 void AnimationNodeBlendSpace::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace::add_blend_point, DEFVAL(-1));
@@ -461,6 +517,11 @@ void AnimationNodeBlendSpace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_triangles", "triangles"), &AnimationNodeBlendSpace::_set_triangles);
 	ClassDB::bind_method(D_METHOD("_get_triangles"), &AnimationNodeBlendSpace::_get_triangles);
 
+	ClassDB::bind_method(D_METHOD("set_auto_triangles", "enable"), &AnimationNodeBlendSpace::set_auto_triangles);
+	ClassDB::bind_method(D_METHOD("get_auto_triangles"), &AnimationNodeBlendSpace::get_auto_triangles);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_auto_triangles", "get_auto_triangles");
+
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "blend_point_" + itos(i) + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "_add_blend_point", "get_blend_point_node", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_position", "get_blend_point_position", i);
@@ -478,12 +539,14 @@ void AnimationNodeBlendSpace::_bind_methods() {
 
 AnimationNodeBlendSpace::AnimationNodeBlendSpace() {
 
+	auto_triangles = true;
 	blend_points_used = 0;
 	max_space = Vector2(1, 1);
 	min_space = Vector2(-1, -1);
 	snap = Vector2(0.1, 0.1);
 	x_label = "x";
 	y_label = "y";
+	trianges_dirty = false;
 }
 
 AnimationNodeBlendSpace::~AnimationNodeBlendSpace() {

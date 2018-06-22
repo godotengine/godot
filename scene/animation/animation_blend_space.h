@@ -37,6 +37,11 @@ class AnimationNodeBlendSpace : public AnimationRootNode {
 
 	void _blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights);
 
+	bool auto_triangles;
+	bool trianges_dirty;
+
+	void _update_triangles();
+
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
@@ -78,6 +83,9 @@ public:
 	String get_caption() const;
 
 	Vector2 get_closest_point(const Vector2 &p_point);
+
+	void set_auto_triangles(bool p_enable);
+	bool get_auto_triangles() const;
 
 	AnimationNodeBlendSpace();
 	~AnimationNodeBlendSpace();

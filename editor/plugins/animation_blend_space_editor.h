@@ -33,6 +33,8 @@ class AnimationNodeBlendSpaceEditor : public VBoxContainer {
 	SpinBox *snap_x;
 	SpinBox *snap_y;
 
+	ToolButton *auto_triangles;
+
 	LineEdit *label_x;
 	LineEdit *label_y;
 	SpinBox *max_x_value;
@@ -94,6 +96,8 @@ class AnimationNodeBlendSpaceEditor : public VBoxContainer {
 	void _goto_parent();
 
 	void _removed_from_graph();
+
+	void _auto_triangles_toggled();
 
 protected:
 	void _notification(int p_what);
