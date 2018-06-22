@@ -1,10 +1,10 @@
-#ifndef ANIMATION_BLEND_SPACE_EDITOR_H
-#define ANIMATION_BLEND_SPACE_EDITOR_H
+#ifndef ANIMATION_BLEND_SPACE2D_EDITOR_H
+#define ANIMATION_BLEND_SPACE2D_EDITOR_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
-#include "scene/animation/animation_blend_space.h"
+#include "scene/animation/animation_blend_space2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
@@ -13,11 +13,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AnimationNodeBlendSpaceEditor : public VBoxContainer {
+class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
 
-	GDCLASS(AnimationNodeBlendSpaceEditor, VBoxContainer);
+    GDCLASS(AnimationNodeBlendSpace2DEditor, VBoxContainer);
 
-	Ref<AnimationNodeBlendSpace> blend_space;
+	Ref<AnimationNodeBlendSpace2D> blend_space;
 
 	HBoxContainer *goto_parent_hb;
 	ToolButton *goto_parent;
@@ -59,7 +59,7 @@ class AnimationNodeBlendSpaceEditor : public VBoxContainer {
 
 	UndoRedo *undo_redo;
 
-	static AnimationNodeBlendSpaceEditor *singleton;
+    static AnimationNodeBlendSpace2DEditor *singleton;
 
 	void _blend_space_gui_input(const Ref<InputEvent> &p_event);
 	void _blend_space_draw();
@@ -104,27 +104,27 @@ protected:
 	static void _bind_methods();
 
 public:
-	static AnimationNodeBlendSpaceEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeBlendSpace *p_blend_space);
-	AnimationNodeBlendSpaceEditor();
+    static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
+	void edit(AnimationNodeBlendSpace2D *p_blend_space);
+    AnimationNodeBlendSpace2DEditor();
 };
 
-class AnimationNodeBlendSpaceEditorPlugin : public EditorPlugin {
+class AnimationNodeBlendSpace2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpaceEditorPlugin, EditorPlugin);
+    GDCLASS(AnimationNodeBlendSpace2DEditorPlugin, EditorPlugin);
 
-	AnimationNodeBlendSpaceEditor *anim_tree_editor;
+    AnimationNodeBlendSpace2DEditor *anim_tree_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-	virtual String get_name() const { return "BlendSpace"; }
+    virtual String get_name() const { return "BlendSpace2D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	AnimationNodeBlendSpaceEditorPlugin(EditorNode *p_node);
-	~AnimationNodeBlendSpaceEditorPlugin();
+    AnimationNodeBlendSpace2DEditorPlugin(EditorNode *p_node);
+    ~AnimationNodeBlendSpace2DEditorPlugin();
 };
-#endif // ANIMATION_BLEND_SPACE_EDITOR_H
+#endif // ANIMATION_BLEND_SPACE2D_EDITOR_H
