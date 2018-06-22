@@ -1,4 +1,4 @@
-#include "animation_blend_space_editor.h"
+#include "animation_blend_space2d_editor.h"
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
@@ -11,14 +11,14 @@
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 
-void AnimationNodeBlendSpaceEditor::edit(AnimationNodeBlendSpace *p_blend_space) {
+void AnimationNodeBlendSpace2DEditor::edit(AnimationNodeBlendSpace2D *p_blend_space) {
 
 	if (blend_space.is_valid()) {
 		blend_space->disconnect("removed_from_graph", this, "_removed_from_graph");
 	}
 
 	if (p_blend_space) {
-		blend_space = Ref<AnimationNodeBlendSpace>(p_blend_space);
+		blend_space = Ref<AnimationNodeBlendSpace2D>(p_blend_space);
 	} else {
 		blend_space.unref();
 	}
@@ -32,7 +32,7 @@ void AnimationNodeBlendSpaceEditor::edit(AnimationNodeBlendSpace *p_blend_space)
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
+void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
@@ -242,7 +242,7 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_add_menu_type(int p_index) {
+void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 
 	String type = menu->get_item_metadata(p_index);
 
@@ -265,7 +265,7 @@ void AnimationNodeBlendSpaceEditor::_add_menu_type(int p_index) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_add_animation_type(int p_index) {
+void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
 
 	Ref<AnimationNodeAnimation> anim;
 	anim.instance();
@@ -284,7 +284,7 @@ void AnimationNodeBlendSpaceEditor::_add_animation_type(int p_index) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_update_tool_erase() {
+void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
 	tool_erase->set_disabled(!(selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) && !(selected_triangle >= 0 && selected_triangle < blend_space->get_triangle_count()));
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
@@ -299,7 +299,7 @@ void AnimationNodeBlendSpaceEditor::_update_tool_erase() {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_tool_switch(int p_tool) {
+void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
 
 	if (p_tool == 2) {
@@ -325,7 +325,7 @@ void AnimationNodeBlendSpaceEditor::_tool_switch(int p_tool) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_blend_space_draw() {
+void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	Color linecolor = get_color("font_color", "Label");
 	Color linecolor_soft = linecolor;
@@ -515,12 +515,12 @@ void AnimationNodeBlendSpaceEditor::_blend_space_draw() {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_snap_toggled() {
+void AnimationNodeBlendSpace2DEditor::_snap_toggled() {
 
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_update_space() {
+void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	if (updating)
 		return;
@@ -558,12 +558,12 @@ void AnimationNodeBlendSpaceEditor::_update_space() {
 	updating = false;
 }
 
-void AnimationNodeBlendSpaceEditor::_config_changed(double) {
+void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	if (updating)
 		return;
 
 	updating = true;
-	undo_redo->create_action("Change BlendSpace Limits");
+    undo_redo->create_action("Change BlendSpace2D Limits");
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
@@ -578,12 +578,12 @@ void AnimationNodeBlendSpaceEditor::_config_changed(double) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_labels_changed(String) {
+void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
 	if (updating)
 		return;
 
 	updating = true;
-	undo_redo->create_action("Change BlendSpace Labels", UndoRedo::MERGE_ENDS);
+    undo_redo->create_action("Change BlendSpace2D Labels", UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(blend_space.ptr(), "set_x_label", label_x->get_text());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_x_label", blend_space->get_x_label());
 	undo_redo->add_do_method(blend_space.ptr(), "set_y_label", label_y->get_text());
@@ -594,12 +594,12 @@ void AnimationNodeBlendSpaceEditor::_labels_changed(String) {
 	updating = false;
 }
 
-void AnimationNodeBlendSpaceEditor::_erase_selected() {
+void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 
 	if (selected_point != -1) {
 
 		updating = true;
-		undo_redo->create_action("Remove BlendSpace Point");
+        undo_redo->create_action("Remove BlendSpace2D Point");
 		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
 		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
 
@@ -622,7 +622,7 @@ void AnimationNodeBlendSpaceEditor::_erase_selected() {
 	} else if (selected_triangle != -1) {
 
 		updating = true;
-		undo_redo->create_action("Remove BlendSpace Triangle");
+        undo_redo->create_action("Remove BlendSpace2D Triangle");
 		undo_redo->add_do_method(blend_space.ptr(), "remove_triangle", selected_triangle);
 		undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(selected_triangle, 0), blend_space->get_triangle_point(selected_triangle, 1), blend_space->get_triangle_point(selected_triangle, 2), selected_triangle);
 
@@ -635,7 +635,7 @@ void AnimationNodeBlendSpaceEditor::_erase_selected() {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_update_edited_point_pos() {
+void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
 	if (updating)
 		return;
 
@@ -655,7 +655,7 @@ void AnimationNodeBlendSpaceEditor::_update_edited_point_pos() {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_edit_point_pos(double) {
+void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 	if (updating)
 		return;
 	updating = true;
@@ -672,7 +672,7 @@ void AnimationNodeBlendSpaceEditor::_edit_point_pos(double) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpaceEditor::_notification(int p_what) {
+void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
@@ -694,7 +694,7 @@ void AnimationNodeBlendSpaceEditor::_notification(int p_what) {
 		String error;
 
 		if (!blend_space->get_graph_player()) {
-			error = TTR("BlendSpace does not belong to an AnimationGraphPlayer node.");
+            error = TTR("BlendSpace2D does not belong to an AnimationGraphPlayer node.");
 		} else if (!blend_space->get_graph_player()->is_active()) {
 			error = TTR("AnimationGraphPlayer is inactive.\nActivate to enable playback, check node warnings if activation fails.");
 		} else if (blend_space->get_graph_player()->is_state_invalid()) {
@@ -714,7 +714,7 @@ void AnimationNodeBlendSpaceEditor::_notification(int p_what) {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_open_editor() {
+void AnimationNodeBlendSpace2DEditor::_open_editor() {
 
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
@@ -723,16 +723,16 @@ void AnimationNodeBlendSpaceEditor::_open_editor() {
 	}
 }
 
-void AnimationNodeBlendSpaceEditor::_goto_parent() {
+void AnimationNodeBlendSpace2DEditor::_goto_parent() {
 
 	EditorNode::get_singleton()->edit_item(blend_space->get_parent().ptr());
 }
 
-void AnimationNodeBlendSpaceEditor::_removed_from_graph() {
+void AnimationNodeBlendSpace2DEditor::_removed_from_graph() {
 	EditorNode::get_singleton()->edit_item(NULL);
 }
 
-void AnimationNodeBlendSpaceEditor::_auto_triangles_toggled() {
+void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 
 	undo_redo->create_action("Toggle Auto Triangles");
 	undo_redo->add_do_method(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
@@ -742,35 +742,35 @@ void AnimationNodeBlendSpaceEditor::_auto_triangles_toggled() {
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendSpaceEditor::_bind_methods() {
+void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 
-	ClassDB::bind_method("_blend_space_gui_input", &AnimationNodeBlendSpaceEditor::_blend_space_gui_input);
-	ClassDB::bind_method("_blend_space_draw", &AnimationNodeBlendSpaceEditor::_blend_space_draw);
-	ClassDB::bind_method("_config_changed", &AnimationNodeBlendSpaceEditor::_config_changed);
-	ClassDB::bind_method("_labels_changed", &AnimationNodeBlendSpaceEditor::_labels_changed);
-	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpaceEditor::_update_space);
-	ClassDB::bind_method("_snap_toggled", &AnimationNodeBlendSpaceEditor::_snap_toggled);
-	ClassDB::bind_method("_tool_switch", &AnimationNodeBlendSpaceEditor::_tool_switch);
-	ClassDB::bind_method("_erase_selected", &AnimationNodeBlendSpaceEditor::_erase_selected);
-	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpaceEditor::_update_tool_erase);
-	ClassDB::bind_method("_edit_point_pos", &AnimationNodeBlendSpaceEditor::_edit_point_pos);
+    ClassDB::bind_method("_blend_space_gui_input", &AnimationNodeBlendSpace2DEditor::_blend_space_gui_input);
+    ClassDB::bind_method("_blend_space_draw", &AnimationNodeBlendSpace2DEditor::_blend_space_draw);
+    ClassDB::bind_method("_config_changed", &AnimationNodeBlendSpace2DEditor::_config_changed);
+    ClassDB::bind_method("_labels_changed", &AnimationNodeBlendSpace2DEditor::_labels_changed);
+    ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace2DEditor::_update_space);
+    ClassDB::bind_method("_snap_toggled", &AnimationNodeBlendSpace2DEditor::_snap_toggled);
+    ClassDB::bind_method("_tool_switch", &AnimationNodeBlendSpace2DEditor::_tool_switch);
+    ClassDB::bind_method("_erase_selected", &AnimationNodeBlendSpace2DEditor::_erase_selected);
+    ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace2DEditor::_update_tool_erase);
+    ClassDB::bind_method("_edit_point_pos", &AnimationNodeBlendSpace2DEditor::_edit_point_pos);
 
-	ClassDB::bind_method("_add_menu_type", &AnimationNodeBlendSpaceEditor::_add_menu_type);
-	ClassDB::bind_method("_add_animation_type", &AnimationNodeBlendSpaceEditor::_add_animation_type);
+    ClassDB::bind_method("_add_menu_type", &AnimationNodeBlendSpace2DEditor::_add_menu_type);
+    ClassDB::bind_method("_add_animation_type", &AnimationNodeBlendSpace2DEditor::_add_animation_type);
 
-	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpaceEditor::_update_edited_point_pos);
+    ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
 
-	ClassDB::bind_method("_open_editor", &AnimationNodeBlendSpaceEditor::_open_editor);
-	ClassDB::bind_method("_goto_parent", &AnimationNodeBlendSpaceEditor::_goto_parent);
+    ClassDB::bind_method("_open_editor", &AnimationNodeBlendSpace2DEditor::_open_editor);
+    ClassDB::bind_method("_goto_parent", &AnimationNodeBlendSpace2DEditor::_goto_parent);
 
-	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpaceEditor::_removed_from_graph);
+    ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpace2DEditor::_removed_from_graph);
 
-	ClassDB::bind_method("_auto_triangles_toggled", &AnimationNodeBlendSpaceEditor::_auto_triangles_toggled);
+    ClassDB::bind_method("_auto_triangles_toggled", &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled);
 }
 
-AnimationNodeBlendSpaceEditor *AnimationNodeBlendSpaceEditor::singleton = NULL;
+AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = NULL;
 
-AnimationNodeBlendSpaceEditor::AnimationNodeBlendSpaceEditor() {
+AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	singleton = this;
 	updating = false;
@@ -982,17 +982,17 @@ AnimationNodeBlendSpaceEditor::AnimationNodeBlendSpaceEditor() {
 	dragging_selected_attempt = false;
 }
 
-void AnimationNodeBlendSpaceEditorPlugin::edit(Object *p_object) {
+void AnimationNodeBlendSpace2DEditorPlugin::edit(Object *p_object) {
 
-	anim_tree_editor->edit(Object::cast_to<AnimationNodeBlendSpace>(p_object));
+	anim_tree_editor->edit(Object::cast_to<AnimationNodeBlendSpace2D>(p_object));
 }
 
-bool AnimationNodeBlendSpaceEditorPlugin::handles(Object *p_object) const {
+bool AnimationNodeBlendSpace2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("AnimationNodeBlendSpace");
+    return p_object->is_class("AnimationNodeBlendSpace2D");
 }
 
-void AnimationNodeBlendSpaceEditorPlugin::make_visible(bool p_visible) {
+void AnimationNodeBlendSpace2DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		//editor->hide_animation_player_editors();
@@ -1009,15 +1009,15 @@ void AnimationNodeBlendSpaceEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AnimationNodeBlendSpaceEditorPlugin::AnimationNodeBlendSpaceEditorPlugin(EditorNode *p_node) {
+AnimationNodeBlendSpace2DEditorPlugin::AnimationNodeBlendSpace2DEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	anim_tree_editor = memnew(AnimationNodeBlendSpaceEditor);
+    anim_tree_editor = memnew(AnimationNodeBlendSpace2DEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300));
 
-	button = editor->add_bottom_panel_item(TTR("BlendSpace"), anim_tree_editor);
+    button = editor->add_bottom_panel_item(TTR("BlendSpace2D"), anim_tree_editor);
 	button->hide();
 }
 
-AnimationNodeBlendSpaceEditorPlugin::~AnimationNodeBlendSpaceEditorPlugin() {
+AnimationNodeBlendSpace2DEditorPlugin::~AnimationNodeBlendSpace2DEditorPlugin() {
 }
