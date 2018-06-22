@@ -2,6 +2,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "math/delaunay.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -113,20 +114,21 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 		}
 
 		//then try to see if a triangle can be selected
+		if (!blend_space->get_auto_triangles()) { //if autotriangles use, disable this
+			for (int i = 0; i < blend_space->get_triangle_count(); i++) {
+				Vector<Vector2> triangle;
 
-		for (int i = 0; i < blend_space->get_triangle_count(); i++) {
-			Vector<Vector2> triangle;
+				for (int j = 0; j < 3; j++) {
+					int idx = blend_space->get_triangle_point(i, j);
+					ERR_FAIL_INDEX(idx, points.size());
+					triangle.push_back(points[idx]);
+				}
 
-			for (int j = 0; j < 3; j++) {
-				int idx = blend_space->get_triangle_point(i, j);
-				ERR_FAIL_INDEX(idx, points.size());
-				triangle.push_back(points[idx]);
-			}
-
-			if (Geometry::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
-				selected_triangle = i;
-				_update_tool_erase();
-				return;
+				if (Geometry::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
+					selected_triangle = i;
+					_update_tool_erase();
+					return;
+				}
 			}
 		}
 	}
@@ -299,6 +301,18 @@ void AnimationNodeBlendSpaceEditor::_update_tool_erase() {
 
 void AnimationNodeBlendSpaceEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
+
+	if (p_tool == 2) {
+		Vector<Vector2> points;
+		for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
+			points.push_back(blend_space->get_blend_point_position(i));
+		}
+		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(points);
+		print_line("triangleS: " + itos(tr.size()));
+		for (int i = 0; i < tr.size(); i++) {
+			blend_space->add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
+		}
+	}
 
 	if (p_tool == 0) {
 		tool_erase->show();
@@ -518,6 +532,15 @@ void AnimationNodeBlendSpaceEditor::_update_space() {
 	} else {
 		goto_parent_hb->hide();
 	}
+
+	if (blend_space->get_auto_triangles()) {
+		tool_triangle->hide();
+	} else {
+		tool_triangle->show();
+	}
+
+	auto_triangles->set_pressed(blend_space->get_auto_triangles());
+
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
 
@@ -663,6 +686,7 @@ void AnimationNodeBlendSpaceEditor::_notification(int p_what) {
 		snap->set_icon(get_icon("SnapGrid", "EditorIcons"));
 		open_editor->set_icon(get_icon("Edit", "EditorIcons"));
 		goto_parent->set_icon(get_icon("MoveUp", "EditorIcons"));
+		auto_triangles->set_icon(get_icon("AutoTriangle", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -708,6 +732,16 @@ void AnimationNodeBlendSpaceEditor::_removed_from_graph() {
 	EditorNode::get_singleton()->edit_item(NULL);
 }
 
+void AnimationNodeBlendSpaceEditor::_auto_triangles_toggled() {
+
+	undo_redo->create_action("Toggle Auto Triangles");
+	undo_redo->add_do_method(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_auto_triangles", blend_space->get_auto_triangles());
+	undo_redo->add_do_method(this, "_update_space");
+	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->commit_action();
+}
+
 void AnimationNodeBlendSpaceEditor::_bind_methods() {
 
 	ClassDB::bind_method("_blend_space_gui_input", &AnimationNodeBlendSpaceEditor::_blend_space_gui_input);
@@ -730,6 +764,8 @@ void AnimationNodeBlendSpaceEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_parent", &AnimationNodeBlendSpaceEditor::_goto_parent);
 
 	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpaceEditor::_removed_from_graph);
+
+	ClassDB::bind_method("_auto_triangles_toggled", &AnimationNodeBlendSpaceEditor::_auto_triangles_toggled);
 }
 
 AnimationNodeBlendSpaceEditor *AnimationNodeBlendSpaceEditor::singleton = NULL;
@@ -789,6 +825,14 @@ AnimationNodeBlendSpaceEditor::AnimationNodeBlendSpaceEditor() {
 	tool_erase->set_tooltip(TTR("Erase points and triangles."));
 	tool_erase->connect("pressed", this, "_erase_selected");
 	tool_erase->set_disabled(true);
+
+	top_hb->add_child(memnew(VSeparator));
+
+	auto_triangles = memnew(ToolButton);
+	top_hb->add_child(auto_triangles);
+	auto_triangles->connect("pressed", this, "_auto_triangles_toggled");
+	auto_triangles->set_toggle_mode(true);
+	auto_triangles->set_tooltip(TTR("Generate blend triangles automatically (instead of manually)"));
 
 	top_hb->add_child(memnew(VSeparator));
 
