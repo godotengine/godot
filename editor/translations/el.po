@@ -8260,32 +8260,9 @@ msgstr "Σφάλμα κατά την φόρτωση της γραμματοσε�
 msgid "Invalid font size."
 msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Μη έγκυρη ενέργεια (Όλα επιτρέποντα εκτός από το '/' και το ':')."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Δεν μπορεί να περιέχει '/' ή ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Άκυρη μορφή version.txt μέσα στα πρότυπα. Το Revision δεν είναι έγκυρο "
-#~ "αναγνωριστικό."
-
-#~ msgid "Can't write file."
-#~ msgstr "Δεν ήταν δυνατή η εγγραφή στο αρχείο."
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr ""
-#~ "Παρακαλούμε επιλέξτε έναν φάκελο που δεν περιέχει ένα αρχείο 'project."
-#~ "godot'."
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Προηγούμενη καρτέλα"
 
 #~ msgid "Next"
 #~ msgstr "Επόμενο"

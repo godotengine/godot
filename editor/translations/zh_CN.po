@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # 360119124 <360119124@qq.com>, 2018.
 # 柠檬杀手 <lemonkiller@gmail.com>, 2018.
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
@@ -13,6 +12,7 @@
 # dragonandy <dragonandy@foxmail.com>, 2017-2018.
 # Geequlim <geequlim@gmail.com>, 2016-2018.
 # jie Shi <meishijiemeimeimei@gmail.com>, 2018.
+# Jingtian Pan <panjingtian@126.com>, 2018.
 # lalalaring <783482203@qq.com>, 2017.
 # Luo Jun <vipsbpig@gmail.com>, 2016-2017, 2018.
 # oberon-tonya <360119124@qq.com>, 2016.
@@ -25,13 +25,13 @@
 # Youmu <konpaku.w@gmail.com>, 2017.
 # yuetian <18829280955@163.com>, 2018.
 # Zae Chao <zae.vito@live.com>, 2018.
-#
+# zwj36028 <23732399@qq.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-05-11 03:34+0000\n"
-"Last-Translator: plumsky <x-wolf@163.com>\n"
+"PO-Revision-Date: 2018-06-09 03:55+0000\n"
+"Last-Translator: zwj36028 <23732399@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -39,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1403,7 +1403,7 @@ msgstr "清空输出"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "项目导出失败，错误代码 "
+msgstr "项目导出失败，错误代码 %d。"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2748,11 +2748,11 @@ msgstr "导入独立的物体和动画"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "导入独立的材质和动画"
+msgstr "与独立的材质和动画一同导入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "导入独立的物体、材质和动画"
+msgstr "与独立的物体、材质和动画一同导入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -5647,9 +5647,8 @@ msgid "Options"
 msgstr "选项"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "有，很多，几个，选项(Have,Many,Several,Options)！"
+msgstr "有，很多，选项"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5929,9 +5928,8 @@ msgid "Imported Project"
 msgstr "已导入的项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "项目名称:"
+msgstr "无效项目名称。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6128,11 +6126,10 @@ msgid "Mouse Button"
 msgstr "鼠标按键"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
-msgstr "无效的操作名称。它不能是空的也不能包含 '/', ':', '=', '\\' 或者 '\"'"
+msgstr "无效的操作名称。它不能是空的也不能包含 '/', ':', '=', '\\' 或者 '\"'。"
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8100,28 +8097,9 @@ msgstr "加载字体出错。"
 msgid "Invalid font size."
 msgstr "字体大小非法。"
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Action名非法(不得包含'/'或':')。"
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "不能包含 \"/\" 或 \":\""
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr "模板中的 version.txt文件格式不合法，无效的版本标识符。"
-
-#~ msgid "Can't write file."
-#~ msgstr "无法写入文件。"
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr "请选择一个不包含'project.godot'文件的文件夹。"
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "无法在项目目录下找到project.godot文件。"
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "无法在项目目录下找到project.godot文件。"
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "上一个目录"
 
 #~ msgid "Next"
 #~ msgstr "下一项"

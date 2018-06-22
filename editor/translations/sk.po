@@ -8057,10 +8057,6 @@ msgstr "Nesprávna veľkosť písma."
 #~ msgid "Can't write file."
 #~ msgstr "Popis:"
 
-#, fuzzy
-#~ msgid "Can't write file."
-#~ msgstr "Popis:"
-
 #~ msgid "Meta+"
 #~ msgstr "Meta+"
 

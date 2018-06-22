@@ -27,9 +27,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-05-20 21:41+0000\n"
-"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
-"com>\n"
+"PO-Revision-Date: 2018-06-16 18:43+0000\n"
+"Last-Translator: Rodolfo R Gomes <rodolforg@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -37,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5715,9 +5714,8 @@ msgid "Options"
 msgstr "Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Tem,Muitas,Várias,Opções!"
+msgstr "Tem,Muitas,Opções"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6006,9 +6004,8 @@ msgid "Imported Project"
 msgstr "Projeto Importado"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nome do Projeto:"
+msgstr "Nome do Projeto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6210,13 +6207,12 @@ msgid "Mouse Button"
 msgstr "Botão do Mous"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Nome de ação inválido. Ele não pode estar vazio ou conter '/', ':', '=', "
-"'\\' ou '\"'"
+"'\\' ou '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8244,31 +8240,9 @@ msgstr "Erro ao carregar fonte."
 msgid "Invalid font size."
 msgstr "Tamanho de fonte inválido."
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Ação Inválida (qualquer coisa serve, exceto '/' ou ':')."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Não pode conter '/' ou ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Formato do version.txt dentro dos modelos é inválido. A revisão não é um "
-#~ "identificador válido."
-
-#~ msgid "Can't write file."
-#~ msgstr "Não foi possível escrever o arquivo."
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr ""
-#~ "Por favor, escolha uma pasta que não contenha um arquivo 'project.godot'."
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "Não foi possível encontrar project.godot no caminho do projeto."
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "Não foi possível encontrar project.godot no caminho do projeto."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Guia anterior"
 
 #~ msgid "Next"
 #~ msgstr "Próximo"

@@ -27,7 +27,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-05 13:41+0000\n"
+"PO-Revision-Date: 2018-06-22 08:31+0000\n"
 "Last-Translator: RM <synaptykq@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -8292,30 +8292,9 @@ msgstr "Błąd ładowania fonta."
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Nieprawidłowa akcja (wszystko oprócz '/' lub ':')."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Nie może zawierać '/ 'lub':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "nieprawidłowy format pliku version.txt wewnątrz szablonów. Zmiana nie "
-#~ "jest prawidłowym identyfikatorem."
-
-#~ msgid "Can't write file."
-#~ msgstr "Nie można zapisać pliku."
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr "Proszę wybrać folder nie zawierający pliku 'project.godot'."
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "Nie można było utworzyć engine.cfg w ścieżce projektu."
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "Nie znaleziono project.godot w ścieżce projektu."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Poprzednia zakładka"
 
 #~ msgid "Next"
 #~ msgstr "Następny"

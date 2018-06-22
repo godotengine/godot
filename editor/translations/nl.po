@@ -8276,18 +8276,8 @@ msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
 
 #, fuzzy
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Kan niet verbinden met host:"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Ongeldig version.txt formaat in sjablonen. Revisie is geen geldig "
-#~ "identificatienummer."
-
-#~ msgid "Can't write file."
-#~ msgstr "Kan niet naar bestand schrijven."
+#~ msgid "Previous"
+#~ msgstr "Vorig tabblad"
 
 #~ msgid "Next"
 #~ msgstr "Volgende"

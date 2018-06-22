@@ -8124,18 +8124,9 @@ msgstr "Chyba nahrávání fontu."
 msgid "Invalid font size."
 msgstr "Neplatná velikost fontu."
 
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Nesmí obsaovat '/' nebo ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Neplatný formát version.txt uvnitř šablon. Revize není platný "
-#~ "identifikátor."
-
-#~ msgid "Can't write file."
-#~ msgstr "Nelze zapsat soubor."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Předchozí záložka"
 
 #~ msgid "Next"
 #~ msgstr "Další"

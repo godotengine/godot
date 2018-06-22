@@ -17,6 +17,7 @@
 # Kim <github@aggsol.de>, 2017.
 # Metin Celik <metincelik88@gmail.com>, 2018.
 # Neicul <neicul@gmx.de>, 2018.
+# nimradium <nimra242001@gmail.com>, 2018.
 # Oliver Ruehl <oliver@ruehldesign.co>, 2016-2017.
 # Paul-Vincent Roll <paviro@me.com>, 2016.
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
@@ -30,8 +31,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-24 15:37+0000\n"
-"Last-Translator: Metin Celik <metincelik88@gmail.com>\n"
+"PO-Revision-Date: 2018-06-19 19:38+0000\n"
+"Last-Translator: nimradium <nimra242001@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4046,7 +4047,7 @@ msgstr "Mesh hat keine Oberfläche von der Umrisse erzeugt werden könnten!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Mesh primitive type ist nicht PRIMITIVE_TRIANGLES!"
+msgstr "Der Mesh-Grundtyp ist nicht ist nicht PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5736,9 +5737,8 @@ msgid "Options"
 msgstr "Optionen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Enthalten,Viele,Einige,Optionen!"
+msgstr "Einstellungen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6023,9 +6023,8 @@ msgid "Imported Project"
 msgstr "Importiertes Projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Projektname:"
+msgstr "Ungültiger Projektname."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6229,13 +6228,12 @@ msgid "Mouse Button"
 msgstr "Maustaste"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"Ungültiger Aktionsname. Er kann weder leer sein, noch kann er '/', ':', '=', "
-"'\\' oder '\"' enthalten"
+"Ungültiger Aktionsname. Er kann weder leer sein noch ‚/‘, ‚:‘, ‚=‘, ‘\\‘ "
+"oder ‚\"‘ enthalten."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8286,31 +8284,9 @@ msgstr "Fehler beim Laden der Schriftart."
 msgid "Invalid font size."
 msgstr "Ungültige Schriftgröße."
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr ""
-#~ "Ungültiger Name für Aktion (alle Zeichen außer ‚/‘ und ‚:‘ möglich)."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Darf nicht ‚/‘ oder ‚:‘ beinhalten"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Ungültiges version.txt-Format in Templates. Revision ist kein gültiger "
-#~ "Bezeichner."
-
-#~ msgid "Can't write file."
-#~ msgstr "Konnte Datei nicht schreiben."
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr "Ein Ordner ohne ‚project.godot‘-Datei muss ausgewählt werden."
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "project.godot konnte nicht im Projektpfad gefunden werden."
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "project.godot konnte nicht im Projektpfad gefunden werden."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Vorheriger Tab"
 
 #~ msgid "Next"
 #~ msgstr "Nächste"

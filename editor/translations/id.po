@@ -18,15 +18,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-31 16:39+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2018-06-22 08:30+0000\n"
+"Last-Translator: Fajar Ru <kzofajar@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -8349,19 +8349,8 @@ msgid "Invalid font size."
 msgstr "Ukuran font tidak sah."
 
 #, fuzzy
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Sambungkan Ke Node:"
-
-#, fuzzy
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Format version.txt tidak valid dalam berkas templat. Revisi tidak valid."
-
-#, fuzzy
-#~ msgid "Can't write file."
-#~ msgstr "Tidak dapat membuat folder."
+#~ msgid "Previous"
+#~ msgstr "Tab sebelumnya"
 
 #~ msgid "Next"
 #~ msgstr "Berikutnya"

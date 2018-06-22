@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Allan Nordhøy <epost@anotheragency.no>, 2017-2018.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # Elias <eliasnykrem@gmail.com>, 2018.
@@ -15,15 +14,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-03-22 03:38+0000\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"PO-Revision-Date: 2018-06-22 08:31+0000\n"
+"Last-Translator: Frank T. Rambol <frank@d-fect.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1406,10 +1405,6 @@ msgstr "Nullstill resultat"
 msgid "Project export failed with error code %d."
 msgstr "Eksport av prosjektet mislyktes med feilkode %d."
 
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Feil ved lagring av ressurs!"
@@ -1420,9 +1415,8 @@ msgstr "Lagre Ressurs Som..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "I see..."
-msgstr "Jeg ser..."
+msgstr "Jeg forstår..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1920,7 +1914,7 @@ msgstr "MeshBibliotek..."
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "TileSet..."
-msgstr "TileSet..."
+msgstr "TileSet…"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -8206,15 +8200,9 @@ msgstr "Feil ved innlasting av font."
 msgid "Invalid font size."
 msgstr "Ugyldig fontstørrelse."
 
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Ugyldig version.txt format i mal. Revisjon er ikke en gyldig "
-#~ "identifikator."
-
-#~ msgid "Can't write file."
-#~ msgstr "Kan ikke skrive fil."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Forrige fane"
 
 #~ msgid "Next"
 #~ msgstr "Neste"

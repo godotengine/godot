@@ -8077,28 +8077,9 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "ใช้ชื่อนี้ไม่ได้ (มี '/' หรือ ':')"
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "ต้องไม่มี '/' หรือ ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr "รูปแบบของ version.txt ในแม่แบบไม่ถูกต้อง หมายเลขรุ่น revision ต้องใช้ระบุได้"
-
-#~ msgid "Can't write file."
-#~ msgstr "เขียนไฟล์ไม่ได้"
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr "กรุณาเลือกโฟลเดอร์ที่ไม่มีไฟล์ 'project.godot'"
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "ไม่พบไฟล์ project.godot"
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "ไม่พบไฟล์ project.godot"
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "แท็บก่อนหน้า"
 
 #~ msgid "Next"
 #~ msgstr "ต่อไป"
