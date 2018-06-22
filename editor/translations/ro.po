@@ -2,15 +2,15 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
+# Calin Sopterean <csopterean@gmail.com>, 2018.
 # Filip <filipanton@tutanota.com>, 2018.
 # Nitroretro <nitroretro@protonmail.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-10 20:02+0000\n"
-"Last-Translator: Nitroretro <nitroretro@protonmail.com>\n"
+"PO-Revision-Date: 2018-06-20 20:43+0000\n"
+"Last-Translator: Calin Sopterean <csopterean@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -256,7 +256,7 @@ msgstr "Pas (s):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr "Pas Bruscare Cursor (în secunde)."
+msgstr "Pas de Cursor Snap (în secunde)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
@@ -549,7 +549,7 @@ msgstr "Potriviri:"
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr "Descripție:"
+msgstr "Descriere:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -793,7 +793,7 @@ msgstr "Eroare la deschiderea fişierului pachet, nu este în format zip."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "Decompresez Active"
+msgstr "Decomprimare Asset-uri"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
@@ -892,7 +892,7 @@ msgstr "Ștergeți Efectul"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Audio"
+msgstr "Sunet"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -920,15 +920,15 @@ msgstr "Mutați Pista Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Salvați Pista Audio Șablon Ca..."
+msgstr "Salvați Schema Pistei Audio Ca..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr "Locație pentru Noul Șablon..."
+msgstr "Locație pentru Noua Schemă..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Deschideți Șablon Pistă Audio"
+msgstr "Deschide Schema Pistei Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
@@ -936,7 +936,7 @@ msgstr "Nu există nici un fişier 'res://default_bus_layout.tres'."
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Fişier nevalid, nu un șablon de pistă audio."
+msgstr "Fişier nevalid, nu este o schemă de pistă audio."
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -944,7 +944,7 @@ msgstr "Adaugați Pistă Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "Creaţi un Șablon nou Pistă Audio."
+msgstr "Creaţi o Schemă nouă de Pistă Audio."
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
@@ -953,7 +953,7 @@ msgstr "Încărcați"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "Încărcaţi un Șablon de Pistă Audio existent."
+msgstr "Încărcaţi o Schemă de Pistă Audio existentă."
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -962,7 +962,7 @@ msgstr "Salvați Ca"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "Salvaţi acest Șablon Pistă Audio într-un fişier."
+msgstr "Salvaţi acestă Schemă de Pistă Audio într-un fişier."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -970,7 +970,7 @@ msgstr "Încărcați Implicit"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Încărcat Șablonul Pistă Audio implicit."
+msgstr "Încarcă Schema de Pistă Audio implicită."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1241,7 +1241,7 @@ msgstr "SurseScan"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "(Re)Importând Bunuri"
+msgstr "(Re)Importând Asset-uri"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1392,11 +1392,11 @@ msgstr "Afișare:"
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
-msgstr "Goliți"
+msgstr "Curăță"
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr "Goliți Afișarea"
+msgstr "Curăță Afișarea"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -1497,15 +1497,15 @@ msgstr "Eroare la încercarea de a salva schema!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Șablon Editor implicit suprascris."
+msgstr "Schemă implicită de editor suprascrisă."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr "Numele șablonului nu a fost găsit!"
+msgstr "Numele schemei nu a fost găsit!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Restaurat șablonul implicit la setările de bază."
+msgstr "S-a restaurat schema implictă la setările de bază."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1596,7 +1596,7 @@ msgstr "Deschideți în Ajutor"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "Nu există nici o scenă definită pentru a rula."
+msgstr "Nu există nici o scenă definită pentru a execuție."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1712,7 +1712,7 @@ msgstr "Această acțiune nu poate fi recuperată. Te reîntorci oricum?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr ""
+msgstr "Execută Rapid Scena..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1873,7 +1873,7 @@ msgstr "Fila anterioară"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr ""
+msgstr "Filtrează fișierele..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1885,11 +1885,11 @@ msgstr "Scenă Nouă"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr ""
+msgstr "Scenă Derivată Nouă..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr ""
+msgstr "Deschide Scena..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -1909,15 +1909,15 @@ msgstr "Deschide Recente"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr ""
+msgstr "Convertește În..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "Librărie_de_Structuri..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr ""
+msgstr "Set_de_Plăci..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2181,7 +2181,7 @@ msgstr "Salvează resursa editată curentă."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr ""
+msgstr "Salvează Ca..."
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2290,7 +2290,7 @@ msgstr "Se creează Previzualizările Mesh-ului"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr ""
+msgstr "Miniatură..."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2444,7 +2444,7 @@ msgstr "(Curent)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr ""
+msgstr "Se recuperează oglinzile, te rog așteaptă..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2456,7 +2456,7 @@ msgstr "Nu se pot deschide șabloanele de export zip."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "Format nevalid versiune.txt în șabloane."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2510,7 +2510,7 @@ msgstr "Buclă de Redirecționare."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "A Eșuat:"
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -2522,7 +2522,7 @@ msgstr "Eroare la solicitarea URL: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr ""
+msgstr "Se conectează la Oglinda..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2539,7 +2539,7 @@ msgstr "Nu se poate Soluționa"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting..."
-msgstr ""
+msgstr "Conectare..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2552,7 +2552,7 @@ msgstr "Conectat"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting..."
-msgstr ""
+msgstr "Se Solicită..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2690,11 +2690,11 @@ msgstr "Restrânge toate"
 
 #: editor/filesystem_dock.cpp
 msgid "Rename..."
-msgstr ""
+msgstr "Redenumește..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr ""
+msgstr "Mută În..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2706,15 +2706,15 @@ msgstr "Instanță"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr ""
+msgstr "Editează Dependințele..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr ""
+msgstr "Vizualizează Proprietarii..."
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr ""
+msgstr "Duplicați..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2808,7 +2808,7 @@ msgstr "Importă Scena"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr ""
+msgstr "Se Importa Scena..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2820,7 +2820,7 @@ msgstr "Se Generează pentru Mesh: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr ""
+msgstr "Se Execută un Script Personalizat..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2836,7 +2836,7 @@ msgstr "Eroare la executarea scripyului post-importare:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr ""
+msgstr "Se Salvează..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2856,7 +2856,7 @@ msgstr "Importă Ca:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset..."
-msgstr ""
+msgstr "Presetare..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3274,7 +3274,7 @@ msgstr "Nod Tranziție"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "Importă Animații..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3282,7 +3282,7 @@ msgstr "Editează Filtrele Nodurilor"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "Filtre..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3350,7 +3350,7 @@ msgstr "Se Preia(u):"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr ""
+msgstr "Se Rezolvă..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3417,7 +3417,7 @@ msgstr "Site:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support..."
-msgstr ""
+msgstr "Suport..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3700,23 +3700,23 @@ msgstr "Arată Grila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr ""
+msgstr "Arată Asistenții"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr ""
+msgstr "Arată Riglele"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr ""
+msgstr "Arată Ghizii"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
-msgstr ""
+msgstr "Arată Originea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr ""
+msgstr "Arată Fereastra de Lucru"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4012,10 +4012,6 @@ msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr "Mesh-ul primitiv nu este de tipul PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
 msgstr "Nu s-a putut creea un contur!"
 
@@ -4045,7 +4041,7 @@ msgstr "Creează un Frate de Coliziune Convex"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
-msgstr ""
+msgstr "Se Creează un Mesh de Contur..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -5971,9 +5967,8 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Nume nevalid."
+msgstr "Nume de Proiect Nevalid."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6705,7 +6700,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr ""
+msgstr "Curăță Derivarea"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -7275,7 +7270,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr ""
+msgstr "Perspectivă Snap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
