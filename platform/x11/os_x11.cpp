@@ -1934,6 +1934,7 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
+#ifdef TOUCH_ENABLED
 				// Avoidance of spurious mouse motion (see handling of touch)
 				bool filter = false;
 				// Adding some tolerance to match better Point2i to Vector2
@@ -1945,6 +1946,7 @@ void OS_X11::process_xevents() {
 				if (filter) {
 					break;
 				}
+#endif
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -2507,17 +2509,23 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 void OS_X11::release_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->release_current();
+#endif
 }
 
 void OS_X11::make_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->make_current();
+#endif
 }
 
 void OS_X11::swap_buffers() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
+#endif
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
@@ -2611,8 +2619,10 @@ String OS_X11::get_joy_guid(int p_device) const {
 }
 
 void OS_X11::_set_use_vsync(bool p_enable) {
+#if defined(OPENGL_ENABLED)
 	if (context_gl)
-		return context_gl->set_use_vsync(p_enable);
+		context_gl->set_use_vsync(p_enable);
+#endif
 }
 /*
 bool OS_X11::is_vsync_enabled() const {
