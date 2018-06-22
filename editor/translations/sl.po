@@ -2,17 +2,15 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # matevž lapajne <sivar.lapajne@gmail.com>, 2016-2018.
 # Matjaž Vitas <matjaz.vitas@gmail.com>, 2017-2018.
 # Miha Komatar <miha.komatar@gmail.com>, 2018.
 # Simon Šander <simon.sand3r@gmail.com>, 2017.
 # Yahara Octanis <yaharao55@gmail.com>, 2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-05 19:27+0000\n"
+"PO-Revision-Date: 2018-06-10 08:44+0000\n"
 "Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
@@ -21,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.0.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -3262,7 +3260,7 @@ msgstr "Gradnik Prehod"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "Uvozi Animacije..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3270,7 +3268,7 @@ msgstr "Uredi Gradnike Filtri"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "Filtri..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "AnimationTree"
@@ -3338,7 +3336,7 @@ msgstr "Pridobivanje:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr ""
+msgstr "Razreševanje..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
