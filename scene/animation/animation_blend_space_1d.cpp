@@ -1,9 +1,9 @@
-#include "animation_blend_space1d.h"
+#include "animation_blend_space_1d.h"
 
 void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("blend_point_")) {
 		String left = property.name.get_slicec('/', 0);
-		int idx = left.get_slicec('_', 1).to_int();
+		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
 			property.usage = 0;
 		}
@@ -58,7 +58,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used; i > p_at_index; i++) {
+		for (int i = blend_points_used - 1; i > p_at_index; i++) {
 			blend_points[i] = blend_points[i - 1];
 		}
 	}
