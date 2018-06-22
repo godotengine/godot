@@ -9,12 +9,11 @@
 # Максим Якимчук <xpinovo@gmail.com>, 2018.
 # Марс Ямбар <mjambarmeta@gmail.com>, 2017-2018.
 # Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-05-18 10:42+0000\n"
-"Last-Translator: Максим Якимчук <xpinovo@gmail.com>\n"
+"PO-Revision-Date: 2018-06-06 04:03+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -22,7 +21,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.0\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5699,9 +5698,8 @@ msgid "Options"
 msgstr "Параметри"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Має,Багато,Декілька,Параметрів!"
+msgstr "Має,Багато,Параметрів"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -5988,9 +5986,8 @@ msgid "Imported Project"
 msgstr "Імпортований проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Назва проекту:"
+msgstr "Некоректна назва проекту."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6192,13 +6189,12 @@ msgid "Mouse Button"
 msgstr "Кнопка миші"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Некоректна назва дії. Назва не може бути порожньою і не може містити "
-"символів «/», «:», «=», «\\» та «\"»"
+"символів «/», «:», «=», «\\» та «\"»."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -8229,31 +8225,9 @@ msgstr "Помилка завантаження шрифту."
 msgid "Invalid font size."
 msgstr "Некоректний розмір шрифту."
 
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Некоректна дія (можна усе, окрім «/» або «:»)."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Не може містити «/» або «:»"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Неправильний формат version.txt у шаблонах. Ідентифікатор ревізії не є "
-#~ "дійсним."
-
-#~ msgid "Can't write file."
-#~ msgstr "Не вдалося записати файл."
-
-#~ msgid "Please choose a folder that does not contain a 'project.godot' file."
-#~ msgstr ""
-#~ "Будь ласка, виберіть теку, у якій не міститься файла «project.godot»."
-
-#~ msgid "Couldn't get project.godot in project path."
-#~ msgstr "Не вдалося отримати project.godot з каталогу проекту."
-
-#~ msgid "Couldn't get project.godot in the project path."
-#~ msgstr "Не вдалося отримати project.godot у каталозі проекту."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Попередня вкладка"
 
 #~ msgid "Next"
 #~ msgstr "Далі"
