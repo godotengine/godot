@@ -54,7 +54,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 		menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-		AnimationTree *gp = blend_space->get_tree();
+		AnimationGraphPlayer *gp = blend_space->get_graph_player();
 		ERR_FAIL_COND(!gp);
 		if (gp && gp->has_node(gp->get_animation_player())) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
@@ -414,7 +414,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 			point *= s;
 			point.y = s.height - point.y;
-			points.write[j] = point;
+			points[j] = point;
 		}
 
 		for (int j = 0; j < 3; j++) {
@@ -693,12 +693,12 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 		String error;
 
-		if (!blend_space->get_tree()) {
-			error = TTR("BlendSpace2D does not belong to an AnimationTree node.");
-		} else if (!blend_space->get_tree()->is_active()) {
-			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (blend_space->get_tree()->is_state_invalid()) {
-			error = blend_space->get_tree()->get_invalid_state_reason();
+		if (!blend_space->get_graph_player()) {
+			error = TTR("BlendSpace2D does not belong to an AnimationGraphPlayer node.");
+		} else if (!blend_space->get_graph_player()->is_active()) {
+			error = TTR("AnimationGraphPlayer is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+		} else if (blend_space->get_graph_player()->is_state_invalid()) {
+			error = blend_space->get_graph_player()->get_invalid_state_reason();
 		} else if (blend_space->get_triangle_count() == 0) {
 			error = TTR("No triangles exist, so no blending can take place.");
 		}

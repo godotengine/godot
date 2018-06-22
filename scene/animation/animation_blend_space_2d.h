@@ -1,7 +1,7 @@
 #ifndef ANIMATION_BLEND_SPACE_2D_H
 #define ANIMATION_BLEND_SPACE_2D_H
 
-#include "scene/animation/animation_tree.h"
+#include "scene/animation/animation_graph_player.h"
 
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
@@ -47,8 +47,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void set_tree(AnimationTree *p_player);
-
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
 	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
