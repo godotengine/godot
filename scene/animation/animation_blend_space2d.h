@@ -4,7 +4,7 @@
 #include "scene/animation/animation_graph_player.h"
 
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
-    GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
 
 	enum {
 		MAX_BLEND_POINTS = 64
@@ -87,8 +87,8 @@ public:
 	void set_auto_triangles(bool p_enable);
 	bool get_auto_triangles() const;
 
-    AnimationNodeBlendSpace2D();
-    ~AnimationNodeBlendSpace2D();
+	AnimationNodeBlendSpace2D();
+	~AnimationNodeBlendSpace2D();
 };
 
 #endif // ANIMATION_BLEND_SPACE_H
