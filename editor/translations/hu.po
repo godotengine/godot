@@ -9,15 +9,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-03 06:36+0000\n"
-"Last-Translator: Sandor Domokos <sandor.domokos@gmail.com>\n"
+"PO-Revision-Date: 2018-06-17 07:39+0000\n"
+"Last-Translator: Árpád Horváth <horvatha4@googlemail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -33,7 +33,7 @@ msgstr "Animáció kulcsképkocka idő változtatás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Animáció átmenet változtatás"
+msgstr "Animáció átmenet változtatása"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -235,7 +235,7 @@ msgstr "Animáció kulcsok nyújtás"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "Animáció hívási nyomvonal hozzáadás"
+msgstr "Animációhoz hívási nyomvonal hozzáadása"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -1395,7 +1395,7 @@ msgstr "Kimenet Törlése"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Projekt export nem sikerült, hibakód %d."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -1645,11 +1645,11 @@ msgstr "Alap Scene megnyitás"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Scene gyors megnyitás"
+msgstr "Jelenet gyors megnyitása..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Szkript gyors megnyitás"
+msgstr "Szkript gyors megnyitás..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1661,7 +1661,7 @@ msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Scene mentés másként"
+msgstr "Scene mentés másként..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1713,7 +1713,7 @@ msgstr "Ez a művelet nem vonható vissza. Visszaállítja mindenképp?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Scene gyors futtatás"
+msgstr "Scene gyors futtatás..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1859,7 +1859,7 @@ msgstr "Hozzáad egy új jelenetet."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr "Scene"
+msgstr "Jelenet"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -1887,11 +1887,11 @@ msgstr "Új Scene"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "Új örökölt Scene"
+msgstr "Új örökölt Jelenet..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr "Scene megnyitása"
+msgstr "Jelenet megnyitása..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -2025,7 +2025,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Scene változtatások szinkronizálás"
+msgstr "Jelenet változtatások szinkronizálása"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2808,7 +2808,7 @@ msgstr "Scene importálás"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Scene importálás"
+msgstr "Jelenet importálása..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -3429,7 +3429,7 @@ msgstr "Hivatalos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr "Tesztelés Alatt"
+msgstr "Tesztelés"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -3717,14 +3717,12 @@ msgid "Show Guides"
 msgstr "Vezetővonalak Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Origin"
-msgstr "Rács Megjelenítése"
+msgstr "Origó Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Viewport"
-msgstr "Segítők Megjelenítése"
+msgstr "Nézet Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4018,7 +4016,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
+msgstr "A Háló-primitív típusa nem háromszög (PRIMITIVE_TRIANGLES)!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5683,9 +5681,8 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "Elem Hozzáadása"
+msgstr "Rádió Elem"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Radio Item"
@@ -5982,9 +5979,8 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Érvénytelen név."
+msgstr "Érvénytelen projektnév."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7243,7 +7239,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
-msgstr "Következő Sík"
+msgstr "Következő Síklap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Previous Plane"
@@ -8101,15 +8097,9 @@ msgstr "Hiba a betűtípus betöltésekor."
 msgid "Invalid font size."
 msgstr "Érvénytelen betűtípus méret."
 
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Érvénytelen version.txt formátum a sablonokban. A revízió nem érvényes "
-#~ "azonosító."
-
-#~ msgid "Can't write file."
-#~ msgstr "Nem lehet fájlt írni."
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Előző fül"
 
 #~ msgid "Next"
 #~ msgstr "Következő"
