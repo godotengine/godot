@@ -1,5 +1,5 @@
-#ifndef ANIMATION_BLEND_SPACE2D_H
-#define ANIMATION_BLEND_SPACE2D_H
+#ifndef ANIMATION_BLEND_SPACE_2D_H
+#define ANIMATION_BLEND_SPACE_2D_H
 
 #include "scene/animation/animation_graph_player.h"
 
@@ -91,4 +91,4 @@ public:
 	~AnimationNodeBlendSpace2D();
 };
 
-#endif // ANIMATION_BLEND_SPACE_H
+#endif // ANIMATION_BLEND_SPACE_2D_H

@@ -66,7 +66,8 @@
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_wav.h"
-#include "editor/plugins/animation_blend_space2d_editor.h"
+#include "editor/plugins/animation_blend_space_1d_editor.h"
+#include "editor/plugins/animation_blend_space_2d_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/animation_state_machine_editor.h"
@@ -5351,6 +5352,7 @@ EditorNode::EditorNode() {
 	// FIXME: Disabled for Godot 3.0 as made incompatible, it needs to be ported to the new API.
 	//add_editor_plugin(memnew(ShaderGraphEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendTreeEditorPlugin(this)));
+	add_editor_plugin(memnew(AnimationNodeBlendSpace1DEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendSpace2DEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeStateMachineEditorPlugin(this)));
 
