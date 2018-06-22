@@ -1522,8 +1522,15 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
+	NodePath path = p_path;
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	emit_signal("property_changed", get_edited_property(), base_node->get_path().rel_path_to(p_path));
+	if (base_node == NULL && get_edited_object()->has_method("get_root_path")) {
+		base_node = get_edited_object()->call("get_root_path");
+	}
+	if (base_node) { // for AnimationTrackKeyEdit
+		path = base_node->get_path().rel_path_to(p_path);
+	}
+	emit_signal("property_changed", get_edited_property(), path);
 	update_property();
 }
 
