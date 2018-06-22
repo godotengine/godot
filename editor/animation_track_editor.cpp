@@ -25,6 +25,7 @@ public:
 		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
 		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
+		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
 	}
 
 	//PopupDialog *ke_dialog;
@@ -610,6 +611,10 @@ public:
 	void notify_change() {
 
 		_change_notify();
+	}
+
+	Node *get_root_path() {
+		return root_path;
 	}
 
 	AnimationTrackKeyEdit() {
