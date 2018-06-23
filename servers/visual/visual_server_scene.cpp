@@ -1715,7 +1715,7 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		float width = (2.0 * z_near) / camera_matrix.matrix[0][0];
 		float x_shift = width * camera_matrix.matrix[2][0];
 		float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
-		float y_shift = width * camera_matrix.matrix[2][1];
+		float y_shift = height * camera_matrix.matrix[2][1];
 
 		// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
 
@@ -1735,10 +1735,10 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		float z_shift = (left_near / slope) - z_near;
 
 		// - figure out new vertical near plane size (this will be slightly oversized thanks to our z-shift)
-		float top_near = (height + y_shift) * 0.5;
-		top_near += y_shift * z_shift;
-		float bottom_near = -(height - y_shift) * 0.5;
-		bottom_near -= y_shift * z_shift;
+		float top_near = (height - y_shift) * 0.5;
+		top_near += (top_near / z_near) * z_shift;
+		float bottom_near = -(height + y_shift) * 0.5;
+		bottom_near += (bottom_near / z_near) * z_shift;
 
 		// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
 
