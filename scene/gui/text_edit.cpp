@@ -966,12 +966,13 @@ void TextEdit::_notification(int p_what) {
 
 						// draw line numbers
 						if (cache.line_number_w) {
+							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
 							String fc = String::num(line + 1);
 							while (fc.length() < line_number_char_count) {
 								fc = line_num_padding + fc;
 							}
 
-							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
+							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, cache.line_number_color);
 						}
 					}
 
@@ -1094,12 +1095,13 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						if (brace_matching_enabled) {
+							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
 							if ((brace_open_match_line == line && brace_open_match_column == last_wrap_column + j) ||
 									(cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
 
 								if (brace_open_mismatch)
 									color = cache.brace_mismatch_color;
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							}
 
 							if ((brace_close_match_line == line && brace_close_match_column == last_wrap_column + j) ||
@@ -1107,7 +1109,7 @@ void TextEdit::_notification(int p_what) {
 
 								if (brace_close_mismatch)
 									color = cache.brace_mismatch_color;
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							}
 						}
 
@@ -1167,9 +1169,10 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						if (str[j] >= 32) {
-							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
+							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							if (underlined) {
-								draw_rect(Rect2(char_ofs + char_margin + ofs_x, ofs_y + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							}
 						} else if (draw_tabs && str[j] == '\t') {
 							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
