@@ -429,7 +429,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node, int p_level, bool p
 					} else if (callfunc == "texscreen") {
 						//create the call to sample the screen, and clamp it
 						uses_texscreen = true;
-						code = "(texture2D( texscreen_tex, clamp((" + dump_node_code(onode->arguments[1], p_level) + ").xy*texscreen_screen_mult,texscreen_screen_clamp.xy,texscreen_screen_clamp.zw))).rgb";
+						code = "(texture2D( texscreen_tex, clamp((" + dump_node_code(onode->arguments[1], p_level) + ").xy*texscreen_screen_mult,texscreen_screen_clamp.xy,texscreen_screen_clamp.zw)))";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
 					} else if (callfunc == "texpos") {
