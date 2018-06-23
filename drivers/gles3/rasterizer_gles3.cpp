@@ -253,11 +253,15 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 	}
 }
 
-void RasterizerGLES3::restore_render_target() {
+void RasterizerGLES3::restore_render_target(bool p_3d_drawn) {
 
 	ERR_FAIL_COND(storage->frame.current_rt == NULL);
 	RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	if (p_3d_drawn && rt->rgba8_out.fbo) {
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->rgba8_out.fbo);
+	} else {
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	}
 	glViewport(0, 0, rt->width, rt->height);
 }
 
@@ -339,7 +343,11 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 #if 1
 
 	Size2 win_size = OS::get_singleton()->get_window_size();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	if (rt->rgba8_out.fbo) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->rgba8_out.fbo);
+	} else {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);

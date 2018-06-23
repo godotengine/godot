@@ -6618,6 +6618,13 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		glDeleteTextures(1, &rt->exposure.color);
 		rt->exposure.fbo = 0;
 	}
+
+	if (rt->rgba8_out.fbo) {
+		glDeleteFramebuffers(1, &rt->rgba8_out.fbo);
+		glDeleteTextures(1, &rt->rgba8_out.color);
+		rt->rgba8_out.fbo = 0;
+	}
+
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height = 0;
 	tex->alloc_width = 0;
@@ -6722,20 +6729,6 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		}
 
 		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-
-		Texture *tex = texture_owner.get(rt->texture);
-		tex->format = image_format;
-		tex->gl_format_cache = color_format;
-		tex->gl_type_cache = color_type;
-		tex->gl_internal_format_cache = color_internal_format;
-		tex->tex_id = rt->color;
-		tex->width = rt->width;
-		tex->alloc_width = rt->width;
-		tex->height = rt->height;
-		tex->alloc_height = rt->height;
-		tex->active = true;
-
-		texture_set_flags(rt->texture, tex->flags);
 	}
 
 	/* BACK FBO */
@@ -7011,6 +7004,58 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 	}
+
+	if (hdr && !rt->flags[RENDER_TARGET_NO_3D] && rt->flags[RENDER_TARGET_RGBA8_OUT]) {
+		/* HDR -> RGBA8 output buffer */
+
+		color_internal_format = GL_RGBA8;
+		color_format = GL_RGBA;
+		color_type = GL_UNSIGNED_BYTE;
+		image_format = Image::FORMAT_RGBA8;
+
+		glActiveTexture(GL_TEXTURE0);
+
+		glGenFramebuffers(1, &rt->rgba8_out.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->rgba8_out.fbo);
+
+		glGenTextures(1, &rt->rgba8_out.color);
+		glBindTexture(GL_TEXTURE_2D, rt->rgba8_out.color);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->rgba8_out.color, 0);
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("framebuffer fail, status: %x\n", status);
+		}
+
+		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+	}
+
+	{
+		/* Bind our texture to the final color output we use */
+
+		Texture *tex = texture_owner.get(rt->texture);
+		tex->format = image_format;
+		tex->gl_format_cache = color_format;
+		tex->gl_type_cache = color_type;
+		tex->gl_internal_format_cache = color_internal_format;
+		tex->tex_id = rt->rgba8_out.fbo == 0 ? rt->color : rt->rgba8_out.color;
+		tex->width = rt->width;
+		tex->alloc_width = rt->width;
+		tex->height = rt->height;
+		tex->alloc_height = rt->height;
+		tex->active = true;
+
+		texture_set_flags(rt->texture, tex->flags);
+	}
 }
 
 RID RasterizerStorageGLES3::render_target_create() {
@@ -7075,6 +7120,7 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 
 	switch (p_flag) {
 		case RENDER_TARGET_HDR:
+		case RENDER_TARGET_RGBA8_OUT:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
 		case RENDER_TARGET_NO_3D_EFFECTS: {

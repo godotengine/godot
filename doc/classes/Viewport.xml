@@ -260,6 +260,9 @@
 		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip">
 			If [code]true[/code] the result of rendering will be flipped vertically. Default value: [code]false[/code].
 		</member>
+		<member name="rgba8_out" type="bool" setter="set_rgba8_out" getter="get_rgba8_out">
+			If [code]true[/code] and HDR is enabled rendering will use HDR buffers but the final output will be converted to 8 bits per channel. Default value: [code]false[/code].
+		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 			The subdivision amount of first quadrant on shadow atlas. Default value: [code]SHADOW_ATLAS_QUADRANT_SUBDIV_4[/code].
 		</member>

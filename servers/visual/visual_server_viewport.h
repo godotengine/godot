@@ -146,6 +146,7 @@ public:
 
 private:
 	Color clear_color;
+	void _draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye = ARVRInterface::EYE_MONO);
 	void _draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye = ARVRInterface::EYE_MONO);
 
 public:
@@ -172,6 +173,7 @@ public:
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
 	void viewport_set_keep_3d_linear(RID p_viewport, bool p_keep_3d_linear);
+	void viewport_set_rgba8_out(RID p_viewport, bool p_rgba8_out);
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);

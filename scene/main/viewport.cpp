@@ -2740,6 +2740,16 @@ bool Viewport::get_keep_3d_linear() const {
 	return keep_3d_linear;
 }
 
+void Viewport::set_rgba8_out(bool p_rgba8_out) {
+	rgba8_out = p_rgba8_out;
+	VS::get_singleton()->viewport_set_rgba8_out(viewport, rgba8_out);
+}
+
+bool Viewport::get_rgba8_out() const {
+
+	return rgba8_out;
+}
+
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
@@ -2959,6 +2969,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_keep_3d_linear", "keep_3d_linear"), &Viewport::set_keep_3d_linear);
 	ClassDB::bind_method(D_METHOD("get_keep_3d_linear"), &Viewport::get_keep_3d_linear);
 
+	ClassDB::bind_method(D_METHOD("set_rgba8_out", "rgba8_out"), &Viewport::set_rgba8_out);
+	ClassDB::bind_method(D_METHOD("get_rgba8_out"), &Viewport::get_rgba8_out);
+
 	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
@@ -2993,6 +3006,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rgba8_out"), "set_rgba8_out", "get_rgba8_out");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
@@ -3124,6 +3138,7 @@ Viewport::Viewport() {
 	disable_input = false;
 	disable_3d = false;
 	keep_3d_linear = false;
+	rgba8_out = false;
 
 	//window tooltip
 	gui.tooltip_timer = -1;

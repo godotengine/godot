@@ -316,7 +316,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 	}
 }
 
-void RasterizerGLES2::restore_render_target() {
+void RasterizerGLES2::restore_render_target(bool p_3d_drawn) {
 	ERR_FAIL_COND(storage->frame.current_rt == NULL);
 	RasterizerStorageGLES2::RenderTarget *rt = storage->frame.current_rt;
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);

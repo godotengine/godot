@@ -1344,6 +1344,13 @@ public:
 			Exposure() { fbo = 0; }
 		} exposure;
 
+		struct RGBA8_out {
+			GLuint fbo;
+			GLuint color;
+
+			RGBA8_out() { fbo = 0; }
+		} rgba8_out;
+
 		uint64_t last_exposure_tick;
 
 		int width, height;

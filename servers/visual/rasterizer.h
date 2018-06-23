@@ -544,6 +544,7 @@ public:
 		RENDER_TARGET_NO_SAMPLING,
 		RENDER_TARGET_HDR,
 		RENDER_TARGET_KEEP_3D_LINEAR,
+		RENDER_TARGET_RGBA8_OUT,
 		RENDER_TARGET_FLAG_MAX
 	};
 
@@ -1099,7 +1100,7 @@ public:
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 	virtual void set_current_render_target(RID p_render_target) = 0;
-	virtual void restore_render_target() = 0;
+	virtual void restore_render_target(bool p_3d_drawn = false) = 0;
 	virtual void clear_render_target(const Color &p_color) = 0;
 	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) = 0;
 	virtual void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) = 0;

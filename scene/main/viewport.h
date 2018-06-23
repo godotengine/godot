@@ -262,6 +262,7 @@ private:
 
 	MSAA msaa;
 	bool hdr;
+	bool rgba8_out;
 
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
@@ -469,6 +470,9 @@ public:
 
 	void set_keep_3d_linear(bool p_keep_3d_linear);
 	bool get_keep_3d_linear() const;
+
+	void set_rgba8_out(bool p_rgba8_out);
+	bool get_rgba8_out() const;
 
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
