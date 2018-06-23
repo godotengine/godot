@@ -41,7 +41,10 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
@@ -1857,7 +1860,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (over != top && !top->is_a_parent_of(over)) {
 
 				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
-				MenuButton *popup_menu_parent = NULL;
+				MenuButton *popup_menu_parent;
 				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
 
 				if (popup_menu)
