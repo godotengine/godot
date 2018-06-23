@@ -901,7 +901,7 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[] = {
 	//intrinsics - texture
 	{ "tex", TYPE_VEC4, { TYPE_TEXTURE, TYPE_VEC2, TYPE_VOID } },
 	{ "texcube", TYPE_VEC4, { TYPE_CUBEMAP, TYPE_VEC3, TYPE_VOID } },
-	{ "texscreen", TYPE_VEC3, { TYPE_VEC2, TYPE_VOID } },
+	{ "texscreen", TYPE_VEC4, { TYPE_VEC2, TYPE_VOID } },
 	{ "texpos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
 
 	{ NULL, TYPE_VOID, { TYPE_VOID } }
