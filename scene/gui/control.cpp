@@ -2972,7 +2972,6 @@ Control::Control() {
 	data.SI = NULL;
 	data.MI = NULL;
 	data.RI = NULL;
-	data.modal = false;
 	data.theme_owner = NULL;
 	data.modal_exclusive = false;
 	data.default_cursor = CURSOR_ARROW;

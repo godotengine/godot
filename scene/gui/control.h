@@ -182,7 +182,6 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal;
 		bool modal_exclusive;
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;

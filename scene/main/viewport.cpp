@@ -41,7 +41,10 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
@@ -1853,8 +1856,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
 
 			Control *top = gui.modal_stack.back()->get();
+
 			if (over != top && !top->is_a_parent_of(over)) {
-				over = NULL; //nothing can be found outside the modal stack
+
+				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
+				MenuButton *popup_menu_parent;
+				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
+
+				if (popup_menu)
+					popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
+
+				// If the mouse is over a menu button, this menu will open automatically
+				// if there is already a pop-up menu open at the same hierarchical level.
+				if (popup_menu_parent && menu_button &&
+						popup_menu_parent->get_icon().is_null() &&
+						menu_button->get_icon().is_null() &&
+						(popup_menu->get_parent()->get_parent()->is_a_parent_of(menu_button) ||
+								menu_button->get_parent()->is_a_parent_of(popup_menu))) {
+
+					popup_menu->notification(Control::NOTIFICATION_MODAL_CLOSE);
+					popup_menu->_modal_stack_remove();
+					popup_menu->hide();
+
+					menu_button->pressed();
+				} else {
+					over = NULL; //nothing can be found outside the modal stack
+				}
 			}
 		}
 
