@@ -254,7 +254,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
 	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
 
-	int preset = EDITOR_DEF("interface/theme/preset", 0);
+	String preset = EDITOR_DEF("interface/theme/preset", "Default");
+
 	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
@@ -266,55 +267,52 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast;
-	switch (preset) {
-		case 0: { // Default
-			preset_accent_color = Color::html("#699ce8");
-			preset_base_color = Color::html("#323b4f");
-			preset_contrast = default_contrast;
-		} break;
-		case 1: { // Custom
-			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
-			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
-			contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
-		} break;
-		case 2: { // Grey
-			preset_accent_color = Color::html("#b8e4ff");
-			preset_base_color = Color::html("#3d3d3d");
-			preset_contrast = 0.2;
-		} break;
-		case 3: { // Godot 2
-			preset_accent_color = Color::html("#86ace2");
-			preset_base_color = Color::html("#3C3A44");
-			preset_contrast = 0.25;
-		} break;
-		case 4: { // Arc
-			preset_accent_color = Color::html("#5294e2");
-			preset_base_color = Color::html("#383c4a");
-			preset_contrast = 0.25;
-		} break;
-		case 5: { // Light
-			preset_accent_color = Color::html("#2070ff");
-			preset_base_color = Color::html("#ffffff");
-			preset_contrast = 0.08;
-		} break;
-		case 6: { // Alien
-			preset_accent_color = Color::html("#1bfe99");
-			preset_base_color = Color::html("#2f373f");
-			preset_contrast = 0.25;
-		} break;
-		case 7: { // Solarized (Dark)
-			preset_accent_color = Color::html("#268bd2");
-			preset_base_color = Color::html("#073642");
-			preset_contrast = 0.15;
-		} break;
-		case 8: { // Solarized (Light)
-			preset_accent_color = Color::html("#268bd2");
-			preset_base_color = Color::html("#fdf6e3");
-			preset_contrast = 0.06;
-		} break;
+
+	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
+
+	if (preset == "Default") {
+		preset_accent_color = Color::html("#699ce8");
+		preset_base_color = Color::html("#323b4f");
+		preset_contrast = default_contrast;
+	} else if (preset == "Custom") {
+		accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
+		base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
+		contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+	} else if (preset == "Alien") {
+		preset_accent_color = Color::html("#1bfe99");
+		preset_base_color = Color::html("#2f373f");
+		preset_contrast = 0.25;
+	} else if (preset == "Arc") {
+		preset_accent_color = Color::html("#5294e2");
+		preset_base_color = Color::html("#383c4a");
+		preset_contrast = 0.25;
+	} else if (preset == "Godot 2") {
+		preset_accent_color = Color::html("#86ace2");
+		preset_base_color = Color::html("#3C3A44");
+		preset_contrast = 0.25;
+	} else if (preset == "Grey") {
+		preset_accent_color = Color::html("#b8e4ff");
+		preset_base_color = Color::html("#3d3d3d");
+		preset_contrast = 0.2;
+	} else if (preset == "Light") {
+		preset_accent_color = Color::html("#2070ff");
+		preset_base_color = Color::html("#ffffff");
+		preset_contrast = 0.08;
+	} else if (preset == "Solarized (Dark)") {
+		preset_accent_color = Color::html("#268bd2");
+		preset_base_color = Color::html("#073642");
+		preset_contrast = 0.15;
+	} else if (preset == "Solarized (Light)") {
+		preset_accent_color = Color::html("#268bd2");
+		preset_base_color = Color::html("#fdf6e3");
+		preset_contrast = 0.06;
+	} else { // Default
+		preset_accent_color = Color::html("#699ce8");
+		preset_base_color = Color::html("#323b4f");
+		preset_contrast = default_contrast;
 	}
 
-	if (preset != 1) {
+	if (preset != "Custom") {
 		accent_color = preset_accent_color;
 		base_color = preset_base_color;
 		contrast = preset_contrast;
