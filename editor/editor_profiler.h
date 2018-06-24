@@ -100,6 +100,7 @@ public:
 
 private:
 	Button *activate;
+	Button *clear_button;
 	TextureRect *graph;
 	Ref<ImageTexture> graph_texture;
 	PoolVector<uint8_t> graph_image;
@@ -133,6 +134,7 @@ private:
 	void _update_frame();
 
 	void _activate_pressed();
+	void _clear_pressed();
 
 	String _get_time_as_text(Metric &m, float p_time, int p_calls);
 
