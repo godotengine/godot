@@ -150,7 +150,7 @@ namespace Godot
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
-           return (Clamp(weight, 0f, 1f) - from) / (to - from);
+           return (weight - from) / (to - from);
         }
 
         public static bool IsInf(real_t s)
@@ -165,7 +165,7 @@ namespace Godot
 
         public static real_t Lerp(real_t from, real_t to, real_t weight)
         {
-            return from + (to - from) * Clamp(weight, 0f, 1f);
+            return from + (to - from) * weight;
         }
 
         public static real_t Log(real_t s)
