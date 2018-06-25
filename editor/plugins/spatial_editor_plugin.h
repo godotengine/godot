@@ -93,7 +93,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
-		VIEW_DISPLAY_SHADELESS
+		VIEW_DISPLAY_SHADELESS,
+		VIEW_LOCK_ROTATION
 	};
 
 public:
@@ -131,6 +132,7 @@ private:
 	Camera *camera;
 	bool transforming;
 	bool orthogonal;
+	bool lock_rotation;
 	float gizmo_scale;
 
 	bool freelook_active;
