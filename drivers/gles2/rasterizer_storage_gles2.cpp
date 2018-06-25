@@ -1616,6 +1616,10 @@ bool RasterizerStorageGLES2::particles_get_emitting(RID p_particles) {
 	return false;
 }
 
+bool RasterizerStorageGLES2::particles_get_inactive(RID p_particles) {
+	return false;
+}
+
 void RasterizerStorageGLES2::particles_set_amount(RID p_particles, int p_amount) {
 }
 
