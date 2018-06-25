@@ -458,10 +458,6 @@ float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
 		rem = blend_node(states[end_node], 0, true, 0, FILTER_IGNORE, false);
 	}
 
-	if (get_parent().is_valid() && get_parent()->is_class("AnimationNodeStateMachine")) {
-		print_line("rem: " + rtos(rem));
-	}
-
 	return rem;
 }
 
