@@ -69,6 +69,7 @@
 #include "editor/plugins/animation_blend_space_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/animation_state_machine_editor.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/baked_lightmap_editor_plugin.h"
@@ -5401,6 +5402,7 @@ EditorNode::EditorNode() {
 	//add_editor_plugin(memnew(ShaderGraphEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendTreeEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendSpaceEditorPlugin(this)));
+	add_editor_plugin(memnew(AnimationNodeStateMachineEditorPlugin(this)));
 
 	add_editor_plugin(memnew(CameraEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));

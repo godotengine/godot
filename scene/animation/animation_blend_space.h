@@ -70,8 +70,8 @@ public:
 	void set_snap(const Vector2 &p_snap);
 	Vector2 get_snap() const;
 
-	void set_blend_pos(const Vector2 &p_pos);
-	Vector2 get_blend_pos() const;
+	void set_blend_position(const Vector2 &p_pos);
+	Vector2 get_blend_position() const;
 
 	void set_x_label(const String &p_label);
 	String get_x_label() const;
@@ -79,8 +79,8 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	float process(float p_time, bool p_seek);
-	String get_caption() const;
+	virtual float process(float p_time, bool p_seek);
+	virtual String get_caption() const;
 
 	Vector2 get_closest_point(const Vector2 &p_point);
 
