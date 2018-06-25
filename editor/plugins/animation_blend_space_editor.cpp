@@ -203,7 +203,7 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		blend_space->set_blend_pos(blend_pos);
+		blend_space->set_blend_position(blend_pos);
 		blend_space_draw->update();
 	}
 
@@ -237,7 +237,7 @@ void AnimationNodeBlendSpaceEditor::_blend_space_gui_input(const Ref<InputEvent>
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		blend_space->set_blend_pos(blend_pos);
+		blend_space->set_blend_position(blend_pos);
 		blend_space_draw->update();
 	}
 }
@@ -490,13 +490,13 @@ void AnimationNodeBlendSpaceEditor::_blend_space_draw() {
 			color.a *= 0.5;
 		}
 
-		Vector2 point = blend_space->get_blend_pos();
+		Vector2 point = blend_space->get_blend_position();
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s;
 		point.y = s.height - point.y;
 
 		if (blend_space->get_triangle_count()) {
-			Vector2 closest = blend_space->get_closest_point(blend_space->get_blend_pos());
+			Vector2 closest = blend_space->get_closest_point(blend_space->get_blend_position());
 			closest = (closest - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 			closest *= s;
 			closest.y = s.height - closest.y;

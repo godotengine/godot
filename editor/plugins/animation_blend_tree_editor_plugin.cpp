@@ -775,6 +775,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_options.push_back(AddOption("Transition", "AnimationNodeTransition"));
 	add_options.push_back(AddOption("BlendTree", "AnimationNodeBlendTree"));
 	add_options.push_back(AddOption("BlendSpace", "AnimationNodeBlendSpace"));
+	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
 	_update_options_menu();
 
 	error_panel = memnew(PanelContainer);

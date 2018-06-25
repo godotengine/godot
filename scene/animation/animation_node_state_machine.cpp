@@ -71,9 +71,9 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
-	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
-	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
-	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_END);
+	BIND_CONSTANT(SWITCH_MODE_IMMEDIATE);
+	BIND_CONSTANT(SWITCH_MODE_SYNC);
+	BIND_CONSTANT(SWITCH_MODE_AT_END);
 }
 
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
@@ -91,12 +91,12 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	ERR_FAIL_COND(states.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_node->get_parent().is_valid());
-	ERR_FAIL_COND(p_node->get_tree() != NULL);
+	ERR_FAIL_COND(p_node->get_graph_player() != NULL);
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
 	states[p_name] = p_node;
 
 	p_node->set_parent(this);
-	p_node->set_tree(get_tree());
+	p_node->set_graph_player(get_graph_player());
 
 	emit_changed();
 }
@@ -132,7 +132,7 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 			node->set_input_connection(i, StringName());
 		}
 		node->set_parent(NULL);
-		node->set_tree(NULL);
+		node->set_graph_player(NULL);
 	}
 
 	states.erase(p_name);
@@ -169,11 +169,11 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_name) {
-			transitions.write[i].from = p_new_name;
+			transitions[i].from = p_new_name;
 		}
 
 		if (transitions[i].to == p_name) {
-			transitions.write[i].to = p_new_name;
+			transitions[i].to = p_new_name;
 		}
 	}
 
@@ -458,6 +458,10 @@ float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
 		rem = blend_node(states[end_node], 0, true, 0, FILTER_IGNORE, false);
 	}
 
+	if (get_parent().is_valid() && get_parent()->is_class("AnimationNodeStateMachine")) {
+		print_line("rem: " + rtos(rem));
+	}
+
 	return rem;
 }
 
@@ -623,13 +627,13 @@ String AnimationNodeStateMachine::get_caption() const {
 void AnimationNodeStateMachine::_notification(int p_what) {
 }
 
-void AnimationNodeStateMachine::set_tree(AnimationTree *p_player) {
+void AnimationNodeStateMachine::set_graph_player(AnimationGraphPlayer *p_player) {
 
-	AnimationNode::set_tree(p_player);
+	AnimationNode::set_graph_player(p_player);
 
 	for (Map<StringName, Ref<AnimationRootNode> >::Element *E = states.front(); E; E = E->next()) {
 		Ref<AnimationRootNode> node = E->get();
-		node->set_tree(p_player);
+		node->set_graph_player(p_player);
 	}
 }
 

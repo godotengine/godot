@@ -5531,6 +5531,7 @@ EditorNode::EditorNode() {
 	//add_editor_plugin(memnew(ShaderGraphEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendTreeEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendSpaceEditorPlugin(this)));
+	add_editor_plugin(memnew(AnimationNodeStateMachineEditorPlugin(this)));
 
 	add_editor_plugin(memnew(CameraEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));

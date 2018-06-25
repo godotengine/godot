@@ -209,10 +209,10 @@ Vector2 AnimationNodeBlendSpace::get_snap() const {
 	return snap;
 }
 
-void AnimationNodeBlendSpace::set_blend_pos(const Vector2 &p_pos) {
+void AnimationNodeBlendSpace::set_blend_position(const Vector2 &p_pos) {
 	blend_pos = p_pos;
 }
-Vector2 AnimationNodeBlendSpace::get_blend_pos() const {
+Vector2 AnimationNodeBlendSpace::get_blend_position() const {
 	return blend_pos;
 }
 
@@ -503,8 +503,8 @@ void AnimationNodeBlendSpace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &AnimationNodeBlendSpace::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &AnimationNodeBlendSpace::get_snap);
 
-	ClassDB::bind_method(D_METHOD("set_blend_pos", "pos"), &AnimationNodeBlendSpace::set_blend_pos);
-	ClassDB::bind_method(D_METHOD("get_blend_pos"), &AnimationNodeBlendSpace::get_blend_pos);
+	ClassDB::bind_method(D_METHOD("set_blend_position", "pos"), &AnimationNodeBlendSpace::set_blend_position);
+	ClassDB::bind_method(D_METHOD("get_blend_position"), &AnimationNodeBlendSpace::get_blend_position);
 
 	ClassDB::bind_method(D_METHOD("set_x_label", "text"), &AnimationNodeBlendSpace::set_x_label);
 	ClassDB::bind_method(D_METHOD("get_x_label"), &AnimationNodeBlendSpace::get_x_label);
@@ -532,7 +532,7 @@ void AnimationNodeBlendSpace::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "min_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_min_space", "get_min_space");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_max_space", "get_max_space");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "snap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_snap", "get_snap");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "blend_pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_blend_pos", "get_blend_pos");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "blend_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_blend_position", "get_blend_position");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "x_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_x_label", "get_x_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_y_label", "get_y_label");
 }
