@@ -63,7 +63,8 @@
 #include "scene/2d/tile_map.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/2d/y_sort.h"
-#include "scene/animation/animation_blend_space.h"
+#include "scene/animation/animation_blend_space_1d.h"
+#include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_graph_player.h"
 #include "scene/animation/animation_node_state_machine.h"
@@ -390,7 +391,8 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationNode>();
 	ClassDB::register_class<AnimationRootNode>();
 	ClassDB::register_class<AnimationNodeBlendTree>();
-	ClassDB::register_class<AnimationNodeBlendSpace>();
+	ClassDB::register_class<AnimationNodeBlendSpace1D>();
+	ClassDB::register_class<AnimationNodeBlendSpace2D>();
 	ClassDB::register_class<AnimationNodeStateMachine>();
 	ClassDB::register_class<AnimationNodeStateMachineTransition>();
 	ClassDB::register_class<AnimationNodeOutput>();
