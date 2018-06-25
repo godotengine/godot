@@ -753,7 +753,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		autoload_cache.push_back(info);
 	}
 
-	List<Node *> to_add;
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
 		AutoLoadInfo &info = E->get();
 
@@ -763,9 +762,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			Ref<Script> scr = info.node->get_script();
 			info.in_editor = scr.is_valid() && scr->is_tool();
 			info.node->set_name(info.name);
-			if (info.in_editor) {
-				to_add.push_back(info.node);
-			}
 		}
 
 		if (info.is_singleton) {
@@ -778,10 +774,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			memdelete(info.node);
 			info.node = NULL;
 		}
-	}
-
-	for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
-		get_tree()->get_root()->add_child(E->get());
 	}
 
 	autoload_changed = "autoload_changed";
