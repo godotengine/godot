@@ -424,20 +424,25 @@ void EditorProfiler::_update_frame() {
 void EditorProfiler::_activate_pressed() {
 
 	if (activate->is_pressed()) {
-		clear();
 		activate->set_icon(get_icon("Stop", "EditorIcons"));
-		activate->set_text(TTR("Stop Profiling"));
+		activate->set_text(TTR("Stop"));
 	} else {
 		activate->set_icon(get_icon("Play", "EditorIcons"));
-		activate->set_text(TTR("Start Profiling"));
+		activate->set_text(TTR("Start"));
 	}
 	emit_signal("enable_profiling", activate->is_pressed());
+}
+
+void EditorProfiler::_clear_pressed() {
+
+	clear();
 }
 
 void EditorProfiler::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		activate->set_icon(get_icon("Play", "EditorIcons"));
+		clear_button->set_icon(get_icon("Clear", "EditorIcons"));
 	}
 }
 
@@ -599,6 +604,7 @@ void EditorProfiler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_frame"), &EditorProfiler::_update_frame);
 	ClassDB::bind_method(D_METHOD("_update_plot"), &EditorProfiler::_update_plot);
 	ClassDB::bind_method(D_METHOD("_activate_pressed"), &EditorProfiler::_activate_pressed);
+	ClassDB::bind_method(D_METHOD("_clear_pressed"), &EditorProfiler::_clear_pressed);
 	ClassDB::bind_method(D_METHOD("_graph_tex_draw"), &EditorProfiler::_graph_tex_draw);
 	ClassDB::bind_method(D_METHOD("_graph_tex_input"), &EditorProfiler::_graph_tex_input);
 	ClassDB::bind_method(D_METHOD("_graph_tex_mouse_exit"), &EditorProfiler::_graph_tex_mouse_exit);
@@ -625,9 +631,14 @@ EditorProfiler::EditorProfiler() {
 	add_child(hb);
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
-	activate->set_text(TTR("Start Profiling"));
+	activate->set_text(TTR("Start"));
 	activate->connect("pressed", this, "_activate_pressed");
 	hb->add_child(activate);
+
+	clear_button = memnew(Button);
+	clear_button->set_text(TTR("Clear"));
+	clear_button->connect("pressed", this, "_clear_pressed");
+	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
