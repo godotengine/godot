@@ -67,7 +67,7 @@
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
-#include "scene/animation/animation_graph_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -400,7 +400,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationMesh>();
 	ClassDB::register_class<Navigation>();
 
-	ClassDB::register_class<AnimationGraphPlayer>();
+	ClassDB::register_class<AnimationTree>();
 	ClassDB::register_class<AnimationNode>();
 	ClassDB::register_class<AnimationRootNode>();
 	ClassDB::register_class<AnimationNodeBlendTree>();

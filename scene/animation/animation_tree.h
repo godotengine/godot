@@ -82,8 +82,6 @@ protected:
 
 	void _validate_property(PropertyInfo &property) const;
 
-	void _set_parent(Object *p_parent);
-
 public:
 	void set_parent(AnimationNode *p_parent);
 	Ref<AnimationNode> get_parent() const;
@@ -137,8 +135,6 @@ public:
 
 private:
 	struct TrackCache {
-
-		bool root_motion;
 		uint64_t setup_pass;
 		uint64_t process_pass;
 		Animation::TrackType type;
@@ -146,7 +142,6 @@ private:
 		ObjectID object_id;
 
 		TrackCache() {
-			root_motion = false;
 			setup_pass = 0;
 			process_pass = 0;
 			object = NULL;
@@ -161,7 +156,6 @@ private:
 		int bone_idx;
 		Vector3 loc;
 		Quat rot;
-		float rot_blend_accum;
 		Vector3 scale;
 
 		TrackCacheTransform() {
@@ -241,16 +235,13 @@ private:
 
 	bool started;
 
-	NodePath root_motion_track;
-	Transform root_motion_transform;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_tree_root(const Ref<AnimationNode> &p_root);
-	Ref<AnimationNode> get_tree_root() const;
+	void set_graph_root(const Ref<AnimationNode> &p_root);
+	Ref<AnimationNode> get_graph_root() const;
 
 	void set_active(bool p_active);
 	bool is_active() const;
@@ -265,11 +256,6 @@ public:
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;
-
-	void set_root_motion_track(const NodePath &p_track);
-	NodePath get_root_motion_track() const;
-
-	Transform get_root_motion_transform() const;
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();

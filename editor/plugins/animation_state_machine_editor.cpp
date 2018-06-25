@@ -59,7 +59,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 		menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-		AnimationGraphPlayer *gp = state_machine->get_graph_player();
+		AnimationTree *gp = state_machine->get_tree();
 		ERR_FAIL_COND(!gp);
 		if (gp && gp->has_node(gp->get_animation_player())) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
@@ -859,12 +859,12 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		if (error_time > 0) {
 			error = error_text;
 			error_time -= get_process_delta_time();
-		} else if (!state_machine->get_graph_player()) {
-			error = TTR("StateMachine does not belong to an AnimationGraphPlayer node.");
-		} else if (!state_machine->get_graph_player()->is_active()) {
-			error = TTR("AnimationGraphPlayer is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (state_machine->get_graph_player()->is_state_invalid()) {
-			error = state_machine->get_graph_player()->get_invalid_state_reason();
+		} else if (!state_machine->get_tree()) {
+			error = TTR("StateMachine does not belong to an AnimationTree node.");
+		} else if (!state_machine->get_tree()->is_active()) {
+			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+		} else if (state_machine->get_tree()->is_state_invalid()) {
+			error = state_machine->get_tree()->get_invalid_state_reason();
 		} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
 			if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
 				error = TTR("Start and end nodes are needed for a sub-transition.");

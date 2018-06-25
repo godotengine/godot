@@ -1,7 +1,7 @@
 #ifndef ANIMATION_BLEND_TREE_H
 #define ANIMATION_BLEND_TREE_H
 
-#include "scene/animation/animation_graph_player.h"
+#include "scene/animation/animation_tree.h"
 
 class AnimationNodeAnimation : public AnimationRootNode {
 
@@ -318,7 +318,7 @@ public:
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual void set_graph_player(AnimationGraphPlayer *p_player);
+	virtual void set_tree(AnimationTree *p_player);
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();
 };
