@@ -137,8 +137,13 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud, use_gl2);
 
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
+	if (use_gl2) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		RasterizerGLES3::register_config();
+		RasterizerGLES3::make_current();
+	}
 
 	visual_server = memnew(VisualServerRaster);
 	/*	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {

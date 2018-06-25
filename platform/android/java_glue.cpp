@@ -813,10 +813,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	char wd[500];
 	getcwd(wd, 500);
 
-	//video driver is determined here, because once initialized, it can't be changed
-	// String vd = ProjectSettings::get_singleton()->get("display/driver");
-
-	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);
+	env->CallVoidMethod(_godot_instance, _on_video_init);
 }
 
 static void _initialize_java_modules() {
