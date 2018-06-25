@@ -804,12 +804,12 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 void ScriptEditor::_file_dialog_action(String p_file) {
 
 	switch (file_dialog_option) {
-		case FILE_SAVE_THEME_AS: {
+		case THEME_SAVE_AS: {
 			if (!EditorSettings::get_singleton()->save_text_editor_theme_as(p_file)) {
 				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
 			}
 		} break;
-		case FILE_IMPORT_THEME: {
+		case THEME_IMPORT: {
 			if (!EditorSettings::get_singleton()->import_text_editor_theme(p_file)) {
 				editor->show_warning(TTR("Error importing theme"), TTR("Error importing"));
 			}
@@ -858,33 +858,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				return;
 
 			save_all_scripts();
-		} break;
-		case FILE_IMPORT_THEME: {
-			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_IMPORT_THEME;
-			file_dialog->clear_filters();
-			file_dialog->add_filter("*.tet");
-			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Import Theme"));
-		} break;
-		case FILE_RELOAD_THEME: {
-			EditorSettings::get_singleton()->load_text_editor_theme();
-		} break;
-		case FILE_SAVE_THEME: {
-			if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
-				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
-			}
-		} break;
-		case FILE_SAVE_THEME_AS: {
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_SAVE_THEME_AS;
-			file_dialog->clear_filters();
-			file_dialog->add_filter("*.tet");
-			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
-			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Save Theme As..."));
 		} break;
 		case SEARCH_HELP: {
 
@@ -1140,6 +1113,38 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 			}
 		}
+	}
+}
+
+void ScriptEditor::_theme_option(int p_option) {
+	switch (p_option) {
+		case THEME_IMPORT: {
+			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = THEME_IMPORT;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Import Theme"));
+		} break;
+		case THEME_RELOAD: {
+			EditorSettings::get_singleton()->load_text_editor_theme();
+		} break;
+		case THEME_SAVE: {
+			if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
+				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
+			}
+		} break;
+		case THEME_SAVE_AS: {
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = THEME_SAVE_AS;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Save Theme As..."));
+		} break;
 	}
 }
 
@@ -2591,6 +2596,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
 	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
+	ClassDB::bind_method("_theme_option", &ScriptEditor::_theme_option);
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
 	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
@@ -2763,10 +2769,18 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
+
+	file_menu->get_popup()->add_submenu_item(TTR("Theme"), "Theme", FILE_THEME);
+
+	theme_submenu = memnew(PopupMenu);
+	theme_submenu->set_name("Theme");
+	file_menu->get_popup()->add_child(theme_submenu);
+	theme_submenu->connect("id_pressed", this, "_theme_option");
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), THEME_IMPORT);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), THEME_SAVE);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), THEME_SAVE_AS);
+
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
