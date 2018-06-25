@@ -1,7 +1,7 @@
 #ifndef ANIMATION_BLEND_SPACE_1D_H
 #define ANIMATION_BLEND_SPACE_1D_H
 
-#include "scene/animation/animation_graph_player.h"
+#include "scene/animation/animation_tree.h"
 
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode)

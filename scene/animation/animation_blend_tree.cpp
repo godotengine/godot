@@ -16,7 +16,7 @@ float AnimationNodeAnimation::get_playback_time() const {
 void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "animation") {
-		AnimationGraphPlayer *gp = get_graph_player();
+		AnimationTree *gp = get_tree();
 		if (gp && gp->has_node(gp->get_animation_player())) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
 			if (ap) {
@@ -762,13 +762,13 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_node->get_parent().is_valid());
-	ERR_FAIL_COND(p_node->get_graph_player() != NULL);
+	ERR_FAIL_COND(p_node->get_tree() != NULL);
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
 	nodes[p_name] = p_node;
 
 	p_node->set_parent(this);
-	p_node->set_graph_player(get_graph_player());
+	p_node->set_tree(get_tree());
 
 	emit_changed();
 }
@@ -804,7 +804,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 			node->set_input_connection(i, StringName());
 		}
 		node->set_parent(NULL);
-		node->set_graph_player(NULL);
+		node->set_tree(NULL);
 	}
 
 	nodes.erase(p_name);
@@ -965,13 +965,13 @@ Vector2 AnimationNodeBlendTree::get_graph_offset() const {
 	return graph_offset;
 }
 
-void AnimationNodeBlendTree::set_graph_player(AnimationGraphPlayer *p_player) {
+void AnimationNodeBlendTree::set_tree(AnimationTree *p_player) {
 
-	AnimationNode::set_graph_player(p_player);
+	AnimationNode::set_tree(p_player);
 
 	for (Map<StringName, Ref<AnimationNode> >::Element *E = nodes.front(); E; E = E->next()) {
 		Ref<AnimationNode> node = E->get();
-		node->set_graph_player(p_player);
+		node->set_tree(p_player);
 	}
 }
 
@@ -1107,6 +1107,6 @@ AnimationNodeBlendTree::~AnimationNodeBlendTree() {
 
 	for (Map<StringName, Ref<AnimationNode> >::Element *E = nodes.front(); E; E = E->next()) {
 		E->get()->set_parent(NULL);
-		E->get()->set_graph_player(NULL);
+		E->get()->set_tree(NULL);
 	}
 }

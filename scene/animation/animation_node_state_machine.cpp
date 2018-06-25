@@ -91,12 +91,12 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	ERR_FAIL_COND(states.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_node->get_parent().is_valid());
-	ERR_FAIL_COND(p_node->get_graph_player() != NULL);
+	ERR_FAIL_COND(p_node->get_tree() != NULL);
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
 	states[p_name] = p_node;
 
 	p_node->set_parent(this);
-	p_node->set_graph_player(get_graph_player());
+	p_node->set_tree(get_tree());
 
 	emit_changed();
 }
@@ -132,7 +132,7 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 			node->set_input_connection(i, StringName());
 		}
 		node->set_parent(NULL);
-		node->set_graph_player(NULL);
+		node->set_tree(NULL);
 	}
 
 	states.erase(p_name);
@@ -623,13 +623,13 @@ String AnimationNodeStateMachine::get_caption() const {
 void AnimationNodeStateMachine::_notification(int p_what) {
 }
 
-void AnimationNodeStateMachine::set_graph_player(AnimationGraphPlayer *p_player) {
+void AnimationNodeStateMachine::set_tree(AnimationTree *p_player) {
 
-	AnimationNode::set_graph_player(p_player);
+	AnimationNode::set_tree(p_player);
 
 	for (Map<StringName, Ref<AnimationRootNode> >::Element *E = states.front(); E; E = E->next()) {
 		Ref<AnimationRootNode> node = E->get();
-		node->set_graph_player(p_player);
+		node->set_tree(p_player);
 	}
 }
 

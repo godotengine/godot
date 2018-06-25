@@ -1,7 +1,7 @@
 #ifndef ANIMATION_NODE_STATE_MACHINE_H
 #define ANIMATION_NODE_STATE_MACHINE_H
 
-#include "scene/animation/animation_graph_player.h"
+#include "scene/animation/animation_tree.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource)
@@ -134,7 +134,7 @@ public:
 	float get_current_play_pos() const;
 	float get_current_length() const;
 
-	virtual void set_graph_player(AnimationGraphPlayer *p_player);
+	virtual void set_tree(AnimationTree *p_player);
 
 	AnimationNodeStateMachine();
 };
