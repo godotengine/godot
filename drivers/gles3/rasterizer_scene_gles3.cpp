@@ -1381,6 +1381,9 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
+			if (!particles->emitting && particles->inactive)
+				break;
+
 			if (particles->draw_order == VS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->particle_valid_histories[1]) {
 
 				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer, this was used 2 frames ago so it should be good enough for flushing
@@ -1644,6 +1647,9 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
+			
+			if (!particles->emitting && particles->inactive)
+				break;
 
 			if (!particles->use_local_coords) //not using local coordinates? then clear transform..
 				state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, Transform());
