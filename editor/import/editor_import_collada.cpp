@@ -1785,8 +1785,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 			}
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 
@@ -1838,8 +1837,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 
