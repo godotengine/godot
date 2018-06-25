@@ -67,7 +67,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].position = p_position;
 
 	blend_points[p_at_index].node->set_parent(this);
-	blend_points[p_at_index].node->set_graph_player(get_graph_player());
+	blend_points[p_at_index].node->set_tree(get_tree());
 
 	blend_points_used++;
 }
@@ -84,12 +84,12 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 
 	if (blend_points[p_point].node.is_valid()) {
 		blend_points[p_point].node->set_parent(NULL);
-		blend_points[p_point].node->set_graph_player(NULL);
+		blend_points[p_point].node->set_tree(NULL);
 	}
 
 	blend_points[p_point].node = p_node;
 	blend_points[p_point].node->set_parent(this);
-	blend_points[p_point].node->set_graph_player(get_graph_player());
+	blend_points[p_point].node->set_tree(get_tree());
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
@@ -106,7 +106,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	blend_points[p_point].node->set_parent(NULL);
-	blend_points[p_point].node->set_graph_player(NULL);
+	blend_points[p_point].node->set_tree(NULL);
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
 		blend_points[i] = blend_points[i + 1];
@@ -267,6 +267,6 @@ AnimationNodeBlendSpace1D::~AnimationNodeBlendSpace1D() {
 
 	for (int i = 0; i < blend_points_used; i++) {
 		blend_points[i].node->set_parent(this);
-		blend_points[i].node->set_graph_player(get_graph_player());
+		blend_points[i].node->set_tree(get_tree());
 	}
 }

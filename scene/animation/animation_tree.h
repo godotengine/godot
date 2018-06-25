@@ -8,7 +8,7 @@
 
 class AnimationNodeBlendTree;
 class AnimationPlayer;
-class AnimationGraphPlayer;
+class AnimationTree;
 
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource)
@@ -32,7 +32,7 @@ public:
 
 	float process_input(int p_input, float p_time, bool p_seek, float p_blend);
 
-	friend class AnimationGraphPlayer;
+	friend class AnimationTree;
 
 	struct AnimationState {
 
@@ -62,7 +62,7 @@ public:
 	Vector2 position;
 
 	AnimationNode *parent;
-	AnimationGraphPlayer *player;
+	AnimationTree *player;
 
 	float _blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
 
@@ -85,8 +85,8 @@ protected:
 public:
 	void set_parent(AnimationNode *p_parent);
 	Ref<AnimationNode> get_parent() const;
-	virtual void set_graph_player(AnimationGraphPlayer *p_player);
-	AnimationGraphPlayer *get_graph_player() const;
+	virtual void set_tree(AnimationTree *p_player);
+	AnimationTree *get_tree() const;
 	AnimationPlayer *get_player() const;
 
 	virtual float process(float p_time, bool p_seek);
@@ -125,8 +125,8 @@ public:
 	AnimationRootNode() {}
 };
 
-class AnimationGraphPlayer : public Node {
-	GDCLASS(AnimationGraphPlayer, Node)
+class AnimationTree : public Node {
+	GDCLASS(AnimationTree, Node)
 public:
 	enum AnimationProcessMode {
 		ANIMATION_PROCESS_PHYSICS,
@@ -258,10 +258,10 @@ public:
 	String get_invalid_state_reason() const;
 
 	uint64_t get_last_process_pass() const;
-	AnimationGraphPlayer();
-	~AnimationGraphPlayer();
+	AnimationTree();
+	~AnimationTree();
 };
 
-VARIANT_ENUM_CAST(AnimationGraphPlayer::AnimationProcessMode)
+VARIANT_ENUM_CAST(AnimationTree::AnimationProcessMode)
 
 #endif // ANIMATION_GRAPH_PLAYER_H
