@@ -2012,6 +2012,19 @@ Variant::operator Vector<String>() const {
 	}
 	return to;
 }
+Variant::operator Vector<StringName>() const {
+
+	PoolVector<String> from = operator PoolVector<String>();
+	Vector<StringName> to;
+	int len = from.size();
+	to.resize(len);
+	for (int i = 0; i < len; i++) {
+
+		to[i] = from[i];
+	}
+	return to;
+}
+
 Variant::operator Vector<Vector3>() const {
 
 	PoolVector<Vector3> from = operator PoolVector<Vector3>();
@@ -2434,6 +2447,17 @@ Variant::Variant(const Vector<real_t> &p_array) {
 }
 
 Variant::Variant(const Vector<String> &p_array) {
+
+	type = NIL;
+	PoolVector<String> v;
+	int len = p_array.size();
+	v.resize(len);
+	for (int i = 0; i < len; i++)
+		v.set(i, p_array[i]);
+	*this = v;
+}
+
+Variant::Variant(const Vector<StringName> &p_array) {
 
 	type = NIL;
 	PoolVector<String> v;

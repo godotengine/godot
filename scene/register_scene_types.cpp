@@ -66,6 +66,7 @@
 #include "scene/animation/animation_blend_space.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_graph_player.h"
+#include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree_player.h"
 #include "scene/animation/tween.h"
@@ -391,6 +392,8 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationRootNode>();
 	ClassDB::register_class<AnimationNodeBlendTree>();
 	ClassDB::register_class<AnimationNodeBlendSpace>();
+	ClassDB::register_class<AnimationNodeStateMachine>();
+	ClassDB::register_class<AnimationNodeStateMachineTransition>();
 	ClassDB::register_class<AnimationNodeOutput>();
 	ClassDB::register_class<AnimationNodeOneShot>();
 	ClassDB::register_class<AnimationNodeAnimation>();

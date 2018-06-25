@@ -214,6 +214,50 @@ struct PtrToArg<const T *> {
 		}                                                                                        \
 	}
 
+#define MAKE_VECARG_ALT(m_type, m_type_alt)                                                      \
+	template <>                                                                                  \
+	struct PtrToArg<Vector<m_type_alt> > {                                                       \
+		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {                    \
+			const PoolVector<m_type> *dvs = reinterpret_cast<const PoolVector<m_type> *>(p_ptr); \
+			Vector<m_type_alt> ret;                                                              \
+			int len = dvs->size();                                                               \
+			ret.resize(len);                                                                     \
+			{                                                                                    \
+				PoolVector<m_type>::Read r = dvs->read();                                        \
+				for (int i = 0; i < len; i++) {                                                  \
+					ret[i] = r[i];                                                               \
+				}                                                                                \
+			}                                                                                    \
+			return ret;                                                                          \
+		}                                                                                        \
+		_FORCE_INLINE_ static void encode(Vector<m_type_alt> p_vec, void *p_ptr) {               \
+			PoolVector<m_type> *dv = reinterpret_cast<PoolVector<m_type> *>(p_ptr);              \
+			int len = p_vec.size();                                                              \
+			dv->resize(len);                                                                     \
+			{                                                                                    \
+				PoolVector<m_type>::Write w = dv->write();                                       \
+				for (int i = 0; i < len; i++) {                                                  \
+					w[i] = p_vec[i];                                                             \
+				}                                                                                \
+			}                                                                                    \
+		}                                                                                        \
+	};                                                                                           \
+	template <>                                                                                  \
+	struct PtrToArg<const Vector<m_type_alt> &> {                                                \
+		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {                    \
+			const PoolVector<m_type> *dvs = reinterpret_cast<const PoolVector<m_type> *>(p_ptr); \
+			Vector<m_type_alt> ret;                                                              \
+			int len = dvs->size();                                                               \
+			ret.resize(len);                                                                     \
+			{                                                                                    \
+				PoolVector<m_type>::Read r = dvs->read();                                        \
+				for (int i = 0; i < len; i++) {                                                  \
+					ret[i] = r[i];                                                               \
+				}                                                                                \
+			}                                                                                    \
+			return ret;                                                                          \
+		}                                                                                        \
+	}
 MAKE_VECARG(String);
 MAKE_VECARG(uint8_t);
 MAKE_VECARG(int);
@@ -221,6 +265,7 @@ MAKE_VECARG(float);
 MAKE_VECARG(Vector2);
 MAKE_VECARG(Vector3);
 MAKE_VECARG(Color);
+MAKE_VECARG_ALT(String, StringName);
 
 //for stuff that gets converted to Array vectors
 #define MAKE_VECARR(m_type)                                                    \
