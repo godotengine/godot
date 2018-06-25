@@ -1,3 +1,0 @@
-#!/bin/sh
-HERE="$(dirname "$(readlink -f "${0}")")"
-"${HERE}"/godot $@
