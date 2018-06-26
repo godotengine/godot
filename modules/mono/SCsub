@@ -5,9 +5,11 @@ Import('env_modules')
 
 env_mono = env_modules.Clone()
 
-from compat import byte_to_str
+# TODO move functions to their own modules
 
 def make_cs_files_header(src, dst):
+    from compat import byte_to_str
+
     with open(dst, 'w') as header:
         header.write('/* This is an automatically generated file; DO NOT EDIT! OK THX */\n')
         header.write('#ifndef _CS_FILES_DATA_H\n')
@@ -75,6 +77,13 @@ else:
 if ARGUMENTS.get('yolo_copy', False):
     env_mono.Append(CPPDEFINES=['YOLO_COPY'])
 
+# Configure TLS checks
+
+import tls_configure
+conf = Configure(env_mono)
+tls_configure.configure(conf)
+env_mono = conf.Finish()
+
 
 # Build GodotSharpTools solution
 
@@ -128,12 +137,13 @@ def find_msbuild_windows():
         raise RuntimeError('Cannot find mono root directory')
 
     framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
-
     mono_bin_dir = os.path.join(mono_root, 'bin')
-
     msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
 
     if os.path.isfile(msbuild_mono):
+        # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
+        # building with Mono's MSBuild. They must point to the batch files
+        # in Mono's bin directory to make sure they are executed with Mono.
         mono_msbuild_env = {
             'CscToolExe': os.path.join(mono_bin_dir, 'csc.bat'),
             'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),

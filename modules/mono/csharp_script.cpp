@@ -49,6 +49,8 @@
 #include "mono_gd/gd_mono_class.h"
 #include "mono_gd/gd_mono_marshal.h"
 #include "signal_awaiter_utils.h"
+#include "utils/macros.h"
+#include "utils/thread_local.h"
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
@@ -476,7 +478,7 @@ String CSharpLanguage::_get_indentation() const {
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 
 #ifdef DEBUG_ENABLED
-	// Printing an error here will result in endless recursion, so we must be careful
+	_TLS_RECURSION_GUARD_V_(Vector<StackInfo>());
 
 	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoUtils::mono_cache.corlib_cache_updated)
 		return Vector<StackInfo>();
@@ -500,15 +502,15 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 #ifdef DEBUG_ENABLED
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
 
-	// Printing an error here could result in endless recursion, so we must be careful
+	_TLS_RECURSION_GUARD_V_(Vector<StackInfo>());
 
-	MonoObject *exc = NULL;
+	MonoException *exc = NULL;
 
 	GDMonoUtils::StackTrace_GetFrames st_get_frames = CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames);
-	MonoArray *frames = st_get_frames(p_stack_trace, &exc);
+	MonoArray *frames = st_get_frames(p_stack_trace, (MonoObject **)&exc);
 
 	if (exc) {
-		GDMonoUtils::print_unhandled_exception(exc, true /* fail silently to avoid endless recursion */);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		return Vector<StackInfo>();
 	}
 
@@ -529,10 +531,10 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 		MonoString *file_name;
 		int file_line_num;
 		MonoString *method_decl;
-		get_sf_info(frame, &file_name, &file_line_num, &method_decl, &exc);
+		get_sf_info(frame, &file_name, &file_line_num, &method_decl, (MonoObject **)&exc);
 
 		if (exc) {
-			GDMonoUtils::print_unhandled_exception(exc, true /* fail silently to avoid endless recursion */);
+			GDMonoUtils::debug_print_unhandled_exception(exc);
 			return Vector<StackInfo>();
 		}
 
@@ -561,12 +563,12 @@ void CSharpLanguage::frame() {
 
 			ERR_FAIL_NULL(thunk);
 
-			MonoObject *ex;
-			thunk(task_scheduler, &ex);
+			MonoException *exc = NULL;
+			thunk(task_scheduler, (MonoObject **)&exc);
 
-			if (ex) {
-				mono_print_unhandled_exception(ex);
-				ERR_FAIL();
+			if (exc) {
+				GDMonoUtils::debug_unhandled_exception(exc);
+				_UNREACHABLE_();
 			}
 		}
 	}
@@ -1078,11 +1080,11 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
-			MonoObject *exc = NULL;
+			MonoException *exc = NULL;
 			MonoObject *value = property->get_value(mono_object, &exc);
 			if (exc) {
 				r_ret = Variant();
-				GDMonoUtils::print_unhandled_exception(exc);
+				GDMonoUtils::set_pending_exception(exc);
 			} else {
 				r_ret = GDMonoMarshal::mono_object_to_variant(value);
 			}
@@ -1490,12 +1492,12 @@ bool CSharpScript::_update_exports() {
 			CACHED_FIELD(GodotObject, ptr)->set_value_raw(tmp_object, tmp_object); // FIXME WTF is this workaround
 
 			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-			MonoObject *ex = NULL;
-			ctor->invoke(tmp_object, NULL, &ex);
+			MonoException *exc = NULL;
+			ctor->invoke(tmp_object, NULL, &exc);
 
-			if (ex) {
+			if (exc) {
 				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
-				mono_print_unhandled_exception(ex);
+				GDMonoUtils::debug_print_unhandled_exception(exc);
 				tmp_object = NULL;
 				ERR_FAIL_V(false);
 			}
@@ -1544,11 +1546,11 @@ bool CSharpScript::_update_exports() {
 						exported_members_cache.push_front(prop_info);
 
 						if (tmp_object) {
-							MonoObject *exc = NULL;
+							MonoException *exc = NULL;
 							MonoObject *ret = property->get_value(tmp_object, &exc);
 							if (exc) {
 								exported_members_defval_cache[name] = Variant();
-								GDMonoUtils::print_unhandled_exception(exc);
+								GDMonoUtils::debug_print_unhandled_exception(exc);
 							} else {
 								exported_members_defval_cache[name] = GDMonoMarshal::mono_object_to_variant(ret);
 							}
@@ -1918,7 +1920,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	// Construct
 	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
-	ctor->invoke(mono_object, p_args, NULL);
+	ctor->invoke(mono_object, p_args);
 
 	// Tie managed to unmanaged
 	instance->gchandle = MonoGCHandle::create_strong(mono_object);
