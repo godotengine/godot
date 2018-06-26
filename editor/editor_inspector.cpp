@@ -1464,7 +1464,8 @@ void EditorInspector::update_tree() {
 #endif
 		for (List<Ref<EditorInspectorPlugin> >::Element *E = valid_plugins.front(); E; E = E->next()) {
 			Ref<EditorInspectorPlugin> ped = E->get();
-			ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage);
+			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage);
+
 			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
 			ped->added_editors.clear();
 
@@ -1531,6 +1532,10 @@ void EditorInspector::update_tree() {
 						ep->select(current_focusable);
 					}
 				}
+			}
+
+			if (exclusive) {
+				break;
 			}
 		}
 	}

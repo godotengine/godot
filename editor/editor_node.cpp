@@ -4708,6 +4708,10 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorDefaultPlugin> eidp;
 		eidp.instance();
 		EditorInspector::add_inspector_plugin(eidp);
+
+		Ref<EditorInspectorRootMotionPlugin> rmp;
+		rmp.instance();
+		EditorInspector::add_inspector_plugin(rmp);
 	}
 
 	_pvrtc_register_compressors();
@@ -4734,24 +4738,6 @@ EditorNode::EditorNode() {
 	GLOBAL_DEF("editor/main_run_args", "");
 
 	ClassDB::set_class_enabled("RootMotionView", true);
-
-	//defs here, use EDITOR_GET in logic
-	EDITOR_DEF_RST("interface/scene_tabs/always_show_close_button", false);
-	EDITOR_DEF_RST("interface/scene_tabs/resize_if_many_tabs", true);
-	EDITOR_DEF_RST("interface/scene_tabs/minimum_width", 50);
-	EDITOR_DEF("run/output/always_clear_output_on_play", true);
-	EDITOR_DEF("run/output/always_open_output_on_play", true);
-	EDITOR_DEF("run/output/always_close_output_on_stop", true);
-	EDITOR_DEF("run/auto_save/save_before_running", true);
-	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
-	EDITOR_DEF("interface/editor/quit_confirmation", true);
-	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
-	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
-	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
-	EDITOR_DEF_RST("interface/inspector/disable_folding", false);
-	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_types_to_open_in_new_inspector", "SpatialMaterial");
-	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	//defs here, use EDITOR_GET in logic
 	EDITOR_DEF("interface/scene_tabs/always_show_close_button", false);

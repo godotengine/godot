@@ -13,7 +13,6 @@ public:
 	bool use_in_game;
 	Color color;
 	bool first;
-	bool zero_y;
 
 	Transform accumulated;
 
@@ -33,9 +32,6 @@ public:
 
 	void set_radius(float p_radius);
 	float get_radius() const;
-
-	void set_zero_y(bool p_zero_y);
-	bool get_zero_y() const;
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
