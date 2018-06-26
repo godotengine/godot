@@ -405,7 +405,7 @@ void ProceduralSky::_update_sky() {
 
 	} else {
 		Ref<Image> image = _generate_sky();
-		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 		VS::get_singleton()->texture_set_data(texture, image);
 		_radiance_changed();
 	}
@@ -422,7 +422,7 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 	VS::get_singleton()->texture_set_data(texture, p_image);
 	_radiance_changed();
 	Thread::wait_to_finish(sky_thread);

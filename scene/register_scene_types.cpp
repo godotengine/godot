@@ -613,6 +613,7 @@ void register_scene_types() {
 	ClassDB::register_class<ProxyTexture>();
 	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CubeMap>();
+	ClassDB::register_class<Texture3D>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();

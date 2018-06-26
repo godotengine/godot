@@ -1190,6 +1190,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 	int tc = p_material->textures.size();
 	RID *textures = p_material->textures.ptrw();
 	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = p_material->shader->texture_hints.ptrw();
+	const ShaderLanguage::DataType *texture_types = p_material->shader->texture_types.ptr();
 
 	state.current_main_tex = 0;
 
@@ -1198,39 +1199,17 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		glActiveTexture(GL_TEXTURE0 + i);
 
 		GLenum target;
-		GLuint tex;
+		GLuint tex = 0;
 
-		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(textures[i]);
+		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getptr(textures[i]);
 
-		if (!t) {
-			//check hints
-			target = GL_TEXTURE_2D;
-
-			switch (texture_hints[i]) {
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
-					tex = storage->resources.black_tex;
-				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
-					tex = storage->resources.aniso_tex;
-				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
-					tex = storage->resources.normal_tex;
-
-				} break;
-				default: {
-					tex = storage->resources.white_tex;
-				} break;
-			}
-
-		} else {
+		if (t) {
 
 			if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
 				VisualServerRaster::redraw_request();
 			}
 
 			t = t->get_ptr(); //resolve for proxies
-
 #ifdef TOOLS_ENABLED
 			if (t->detect_3d) {
 				t->detect_3d(t->detect_3d_ud);
@@ -1247,6 +1226,59 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 			target = t->target;
 			tex = t->tex_id;
+		} else {
+
+			switch (texture_types[i]) {
+				case ShaderLanguage::TYPE_ISAMPLER2D:
+				case ShaderLanguage::TYPE_USAMPLER2D:
+				case ShaderLanguage::TYPE_SAMPLER2D: {
+					target = GL_TEXTURE_2D;
+
+					switch (texture_hints[i]) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
+							tex = storage->resources.black_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+							tex = storage->resources.aniso_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+							tex = storage->resources.normal_tex;
+
+						} break;
+						default: {
+							tex = storage->resources.white_tex;
+						} break;
+					}
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+					// TODO
+				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER3D:
+				case ShaderLanguage::TYPE_USAMPLER3D:
+				case ShaderLanguage::TYPE_SAMPLER3D: {
+
+					target = GL_TEXTURE_3D;
+
+					switch (texture_hints[i]) {
+
+						// TODO
+						default: {
+							tex = storage->resources.white_tex_3d;
+						} break;
+					}
+
+				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+					// TODO
+				} break;
+			}
 		}
 
 		glBindTexture(target, tex);
