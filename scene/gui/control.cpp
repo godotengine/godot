@@ -1328,8 +1328,8 @@ void Control::_size_changed() {
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
 	if (Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		new_size_cache = new_size_cache.floor();
-		new_pos_cache = new_pos_cache.floor();
+		new_size_cache = new_size_cache.round();
+		new_pos_cache = new_pos_cache.round();
 	}
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
