@@ -135,6 +135,8 @@ public:
 
 private:
 	struct TrackCache {
+
+		bool root_motion;
 		uint64_t setup_pass;
 		uint64_t process_pass;
 		Animation::TrackType type;
@@ -142,6 +144,7 @@ private:
 		ObjectID object_id;
 
 		TrackCache() {
+			root_motion = false;
 			setup_pass = 0;
 			process_pass = 0;
 			object = NULL;
@@ -235,6 +238,9 @@ private:
 
 	bool started;
 
+	NodePath root_motion_track;
+	Transform root_motion_transform;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -256,6 +262,11 @@ public:
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;
+
+	void set_root_motion_track(const NodePath &p_track);
+	NodePath get_root_motion_track() const;
+
+	Transform get_root_motion_transform() const;
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();
