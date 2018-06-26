@@ -837,11 +837,13 @@ MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
 
 	GDMonoUtils::MarshalUtils_ArraysToDict arrays_to_dict = CACHED_METHOD_THUNK(MarshalUtils, ArraysToDictionary);
 
-	MonoObject *ex = NULL;
-	MonoObject *ret = arrays_to_dict(keys, values, &ex);
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = arrays_to_dict(keys, values, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
-	if (ex) {
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
 		ERR_FAIL_V(NULL);
 	}
 
@@ -858,11 +860,13 @@ Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
 
 	MonoArray *keys = NULL;
 	MonoArray *values = NULL;
-	MonoObject *ex = NULL;
-	dict_to_arrays(p_dict, &keys, &values, &ex);
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	dict_to_arrays(p_dict, &keys, &values, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
-	if (ex) {
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
 		ERR_FAIL_V(Dictionary());
 	}
 

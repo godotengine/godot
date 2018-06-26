@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mono_gc_handle.cpp                                                   */
+/*  thread_local.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "mono_gc_handle.h"
+#include "thread_local.h"
 
-#include "mono_gd/gd_mono.h"
-
-uint32_t MonoGCHandle::make_strong_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new(p_object, /* pinned: */ false);
-}
-
-uint32_t MonoGCHandle::make_weak_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_strong_handle(p_object)));
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_weak_handle(p_object)));
-}
-
-void MonoGCHandle::release() {
-
-#ifdef DEBUG_ENABLED
-	CRASH_COND(GDMono::get_singleton() == NULL);
+#ifdef WINDOWS_ENABLED
+#include <windows.h>
+#else
+#include <pthread.h>
 #endif
 
-	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
-		mono_gchandle_free(handle);
-		released = true;
+#include "core/os/memory.h"
+#include "core/print_string.h"
+
+struct ThreadLocalStorage::Impl {
+
+#ifdef WINDOWS_ENABLED
+	DWORD dwFlsIndex;
+#else
+	pthread_key_t key;
+#endif
+
+	void *get_value() const {
+#ifdef WINDOWS_ENABLED
+		return FlsGetValue(dwFlsIndex);
+#else
+		return pthread_getspecific(key);
+#endif
 	}
+
+	void set_value(void *p_value) const {
+#ifdef WINDOWS_ENABLED
+		FlsSetValue(dwFlsIndex, p_value);
+#else
+		pthread_setspecific(key, p_value);
+#endif
+	}
+
+	Impl(void (*p_destr_callback_func)(void *)) {
+#ifdef WINDOWS_ENABLED
+		dwFlsIndex = FlsAlloc(p_destr_callback_func);
+		ERR_FAIL_COND(dwFlsIndex == FLS_OUT_OF_INDEXES);
+#else
+		pthread_key_create(&key, p_destr_callback_func);
+#endif
+	}
+
+	~Impl() {
+#ifdef WINDOWS_ENABLED
+		FlsFree(dwFlsIndex);
+#else
+		pthread_key_delete(key);
+#endif
+	}
+};
+
+void *ThreadLocalStorage::get_value() const {
+	return pimpl->get_value();
 }
 
-MonoGCHandle::MonoGCHandle(uint32_t p_handle) {
-
-	released = false;
-	handle = p_handle;
+void ThreadLocalStorage::set_value(void *p_value) const {
+	pimpl->set_value(p_value);
 }
 
-MonoGCHandle::~MonoGCHandle() {
+void ThreadLocalStorage::alloc(void (*p_destr_callback)(void *)) {
+	pimpl = memnew(ThreadLocalStorage::Impl(p_destr_callback));
+}
 
-	release();
+void ThreadLocalStorage::free() {
+	memdelete(pimpl);
+	pimpl = NULL;
 }

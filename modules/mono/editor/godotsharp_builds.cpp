@@ -512,14 +512,14 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	const Variant *ctor_args[2] = { &solution, &config };
 
-	MonoObject *ex = NULL;
+	MonoException *exc = NULL;
 	GDMonoMethod *ctor = klass->get_method(".ctor", 2);
-	ctor->invoke(mono_object, ctor_args, &ex);
+	ctor->invoke(mono_object, ctor_args, &exc);
 
-	if (ex) {
+	if (exc) {
 		exited = true;
-		GDMonoUtils::print_unhandled_exception(ex);
-		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		GDMonoUtils::debug_unhandled_exception(exc);
+		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();
@@ -534,14 +534,14 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	const Variant *args[3] = { &logger_assembly, &logger_output_dir, &custom_props };
 
-	ex = NULL;
+	exc = NULL;
 	GDMonoMethod *build_method = klass->get_method(p_blocking ? "Build" : "BuildAsync", 3);
-	build_method->invoke(mono_object, args, &ex);
+	build_method->invoke(mono_object, args, &exc);
 
-	if (ex) {
+	if (exc) {
 		exited = true;
-		GDMonoUtils::print_unhandled_exception(ex);
-		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		GDMonoUtils::debug_unhandled_exception(exc);
+		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();

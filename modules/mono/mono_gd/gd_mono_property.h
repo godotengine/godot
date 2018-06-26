@@ -62,9 +62,9 @@ public:
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
-	void set_value(MonoObject *p_object, MonoObject *p_value, MonoObject **r_exc = NULL);
-	void set_value(MonoObject *p_object, void **p_params, MonoObject **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoObject **r_exc = NULL);
+	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = NULL);
+	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
+	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
 
 	bool get_bool_value(MonoObject *p_object);
 	int get_int_value(MonoObject *p_object);

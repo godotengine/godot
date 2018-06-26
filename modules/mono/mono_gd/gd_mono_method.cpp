@@ -95,7 +95,7 @@ void *GDMonoMethod::get_thunk() {
 	return mono_method_get_unmanaged_thunk(mono_method);
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoObject **r_exc) {
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) {
 	if (get_return_type().type_encoding != MONO_TYPE_VOID || get_parameters_count() > 0) {
 		MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), get_parameters_count());
 
@@ -104,28 +104,32 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 			mono_array_set(params, MonoObject *, i, boxed_param);
 		}
 
-		MonoObject *exc = NULL;
-		MonoObject *ret = mono_runtime_invoke_array(mono_method, p_object, params, &exc);
+		MonoException *exc = NULL;
+		GD_MONO_BEGIN_RUNTIME_INVOKE;
+		MonoObject *ret = mono_runtime_invoke_array(mono_method, p_object, params, (MonoObject **)&exc);
+		GD_MONO_END_RUNTIME_INVOKE;
 
 		if (exc) {
 			ret = NULL;
 			if (r_exc) {
 				*r_exc = exc;
 			} else {
-				GDMonoUtils::print_unhandled_exception(exc);
+				GDMonoUtils::set_pending_exception(exc);
 			}
 		}
 
 		return ret;
 	} else {
-		MonoObject *exc = NULL;
-		mono_runtime_invoke(mono_method, p_object, NULL, &exc);
+		MonoException *exc = NULL;
+		GD_MONO_BEGIN_RUNTIME_INVOKE;
+		mono_runtime_invoke(mono_method, p_object, NULL, (MonoObject **)&exc);
+		GD_MONO_END_RUNTIME_INVOKE;
 
 		if (exc) {
 			if (r_exc) {
 				*r_exc = exc;
 			} else {
-				GDMonoUtils::print_unhandled_exception(exc);
+				GDMonoUtils::set_pending_exception(exc);
 			}
 		}
 
@@ -133,21 +137,23 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 	}
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoObject **r_exc) {
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) {
 	ERR_FAIL_COND_V(get_parameters_count() > 0, NULL);
 	return invoke_raw(p_object, NULL, r_exc);
 }
 
-MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoObject **r_exc) {
-	MonoObject *exc = NULL;
-	MonoObject *ret = mono_runtime_invoke(mono_method, p_object, p_params, &exc);
+MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) {
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = mono_runtime_invoke(mono_method, p_object, p_params, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
 		ret = NULL;
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 
