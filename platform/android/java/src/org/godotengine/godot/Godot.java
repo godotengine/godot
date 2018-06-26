@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 import android.R;
 import android.app.Activity;
+import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -246,9 +247,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	};
 
-	public void onVideoInit(boolean use_gl2) {
+	public void onVideoInit() {
 
-		//mView = new GodotView(getApplication(),io,use_gl2);
+		boolean use_gl3 = getGLESVersionCode() >= 0x00030000;
+
+		//mView = new GodotView(getApplication(),io,use_gl3);
 		//setContentView(mView);
 
 		layout = new FrameLayout(this);
@@ -261,7 +264,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(getApplication(), io, use_gl2, use_32_bits, this);
+		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, this);
 		layout.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);
@@ -336,6 +339,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	public static Godot getInstance() {
 		return Godot._self;
+	}
+
+	public int getGLESVersionCode() {
+		ActivityManager am = (ActivityManager)Godot.getInstance().getSystemService(Context.ACTIVITY_SERVICE);
+		ConfigurationInfo deviceInfo = am.getDeviceConfigurationInfo();
+		return deviceInfo.reqGlEsVersion;
 	}
 
 	private String[] getCommandLine() {
