@@ -99,6 +99,7 @@
 #include "editor/plugins/physical_bone_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
+#include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -4585,6 +4586,10 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorDefaultPlugin> eidp;
 		eidp.instance();
 		EditorInspector::add_inspector_plugin(eidp);
+
+		Ref<EditorInspectorRootMotionPlugin> rmp;
+		rmp.instance();
+		EditorInspector::add_inspector_plugin(rmp);
 	}
 
 	_pvrtc_register_compressors();
@@ -4610,9 +4615,7 @@ EditorNode::EditorNode() {
 
 	GLOBAL_DEF("editor/main_run_args", "");
 
-	ClassDB::set_class_enabled("CollisionShape", true);
-	ClassDB::set_class_enabled("CollisionShape2D", true);
-	ClassDB::set_class_enabled("CollisionPolygon2D", true);
+	ClassDB::set_class_enabled("RootMotionView", true);
 
 	//defs here, use EDITOR_GET in logic
 	EDITOR_DEF("interface/scene_tabs/always_show_close_button", false);
