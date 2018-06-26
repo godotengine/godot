@@ -24,6 +24,7 @@ def get_opts():
         ('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
         ('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
         ('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
+        ('SDKVERSION', 'SDK version to link against', '11.4'),
         ('game_center', 'Support for game center', 'yes'),
         ('store_kit', 'Support for in-app store', 'yes'),
         ('icloud', 'Support for iCloud', 'yes'),
@@ -81,10 +82,8 @@ def configure(env):
         env['IPHONEPLATFORM'] = 'iPhoneSimulator'
         env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=9.0',
                               '-isysroot', '$IPHONESDK',
-                              #'-mmacosx-version-min=10.6',
-                              '-Xlinker',
-                              '-objc_abi_version',
-                              '-Xlinker', '2',
+                              '-Xlinker', '-sdk_version', '-Xlinker', '$SDKVERSION',
+                              '-Xlinker', '-objc_abi_version', '-Xlinker', '2',
                               '-framework', 'AudioToolbox',
                               '-framework', 'AVFoundation',
                               '-framework', 'CoreAudio',
@@ -104,7 +103,7 @@ def configure(env):
     elif (env["arch"] == "arm64"):
         env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
                                                 '-isysroot', '$IPHONESDK',
-                                                #'-stdlib=libc++',
+                                                '-Xlinker', '-sdk_version', '-Xlinker', '$SDKVERSION',
                                                 '-framework', 'Foundation',
                                                 '-framework', 'UIKit',
                                                 '-framework', 'CoreGraphics',
@@ -124,6 +123,7 @@ def configure(env):
     else:
         env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
                                                 '-isysroot', '$IPHONESDK',
+                                                '-Xlinker', '-sdk_version', '-Xlinker', '$SDKVERSION',
                                                 '-framework', 'Foundation',
                                                 '-framework', 'UIKit',
                                                 '-framework', 'CoreGraphics',
