@@ -621,21 +621,8 @@ void Tween::_tween_process(float p_delta) {
 	}
 	pending_update--;
 
-	if (!repeat) {
-		bool all_finished = true;
-		for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
-			InterpolateData &data = E->get();
-
-			if (data.finish == false) {
-				all_finished = false;
-				break;
-			}
-		}
-
-		if (all_finished)
-			set_active(false);
-	}
+	if (all_finished)
+		set_active(false);
 }
 
 void Tween::set_tween_process_mode(TweenProcessMode p_mode) {
