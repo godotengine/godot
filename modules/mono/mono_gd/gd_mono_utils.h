@@ -34,6 +34,8 @@
 #include <mono/metadata/threads.h>
 
 #include "../mono_gc_handle.h"
+#include "../utils/macros.h"
+#include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
 #include "object.h"
@@ -181,10 +183,28 @@ MonoObject *create_managed_from(const RID &p_from);
 
 MonoDomain *create_domain(const String &p_friendly_name);
 
-String get_exception_name_and_message(MonoObject *p_ex);
+String get_exception_name_and_message(MonoException *p_ex);
 
-void print_unhandled_exception(MonoObject *p_exc);
-void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution);
+void debug_print_unhandled_exception(MonoException *p_exc);
+void debug_send_unhandled_exception_error(MonoException *p_exc);
+_NO_RETURN_ void debug_unhandled_exception(MonoException *p_exc);
+void print_unhandled_exception(MonoException *p_exc);
+
+/**
+ * Sets the exception as pending. The exception will be thrown when returning to managed code.
+ * If no managed method is being invoked by the runtime, the exception will be treated as
+ * an unhandled exception and the method will not return.
+ */
+void set_pending_exception(MonoException *p_exc);
+
+extern _THREAD_LOCAL_(int) current_invoke_count;
+
+_FORCE_INLINE_ int get_runtime_invoke_count() {
+	return current_invoke_count;
+}
+_FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
+	return current_invoke_count;
+}
 
 } // namespace GDMonoUtils
 
@@ -202,5 +222,12 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution);
 #else
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(float)
 #endif
+
+#define GD_MONO_BEGIN_RUNTIME_INVOKE                                              \
+	int &_runtime_invoke_count_ref = GDMonoUtils::get_runtime_invoke_count_ref(); \
+	_runtime_invoke_count_ref += 1;
+
+#define GD_MONO_END_RUNTIME_INVOKE \
+	_runtime_invoke_count_ref -= 1;
 
 #endif // GD_MONOUTILS_H

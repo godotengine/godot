@@ -164,6 +164,8 @@ public:
 
 	static GDMono *get_singleton() { return singleton; }
 
+	static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
+
 	// Do not use these, unless you know what you're doing
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
 	GDMonoAssembly **get_loaded_assembly(const String &p_name);
