@@ -521,8 +521,8 @@ void Tween::_tween_process(float p_delta) {
 
 	pending_update++;
 	// if repeat and all interpolates was finished then reset all interpolates
+	bool all_finished = true;
 	if (repeat) {
-		bool all_finished = true;
 
 		for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 
@@ -538,9 +538,12 @@ void Tween::_tween_process(float p_delta) {
 			reset_all();
 	}
 
+	all_finished = true;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 
 		InterpolateData &data = E->get();
+		all_finished = all_finished && data.finish;
+
 		if (!data.active || data.finish)
 			continue;
 
@@ -554,8 +557,8 @@ void Tween::_tween_process(float p_delta) {
 			continue;
 		else if (prev_delaying) {
 
-			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
 			_apply_tween_value(data, data.initial_val);
+			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
 		}
 
 		if (data.elapsed > (data.delay + data.duration)) {
@@ -608,29 +611,18 @@ void Tween::_tween_process(float p_delta) {
 
 		if (data.finish) {
 			_apply_tween_value(data, data.final_val);
+			data.elapsed = 0;
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 			// not repeat mode, remove completed action
 			if (!repeat)
 				call_deferred("_remove", object, NodePath(Vector<StringName>(), data.key, false), true);
-		}
+		} else if (!repeat)
+			all_finished = all_finished && data.finish;
 	}
 	pending_update--;
 
-	if (!repeat) {
-		bool all_finished = true;
-		for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
-			InterpolateData &data = E->get();
-
-			if (data.finish == false) {
-				all_finished = false;
-				break;
-			}
-		}
-
-		if (all_finished)
-			set_active(false);
-	}
+	if (all_finished)
+		set_active(false);
 }
 
 void Tween::set_tween_process_mode(TweenProcessMode p_mode) {
