@@ -129,6 +129,7 @@ class TileMapEditor : public VBoxContainer {
 		bool xf;
 		bool yf;
 		bool tr;
+		Vector2 ac;
 
 		CellOp() :
 				idx(TileMap::INVALID_CELL),
@@ -154,6 +155,8 @@ class TileMapEditor : public VBoxContainer {
 	};
 
 	List<TileData> copydata;
+
+	Map<Point2i, CellOp> undo_data;
 
 	void _pick_tile(const Point2 &p_pos);
 
@@ -181,6 +184,9 @@ class TileMapEditor : public VBoxContainer {
 	void _menu_option(int p_option);
 	void _palette_selected(int index);
 
+	void _start_undo(const String &p_action);
+	void _finish_undo();
+	void _create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
 	void _set_cell(const Point2i &p_pos, int p_value, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
 
 	void _canvas_mouse_enter();
