@@ -4,10 +4,34 @@ import os
 import sys
 import subprocess
 
+from distutils.version import LooseVersion
 from SCons.Script import BoolVariable, Dir, Environment, File, PathVariable, SCons, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
+
+
+def can_build(env, platform):
+    if platform in ['javascript']:
+        return False # Not yet supported
+    return True
+
+
+def is_enabled():
+    # The module is disabled by default. Use module_mono_enabled=yes to enable it.
+    return False
+
+
+def get_doc_classes():
+    return [
+        '@C#',
+        'CSharpScript',
+        'GodotSharp',
+    ]
+
+
+def get_doc_path():
+    return 'doc_classes'
 
 
 def find_file_in_dir(directory, files, prefix='', extension=''):
@@ -17,17 +41,6 @@ def find_file_in_dir(directory, files, prefix='', extension=''):
         if os.path.isfile(os.path.join(directory, prefix + curfile + extension)):
             return curfile
     return ''
-
-
-def can_build(env, platform):
-    if platform in ["javascript"]:
-        return False # Not yet supported
-    return True
-
-
-def is_enabled():
-    # The module is disabled by default. Use module_mono_enabled=yes to enable it.
-    return False
 
 
 def copy_file(src_dir, dst_dir, name):
@@ -152,16 +165,7 @@ def configure(env):
         # We can't use pkg-config to link mono statically,
         # but we can still use it to find the mono root directory
         if not mono_root and mono_static:
-            def pkgconfig_try_find_mono_root():
-                tmpenv = Environment()
-                tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
-                tmpenv.ParseConfig('pkg-config monosgen-2 --libs-only-L')
-                for hint_dir in tmpenv['LIBPATH']:
-                    name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix='lib', extension=sharedlib_ext)
-                    if name_found and os.path.isdir(os.path.join(hint_dir, '..', 'include', 'mono-2.0')):
-                        return os.path.join(hint_dir, '..')
-                return ''
-            mono_root = pkgconfig_try_find_mono_root()
+            mono_root = pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext)
             if not mono_root:
                 raise RuntimeError('Building with mono_static=yes, but failed to find the mono prefix with pkg-config. Specify one manually')
 
@@ -210,11 +214,14 @@ def configure(env):
         else:
             assert not mono_static
 
+            mono_version = pkgconfig_try_find_mono_version()
+            configure_for_mono_version(env, mono_version)
+
             env.ParseConfig('pkg-config monosgen-2 --cflags --libs')
 
             mono_lib_path = ''
             mono_so_name = ''
-            mono_prefix = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
+            mono_prefix = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
 
             tmpenv = Environment()
             tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
@@ -269,10 +276,7 @@ def pkgconfig_try_find_mono_version():
 
 
 def mono_root_try_find_mono_version(mono_root):
-    from compat import decode_utf8
-
-    output = subprocess.check_output([os.path.join(mono_root, 'bin', 'mono'), '--version'])
-    first_line = decode_utf8(output.splitlines()[0])
+    first_line = subprocess.check_output([os.path.join(mono_root, 'bin', 'mono'), '--version']).splitlines()[0]
     try:
         return LooseVersion(first_line.split()[len('Mono JIT compiler version'.split())])
     except (ValueError, IndexError):

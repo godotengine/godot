@@ -138,12 +138,13 @@ def find_msbuild_windows():
         raise RuntimeError('Cannot find mono root directory')
 
     framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
-
     mono_bin_dir = os.path.join(mono_root, 'bin')
-
     msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
 
     if os.path.isfile(msbuild_mono):
+        # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
+        # building with Mono's MSBuild. They must point to the batch files
+        # in Mono's bin directory to make sure they are executed with Mono.
         mono_msbuild_env = {
             'CscToolExe': os.path.join(mono_bin_dir, 'csc.bat'),
             'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),

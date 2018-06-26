@@ -65,18 +65,12 @@
 
 #include "core/typedefs.h"
 
-#ifdef WINDOWS_ENABLED
-#define _CALLBACK_FUNC_ __stdcall
-#else
-#define _CALLBACK_FUNC_
-#endif
-
 struct ThreadLocalStorage {
 
 	void *get_value() const;
 	void set_value(void *p_value) const;
 
-	void alloc(void _CALLBACK_FUNC_ (*p_dest_callback)(void *));
+	void alloc(void (*p_dest_callback)(void *));
 	void free();
 
 private:
@@ -91,10 +85,17 @@ class ThreadLocal {
 
 	T init_val;
 
+#ifdef WINDOWS_ENABLED
+#define _CALLBACK_FUNC_ __stdcall
+#else
+#define _CALLBACK_FUNC_
+#endif
+
 	static void _CALLBACK_FUNC_ destr_callback(void *tls_data) {
 		memdelete(static_cast<T *>(tls_data));
 	}
 
+#undef _CALLBACK_FUNC_
 
 	T *_tls_get_value() const {
 		void *tls_data = storage.get_value();
@@ -154,8 +155,6 @@ struct FlagScopeGuard {
 private:
 	bool &flag;
 };
-
-#undef _CALLBACK_FUNC_
 
 #define _TLS_RECURSION_GUARD_V_(m_ret)                    \
 	static _THREAD_LOCAL_(bool) _recursion_flag_ = false; \

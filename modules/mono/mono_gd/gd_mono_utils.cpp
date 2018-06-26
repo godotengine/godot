@@ -463,10 +463,10 @@ MonoDomain *create_domain(const String &p_friendly_name) {
 	return domain;
 }
 
-String get_exception_name_and_message(MonoException *p_exc) {
+String get_exception_name_and_message(MonoException *p_ex) {
 	String res;
 
-	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
+	MonoClass *klass = mono_object_get_class((MonoObject *)p_ex);
 	MonoType *type = mono_class_get_type(klass);
 
 	char *full_name = mono_type_full_name(type);
@@ -476,22 +476,10 @@ String get_exception_name_and_message(MonoException *p_exc) {
 	res += ": ";
 
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_exc, NULL, NULL);
-	GD_MONO_END_RUNTIME_INVOKE;
+	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_ex, NULL, NULL);
 	res += GDMonoMarshal::mono_string_to_godot(msg);
 
 	return res;
-}
-
-void set_exception_message(MonoException *p_exc, String message) {
-	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
-	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
-	void *params[1] = { msg };
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	mono_property_set_value(prop, (MonoObject *)p_exc, params, NULL);
-	GD_MONO_END_RUNTIME_INVOKE;
 }
 
 void debug_print_unhandled_exception(MonoException *p_exc) {
@@ -504,13 +492,15 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	if (!ScriptDebugger::get_singleton())
 		return;
 
+	_TLS_RECURSION_GUARD_;
+
 	ScriptLanguage::StackInfo separator;
-	separator.file = "";
+	separator.file = String();
 	separator.func = "--- " + RTR("End of inner exception stack trace") + " ---";
 	separator.line = 0;
 
 	Vector<ScriptLanguage::StackInfo> si;
-	String exc_msg = "";
+	String exc_msg;
 
 	while (p_exc != NULL) {
 		GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
@@ -519,24 +509,16 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		MonoBoolean need_file_info = true;
 		void *ctor_args[2] = { p_exc, &need_file_info };
 
-		MonoObject *unexpected_exc = NULL;
+		MonoException *unexpected_exc = NULL;
 		CACHED_METHOD(System_Diagnostics_StackTrace, ctor_Exception_bool)->invoke_raw(stack_trace, ctor_args, &unexpected_exc);
 
-		if (unexpected_exc != NULL) {
-			mono_print_unhandled_exception(unexpected_exc);
-
-			if (p_recursion_caution) {
-				// Called from CSharpLanguage::get_current_stack_info,
-				// so printing an error here could result in endless recursion
-				OS::get_singleton()->printerr("Mono: Method GDMonoUtils::print_unhandled_exception failed");
-				return;
-			} else {
-				ERR_FAIL();
-			}
+		if (unexpected_exc) {
+			GDMonoInternals::unhandled_exception(unexpected_exc);
+			_UNREACHABLE_();
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
-		if (stack_trace != NULL && !p_recursion_caution) {
+		if (stack_trace != NULL) {
 			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
 			for (int i = _si.size() - 1; i >= 0; i--)
 				si.insert(0, _si[i]);
@@ -544,10 +526,15 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 		exc_msg += (exc_msg.length() > 0 ? " ---> " : "") + GDMonoUtils::get_exception_name_and_message(p_exc);
 
-		GDMonoProperty *p_prop = GDMono::get_singleton()->get_class(mono_object_get_class(p_exc))->get_property("InnerException");
-		p_exc = p_prop != NULL ? p_prop->get_value(p_exc) : NULL;
-		if (p_exc != NULL)
+		GDMonoClass *exc_class = GDMono::get_singleton()->get_class(mono_get_exception_class());
+		GDMonoProperty *inner_exc_prop = exc_class->get_property("InnerException");
+		CRASH_COND(inner_exc_prop == NULL);
+
+		MonoObject *inner_exc = inner_exc_prop->get_value((MonoObject *)p_exc);
+		if (inner_exc != NULL)
 			si.insert(0, separator);
+
+		p_exc = (MonoException *)inner_exc;
 	}
 
 	String file = si.size() ? si[0].file : __FILE__;

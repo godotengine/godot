@@ -206,8 +206,7 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
 
-String get_exception_name_and_message(MonoException *p_exc);
-void set_exception_message(MonoException *p_exc, String message);
+String get_exception_name_and_message(MonoException *p_ex);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);

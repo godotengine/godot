@@ -273,23 +273,6 @@ void GDMono::initialize() {
 		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
 #endif
 
-			OS::get_singleton()->print("Mono: Proceeding to unload scripts domain because of invalid API assemblies\n");
-
-			Error err = _unload_scripts_domain();
-			if (err != OK) {
-				WARN_PRINT("Mono: Failed to unload scripts domain");
-			}
-#else
-			ERR_PRINT("The loaded API assembly is invalid");
-			CRASH_NOW();
-#endif
-		}
-	}
-#else
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
-#endif
-
 	OS::get_singleton()->print("Mono: INITIALIZED\n");
 }
 
@@ -772,12 +755,12 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
 
-	MonoObject *ex = NULL;
-	mono_domain_try_unload(p_domain, &ex);
+	MonoException *exc = NULL;
+	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
-	if (ex) {
-		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`:");
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`");
+		GDMonoUtils::debug_unhandled_exception(exc);
 		return FAILED;
 	}
 
@@ -822,9 +805,9 @@ void GDMono::_domain_assemblies_cleanup(uint32_t p_domain_id) {
 
 void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
 
-	// This method will be called by the runtime when a thrown exception is not handled.
-	// It won't be called when we manually treat a thrown exception as unhandled.
-	// We assume the exception was already printed before calling this hook.
+// This method will be called by the runtime when a thrown exception is not handled.
+// It won't be called when we manually treat a thrown exception as unhandled.
+// We assume the exception was already printed before calling this hook.
 
 #ifdef DEBUG_ENABLED
 	GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
