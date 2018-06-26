@@ -207,6 +207,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="round">
