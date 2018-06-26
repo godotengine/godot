@@ -708,7 +708,7 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 	rect_cache_dirty = true;
 }
 
-void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q) {
+void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool update) {
 
 	Quadrant &q = Q->get();
 	if (!q.dirty_list.in_list())
@@ -719,7 +719,10 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q) {
 	pending_update = true;
 	if (!is_inside_tree())
 		return;
-	_update_dirty_quadrants();
+
+	if (update) {
+		_update_dirty_quadrants();
+	}
 }
 
 void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose) {
@@ -1021,8 +1024,9 @@ void TileMap::_recreate_quadrants() {
 		}
 
 		Q->get().cells.insert(E->key());
-		_make_quadrant_dirty(Q);
+		_make_quadrant_dirty(Q, false);
 	}
+	_update_dirty_quadrants();
 }
 
 void TileMap::_clear_quadrants() {

@@ -188,7 +188,7 @@ private:
 
 	Map<PosKey, Quadrant>::Element *_create_quadrant(const PosKey &p_qk);
 	void _erase_quadrant(Map<PosKey, Quadrant>::Element *Q);
-	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q);
+	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool update = true);
 	void _recreate_quadrants();
 	void _clear_quadrants();
 	void _update_dirty_quadrants();
