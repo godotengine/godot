@@ -187,6 +187,8 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		return blend_node(blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 	}
 
+	float weights[MAX_BLEND_POINTS] = {};
+
 	int point_lower = -1;
 	float pos_lower = 0.0;
 	int point_higher = -1;
@@ -216,18 +218,21 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		}
 	}
 
+	// fill in weights
+
 	if (point_lower == -1) {
 		// we are on the left side, no other point to the left
 		// we just play the next point.
 
-		return blend_node(blend_points[point_higher].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+		weights[point_higher] = 1.0;
 	} else if (point_higher == -1) {
 		// we are on the right side, no other point to the right
 		// we just play the previous point
-		return blend_node(blend_points[point_lower].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+
+		weights[point_lower] = 1.0;
 	} else {
 
-		//w we are between two points.
+		// we are between two points.
 		// figure out weights, then blend the animations
 
 		float distance_between_points = pos_higher - pos_lower;
@@ -239,14 +244,21 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		float blend_lower = 1.0 - blend_percentage;
 		float blend_higher = blend_percentage;
 
-		float time_remaining_lower = 0.0;
-		float time_remaining_higher = 0.0;
-
-		time_remaining_lower = blend_node(blend_points[point_lower].node, p_time, p_seek, blend_lower, FILTER_IGNORE, false);
-		time_remaining_higher = blend_node(blend_points[point_higher].node, p_time, p_seek, blend_higher, FILTER_IGNORE, false);
-
-		return MAX(time_remaining_lower, time_remaining_higher);
+		weights[point_lower] = blend_lower;
+		weights[point_higher] = blend_higher;
 	}
+
+	// actually blend the animations now
+
+	float max_time_remaining = 0.0;
+
+	for (int i = 0; i < blend_points_used; i++) {
+		float remaining = blend_node(blend_points[i].node, p_time, p_seek, weights[i], FILTER_IGNORE, false);
+
+		max_time_remaining = MAX(max_time_remaining, remaining);
+	}
+
+	return max_time_remaining;
 }
 
 String AnimationNodeBlendSpace1D::get_caption() const {
