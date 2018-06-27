@@ -339,8 +339,10 @@
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
+			<argument index="1" name="direct" type="bool">
+			</argument>
 			<description>
-				Returns [code]true[/code] if the given node is a direct or indirect child of the current node.
+				Returns [code]true[/code] if the given node is a direct or indirect child of the current node. If [code]direct[/code], returns [code]true[/code] if the given node is an immediate child of the current node.
 			</description>
 		</method>
 		<method name="is_displayed_folded" qualifiers="const">
