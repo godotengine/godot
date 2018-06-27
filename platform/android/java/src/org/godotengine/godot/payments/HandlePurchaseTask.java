@@ -58,17 +58,15 @@ abstract public class HandlePurchaseTask {
 
 	public void handlePurchaseRequest(int resultCode, Intent data) {
 		//Log.d("XXX", "Handling purchase response");
-		//int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
-		PaymentsCache pc = new PaymentsCache(context);
-
-		String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-		//Log.d("XXX", "Purchase data:" + purchaseData);
-		String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
-		//Log.d("XXX", "Purchase signature:" + dataSignature);
-
 		if (resultCode == Activity.RESULT_OK) {
-
 			try {
+				//int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+				PaymentsCache pc = new PaymentsCache(context);
+
+				String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+				//Log.d("XXX", "Purchase data:" + purchaseData);
+				String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+				//Log.d("XXX", "Purchase signature:" + dataSignature);
 				//Log.d("SARLANGA", purchaseData);
 
 				JSONObject jo = new JSONObject(purchaseData);
