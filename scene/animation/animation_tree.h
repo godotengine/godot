@@ -161,6 +161,7 @@ private:
 		int bone_idx;
 		Vector3 loc;
 		Quat rot;
+		float rot_blend_accum;
 		Vector3 scale;
 
 		TrackCacheTransform() {
