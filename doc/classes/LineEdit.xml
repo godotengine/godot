@@ -127,6 +127,20 @@
 				Emitted when the text changes.
 			</description>
 		</signal>
+		<signal name="text_inserted">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Emitted when text is inserted.
+			</description>
+		</signal>
+		<signal name="text_deleted">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Emitted when text is deleted.
+			</description>
+		</signal>
 		<signal name="text_entered">
 			<argument index="0" name="new_text" type="String">
 			</argument>

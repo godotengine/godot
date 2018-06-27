@@ -178,6 +178,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (editable) {
 
 						deselect();
+						String deleted_text = text.substr(0, cursor_pos - 1);
 						text = text.substr(cursor_pos, text.length() - cursor_pos);
 
 						Ref<Font> font = get_font("font");
@@ -189,6 +190,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						}
 
 						set_cursor_position(0);
+						emit_signal("text_deleted", deleted_text);
 						_text_changed();
 					}
 
@@ -207,7 +209,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (editable) {
 
 						deselect();
+						String deleted_text = text.substr(cursor_pos, text.length() - cursor_pos);
 						text = text.substr(0, cursor_pos);
+						emit_signal("text_deleted", deleted_text);
 						_text_changed();
 					}
 
@@ -484,6 +488,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						selection_delete();
 						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
 						append_at_cursor(ucodestr);
+						String text(ucodestr);
+						emit_signal("text_inserted", text);
 						_text_changed();
 						accept_event();
 					}
@@ -822,6 +828,7 @@ void LineEdit::paste_text() {
 
 		if (!text_changed_dirty) {
 			if (is_inside_tree()) {
+				emit_signal("text_inserted", text);
 				MessageQueue::get_singleton()->push_call(this, "_text_changed");
 			}
 			text_changed_dirty = true;
@@ -856,6 +863,7 @@ void LineEdit::redo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	set_cursor_position(op.cursor_pos);
+	emit_signal("text_inserted", text);
 	_emit_text_change();
 }
 
@@ -968,10 +976,13 @@ void LineEdit::delete_char() {
 		cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
 	}
 
+	String deleted_text = text.substr(cursor_pos - 1, 1);
+
 	text.erase(cursor_pos - 1, 1);
 
 	set_cursor_position(get_cursor_position() - 1);
 
+	emit_signal("text_deleted", deleted_text);
 	_text_changed();
 }
 
@@ -987,6 +998,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 		cached_width = 0;
 	}
 
+	String deleted_text = text.substr(p_from_column, p_to_column - p_from_column);
 	text.erase(p_from_column, p_to_column - p_from_column);
 	cursor_pos -= CLAMP(cursor_pos - p_from_column, 0, p_to_column - p_from_column);
 
@@ -1001,6 +1013,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
 	if (!text_changed_dirty) {
 		if (is_inside_tree()) {
+			emit_signal("text_deleted", deleted_text);
 			MessageQueue::get_singleton()->push_call(this, "_text_changed");
 		}
 		text_changed_dirty = true;
@@ -1472,6 +1485,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("text_inserted", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("text_deleted", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
