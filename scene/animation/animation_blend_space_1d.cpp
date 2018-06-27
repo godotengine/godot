@@ -1,5 +1,15 @@
 #include "animation_blend_space_1d.h"
 
+void AnimationNodeBlendSpace1D::set_tree(AnimationTree *p_player) {
+
+	AnimationRootNode::set_tree(p_player);
+
+	for(int i=0;i<blend_points_used;i++) {
+		blend_points[i].node->set_tree(p_player);
+	}
+
+}
+
 void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("blend_point_")) {
 		String left = property.name.get_slicec('/', 0);

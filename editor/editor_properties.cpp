@@ -1537,6 +1537,8 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 void EditorPropertyNodePath::_node_assign() {
 	if (!scene_tree) {
 		scene_tree = memnew(SceneTreeDialog);
+		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
+		scene_tree->get_scene_tree()->set_valid_types(valid_types);
 		add_child(scene_tree);
 		scene_tree->connect("selected", this, "_node_selected");
 	}
@@ -1591,9 +1593,10 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(icon);
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types) {
 
 	base_hint = p_base_hint;
+	valid_types = p_valid_types;
 }
 
 void EditorPropertyNodePath::_notification(int p_what) {
@@ -1786,6 +1789,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 				if (!scene_tree) {
 					scene_tree = memnew(SceneTreeDialog);
+					scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 					add_child(scene_tree);
 					scene_tree->connect("selected", this, "_viewport_selected");
 					scene_tree->set_title(TTR("Pick a Viewport"));
@@ -2672,7 +2676,12 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
 			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
-				editor->setup(p_hint_text);
+				editor->setup(p_hint_text, Vector<StringName>());
+			}
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
+				Vector<String> types = p_hint_text.split(",", false);
+				Vector<StringName> sn = Variant(types); //convert via variant
+				editor->setup(NodePath(), sn);
 			}
 			add_property_editor(p_path, editor);
 

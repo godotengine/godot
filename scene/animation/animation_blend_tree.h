@@ -94,8 +94,8 @@ public:
 
 VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 
-class AnimationNodeAdd : public AnimationNode {
-	GDCLASS(AnimationNodeAdd, AnimationNode);
+class AnimationNodeAdd2 : public AnimationNode {
+	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
 	float amount;
 	bool sync;
@@ -115,7 +115,31 @@ public:
 	virtual bool has_filter() const;
 	virtual float process(float p_time, bool p_seek);
 
-	AnimationNodeAdd();
+	AnimationNodeAdd2();
+};
+
+class AnimationNodeAdd3 : public AnimationNode {
+	GDCLASS(AnimationNodeAdd3, AnimationNode);
+
+	float amount;
+	bool sync;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	void set_amount(float p_amount);
+	float get_amount() const;
+
+	void set_use_sync(bool p_sync);
+	bool is_using_sync() const;
+
+	virtual bool has_filter() const;
+	virtual float process(float p_time, bool p_seek);
+
+	AnimationNodeAdd3();
 };
 
 class AnimationNodeBlend2 : public AnimationNode {

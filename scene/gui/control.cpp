@@ -2845,12 +2845,12 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
 
 	ADD_GROUP("Focus", "focus_");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_left"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_LEFT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
-	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next"), "set_focus_next", "get_focus_next");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous"), "set_focus_previous", "get_focus_previous");
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_LEFT);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 
 	ADD_GROUP("Mouse", "mouse_");
