@@ -1,6 +1,15 @@
 #include "animation_blend_space_2d.h"
 #include "math/delaunay.h"
 
+void AnimationNodeBlendSpace2D::set_tree(AnimationTree *p_player) {
+	AnimationRootNode::set_tree(p_player);
+
+	for(int i=0;i<blend_points_used;i++) {
+		blend_points[i].node->set_tree(p_player);
+	}
+}
+
+
 void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index) {
 	ERR_FAIL_COND(blend_points_used >= MAX_BLEND_POINTS);
 	ERR_FAIL_COND(p_node.is_null());

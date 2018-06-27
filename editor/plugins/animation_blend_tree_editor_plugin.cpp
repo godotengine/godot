@@ -767,7 +767,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
 	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot"));
-	add_options.push_back(AddOption("Add", "AnimationNodeAdd"));
+	add_options.push_back(AddOption("Add2", "AnimationNodeAdd2"));
+	add_options.push_back(AddOption("Add3", "AnimationNodeAdd3"));
 	add_options.push_back(AddOption("Blend2", "AnimationNodeBlend2"));
 	add_options.push_back(AddOption("Blend3", "AnimationNodeBlend3"));
 	add_options.push_back(AddOption("Seek", "AnimationNodeTimeSeek"));

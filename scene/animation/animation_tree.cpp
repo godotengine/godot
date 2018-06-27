@@ -1290,7 +1290,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_tree_root", "get_tree_root");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player"), "set_animation_player", "get_animation_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player",PROPERTY_HINT_NODE_PATH_VALID_TYPES,"AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
 	ADD_GROUP("Root Motion", "root_motion_");

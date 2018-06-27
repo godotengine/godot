@@ -142,7 +142,7 @@ void RootMotionView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "size"), &RootMotionView::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &RootMotionView::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "animation_path"), "set_animation_path", "get_animation_path");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "animation_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationTree"), "set_animation_path", "get_animation_path");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater"), "set_radius", "get_radius");

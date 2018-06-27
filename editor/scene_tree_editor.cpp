@@ -166,6 +166,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	TreeItem *item = tree->create_item(p_parent);
+
 	item->set_text(0, p_node->get_name());
 	if (can_rename && !part_of_subscene /*(p_node->get_owner() == get_scene_node() || p_node==get_scene_node())*/)
 		item->set_editable(0, true);
@@ -196,7 +197,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (part_of_subscene) {
 
 		//item->set_selectable(0,marked_selectable);
-		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		if (valid_types.size() == 0) {
+			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		}
 
 	} else if (marked.has(p_node)) {
 
@@ -321,6 +324,22 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		bool child_keep = _add_nodes(p_node->get_child(i), item);
 
 		keep = keep || child_keep;
+	}
+
+	if (valid_types.size()) {
+		bool valid = false;
+		for (int i = 0; i < valid_types.size(); i++) {
+			if (p_node->is_class(valid_types[i])) {
+				valid = true;
+				break;
+			}
+		}
+
+		if (!valid) {
+			//item->set_selectable(0,marked_selectable);
+			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+			item->set_selectable(0, false);
+		}
 	}
 
 	if (!keep) {
@@ -714,6 +733,10 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 bool SceneTreeEditor::get_display_foreign_nodes() const {
 
 	return display_foreign;
+}
+
+void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
+	valid_types = p_valid;
 }
 
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
