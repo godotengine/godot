@@ -471,7 +471,11 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 
 	CameraMatrix cm;
-	cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+	if (orthogonal) {
+		cm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+	} else {
+		cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+	}
 	float screen_w, screen_h;
 	cm.get_viewport_size(screen_w, screen_h);
 
@@ -531,8 +535,8 @@ void SpatialEditorViewport::_select_region() {
 
 		frustum.push_back(near);
 
-	Plane far = -near;
-	far.d += get_zfar();
+		Plane far = -near;
+		far.d += get_zfar();
 
 		frustum.push_back(far);
 	}
