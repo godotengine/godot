@@ -311,33 +311,33 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 
 ////////////////////////////////////////////////
 
-void AnimationNodeAdd::set_amount(float p_amount) {
+void AnimationNodeAdd2::set_amount(float p_amount) {
 	amount = p_amount;
 }
 
-float AnimationNodeAdd::get_amount() const {
+float AnimationNodeAdd2::get_amount() const {
 	return amount;
 }
 
-String AnimationNodeAdd::get_caption() const {
-	return "Add";
+String AnimationNodeAdd2::get_caption() const {
+	return "Add2";
 }
-void AnimationNodeAdd::set_use_sync(bool p_sync) {
+void AnimationNodeAdd2::set_use_sync(bool p_sync) {
 
 	sync = p_sync;
 }
 
-bool AnimationNodeAdd::is_using_sync() const {
+bool AnimationNodeAdd2::is_using_sync() const {
 
 	return sync;
 }
 
-bool AnimationNodeAdd::has_filter() const {
+bool AnimationNodeAdd2::has_filter() const {
 
 	return true;
 }
 
-float AnimationNodeAdd::process(float p_time, bool p_seek) {
+float AnimationNodeAdd2::process(float p_time, bool p_seek) {
 
 	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
@@ -345,19 +345,19 @@ float AnimationNodeAdd::process(float p_time, bool p_seek) {
 	return rem0;
 }
 
-void AnimationNodeAdd::_bind_methods() {
+void AnimationNodeAdd2::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &AnimationNodeAdd::set_amount);
-	ClassDB::bind_method(D_METHOD("get_amount"), &AnimationNodeAdd::get_amount);
+	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &AnimationNodeAdd2::set_amount);
+	ClassDB::bind_method(D_METHOD("get_amount"), &AnimationNodeAdd2::get_amount);
 
-	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeAdd::set_use_sync);
-	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeAdd::is_using_sync);
+	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeAdd2::set_use_sync);
+	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeAdd2::is_using_sync);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 }
 
-AnimationNodeAdd::AnimationNodeAdd() {
+AnimationNodeAdd2::AnimationNodeAdd2() {
 
 	add_input("in");
 	add_input("add");
@@ -365,6 +365,63 @@ AnimationNodeAdd::AnimationNodeAdd() {
 	sync = false;
 }
 
+////////////////////////////////////////////////
+
+void AnimationNodeAdd3::set_amount(float p_amount) {
+	amount = p_amount;
+}
+
+float AnimationNodeAdd3::get_amount() const {
+	return amount;
+}
+
+String AnimationNodeAdd3::get_caption() const {
+	return "Add3";
+}
+void AnimationNodeAdd3::set_use_sync(bool p_sync) {
+
+	sync = p_sync;
+}
+
+bool AnimationNodeAdd3::is_using_sync() const {
+
+	return sync;
+}
+
+bool AnimationNodeAdd3::has_filter() const {
+
+	return true;
+}
+
+float AnimationNodeAdd3::process(float p_time, bool p_seek) {
+
+	blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_PASS, !sync);
+	float rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+	blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_PASS, !sync);
+
+	return rem0;
+}
+
+void AnimationNodeAdd3::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &AnimationNodeAdd3::set_amount);
+	ClassDB::bind_method(D_METHOD("get_amount"), &AnimationNodeAdd3::get_amount);
+
+	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeAdd3::set_use_sync);
+	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeAdd3::is_using_sync);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "amount", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
+}
+
+AnimationNodeAdd3::AnimationNodeAdd3() {
+
+	add_input("-add");
+	add_input("in");
+	add_input("+add");
+	amount = 0;
+	sync = false;
+}
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::set_amount(float p_amount) {

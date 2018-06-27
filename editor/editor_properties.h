@@ -453,6 +453,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	SceneTreeDialog *scene_tree;
 	NodePath base_hint;
 
+	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path);
 	void _node_assign();
 	void _node_clear();
@@ -463,7 +464,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(const NodePath &p_base_hint);
+	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types);
 	EditorPropertyNodePath();
 };
 
