@@ -82,6 +82,8 @@ protected:
 
 	void _validate_property(PropertyInfo &property) const;
 
+	void _set_parent(Object *p_parent);
+
 public:
 	void set_parent(AnimationNode *p_parent);
 	Ref<AnimationNode> get_parent() const;
@@ -246,8 +248,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_graph_root(const Ref<AnimationNode> &p_root);
-	Ref<AnimationNode> get_graph_root() const;
+	void set_tree_root(const Ref<AnimationNode> &p_root);
+	Ref<AnimationNode> get_tree_root() const;
 
 	void set_active(bool p_active);
 	bool is_active() const;
