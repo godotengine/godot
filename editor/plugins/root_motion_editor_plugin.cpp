@@ -124,9 +124,10 @@ void EditorPropertyRootMotion::_node_assign() {
 						ti = filters->create_item(ti);
 						parenthood[accum] = ti;
 						ti->set_text(0, F->get());
-						ti->set_selectable(0, false);
+						ti->set_selectable(0, true);
 						ti->set_editable(0, false);
 						ti->set_icon(0, get_icon("BoneAttachment", "EditorIcons"));
+						ti->set_metadata(0, accum);
 					} else {
 						ti = parenthood[accum];
 					}
