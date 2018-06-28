@@ -30,6 +30,9 @@
 #ifndef LWS_HELPER_H
 #define LWS_HELPER_H
 
+#define LWS_BUF_SIZE 65536
+#define LWS_PACKET_SIZE LWS_BUF_SIZE
+
 #include "core/io/stream_peer.h"
 #include "core/os/os.h"
 #include "core/reference.h"
@@ -124,6 +127,7 @@ static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, 
 
 	/* LWS protocol structs */
 	ref->lws_structs = (struct lws_protocols *)memalloc(sizeof(struct lws_protocols) * (len + 2));
+	memset(ref->lws_structs, 0, sizeof(struct lws_protocols) * (len + 2));
 
 	CharString strings = p_names.join(",").ascii();
 	int str_len = strings.length();
@@ -145,13 +149,15 @@ static void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, 
 	structs_ptr[0].name = "http-only";
 	structs_ptr[0].callback = p_callback;
 	structs_ptr[0].per_session_data_size = data_size;
-	structs_ptr[0].rx_buffer_size = 0;
+	structs_ptr[0].rx_buffer_size = LWS_BUF_SIZE;
+	structs_ptr[0].tx_packet_size = LWS_PACKET_SIZE;
 	/* add user defined protocols */
 	for (i = 0; i < len; i++) {
 		structs_ptr[i + 1].name = (const char *)&names_ptr[pos];
 		structs_ptr[i + 1].callback = p_callback;
 		structs_ptr[i + 1].per_session_data_size = data_size;
-		structs_ptr[i + 1].rx_buffer_size = 0;
+		structs_ptr[i + 1].rx_buffer_size = LWS_BUF_SIZE;
+		structs_ptr[i + 1].tx_packet_size = LWS_PACKET_SIZE;
 		pos += pnr[i].ascii().length() + 1;
 		names_ptr[pos - 1] = '\0';
 	}
