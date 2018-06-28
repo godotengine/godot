@@ -405,6 +405,18 @@ void EditorNode::_notification(int p_what) {
 	}
 }
 
+void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_name) {
+	Script *script = Object::cast_to<Script>(p_script);
+	if (!script)
+		return;
+	if (p_activate_name.length()) {
+		set_addon_plugin_enabled(p_activate_name, true);
+	}
+	project_settings->update_plugins();
+	project_settings->hide();
+	push_item(script);
+}
+
 void EditorNode::_fs_changed() {
 
 	for (Set<FileDialog *>::Element *E = file_dialogs.front(); E; E = E->next()) {
@@ -425,6 +437,7 @@ void EditorNode::_fs_changed() {
 		ResourceCache::get_cached_resources(&cached);
 		// FIXME: This should be done in a thread.
 		for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+			editor_data.get_type_db().update_res(String(E->get()->get_path()));
 
 			if (!E->get()->editor_can_reload_from_file())
 				continue;
@@ -444,6 +457,7 @@ void EditorNode::_fs_changed() {
 				changed.push_back(E->get());
 			}
 		}
+		editor_data.get_type_db().update_globals();
 
 		if (changed.size()) {
 			for (List<Ref<Resource> >::Element *E = changed.front(); E; E = E->next()) {
@@ -2260,6 +2274,13 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		case TOOLS_ORPHAN_RESOURCES: {
 			orphan_resources->show();
 		} break;
+		case TOOLS_RELOAD_DOCS: {
+			OS *os = OS::get_singleton();
+			List<String> args;
+			args.push_back("--doctool");
+			args.push_back("\"" + os->get_executable_path().get_base_dir().get_base_dir() + "\"");
+			os->execute(os->get_executable_path(), args, false);
+		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
 				Array params = tool_menu->get_item_metadata(p_idx);
@@ -2437,6 +2458,13 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
+	if (!p_editor->get_script().is_null()) {
+		Ref<Script> script = p_editor->get_script();
+		if (script.is_valid()) {
+			String plugin_dir = "res://addons/" + script->get_path().get_slicec('/', 3);
+			singleton->editor_data.get_type_db().toggle_directory(plugin_dir, true);
+		}
+	}
 }
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
@@ -2460,6 +2488,15 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 
 		singleton->editor_table.erase(p_editor);
 	}
+
+	if (!p_editor->get_script().is_null()) {
+		Ref<Script> script = p_editor->get_script();
+		if (script.is_valid()) {
+			String plugin_dir = "res://addons/" + script->get_path().get_slicec('/', 3);
+			singleton->editor_data.get_type_db().toggle_directory(plugin_dir, false);
+		}
+	}
+
 	p_editor->make_visible(false);
 	p_editor->clear();
 	singleton->editor_plugins_over->get_plugins_list().erase(p_editor);
@@ -2539,6 +2576,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 
 	EditorPlugin *ep = memnew(EditorPlugin);
 	ep->set_script(script.get_ref_ptr());
+	ep->set_config(cf);
 	plugin_addons[p_addon] = ep;
 	add_editor_plugin(ep);
 
@@ -2548,6 +2586,11 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 
 	return plugin_addons.has(p_addon);
+}
+
+EditorPlugin *EditorNode::get_addon_plugin(const String &p_addon) {
+
+	return plugin_addons.has(p_addon) ? plugin_addons[p_addon] : NULL;
 }
 
 void EditorNode::_remove_edited_scene() {
@@ -4476,6 +4519,8 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_resources_reimported"), &EditorNode::_resources_reimported);
 
+	ClassDB::bind_method(D_METHOD("_on_plugin_ready"), &EditorNode::_on_plugin_ready);
+
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -5031,12 +5076,17 @@ EditorNode::EditorNode() {
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
 
+	plugin_create_dialog = memnew(PluginCreateDialog);
+	plugin_create_dialog->connect("plugin_ready", this, "_on_plugin_ready");
+	gui_base->add_child(plugin_create_dialog);
+
 	tool_menu = memnew(PopupMenu);
 	tool_menu->set_name("Tools");
 	tool_menu->connect("index_pressed", this, "_tool_menu_option");
 	p->add_child(tool_menu);
 	p->add_submenu_item(TTR("Tools"), "Tools");
 	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
+	tool_menu->add_item(TTR("Rebuild Documentation"), TOOLS_RELOAD_DOCS);
 	p->add_separator();
 
 #ifdef OSX_ENABLED

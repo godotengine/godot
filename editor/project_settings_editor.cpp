@@ -783,6 +783,10 @@ void ProjectSettingsEditor::popup_project_settings() {
 	plugin_settings->update_plugins();
 }
 
+void ProjectSettingsEditor::update_plugins() {
+	plugin_settings->update_plugins();
+}
+
 void ProjectSettingsEditor::_item_selected() {
 
 	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();

@@ -284,11 +284,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						return;
 					}
 
-					Object *obj = ClassDB::instance(intype);
-
-					if (!obj) {
-						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
-					}
+					Object *obj = _instance_type(intype);
 
 					ERR_BREAK(!obj);
 					Resource *res = Object::cast_to<Resource>(obj);
@@ -882,10 +878,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			} else if (hint_text != "") {
 				int idx = 0;
 
-				Vector<EditorData::CustomType> custom_resources;
-
-				if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-					custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+				EditorData::TypeDB &tdb = EditorNode::get_editor_data().get_type_db();
+				List<StringName> custom_resources;
+				EditorData::TypeDbTypes db_type = EditorData::TYPEDB_TYPE_SCRIPT;
+				tdb.get_class_list(&custom_resources, db_type);
+				for (List<StringName>::Element *E = custom_resources.front(); E; E = E->next()) {
+					if (!tdb.is_parent_class(E->get(), "Resource", db_type) || !tdb.is_custom(E->get()))
+						custom_resources.erase(E->get());
 				}
 
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
@@ -897,8 +896,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
 
-					for (int i = 0; i < custom_resources.size(); i++) {
-						inheritors.push_back(custom_resources[i].name);
+					for (List<StringName>::Element *E = custom_resources.front(); E; E = E->next()) {
+						inheritors.push_back(E->get());
 					}
 
 					List<StringName>::Element *E = inheritors.front();
@@ -912,18 +911,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 						bool is_custom_resource = false;
 						Ref<Texture> icon;
-						if (!custom_resources.empty()) {
-							for (int i = 0; i < custom_resources.size(); i++) {
-								if (custom_resources[i].name == t) {
-									is_custom_resource = true;
-									if (custom_resources[i].icon.is_valid())
-										icon = custom_resources[i].icon;
-									break;
-								}
-							}
-						}
+						const EditorData::TypeInfo *res_ti = tdb.get_type_info(t, db_type);
+						if (res_ti && res_ti->icon.is_valid())
+							icon = res_ti->icon;
 
-						if (!is_custom_resource && !ClassDB::can_instance(t))
+						if ((res_ti && res_ti->is_custom && !tdb.can_instance(t, db_type)) || (ClassDB::class_exists(t) && !ClassDB::can_instance(t)))
 							continue;
 
 						inheritors_array.push_back(t);
@@ -1128,11 +1120,7 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		String intype = inheritors_array[p_idx];
 
-		Object *obj = ClassDB::instance(intype);
-
-		if (!obj) {
-			obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
-		}
+		Object *obj = _instance_type(intype);
 
 		ERR_FAIL_COND(!obj);
 
@@ -1330,11 +1318,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 
-					Object *obj = ClassDB::instance(intype);
-
-					if (!obj) {
-						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
-					}
+					Object *obj = _instance_type(intype);
 
 					ERR_BREAK(!obj);
 					Resource *res = Object::cast_to<Resource>(obj);
@@ -1453,6 +1437,10 @@ void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 		easing_draw->update();
 		emit_signal("variant_changed");
 	}
+}
+
+Object *CustomPropertyEditor::_instance_type(const String &p_type) {
+	return ClassDB::class_exists(p_type) ? ClassDB::instance(p_type) : EditorNode::get_editor_data().get_type_db().instance(p_type, EditorData::TYPEDB_TYPE_SCRIPT);
 }
 
 void CustomPropertyEditor::_draw_easing() {

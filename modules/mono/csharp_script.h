@@ -152,7 +152,7 @@ public:
 	virtual void update_signals();
 
 	/* TODO */ virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inheritance = false) const;
 	virtual void update_exports();
 
 	virtual bool is_tool() const { return tool; }

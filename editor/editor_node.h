@@ -56,6 +56,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/pane_drag.h"
+#include "editor/plugin_create_dialog.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
@@ -143,6 +144,7 @@ private:
 		EDIT_REDO,
 		EDIT_REVERT,
 		TOOLS_ORPHAN_RESOURCES,
+		TOOLS_RELOAD_DOCS,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -244,6 +246,8 @@ private:
 	ToolButton *play_custom_scene_button;
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
+
+	PluginCreateDialog *plugin_create_dialog;
 
 	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
@@ -399,6 +403,8 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
+
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
@@ -617,6 +623,7 @@ public:
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
+	EditorPlugin *get_addon_plugin(const String &p_addon);
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };

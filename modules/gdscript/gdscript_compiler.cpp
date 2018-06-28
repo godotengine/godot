@@ -1770,25 +1770,90 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 			} else {
 
-				if (p_class->extends_class.size() > 1) {
+				if (p_class->extends_class.size() >= 1 && p_class->extends_class[0] == "Scripts") {
 
-					_set_error("Invalid inheritance (unknown class+subclasses)", p_class);
-					return ERR_FILE_NOT_FOUND;
+					GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+					if (!lang->get_global_map().has("Scripts")) {
+						_set_error("'Scripts' global is undefined.", p_class);
+						return ERR_BUG;
+					}
+					if (p_class->extends_class.size() <= 2) {
+						_set_error("Must use a namespaced typename: Scripts.Namespace.Typename", p_class);
+						return ERR_BUG;
+					}
+
+					Dictionary scripts = lang->get_global_array()[lang->get_global_map()["Scripts"]];
+					String type_name = p_class->extends_class[1];
+
+					for (int i_extends = 2; i_extends < p_class->extends_class.size(); i_extends++) {
+						type_name = StringName(type_name + String(".") + p_class->extends_class[i_extends]);
+						if (scripts.has(type_name)) {
+							Ref<GDScript> a_script = ResourceLoader::load(scripts[type_name], "GDScript");
+							if (i_extends == p_class->extends_class.size() - 1) {
+								script = a_script;
+							} else {
+
+								i_extends++;
+
+								String base = p_class->extends_class[i_extends];
+								Ref<GDScript> base_class = a_script;
+
+								if (base_class.is_valid()) {
+
+									String ident = base;
+
+									for (int i = i_extends; i < p_class->extends_class.size(); i++) {
+
+										String subclass = p_class->extends_class[i];
+
+										ident += ("." + subclass);
+
+										if (base_class->subclasses.has(subclass)) {
+
+											base_class = base_class->subclasses[subclass];
+										} else if (base_class->constants.has(subclass)) {
+
+											Ref<GDScript> new_base_class = base_class->constants[subclass];
+											if (new_base_class.is_null()) {
+												_set_error("Constant is not a class: " + ident, p_class);
+												return ERR_SCRIPT_FAILED;
+											}
+											base_class = new_base_class;
+										} else {
+
+											_set_error("Could not find subclass: " + ident, p_class);
+											return ERR_FILE_NOT_FOUND;
+										}
+									}
+
+									script = base_class;
+								}
+							}
+						}
+					}
 				}
-				//if not found, try engine classes
-				if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
 
-					_set_error("Unknown class: '" + base + "'", p_class);
-					return ERR_FILE_NOT_FOUND;
-				}
+				if (script.is_null()) {
+					if (p_class->extends_class.size() > 1) {
 
-				int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
-				native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
-				if (!native.is_valid()) {
+						_set_error("Invalid inheritance (unknown class+subclasses)", p_class);
+						return ERR_FILE_NOT_FOUND;
+					}
+					//if not found, try engine classes
+					if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
 
-					_set_error("Global not a class: '" + base + "'", p_class);
+						_set_error("Unknown class: '" + base + "'", p_class);
+						return ERR_FILE_NOT_FOUND;
+					}
 
-					return ERR_FILE_NOT_FOUND;
+					int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
+					native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
+					if (!native.is_valid()) {
+
+						_set_error("Global not a class: '" + base + "'", p_class);
+
+						return ERR_FILE_NOT_FOUND;
+					}
 				}
 			}
 		}

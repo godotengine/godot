@@ -30,6 +30,7 @@
 
 #include "editor_properties.h"
 #include "editor/editor_resource_preview.h"
+#include "editor_data.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "scene/main/viewport.h"
@@ -1795,7 +1796,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			Object *obj = ClassDB::instance(intype);
 
 			if (!obj) {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_data().get_type_db().instance(intype, EditorData::TYPEDB_TYPE_SCRIPT);
 			}
 
 			ERR_BREAK(!obj);
@@ -1836,48 +1837,36 @@ void EditorPropertyResource::_update_menu() {
 	} else if (base_type != "") {
 		int idx = 0;
 
-		Vector<EditorData::CustomType> custom_resources;
-
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+		List<StringName> custom_resources;
+		EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
+		tdb.get_class_list(&custom_resources, EditorData::TYPEDB_TYPE_SCRIPT);
+		for (List<StringName>::Element *E = custom_resources.front(); E; E = E->next()) {
+			if (!tdb.is_parent_class(E->get(), "Resource"))
+				custom_resources.erase(E->get());
 		}
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
 
 			String base = base_type.get_slice(",", i);
 
-			Set<String> valid_inheritors;
-			valid_inheritors.insert(base);
 			List<StringName> inheritors;
-			ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
+			inheritors.push_back(base);
+			ClassDB::get_inheriters_from_class(base, &inheritors);
 
-			for (int i = 0; i < custom_resources.size(); i++) {
-				inheritors.push_back(custom_resources[i].name);
+			for (List<StringName>::Element *E = custom_resources.front(); E; E = E->next()) {
+				if (tdb.is_parent_class(E->get(), base))
+					inheritors.push_back(E->get());
 			}
 
-			List<StringName>::Element *E = inheritors.front();
-			while (E) {
-				valid_inheritors.insert(E->get());
-				E = E->next();
-			}
-
-			for (Set<String>::Element *E = valid_inheritors.front(); E; E = E->next()) {
+			for (List<StringName>::Element *E = inheritors.front(); E; E = E->next()) {
 				String t = E->get();
 
-				bool is_custom_resource = false;
+				const EditorData::TypeInfo *res_ti = tdb.get_type_info(t, EditorData::TYPEDB_TYPE_SCRIPT);
 				Ref<Texture> icon;
-				if (!custom_resources.empty()) {
-					for (int i = 0; i < custom_resources.size(); i++) {
-						if (custom_resources[i].name == t) {
-							is_custom_resource = true;
-							if (custom_resources[i].icon.is_valid())
-								icon = custom_resources[i].icon;
-							break;
-						}
-					}
-				}
+				if (res_ti && res_ti->icon.is_valid())
+					icon = res_ti->icon;
 
-				if (!is_custom_resource && !ClassDB::can_instance(t))
+				if ((res_ti && res_ti->is_abstract) || (ClassDB::class_exists(t) && !ClassDB::can_instance(t)))
 					continue;
 
 				inheritors_array.push_back(t);

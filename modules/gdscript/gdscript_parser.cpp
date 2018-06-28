@@ -30,6 +30,7 @@
 
 #include "gdscript_parser.h"
 
+#include "../../core/project_settings.h"
 #include "gdscript.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
@@ -727,9 +728,71 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			if (!bfn) {
-				IdentifierNode *id = alloc_node<IdentifierNode>();
-				id->name = identifier;
-				expr = id;
+
+				if (identifier == "Scripts" || identifier == "Scenes") {
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_PERIOD) {
+						_set_error("'" + String(identifier) + "' must be accessed with a period '.'");
+						return NULL;
+					}
+					tokenizer->advance();
+
+					String type_name = "";
+					GDScriptTokenizer::Token t = tokenizer->get_token();
+					const Map<StringName, int> &map = GDScriptLanguage::get_singleton()->get_global_map();
+
+					if (map.has(identifier)) {
+						GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+						lang->add_global_constant(identifier, ProjectSettings::get_singleton()->get_setting("typedb/" + String(identifier).to_lower()));
+						Dictionary type_map = lang->get_global_array()[lang->get_global_map()[identifier]];
+						bool found_type = false;
+						while (t == GDScriptTokenizer::TK_IDENTIFIER || t == GDScriptTokenizer::TK_PERIOD) {
+
+							if (t == GDScriptTokenizer::TK_PERIOD) {
+								tokenizer->advance();
+								t = tokenizer->get_token();
+								continue;
+							}
+
+							StringName type_identifier = tokenizer->get_token_identifier();
+							if (type_name.length())
+								type_name += ".";
+							type_name += String(type_identifier);
+
+							if (type_map.has(type_name)) {
+
+								OperatorNode *op = alloc_node<OperatorNode>();
+								op->op = OperatorNode::OP_CALL;
+
+								BuiltInFunctionNode *bn = alloc_node<BuiltInFunctionNode>();
+								bn->function = GDScriptFunctions::RESOURCE_LOAD;
+								op->arguments.push_back(bn);
+
+								ConstantNode *path = alloc_node<ConstantNode>();
+								path->value = String(type_map[type_name]);
+								op->arguments.push_back(path);
+
+								expr = op;
+								found_type = true;
+								tokenizer->advance();
+								break;
+							}
+							tokenizer->advance();
+							t = tokenizer->get_token();
+						}
+						if (!found_type) {
+							if (String(type_name).get_slice_count(".") >= 2)
+								_set_error("'" + String(identifier) + "' global failed to match any substring in: " + String(type_name));
+							else
+								_set_error("'" + String(identifier) + "' global must be followed by namespaced typename: Scripts.Namespace.Typename");
+							return NULL;
+						}
+					}
+				} else {
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = identifier;
+					expr = id;
+				}
 			}
 
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ADD || tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB || tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT || tokenizer->get_token() == GDScriptTokenizer::TK_OP_BIT_INVERT) {
@@ -1182,7 +1245,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		}
 	}
 
-	/* Reduce the set set of expressions and place them in an operator tree, respecting precedence */
+	/* Reduce the set of expressions and place them in an operator tree, respecting precedence */
 
 	while (expression.size() > 1) {
 
@@ -3445,6 +3508,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance();
 
+				bool typename_defined = false;
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 
 					tokenizer->advance();
@@ -3464,7 +3528,93 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 
-					if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT) {
+
+						const Variant v = tokenizer->get_token_constant();
+						String s = v;
+
+						if (!p_class->extends_used && !p_class->tool) {
+							bool good_class_export = v.get_type() == Variant::STRING && s.get_slicec('.', 0).length() && s.get_slicec('.', 1).length();
+							int token_line = tokenizer->get_token_line(0);
+							if (!good_class_export && token_line == 1) {
+								_set_error("Namespace required: export(\"Namespace.Typename\"[, ...])\\n");
+								return;
+							}
+
+							tokenizer->advance();
+							if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE || tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+								typename_defined = true;
+							}
+
+							bool is_abstract = false;
+							bool is_custom = false;
+							while (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+								tokenizer->advance();
+								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER) {
+									String identifier = tokenizer->get_token_identifier();
+									if (identifier == "ABSTRACT") {
+										if (is_abstract) {
+											_set_error("Duplication of 'ABSTRACT' flag.");
+											return;
+										}
+										is_abstract = true;
+										tokenizer->advance();
+									} else if (identifier == "CUSTOM") {
+										if (is_custom) {
+											_set_error("Duplication of 'CUSTOM' flag.");
+											return;
+										}
+										is_custom = true;
+										tokenizer->advance();
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											break;
+										} else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA && tokenizer->get_token(1) == GDScriptTokenizer::TK_CONSTANT) {
+											tokenizer->advance();
+											GDScriptTokenizer::Token icon_token = tokenizer->get_token();
+											if (icon_token == GDScriptTokenizer::TK_CONSTANT) {
+												Variant icon_var = tokenizer->get_token_constant();
+												if (icon_var.get_type() == Variant::STRING) {
+													if (FileAccess::exists(String(icon_var))) {
+														tokenizer->advance();
+														break;
+													} else {
+														_set_error("Custom icon filepath in class export could not be opened.");
+														return;
+													}
+												}
+												_set_error("String parameter must follow class export's 'CUSTOM' flag.");
+												return;
+											} else if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER) {
+												while (true) {
+													switch (icon_token) {
+														case GDScriptTokenizer::TK_IDENTIFIER:
+														case GDScriptTokenizer::TK_PERIOD: {
+															tokenizer->advance();
+															icon_token = tokenizer->get_token();
+														} break;
+													}
+												}
+											} else {
+												_set_error("Expected a Texture identifier or file path after 'CUSTOM' in class export.");
+												return;
+											}
+										}
+									} else {
+										_set_error("Unrecognized class export parameter.");
+										return;
+									}
+								} else {
+									_set_error("Expected class export parameter after comma.");
+									return;
+								}
+							}
+						} else if (v.get_type() == Variant::STRING) {
+							_set_error("Misplaced class export. Must be first statement.");
+							return;
+						} else {
+							tokenizer->advance();
+						}
+					} else if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 
 						Variant::Type type = tokenizer->get_token_type();
 						if (type == Variant::NIL) {
@@ -3931,7 +4081,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					tokenizer->advance();
 				}
 
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVESYNC) {
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVESYNC && !typename_defined) {
 
 					current_export = PropertyInfo();
 					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave', 'sync', 'remotesync', 'mastersync', 'slavesync'.");

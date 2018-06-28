@@ -647,6 +647,138 @@ void DocData::generate(bool p_basic_types) {
 	}
 }
 
+String DocData::get_script_xml(Ref<Script> &p_script) {
+	String className = p_script->get_path().get_file().get_basename().typenamify();
+	Dictionary vi = Engine::get_singleton()->get_version_info();
+	String version = String(vi["major"]) + "." + String(vi["minor"]);
+	String category = p_script->get_path().find("res://addons/") != String::npos ? "Plugin" : "Project";
+
+	//unable to isolate only the current script's methods/signals/constants
+	List<PropertyInfo> plist;
+	p_script->get_script_property_list(&plist, true);
+	List<MethodInfo> mlist;
+	p_script->get_script_method_list(&mlist);
+	List<MethodInfo> slist;
+	p_script->get_script_signal_list(&slist);
+	Map<StringName, Variant> cmap;
+	p_script->get_constants(&cmap);
+
+	String header = "";
+	header += "< ? xml version = \"1.0\" encoding = \"UTF-8\" ? >\n";
+	header += "<class name = \"" + className + "\" category = \"" + category + "\" version = \"" + version + "\">\n";
+
+	String content;
+	content += "\t<brief_description>\n";
+	content += "\t</brief_description>\n";
+	content += "\t<description>\n";
+	content += "\t</description>\n";
+	content += "\t<tutorials>\n";
+	content += "\t</tutorials>\n";
+	content += "\t<demos>\n";
+	content += "\t</demos>\n";
+
+	content += "\t<methods>\n";
+	for (List<MethodInfo>::Element *M = mlist.front(); M; M = M->next()) {
+		MethodInfo &mi = M->get();
+		content += "\t\tmethod name=\"" + mi.name + "\"";
+		String qualifiers = "";
+		if (mi.flags & METHOD_FLAG_CONST) {
+			if (qualifiers.length())
+				qualifiers += " ";
+			qualifiers += "const";
+		}
+		if (mi.flags & METHOD_FLAG_VIRTUAL) {
+			if (qualifiers.length())
+				qualifiers += " ";
+			qualifiers += "virtual";
+		}
+		if (mi.flags & METHOD_FLAG_VARARG) {
+			if (qualifiers.length())
+				qualifiers += " ";
+			qualifiers += "vararg";
+		}
+		if (qualifiers.length())
+			content += " " + qualifiers;
+		content += ">\n";
+
+		String class_name = "";
+		String ret_type = Variant::get_type_name(mi.return_val.type);
+		if (mi.return_val.type == Variant::NIL) {
+			ret_type = mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT ? "Variant" : "void";
+		} else if (mi.return_val.class_name != StringName()) {
+			ret_type = mi.return_val.class_name;
+		} else if (mi.return_val.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+			ret_type = mi.return_val.hint_string;
+		}
+		content += "\t\t\t<return type=\"" + ret_type + "\"";
+		content += (mi.return_val.usage & PROPERTY_USAGE_CLASS_IS_ENUM ? " enum=\"" + mi.return_val.class_name + "\"" : "") + ">";
+		content += "\t\t\t</return>";
+
+		int idx = 0;
+		for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
+			PropertyInfo &pi = E->get();
+			content += "\t\t\t<argument index=\"" + itos(idx++) + "\" name=\"" + pi.name + "\" type=\"" + (pi.type == Variant::OBJECT ? String(pi.class_name) : Variant::get_type_name(pi.type));
+			//TODO: check for default, and insert it if it exists
+			content += "\">\n";
+			content += "\t\t\t</argument>\n";
+		}
+		content += "\t\t\t<description>\n";
+		content += "\t\t\t</description>\n";
+
+		content += "\t\t</method>\n";
+	}
+	content += "\t</methods>\n";
+
+	content += "\t<members>\n";
+	for (List<PropertyInfo>::Element *P = plist.front(); P; P = P->next()) {
+		PropertyInfo &pi = P->get();
+		String getter_prefix = pi.type == Variant::BOOL ? "is_" : "get_";
+		content += "\t\t<member name=\"" + pi.name + "\" type=\"" + Variant::get_type_name(pi.type) + "\"";
+		content += " setter=\"set_" + pi.name + "\" getter=\"" + getter_prefix + pi.name + "\"";
+		content += (pi.hint & PROPERTY_HINT_ENUM ? " enum=\"" + pi.hint_string + "\"" : "") + String(">\n");
+		content += "\t\t</member>";
+	}
+	content += "\t</members>\n";
+
+	content += "\t<signals>\n";
+	for (List<MethodInfo>::Element *S = slist.front(); S; S = S->next()) {
+		MethodInfo &mi = S->get();
+
+		content += "\t\t<signal name=\"" + mi.name + "\">\n";
+
+		int idx = 0;
+		for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
+			PropertyInfo &pi = E->get();
+			content += "\t\t\t<argument index=\"" + itos(idx++) + "\" name=\"" + pi.name + "\" type=\"" + Variant::get_type_name(pi.type);
+			//TODO: check for default, and insert it if it exists
+			content += "\">\n";
+			content += "\t\t\t</argument>\n";
+		}
+		content += "\t\t\t<description>\n";
+		content += "\t\t\t</description>\n";
+
+		content += "\t\t</signal>\n";
+	}
+	content += "\t</signals>\n";
+
+	String constants = "";
+	for (Map<StringName, Variant>::Element *C = cmap.front(); C; C = C->next()) {
+		String cname = C->get();
+		if (cmap[cname].get_type() == Variant::INT) {
+			constants += "\t\t<constant name=\"" + cname + "\" value=\"" + String(cmap[cname]) + "\">\n";
+		}
+	}
+	if (constants.length()) {
+		content += "\t<constants>\n" + constants + "\t</constants>\n";
+	}
+
+	String footer = "</class>\n";
+
+	content = header + content + footer;
+
+	return content;
+}
+
 static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &methods) {
 
 	String section = parser->get_node_name();

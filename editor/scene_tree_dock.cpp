@@ -315,6 +315,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					preferred = "Spatial";
 			}
 			create_dialog->set_preferred_search_result_type(preferred);
+			create_dialog->update_types();
 			create_dialog->popup_create(true);
 		} break;
 		case TOOL_INSTANCE: {
@@ -348,10 +349,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!selected)
 				break;
 
+			EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
 			Ref<Script> existing = selected->get_script();
-			if (existing.is_valid())
+			Dictionary script_meta = existing.is_valid() ? existing->get_script_metadata() : Dictionary();
+			String type_name = script_meta.has("type_name") ? script_meta["type_name"] : "";
+			const EditorData::TypeInfo *script_ti = tdb.get_type_info(type_name, EditorData::TYPEDB_TYPE_SCRIPT);
+
+			if (existing.is_valid() && !script_ti) {
 				editor->push_item(existing.ptr());
-			else {
+			} else {
 				String path = selected->get_filename();
 				if (path == "") {
 					String root_path = editor_data->get_edited_scene_root()->get_filename();
@@ -361,7 +367,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						path = root_path.get_base_dir() + "/" + selected->get_name();
 					}
 				}
-				script_create_dialog->config(selected->get_class(), path);
+				//Will need to update this when able to derive directly from Scripts.Typename
+				String name = selected->get_class();
+				if (script_ti && script_ti->is_custom) {
+					name = ProjectSettings::get_singleton()->get_setting("typedb/automation/inherit_by_typename_for_custom_types") ? tdb.get_script_create_dialog_inherits_field(*script_ti) : "\"" + script_ti->path + "\"";
+				}
+				String name = script_ti && script_ti->is_custom ? tdb.get_script_create_dialog_inherits_field(*script_ti) : selected->get_class();
+				script_create_dialog->config(name, path);
 				script_create_dialog->popup_centered();
 			}
 
@@ -376,13 +388,36 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().create_action(TTR("Clear Script"));
 			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
 
+			EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Ref<Script> existing = E->get()->get_script();
+
 				if (existing.is_valid()) {
-					const RefPtr empty;
-					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
-					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+					Ref<Script> current = existing;
+					bool match_found = false;
+					while (current.is_valid()) {
+						Dictionary script_meta = current->get_script_metadata();
+						String type_name = script_meta.has("type_name") ? script_meta["type_name"] : "";
+						const EditorData::TypeInfo *script_ti = tdb.get_type_info(type_name, EditorData::TYPEDB_TYPE_SCRIPT);
+
+						while (script_ti && !script_ti->is_custom) {
+							script_ti = tdb.get_type_info(script_ti->inherits, EditorData::TYPEDB_TYPE_SCRIPT);
+						}
+						if (script_ti) {
+							match_found = true;
+							editor_data->get_undo_redo().add_do_method(E->get(), "set_script", current.get_ref_ptr());
+							editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+							break;
+						} else {
+							current = current->get_base_script();
+						}
+					}
+					if (!match_found) {
+						const RefPtr empty;
+						editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
+						editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+					}
 				}
 			}
 
@@ -1329,6 +1364,9 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
 	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
 
+	editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+	editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+
 	editor_data->get_undo_redo().commit_action();
 }
 
@@ -1418,7 +1456,15 @@ void SceneTreeDock::_delete_confirm() {
 
 void SceneTreeDock::_update_script_button() {
 	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() == 1) {
-		if (EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
+		EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
+		Object *obj = EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key();
+		Ref<Script> s = obj->get_script();
+		bool script_is_custom = false;
+		if (s.is_valid() && tdb.has_path(s->get_path())) {
+			EditorData::TypeInfo &script_ti = tdb.get_path(s->get_path());
+			script_is_custom = script_ti.is_custom;
+		}
+		if (obj->get_script().is_null() || script_is_custom) {
 			button_create_script->show();
 			button_clear_script->hide();
 		} else {
@@ -1466,6 +1512,8 @@ void SceneTreeDock::_create() {
 		ERR_FAIL_COND(!child);
 
 		editor_data->get_undo_redo().create_action(TTR("Create Node"));
+		String node_name = create_dialog->get_selected_type().replacen(".", "/").get_file();
+		child->set_name(node_name);
 
 		if (edited_scene) {
 

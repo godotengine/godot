@@ -162,7 +162,7 @@ public:
 
 	virtual void update_exports(); //editor tool
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited = false) const;
 
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;

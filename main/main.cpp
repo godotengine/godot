@@ -1312,7 +1312,7 @@ bool Main::start() {
 		{
 			DirAccessRef da = DirAccess::open(doc_tool);
 			if (!da) {
-				ERR_EXPLAIN("Argument supplied to --doctool must be a base godot build directory");
+				ERR_EXPLAIN("Argument supplied to --doctool must be a base godot build directory. Given: " + doc_tool);
 				ERR_FAIL_V(false);
 			}
 		}
@@ -1335,6 +1335,53 @@ bool Main::start() {
 			}
 		}
 
+		{
+			String path = "res://doc_classes";
+			if (DirAccess::exists(ProjectSettings::get_singleton()->globalize_path(path))) {
+				checked_paths.insert(path);
+				docsrc.load_classes(path);
+				print_line("Loading docs from: " + path);
+			}
+		}
+		{
+			Error err;
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			if (da) {
+				da->change_dir(ProjectSettings::get_singleton()->globalize_path("res://addons/"));
+				da->list_dir_begin();
+				String path;
+				bool isdir;
+				path = da->get_next(&isdir);
+				while (path != String()) {
+					if (isdir) {
+						DirAccessRef subda = DirAccess::open("res://addons/" + path, &err);
+						if (subda) {
+							subda->list_dir_begin();
+							String sub_path;
+							bool subisdir;
+							sub_path = subda->get_next(&subisdir);
+							while (sub_path != String()) {
+								if (sub_path == "." || sub_path == "..") {
+									sub_path = da->get_next(&subisdir);
+									continue;
+								}
+								String doc_path = "res://addons/" + sub_path.plus_file("doc_classes");
+								if (subisdir && DirAccess::exists(doc_path) && !checked_paths.has(doc_path)) {
+									checked_paths.insert(doc_path);
+									docsrc.load_classes(doc_path);
+									print_line("Loading docs from: " + doc_path);
+								}
+								sub_path = da->get_next(&subisdir);
+							}
+							subda->list_dir_end();
+						}
+					}
+					path = da->get_next(&isdir);
+				}
+				da->list_dir_end();
+			}
+		}
+
 		String index_path = doc_tool.plus_file("doc/classes");
 		docsrc.load_classes(index_path);
 		checked_paths.insert(index_path);
@@ -1354,6 +1401,9 @@ bool Main::start() {
 	}
 
 #endif
+
+	GLOBAL_DEF("typedb/automation/inherit_by_typename_for_custom_types", true);
+	GLOBAL_DEF("typedb/automation/auto_generate_custom_script_docs", false);
 
 	if (_export_preset != "") {
 		if (game_path == "") {

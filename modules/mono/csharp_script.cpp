@@ -2183,7 +2183,7 @@ Ref<Script> CSharpScript::get_base_script() const {
 	return Ref<Script>();
 }
 
-void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inheritance) const {
 
 	for (Map<StringName, PropertyInfo>::Element *E = member_info.front(); E; E = E->next()) {
 		p_list->push_back(E->value());

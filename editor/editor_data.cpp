@@ -38,6 +38,9 @@
 #include "project_settings.h"
 #include "scene/resources/packed_scene.h"
 
+#include "../modules/gdscript/gdscript.h"
+#include "../modules/regex/regex.h"
+
 void EditorHistory::cleanup_history() {
 
 	for (int i = 0; i < history.size(); i++) {
@@ -473,65 +476,482 @@ void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
 int EditorData::get_editor_plugin_count() const {
 	return editor_plugins.size();
 }
+
 EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, editor_plugins.size(), NULL);
 	return editor_plugins[p_idx];
 }
 
-void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
+void EditorData::TypeDB::_add_type(const StringName &p_type, const StringName &p_inherits, const String &p_path, const Ref<Texture> &p_icon, bool p_is_abstract, bool p_is_custom, TypeDbTypes p_db_type) {
 
-	ERR_FAIL_COND(p_script.is_null());
-	CustomType ct;
-	ct.name = p_type;
-	ct.icon = p_icon;
-	ct.script = p_script;
-	if (!custom_types.has(p_inherits)) {
-		custom_types[p_inherits] = Vector<CustomType>();
+	ERR_FAIL_COND(_scripts.has(p_type));
+	ERR_FAIL_COND(!FileAccess::exists(p_path));
+
+	TypeInfo ti;
+	ti.type_name = p_type;
+	ti.inherits = p_inherits;
+	ti.icon = p_icon;
+	ti.is_abstract = p_is_abstract;
+	ti.is_custom = p_is_custom;
+	ti.type = p_db_type;
+	ti.path = String(p_path);
+	ti.disabled = false;
+
+	TypeMap *tm;
+	DependencyMap *dm;
+	switch (p_db_type) {
+		case TYPEDB_TYPE_SCRIPT:
+			tm = &_scripts;
+			dm = &_script_deps;
+			break;
+		case TYPEDB_TYPE_SCENE:
+			tm = &_scenes;
+			dm = &_scene_deps;
+			break;
 	}
 
-	custom_types[p_inherits].push_back(ct);
+	if (!tm->has(p_inherits) && !ClassDB::class_exists(p_inherits)) {
+		if (!dm->has(p_inherits))
+			(*dm)[p_inherits] = Vector<TypeInfo>();
+		(*dm)[p_inherits].push_back(ti);
+		return;
+	}
+	if (tm->has(ti.inherits)) {
+		TypeInfo &bti = (*tm)[ti.inherits];
+		ti.base = bti.base;
+		bti.sub_types.push_back(ti.type_name);
+	} else {
+		ti.base = ti.inherits;
+	}
+
+	_register_type_info(ti, p_db_type);
+
+	_check_for_deps(ti.type_name, p_db_type);
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+void EditorData::TypeDB::_register_type_info(TypeInfo &p_ti, TypeDbTypes p_db_type) {
 
-	if (get_custom_types().has(p_inherits)) {
+	TypeMap *tm;
+	switch (p_db_type) {
+		case TYPEDB_TYPE_SCRIPT:
+			tm = &_scripts;
+			break;
+		case TYPEDB_TYPE_SCENE:
+			tm = &_scenes;
+			break;
+	}
+	(*tm)[p_ti.type_name] = p_ti;
+	_paths[p_ti.path] = &(*tm)[p_ti.type_name];
 
-		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
-			if (get_custom_types()[p_inherits][i].name == p_type) {
-				Ref<Texture> icon = get_custom_types()[p_inherits][i].icon;
-				Ref<Script> script = get_custom_types()[p_inherits][i].script;
+	_globals_dirty = true;
+}
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, NULL);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
-				}
-				ob->set_script(script.get_ref_ptr());
-				if (icon.is_valid())
-					ob->set_meta("_editor_icon", icon);
-				return ob;
-			}
-		}
+void EditorData::TypeDB::_check_for_deps(const StringName &p_type, TypeDbTypes p_db_type) {
+
+	TypeMap *tm;
+	DependencyMap *dm;
+	switch (p_db_type) {
+		case TYPEDB_TYPE_SCRIPT:
+			tm = &_scripts;
+			dm = &_script_deps;
+			break;
+		case TYPEDB_TYPE_SCENE:
+			tm = &_scenes;
+			dm = &_scene_deps;
+			break;
 	}
 
+	if (!dm->has(p_type))
+		return;
+
+	TypeInfo &ti = (*tm)[p_type];
+	Vector<TypeInfo> &tis = (*dm)[p_type];
+
+	for (int i = 0; i < tis.size(); i++) {
+		TypeInfo &dep = tis[i];
+
+		dep.base = ti.base;
+		ti.sub_types.push_back(dep.type_name);
+		_register_type_info(dep);
+		_check_for_deps(dep.type_name);
+	}
+
+	dm->erase(p_type);
+}
+
+void EditorData::TypeDB::add_script(const StringName &p_type, const StringName &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon, bool p_is_abstract, bool p_is_custom) {
+	ERR_FAIL_COND(!p_script.is_valid());
+	_add_type(p_type, p_inherits, p_script->get_path(), p_icon, p_is_abstract, p_is_custom, TYPEDB_TYPE_SCRIPT);
+}
+
+void EditorData::TypeDB::add_scene(const StringName &p_type, const StringName &p_inherits, const Ref<PackedScene> &p_scene, const Ref<Texture> &p_icon, bool p_is_abstract, bool p_is_custom) {
+	ERR_FAIL_COND(!p_scene.is_valid());
+	_add_type(p_type, p_inherits, p_scene->get_path(), p_icon, p_is_abstract, p_is_custom, TYPEDB_TYPE_SCENE);
+}
+
+void EditorData::TypeDB::remove_custom_type(const StringName &p_type, TypeDbTypes p_db_types) {
+	TypeMap *tm;
+	switch (p_db_types) {
+		case TYPEDB_TYPE_SCRIPT:
+			tm = &_scripts;
+			break;
+		case TYPEDB_TYPE_SCENE:
+			tm = &_scenes;
+			break;
+	}
+
+	TypeInfo &ti = (*tm)[p_type];
+	(*tm)[ti.inherits].sub_types.erase(ti.type_name);
+	tm->erase(p_type);
+}
+
+bool EditorData::TypeDB::class_exists(const StringName &p_type, TypeDbTypes p_db_types) const {
+	if (p_db_types & TYPEDB_TYPE_SCRIPT && _scripts.has(p_type))
+		return !_scripts[p_type].disabled;
+	if (p_db_types & TYPEDB_TYPE_SCENE && _scenes.has(p_type))
+		return !_scenes[p_type].disabled;
+	return false;
+}
+
+bool EditorData::TypeDB::can_instance(const StringName &p_type, TypeDbTypes p_db_types) const {
+
+	if (p_db_types & TYPEDB_TYPE_SCRIPT && _scripts.has(p_type)) {
+		const EditorData::TypeInfo &ti = _scripts[p_type];
+		if (ti.is_abstract || ti.disabled) {
+			return false;
+		}
+		RES res = ResourceLoader::load(_scripts[p_type].path);
+		if (res->has_method("can_instance")) {
+			bool script_can_instance = res->call("can_instance").operator bool();
+			if (!script_can_instance) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	if (p_db_types & TYPEDB_TYPE_SCENE && _scenes.has(p_type)) {
+		const EditorData::TypeInfo &ti = _scenes[p_type];
+		return !(ti.is_abstract || ti.disabled);
+	}
+
+	return false;
+}
+
+Object *EditorData::TypeDB::instance(const StringName &p_type, TypeDbTypes p_db_type) {
+	ERR_FAIL_COND_V(!class_exists(p_type, p_db_type), NULL);
+
+	const EditorData::TypeInfo *ti = get_type_info(p_type, p_db_type);
+	ERR_FAIL_COND_V(!ti, NULL);
+	ERR_FAIL_COND_V(ti->type != p_db_type, NULL);
+	ERR_FAIL_COND_V(ti->is_abstract, NULL);
+	ERR_FAIL_COND_V(ti->disabled, NULL);
+
+	if (ti->type == TYPEDB_TYPE_SCRIPT) {
+		Object *obj = ClassDB::instance(ti->base);
+		ERR_FAIL_COND_V(!obj, NULL);
+
+		Ref<Script> script = ResourceLoader::load(ti->path, "Script");
+		ERR_FAIL_COND_V(script.is_null(), NULL);
+
+		obj->set_script(script.get_ref_ptr());
+		return obj;
+	} else if (ti->type == TYPEDB_TYPE_SCENE) {
+		Ref<PackedScene> scene = ResourceLoader::load(ti->path, "PackedScene");
+		ERR_FAIL_COND_V(scene.is_null(), NULL);
+
+		Object *obj = scene->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
+		ERR_FAIL_COND_V(!obj, NULL);
+
+		return obj;
+	}
 	return NULL;
 }
 
-void EditorData::remove_custom_type(const String &p_type) {
+bool EditorData::TypeDB::is_custom(const StringName &p_type, TypeDbTypes p_db_types) const {
 
-	for (Map<String, Vector<CustomType> >::Element *E = custom_types.front(); E; E = E->next()) {
+	if (p_db_types & TYPEDB_TYPE_SCRIPT && _scripts.has(p_type)) {
+		const EditorData::TypeInfo &ti = _scripts[p_type];
+		return ti.is_custom && !ti.disabled;
+	}
+	if (p_db_types & TYPEDB_TYPE_SCENE && _scenes.has(p_type)) {
+		const EditorData::TypeInfo &ti = _scenes[p_type];
+		return ti.is_custom && !ti.disabled;
+	}
+	return false;
+}
 
-		for (int i = 0; i < E->get().size(); i++) {
-			if (E->get()[i].name == p_type) {
-				E->get().remove(i);
-				if (E->get().empty()) {
-					custom_types.erase(E->key());
-				}
-				return;
+bool EditorData::TypeDB::is_custom_path(const String &p_path, TypeDbTypes p_db_types) const {
+	EditorData::TypeInfo *ti = _paths[p_path];
+	if (!ti)
+		return false;
+	return is_custom(ti->type_name, p_db_types);
+}
+
+StringName EditorData::TypeDB::get_type_name(const String &p_path, EditorData::TypeDbTypes p_db_types) const {
+
+	if (p_db_types == TYPEDB_TYPE_SCRIPT) {
+		Ref<Script> script = ResourceLoader::load(p_path, "Script");
+		Dictionary meta = script->get_script_metadata();
+		if (!meta.empty() && meta.has("type_name")) {
+			return meta["type_name"];
+		}
+	}
+	//TODO: scenes metadata extraction
+	return StringName();
+}
+
+bool EditorData::TypeDB::is_parent_class(const StringName &p_type, const StringName &p_inherits, TypeDbTypes p_db_types) const {
+
+	StringName inherits = p_type;
+
+	while (inherits.operator String().length()) {
+
+		if (inherits == p_inherits)
+			return true;
+		inherits = get_parent_class(inherits, p_db_types);
+	}
+
+	const EditorData::TypeInfo *ti = get_type_info(p_type, p_db_types);
+	if (ti) {
+		return ti->base == p_inherits || ClassDB::is_parent_class(ti->base, p_inherits);
+	}
+
+	return false;
+}
+
+StringName EditorData::TypeDB::get_parent_class(const StringName &p_type, TypeDbTypes p_db_types) const {
+	if (p_db_types & TYPEDB_TYPE_SCRIPT)
+		return _scripts.has(p_type) && !_scripts[p_type].disabled ? _scripts[p_type].inherits : StringName();
+	if (p_db_types & TYPEDB_TYPE_SCENE)
+		return _scenes.has(p_type) && !_scenes[p_type].disabled ? _scenes[p_type].inherits : StringName();
+	return StringName();
+}
+
+void EditorData::TypeDB::get_class_list(List<StringName> *p_types, TypeDbTypes p_db_types) const {
+
+	if (p_db_types & TYPEDB_TYPE_SCRIPT) {
+		const StringName *k = NULL;
+
+		while ((k = _scripts.next(k))) {
+			if (_scripts[*k].disabled)
+				continue;
+			p_types->push_back(*k);
+		}
+	}
+
+	if (p_db_types & TYPEDB_TYPE_SCENE) {
+		const StringName *k = NULL;
+
+		while ((k = _scenes.next(k))) {
+			if (_scenes[*k].disabled)
+				continue;
+			p_types->push_back(*k);
+		}
+	}
+
+	p_types->sort();
+}
+
+const EditorData::TypeInfo *EditorData::TypeDB::get_type_info(const StringName &p_type, TypeDbTypes p_db_types) const {
+	if (p_db_types & TYPEDB_TYPE_SCRIPT && _scripts.has(p_type) && !_scripts[p_type].disabled)
+		return &_scripts[p_type];
+	if (p_db_types & TYPEDB_TYPE_SCENE && _scenes.has(p_type) && !_scenes[p_type].disabled)
+		return &_scenes[p_type];
+	return NULL;
+}
+
+void EditorData::TypeDB::toggle_namespace(const String &p_namespace, bool p_active) {
+	List<StringName> keys;
+	_scripts.get_key_list(&keys);
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		if (String(E->get()).find(p_namespace + ".", 0) == 0)
+			_scripts[E->get()].disabled = !p_active;
+	}
+	keys.clear();
+	_scenes.get_key_list(&keys);
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		if (String(E->get()).find(p_namespace + ".", 0) == 0)
+			_scenes[E->get()].disabled = !p_active;
+	}
+	_globals_dirty = true;
+}
+
+void EditorData::TypeDB::toggle_directory(const String &p_directory, bool p_active) {
+	List<StringName> keys;
+	_paths.get_key_list(&keys);
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		if (String(E->get()).find(p_directory, 0) == 0)
+			_paths[E->get()]->disabled = !p_active;
+	}
+	_globals_dirty = true;
+}
+
+void EditorData::TypeDB::update_res(const String &p_path) {
+
+	TypeDbTypes t = TYPEDB_TYPE_NONE;
+	String ext = p_path.get_extension();
+	if ("tscn" == ext || "scn" == ext) {
+		t = TYPEDB_TYPE_SCENE;
+	} else {
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *lang = ScriptServer::get_language(i);
+			if (ext == lang->get_extension()) {
+				t = TYPEDB_TYPE_SCRIPT;
+				break;
 			}
 		}
 	}
+
+	if (_paths.has(p_path) && !FileAccess::exists(p_path)) {
+		_paths.erase(p_path); // will this situation even happen if it's already in the ResourceCache?
+	}
+
+	StringName type_name = get_type_name(p_path, t);
+	if (StringName() == type_name) {
+		if (_paths.has(p_path)) {
+			EditorData::TypeInfo *ti = _paths[p_path];
+			if (ti) {
+				if (ti->type == TYPEDB_TYPE_SCRIPT)
+					_scripts.erase(ti->type_name);
+				else if (ti->type == TYPEDB_TYPE_SCENE)
+					_scenes.erase(ti->type_name);
+			}
+			_paths.erase(p_path);
+		}
+		return;
+	}
+
+	if (_paths.has(p_path)) {
+
+		EditorData::TypeInfo *ti = _paths[p_path];
+		if (ti->type == TYPEDB_TYPE_SCRIPT) {
+			Ref<Script> script;
+			script = ResourceLoader::load(ti->path, "Script");
+
+			Dictionary meta = script->get_script_metadata();
+			if (!meta.empty()) {
+
+				StringName script_type_name = meta["type_name"];
+				StringName base_name = meta["base_name"].operator StringName();
+
+				String icon_path = meta["icon_path"];
+				Ref<Texture> icon = FileAccess::exists(String(meta["icon_path"])) ? ResourceLoader::load(icon_path, "Texture") : NULL;
+
+				bool is_abstract = meta.has("is_abstract") ? meta["is_abstract"].operator bool() : false;
+				bool is_custom = meta.has("is_custom") ? meta["is_custom"].operator bool() : false;
+
+				if (base_name == StringName()) {
+					Ref<Script> base_script = script->get_base_script();
+					if (base_script.is_valid() && _paths.has(base_script->get_path())) {
+						EditorData::TypeInfo *ti = _paths[base_script->get_path()];
+						if (ti)
+							base_name = ti->type_name;
+					}
+				}
+
+				ti->type_name = script_type_name;
+				ti->inherits = base_name;
+				ti->icon = icon;
+				ti->is_abstract = is_abstract;
+				ti->is_custom = is_custom;
+			}
+			_globals_dirty = true;
+		}
+	} else {
+		const EditorData::TypeInfo *cti = get_type_info(type_name, t);
+		if (!cti) {
+
+			if (t == TYPEDB_TYPE_SCRIPT) {
+				Ref<Script> script = ResourceLoader::load(p_path, "Script");
+				if (script.is_valid()) {
+
+					Dictionary meta = script->get_script_metadata();
+					if (!meta.empty()) {
+
+						StringName script_type_name = meta["type_name"];
+						StringName base_name = meta["base_name"].get_type() == Variant::NIL ? StringName() : meta["base_name"].operator StringName();
+						if (String(base_name).find("Scripts.", 0) == 0) {
+							base_name = StringName(String(base_name).replace("Scripts.", ""));
+						}
+
+						String icon_path = meta["icon_path"];
+						Ref<Texture> icon = FileAccess::exists(String(meta["icon_path"])) ? ResourceLoader::load(icon_path, "Texture") : NULL;
+
+						bool is_abstract = meta.has("is_abstract") ? meta["is_abstract"].operator bool() : false;
+						bool is_custom = meta.has("is_custom") ? meta["is_custom"].operator bool() : false;
+
+						if (base_name == StringName()) {
+							String base_path = meta["base_path"];
+							Ref<Script> base_script = script->get_base_script();
+							if (base_script.is_valid() && _paths.has(base_script->get_path())) {
+								EditorData::TypeInfo *ti = _paths[base_script->get_path()];
+								if (ti)
+									base_name = ti->type_name;
+							}
+						}
+
+						_add_type(script_type_name, base_name, p_path, icon, is_abstract, is_custom, TYPEDB_TYPE_SCRIPT);
+					}
+				}
+			}
+		} else {
+			String original_path = cti->path;
+			if (_paths.has(original_path)) {
+				EditorData::TypeInfo *ti = _paths[original_path];
+				ti->path = p_path;
+				_paths.erase(original_path);
+				_paths[p_path] = ti;
+				_globals_dirty = true;
+			}
+		}
+	}
+}
+
+void EditorData::TypeDB::update_globals() {
+	if (!_globals_dirty)
+		return;
+
+	Dictionary scripts;
+	List<StringName> keys;
+	_scripts.get_key_list(&keys);
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		EditorData::TypeInfo &ti = _scripts[E->get()];
+		if (ti.disabled)
+			continue;
+		scripts[E->get()] = ti.path;
+	}
+	ProjectSettings::get_singleton()->set_setting("typedb/scripts", scripts);
+
+	keys.clear();
+
+	Dictionary scenes;
+	_scenes.get_key_list(&keys);
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		EditorData::TypeInfo &ti = _scenes[E->get()];
+		if (ti.disabled)
+			continue;
+		scenes[E->get()] = ti.path;
+	}
+	ProjectSettings::get_singleton()->set_setting("typedb/scenes", scenes);
+	keys.clear();
+
+	ProjectSettings::get_singleton()->save();
+	_globals_dirty = false;
+}
+
+String EditorData::TypeDB::get_script_create_dialog_inherits_field(const EditorData::TypeInfo &p_ti) const {
+	if (p_ti.path.get_extension() == "gd") {
+		return "Scripts." + String(p_ti.type_name);
+	}
+	return "";
+}
+
+EditorData::TypeDB::TypeDB() {
+}
+
+EditorData::TypeDB::~TypeDB() {
 }
 
 int EditorData::add_edited_scene(int p_at_pos) {

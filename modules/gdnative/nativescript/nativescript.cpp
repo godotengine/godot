@@ -353,7 +353,7 @@ void NativeScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+void NativeScript::get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 	Set<StringName> existing_properties;
@@ -367,6 +367,10 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 				existing_properties.insert(E.key());
 			}
 		}
+
+		if (p_no_inherited)
+			break;
+
 		script_data = script_data->base_data;
 	}
 }

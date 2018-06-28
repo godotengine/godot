@@ -101,6 +101,8 @@ public:
 
 	void popup_create(bool p_dont_clear, bool p_replace_mode = false);
 
+	void update_types();
+
 	CreateDialog();
 };
 

@@ -351,7 +351,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual MethodInfo get_method_info(const StringName &p_method) const;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited = false) const;
 
 	virtual int get_member_line(const StringName &p_member) const;
 

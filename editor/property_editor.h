@@ -143,6 +143,8 @@ class CustomPropertyEditor : public Popup {
 	void _create_dialog_callback();
 	void _create_selected_property(const String &p_prop);
 
+	Object *_instance_type(const String &p_type);
+
 	void _color_changed(const Color &p_color);
 	void _draw_easing();
 	void _menu_option(int p_which);

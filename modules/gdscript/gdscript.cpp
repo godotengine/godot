@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 
+#include "../../core/script_language.h"
 #include "engine.h"
 #include "gdscript_compiler.h"
 #include "global_constants.h"
@@ -181,7 +182,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 
 bool GDScript::can_instance() const {
 
-	return valid || (!tool && !ScriptServer::is_scripting_enabled());
+	return (valid || (!tool && !ScriptServer::is_scripting_enabled())) && instanceable;
 }
 
 Ref<Script> GDScript::get_base_script() const {
@@ -234,7 +235,7 @@ void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-void GDScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+void GDScript::get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited) const {
 
 	const GDScript *sptr = this;
 	List<PropertyInfo> props;
@@ -257,6 +258,9 @@ void GDScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
+
+		if (p_no_inherited)
+			break;
 
 		sptr = sptr->_base;
 	}
@@ -603,6 +607,24 @@ Error GDScript::reload(bool p_keep_state) {
 
 	valid = true;
 
+	GDScript *top = this;
+	while (top) {
+
+		Map<StringName, GDScriptFunction *>::Element *E = top->member_functions.find("can_instance");
+		if (E) {
+
+			if (!E->get()->is_static()) {
+				WARN_PRINT(String("Can't call non-static function: 'can_instance' in script.").utf8().get_data());
+			}
+
+			Variant::CallError err;
+			const Variant **args;
+			instanceable = E->get()->call(NULL, args, 0, err).operator bool();
+			break;
+		}
+		top = top->_base;
+	}
+
 	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
 
 		_set_subclass_path(E->get(), path);
@@ -631,6 +653,97 @@ void GDScript::get_members(Set<StringName> *p_members) {
 			p_members->insert(E->get());
 		}
 	}
+}
+
+Dictionary GDScript::get_script_metadata() {
+
+	if (has_method("_get_script_metadata")) {
+		Variant::CallError ce;
+		Variant ret = call("_get_script_metadata", NULL, 0, ce);
+		if (ce.error = Variant::CallError::CALL_OK) {
+			if (ret.get_type() == Variant::NIL) {
+				return Dictionary();
+			}
+			Dictionary dict = ret;
+			return dict;
+		}
+	}
+
+	FileAccess *fa = FileAccess::open(get_path(), FileAccess::READ);
+	if (!fa)
+		return Dictionary();
+
+	String line = fa->get_line();
+	String export_decl = "export(";
+
+	// skip lines which are probably just comments
+	while (!fa->eof_reached() && line.find("#", 0) != String::npos)
+		line = fa->get_line();
+
+	int exp_pos = line.find(export_decl, 0);
+	if (exp_pos != 0) {
+		fa->close();
+		return Dictionary();
+	}
+
+	int exp_end = line.rfind(")");
+	line = line.substr(export_decl.length(), exp_end - export_decl.length());
+
+	Vector<String> params = line.split(",");
+
+	String type_name = params[0].strip_edges();
+	type_name = type_name.substr(1, type_name.length() - 2);
+	if (!(type_name.get_slicec('.', 0).length() && type_name.get_slicec('.', 1).length())) {
+		fa->close();
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["type_name"] = type_name;
+
+	for (int i = 1; i < params.size(); i++) {
+		String param = params[i].strip_edges();
+		if (param == "CUSTOM") {
+			result["is_custom"] = true;
+			if (i < params.size() - 1) {
+				param = params[i + 1].strip_edges();
+				param = param.substr(1, param.length() - 2);
+				if (FileAccess::exists(param)) {
+					i++;
+					RES res = ResourceLoader::load(param);
+					if (res.is_valid() && res->is_class("Texture")) {
+						result["icon_path"] = param;
+					}
+				}
+			}
+		} else if (param == "ABSTRACT")
+			result["is_abstract"] = true;
+	}
+
+	while (!fa->eof_reached()) {
+		line = fa->get_line();
+		if (line.find("extends", 0) == 0) {
+			String extends_str = "extends ";
+			String extend = line.substr(extends_str.length(), line.length() - extends_str.length()).strip_edges();
+			String file_path = file_path.substr(1, file_path.length() - 2);
+			if (file_path.get_extension() == GDScriptLanguage::get_singleton()->get_extension()) {
+				break;
+			}
+			if (extend.get_slice_count(".") > 1)
+				extend = extend.substr(String("Scripts.").length(), extend.length() - String("Scripts.").length());
+			result["base_name"] = extend;
+			break;
+		}
+		String first_word = line.substr(0, line.find(" ", 0));
+		if (first_word == "var" || first_word == "func" || first_word == "class")
+			break;
+	}
+	if (!result.has("base_name"))
+		result["base_name"] = "Reference";
+
+	fa->close();
+
+	return result;
 }
 
 Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
@@ -887,6 +1000,7 @@ GDScript::GDScript() :
 	_base = NULL;
 	_owner = NULL;
 	tool = false;
+	instanceable = true;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
 #endif
@@ -1380,6 +1494,14 @@ void GDScriptLanguage::init() {
 	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 
 		_add_global(E->get().name, E->get().ptr);
+	}
+
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps->has_setting("typedb/scripts")) {
+		_add_global("Scripts", ps->get_setting("typedb/scripts"));
+	}
+	if (ps->has_setting("typedb/scenes")) {
+		_add_global("Scenes", ps->get_setting("typedb/scenes"));
 	}
 }
 

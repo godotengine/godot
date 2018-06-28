@@ -118,12 +118,14 @@ public:
 
 	virtual void update_exports() {} //editor tool
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inherited = false) const = 0;
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
 	virtual void get_members(Set<StringName> *p_constants) {}
+
+	virtual Dictionary get_script_metadata();
 
 	Script() {}
 };

@@ -255,7 +255,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		if (!p_node->get_script().is_null()) {
 
-			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open Script"));
+			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open script"));
+			_update_script_button_alpha(item, p_node);
 		}
 
 		if (p_node->is_class("CanvasItem")) {
@@ -348,6 +349,18 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	} else {
 		return true;
 	}
+}
+
+void SceneTreeEditor::_update_script_button_alpha(TreeItem *p_item, Node *p_node) {
+
+	Ref<Script> s = p_node->get_script();
+	bool script_is_custom = false;
+	EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
+	if (s.is_valid() && tdb.has_path(s->get_path())) {
+		EditorData::TypeInfo &ti = tdb.get_path(s->get_path());
+		script_is_custom = ti.is_custom;
+	}
+	p_item->set_button_color(0, p_item->get_button_by_id(0, BUTTON_SCRIPT), Color(1, 1, 1, (script_is_custom ? 0.3 : 1)));
 }
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {

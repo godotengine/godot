@@ -91,11 +91,14 @@ public:
 
 	Control *get_base_control();
 
-	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
-	bool is_plugin_enabled(const String &p_plugin) const;
+	void set_plugin_enabled(const String &p_plugin_dir_name, bool p_enabled);
+	bool is_plugin_enabled(const String &p_plugin_dir_name) const;
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+
+	void load_class_docs(const String &p_dir = "");
+	void generate_script_docs(const String &p_script_path, const String &p_output_path = "");
 
 	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, int p_preview_size);
 
@@ -110,17 +113,18 @@ class EditorPlugin : public Node {
 
 	UndoRedo *_get_undo_redo() { return undo_redo; }
 
+	Ref<ConfigFile> _config;
+
 	bool input_event_forwarding_always_enabled;
 	bool force_draw_over_forwarding_enabled;
 
 	String last_main_screen_name;
 
+	String _get_type_name(const String &p_type, bool p_allow_class = false);
+
 protected:
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
-
-	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
-	void remove_custom_type(const String &p_type);
 
 public:
 	enum CustomControlContainer {
@@ -158,6 +162,18 @@ public:
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	void add_custom_type(const StringName &p_type, const StringName &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon = NULL, bool p_is_abstract = false);
+	void add_custom_scene(const StringName &p_type, const StringName &p_inherits, const Ref<PackedScene> &p_scene, const Ref<Texture> &p_icon = NULL, bool p_is_abstract = false);
+	void remove_custom_type(const StringName &p_type);
+	void remove_custom_scene(const StringName &p_type);
+	void toggle_custom_namespace(const String &p_namespace, bool p_active);
+	void toggle_custom_directory(const String &p_directory, bool p_active);
+
+	String get_domain();
+
+	Ref<ConfigFile> get_config() const { return _config; }
+	void set_config(const Ref<ConfigFile> &p_config) { _config = p_config; }
 
 	void set_input_event_forwarding_always_enabled();
 	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }

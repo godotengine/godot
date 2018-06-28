@@ -235,12 +235,12 @@ Control *EditorInterface::get_base_control() {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
-void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
-	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled);
+void EditorInterface::set_plugin_enabled(const String &p_plugin_dir_name, bool p_enabled) {
+	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin_dir_name, p_enabled);
 }
 
-bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
-	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
+bool EditorInterface::is_plugin_enabled(const String &p_plugin_dir_name) const {
+	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin_dir_name);
 }
 
 Error EditorInterface::save_scene() {
@@ -256,6 +256,27 @@ Error EditorInterface::save_scene() {
 void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
+}
+
+void EditorInterface::load_class_docs(const String &p_dir) {
+	String dir = p_dir;
+	if (!p_dir.length()) {
+		Ref<Script> s = get_script();
+		dir = s->get_path().get_base_dir();
+	}
+	EditorHelp::get_doc_data()->load_classes(dir);
+}
+
+void EditorInterface::generate_script_docs(const String &p_script_path, const String &p_output_path) {
+	ERR_FAIL_COND(!FileAccess::exists(p_script_path));
+
+	Ref<Script> script = ResourceLoader::load(p_script_path, "Script");
+	String output_path = p_output_path.empty() ? p_script_path.get_base_dir().plus_file(p_script_path.get_file().get_basename().typenamify() + ".xml") : p_output_path;
+	FileAccess *fa = FileAccess::open(p_output_path, FileAccess::WRITE);
+	if (!fa)
+		return;
+	fa->store_string(EditorHelp::get_doc_data()->get_script_xml(script));
+	fa->close();
 }
 
 EditorInterface *EditorInterface::singleton = NULL;
@@ -279,11 +300,17 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_file", "p_file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 
-	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
-	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin_dir_name", "enabled"), &EditorInterface::set_plugin_enabled);
+	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin_dir_name"), &EditorInterface::is_plugin_enabled);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("toggle_custom_namespace", "p_namespace", "p_active"), &EditorPlugin::toggle_custom_namespace);
+	ClassDB::bind_method(D_METHOD("toggle_custom_directory", "p_directory", "p_active"), &EditorPlugin::toggle_custom_directory);
+
+	ClassDB::bind_method(D_METHOD("generate_script_docs", "p_script_path", "p_output_path"), &EditorInterface::generate_script_docs, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("load_class_docs", "xml_doc_path"), &EditorInterface::load_class_docs);
 }
 
 EditorInterface::EditorInterface() {
@@ -291,14 +318,65 @@ EditorInterface::EditorInterface() {
 }
 
 ///////////////////////////////////////////
-void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
 
-	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
+String EditorPlugin::_get_type_name(const String &p_type, bool p_allow_class) {
+
+	int a = p_type.get_slice_count(".");
+	String b = get_domain();
+	String c = b.plus_file(p_type);
+	String ret = p_type.get_slice_count(".") > 1 || (p_allow_class && ClassDB::class_exists(p_type)) ? p_type : get_domain().plus_file(p_type);
+	return ret;
 }
 
-void EditorPlugin::remove_custom_type(const String &p_type) {
+void EditorPlugin::add_custom_type(const StringName &p_type, const StringName &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon, bool p_is_abstract) {
 
-	EditorNode::get_editor_data().remove_custom_type(p_type);
+	ERR_FAIL_COND(!p_script.is_valid());
+
+	EditorData::TypeDB &tdb = EditorNode::get_singleton()->get_editor_data().get_type_db();
+	ERR_FAIL_COND(!ClassDB::class_exists(p_inherits) && !tdb.class_exists(p_inherits));
+
+	StringName type_name = tdb.get_type_name(p_script->get_path(), EditorData::TYPEDB_TYPE_SCRIPT);
+	if (type_name == StringName())
+		type_name = p_type;
+	if (String(type_name).get_slice_count(".") == 1)
+		type_name = "Custom." + String(p_type);
+
+	StringName inherits_name = ClassDB::class_exists(p_inherits) ? p_inherits : tdb.get_type_info(p_inherits, EditorData::TYPEDB_TYPE_SCRIPT)->type_name;
+
+	tdb.add_script(String(type_name), String(inherits_name), p_script, p_icon, p_is_abstract, true);
+}
+
+void EditorPlugin::add_custom_scene(const StringName &p_type, const StringName &p_inherits, const Ref<PackedScene> &p_scene, const Ref<Texture> &p_icon, bool p_is_abstract) {
+	EditorNode::get_editor_data().get_type_db().add_scene(_get_type_name(p_type), _get_type_name(p_inherits, true), p_scene, p_icon, p_is_abstract, true);
+}
+
+void EditorPlugin::remove_custom_type(const StringName &p_type) {
+	EditorNode::get_editor_data().get_type_db().remove_custom_type(_get_type_name(p_type), EditorData::TYPEDB_TYPE_SCRIPT);
+}
+
+void EditorPlugin::remove_custom_scene(const StringName &p_type) {
+	EditorNode::get_editor_data().get_type_db().remove_custom_type(_get_type_name(p_type), EditorData::TYPEDB_TYPE_SCENE);
+}
+
+void EditorPlugin::toggle_custom_namespace(const String &p_namespace, bool p_active) {
+	EditorNode::get_editor_data().get_type_db().toggle_namespace(p_namespace, p_active);
+}
+
+void EditorPlugin::toggle_custom_directory(const String &p_directory, bool p_active) {
+	EditorNode::get_editor_data().get_type_db().toggle_directory(p_directory, p_active);
+}
+
+String EditorPlugin::get_domain() {
+	Ref<ConfigFile> cf = get_config();
+	if (cf.is_valid() && cf->has_section_key("plugin", "domain")) {
+		return cf->get_value("plugin", "domain");
+	}
+
+	Ref<Script> s = get_script();
+	if (s.is_valid())
+		return s->get_path().get_slice(".", 3).typenamify();
+
+	return "";
 }
 
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
@@ -728,8 +806,12 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "handler", "callback", "ud"), &EditorPlugin::add_tool_menu_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
-	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
+	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon", "is_abstract"), &EditorPlugin::add_custom_type, DEFVAL(Variant()), DEFVAL(false));
+	//ClassDB::bind_method(D_METHOD("add_custom_scene", "type", "base", "scene", "icon", "is_abstract"), &EditorPlugin::add_custom_scene, DEFVAL(NULL), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+	//ClassDB::bind_method(D_METHOD("remove_custom_scene", "type"), &EditorPlugin::remove_custom_type);
+
+	ClassDB::bind_method(D_METHOD("get_config"), &EditorPlugin::get_config);
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
