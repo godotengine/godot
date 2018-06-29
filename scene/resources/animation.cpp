@@ -134,8 +134,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					int um = d["update"];
 					if (um < 0)
 						um = 0;
-					else if (um > 2)
-						um = 2;
+					else if (um > 3)
+						um = 3;
 					vt->update_mode = UpdateMode(um);
 				}
 
