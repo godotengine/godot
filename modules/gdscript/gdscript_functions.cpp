@@ -1020,71 +1020,45 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 		} break;
 		case INST2DICT: {
-			VALIDATE_ARG_COUNT(1);
+			bool deep = false;
+
+			if (p_arg_count < 1) {
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument = 1;
+				r_ret = Variant();
+				return;
+			} else if (p_arg_count > 2) {
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.argument = 2;
+				r_ret = Variant();
+				return;
+			} else if (p_arg_count == 2) {
+				if (p_args[1]->get_type() != Variant::BOOL) {
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 1;
+					r_error.expected = Variant::BOOL;
+					r_ret = Variant();
+					return;
+				}
+				deep = *p_args[1];
+			}
 
 			if (p_args[0]->get_type() == Variant::NIL) {
 				r_ret = Variant();
+				return;
 			} else if (p_args[0]->get_type() != Variant::OBJECT) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_ret = Variant();
+				return;
 			} else {
-				Object *obj = *p_args[0];
-				if (!obj) {
-					r_ret = Variant();
-
-				} else if (!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
-					r_ret = RTR("Not a script with an instance");
-					return;
+				if (deep) {
+					Map<ObjectID, Dictionary> instances;
+					_instance_to_dictionary(*p_args[0], r_ret, r_error, &instances);
 				} else {
-					GDScriptInstance *ins = static_cast<GDScriptInstance *>(obj->get_script_instance());
-					Ref<GDScript> base = ins->get_script();
-					if (base.is_null()) {
-						r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-						r_error.argument = 0;
-						r_error.expected = Variant::DICTIONARY;
-						r_ret = RTR("Not based on a script");
-						return;
-					}
-
-					GDScript *p = base.ptr();
-					Vector<StringName> sname;
-
-					while (p->_owner) {
-						sname.push_back(p->name);
-						p = p->_owner;
-					}
-					sname.invert();
-
-					if (!p->path.is_resource_file()) {
-						r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-						r_error.argument = 0;
-						r_error.expected = Variant::DICTIONARY;
-						r_ret = Variant();
-
-						r_ret = RTR("Not based on a resource file");
-
-						return;
-					}
-
-					NodePath cp(sname, Vector<StringName>(), false);
-
-					Dictionary d;
-					d["@subpath"] = cp;
-					d["@path"] = p->get_path();
-
-					for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
-						if (!d.has(E->key())) {
-							d[E->key()] = ins->members[E->get().index];
-						}
-					}
-					r_ret = d;
+					_instance_to_dictionary(*p_args[0], r_ret, r_error);
 				}
 			}
-
 		} break;
 		case DICT2INST: {
 			VALIDATE_ARG_COUNT(1);
@@ -1094,71 +1068,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_error.argument = 0;
 				r_error.expected = Variant::DICTIONARY;
 				r_ret = Variant();
-
 				return;
-			}
-
-			Dictionary d = *p_args[0];
-
-			if (!d.has("@path")) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = RTR("Invalid instance dictionary format (missing @path)");
-
-				return;
-			}
-
-			Ref<Script> scr = ResourceLoader::load(d["@path"]);
-			if (!scr.is_valid()) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
-				return;
-			}
-
-			Ref<GDScript> gdscr = scr;
-
-			if (!gdscr.is_valid()) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = Variant();
-				r_ret = RTR("Invalid instance dictionary format (invalid script at @path)");
-				return;
-			}
-
-			NodePath sub;
-			if (d.has("@subpath")) {
-				sub = d["@subpath"];
-			}
-
-			for (int i = 0; i < sub.get_name_count(); i++) {
-				gdscr = gdscr->subclasses[sub.get_name(i)];
-				if (!gdscr.is_valid()) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					r_error.argument = 0;
-					r_error.expected = Variant::OBJECT;
-					r_ret = Variant();
-					r_ret = RTR("Invalid instance dictionary (invalid subclasses)");
-					return;
-				}
-			}
-			r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
-
-			if (r_error.error != Callable::CallError::CALL_OK) {
-				r_ret = Variant();
-				return;
-			}
-
-			GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(r_ret)->get_script_instance());
-			Ref<GDScript> gd_ref = ins->get_script();
-
-			for (Map<StringName, GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
-				if (d.has(E->key())) {
-					ins->members.write[E->get().index] = d[E->key()];
-				}
+			} else {
+				_dictionary_to_instance(*p_args[0], r_ret, r_error);
 			}
 
 		} break;
@@ -1390,6 +1302,234 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			ERR_FAIL();
 		} break;
 	}
+}
+
+void GDScriptFunctions::_instance_to_dictionary(Object *obj, Variant &r_ret, Callable::CallError &r_error, Map<ObjectID, Dictionary> *r_instances) {
+
+	if (!obj) {
+		r_ret = Variant();
+
+	} else if (!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::DICTIONARY;
+		r_ret = RTR("Not a script with an instance");
+		return;
+
+	} else {
+		GDScriptInstance *ins = static_cast<GDScriptInstance *>(obj->get_script_instance());
+		Ref<GDScript> base = ins->get_script();
+
+		if (base.is_null()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			r_ret = RTR("Not based on a script");
+			return;
+		}
+		GDScript *p = base.ptr();
+		Vector<StringName> sname;
+
+		while (p->_owner) {
+			sname.push_back(p->name);
+			p = p->_owner;
+		}
+		sname.invert();
+
+		if (!p->path.is_resource_file()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			r_ret = Variant();
+			r_ret = RTR("Not based on a resource file");
+			return;
+		}
+		NodePath cp(sname, Vector<StringName>(), false);
+
+		Dictionary d;
+		d["@subpath"] = cp;
+		d["@path"] = p->get_path();
+
+		bool deep = r_instances != NULL;
+#ifdef DEBUG_ENABLED
+		if (deep) {
+			r_instances->insert(obj->get_instance_id(), d);
+		}
+#endif
+		for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
+			String property = E->key();
+			if (d.has(property)) {
+				continue;
+			}
+			Variant value = ins->members[E->get().index];
+			if (deep) {
+#ifdef DEBUG_ENABLED
+				if (value.get_type() == Variant::OBJECT) {
+					Object *o = value;
+					if (r_instances->has(o->get_instance_id())) {
+						r_ret = Variant();
+						ERR_FAIL_MSG("Cannot convert an instance to a dictionary: circular referencing detected.");
+					}
+				}
+#endif
+				d[property] = _inst_to_dict_or_var(value, r_error, r_instances);
+			} else {
+				d[property] = value;
+			}
+		}
+		r_ret = d;
+	}
+}
+
+void GDScriptFunctions::_dictionary_to_instance(const Dictionary &d, Variant &r_ret, Callable::CallError &r_error) {
+
+	if (!is_dict_instance(d)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		r_ret = RTR("Invalid instance dictionary format (missing @path)");
+		return;
+	}
+
+	Ref<Script> scr = ResourceLoader::load(d["@path"]);
+	if (!scr.is_valid()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
+		return;
+	}
+
+	Ref<GDScript> gdscr = scr;
+
+	if (!gdscr.is_valid()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		r_ret = Variant();
+		r_ret = RTR("Invalid instance dictionary format (invalid script at @path)");
+		return;
+	}
+
+	NodePath sub;
+	if (d.has("@subpath")) {
+		sub = d["@subpath"];
+	}
+
+	for (int i = 0; i < sub.get_name_count(); i++) {
+
+		gdscr = gdscr->subclasses[sub.get_name(i)];
+		if (!gdscr.is_valid()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::OBJECT;
+			r_ret = Variant();
+			r_ret = RTR("Invalid instance dictionary (invalid subclasses)");
+			return;
+		}
+	}
+
+	r_ret = gdscr->_new(NULL, 0, r_error);
+
+	GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(r_ret)->get_script_instance());
+	Ref<GDScript> gd_ref = ins->get_script();
+
+	for (Map<StringName, GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
+		if (d.has(E->key())) {
+			Variant v = _dict_to_inst_or_var(d[E->key()], r_error);
+			ins->members.write[E->get().index] = v;
+		}
+	}
+}
+
+Variant GDScriptFunctions::_inst_to_dict_or_var(const Variant &v, Callable::CallError &r_error, Map<ObjectID, Dictionary> *r_instances) {
+
+	Variant ret;
+
+	switch (v.get_type()) {
+
+		case Variant::OBJECT: {
+			Object *obj = v;
+			_instance_to_dictionary(obj, ret, r_error, r_instances);
+		} break;
+
+		case Variant::ARRAY: {
+			Array arr = v;
+			Array ret_arr;
+
+			for (int i = 0; i < arr.size(); i++) {
+				Variant vi = _inst_to_dict_or_var(arr[i], r_error, r_instances);
+				ret_arr.push_back(vi);
+			}
+			ret = ret_arr;
+		} break;
+
+		case Variant::DICTIONARY: {
+			Dictionary dict = v;
+			Dictionary ret_dict;
+
+			List<Variant> keys;
+			dict.get_key_list(&keys);
+
+			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+				// Both key and value can be objects
+				Variant vi = _inst_to_dict_or_var(dict[E->get()], r_error, r_instances);
+				Variant ki = _inst_to_dict_or_var(E->get(), r_error, r_instances);
+				ret_dict[ki] = vi;
+			}
+			ret = ret_dict;
+		} break;
+
+		default: {
+			ret = v;
+		};
+	}
+	return ret;
+}
+
+Variant GDScriptFunctions::_dict_to_inst_or_var(const Variant &v, Callable::CallError &r_error) {
+
+	Variant ret;
+
+	switch (v.get_type()) {
+
+		case Variant::ARRAY: {
+			Array arr = v;
+			Array ret_arr;
+
+			for (int i = 0; i < arr.size(); i++) {
+				Variant vi = _dict_to_inst_or_var(arr[i], r_error);
+				ret_arr.push_back(vi);
+			}
+			ret = ret_arr;
+		} break;
+
+		case Variant::DICTIONARY: {
+
+			Dictionary dict = v;
+			if (is_dict_instance(dict)) {
+				_dictionary_to_instance(dict, ret, r_error);
+				break;
+			}
+			Dictionary ret_dict;
+
+			List<Variant> keys;
+			dict.get_key_list(&keys);
+
+			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+				// Both key and value can be objects
+				Variant vi = _dict_to_inst_or_var(dict[E->get()], r_error);
+				Variant ki = _dict_to_inst_or_var(E->get(), r_error);
+				ret_dict[ki] = vi;
+			}
+			ret = ret_dict;
+		} break;
+
+		default: {
+			ret = v;
+		};
+	}
+	return ret;
 }
 
 bool GDScriptFunctions::is_deterministic(Function p_func) {
@@ -1880,7 +2020,8 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case INST2DICT: {
-			MethodInfo mi("inst2dict", PropertyInfo(Variant::OBJECT, "inst"));
+			MethodInfo mi("inst2dict", PropertyInfo(Variant::OBJECT, "inst"), PropertyInfo(Variant::BOOL, "deep"));
+			mi.default_arguments.push_back(false);
 			mi.return_val.type = Variant::DICTIONARY;
 			return mi;
 		} break;

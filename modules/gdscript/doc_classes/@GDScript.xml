@@ -443,8 +443,11 @@
 			</return>
 			<argument index="0" name="inst" type="Object">
 			</argument>
+			<argument index="1" name="deep" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the passed instance converted to a dictionary (useful for serializing).
+				If [code]deep[/code] is [code]true[/code], the method converts any inner instances recursively, including nested arrays and dictionaries with both keys and values as instances. Use this option only if you're sure that instances have no circular references to each other as it can lead to an endless conversion loop.
 				[codeblock]
 				var foo = "bar"
 				func _ready():

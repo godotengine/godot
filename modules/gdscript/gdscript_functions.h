@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_FUNCTIONS_H
 #define GDSCRIPT_FUNCTIONS_H
 
+#include "core/map.h"
+#include "core/object.h"
 #include "core/variant.h"
 
 class GDScriptFunctions {
@@ -132,6 +134,15 @@ public:
 	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Callable::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
+
+private:
+	static void _instance_to_dictionary(Object *obj, Variant &r_ret, Callable::CallError &r_error, Map<ObjectID, Dictionary> *r_instances = NULL);
+	static void _dictionary_to_instance(const Dictionary &d, Variant &r_ret, Callable::CallError &r_error);
+
+	static Variant _inst_to_dict_or_var(const Variant &v, Callable::CallError &r_error, Map<ObjectID, Dictionary> *r_instances = NULL);
+	static Variant _dict_to_inst_or_var(const Variant &v, Callable::CallError &r_error);
+
+	_FORCE_INLINE_ static bool is_dict_instance(const Dictionary &d) { return d.has("@path"); }
 };
 
 #endif // GDSCRIPT_FUNCTIONS_H
