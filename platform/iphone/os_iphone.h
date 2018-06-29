@@ -47,14 +47,6 @@
 
 class OSIPhone : public OS_Unix {
 
-public:
-	enum Orientations {
-		PortraitDown,
-		PortraitUp,
-		LandscapeLeft,
-		LandscapeRight,
-	};
-
 private:
 	enum {
 		MAX_MOUSE_COUNT = 8,
@@ -63,8 +55,6 @@ private:
 
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
-
-	uint8_t supported_orientations;
 
 	VisualServer *visual_server;
 
