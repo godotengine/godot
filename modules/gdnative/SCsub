@@ -13,6 +13,7 @@ gdn_env.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cp
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
+SConscript("net/SCsub")
 SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 
