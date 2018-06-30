@@ -37,6 +37,14 @@ float RootMotionView::get_radius() const {
 	return radius;
 }
 
+void RootMotionView::set_zero_y(bool p_zero_y) {
+	zero_y = p_zero_y;
+}
+
+bool RootMotionView::get_zero_y() const {
+	return zero_y;
+}
+
 void RootMotionView::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -77,9 +85,11 @@ void RootMotionView::_notification(int p_what) {
 		transform.orthonormalize(); //dont want scale, too imprecise
 		transform.affine_invert();
 
-		accumulated = accumulated * transform;
+		accumulated = transform * accumulated;
 		accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
-		accumulated.origin.y = Math::fposmod(accumulated.origin.y, cell_size);
+		if (zero_y) {
+			accumulated.origin.y = 0;
+		}
 		accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
 
 		VS::get_singleton()->immediate_clear(immediate);
@@ -142,13 +152,18 @@ void RootMotionView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "size"), &RootMotionView::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &RootMotionView::get_radius);
 
+	ClassDB::bind_method(D_METHOD("set_zero_y", "enable"), &RootMotionView::set_zero_y);
+	ClassDB::bind_method(D_METHOD("get_zero_y"), &RootMotionView::get_zero_y);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "animation_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationTree"), "set_animation_path", "get_animation_path");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.1,16,0.01,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "zero_y"), "set_zero_y", "get_zero_y");
 }
 
 RootMotionView::RootMotionView() {
+	zero_y = true;
 	radius = 10;
 	cell_size = 1;
 	set_process_internal(true);
