@@ -304,18 +304,16 @@ void CreateDialog::_update_search() {
 		if (base_type == "Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
 
-		if (cpp_type && !ClassDB::can_instance(type))
+		if (!ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 
 		bool skip = false;
-		if (cpp_type) {
-			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
-				if (ClassDB::is_parent_class(type, E->get()))
-					skip = true;
-			}
-			if (skip)
-				continue;
+		for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
+			if (ClassDB::is_parent_class(type, E->get()))
+				skip = true;
 		}
+		if (skip)
+			continue;
 
 		if (search_box->get_text() == "") {
 			add_type(type, types, root, &to_select);
@@ -754,6 +752,4 @@ CreateDialog::CreateDialog() {
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
-
-	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
 }
