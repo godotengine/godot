@@ -1019,7 +1019,7 @@ void PopupMenu::activate_item(int p_item) {
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
 	PopupMenu *pop = Object::cast_to<PopupMenu>(next);
-	while (pop) {
+	while (pop && p_item >= 0 && p_item < items.size()) {
 		// We close all parents that are chained together,
 		// with hide_on_item_selection enabled
 
@@ -1040,14 +1040,16 @@ void PopupMenu::activate_item(int p_item) {
 	// Hides popup by default; unless otherwise specified
 	// by using set_hide_on_item_selection and set_hide_on_checkable_item_selection
 
-	if (items[p_item].checkable_type) {
-		if (!hide_on_checkable_item_selection)
+	if (p_item >= 0 && p_item < items.size()) {
+		if (items[p_item].checkable_type) {
+			if (!hide_on_checkable_item_selection)
+				return;
+		} else if (0 < items[p_item].max_states) {
+			if (!hide_on_multistate_item_selection)
+				return;
+		} else if (!hide_on_item_selection)
 			return;
-	} else if (0 < items[p_item].max_states) {
-		if (!hide_on_multistate_item_selection)
-			return;
-	} else if (!hide_on_item_selection)
-		return;
+	}
 
 	hide();
 }
