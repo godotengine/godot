@@ -304,8 +304,8 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const {}
-	virtual bool has_method(const StringName &p_method) const { return false; }
+	virtual void get_method_list(List<MethodInfo> *p_list) const;
+	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST) { return Variant(); }
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
