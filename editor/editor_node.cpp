@@ -3075,6 +3075,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorInspectorPlugin>();
 	ClassDB::register_class<EditorProperty>();
 	ClassDB::register_class<AnimationTrackEditPlugin>();
+	ClassDB::register_class<ScriptCreateDialog>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -4429,6 +4430,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_open_recent_scene", &EditorNode::_open_recent_scene);
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
+
+	ClassDB::bind_method("get_script_create_dialog", &EditorNode::get_script_create_dialog);
 
 	ClassDB::bind_method("_sources_changed", &EditorNode::_sources_changed);
 	ClassDB::bind_method("_fs_changed", &EditorNode::_fs_changed);

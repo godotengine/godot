@@ -262,12 +262,16 @@ void CreateDialog::_update_search() {
 		if (base_type == "Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
 
-		if (base_type == "Resource" && ClassDB::is_parent_class(type, "PluginScript"))
-			// PluginScript must be initialized before use, which is not possible here
-			continue;
-
 		if (!ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
+
+		bool skip = false;
+		for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
+			if (ClassDB::is_parent_class(type, E->get()))
+				skip = true;
+		}
+		if (skip)
+			continue;
 
 		if (search_box->get_text() == "") {
 			add_type(type, types, root, &to_select);
@@ -706,4 +710,7 @@ CreateDialog::CreateDialog() {
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 	help_bit->connect("request_hide", this, "_closed");
+
+	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
+	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
 }
