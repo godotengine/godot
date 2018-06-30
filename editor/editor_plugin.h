@@ -34,6 +34,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
+#include "editor/script_create_dialog.h"
 #include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
@@ -195,6 +196,7 @@ public:
 	virtual bool build(); // builds with external tools. Returns true if safe to continue running scene.
 
 	EditorInterface *get_editor_interface();
+	ScriptCreateDialog *get_script_create_dialog();
 
 	int update_overlays() const;
 
