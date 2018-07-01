@@ -17,7 +17,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				Adds a new animation to the the library.
+				Adds a new animation to the library.
 			</description>
 		</method>
 		<method name="add_frame">
