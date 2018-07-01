@@ -1102,9 +1102,12 @@ void AnimationPlayerEditor::_animation_about_to_show_menu() {
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
-	String current = animation->get_item_text(animation->get_selected());
+	String current;
+	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count())
+		current = animation->get_item_text(animation->get_selected());
+
 	Ref<Animation> anim;
-	if (current != "") {
+	if (current != String()) {
 		anim = player->get_animation(current);
 	}
 
