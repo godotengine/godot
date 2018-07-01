@@ -942,6 +942,7 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
+			minimum_size_changed();
 			shape_changed = false;
 		}
 
