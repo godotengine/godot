@@ -547,6 +547,8 @@ void Skeleton::localize_rests() {
 	}
 }
 
+#ifndef _3D_DISABLED
+
 void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
@@ -691,6 +693,8 @@ void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
 	_physical_bones_add_remove_collision_exception(false, this, p_exception);
 }
 
+#endif // _3D_DISABLED
+
 void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton::add_bone);
@@ -727,10 +731,14 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_transform", "bone_idx"), &Skeleton::get_bone_transform);
 
+#ifndef _3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
 	ClassDB::bind_method(D_METHOD("physical_bones_start_simulation", "bones"), &Skeleton::physical_bones_start_simulation_on, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
+
+#endif // _3D_DISABLED
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }
