@@ -910,9 +910,11 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 	if (animation.is_valid()) {
 		len_hb->show();
 		add_track->show();
+		play_position->show();
 	} else {
 		len_hb->hide();
 		add_track->hide();
+		play_position->hide();
 	}
 	update();
 	update_values();
