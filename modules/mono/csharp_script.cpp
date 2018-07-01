@@ -745,11 +745,9 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 	for (Map<Ref<CSharpScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
 
 		Ref<CSharpScript> scr = E->key();
-		scr->signals_invalidated = true;
 		scr->exports_invalidated = true;
 		scr->signals_invalidated = true;
 		scr->reload(p_soft_reload);
-		scr->update_signals();
 		scr->update_exports();
 
 		//restore state if saved
@@ -1580,37 +1578,33 @@ bool CSharpScript::_update_exports() {
 	return false;
 }
 
-bool CSharpScript::_update_signals() {
-	if (!valid)
-		return false;
+void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
 
-	bool changed = false;
-
-	if (signals_invalidated) {
-		signals_invalidated = false;
-
-		GDMonoClass *top = script_class;
-
-		_signals.clear();
-		changed = true; // TODO Do a real check for change
-
-		while (top && top != native) {
-			const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
-			for (int i = delegates.size() - 1; i >= 0; --i) {
-				Vector<Argument> parameters;
-
-				GDMonoClass *delegate = delegates[i];
-
-				if (_get_signal(top, delegate, parameters)) {
-					_signals[delegate->get_name()] = parameters;
-				}
-			}
-
-			top = top->get_parent_class();
-		}
+	// no need to load the script's signals more than once
+	if (!signals_invalidated) {
+		return;
 	}
 
-	return changed;
+	// make sure this classes signals are empty when loading for the first time
+	_signals.clear();
+
+	GDMonoClass *top = p_class;
+	while (top && top != p_native_class) {
+		const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
+		for (int i = delegates.size() - 1; i >= 0; --i) {
+			Vector<Argument> parameters;
+
+			GDMonoClass *delegate = delegates[i];
+
+			if (_get_signal(top, delegate, parameters)) {
+				_signals[delegate->get_name()] = parameters;
+			}
+		}
+
+		top = top->get_parent_class();
+	}
+
+	signals_invalidated = false;
 }
 
 bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
@@ -1976,7 +1970,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
 		placeholders.insert(si);
 		_update_exports();
-		_update_signals();
 		return si;
 #else
 		return NULL;
@@ -1994,8 +1987,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
 		ERR_FAIL_V(NULL);
 	}
-
-	update_signals();
 
 	if (native) {
 		String native_name = native->get_name();
@@ -2178,10 +2169,6 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	}
 }
 
-void CSharpScript::update_signals() {
-	_update_signals();
-}
-
 Ref<Script> CSharpScript::get_base_script() const {
 
 	// TODO search in metadata file once we have it, not important any way?
@@ -2246,7 +2233,6 @@ CSharpScript::CSharpScript() :
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
 	exports_invalidated = true;
-	signals_invalidated = true;
 #endif
 
 	signals_invalidated = true;
