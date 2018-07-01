@@ -106,6 +106,7 @@ private:
 	Button *button_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
+	Button *button_show;
 	LineEdit *current_path;
 	LineEdit *search_box;
 	TextureRect *search_icon;
@@ -206,6 +207,7 @@ private:
 	void _rescan();
 
 	void _favorites_pressed();
+	void _show_current_scene_file();
 	void _search_changed(const String &p_text);
 
 	void _dir_rmb_pressed(const Vector2 &p_pos);
