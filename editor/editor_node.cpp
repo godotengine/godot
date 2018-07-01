@@ -1033,8 +1033,23 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	err = ResourceSaver::save(p_file, sdata, flg);
-	Map<RES, bool> processed;
-	_save_edited_subresources(scene, processed, flg);
+	//Map<RES, bool> processed;
+	//this method is slow and not always works, deprecating
+	//_save_edited_subresources(scene, processed, flg);
+	{ //instead, just find globally unsaved subresources and save them
+
+		List<Ref<Resource> > cached;
+		ResourceCache::get_cached_resources(&cached);
+		for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+
+			Ref<Resource> res = E->get();
+			if (res->is_edited() && res->get_path().is_resource_file()) {
+				ResourceSaver::save(res->get_path(), res, flg);
+				res->set_edited(false);
+			}
+		}
+	}
+
 	editor_data.save_editor_external_data();
 	if (err == OK) {
 		scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_file));

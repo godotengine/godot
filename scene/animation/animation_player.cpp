@@ -656,7 +656,22 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							nc->audio_start = p_time;
 						}
 					} else if (nc->audio_playing) {
-						if (nc->audio_start > p_time || (nc->audio_len > 0 && p_time - nc->audio_start < nc->audio_len)) {
+
+						bool loop = a->has_loop();
+
+						bool stop = false;
+
+						if (!loop && p_time < nc->audio_start) {
+							stop = true;
+						} else if (nc->audio_len > 0) {
+							float len = nc->audio_start > p_time ? (a->get_length() - nc->audio_start) + p_time : p_time - nc->audio_start;
+
+							if (len > nc->audio_len) {
+								stop = true;
+							}
+						}
+
+						if (stop) {
 							//time to stop
 							nc->node->call("stop");
 							nc->audio_playing = false;
