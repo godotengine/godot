@@ -893,7 +893,6 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					}
 
 					String ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
-
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
 						//try to keep custom animation tracks
 						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
@@ -907,6 +906,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						}
 					}
 
+					anim->set_path(ext_name, true); //if not set, then its never saved externally
 					ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
 					p_animations[anim] = anim;
 				}
