@@ -38,7 +38,10 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+#ifndef _3D_DISABLED
 class PhysicalBone;
+#endif // _3D_DISABLED
+
 class Skeleton : public Spatial {
 
 	GDCLASS(Skeleton, Spatial);
@@ -64,8 +67,10 @@ class Skeleton : public Spatial {
 
 		Transform transform_final;
 
+#ifndef _3D_DISABLED
 		PhysicalBone *physical_bone;
 		PhysicalBone *cache_parent_physical_bone;
+#endif // _3D_DISABLED
 
 		List<uint32_t> nodes_bound;
 
@@ -164,6 +169,7 @@ public:
 
 	void localize_rests(); // used for loaders and tools
 
+#ifndef _3D_DISABLED
 	// Physical bone API
 
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone);
@@ -182,6 +188,7 @@ public:
 	void physical_bones_start_simulation_on(const Array &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
+#endif // _3D_DISABLED
 
 public:
 	Skeleton();
