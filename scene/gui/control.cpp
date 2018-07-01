@@ -160,9 +160,16 @@ void Control::_update_minimum_size_cache() {
 	Size2 minsize = get_minimum_size();
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
+
+	bool size_changed = false;
+	if (data.minimum_size_cache != minsize)
+		size_changed = true;
+
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
-	minimum_size_changed();
+
+	if (size_changed)
+		minimum_size_changed();
 }
 
 Size2 Control::get_combined_minimum_size() const {
