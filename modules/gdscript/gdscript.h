@@ -261,6 +261,49 @@ public:
 	~GDScriptInstance();
 };
 
+#ifdef DEBUG_ENABLED
+struct GDScriptWarning {
+	enum Code {
+		UNASSIGNED_VARIABLE, // Variable used but never assigned
+		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc)
+		UNUSED_VARIABLE, // Local variable is declared but never used
+		UNUSED_CLASS_VARIABLE, // Class variable is declared but never used in the file
+		UNUSED_ARGUMENT, // Function argument is never used
+		UNREACHABLE_CODE, // Code after a return statement
+		STANDALONE_EXPRESSION, // Expression not assigned to a variable
+		VOID_ASSIGNMENT, // Function returns void but it's assigned to a variable
+		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost
+		FUNCTION_MAY_YIELD, // Typed assign of function call that yields (it may return a function state)
+		VARIABLE_CONFLICTS_FUNCTION, // Variable has the same name of a function
+		FUNCTION_CONFLICTS_VARIABLE, // Function has the same name of a variable
+		FUNCTION_CONFLICTS_CONSTANT, // Function has the same name of a constant
+		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible
+		UNUSED_SIGNAL, // Signal is defined but never emitted
+		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used
+		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name
+		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name
+		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name
+		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded
+		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes)
+		UNSAFE_METHOD_ACCESS, // Fucntion not found in the detected type (but can be in subtypes)
+		UNSAFE_CAST, // Cast used in an unknown type
+		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
+		WARNING_MAX,
+	} code;
+	Vector<String> symbols;
+	int line;
+
+	String get_name() const;
+	String get_message() const;
+	static String get_name_from_code(Code p_code);
+	static Code get_code_from_name(const String &p_name);
+
+	GDScriptWarning() :
+			line(-1),
+			code(WARNING_MAX) {}
+};
+#endif // DEBUG_ENABLED
+
 class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
@@ -397,7 +440,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;

@@ -142,6 +142,8 @@ class CodeTextEditor : public VBoxContainer {
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
+	Label *warning_label;
+	Label *warning_count_label;
 
 	Label *line_nb;
 	Label *col_nb;
@@ -214,6 +216,8 @@ public:
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
+	Label *get_warning_label() const { return warning_label; }
+	Label *get_warning_count_label() const { return warning_count_label; }
 	virtual void apply_code() {}
 
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
