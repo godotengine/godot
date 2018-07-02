@@ -921,7 +921,7 @@ CSGBrush *CSGBox::_build_brush() {
 
 		int face = 0;
 
-		Vector3 vertex_mul(width, height, depth);
+		Vector3 vertex_mul(width * 0.5, height * 0.5, depth * 0.5);
 
 		{
 
