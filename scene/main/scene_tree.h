@@ -161,7 +161,7 @@ private:
 	bool ugc_locked;
 	void _flush_ugc();
 
-	_FORCE_INLINE_ void _update_group_order(Group &g);
+	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
 	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName &p_group);
@@ -204,6 +204,7 @@ private:
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
+	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
 	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);

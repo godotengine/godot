@@ -70,6 +70,11 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
+	struct ComparatorWithPriority {
+
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
+	};
+
 private:
 	struct GroupData {
 
@@ -118,6 +123,7 @@ private:
 		//should move all the stuff below to bits
 		bool physics_process;
 		bool idle_process;
+		int process_priority;
 
 		bool physics_process_internal;
 		bool idle_process_internal;
@@ -259,6 +265,7 @@ public:
 
 	bool is_a_parent_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
+	bool has_priority_higher_than(const Node *p_node) const;
 
 	NodePath get_path() const;
 	NodePath get_path_to(const Node *p_node) const;
@@ -318,6 +325,8 @@ public:
 
 	void set_process_internal(bool p_idle_process_internal);
 	bool is_processing_internal() const;
+
+	void set_process_priority(int p_priority);
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
