@@ -70,6 +70,11 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
 	};
 
+	struct ComparatorWithPriority {
+
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
+	};
+
 private:
 	struct GroupData {
 
