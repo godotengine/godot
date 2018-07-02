@@ -80,8 +80,10 @@ class Skeleton : public Spatial {
 			ignore_animation = false;
 			custom_pose_enable = false;
 			disable_rest = false;
+#ifndef _3D_DISABLED
 			physical_bone = NULL;
 			cache_parent_physical_bone = NULL;
+#endif // _3D_DISABLED
 		}
 	};
 
