@@ -181,6 +181,9 @@ class NativeScriptInstance : public ScriptInstance {
 
 	Object *owner;
 	Ref<NativeScript> script;
+#ifdef DEBUG_ENABLED
+	StringName current_method_call;
+#endif
 
 	void _ml_call_reversed(NativeScriptDesc *script_data, const StringName &p_method, const Variant **p_args, int p_argcount);
 
