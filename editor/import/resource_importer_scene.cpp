@@ -224,32 +224,42 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 
 static bool _teststr(const String &p_what, const String &p_str) {
 
-	String str = p_str;
+	String what = p_what;
 
 	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (str.length() && ((str[str.length() - 1] >= '0' && str[str.length() - 1] <= '9') || str[str.length() - 1] <= 32 || str[str.length() - 1] == '.')) {
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
 
-		str = str.substr(0, str.length() - 1);
+		what = what.substr(0, what.length() - 1);
 	}
 
-	if (p_what.findn("$" + str) != -1) //blender and other stuff
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
 		return true;
-	if (p_what.to_lower().ends_with("-" + str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
-	if (p_what.to_lower().ends_with("_" + str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
 	return false;
 }
 
 static String _fixstr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
-		return p_what.replace("$" + p_str, "");
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	return p_what;
+	String what = p_what;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+
+		what = what.substr(0, what.length() - 1);
+	}
+
+	String end = p_what.substr(what.length(), p_what.length() - what.length());
+
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
+		return what.replace("$" + p_str, "") + end;
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	return what;
 }
 
 Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode) {
@@ -445,13 +455,19 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		Node *col;
 
 		if (_teststr(name, "col")) {
-			mi->set_name(_fixstr(name, "col"));
+			String new_name = _fixstr(name, "col");
+			if (mi->get_parent() && !mi->get_parent()->has_node(new_name)) {
+				mi->set_name(new_name);
+			}
 			col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
 			col->set_name("col");
 		} else {
-			mi->set_name(_fixstr(name, "convcol"));
+			String new_name = _fixstr(name, "convcol");
+			if (mi->get_parent() && !mi->get_parent()->has_node(new_name)) {
+				mi->set_name(new_name);
+			}
 			col = mi->create_convex_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
