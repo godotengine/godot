@@ -90,6 +90,7 @@ layout(std140) uniform SceneData { //ubo:0
 	mediump float reflection_multiplier;
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
+	mediump float ambient_occlusion_affect_ao_channel;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -670,6 +671,7 @@ layout(std140) uniform SceneData {
 	mediump float reflection_multiplier;
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
+	mediump float ambient_occlusion_affect_ao_channel;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -2128,18 +2130,16 @@ FRAGMENT_SHADER_CODE
 
 #else
 
-#if defined(ENABLE_AO)
-
-	float ambient_scale=0.0; // AO is supplied by material
-#else
 	//approximate ambient scale for SSAO, since we will lack full ambient
 	float max_emission=max(emission.r,max(emission.g,emission.b));
 	float max_ambient=max(ambient_light.r,max(ambient_light.g,ambient_light.b));
 	float max_diffuse=max(diffuse_light.r,max(diffuse_light.g,diffuse_light.b));
 	float total_ambient = max_ambient+max_diffuse+max_emission;
 	float ambient_scale = (total_ambient>0.0) ? (max_ambient+ambient_occlusion_affect_light*max_diffuse)/total_ambient : 0.0;
-#endif //ENABLE_AO
 
+#if defined(ENABLE_AO)
+	ambient_scale=mix(0.0,ambient_scale,ambient_occlusion_affect_ao_channel);
+#endif
 	diffuse_buffer=vec4(emission+diffuse_light+ambient_light,ambient_scale);
 	specular_buffer=vec4(specular_light,metallic);
 
