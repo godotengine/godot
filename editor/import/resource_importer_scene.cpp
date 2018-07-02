@@ -241,11 +241,19 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 
 static bool _teststr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
+	String str = p_str;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (str.length() && ((str[str.length() - 1] >= '0' && str[str.length() - 1] <= '9') || str[str.length() - 1] <= 32 || str[str.length() - 1] == '.')) {
+
+		str = str.substr(0, str.length() - 1);
+	}
+
+	if (p_what.findn("$" + str) != -1) //blender and other stuff
 		return true;
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+	if (p_what.to_lower().ends_with("-" + str)) //collada only supports "_" and "-" besides letters
 		return true;
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+	if (p_what.to_lower().ends_with("_" + str)) //collada only supports "_" and "-" besides letters
 		return true;
 	return false;
 }
