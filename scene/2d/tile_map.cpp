@@ -327,6 +327,10 @@ void TileMap::update_dirty_quadrants() {
 			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
 			int z_index = tile_set->tile_get_z_index(c.id);
 
+			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE) {
+				z_index += tile_set->autotile_get_z_index(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+			}
+
 			RID canvas_item;
 			RID debug_canvas_item;
 

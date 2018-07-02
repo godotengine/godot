@@ -185,6 +185,7 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_on_workspace_input", &TileSetEditor::_on_workspace_input);
 	ClassDB::bind_method("_on_tool_clicked", &TileSetEditor::_on_tool_clicked);
 	ClassDB::bind_method("_on_priority_changed", &TileSetEditor::_on_priority_changed);
+	ClassDB::bind_method("_on_z_index_changed", &TileSetEditor::_on_z_index_changed);
 	ClassDB::bind_method("_on_grid_snap_toggled", &TileSetEditor::_on_grid_snap_toggled);
 	ClassDB::bind_method("_set_snap_step", &TileSetEditor::_set_snap_step);
 	ClassDB::bind_method("_set_snap_off", &TileSetEditor::_set_snap_off);
@@ -233,6 +234,7 @@ void TileSetEditor::_notification(int p_what) {
 			tool_editmode[EDITMODE_BITMASK]->set_icon(get_icon("PackedDataContainer", "EditorIcons"));
 			tool_editmode[EDITMODE_PRIORITY]->set_icon(get_icon("MaterialPreviewLight1", "EditorIcons"));
 			tool_editmode[EDITMODE_ICON]->set_icon(get_icon("LargeTexture", "EditorIcons"));
+			tool_editmode[EDITMODE_Z_INDEX]->set_icon(get_icon("Sort", "EditorIcons"));
 
 			scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 		} break;
@@ -320,7 +322,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_hb = memnew(HBoxContainer);
 
 	g = Ref<ButtonGroup>(memnew(ButtonGroup));
-	String label[EDITMODE_MAX] = { "Region", "Collision", "Occlusion", "Navigation", "Bitmask", "Priority", "Icon" };
+	String label[EDITMODE_MAX] = { "Region", "Collision", "Occlusion", "Navigation", "Bitmask", "Priority", "Icon", "Z Index" };
 	for (int i = 0; i < (int)EDITMODE_MAX; i++) {
 		tool_editmode[i] = memnew(Button);
 		tool_editmode[i]->set_text(label[i]);
@@ -394,6 +396,15 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	spin_priority->connect("value_changed", this, "_on_priority_changed");
 	spin_priority->hide();
 	toolbar->add_child(spin_priority);
+
+	spin_z_index = memnew(SpinBox);
+	spin_z_index->set_min(VS::CANVAS_ITEM_Z_MIN);
+	spin_z_index->set_max(VS::CANVAS_ITEM_Z_MAX);
+	spin_z_index->set_step(1);
+	spin_z_index->set_custom_minimum_size(Size2(100, 0));
+	spin_z_index->connect("value_changed", this, "_on_z_index_changed");
+	spin_z_index->hide();
+	toolbar->add_child(spin_z_index);
 
 	Control *separator = memnew(Control);
 	separator->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -617,6 +628,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[TOOL_SELECT]->set_tooltip(TTR("Drag handles to edit Rect.\nClick on another Tile to edit it."));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete selected Rect."));
 			spin_priority->hide();
+			spin_z_index->hide();
 		} break;
 		case EDITMODE_COLLISION:
 		case EDITMODE_NAVIGATION:
@@ -639,6 +651,8 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile.\nClick on another Tile to edit it."));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete polygon."));
 			spin_priority->hide();
+			spin_z_index->hide();
+
 			select_coord(edited_shape_coord);
 		} break;
 		case EDITMODE_BITMASK: {
@@ -661,6 +675,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[TOOL_SELECT]->set_tooltip(TTR("LMB: Set bit on.\nRMB: Set bit off.\nClick on another Tile to edit it."));
 			spin_priority->hide();
 		} break;
+		case EDITMODE_Z_INDEX:
 		case EDITMODE_PRIORITY:
 		case EDITMODE_ICON: {
 			tools[TOOL_SELECT]->show();
@@ -681,9 +696,15 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			if (edit_mode == EDITMODE_ICON) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.\nClick on another Tile to edit it."));
 				spin_priority->hide();
-			} else {
+				spin_z_index->hide();
+			} else if (edit_mode == EDITMODE_PRIORITY) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its priority.\nClick on another Tile to edit it."));
 				spin_priority->show();
+				spin_z_index->hide();
+			} else {
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its z index.\nClick on another Tile to edit it."));
+				spin_priority->hide();
+				spin_z_index->show();
 			}
 		} break;
 		default: {}
@@ -810,6 +831,10 @@ void TileSetEditor::_on_workspace_draw() {
 				}
 				spin_priority->set_suffix(" / " + String::num(total, 0));
 				draw_highlight_subtile(edited_shape_coord, queue_others);
+			} break;
+			case EDITMODE_Z_INDEX: {
+				spin_z_index->set_value(tileset->autotile_get_z_index(get_current_tile(), edited_shape_coord));
+				draw_highlight_subtile(edited_shape_coord);
 			} break;
 			default: {}
 		}
@@ -1205,7 +1230,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				case EDITMODE_COLLISION:
 				case EDITMODE_OCCLUSION:
 				case EDITMODE_NAVIGATION:
-				case EDITMODE_PRIORITY: {
+				case EDITMODE_PRIORITY:
+				case EDITMODE_Z_INDEX: {
 					Vector2 shape_anchor = Vector2(0, 0);
 					if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
 						shape_anchor = edited_shape_coord;
@@ -1478,6 +1504,11 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 
 void TileSetEditor::_on_priority_changed(float val) {
 	tileset->autotile_set_subtile_priority(get_current_tile(), edited_shape_coord, (int)val);
+	workspace->update();
+}
+
+void TileSetEditor::_on_z_index_changed(float val) {
+	tileset->autotile_set_z_index(get_current_tile(), edited_shape_coord, (int)val);
 	workspace->update();
 }
 
@@ -2219,7 +2250,7 @@ void TileSetEditor::update_workspace_tile_mode() {
 	separator_editmode->show();
 
 	if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
-		if (tool_editmode[EDITMODE_ICON]->is_pressed() || tool_editmode[EDITMODE_PRIORITY]->is_pressed() || tool_editmode[EDITMODE_BITMASK]->is_pressed()) {
+		if (tool_editmode[EDITMODE_ICON]->is_pressed() || tool_editmode[EDITMODE_PRIORITY]->is_pressed() || tool_editmode[EDITMODE_BITMASK]->is_pressed() || tool_editmode[EDITMODE_Z_INDEX]->is_pressed()) {
 			tool_editmode[EDITMODE_COLLISION]->set_pressed(true);
 			edit_mode = EDITMODE_COLLISION;
 		}
@@ -2228,6 +2259,7 @@ void TileSetEditor::update_workspace_tile_mode() {
 		tool_editmode[EDITMODE_ICON]->hide();
 		tool_editmode[EDITMODE_BITMASK]->hide();
 		tool_editmode[EDITMODE_PRIORITY]->hide();
+		tool_editmode[EDITMODE_Z_INDEX]->hide();
 	} else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
 		if (edit_mode == EDITMODE_ICON)
 			select_coord(tileset->autotile_get_icon_coordinate(get_current_tile()));
