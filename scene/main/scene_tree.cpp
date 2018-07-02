@@ -656,6 +656,11 @@ void SceneTree::_notification(int p_notification) {
 #endif
 		} break;
 
+		case NOTIFICATION_CRASH: {
+
+			get_root()->propagate_notification(p_notification);
+		} break;
+
 		default:
 			break;
 	};
