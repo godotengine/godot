@@ -248,9 +248,9 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
-HashMap<StringName, ClassDB::ClassInfo, StringNameHasher> ClassDB::classes;
-HashMap<StringName, StringName, StringNameHasher> ClassDB::resource_base_extensions;
-HashMap<StringName, StringName, StringNameHasher> ClassDB::compat_classes;
+HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
+HashMap<StringName, StringName> ClassDB::resource_base_extensions;
+HashMap<StringName, StringName> ClassDB::compat_classes;
 
 ClassDB::ClassInfo::ClassInfo() {
 

@@ -32,10 +32,7 @@
 
 #include "print_string.h"
 
-uint32_t NodePath::hash() const {
-
-	if (!data)
-		return 0;
+void NodePath::_update_hash_cache() const {
 
 	uint32_t h = data->absolute ? 1 : 0;
 	int pc = data->path.size();
@@ -49,13 +46,15 @@ uint32_t NodePath::hash() const {
 		h = h ^ ssn[i].hash();
 	}
 
-	return h;
+	data->hash_cache_valid = true;
+	data->hash_cache = h;
 }
 
 void NodePath::prepend_period() {
 
 	if (data->path.size() && data->path[0].operator String() != ".") {
 		data->path.insert(0, ".");
+		data->hash_cache_valid = false;
 	}
 }
 
@@ -114,21 +113,33 @@ bool NodePath::operator==(const NodePath &p_path) const {
 	if (data->absolute != p_path.data->absolute)
 		return false;
 
-	if (data->path.size() != p_path.data->path.size())
+	int path_size = data->path.size();
+
+	if (path_size != p_path.data->path.size()) {
 		return false;
+	}
 
-	if (data->subpath.size() != p_path.data->subpath.size())
+	int subpath_size = data->subpath.size();
+
+	if (subpath_size != p_path.data->subpath.size()) {
 		return false;
+	}
 
-	for (int i = 0; i < data->path.size(); i++) {
+	const StringName *l_path_ptr = data->path.ptr();
+	const StringName *r_path_ptr = p_path.data->path.ptr();
 
-		if (data->path[i] != p_path.data->path[i])
+	for (int i = 0; i < path_size; i++) {
+
+		if (l_path_ptr[i] != r_path_ptr[i])
 			return false;
 	}
 
-	for (int i = 0; i < data->subpath.size(); i++) {
+	const StringName *l_subpath_ptr = data->subpath.ptr();
+	const StringName *r_subpath_ptr = p_path.data->subpath.ptr();
 
-		if (data->subpath[i] != p_path.data->subpath[i])
+	for (int i = 0; i < subpath_size; i++) {
+
+		if (l_subpath_ptr[i] != r_subpath_ptr[i])
 			return false;
 	}
 
@@ -286,6 +297,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->has_slashes = true;
+	data->hash_cache_valid = false;
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
@@ -301,6 +313,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 	data->path = p_path;
 	data->subpath = p_subpath;
 	data->has_slashes = true;
+	data->hash_cache_valid = false;
 }
 
 void NodePath::simplify() {
@@ -324,6 +337,7 @@ void NodePath::simplify() {
 			}
 		}
 	}
+	data->hash_cache_valid = false;
 }
 
 NodePath NodePath::simplified() const {
@@ -396,6 +410,7 @@ NodePath::NodePath(const String &p_path) {
 	data->absolute = absolute ? true : false;
 	data->has_slashes = has_slashes;
 	data->subpath = subpath;
+	data->hash_cache_valid = false;
 
 	if (slices == 0)
 		return;

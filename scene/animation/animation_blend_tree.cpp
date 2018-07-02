@@ -1036,6 +1036,7 @@ bool AnimationNodeBlendTree::_set(const StringName &p_name, const Variant &p_val
 
 	String name = p_name;
 	if (name.begins_with("nodes/")) {
+
 		String node_name = name.get_slicec('/', 1);
 		String what = name.get_slicec('/', 2);
 

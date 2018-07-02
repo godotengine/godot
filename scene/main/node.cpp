@@ -1934,8 +1934,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 
 				Resource *res = Object::cast_to<Resource>(value);
-				if (res) // Duplicate only if it's a resource
+				if (res) { // Duplicate only if it's a resource
 					current_node->set(name, res->duplicate());
+				}
 
 			} else {
 
