@@ -202,12 +202,12 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
-		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
-		HashMap<StringName, Ref<StyleBox>, StringNameHasher> style_override;
-		HashMap<StringName, Ref<Font>, StringNameHasher> font_override;
-		HashMap<StringName, Color, StringNameHasher> color_override;
-		HashMap<StringName, int, StringNameHasher> constant_override;
+		HashMap<StringName, Ref<Texture> > icon_override;
+		HashMap<StringName, Ref<Shader> > shader_override;
+		HashMap<StringName, Ref<StyleBox> > style_override;
+		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Color> color_override;
+		HashMap<StringName, int> constant_override;
 		Map<Ref<Font>, int> font_refcount;
 
 	} data;

@@ -31,6 +31,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "hash_map.h"
 #include "list.h"
 #include "map.h"
 #include "os/rw_lock.h"
@@ -451,7 +452,7 @@ private:
 		Signal() { lock = 0; }
 	};
 
-	HashMap<StringName, Signal, StringNameHasher> signal_map;
+	HashMap<StringName, Signal> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
