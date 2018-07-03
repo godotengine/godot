@@ -402,15 +402,18 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org/
-- Version: 10.23
+- Version: 10.31
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- Files listed in NON-AUTOTOOLS-BUILD steps 1-4
+- Files listed in the file NON-AUTOTOOLS-BUILD steps 1-4
 - All .h files in src/
-- src/pcre2_jit_*.c and src/sljit/*
-- AUTHORS and COPYING
+- src/pcre2_jit_match.c
+- src/pcre2_jit_misc.c
+- src/pcre2_jit_maketables.c
+- src/sljit/*
+- AUTHORS and LICENCE
 
 
 ## pvrtccompressor

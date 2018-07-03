@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -414,7 +414,12 @@ else
 for (i = 0; i < count2; i += 2)
   {
   size = (ovector[i+1] > ovector[i])? (ovector[i+1] - ovector[i]) : 0;
-  memcpy(sp, match_data->subject + ovector[i], CU2BYTES(size));
+
+  /* Size == 0 includes the case when the capture is unset. Avoid adding
+  PCRE2_UNSET to match_data->subject because it overflows, even though with
+  zero size calling memcpy() is harmless. */
+
+  if (size != 0) memcpy(sp, match_data->subject + ovector[i], CU2BYTES(size));
   *listp++ = sp;
   if (lensp != NULL) *lensp++ = size;
   sp += size;
