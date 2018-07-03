@@ -436,6 +436,10 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	template_list_state->set_text(TTR("Connecting to Mirror..."));
 }
 
+void ExportTemplateManager::_window_template_downloader_closed() {
+	download_templates->cancel_request();
+}
+
 void ExportTemplateManager::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -496,7 +500,6 @@ void ExportTemplateManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (!is_visible_in_tree()) {
 			print_line("closed");
-			download_templates->cancel_request();
 			set_process(false);
 		}
 	}
@@ -511,6 +514,7 @@ void ExportTemplateManager::_bind_methods() {
 	ClassDB::bind_method("_http_download_mirror_completed", &ExportTemplateManager::_http_download_mirror_completed);
 	ClassDB::bind_method("_http_download_templates_completed", &ExportTemplateManager::_http_download_templates_completed);
 	ClassDB::bind_method("_begin_template_download", &ExportTemplateManager::_begin_template_download);
+	ClassDB::bind_method("_window_template_downloader_closed", &ExportTemplateManager::_window_template_downloader_closed);
 }
 
 ExportTemplateManager::ExportTemplateManager() {
@@ -560,7 +564,9 @@ ExportTemplateManager::ExportTemplateManager() {
 	template_downloader = memnew(AcceptDialog);
 	template_downloader->set_title(TTR("Download Templates"));
 	template_downloader->get_ok()->set_text(TTR("Close"));
+	template_downloader->set_exclusive(true);
 	add_child(template_downloader);
+	template_downloader->connect("popup_hide", this, "_window_template_downloader_closed");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	template_downloader->add_child(vbc);
