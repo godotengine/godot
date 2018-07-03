@@ -55,6 +55,18 @@
 				Get the list of favorite directories for this project.
 			</description>
 		</method>
+		<method name="get_project_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="default" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_project_settings_dir" qualifiers="const">
 			<return type="String">
 			</return>
@@ -127,6 +139,18 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<argument index="2" name="update_current" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_project_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>

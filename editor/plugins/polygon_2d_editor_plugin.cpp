@@ -1035,6 +1035,7 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
 
+	node = NULL;
 	snap_step = Vector2(10, 10);
 	use_snap = false;
 	snap_show_grid = false;

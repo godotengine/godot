@@ -106,6 +106,8 @@
 		</theme_item>
 		<theme_item name="font_color_shadow" type="Color">
 		</theme_item>
+		<theme_item name="font_outline_modulate" type="Color">
+		</theme_item>
 		<theme_item name="line_spacing" type="int">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">

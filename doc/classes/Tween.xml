@@ -181,6 +181,12 @@
 				Returns [code]true[/code] if any tweens are currently running. Note that this method doesn't consider tweens that have ended.
 			</description>
 		</method>
+		<method name="is_stopped" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="remove">
 			<return type="bool">
 			</return>
@@ -340,7 +346,7 @@
 	</methods>
 	<members>
 		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode">
-            The tween's animation process thread. See [enum TweenProcessMode]. Default value: [enum TWEEN_PROCESS_IDLE].
+			The tween's animation process thread. See [enum TweenProcessMode]. Default value: [enum TWEEN_PROCESS_IDLE].
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
 			The tween's speed multiplier. For example, set it to [code]1.0[/code] for normal speed, [code]2.0[/code] for two times normal speed, or [code]0.5[/code] for half of the normal speed. A value of [code]0[/code] pauses the animation, but see also [method set_active] or [method stop_all] for this.

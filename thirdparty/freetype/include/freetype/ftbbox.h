@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType exact bbox computation (specification).                     */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -61,7 +61,7 @@ FT_BEGIN_HEADER
   /*    Compute the exact bounding box of an outline.  This is slower      */
   /*    than computing the control box.  However, it uses an advanced      */
   /*    algorithm that returns _very_ quickly when the two boxes           */
-  /*    coincide.  Otherwise, the outline Bézier arcs are traversed to     */
+  /*    coincide.  Otherwise, the outline Bezier arcs are traversed to     */
   /*    extract their extrema.                                             */
   /*                                                                       */
   /* <Input>                                                               */

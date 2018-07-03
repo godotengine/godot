@@ -173,6 +173,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("shadows_disabled");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_lighting");
 
 	/************ CANVAS ITEM **************************/
@@ -231,6 +233,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_disabled");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("unshaded");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");

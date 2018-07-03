@@ -124,7 +124,7 @@ public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
-	void load(const String &p_path);
+	Error load(const String &p_path);
 	void set_data(const Ref<Image> &p_image);
 	Ref<Image> get_data() const;
 

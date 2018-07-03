@@ -188,6 +188,7 @@ public:
 		FLAG_EMISSION_ON_UV2,
 		FLAG_USE_ALPHA_SCISSOR,
 		FLAG_ALBEDO_TEXTURE_FORCE_SRGB,
+		FLAG_DONT_RECEIVE_SHADOWS,
 		FLAG_MAX
 	};
 
@@ -236,7 +237,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 14;
+			uint64_t flags : 15;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;

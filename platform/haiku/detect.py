@@ -22,7 +22,7 @@ def get_opts():
     from SCons.Variables import EnumVariable
 
     return [
-        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
+        EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
     ]
 
 

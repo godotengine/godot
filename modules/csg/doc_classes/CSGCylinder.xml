@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGCylinder" inherits="CSGPrimitive" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="cone" type="bool" setter="set_cone" getter="is_cone">
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+		</member>
+		<member name="sides" type="int" setter="set_sides" getter="get_sides">
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -51,6 +51,7 @@ private:
 	AABB custom_aabb;
 
 	Ref<Material> material;
+	bool flip_faces;
 
 	mutable bool pending_request;
 	void _update() const;
@@ -84,6 +85,9 @@ public:
 
 	void set_custom_aabb(const AABB &p_custom);
 	AABB get_custom_aabb() const;
+
+	void set_flip_faces(bool p_enable);
+	bool get_flip_faces() const;
 
 	PrimitiveMesh();
 	~PrimitiveMesh();

@@ -1023,7 +1023,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,65535,1"), 1));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name"), "org.godotengine.$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name"), ""));
@@ -1643,9 +1643,9 @@ public:
 
 			List<String> args;
 			args.push_back("-digestalg");
-			args.push_back("SHA1");
+			args.push_back("SHA-256");
 			args.push_back("-sigalg");
-			args.push_back("MD5withRSA");
+			args.push_back("SHA256withRSA");
 			String tsa_url = EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
 			if (tsa_url != "") {
 				args.push_back("-tsa");

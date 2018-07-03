@@ -30,7 +30,6 @@
 
 #include "canvas_item_editor_plugin.h"
 
-#include "editor/animation_editor.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -365,7 +364,7 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 
 void CanvasItemEditor::_keying_changed() {
 
-	if (AnimationPlayerEditor::singleton->get_key_editor()->is_visible_in_tree())
+	if (AnimationPlayerEditor::singleton->get_track_editor()->is_visible_in_tree())
 		animation_hb->show();
 	else
 		animation_hb->hide();
@@ -467,32 +466,28 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
-	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
-
-	if (!locked) {
-		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
-			} else {
-				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
-			}
-			if (p_limit != 0 && r_items.size() >= p_limit)
-				return;
+	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
+		if (canvas_item && !canvas_item->is_set_as_toplevel()) {
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+		} else {
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
 		}
+		if (p_limit != 0 && r_items.size() >= p_limit)
+			return;
+	}
 
-		if (canvas_item && canvas_item->is_visible_in_tree()) {
-			Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
-			const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
-			if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
-				Node2D *node = Object::cast_to<Node2D>(canvas_item);
+	if (canvas_item && canvas_item->is_visible_in_tree()) {
+		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
+		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
+		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
+			Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
-				_SelectResult res;
-				res.item = canvas_item;
-				res.z_index = node ? node->get_z_index() : 0;
-				res.has_z = node;
-				r_items.push_back(res);
-			}
+			_SelectResult res;
+			res.item = canvas_item;
+			res.z_index = node ? node->get_z_index() : 0;
+			res.has_z = node;
+			r_items.push_back(res);
 		}
 	}
 
@@ -509,14 +504,14 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 	for (int i = 0; i < r_items.size(); i++) {
 		Node *node = r_items[i].item;
 
-		// Make sure the selected node is in the current scene
-		while (node && node != scene && node->get_owner() != scene) {
+		// Make sure the selected node is in the current scene, or editable
+		while (node && node != get_tree()->get_edited_scene_root() && node->get_owner() != scene && !scene->is_editable_instance(node->get_owner())) {
 			node = node->get_parent();
 		};
 
 		// Replace the node by the group if grouped
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(node);
-		while (node && node != scene) {
+		while (node && node != scene->get_parent()) {
 			CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
 			if (canvas_item_tmp && node->has_meta("_edit_group_")) {
 				canvas_item = canvas_item_tmp;
@@ -524,14 +519,105 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 			node = node->get_parent();
 		}
 
+		// Check if the canvas item is already in the list (for groups or scenes)
+		bool duplicate = false;
+		for (int j = 0; j < i; j++) {
+			if (r_items[j].item == canvas_item) {
+				duplicate = true;
+				break;
+			}
+		}
+
 		//Remove the item if invalid
-		if (!canvas_item || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
+		if (!canvas_item || duplicate || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || (canvas_item->has_meta("_edit_lock_") && canvas_item->get_meta("_edit_lock_"))) {
 			r_items.remove(i);
 			i--;
 		} else {
 			r_items[i].item = canvas_item;
 		}
 	}
+}
+
+void CanvasItemEditor::_get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items) {
+	Point2 screen_pos = transform.xform(p_pos);
+
+	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
+		Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+		Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
+
+		Vector<Vector2> bone_shape;
+		if (!_get_bone_shape(&bone_shape, NULL, E))
+			continue;
+
+		// Check if the point is inside the Polygon2D
+		if (Geometry::is_point_in_polygon(screen_pos, bone_shape)) {
+			// Check if the item is already in the list
+			bool duplicate = false;
+			for (int i = 0; i < r_items.size(); i++) {
+				if (r_items[i].item == from_node) {
+					duplicate = true;
+					break;
+				}
+			}
+			if (duplicate)
+				continue;
+
+			// Else, add it
+			_SelectResult res;
+			res.item = from_node;
+			res.z_index = from_node ? from_node->get_z_index() : 0;
+			res.has_z = from_node;
+			r_items.push_back(res);
+		}
+	}
+}
+
+bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *outline_shape, Map<BoneKey, BoneList>::Element *bone) {
+	int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
+	int bone_outline_width = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
+
+	Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().from));
+	Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().to));
+
+	if (!from_node->is_inside_tree())
+		return false; //may have been removed
+	if (!from_node)
+		return false;
+
+	if (!to_node && bone->get().length == 0)
+		return false;
+
+	Vector2 from = transform.xform(from_node->get_global_position());
+	Vector2 to;
+
+	if (to_node)
+		to = transform.xform(to_node->get_global_position());
+	else
+		to = transform.xform(from_node->get_global_transform().xform(Vector2(bone->get().length, 0)));
+
+	Vector2 rel = to - from;
+	Vector2 relt = rel.tangent().normalized() * bone_width;
+	Vector2 reln = rel.normalized();
+	Vector2 reltn = relt.normalized();
+
+	if (shape) {
+		shape->clear();
+		shape->push_back(from);
+		shape->push_back(from + rel * 0.2 + relt);
+		shape->push_back(to);
+		shape->push_back(from + rel * 0.2 - relt);
+	}
+
+	if (outline_shape) {
+		outline_shape->clear();
+		outline_shape->push_back(from + (-reln - reltn) * bone_outline_width);
+		outline_shape->push_back(from + (-reln + reltn) * bone_outline_width);
+		outline_shape->push_back(from + rel * 0.2 + relt + reltn * bone_outline_width);
+		outline_shape->push_back(to + (reln + reltn) * bone_outline_width);
+		outline_shape->push_back(to + (reln - reltn) * bone_outline_width);
+		outline_shape->push_back(from + rel * 0.2 - relt - reltn * bone_outline_width);
+	}
+	return true;
 }
 
 void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
@@ -541,13 +627,13 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		return;
 
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	Node *scene = editor->get_edited_scene();
 
-	bool inherited = p_node != get_tree()->get_edited_scene_root() && p_node->get_filename() != "";
-	bool editable = !inherited || EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
+	bool editable = p_node == scene || p_node->get_owner() == scene || scene->is_editable_instance(p_node->get_owner());
 	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
 	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
 
-	if (!lock_children && !locked && editable) {
+	if (!lock_children || !editable) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
 				_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
@@ -558,7 +644,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		}
 	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && !canvas_item->has_meta("_edit_lock_")) {
+	if (canvas_item && canvas_item->is_visible_in_tree() && !locked && editable) {
 		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
 
 		if (canvas_item->_edit_use_rect()) {
@@ -1791,7 +1877,12 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Find the item to select
 			CanvasItem *canvas_item = NULL;
 			Vector<_SelectResult> selection;
+
+			// Retrieve the items
 			_get_canvas_items_at_pos(click, selection, editor_selection->get_selection().empty() ? 1 : 0);
+
+			// Retrieve the bones
+			_get_bones_at_pos(click, selection);
 
 			for (int i = 0; i < selection.size(); i++) {
 				if (editor_selection->is_selected(selection[i].item)) {
@@ -1892,32 +1983,53 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
-		if (drag_type == DRAG_NONE && tool == TOOL_SELECT) {
-			Point2 click = transform.affine_inverse().xform(m->get_position());
+		Point2 click = transform.affine_inverse().xform(m->get_position());
 
-			//Checks if the hovered items changed, update the viewport if so
-			Vector<_SelectResult> hovering_results_tmp;
-			_get_canvas_items_at_pos(click, hovering_results_tmp);
-			hovering_results_tmp.sort();
-			bool changed = false;
-			if (hovering_results.size() == hovering_results_tmp.size()) {
-				for (int i = 0; i < hovering_results.size(); i++) {
-					if (hovering_results[i].item != hovering_results_tmp[i].item) {
-						changed = true;
-						break;
-					}
-				}
-			} else {
-				changed = true;
-			}
+		// Checks if the hovered items changed, update the viewport if so
+		Vector<_SelectResult> hovering_results_items;
+		_get_canvas_items_at_pos(click, hovering_results_items);
+		hovering_results_items.sort();
 
-			if (changed) {
-				hovering_results = hovering_results_tmp;
-				viewport->update();
-			}
+		// Compute the nodes names and icon position
+		Vector<_HoverResult> hovering_results_tmp;
+		for (int i = 0; i < hovering_results_items.size(); i++) {
+			CanvasItem *canvas_item = hovering_results_items[i].item;
 
-			return true;
+			if (canvas_item->_edit_use_rect())
+				continue;
+
+			_HoverResult hover_result;
+			hover_result.position = canvas_item->get_global_transform_with_canvas().get_origin();
+			if (has_icon(canvas_item->get_class(), "EditorIcons"))
+				hover_result.icon = get_icon(canvas_item->get_class(), "EditorIcons");
+			else
+				hover_result.icon = get_icon("Object", "EditorIcons");
+			hover_result.name = canvas_item->get_name();
+
+			hovering_results_tmp.push_back(hover_result);
 		}
+
+		// Check if changed, if so, update.
+		bool changed = false;
+		if (hovering_results_tmp.size() == hovering_results.size()) {
+			for (int i = 0; i < hovering_results_tmp.size(); i++) {
+				_HoverResult a = hovering_results_tmp[i];
+				_HoverResult b = hovering_results[i];
+				if (a.icon != b.icon || a.name != b.name || a.position != b.position) {
+					changed = true;
+					break;
+				}
+			}
+		} else {
+			changed = true;
+		}
+
+		if (changed) {
+			hovering_results = hovering_results_tmp;
+			viewport->update();
+		}
+
+		return true;
 	}
 
 	return false;
@@ -2583,63 +2695,25 @@ void CanvasItemEditor::_draw_bones() {
 	RID ci = viewport->get_canvas_item();
 
 	if (skeleton_show_bones) {
-		int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
 		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
 		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
 		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
 		Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
 		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
-		int bone_outline_size = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
-			E->get().from = Vector2();
-			E->get().to = Vector2();
+			Vector<Vector2> bone_shape;
+			Vector<Vector2> bone_shape_outline;
+			if (!_get_bone_shape(&bone_shape, &bone_shape_outline, E))
+				continue;
 
 			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
-			Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
-
-			if (!from_node->is_inside_tree())
-				continue; //may have been removed
-			if (!from_node)
+			if (!from_node->is_visible_in_tree())
 				continue;
-
-			if (!to_node && E->get().length == 0)
-				continue;
-
-			Vector2 from = transform.xform(from_node->get_global_position());
-			Vector2 to;
-
-			if (to_node)
-				to = transform.xform(to_node->get_global_position());
-			else
-				to = transform.xform(from_node->get_global_transform().xform(Vector2(E->get().length, 0)));
-
-			E->get().from = from;
-			E->get().to = to;
-
-			Vector2 rel = to - from;
-			Vector2 relt = rel.tangent().normalized() * bone_width;
-			Vector2 reln = rel.normalized();
-			Vector2 reltn = relt.normalized();
-
-			Vector<Vector2> bone_shape;
-			bone_shape.push_back(from);
-			bone_shape.push_back(from + rel * 0.2 + relt);
-			bone_shape.push_back(to);
-			bone_shape.push_back(from + rel * 0.2 - relt);
-
-			Vector<Vector2> bone_shape_outline;
-			bone_shape_outline.push_back(from + (-reln - reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + (-reln + reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + rel * 0.2 + relt + reltn * bone_outline_size);
-			bone_shape_outline.push_back(to + (reln + reltn) * bone_outline_size);
-			bone_shape_outline.push_back(to + (reln - reltn) * bone_outline_size);
-			bone_shape_outline.push_back(from + rel * 0.2 - relt - reltn * bone_outline_size);
 
 			Vector<Color> colors;
 			if (from_node->has_meta("_edit_ik_")) {
-
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
 				colors.push_back(bone_ik_color);
@@ -2679,7 +2753,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	ERR_FAIL_COND(!p_node);
 
 	Node *scene = editor->get_edited_scene();
-	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node))
+	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner()))
 		return;
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 	if (canvas_item && !canvas_item->is_visible())
@@ -2716,26 +2790,15 @@ void CanvasItemEditor::_draw_hover() {
 	List<Rect2> previous_rects;
 
 	for (int i = 0; i < hovering_results.size(); i++) {
-		// Draw the node's name and icon
-		CanvasItem *canvas_item = hovering_results[i].item;
 
-		if (canvas_item->_edit_use_rect())
-			continue;
+		Ref<Texture> node_icon = hovering_results[i].icon;
+		String node_name = hovering_results[i].name;
 
-		Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
-
-		// Get the resources
-		Ref<Texture> node_icon;
-		if (has_icon(canvas_item->get_class(), "EditorIcons"))
-			node_icon = get_icon(canvas_item->get_class(), "EditorIcons");
-		else
-			node_icon = get_icon("Object", "EditorIcons");
 		Ref<Font> font = get_font("font", "Label");
-		String node_name = canvas_item->get_name();
 		Size2 node_name_size = font->get_string_size(node_name);
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
-		Point2 pos = xform.get_origin() - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
+		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
 		// Rectify the position to avoid overlaping items
 		for (List<Rect2>::Element *E = previous_rects.front(); E; E = E->next()) {
 			if (E->get().intersects(Rect2(pos, item_size))) {
@@ -2745,8 +2808,10 @@ void CanvasItemEditor::_draw_hover() {
 
 		previous_rects.push_back(Rect2(pos, item_size));
 
-		// Draw the node icon and name
+		// Draw icon
 		viewport->draw_texture(node_icon, pos, Color(1.0, 1.0, 1.0, 0.5));
+
+		// Draw name
 		viewport->draw_string(font, pos + Point2(node_icon->get_size().x + 4, item_size.y - 3), node_name, Color(1.0, 1.0, 1.0, 0.5));
 	}
 }
@@ -2805,27 +2870,20 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 		}
 	}
 
-	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
-	if (!c) {
+	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	Node *scene = editor->get_edited_scene();
+	if (!canvas_item || !canvas_item->is_visible() || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner()))) {
 		return false;
 	}
 
-	Node *p = c->get_parent();
-	if (!p) {
-		return false;
-	}
+	Node *parent = canvas_item->get_parent();
 
-	if (!c->is_visible()) {
-		return false;
-	}
-
-	if (Object::cast_to<Bone2D>(c)) {
-
-		if (Object::cast_to<Bone2D>(p)) {
-			//add as bone->parent relationship
+	if (Object::cast_to<Bone2D>(canvas_item)) {
+		if (Object::cast_to<Bone2D>(parent)) {
+			// Add as bone->parent relationship
 			BoneKey bk;
-			bk.from = p->get_instance_id();
-			bk.to = c->get_instance_id();
+			bk.from = parent->get_instance_id();
+			bk.to = canvas_item->get_instance_id();
 			if (!bone_list.has(bk)) {
 				BoneList b;
 				b.length = 0;
@@ -2836,8 +2894,9 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 		}
 
 		if (!has_child_bones) {
+			// Add a last bone if the Bone2D has no Bone2D child
 			BoneKey bk;
-			bk.from = c->get_instance_id();
+			bk.from = canvas_item->get_instance_id();
 			bk.to = 0;
 			if (!bone_list.has(bk)) {
 				BoneList b;
@@ -2849,11 +2908,12 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 
 		return true;
 	}
-	if (c->has_meta("_edit_bone_")) {
 
+	if (canvas_item->has_meta("_edit_bone_")) {
+		// Add a "custom bone"
 		BoneKey bk;
-		bk.from = c->get_parent()->get_instance_id();
-		bk.to = c->get_instance_id();
+		bk.from = parent->get_instance_id();
+		bk.to = canvas_item->get_instance_id();
 		if (!bone_list.has(bk)) {
 			BoneList b;
 			b.length = 0;
@@ -2938,6 +2998,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		int nb_control = 0;
 		int nb_having_pivot = 0;
 
+		// Update the viewport if the canvas_item changes
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
 			CanvasItem *canvas_item = E->get();
@@ -2983,12 +3044,14 @@ void CanvasItemEditor::_notification(int p_what) {
 				nb_having_pivot++;
 			}
 		}
+
 		// Activate / Deactivate the pivot tool
 		pivot_button->set_disabled(nb_having_pivot == 0);
 
 		// Show / Hide the layout button
 		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
 
+		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
 			Object *b = ObjectDB::get_instance(E->key().from);
@@ -2999,7 +3062,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 
 			Node2D *b2 = Object::cast_to<Node2D>(b);
-			if (!b2) {
+			if (!b2 || !b2->is_inside_tree()) {
 				continue;
 			}
 
@@ -3028,7 +3091,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_default_margin(Margin(i), 4);
 		}
 
-		AnimationPlayerEditor::singleton->get_key_editor()->connect("visibility_changed", this, "_keying_changed");
+		AnimationPlayerEditor::singleton->get_track_editor()->connect("visibility_changed", this, "_keying_changed");
 		_keying_changed();
 		get_tree()->connect("node_added", this, "_tree_changed", varray());
 		get_tree()->connect("node_removed", this, "_tree_changed", varray());
@@ -3640,11 +3703,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Node2D *n2d = Object::cast_to<Node2D>(canvas_item);
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), existing);
 					if (key_rot)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "rotation_degrees", Math::rad2deg(n2d->get_rotation()), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "rotation_degrees", Math::rad2deg(n2d->get_rotation()), existing);
 					if (key_scale)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), existing);
 
 					if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
 						//look for an IK chain
@@ -3671,11 +3734,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 							for (List<Node2D *>::Element *F = ik_chain.front(); F; F = F->next()) {
 
 								if (key_pos)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "position", F->get()->get_position(), existing);
+									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "position", F->get()->get_position(), existing);
 								if (key_rot)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "rotation_degrees", Math::rad2deg(F->get()->get_rotation()), existing);
+									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "rotation_degrees", Math::rad2deg(F->get()->get_rotation()), existing);
 								if (key_scale)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "scale", F->get()->get_scale(), existing);
+									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "scale", F->get()->get_scale(), existing);
 							}
 						}
 					}
@@ -3685,11 +3748,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = Object::cast_to<Control>(canvas_item);
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), existing);
 					if (key_rot)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation_degrees(), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation_degrees(), existing);
 					if (key_scale)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), existing);
+						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), existing);
 				}
 			}
 
@@ -3785,7 +3848,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 						ctrl->set_position(Point2());
 					/*
                                    if (key_scale)
-                                   AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
+				   AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
                                    */
 				}
 			}
@@ -4287,13 +4350,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(snap_button);
 	snap_button->set_toggle_mode(true);
 	snap_button->connect("toggled", this, "_button_toggle_snap");
-	snap_button->set_tooltip(TTR("Toggles snapping"));
+	snap_button->set_tooltip(TTR("Toggle snapping."));
 	snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap"), KEY_S));
 
 	snap_config_menu = memnew(MenuButton);
 	hb->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
-	snap_config_menu->set_tooltip(TTR("Snapping options"));
+	snap_config_menu->set_tooltip(TTR("Snapping Options"));
 
 	PopupMenu *p = snap_config_menu->get_popup();
 	p->connect("id_pressed", this, "_popup_callback");

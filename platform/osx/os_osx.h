@@ -99,6 +99,8 @@ public:
 	id pixelFormat;
 	id context;
 
+	bool layered_window;
+
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
 	MouseMode mouse_mode;
@@ -107,6 +109,7 @@ public:
 	bool minimized;
 	bool maximized;
 	bool zoomed;
+	bool resizable;
 
 	Size2 window_size;
 	Rect2 restore_rect;
@@ -114,6 +117,7 @@ public:
 	String open_with_filename;
 
 	Point2 im_position;
+	bool im_active;
 	ImeCallback im_callback;
 	void *im_target;
 
@@ -226,6 +230,11 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
 

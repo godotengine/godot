@@ -13,7 +13,6 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -31,7 +30,7 @@
 
 #  ifdef __GNUC__
 #    define STIN static __inline__
-#  elif _WIN32
+#  elif defined(_WIN32)
 #    define STIN static __inline
 #  else
 #    define STIN static

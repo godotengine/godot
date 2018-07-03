@@ -112,6 +112,7 @@ struct Vector2 {
 
 	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t);
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_b, real_t p_t) const;
+	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_b, real_t p_t) const;
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
@@ -261,6 +262,14 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 	res.y += (p_t * (p_b.y - y));
 
 	return res;
+}
+
+Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_normalized() == false, Vector2());
+#endif
+	real_t theta = angle_to(p_b);
+	return rotated(theta * p_t);
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t) {

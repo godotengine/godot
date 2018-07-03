@@ -7,26 +7,25 @@
 		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html
-		http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
 	</tutorials>
 	<demos>
 	</demos>
 	<methods>
-		<method name="action_match" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-				Returns [code]true[/code] if this event matches [code]event[/code].
-			</description>
-		</method>
 		<method name="as_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Returns a [String] representation of the event.
+			</description>
+		</method>
+		<method name="get_action_strength" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="is_action" qualifiers="const">

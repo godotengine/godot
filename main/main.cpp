@@ -82,6 +82,8 @@
 #include "version.h"
 #include "version_hash.gen.h"
 
+#include "main/timer_sync.h"
+
 static ProjectSettings *globals = NULL;
 static Engine *engine = NULL;
 static InputMap *input_map = NULL;
@@ -261,9 +263,10 @@ void Main::print_help(const char *p_binary) {
 
 	OS::get_singleton()->print("Standalone tools:\n");
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
+	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <target>                Export the project using the given export target.\n");
-	OS::get_singleton()->print("  --export-debug                   Use together with --export, enables debug mode for the template.\n");
+	OS::get_singleton()->print("  --export <target>                Export the project using the given export target. Export only main pack if path ends with .pck or .zip'.\n");
+	OS::get_singleton()->print("  --export-debug <target>          Like --export, but use debug template.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects).\n");
@@ -337,7 +340,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String video_driver = "";
 	String audio_driver = "";
-	String game_path = ".";
+	String project_path = ".";
 	bool upwards = false;
 	String debug_mode;
 	String debug_host;
@@ -536,6 +539,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
+			editor = true;
 #endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
@@ -553,7 +557,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				if (OS::get_singleton()->set_cwd(p) == OK) {
 					//nothing
 				} else {
-					game_path = I->next()->get(); //use game_path instead
+					project_path = I->next()->get(); //use project_path instead
 				}
 				N = I->next()->next();
 			} else {
@@ -576,7 +580,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (OS::get_singleton()->set_cwd(path) == OK) {
 				// path already specified, don't override
 			} else {
-				game_path = path;
+				project_path = path;
 			}
 #ifdef TOOLS_ENABLED
 			editor = true;
@@ -672,35 +676,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
 		} else {
-
-			//test for game path
-			bool gpfound = false;
-
-			if (!I->get().begins_with("-") && game_path == "") {
-				DirAccess *da = DirAccess::open(I->get());
-				if (da != NULL) {
-					game_path = I->get();
-					gpfound = true;
-					memdelete(da);
-				}
-			}
-
-			if (!gpfound) {
-				main_args.push_back(I->get());
-			}
+			main_args.push_back(I->get());
 		}
 
 		I = N;
 	}
 
-	if (globals->setup(game_path, main_pack, upwards) == OK) {
+	if (globals->setup(project_path, main_pack, upwards) == OK) {
 		found_project = true;
 	} else {
 
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", game_path.ascii().get_data());
+		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", project_path.ascii().get_data());
 
 		goto error;
 #endif
@@ -730,6 +719,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	} else if (debug_mode == "local") {
 
 		script_debugger = memnew(ScriptDebuggerLocal);
+		OS::get_singleton()->initialize_debugging();
 	}
 
 	FileAccessNetwork::configure();
@@ -874,7 +864,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
 
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/allow_per_pixel_transparency", false);
+
 	video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
+	OS::get_singleton()->_use_vsync = video_mode.use_vsync;
+
+	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency", false);
+	video_mode.layered_splash = GLOBAL_DEF("display/window/per_pixel_transparency_splash", false);
 
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
@@ -882,6 +878,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
+		OS::get_singleton()->_allow_layered = false;
 	}
 
 	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
@@ -955,6 +952,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
+	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
@@ -984,7 +982,7 @@ error:
 
 	video_driver = "";
 	audio_driver = "";
-	game_path = "";
+	project_path = "";
 
 	args.clear();
 	main_args.clear();
@@ -1143,14 +1141,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 	if (id) {
-		if (bool(GLOBAL_DEF("input/pointing_devices/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
+		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
 			if (!OS::get_singleton()->has_touchscreen_ui_hint()) {
 				//only if no touchscreen ui hint, set emulation
 				id->set_emulate_touch_from_mouse(true);
 			}
 		}
 
-		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input/pointing_devices/emulate_mouse_from_touch", true)));
+		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input_devices/pointing/emulate_mouse_from_touch", true)));
 	}
 
 	MAIN_PRINT("Main: Load Remaps");
@@ -1228,6 +1226,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	return OK;
 }
 
+// everything the main loop needs to know about frame timings
+
+static MainTimerSync main_timer_sync;
+
 bool Main::start() {
 
 	ERR_FAIL_COND_V(!_start_success, false);
@@ -1241,6 +1243,9 @@ bool Main::start() {
 	String test;
 	String _export_preset;
 	bool export_debug = false;
+	bool check_only = false;
+
+	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i = 0; i < args.size(); i++) {
@@ -1261,6 +1266,8 @@ bool Main::start() {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
+			} else if (args[i] == "--check-only") {
+				check_only = true;
 			} else if (args[i] == "--test") {
 				test = args[i + 1];
 #ifdef TOOLS_ENABLED
@@ -1383,6 +1390,10 @@ bool Main::start() {
 		ERR_EXPLAIN("Can't load script: " + script);
 		ERR_FAIL_COND_V(script_res.is_null(), false);
 
+		if (check_only) {
+			return false;
+		}
+
 		if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
 
 			StringName instance_type = script_res->get_instance_base_type();
@@ -1444,6 +1455,91 @@ bool Main::start() {
 		}
 #endif
 
+		if (!project_manager && !editor) { // game
+			if (game_path != "" || script != "") {
+				//autoload
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+
+				//first pass, add the constants so they exist before any script is loaded
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+					}
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+							ScriptServer::get_language(i)->add_global_constant(name, Variant());
+						}
+					}
+				}
+
+				//second pass, load into global constants
+				List<Node *> to_add;
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/', 1);
+					String path = ProjectSettings::get_singleton()->get(s);
+					bool global_var = false;
+					if (path.begins_with("*")) {
+						global_var = true;
+						path = path.substr(1, path.length() - 1);
+					}
+
+					RES res = ResourceLoader::load(path);
+					ERR_EXPLAIN("Can't autoload: " + path);
+					ERR_CONTINUE(res.is_null());
+					Node *n = NULL;
+					if (res->is_class("PackedScene")) {
+						Ref<PackedScene> ps = res;
+						n = ps->instance();
+					} else if (res->is_class("Script")) {
+						Ref<Script> s = res;
+						StringName ibt = s->get_instance_base_type();
+						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+						ERR_EXPLAIN("Script does not inherit a Node: " + path);
+						ERR_CONTINUE(!valid_type);
+
+						Object *obj = ClassDB::instance(ibt);
+
+						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE(obj == NULL);
+
+						n = Object::cast_to<Node>(obj);
+						n->set_script(s.get_ref_ptr());
+					}
+
+					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
+					ERR_CONTINUE(!n);
+					n->set_name(name);
+
+					//defer so references are all valid on _ready()
+					to_add.push_back(n);
+
+					if (global_var) {
+						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+							ScriptServer::get_language(i)->add_global_constant(name, n);
+						}
+					}
+				}
+
+				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
+
+					sml->get_root()->add_child(E->get());
+				}
+			}
+		}
+
 #ifdef TOOLS_ENABLED
 
 		EditorNode *editor_node = NULL;
@@ -1462,9 +1558,6 @@ bool Main::start() {
 			}
 		}
 #endif
-
-		{
-		}
 
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
@@ -1578,89 +1671,6 @@ bool Main::start() {
 		}
 
 		if (!project_manager && !editor) { // game
-			if (game_path != "" || script != "") {
-				//autoload
-				List<PropertyInfo> props;
-				ProjectSettings::get_singleton()->get_property_list(&props);
-
-				//first pass, add the constants so they exist before any script is loaded
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
-					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
-						continue;
-					String name = s.get_slicec('/', 1);
-					String path = ProjectSettings::get_singleton()->get(s);
-					bool global_var = false;
-					if (path.begins_with("*")) {
-						global_var = true;
-					}
-
-					if (global_var) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(name, Variant());
-						}
-					}
-				}
-
-				//second pass, load into global constants
-				List<Node *> to_add;
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
-					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
-						continue;
-					String name = s.get_slicec('/', 1);
-					String path = ProjectSettings::get_singleton()->get(s);
-					bool global_var = false;
-					if (path.begins_with("*")) {
-						global_var = true;
-						path = path.substr(1, path.length() - 1);
-					}
-
-					RES res = ResourceLoader::load(path);
-					ERR_EXPLAIN("Can't autoload: " + path);
-					ERR_CONTINUE(res.is_null());
-					Node *n = NULL;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instance();
-					} else if (res->is_class("Script")) {
-						Ref<Script> s = res;
-						StringName ibt = s->get_instance_base_type();
-						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_EXPLAIN("Script does not inherit a Node: " + path);
-						ERR_CONTINUE(!valid_type);
-
-						Object *obj = ClassDB::instance(ibt);
-
-						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
-						ERR_CONTINUE(obj == NULL);
-
-						n = Object::cast_to<Node>(obj);
-						n->set_script(s.get_ref_ptr());
-					}
-
-					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
-					ERR_CONTINUE(!n);
-					n->set_name(name);
-
-					//defer so references are all valid on _ready()
-					to_add.push_back(n);
-
-					if (global_var) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(name, n);
-						}
-					}
-				}
-
-				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
-
-					sml->get_root()->add_child(E->get());
-				}
-			}
-
 			if (game_path != "") {
 				Node *scene = NULL;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
@@ -1707,7 +1717,6 @@ bool Main::start() {
 
 uint64_t Main::last_ticks = 0;
 uint64_t Main::target_ticks = 0;
-float Main::time_accum = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
@@ -1720,14 +1729,16 @@ bool Main::iteration() {
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
+	main_timer_sync.set_cpu_ticks_usec(ticks);
+	main_timer_sync.set_fixed_fps(fixed_fps);
 
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
-	double step = (double)ticks_elapsed / 1000000.0;
-	if (fixed_fps != -1)
-		step = 1.0 / fixed_fps;
+	int physics_fps = Engine::get_singleton()->get_iterations_per_second();
+	float frame_slice = 1.0 / physics_fps;
 
-	float frame_slice = 1.0 / Engine::get_singleton()->get_iterations_per_second();
+	MainFrameTime advance = main_timer_sync.advance(frame_slice, physics_fps);
+	double step = advance.idle_step;
 
 	Engine::get_singleton()->_frame_step = step;
 
@@ -1743,20 +1754,19 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	if (fixed_fps == -1 && step > frame_slice * 8)
-		step = frame_slice * 8;
-
-	time_accum += step;
+	static const int max_physics_steps = 8;
+	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
+		step -= (advance.physics_steps - max_physics_steps) * frame_slice;
+		advance.physics_steps = max_physics_steps;
+	}
 
 	float time_scale = Engine::get_singleton()->get_time_scale();
 
 	bool exit = false;
 
-	int iters = 0;
-
 	Engine::get_singleton()->_in_physics = true;
 
-	while (time_accum > frame_slice) {
+	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -1778,12 +1788,10 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->end_sync();
 		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
 
-		time_accum -= frame_slice;
 		message_queue->flush();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		iters++;
 		Engine::get_singleton()->_physics_frames++;
 	}
 
@@ -1809,9 +1817,6 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
-
-	if (AudioServer::get_singleton())
-		AudioServer::get_singleton()->update();
 
 	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
 	idle_process_max = MAX(idle_process_ticks, idle_process_max);

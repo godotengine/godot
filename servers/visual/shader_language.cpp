@@ -1625,14 +1625,14 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
 
 	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
@@ -2207,6 +2207,37 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 	return scalar_types[p_type];
 }
 
+int ShaderLanguage::get_cardinality(DataType p_type) {
+	static const int cardinality_table[] = {
+		0,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		2,
+		3,
+		4,
+		1,
+		1,
+		1,
+		1,
+	};
+
+	return cardinality_table[p_type];
+}
+
 bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier) {
 
 	identifier = StringName();
@@ -2269,7 +2300,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 	if (p_node->type == Node::TYPE_OPERATOR) {
 
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
-		if (op->type == OP_INDEX) {
+		if (op->op == OP_INDEX) {
 			return _validate_assign(op->arguments[0], p_builtin_types);
 		}
 	}
@@ -3111,9 +3142,18 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 				if (get_scalar_type(cn->datatype) == base) {
 
-					for (int j = 0; j < cn->values.size(); j++) {
-						values.push_back(cn->values[j]);
-					}
+					int cardinality = get_cardinality(op->arguments[i]->get_datatype());
+					if (cn->values.size() == cardinality) {
+
+						for (int j = 0; j < cn->values.size(); j++) {
+							values.push_back(cn->values[j]);
+						}
+					} else if (cn->values.size() == 1) {
+
+						for (int j = 0; j < cardinality; j++) {
+							values.push_back(cn->values[0]);
+						}
+					} // else: should be filtered by the parser as it's an invalid constructor
 				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
 
 					ConstantNode::Value v;

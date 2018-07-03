@@ -254,7 +254,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
 	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
 
-	int preset = EDITOR_DEF("interface/theme/preset", 0);
+	String preset = EDITOR_DEF("interface/theme/preset", "Default");
+
 	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
@@ -266,45 +267,52 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast;
-	switch (preset) {
-		case 0: { // Default
-			preset_accent_color = Color::html("#699ce8");
-			preset_base_color = Color::html("#323b4f");
-			preset_contrast = default_contrast;
-		} break;
-		case 1: { // Grey
-			preset_accent_color = Color::html("#b8e4ff");
-			preset_base_color = Color::html("#3d3d3d");
-			preset_contrast = 0.2;
-		} break;
-		case 2: { // Godot 2
-			preset_accent_color = Color::html("#86ace2");
-			preset_base_color = Color::html("#3C3A44");
-			preset_contrast = 0.25;
-		} break;
-		case 3: { // Arc
-			preset_accent_color = Color::html("#5294e2");
-			preset_base_color = Color::html("#383c4a");
-			preset_contrast = 0.25;
-		} break;
-		case 4: { // Light
-			preset_accent_color = Color::html("#2070ff");
-			preset_base_color = Color::html("#ffffff");
-			preset_contrast = 0.08;
-		} break;
-		case 5: { // Alien
-			preset_accent_color = Color::html("#1bfe99");
-			preset_base_color = Color::html("#2f373f");
-			preset_contrast = 0.25;
-		}
-		default: { // Custom
-			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
-			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
-			contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
-		}
+
+	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
+
+	if (preset == "Default") {
+		preset_accent_color = Color::html("#699ce8");
+		preset_base_color = Color::html("#323b4f");
+		preset_contrast = default_contrast;
+	} else if (preset == "Custom") {
+		accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
+		base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
+		contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+	} else if (preset == "Alien") {
+		preset_accent_color = Color::html("#1bfe99");
+		preset_base_color = Color::html("#2f373f");
+		preset_contrast = 0.25;
+	} else if (preset == "Arc") {
+		preset_accent_color = Color::html("#5294e2");
+		preset_base_color = Color::html("#383c4a");
+		preset_contrast = 0.25;
+	} else if (preset == "Godot 2") {
+		preset_accent_color = Color::html("#86ace2");
+		preset_base_color = Color::html("#3C3A44");
+		preset_contrast = 0.25;
+	} else if (preset == "Grey") {
+		preset_accent_color = Color::html("#b8e4ff");
+		preset_base_color = Color::html("#3d3d3d");
+		preset_contrast = 0.2;
+	} else if (preset == "Light") {
+		preset_accent_color = Color::html("#2070ff");
+		preset_base_color = Color::html("#ffffff");
+		preset_contrast = 0.08;
+	} else if (preset == "Solarized (Dark)") {
+		preset_accent_color = Color::html("#268bd2");
+		preset_base_color = Color::html("#073642");
+		preset_contrast = 0.15;
+	} else if (preset == "Solarized (Light)") {
+		preset_accent_color = Color::html("#268bd2");
+		preset_base_color = Color::html("#fdf6e3");
+		preset_contrast = 0.06;
+	} else { // Default
+		preset_accent_color = Color::html("#699ce8");
+		preset_base_color = Color::html("#323b4f");
+		preset_contrast = default_contrast;
 	}
 
-	if (preset != 6) {
+	if (preset != "Custom") {
 		accent_color = preset_accent_color;
 		base_color = preset_base_color;
 		contrast = preset_contrast;
@@ -318,9 +326,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	EditorSettings::get_singleton()->set_manually("interface/theme/contrast", contrast);
 
 	//Colors
-	int AUTO_COLOR = 0;
-	int LIGHT_COLOR = 2;
-	bool dark_theme = (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
 	const Color dark_color_1 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast);
 	const Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
@@ -940,6 +946,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
 	theme->set_color("grid_major", "GraphEdit", grid_major_color);
 	theme->set_color("grid_minor", "GraphEdit", grid_minor_color);
+	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
@@ -1047,8 +1054,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color comment_color = dim_color;
 	const Color string_color = Color::html(dark_theme ? "#ffd942" : "#ffd118").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 
-	const Color te_background_color = Color(0, 0, 0, 0);
-	const Color completion_background_color = base_color;
+	const Color te_background_color = dark_theme ? background_color : base_color;
+	const Color completion_background_color = dark_theme ? base_color : background_color;
 	const Color completion_selected_color = alpha1;
 	const Color completion_existing_color = alpha2;
 	const Color completion_scroll_color = alpha1;
@@ -1061,7 +1068,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color selection_color = alpha2;
 	const Color brace_mismatch_color = error_color;
 	const Color current_line_color = alpha1;
-	const Color line_length_guideline_color = warning_color;
+	const Color line_length_guideline_color = dark_theme ? base_color : background_color;
 	const Color word_highlighted_color = alpha1;
 	const Color number_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color function_color = main_color;
@@ -1081,7 +1088,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", type_color, true);
 		setting->set_initial_value("text_editor/highlighting/comment_color", comment_color, true);
 		setting->set_initial_value("text_editor/highlighting/string_color", string_color, true);
-		setting->set_initial_value("text_editor/highlighting/background_color", background_color, true);
+		setting->set_initial_value("text_editor/highlighting/background_color", te_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_background_color", completion_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_selected_color", completion_selected_color, true);
 		setting->set_initial_value("text_editor/highlighting/completion_existing_color", completion_existing_color, true);
@@ -1106,36 +1113,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/search_result_color", search_result_color, true);
 		setting->set_initial_value("text_editor/highlighting/search_result_border_color", search_result_border_color, true);
 	} else if (text_editor_color_theme == "Default") {
-		setting->set_initial_value("text_editor/highlighting/symbol_color", Color::html("badfff"), true);
-		setting->set_initial_value("text_editor/highlighting/keyword_color", Color::html("ffffb3"), true);
-		setting->set_initial_value("text_editor/highlighting/base_type_color", Color::html("a4ffd4"), true);
-		setting->set_initial_value("text_editor/highlighting/engine_type_color", Color::html("83d3ff"), true);
-		setting->set_initial_value("text_editor/highlighting/comment_color", Color::html("676767"), true);
-		setting->set_initial_value("text_editor/highlighting/string_color", Color::html("ef6ebe"), true);
-		setting->set_initial_value("text_editor/highlighting/background_color", Color::html("3b000000"), true);
-		setting->set_initial_value("text_editor/highlighting/completion_background_color", Color::html("2C2A32"), true);
-		setting->set_initial_value("text_editor/highlighting/completion_selected_color", Color::html("434244"), true);
-		setting->set_initial_value("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"), true);
-		setting->set_initial_value("text_editor/highlighting/completion_scroll_color", Color::html("ffffff"), true);
-		setting->set_initial_value("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"), true);
-		setting->set_initial_value("text_editor/highlighting/text_color", Color::html("aaaaaa"), true);
-		setting->set_initial_value("text_editor/highlighting/line_number_color", Color::html("66aaaaaa"), true);
-		setting->set_initial_value("text_editor/highlighting/caret_color", Color::html("aaaaaa"), true);
-		setting->set_initial_value("text_editor/highlighting/caret_background_color", Color::html("000000"), true);
-		setting->set_initial_value("text_editor/highlighting/text_selected_color", Color::html("000000"), true);
-		setting->set_initial_value("text_editor/highlighting/selection_color", Color::html("6ca9c2"), true);
-		setting->set_initial_value("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2), true);
-		setting->set_initial_value("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15), true);
-		setting->set_initial_value("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1), true);
-		setting->set_initial_value("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15), true);
-		setting->set_initial_value("text_editor/highlighting/number_color", Color::html("EB9532"), true);
-		setting->set_initial_value("text_editor/highlighting/function_color", Color::html("66a2ce"), true);
-		setting->set_initial_value("text_editor/highlighting/member_variable_color", Color::html("e64e59"), true);
-		setting->set_initial_value("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4), true);
-		setting->set_initial_value("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2), true);
-		setting->set_initial_value("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8), true);
-		setting->set_initial_value("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1), true);
-		setting->set_initial_value("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1), true);
+		setting->load_text_editor_theme();
 	}
 
 	return theme;

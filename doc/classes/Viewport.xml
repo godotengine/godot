@@ -6,14 +6,14 @@
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
-		If a viewport is a child of a [Control], it will automatically take up its same rect and position, otherwise they must be set manually.
+		If a viewport is a child of a [ViewportContainer], it will automatically take up its size, otherwise it must be set manually.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html
-	http://docs.godotengine.org/en/3.0/tutorials/viewports/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/viewports/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -212,6 +212,9 @@
 		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr">
 			If [code]true[/code] the viewport rendering will receive benefits from High Dynamic Range algorithm. Default value: [code]true[/code].
 		</member>
+		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear">
+			If [code]true[/code] the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.
+		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA">
 			The multisample anti-aliasing mode. Default value: [code]MSAA_DISABLED[/code].
 		</member>
@@ -273,7 +276,7 @@
 			Do not update the render target.
 		</constant>
 		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
-			Update the render target once, then switch to [code]UPDATE_DISABLED[/code]
+			Update the render target once, then switch to [code]UPDATE_DISABLED[/code].
 		</constant>
 		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
 			Update the render target only when it is visible. This is the default value.
@@ -326,6 +329,7 @@
 			Objects are displayed without light information.
 		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="2" enum="DebugDraw">
+			Objected are displayed semi-transparent with additive blending so you can see where they intersect.
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="3" enum="DebugDraw">
 			Objects are displayed in wireframe style.
@@ -350,10 +354,13 @@
 		<constant name="USAGE_3D_NO_EFFECTS" value="3" enum="Usage">
 		</constant>
 		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
+			Always clear the render target before drawing.
 		</constant>
 		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
+			Never clear the render target.
 		</constant>
 		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
+			Clear the render target next frame, then switch to [code]CLEAR_MODE_NEVER[/code].
 		</constant>
 	</constants>
 </class>

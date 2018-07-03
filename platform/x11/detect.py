@@ -42,6 +42,11 @@ def can_build():
         print("xrandr not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
+    if (x11_error):
+        print("xrender not found.. x11 disabled.")
+        return False
+
     return True
 
 def get_opts():
@@ -54,8 +59,8 @@ def get_opts():
         BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
-        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
-        BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
+        EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         BoolVariable('touch', 'Enable touch events', True),
     ]
 
@@ -141,6 +146,7 @@ def configure(env):
     env.ParseConfig('pkg-config xcursor --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')
     env.ParseConfig('pkg-config xrandr --cflags --libs')
+    env.ParseConfig('pkg-config xrender --cflags --libs')
 
     if (env['touch']):
         x11_error = os.system("pkg-config xi --modversion > /dev/null ")
@@ -151,14 +157,6 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
-
-    if not env['builtin_mbedtls']:
-        # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
-        env.Append(LIBS=['mbedtls', 'mbedcrypto', 'mbedx509'])
-
-    if not env['builtin_libwebp']:
-        env.ParseConfig('pkg-config libwebp --cflags --libs')
-
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
@@ -199,6 +197,10 @@ def configure(env):
         env['builtin_libogg'] = False  # Needed to link against system libtheora
         env['builtin_libvorbis'] = False  # Needed to link against system libtheora
         env.ParseConfig('pkg-config theora theoradec --cflags --libs')
+    else:
+        list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
+        if any(platform.machine() in s for s in list_of_x86):
+            env["x86_libtheora_opt_gcc"] = True
 
     if not env['builtin_libvpx']:
         env.ParseConfig('pkg-config vpx --cflags --libs')
@@ -214,10 +216,20 @@ def configure(env):
     if not env['builtin_libogg']:
         env.ParseConfig('pkg-config ogg --cflags --libs')
 
-    if env['builtin_libtheora']:
-        list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
-        if any(platform.machine() in s for s in list_of_x86):
-            env["x86_libtheora_opt_gcc"] = True
+    if not env['builtin_libwebp']:
+        env.ParseConfig('pkg-config libwebp --cflags --libs')
+
+    if not env['builtin_mbedtls']:
+        # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
+        env.Append(LIBS=['mbedtls', 'mbedcrypto', 'mbedx509'])
+
+    if not env['builtin_libwebsockets']:
+        env.ParseConfig('pkg-config libwebsockets --cflags --libs')
+
+    if not env['builtin_miniupnpc']:
+        # No pkgconfig file so far, hardcode default paths.
+        env.Append(CPPPATH=["/usr/include/miniupnpc"])
+        env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimisations

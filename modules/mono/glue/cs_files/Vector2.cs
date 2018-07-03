@@ -62,7 +62,7 @@ namespace Godot
             }
         }
 
-        private real_t Cross(Vector2 b)
+        public real_t Cross(Vector2 b)
         {
             return x * b.y - y * b.x;
         }
@@ -209,6 +209,12 @@ namespace Godot
         {
             x = v.x;
             y = v.y;
+        }
+        
+        public Vector2 Slerp(Vector2 b, real_t t)
+        {
+            real_t theta = AngleTo(b);
+            return Rotated(theta * t);
         }
 
         public Vector2 Slide(Vector2 n)

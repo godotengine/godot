@@ -383,11 +383,11 @@ void FileSystemDock::_update_file_display_toggle_button() {
 	if (button_display_mode->is_pressed()) {
 		display_mode = DISPLAY_LIST;
 		button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
-		button_display_mode->set_tooltip(TTR("View items as a grid of thumbnails"));
+		button_display_mode->set_tooltip(TTR("View items as a grid of thumbnails."));
 	} else {
 		display_mode = DISPLAY_THUMBNAILS;
 		button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
-		button_display_mode->set_tooltip(TTR("View items as a list"));
+		button_display_mode->set_tooltip(TTR("View items as a list."));
 	}
 }
 
@@ -1860,7 +1860,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
 	button_favorite->connect("pressed", this, "_favorites_pressed");
-	button_favorite->set_tooltip(TTR("Toggle folder status as Favorite"));
+	button_favorite->set_tooltip(TTR("Toggle folder status as Favorite."));
 	button_favorite->set_focus_mode(FOCUS_NONE);
 	toolbar_hbc->add_child(button_favorite);
 
@@ -1916,11 +1916,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_vb->add_child(path_hb);
 
 	button_tree = memnew(ToolButton);
+	button_tree->set_tooltip(TTR("Enter tree-view."));
 	button_tree->hide();
 	path_hb->add_child(button_tree);
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_placeholder(TTR("Search files"));
 	search_box->connect("text_changed", this, "_search_changed");
 	path_hb->add_child(search_box);
 

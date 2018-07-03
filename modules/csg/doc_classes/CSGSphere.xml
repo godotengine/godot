@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGSphere" inherits="CSGPrimitive" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

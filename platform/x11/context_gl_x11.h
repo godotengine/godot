@@ -41,6 +41,7 @@
 #include "drivers/gl_context/context_gl.h"
 #include "os/os.h"
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
 
 struct ContextGL_X11_Private;
 

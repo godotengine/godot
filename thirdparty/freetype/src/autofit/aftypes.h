@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter types (specification only).                              */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -76,9 +76,9 @@ extern void*  _af_debug_hints;
 
   typedef struct  AF_WidthRec_
   {
-    FT_Pos  org;  /* original position/width in font units              */
-    FT_Pos  cur;  /* current/scaled position/width in device sub-pixels */
-    FT_Pos  fit;  /* current/fitted position/width in device sub-pixels */
+    FT_Pos  org;  /* original position/width in font units             */
+    FT_Pos  cur;  /* current/scaled position/width in device subpixels */
+    FT_Pos  fit;  /* current/fitted position/width in device subpixels */
 
   } AF_WidthRec, *AF_Width;
 

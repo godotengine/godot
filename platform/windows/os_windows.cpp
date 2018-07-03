@@ -152,6 +152,25 @@ void RedirectIOToConsole() {
 	// point to console as well
 }
 
+BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
+	if (ScriptDebugger::get_singleton() == NULL)
+		return FALSE;
+
+	switch (dwCtrlType) {
+		case CTRL_C_EVENT:
+			ScriptDebugger::get_singleton()->set_depth(-1);
+			ScriptDebugger::get_singleton()->set_lines_left(1);
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+void OS_Windows::initialize_debugging() {
+
+	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+}
+
 void OS_Windows::initialize_core() {
 
 	crash_handler.initialize();
@@ -604,9 +623,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_SIZE: {
 			int window_w = LOWORD(lParam);
 			int window_h = HIWORD(lParam);
-			if (window_w > 0 && window_h > 0) {
+			if (window_w > 0 && window_h > 0 && !preserve_window_size) {
 				video_mode.width = window_w;
 				video_mode.height = window_h;
+			} else {
+				preserve_window_size = false;
+				set_window_size(Size2(video_mode.width, video_mode.height));
 			}
 			if (wParam == SIZE_MAXIMIZED) {
 				maximized = true;
@@ -618,6 +640,28 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				maximized = false;
 				minimized = false;
 			}
+			if (is_layered_allowed() && layered_window) {
+				DeleteObject(hBitmap);
+
+				RECT r;
+				GetWindowRect(hWnd, &r);
+				dib_size = Size2(r.right - r.left, r.bottom - r.top);
+
+				BITMAPINFO bmi;
+				ZeroMemory(&bmi, sizeof(BITMAPINFO));
+				bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+				bmi.bmiHeader.biWidth = dib_size.x;
+				bmi.bmiHeader.biHeight = dib_size.y;
+				bmi.bmiHeader.biPlanes = 1;
+				bmi.bmiHeader.biBitCount = 32;
+				bmi.bmiHeader.biCompression = BI_RGB;
+				bmi.bmiHeader.biSizeImage = dib_size.x, dib_size.y * 4;
+				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
+				SelectObject(hDC_dib, hBitmap);
+
+				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
+			}
+			//return 0;								// Jump Back
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
@@ -736,7 +780,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						SetCursor(NULL);
 				} else {
 					if (hCursor != NULL) {
-						SetCursor(hCursor);
+						CursorShape c = cursor_shape;
+						cursor_shape = CURSOR_MAX;
+						set_cursor_shape(c);
 						hCursor = NULL;
 					}
 				}
@@ -1132,6 +1178,18 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		SetFocus(hWnd); // Sets Keyboard Focus To
 	}
 
+	if (p_desired.layered_splash) {
+		set_window_per_pixel_transparency_enabled(true);
+	}
+
+	// IME
+	im_himc = ImmGetContext(hWnd);
+	ImmReleaseContext(hWnd, im_himc);
+
+	im_position = Vector2();
+
+	set_ime_active(false);
+
 	return OK;
 }
 
@@ -1517,11 +1575,23 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 	}
 
 	MoveWindow(hWnd, rect.left, rect.top, w, h, TRUE);
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution
+	if (mouse_mode == MOUSE_MODE_CONFINED) {
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		ClientToScreen(hWnd, (POINT *)&rect.left);
+		ClientToScreen(hWnd, (POINT *)&rect.right);
+		ClipCursor(&rect);
+	}
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled) {
 
 	if (video_mode.fullscreen == p_enabled)
 		return;
+
+	if (layered_window)
+		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled) {
 
@@ -1627,12 +1697,100 @@ bool OS_Windows::is_window_always_on_top() const {
 	return video_mode.always_on_top;
 }
 
+bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
+
+	if (!is_layered_allowed()) return false;
+	return layered_window;
+}
+
+void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+
+	if (!is_layered_allowed()) return;
+	if (layered_window != p_enabled) {
+		if (p_enabled) {
+			set_borderless_window(true);
+			//enable per-pixel alpha
+			hDC_dib = CreateCompatibleDC(GetDC(hWnd));
+
+			SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+			RECT r;
+			GetWindowRect(hWnd, &r);
+			dib_size = Size2(r.right - r.left, r.bottom - r.top);
+
+			BITMAPINFO bmi;
+			ZeroMemory(&bmi, sizeof(BITMAPINFO));
+			bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			bmi.bmiHeader.biWidth = dib_size.x;
+			bmi.bmiHeader.biHeight = dib_size.y;
+			bmi.bmiHeader.biPlanes = 1;
+			bmi.bmiHeader.biBitCount = 32;
+			bmi.bmiHeader.biCompression = BI_RGB;
+			bmi.bmiHeader.biSizeImage = dib_size.x * dib_size.y * 4;
+			hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
+			SelectObject(hDC_dib, hBitmap);
+
+			ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
+
+			layered_window = true;
+		} else {
+			//disable per-pixel alpha
+			layered_window = false;
+
+			SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+
+			//cleanup
+			DeleteObject(hBitmap);
+			DeleteDC(hDC_dib);
+		}
+	}
+}
+
+uint8_t *OS_Windows::get_layered_buffer_data() {
+
+	return (is_layered_allowed() && layered_window) ? dib_data : NULL;
+}
+
+Size2 OS_Windows::get_layered_buffer_size() {
+
+	return (is_layered_allowed() && layered_window) ? dib_size : Size2();
+}
+
+void OS_Windows::swap_layered_buffer() {
+
+	if (is_layered_allowed() && layered_window) {
+
+		//premultiply alpha
+		for (int y = 0; y < dib_size.y; y++) {
+			for (int x = 0; x < dib_size.x; x++) {
+				float alpha = (float)dib_data[y * (int)dib_size.x * 4 + x * 4 + 3] / (float)0xFF;
+				dib_data[y * (int)dib_size.x * 4 + x * 4 + 0] *= alpha;
+				dib_data[y * (int)dib_size.x * 4 + x * 4 + 1] *= alpha;
+				dib_data[y * (int)dib_size.x * 4 + x * 4 + 2] *= alpha;
+			}
+		}
+		//swap layered window buffer
+		POINT ptSrc = { 0, 0 };
+		SIZE sizeWnd = { (long)dib_size.x, (long)dib_size.y };
+		BLENDFUNCTION bf;
+		bf.BlendOp = AC_SRC_OVER;
+		bf.BlendFlags = 0;
+		bf.AlphaFormat = AC_SRC_ALPHA;
+		bf.SourceConstantAlpha = 0xFF;
+		UpdateLayeredWindow(hWnd, NULL, NULL, &sizeWnd, hDC_dib, &ptSrc, 0, &bf, ULW_ALPHA);
+	}
+}
+
 void OS_Windows::set_borderless_window(bool p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
 
+	if (!p_borderless && layered_window)
+		set_window_per_pixel_transparency_enabled(false);
+
 	video_mode.borderless_window = p_borderless;
 
+	preserve_window_size = true;
 	_update_window_style();
 }
 
@@ -1651,7 +1809,7 @@ void OS_Windows::_update_window_style(bool repaint) {
 		}
 	}
 
-	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
 	if (repaint) {
 		RECT rect;
@@ -1862,7 +2020,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	if (mouse_mode != MOUSE_MODE_VISIBLE) {
+	if (mouse_mode != MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
 		cursor_shape = p_shape;
 		return;
 	}
@@ -1899,27 +2057,59 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
-		Ref<Image> image = texture->get_data();
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2 texture_size;
+		Rect2 atlas_rect;
 
-		UINT image_size = texture->get_width() * texture->get_height();
+		if (texture.is_valid()) {
+			image = texture->get_data();
+		}
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+
+		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
+
+		UINT image_size = texture_size.width * texture_size.height;
 		UINT size = sizeof(UINT) * image_size;
 
-		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
-
 		// Create the BITMAP with alpha channel
-		COLORREF *buffer = (COLORREF *)malloc(sizeof(COLORREF) * image_size);
+		COLORREF *buffer = (COLORREF *)memalloc(sizeof(COLORREF) * image_size);
 
 		image->lock();
 		for (UINT index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture->get_width());
-			int column_index = index % texture->get_width();
+			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
+			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
+
+			if (atlas_texture.is_valid()) {
+				column_index = MIN(column_index, atlas_rect.size.width - 1);
+				row_index = MIN(row_index, atlas_rect.size.height - 1);
+			}
 
 			*(buffer + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
 		image->unlock();
 
 		// Using 4 channels, so 4 * 8 bits
-		HBITMAP bitmap = CreateBitmap(texture->get_width(), texture->get_height(), 1, 4 * 8, buffer);
+		HBITMAP bitmap = CreateBitmap(texture_size.width, texture_size.height, 1, 4 * 8, buffer);
 		COLORREF clrTransparent = -1;
 
 		// Create the AND and XOR masks for the bitmap
@@ -1929,6 +2119,8 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		GetMaskBitmaps(bitmap, clrTransparent, hAndMask, hXorMask);
 
 		if (NULL == hAndMask || NULL == hXorMask) {
+			memfree(buffer);
+			DeleteObject(bitmap);
 			return;
 		}
 
@@ -1953,6 +2145,14 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		if (hXorMask != NULL) {
 			DeleteObject(hXorMask);
 		}
+
+		memfree(buffer);
+		DeleteObject(bitmap);
+	} else {
+		// Reset to default system cursor
+		cursors[p_shape] = NULL;
+		cursor_shape = CURSOR_MAX;
+		set_cursor_shape(p_shape);
 	}
 }
 
@@ -2018,10 +2218,6 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			argss += String(" \"") + E->get() + "\"";
 		}
 
-		//print_line("ARGS: "+argss);
-		//argss+"\"";
-		//argss+=" 2>nul";
-
 		FILE *f = _wpopen(argss.c_str(), L"r");
 
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
@@ -2048,15 +2244,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		I = I->next();
 	};
 
-	//cmdline+="\"";
-
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
 	pi.si.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	print_line("running cmdline: " + cmdline);
 	Vector<CharType> modstr; //windows wants to change this no idea why
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
@@ -2475,13 +2668,29 @@ String OS_Windows::get_unique_id() const {
 	return String(HwProfInfo.szHwProfileGuid);
 }
 
+void OS_Windows::set_ime_active(const bool p_active) {
+
+	if (p_active) {
+		ImmAssociateContext(hWnd, im_himc);
+
+		set_ime_position(im_position);
+	} else {
+		ImmAssociateContext(hWnd, (HIMC)0);
+	}
+}
+
 void OS_Windows::set_ime_position(const Point2 &p_pos) {
 
+	im_position = p_pos;
+
 	HIMC himc = ImmGetContext(hWnd);
+	if (himc == (HIMC)0)
+		return;
+
 	COMPOSITIONFORM cps;
 	cps.dwStyle = CFS_FORCE_POSITION;
-	cps.ptCurrentPos.x = p_pos.x;
-	cps.ptCurrentPos.y = p_pos.y;
+	cps.ptCurrentPos.x = im_position.x;
+	cps.ptCurrentPos.y = im_position.y;
 	ImmSetCompositionWindow(himc, &cps);
 	ImmReleaseContext(hWnd, himc);
 }
@@ -2563,6 +2772,8 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	key_event_pos = 0;
+	layered_window = false;
+	hBitmap = NULL;
 	force_quit = false;
 	alt_mem = false;
 	gr_mem = false;
@@ -2596,6 +2807,10 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	if (is_layered_allowed() && layered_window) {
+		DeleteObject(hBitmap);
+		DeleteDC(hDC_dib);
+	}
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif

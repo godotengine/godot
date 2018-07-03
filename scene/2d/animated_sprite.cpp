@@ -351,7 +351,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (frame < 0)
 				return;
 
-			float speed = frames->get_animation_speed(animation);
+			float speed = frames->get_animation_speed(animation) * speed_scale;
 			if (speed == 0)
 				return; //do nothing
 
@@ -361,7 +361,7 @@ void AnimatedSprite::_notification(int p_what) {
 
 				if (timeout <= 0) {
 
-					timeout = 1.0 / speed;
+					timeout = _get_frame_duration();
 
 					int fc = frames->get_frame_count(animation);
 					if (frame >= fc - 1) {
@@ -481,6 +481,22 @@ int AnimatedSprite::get_frame() const {
 	return frame;
 }
 
+void AnimatedSprite::set_speed_scale(float p_speed_scale) {
+
+	float elapsed = _get_frame_duration() - timeout;
+
+	speed_scale = MAX(p_speed_scale, 0.0f);
+
+	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed
+	_reset_timeout();
+	timeout -= elapsed;
+}
+
+float AnimatedSprite::get_speed_scale() const {
+
+	return speed_scale;
+}
+
 void AnimatedSprite::set_centered(bool p_center) {
 
 	centered = p_center;
@@ -564,21 +580,22 @@ bool AnimatedSprite::is_playing() const {
 	return playing;
 }
 
+float AnimatedSprite::_get_frame_duration() {
+	if (frames.is_valid() && frames->has_animation(animation)) {
+		float speed = frames->get_animation_speed(animation) * speed_scale;
+		if (speed > 0) {
+			return 1.0 / speed;
+		}
+	}
+	return 0.0;
+}
+
 void AnimatedSprite::_reset_timeout() {
 
 	if (!playing)
 		return;
 
-	if (frames.is_valid() && frames->has_animation(animation)) {
-		float speed = frames->get_animation_speed(animation);
-		if (speed > 0) {
-			timeout = 1.0 / speed;
-		} else {
-			timeout = 0;
-		}
-	} else {
-		timeout = 0;
-	}
+	timeout = _get_frame_duration();
 }
 
 void AnimatedSprite::set_animation(const StringName &p_animation) {
@@ -636,6 +653,9 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite::get_speed_scale);
+
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
@@ -644,6 +664,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -658,6 +679,7 @@ AnimatedSprite::AnimatedSprite() {
 	vflip = false;
 
 	frame = 0;
+	speed_scale = 1.0f;
 	playing = false;
 	animation = "default";
 	timeout = 0;

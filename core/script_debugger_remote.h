@@ -133,6 +133,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _put_variable(const String &p_name, const Variant &p_variable);
 
+	void _save_node(ObjectID id, const String &p_path);
+
 public:
 	struct ResourceUsage {
 

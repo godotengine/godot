@@ -61,7 +61,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	if (full_name == "text_editor/theme/color_theme") {
 		property_editor->get_property_editor()->update_tree();
 	} else if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/preset", 6); // set preset to Custom
+		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
 	} else if (full_name.begins_with("text_editor/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	}
@@ -101,7 +101,14 @@ void EditorSettingsDialog::popup_edit_settings() {
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/editor_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/editor_settings_bounds"));
 	} else {
-		popup_centered_ratio(0.7);
+
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		popup_centered(popup_size);
 	}
 
 	_focus_current_search_box();

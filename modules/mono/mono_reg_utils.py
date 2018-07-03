@@ -60,10 +60,10 @@ def _find_mono_in_reg_old(subkey, bits):
 def find_mono_root_dir(bits):
     root_dir = _find_mono_in_reg(r'SOFTWARE\Mono', bits)
     if root_dir is not None:
-        return root_dir
+        return str(root_dir)
     root_dir = _find_mono_in_reg_old(r'SOFTWARE\Novell\Mono', bits)
     if root_dir is not None:
-        return root_dir
+        return str(root_dir)
     return ''
 
 

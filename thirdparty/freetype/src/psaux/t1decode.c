@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript Type 1 decoding routines (body).                          */
 /*                                                                         */
-/*  Copyright 2000-2017 by                                                 */
+/*  Copyright 2000-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -112,6 +112,56 @@
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
+  /*    t1_lookup_glyph_by_stdcharcode_ps                                  */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Looks up a given glyph by its StandardEncoding charcode.  Used to  */
+  /*    implement the SEAC Type 1 operator in the Adobe engine             */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face     :: The current face object.                               */
+  /*                                                                       */
+  /*    charcode :: The character code to look for.                        */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    A glyph index in the font face.  Returns -1 if the corresponding   */
+  /*    glyph wasn't found.                                                */
+  /*                                                                       */
+  FT_LOCAL_DEF( FT_Int )
+  t1_lookup_glyph_by_stdcharcode_ps( PS_Decoder*  decoder,
+                                     FT_Int       charcode )
+  {
+    FT_UInt             n;
+    const FT_String*    glyph_name;
+    FT_Service_PsCMaps  psnames = decoder->psnames;
+
+
+    /* check range of standard char code */
+    if ( charcode < 0 || charcode > 255 )
+      return -1;
+
+    glyph_name = psnames->adobe_std_strings(
+                   psnames->adobe_std_encoding[charcode]);
+
+    for ( n = 0; n < decoder->num_glyphs; n++ )
+    {
+      FT_String*  name = (FT_String*)decoder->glyph_names[n];
+
+
+      if ( name                               &&
+           name[0] == glyph_name[0]           &&
+           ft_strcmp( name, glyph_name ) == 0 )
+        return (FT_Int)n;
+    }
+
+    return -1;
+  }
+
+
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
   /*    t1_lookup_glyph_by_stdcharcode                                     */
   /*                                                                       */
   /* <Description>                                                         */
@@ -155,6 +205,15 @@
     }
 
     return -1;
+  }
+
+
+  /* parse a single Type 1 glyph */
+  FT_LOCAL_DEF( FT_Error )
+  t1_decoder_parse_glyph( T1_Decoder  decoder,
+                          FT_UInt     glyph )
+  {
+    return decoder->parse_callback( decoder, glyph );
   }
 
 
@@ -1579,14 +1638,286 @@
     return FT_THROW( Stack_Underflow );
   }
 
+#else /* T1_CONFIG_OPTION_OLD_ENGINE */
 
-  /* parse a single Type 1 glyph */
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    t1_decoder_parse_metrics                                           */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Parses a given Type 1 charstrings program to extract width         */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    decoder         :: The current Type 1 decoder.                     */
+  /*                                                                       */
+  /*    charstring_base :: The base address of the charstring stream.      */
+  /*                                                                       */
+  /*    charstring_len  :: The length in bytes of the charstring stream.   */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    FreeType error code.  0 means success.                             */
+  /*                                                                       */
   FT_LOCAL_DEF( FT_Error )
-  t1_decoder_parse_glyph( T1_Decoder  decoder,
-                          FT_UInt     glyph )
+  t1_decoder_parse_metrics( T1_Decoder  decoder,
+                            FT_Byte*    charstring_base,
+                            FT_UInt     charstring_len )
   {
-    return decoder->parse_callback( decoder, glyph );
+    T1_Decoder_Zone  zone;
+    FT_Byte*         ip;
+    FT_Byte*         limit;
+    T1_Builder       builder = &decoder->builder;
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+    FT_Bool          bol = TRUE;
+#endif
+
+
+    /* First of all, initialize the decoder */
+    decoder->top  = decoder->stack;
+    decoder->zone = decoder->zones;
+    zone          = decoder->zones;
+
+    builder->parse_state = T1_Parse_Start;
+
+    FT_TRACE4(( "\n"
+                "Start charstring: get width\n" ));
+
+    zone->base           = charstring_base;
+    limit = zone->limit  = charstring_base + charstring_len;
+    ip    = zone->cursor = zone->base;
+
+    /* now, execute loop */
+    while ( ip < limit )
+    {
+      FT_Long*     top   = decoder->top;
+      T1_Operator  op    = op_none;
+      FT_Int32     value = 0;
+
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+      if ( bol )
+      {
+        FT_TRACE5(( " (%d)", decoder->top - decoder->stack ));
+        bol = FALSE;
+      }
+#endif
+
+      /*********************************************************************/
+      /*                                                                   */
+      /* Decode operator or operand                                        */
+      /*                                                                   */
+      /*                                                                   */
+
+      /* first of all, decompress operator or value */
+      switch ( *ip++ )
+      {
+      case 1:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+      case 14:
+      case 15:
+      case 21:
+      case 22:
+      case 30:
+      case 31:
+        goto No_Width;
+
+      case 13:
+        op = op_hsbw;
+        break;
+
+      case 12:
+        if ( ip >= limit )
+        {
+          FT_ERROR(( "t1_decoder_parse_metrics:"
+                     " invalid escape (12+EOF)\n" ));
+          goto Syntax_Error;
+        }
+
+        switch ( *ip++ )
+        {
+        case 7:
+          op = op_sbw;
+          break;
+
+        default:
+          goto No_Width;
+        }
+        break;
+
+      case 255:    /* four bytes integer */
+        if ( ip + 4 > limit )
+        {
+          FT_ERROR(( "t1_decoder_parse_metrics:"
+                     " unexpected EOF in integer\n" ));
+          goto Syntax_Error;
+        }
+
+        value = (FT_Int32)( ( (FT_UInt32)ip[0] << 24 ) |
+                            ( (FT_UInt32)ip[1] << 16 ) |
+                            ( (FT_UInt32)ip[2] << 8  ) |
+                              (FT_UInt32)ip[3]         );
+        ip += 4;
+
+        /* According to the specification, values > 32000 or < -32000 must */
+        /* be followed by a `div' operator to make the result be in the    */
+        /* range [-32000;32000].  We expect that the second argument of    */
+        /* `div' is not a large number.  Additionally, we don't handle     */
+        /* stuff like `<large1> <large2> <num> div <num> div' or           */
+        /* <large1> <large2> <num> div div'.  This is probably not allowed */
+        /* anyway.                                                         */
+        if ( value > 32000 || value < -32000 )
+        {
+          FT_ERROR(( "t1_decoder_parse_metrics:"
+                     " large integer found for width\n" ));
+          goto Syntax_Error;
+        }
+        else
+        {
+          value = (FT_Int32)( (FT_UInt32)value << 16 );
+        }
+
+        break;
+
+      default:
+        if ( ip[-1] >= 32 )
+        {
+          if ( ip[-1] < 247 )
+            value = (FT_Int32)ip[-1] - 139;
+          else
+          {
+            if ( ++ip > limit )
+            {
+              FT_ERROR(( "t1_decoder_parse_metrics:"
+                         " unexpected EOF in integer\n" ));
+              goto Syntax_Error;
+            }
+
+            if ( ip[-2] < 251 )
+              value =    ( ( ip[-2] - 247 ) * 256 ) + ip[-1] + 108;
+            else
+              value = -( ( ( ip[-2] - 251 ) * 256 ) + ip[-1] + 108 );
+          }
+
+          value = (FT_Int32)( (FT_UInt32)value << 16 );
+        }
+        else
+        {
+          FT_ERROR(( "t1_decoder_parse_metrics:"
+                     " invalid byte (%d)\n", ip[-1] ));
+          goto Syntax_Error;
+        }
+      }
+
+      /*********************************************************************/
+      /*                                                                   */
+      /*  Push value on stack, or process operator                         */
+      /*                                                                   */
+      /*                                                                   */
+      if ( op == op_none )
+      {
+        if ( top - decoder->stack >= T1_MAX_CHARSTRINGS_OPERANDS )
+        {
+          FT_ERROR(( "t1_decoder_parse_metrics: stack overflow\n" ));
+          goto Syntax_Error;
+        }
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+          FT_TRACE4(( " %d", value / 65536 ));
+#endif
+
+        *top++       = value;
+        decoder->top = top;
+      }
+      else  /* general operator */
+      {
+        FT_Int  num_args = t1_args_count[op];
+
+
+        FT_ASSERT( num_args >= 0 );
+
+        if ( top - decoder->stack < num_args )
+          goto Stack_Underflow;
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+
+        if ( top - decoder->stack != num_args )
+          FT_TRACE0(( "t1_decoder_parse_metrics:"
+                      " too much operands on the stack"
+                      " (seen %d, expected %d)\n",
+                      top - decoder->stack, num_args ));
+
+#endif /* FT_DEBUG_LEVEL_TRACE */
+
+        top -= num_args;
+
+        switch ( op )
+        {
+        case op_hsbw:
+          FT_TRACE4(( " hsbw" ));
+
+          builder->parse_state = T1_Parse_Have_Width;
+
+          builder->left_bearing.x = ADD_LONG( builder->left_bearing.x,
+                                              top[0] );
+
+          builder->advance.x = top[1];
+          builder->advance.y = 0;
+
+          /* we only want to compute the glyph's metrics */
+          /* (lsb + advance width), not load the rest of */
+          /* it; so exit immediately                     */
+          return FT_Err_Ok;
+
+        case op_sbw:
+          FT_TRACE4(( " sbw" ));
+
+          builder->parse_state = T1_Parse_Have_Width;
+
+          builder->left_bearing.x = ADD_LONG( builder->left_bearing.x,
+                                              top[0] );
+          builder->left_bearing.y = ADD_LONG( builder->left_bearing.y,
+                                              top[1] );
+
+          builder->advance.x = top[2];
+          builder->advance.y = top[3];
+
+          /* we only want to compute the glyph's metrics */
+          /* (lsb + advance width), not load the rest of */
+          /* it; so exit immediately                     */
+          return FT_Err_Ok;
+
+        default:
+          FT_ERROR(( "t1_decoder_parse_metrics:"
+                     " unhandled opcode %d\n", op ));
+          goto Syntax_Error;
+        }
+
+      } /* general operator processing */
+
+    } /* while ip < limit */
+
+    FT_TRACE4(( "..end..\n\n" ));
+
+  No_Width:
+    FT_ERROR(( "t1_decoder_parse_metrics:"
+               " no width, found op %d instead\n",
+               ip[-1] ));
+  Syntax_Error:
+    return FT_THROW( Syntax_Error );
+
+  Stack_Underflow:
+    return FT_THROW( Stack_Underflow );
   }
+#endif /* T1_CONFIG_OPTION_OLD_ENGINE */
 
 
   /* initialize T1 decoder */
@@ -1641,7 +1972,16 @@
   FT_LOCAL_DEF( void )
   t1_decoder_done( T1_Decoder  decoder )
   {
+    FT_Memory  memory = decoder->builder.memory;
+
+
     t1_builder_done( &decoder->builder );
+
+    if ( decoder->cf2_instance.finalizer )
+    {
+      decoder->cf2_instance.finalizer( decoder->cf2_instance.data );
+      FT_FREE( decoder->cf2_instance.data );
+    }
   }
 
 

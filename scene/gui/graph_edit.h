@@ -31,6 +31,7 @@
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
@@ -62,6 +63,7 @@ public:
 		StringName to;
 		int from_port;
 		int to_port;
+		float activity;
 	};
 
 private:
@@ -157,6 +159,8 @@ private:
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
 
+	HBoxContainer *zoom_hb;
+
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
 	void _snap_toggled();
@@ -174,6 +178,8 @@ public:
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+
+	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
@@ -205,6 +211,8 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
+	HBoxContainer *get_zoom_hbox();
 
 	GraphEdit();
 };

@@ -65,15 +65,6 @@ public:
 #endif
 	};
 
-	enum RPCMode {
-
-		RPC_MODE_DISABLED, //no rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // using rpc() on it will call method / set property in all other peers
-		RPC_MODE_SYNC, // using rpc() on it will call method / set property in all other peers and locally
-		RPC_MODE_MASTER, // usinc rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_SLAVE, // usinc rpc() on it will call method for all slaves, be it local or remote
-	};
-
 	struct Comparator {
 
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
@@ -120,8 +111,8 @@ private:
 		Node *pause_owner;
 
 		int network_master;
-		Map<StringName, RPCMode> rpc_methods;
-		Map<StringName, RPCMode> rpc_properties;
+		Map<StringName, MultiplayerAPI::RPCMode> rpc_methods;
+		Map<StringName, MultiplayerAPI::RPCMode> rpc_properties;
 
 		// variables used to properly sort the node when processing, ignored otherwise
 		//should move all the stuff below to bits
@@ -151,7 +142,7 @@ private:
 		NAME_CASING_SNAKE_CASE
 	};
 
-	Ref<MultiplayerAPI> multiplayer_api;
+	Ref<MultiplayerAPI> multiplayer;
 
 	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);
@@ -237,6 +228,7 @@ public:
 		NOTIFICATION_TRANSLATION_CHANGED = 24,
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
+		NOTIFICATION_POST_ENTER_TREE = 27,
 
 	};
 
@@ -403,8 +395,8 @@ public:
 	int get_network_master() const;
 	bool is_network_master() const;
 
-	void rpc_config(const StringName &p_method, RPCMode p_mode); // config a local method for RPC
-	void rset_config(const StringName &p_property, RPCMode p_mode); // config a local property for RPC
+	void rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode); // config a local method for RPC
+	void rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode); // config a local property for RPC
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
 	void rpc_unreliable(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
@@ -419,14 +411,11 @@ public:
 	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
-	Ref<MultiplayerAPI> get_multiplayer_api() const;
-	Ref<MultiplayerAPI> get_custom_multiplayer_api() const;
-	void set_custom_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
-	const Map<StringName, RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
-	const Map<StringName, RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
-
-	bool can_call_rpc(const StringName &p_method, int p_from) const;
-	bool can_call_rset(const StringName &p_property, int p_from) const;
+	Ref<MultiplayerAPI> get_multiplayer() const;
+	Ref<MultiplayerAPI> get_custom_multiplayer() const;
+	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
+	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
+	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
 
 	Node();
 	~Node();

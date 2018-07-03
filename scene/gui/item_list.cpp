@@ -942,6 +942,7 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
+			minimum_size_changed();
 			shape_changed = false;
 		}
 
@@ -1121,6 +1122,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs += base_ofs;
 					text_ofs += items[i].rect_cache.position;
 
+					FontDrawer drawer(font, Color(1, 1, 1));
 					for (int j = 0; j < ss; j++) {
 
 						if (j == line_limit_cache[line]) {
@@ -1129,7 +1131,7 @@ void ItemList::_notification(int p_what) {
 							if (line >= max_text_lines)
 								break;
 						}
-						ofs += font->draw_char(get_canvas_item(), text_ofs + Vector2(ofs + (max_len - line_size_cache[line]) / 2, line * (font_height + line_separation)).floor(), items[i].text[j], items[i].text[j + 1], modulate);
+						ofs += drawer.draw_char(get_canvas_item(), text_ofs + Vector2(ofs + (max_len - line_size_cache[line]) / 2, line * (font_height + line_separation)).floor(), items[i].text[j], items[i].text[j + 1], modulate);
 					}
 
 					//special multiline mode
@@ -1243,7 +1245,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 
 String ItemList::get_tooltip(const Point2 &p_pos) const {
 
-	int closest = get_item_at_position(p_pos);
+	int closest = get_item_at_position(p_pos, true);
 
 	if (closest != -1) {
 		if (!items[closest].tooltip_enabled) {

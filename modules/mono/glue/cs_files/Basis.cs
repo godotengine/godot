@@ -446,6 +446,26 @@ namespace Godot
             _z = new Vector3(xz - wy, yz + wx, 1.0f - (xx + yy));
         }
 
+        public Basis(Vector3 euler)
+        {
+            real_t c;
+            real_t s;
+
+            c = Mathf.Cos(euler.x);
+            s = Mathf.Sin(euler.x);
+            var xmat = new Basis(1, 0, 0, 0, c, -s, 0, s, c);
+
+            c = Mathf.Cos(euler.y);
+            s = Mathf.Sin(euler.y);
+            var ymat = new Basis(c, 0, s, 0, 1, 0, -s, 0, c);
+
+            c = Mathf.Cos(euler.z);
+            s = Mathf.Sin(euler.z);
+            var zmat = new Basis(c, -s, 0, s, c, 0, 0, 0, 1);
+
+            this = ymat * xmat * zmat;
+        }
+
         public Basis(Vector3 axis, real_t phi)
         {
             var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);

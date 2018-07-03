@@ -29,6 +29,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_greater" type="bool" setter="set_allow_greater" getter="is_greater_allowed">
+		</member>
+		<member name="allow_lesser" type="bool" setter="set_allow_lesser" getter="is_lesser_allowed">
+		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
 			If [code]true[/code] and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
 		</member>

@@ -388,14 +388,17 @@
 			</argument>
 			<argument index="4" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
-			<argument index="5" name="texture" type="RID">
+			<argument index="5" name="bones" type="PoolIntArray" default="PoolIntArray(  )">
 			</argument>
-			<argument index="6" name="count" type="int" default="-1">
+			<argument index="6" name="weights" type="PoolRealArray" default="PoolRealArray(  )">
 			</argument>
-			<argument index="7" name="normal_map" type="RID">
+			<argument index="7" name="texture" type="RID">
+			</argument>
+			<argument index="8" name="count" type="int" default="-1">
+			</argument>
+			<argument index="9" name="normal_map" type="RID">
 			</argument>
 			<description>
-				Adds a triangle array to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -3328,6 +3331,32 @@
 			</argument>
 			<description>
 				Sets the texture's image data. If it's a CubeMap, it sets the image data at a cube side.
+			</description>
+		</method>
+		<method name="texture_set_data_partial">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="image" type="Image">
+			</argument>
+			<argument index="2" name="src_x" type="int">
+			</argument>
+			<argument index="3" name="src_y" type="int">
+			</argument>
+			<argument index="4" name="src_w" type="int">
+			</argument>
+			<argument index="5" name="src_h" type="int">
+			</argument>
+			<argument index="6" name="dst_x" type="int">
+			</argument>
+			<argument index="7" name="dst_y" type="int">
+			</argument>
+			<argument index="8" name="dst_mip" type="int">
+			</argument>
+			<argument index="9" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="texture_set_flags">

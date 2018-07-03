@@ -12,6 +12,7 @@
 /* ======   Dependencies   ======= */
 #include <stddef.h>  /* size_t */
 #include "pool.h"
+#include "zstd_internal.h"  /* ZSTD_malloc, ZSTD_free */
 
 /* ======   Compiler specifics   ====== */
 #if defined(_MSC_VER)
@@ -193,32 +194,54 @@ static int isQueueFull(POOL_ctx const* ctx) {
     }
 }
 
-void POOL_add(void* ctxVoid, POOL_function function, void *opaque) {
-    POOL_ctx* const ctx = (POOL_ctx*)ctxVoid;
-    if (!ctx) { return; }
 
-    ZSTD_pthread_mutex_lock(&ctx->queueMutex);
-    {   POOL_job const job = {function, opaque};
+static void POOL_add_internal(POOL_ctx* ctx, POOL_function function, void *opaque)
+{
+    POOL_job const job = {function, opaque};
+    assert(ctx != NULL);
+    if (ctx->shutdown) return;
 
-        /* Wait until there is space in the queue for the new job */
-        while (isQueueFull(ctx) && !ctx->shutdown) {
-          ZSTD_pthread_cond_wait(&ctx->queuePushCond, &ctx->queueMutex);
-        }
-        /* The queue is still going => there is space */
-        if (!ctx->shutdown) {
-            ctx->queueEmpty = 0;
-            ctx->queue[ctx->queueTail] = job;
-            ctx->queueTail = (ctx->queueTail + 1) % ctx->queueSize;
-        }
-    }
-    ZSTD_pthread_mutex_unlock(&ctx->queueMutex);
+    ctx->queueEmpty = 0;
+    ctx->queue[ctx->queueTail] = job;
+    ctx->queueTail = (ctx->queueTail + 1) % ctx->queueSize;
     ZSTD_pthread_cond_signal(&ctx->queuePopCond);
 }
 
-#else  /* ZSTD_MULTITHREAD  not defined */
-/* No multi-threading support */
+void POOL_add(POOL_ctx* ctx, POOL_function function, void* opaque)
+{
+    assert(ctx != NULL);
+    ZSTD_pthread_mutex_lock(&ctx->queueMutex);
+    /* Wait until there is space in the queue for the new job */
+    while (isQueueFull(ctx) && (!ctx->shutdown)) {
+        ZSTD_pthread_cond_wait(&ctx->queuePushCond, &ctx->queueMutex);
+    }
+    POOL_add_internal(ctx, function, opaque);
+    ZSTD_pthread_mutex_unlock(&ctx->queueMutex);
+}
 
-/* We don't need any data, but if it is empty malloc() might return NULL. */
+
+int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque)
+{
+    assert(ctx != NULL);
+    ZSTD_pthread_mutex_lock(&ctx->queueMutex);
+    if (isQueueFull(ctx)) {
+        ZSTD_pthread_mutex_unlock(&ctx->queueMutex);
+        return 0;
+    }
+    POOL_add_internal(ctx, function, opaque);
+    ZSTD_pthread_mutex_unlock(&ctx->queueMutex);
+    return 1;
+}
+
+
+#else  /* ZSTD_MULTITHREAD  not defined */
+
+/* ========================== */
+/* No multi-threading support */
+/* ========================== */
+
+
+/* We don't need any data, but if it is empty, malloc() might return NULL. */
 struct POOL_ctx_s {
     int dummy;
 };
@@ -240,9 +263,15 @@ void POOL_free(POOL_ctx* ctx) {
     (void)ctx;
 }
 
-void POOL_add(void* ctx, POOL_function function, void* opaque) {
+void POOL_add(POOL_ctx* ctx, POOL_function function, void* opaque) {
     (void)ctx;
     function(opaque);
+}
+
+int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque) {
+    (void)ctx;
+    function(opaque);
+    return 1;
 }
 
 size_t POOL_sizeof(POOL_ctx* ctx) {

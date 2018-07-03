@@ -2,16 +2,12 @@
 
 EnsureSConsVersion(0, 98, 1)
 
-
 import string
 import os
 import os.path
 import glob
 import sys
 import methods
-
-# moved below to compensate with module version string
-# methods.update_version()
 
 # scan possible build platforms
 
@@ -52,9 +48,6 @@ for x in glob.glob("platform/*"):
     sys.modules.pop('detect')
 
 module_list = methods.detect_modules()
-
-
-# print "Detected Platforms: "+str(platform_list)
 
 methods.save_active_platforms(active_platforms, active_platform_ids)
 
@@ -101,7 +94,6 @@ env_base.Decider('MD5-timestamp')
 # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
 env_base.SetOption('implicit_cache', 1)
 
-
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
 env_base.__class__.android_add_dependency = methods.android_add_dependency
@@ -126,6 +118,7 @@ env_base.__class__.split_lib = methods.split_lib
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
+env_base.__class__.CommandNoCache = methods.CommandNoCache
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
@@ -145,52 +138,53 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/etc)", '')
+opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", '')
 opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32', '64')))
 opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
-opts.Add(BoolVariable('tools', "Build the tools a.k.a. the Godot editor", True))
-opts.Add(BoolVariable('use_lto', 'Use linking time optimization', False))
+opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
+opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
-opts.Add(BoolVariable('gdscript', "Build GDSCript support", True))
-opts.Add(BoolVariable('minizip', "Build minizip archive support", True))
-opts.Add(BoolVariable('xaudio2', "XAudio2 audio driver", False))
-opts.Add(BoolVariable('xml', "XML format support for resources", True))
+opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
+opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
+opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
+opts.Add(BoolVariable('xml', "Enable XML format support for resources", True))
 
 # Advanced options
-opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for smaller executable", False))
-opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D gui nodes and behaviors", False))
+opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
+opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and behaviors", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
-opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
 opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
-opts.Add(BoolVariable('vsproj', "Generate Visual Studio Project", False))
+opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
-opts.Add(BoolVariable('progress', "Show a progress indicator during build", True))
+opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
-opts.Add(EnumVariable('macports_clang', "Build using clang from MacPorts", 'no', ('no', '5.0', 'devel')))
+opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
+opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 
 # Thirdparty libraries
-opts.Add(BoolVariable('builtin_bullet', "Use the builtin bullet library", True))
-opts.Add(BoolVariable('builtin_enet', "Use the builtin enet library", True))
-opts.Add(BoolVariable('builtin_freetype', "Use the builtin freetype library", True))
-opts.Add(BoolVariable('builtin_libogg', "Use the builtin libogg library", True))
-opts.Add(BoolVariable('builtin_libpng', "Use the builtin libpng library", True))
-opts.Add(BoolVariable('builtin_libtheora', "Use the builtin libtheora library", True))
-opts.Add(BoolVariable('builtin_libvorbis', "Use the builtin libvorbis library", True))
-opts.Add(BoolVariable('builtin_libvpx', "Use the builtin libvpx library", True))
-opts.Add(BoolVariable('builtin_libwebp', "Use the builtin libwebp library", True))
-opts.Add(BoolVariable('builtin_mbedtls', "Use the builtin mbedTLS library", True))
-opts.Add(BoolVariable('builtin_opus', "Use the builtin opus library", True))
-opts.Add(BoolVariable('builtin_pcre2', "Use the builtin pcre2 library)", True))
-opts.Add(BoolVariable('builtin_recast', "Use the builtin recast library", True))
-opts.Add(BoolVariable('builtin_squish', "Use the builtin squish library", True))
-opts.Add(BoolVariable('builtin_thekla_atlas', "Use the builtin thekla_altas library", True))
-opts.Add(BoolVariable('builtin_zlib', "Use the builtin zlib library", True))
-opts.Add(BoolVariable('builtin_zstd', "Use the builtin zstd library", True))
-opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
+opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True))
+opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
+opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
+opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))
+opts.Add(BoolVariable('builtin_libpng', "Use the built-in libpng library", True))
+opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library", True))
+opts.Add(BoolVariable('builtin_libvorbis', "Use the built-in libvorbis library", True))
+opts.Add(BoolVariable('builtin_libvpx', "Use the built-in libvpx library", True))
+opts.Add(BoolVariable('builtin_libwebp', "Use the built-in libwebp library", True))
+opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets library", True))
+opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
+opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
+opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
+opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
+opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
+opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
+opts.Add(BoolVariable('builtin_thekla_atlas', "Use the built-in thekla_altas library", True))
+opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
+opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
 
 # Compilation environment setup
 opts.Add("CXX", "C++ compiler")
@@ -200,7 +194,6 @@ opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
 opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
-
 
 # add platform specific options
 
@@ -232,14 +225,6 @@ env_base.Append(CPPPATH=['#core', '#core/math', '#editor', '#drivers', '#'])
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
-"""
-sys.path.append("./platform/"+env_base["platform"])
-import detect
-detect.configure(env_base)
-sys.path.remove("./platform/"+env_base["platform"])
-sys.modules.pop('detect')
-"""
-
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC', 'SCI_NAMESPACE'])
 
@@ -251,7 +236,6 @@ if not env_base['deprecated']:
 
 env_base.platforms = {}
 
-
 selected_platform = ""
 
 if env_base['platform'] != "":
@@ -259,7 +243,6 @@ if env_base['platform'] != "":
 elif env_base['p'] != "":
     selected_platform = env_base['p']
     env_base["platform"] = selected_platform
-
 
 if selected_platform in platform_list:
 
@@ -352,7 +335,6 @@ if selected_platform in platform_list:
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         env.Append(CCFLAGS=['-Werror=return-type'])
-    #env['platform_libsuffix'] = env['LIBSUFFIX']
 
     suffix = "." + selected_platform
 
@@ -396,7 +378,17 @@ if selected_platform in platform_list:
         sys.path.append(tmppath)
         env.current_module = x
         import config
-        if (config.can_build(selected_platform)):
+        # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
+        # so try both to preserve compatibility for 3.0 modules
+        can_build = False
+        try:
+            can_build = config.can_build(env, selected_platform)
+        except TypeError:
+            print("Warning: module '%s' uses a deprecated `can_build` "
+                  "signature in its config.py file, it should be "
+                  "`can_build(env, platform)`." % x)
+            can_build = config.can_build(selected_platform)
+        if (can_build):
             config.configure(env)
             env.module_list.append(x)
             try:
@@ -419,10 +411,6 @@ if selected_platform in platform_list:
 
     if (env.use_ptrcall):
         env.Append(CPPDEFINES=['PTRCALL_ENABLED'])
-
-    # to test 64 bits compiltion
-    # env.Append(CPPFLAGS=['-m64'])
-
     if env['tools']:
         env.Append(CPPDEFINES=['TOOLS_ENABLED'])
     if env['disable_3d']:
@@ -431,10 +419,8 @@ if selected_platform in platform_list:
         env.Append(CPPDEFINES=['GDSCRIPT_ENABLED'])
     if env['disable_advanced_gui']:
         env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
-
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
-
     if env['xml']:
         env.Append(CPPDEFINES=['XML_ENABLED'])
 
@@ -482,11 +468,10 @@ if selected_platform in platform_list:
 else:
 
     print("No valid target platform selected.")
-    print("The following were detected:")
+    print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run scons again with argument: platform=<string>")
-
+    print("\nPlease run SCons again with the argument: platform=<string>")
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():

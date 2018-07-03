@@ -36,7 +36,7 @@ static void LoadTwoPixels_SSE2(const uint8_t* const src, __m128i* out) {
 }
 
 // input: 8 bytes ABCDEFGH -> output: A0B0C0D0E0F0G0H0
-static void LoadHeightPixels_SSE2(const uint8_t* const src, __m128i* out) {
+static void LoadEightPixels_SSE2(const uint8_t* const src, __m128i* out) {
   const __m128i zero = _mm_setzero_si128();
   const __m128i A = _mm_loadl_epi64((const __m128i*)(src));  // ABCDEFGH
   *out = _mm_unpacklo_epi8(A, zero);
@@ -50,13 +50,15 @@ static void RescalerImportRowExpand_SSE2(WebPRescaler* const wrk,
   int accum = x_add;
   __m128i cur_pixels;
 
+  // SSE2 implementation only works with 16b signed arithmetic at max.
+  if (wrk->src_width < 8 || accum >= (1 << 15)) {
+    WebPRescalerImportRowExpand_C(wrk, src);
+    return;
+  }
+
   assert(!WebPRescalerInputDone(wrk));
   assert(wrk->x_expand);
   if (wrk->num_channels == 4) {
-    if (wrk->src_width < 2) {
-      WebPRescalerImportRowExpand_C(wrk, src);
-      return;
-    }
     LoadTwoPixels_SSE2(src, &cur_pixels);
     src += 4;
     while (1) {
@@ -75,11 +77,7 @@ static void RescalerImportRowExpand_SSE2(WebPRescaler* const wrk,
   } else {
     int left;
     const uint8_t* const src_limit = src + wrk->src_width - 8;
-    if (wrk->src_width < 8) {
-      WebPRescalerImportRowExpand_C(wrk, src);
-      return;
-    }
-    LoadHeightPixels_SSE2(src, &cur_pixels);
+    LoadEightPixels_SSE2(src, &cur_pixels);
     src += 7;
     left = 7;
     while (1) {
@@ -94,7 +92,7 @@ static void RescalerImportRowExpand_SSE2(WebPRescaler* const wrk,
         if (--left) {
           cur_pixels = _mm_srli_si128(cur_pixels, 2);
         } else if (src <= src_limit) {
-          LoadHeightPixels_SSE2(src, &cur_pixels);
+          LoadEightPixels_SSE2(src, &cur_pixels);
           src += 7;
           left = 7;
         } else {   // tail

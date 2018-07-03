@@ -173,6 +173,7 @@ private:
 	int chunk_left;
 	int body_size;
 	int body_left;
+	bool read_until_eof;
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;

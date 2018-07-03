@@ -138,11 +138,11 @@ void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);
 }
 
-ScriptInstance::RPCMode PluginScriptInstance::get_rpc_mode(const StringName &p_method) const {
+MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode(const StringName &p_method) const {
 	return _script->get_rpc_mode(p_method);
 }
 
-ScriptInstance::RPCMode PluginScriptInstance::get_rset_mode(const StringName &p_variable) const {
+MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode(const StringName &p_variable) const {
 	return _script->get_rset_mode(p_variable);
 }
 

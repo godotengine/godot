@@ -31,18 +31,17 @@
 #ifndef STYLE_BOX_EDITOR_PLUGIN_H
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
 
-class StyleBoxEditor : public Control {
+class StyleBoxPreview : public VBoxContainer {
 
-	GDCLASS(StyleBoxEditor, Control);
+	GDCLASS(StyleBoxPreview, VBoxContainer);
 
-	Panel *panel;
 	Panel *preview;
-
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();
@@ -53,23 +52,24 @@ protected:
 public:
 	void edit(const Ref<StyleBox> &p_stylebox);
 
-	StyleBoxEditor();
+	StyleBoxPreview();
+};
+
+class EditorInspectorPluginStyleBox : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginStyleBox, EditorInspectorPlugin)
+public:
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
+	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+	virtual void parse_end();
 };
 
 class StyleBoxEditorPlugin : public EditorPlugin {
 
 	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
 
-	StyleBoxEditor *stylebox_editor;
-	EditorNode *editor;
-	Button *button;
-
 public:
 	virtual String get_name() const { return "StyleBox"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
 
 	StyleBoxEditorPlugin(EditorNode *p_node);
 };

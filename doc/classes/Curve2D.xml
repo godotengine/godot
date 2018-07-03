@@ -49,6 +49,26 @@
 				Returns the cache of points as a [PoolVector2Array].
 			</description>
 		</method>
+		<method name="get_closest_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the closest offset to [code]to_point[/code]. This offset is meant to be used in [method interpolate_baked].
+				[code]to_point[/code] must be in this curve's local space.
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the closest point (in curve's local space) to [code]to_point[/code].
+				[code]to_point[/code] must be in this curve's local space.
+			</description>
+		</method>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>

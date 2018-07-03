@@ -656,8 +656,9 @@ ColorPicker::ColorPicker() :
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
 
+	color = p_color;
 	update();
-	emit_signal("color_changed", p_color);
+	emit_signal("color_changed", color);
 }
 
 void ColorPickerButton::_modal_closed() {
@@ -667,6 +668,7 @@ void ColorPickerButton::_modal_closed() {
 
 void ColorPickerButton::pressed() {
 
+	_update_picker();
 	popup->set_position(get_global_position() - picker->get_combined_minimum_size());
 	popup->popup();
 	picker->set_focus_on_line_edit();
@@ -679,43 +681,63 @@ void ColorPickerButton::_notification(int p_what) {
 		Ref<StyleBox> normal = get_stylebox("normal");
 		Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
 		draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
-		draw_rect(r, picker->get_pick_color());
+		draw_rect(r, color);
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
 		popup->hide();
 	}
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
 
-	picker->set_pick_color(p_color);
+	color = p_color;
+	if (picker) {
+		picker->set_pick_color(p_color);
+	}
+
 	update();
-	emit_signal("color_changed", p_color);
 }
 Color ColorPickerButton::get_pick_color() const {
 
-	return picker->get_pick_color();
+	return color;
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
 
-	picker->set_edit_alpha(p_show);
+	edit_alpha = p_show;
+	if (picker) {
+		picker->set_edit_alpha(p_show);
+	}
 }
 
 bool ColorPickerButton::is_editing_alpha() const {
 
-	return picker->is_editing_alpha();
+	return edit_alpha;
 }
 
-ColorPicker *ColorPickerButton::get_picker() const {
+ColorPicker *ColorPickerButton::get_picker() {
 
+	_update_picker();
 	return picker;
 }
 
 PopupPanel *ColorPickerButton::get_popup() const {
 
 	return popup;
+}
+
+void ColorPickerButton::_update_picker() {
+	if (!picker) {
+		popup = memnew(PopupPanel);
+		picker = memnew(ColorPicker);
+		popup->add_child(picker);
+		add_child(popup);
+		picker->connect("color_changed", this, "_color_changed");
+		popup->connect("modal_closed", this, "_modal_closed");
+		picker->set_pick_color(color);
+		picker->set_edit_alpha(edit_alpha);
+	}
 }
 
 void ColorPickerButton::_bind_methods() {
@@ -737,12 +759,10 @@ void ColorPickerButton::_bind_methods() {
 
 ColorPickerButton::ColorPickerButton() {
 
-	popup = memnew(PopupPanel);
-	picker = memnew(ColorPicker);
-	popup->add_child(picker);
-
-	picker->connect("color_changed", this, "_color_changed");
-	popup->connect("modal_closed", this, "_modal_closed");
-
-	add_child(popup);
+	//Initialization is now done deferred
+	//this improves performance in the inspector as the color picker
+	//can be expensive to initialize
+	picker = NULL;
+	popup = NULL;
+	edit_alpha = true;
 }

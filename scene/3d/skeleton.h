@@ -37,6 +37,11 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+#ifndef _3D_DISABLED
+class PhysicalBone;
+#endif // _3D_DISABLED
+
 class Skeleton : public Spatial {
 
 	GDCLASS(Skeleton, Spatial);
@@ -47,6 +52,8 @@ class Skeleton : public Spatial {
 
 		bool enabled;
 		int parent;
+
+		bool ignore_animation;
 
 		bool disable_rest;
 		Transform rest;
@@ -60,13 +67,23 @@ class Skeleton : public Spatial {
 
 		Transform transform_final;
 
+#ifndef _3D_DISABLED
+		PhysicalBone *physical_bone;
+		PhysicalBone *cache_parent_physical_bone;
+#endif // _3D_DISABLED
+
 		List<uint32_t> nodes_bound;
 
 		Bone() {
 			parent = -1;
 			enabled = true;
+			ignore_animation = false;
 			custom_pose_enable = false;
 			disable_rest = false;
+#ifndef _3D_DISABLED
+			physical_bone = NULL;
+			cache_parent_physical_bone = NULL;
+#endif // _3D_DISABLED
 		}
 	};
 
@@ -110,13 +127,18 @@ public:
 
 	// skeleton creation api
 	void add_bone(const String &p_name);
-	int find_bone(String p_name) const;
+	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
+
+	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 
 	void set_bone_parent(int p_bone, int p_parent);
 	int get_bone_parent(int p_bone) const;
 
 	void unparent_bone_and_rest(int p_bone);
+
+	void set_bone_ignore_animation(int p_bone, bool p_ignore);
+	bool is_bone_ignore_animation(int p_bone) const;
 
 	void set_bone_disable_rest(int p_bone, bool p_disable);
 	bool is_bone_rest_disabled(int p_bone) const;
@@ -149,6 +171,28 @@ public:
 
 	void localize_rests(); // used for loaders and tools
 
+#ifndef _3D_DISABLED
+	// Physical bone API
+
+	void bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone);
+	void unbind_physical_bone_from_bone(int p_bone);
+
+	PhysicalBone *get_physical_bone(int p_bone);
+	PhysicalBone *get_physical_bone_parent(int p_bone);
+
+private:
+	/// This is a slow API os it's cached
+	PhysicalBone *_get_physical_bone_parent(int p_bone);
+	void _rebuild_physical_bones_cache();
+
+public:
+	void physical_bones_stop_simulation();
+	void physical_bones_start_simulation_on(const Array &p_bones);
+	void physical_bones_add_collision_exception(RID p_exception);
+	void physical_bones_remove_collision_exception(RID p_exception);
+#endif // _3D_DISABLED
+
+public:
 	Skeleton();
 	~Skeleton();
 };

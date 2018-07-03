@@ -248,6 +248,7 @@ void HTTPClient::close() {
 	body_size = 0;
 	body_left = 0;
 	chunk_left = 0;
+	read_until_eof = false;
 	response_num = 0;
 }
 
@@ -352,9 +353,16 @@ Error HTTPClient::poll() {
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
+					read_until_eof = false;
 					response_str.clear();
 					response_headers.clear();
 					response_num = RESPONSE_OK;
+
+					// Per the HTTP 1.1 spec, keep-alive is the default, but in practice
+					// it's safe to assume it only if the explicit header is found, allowing
+					// to handle body-up-to-EOF responses on naive servers; that's what Curl
+					// and browsers do
+					bool keep_alive = false;
 
 					for (int i = 0; i < responses.size(); i++) {
 
@@ -365,13 +373,14 @@ Error HTTPClient::poll() {
 						if (s.begins_with("content-length:")) {
 							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int();
 							body_left = body_size;
-						}
 
-						if (s.begins_with("transfer-encoding:")) {
+						} else if (s.begins_with("transfer-encoding:")) {
 							String encoding = header.substr(header.find(":") + 1, header.length()).strip_edges();
 							if (encoding == "chunked") {
 								chunked = true;
 							}
+						} else if (s.begins_with("connection: keep-alive")) {
+							keep_alive = true;
 						}
 
 						if (i == 0 && responses[i].begins_with("HTTP")) {
@@ -384,11 +393,16 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					if (body_size == 0 && !chunked) {
+					if (body_size || chunked) {
 
-						status = STATUS_CONNECTED; // Ready for new requests
-					} else {
 						status = STATUS_BODY;
+					} else if (!keep_alive) {
+
+						read_until_eof = true;
+						status = STATUS_BODY;
+					} else {
+
+						status = STATUS_CONNECTED;
 					}
 					return OK;
 				}
@@ -515,34 +529,53 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 	} else {
 
-		int to_read = MIN(body_left, read_chunk_size);
+		int to_read = !read_until_eof ? MIN(body_left, read_chunk_size) : read_chunk_size;
 		PoolByteArray ret;
 		ret.resize(to_read);
 		int _offset = 0;
-		while (to_read > 0) {
+		while (read_until_eof || to_read > 0) {
 			int rec = 0;
 			{
 				PoolByteArray::Write w = ret.write();
 				err = _get_http_data(w.ptr() + _offset, to_read, rec);
 			}
-			if (rec > 0) {
-				body_left -= rec;
-				to_read -= rec;
-				_offset += rec;
-			} else {
+			if (rec < 0) {
 				if (to_read > 0) // Ended up reading less
 					ret.resize(_offset);
 				break;
+			} else {
+				_offset += rec;
+				if (!read_until_eof) {
+					body_left -= rec;
+					to_read -= rec;
+				} else {
+					if (rec < to_read) {
+						ret.resize(_offset);
+						err = ERR_FILE_EOF;
+						break;
+					}
+					ret.resize(_offset + to_read);
+				}
 			}
 		}
-		if (body_left == 0) {
-			status = STATUS_CONNECTED;
+		if (!read_until_eof) {
+			if (body_left == 0) {
+				status = STATUS_CONNECTED;
+			}
+			return ret;
+		} else {
+			if (err == ERR_FILE_EOF) {
+				err = OK; // EOF is expected here
+				close();
+				return ret;
+			}
 		}
-		return ret;
 	}
 
 	if (err != OK) {
+
 		close();
+
 		if (err == ERR_FILE_EOF) {
 
 			status = STATUS_DISCONNECTED; // Server disconnected
@@ -602,6 +635,7 @@ HTTPClient::HTTPClient() {
 	body_size = 0;
 	chunked = false;
 	body_left = 0;
+	read_until_eof = false;
 	chunk_left = 0;
 	response_num = 0;
 	ssl = false;

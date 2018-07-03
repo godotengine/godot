@@ -4,7 +4,7 @@
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		This contains the list of built-in gdscript functions. Mostly math functions and other utilities. Everything else is expanded by objects.
+		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
 	</description>
 	<tutorials>
 	</tutorials>
@@ -485,6 +485,14 @@
 				Returns True/False whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
+		<method name="is_instance_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_nan">
 			<return type="bool">
 			</return>
@@ -510,9 +518,9 @@
 		<method name="lerp">
 			<return type="float">
 			</return>
-			<argument index="0" name="from" type="float">
+			<argument index="0" name="from" type="Variant">
 			</argument>
-			<argument index="1" name="to" type="float">
+			<argument index="1" name="to" type="Variant">
 			</argument>
 			<argument index="2" name="weight" type="float">
 			</argument>

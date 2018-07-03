@@ -643,6 +643,20 @@
 				Returns the right side of the string from a given position.
 			</description>
 		</method>
+		<method name="rsplit">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="divisor" type="String">
+			</argument>
+			<argument index="1" name="allow_empty" type="bool" default="True">
+			</argument>
+			<argument index="2" name="maxsplit" type="int" default="0">
+			</argument>
+			<description>
+				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
+			</description>
+		</method>
 		<method name="rstrip">
 			<return type="String">
 			</return>

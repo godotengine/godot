@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGBox" inherits="CSGPrimitive" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth">
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -5,7 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/3d/spatial_material.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/spatial_material.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -83,6 +83,8 @@
 		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag">
+		</member>
+		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag">
 		</member>
@@ -316,7 +318,9 @@
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="13" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="14" enum="Flags">
+		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="14" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="15" enum="Flags">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>

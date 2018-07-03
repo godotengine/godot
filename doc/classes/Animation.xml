@@ -8,7 +8,7 @@
 		Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/animation/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -22,6 +22,214 @@
 			</argument>
 			<description>
 				Add a track to the Animation. The track type must be specified as any of the values in the TYPE_* enumeration.
+			</description>
+		</method>
+		<method name="animation_track_get_key_animation" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_track_insert_key">
+			<return type="int">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<argument index="1" name="time" type="float">
+			</argument>
+			<argument index="2" name="animation" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_track_set_key_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="animation" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_get_key_end_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_get_key_start_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_get_key_stream" qualifiers="const">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_insert_key">
+			<return type="int">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<argument index="1" name="time" type="float">
+			</argument>
+			<argument index="2" name="stream" type="Resource">
+			</argument>
+			<argument index="3" name="start_offset" type="float" default="0">
+			</argument>
+			<argument index="4" name="end_offset" type="float" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_set_key_end_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_set_key_start_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="audio_track_set_key_stream">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="stream" type="Resource">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_get_key_in_handle" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_get_key_out_handle" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_get_key_value" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_insert_key">
+			<return type="int">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<argument index="1" name="time" type="float">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<argument index="3" name="in_handle" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="4" name="out_handle" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_interpolate" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<argument index="1" name="time" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_set_key_in_handle">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="in_handle" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_set_key_out_handle">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="out_handle" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bezier_track_set_key_value">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="key_idx" type="int">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="clear">
@@ -347,6 +555,16 @@
 				Set the path of a track. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by ":". Example: "character/skeleton:ankle" or "character/mesh:transform/local"
 			</description>
 		</method>
+		<method name="track_swap">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="with_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="transform_track_insert_key">
 			<return type="int">
 			</return>
@@ -430,6 +648,12 @@
 		<constant name="TYPE_METHOD" value="2" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
+		<constant name="TYPE_BEZIER" value="3" enum="TrackType">
+		</constant>
+		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
+		</constant>
+		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
+		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).
 		</constant>
@@ -447,6 +671,8 @@
 		</constant>
 		<constant name="UPDATE_TRIGGER" value="2" enum="UpdateMode">
 			Update at the keyframes.
+		</constant>
+		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
 		</constant>
 	</constants>
 </class>

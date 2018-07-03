@@ -606,11 +606,14 @@ MonoArray *Array_to_mono_array(const Array &p_array) {
 
 Array mono_array_to_Array(MonoArray *p_array) {
 	Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_array, MonoObject *, i);
-		ret.push_back(mono_object_to_variant(elem));
+		ret[i] = mono_object_to_variant(elem);
 	}
 
 	return ret;
@@ -630,11 +633,13 @@ MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
 
 PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array) {
 	PoolIntArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
-
+	ret.resize(length);
 	for (int i = 0; i < length; i++) {
 		int32_t elem = mono_array_get(p_array, int32_t, i);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -652,11 +657,14 @@ MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array) {
 
 PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array) {
 	PoolByteArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		uint8_t elem = mono_array_get(p_array, uint8_t, i);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -674,11 +682,14 @@ MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array) {
 
 PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array) {
 	PoolRealArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		real_t elem = mono_array_get(p_array, real_t, i);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -697,11 +708,14 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 
 PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array) {
 	PoolStringArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		MonoString *elem = mono_array_get(p_array, MonoString *, i);
-		ret.push_back(mono_string_to_godot(elem));
+		ret.set(i, mono_string_to_godot(elem));
 	}
 
 	return ret;
@@ -728,12 +742,15 @@ MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
 
 PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
 	PoolColorArray ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 4, i);
 		MARSHALLED_IN(Color, raw_elem, elem);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -758,12 +775,15 @@ MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
 
 PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
 	PoolVector2Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 2, i);
 		MARSHALLED_IN(Vector2, raw_elem, elem);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -789,12 +809,15 @@ MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
 
 PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 	PoolVector3Array ret;
+	if (!p_array)
+		return ret;
 	int length = mono_array_length(p_array);
+	ret.resize(length);
 
 	for (int i = 0; i < length; i++) {
 		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 3, i);
 		MARSHALLED_IN(Vector3, raw_elem, elem);
-		ret.push_back(elem);
+		ret.set(i, elem);
 	}
 
 	return ret;
@@ -827,6 +850,9 @@ MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
 
 Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
 	Dictionary ret;
+
+	if (!p_dict)
+		return ret;
 
 	GDMonoUtils::MarshalUtils_DictToArrays dict_to_arrays = CACHED_METHOD_THUNK(MarshalUtils, DictionaryToArrays);
 

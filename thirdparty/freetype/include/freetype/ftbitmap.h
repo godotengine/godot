@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility functions for bitmaps (specification).              */
 /*                                                                         */
-/*  Copyright 2004-2017 by                                                 */
+/*  Copyright 2004-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -97,7 +97,7 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Error )
   FT_Bitmap_Copy( FT_Library        library,
                   const FT_Bitmap  *source,
-                  FT_Bitmap        *target);
+                  FT_Bitmap        *target );
 
 
   /*************************************************************************/

@@ -160,7 +160,7 @@ void ProjectSettingsEditor::_action_edited() {
 		ti->set_text(0, old_name);
 		add_at = "input/" + old_name;
 
-		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\', or '\"'."));
+		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
 		message->popup_centered(Size2(300, 100) * EDSCALE);
 		return;
 	}
@@ -768,7 +768,14 @@ void ProjectSettingsEditor::popup_project_settings() {
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
 	} else {
-		popup_centered_ratio();
+
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		popup_centered(popup_size);
 	}
 	globals_editor->update_category_list();
 	_update_translations();
@@ -778,7 +785,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 void ProjectSettingsEditor::_item_selected() {
 
-	TreeItem *ti = globals_editor->get_property_editor()->get_scene_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -887,7 +894,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 
 		if (!_validate_action_name(p_action)) {
 
-			action_add_error->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			action_add_error->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
@@ -1720,7 +1727,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected", this, "_item_selected");
+	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
 	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 

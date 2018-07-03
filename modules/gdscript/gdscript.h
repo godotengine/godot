@@ -63,7 +63,7 @@ class GDScript : public Script {
 		int index;
 		StringName setter;
 		StringName getter;
-		ScriptInstance::RPCMode rpc_mode;
+		MultiplayerAPI::RPCMode rpc_mode;
 	};
 
 	friend class GDScriptInstance;
@@ -248,8 +248,8 @@ public:
 
 	void reload_members();
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	GDScriptInstance();
 	~GDScriptInstance();
@@ -262,6 +262,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	Variant *_global_array;
 	Vector<Variant> global_array;
 	Map<StringName, int> globals;
+	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
 
@@ -369,7 +370,8 @@ public:
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
-	_FORCE_INLINE_ const Map<StringName, int> &get_global_map() { return globals; }
+	_FORCE_INLINE_ const Map<StringName, int> &get_global_map() const { return globals; }
+	_FORCE_INLINE_ const Map<StringName, Variant> &get_named_globals_map() const { return named_globals; }
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 
@@ -403,6 +405,8 @@ public:
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
+	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value);
+	virtual void remove_named_global_constant(const StringName &p_name);
 
 	/* DEBUGGER FUNCTIONS */
 

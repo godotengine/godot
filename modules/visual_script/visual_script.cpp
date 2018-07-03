@@ -121,6 +121,10 @@ Array VisualScriptNode::_get_default_input_values() const {
 	return default_input_values;
 }
 
+String VisualScriptNode::get_text() const {
+	return "";
+}
+
 void VisualScriptNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_visual_script"), &VisualScriptNode::get_visual_script);
@@ -1967,11 +1971,11 @@ Ref<Script> VisualScriptInstance::get_script() const {
 	return script;
 }
 
-ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
+MultiplayerAPI::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
 	const Map<StringName, VisualScript::Function>::Element *E = script->functions.find(p_method);
 	if (!E) {
-		return RPC_MODE_DISABLED;
+		return MultiplayerAPI::RPC_MODE_DISABLED;
 	}
 
 	if (E->get().function_id >= 0 && E->get().nodes.has(E->get().function_id)) {
@@ -1983,12 +1987,12 @@ ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_m
 		}
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-ScriptInstance::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
+MultiplayerAPI::RPCMode VisualScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
 void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_owner) {

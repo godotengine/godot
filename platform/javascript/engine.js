@@ -10,6 +10,7 @@
 	var DOWNLOAD_ATTEMPTS_MAX = 4;
 
 	var basePath = null;
+	var wasmFilenameExtensionOverride = null;
 	var engineLoadPromise = null;
 
 	var loadingFiles = {};
@@ -129,13 +130,17 @@
 		this.startGame = function(mainPack) {
 
 			executableName = getBaseName(mainPack);
+			var mainArgs = [];
+			if (!getPathLeaf(mainPack).endsWith('.pck')) {
+				mainArgs = ['--main-pack', getPathLeaf(mainPack)];
+			}
 			return Promise.all([
 				// Load from directory,
 				this.init(getBasePath(mainPack)),
 				// ...but write to root where the engine expects it.
 				this.preloadFile(mainPack, getPathLeaf(mainPack))
 			]).then(
-				Function.prototype.apply.bind(synchronousStart, this, [])
+				Function.prototype.apply.bind(synchronousStart, this, mainArgs)
 			);
 		};
 
@@ -161,6 +166,10 @@
 			actualCanvas.style.padding = 0;
 			actualCanvas.style.borderWidth = 0;
 			actualCanvas.style.borderStyle = 'none';
+			// disable right-click context menu
+			actualCanvas.addEventListener('contextmenu', function(ev) {
+				ev.preventDefault();
+			}, false);
 			// until context restoration is implemented
 			actualCanvas.addEventListener('webglcontextlost', function(ev) {
 				alert("WebGL context lost, please reload the page");
@@ -299,6 +308,14 @@
 		return !!testContext;
 	};
 
+	Engine.setWebAssemblyFilenameExtension = function(override) {
+
+		if (String(override).length === 0) {
+			throw new Error('Invalid WebAssembly filename extension override');
+		}
+		wasmFilenameExtensionOverride = String(override);
+	}
+
 	Engine.load = function(newBasePath) {
 
 		if (newBasePath !== undefined) basePath = getBasePath(newBasePath);
@@ -306,7 +323,7 @@
 			if (typeof WebAssembly !== 'object')
 				return Promise.reject(new Error("Browser doesn't support WebAssembly"));
 			// TODO cache/retrieve module to/from idb
-			engineLoadPromise = loadPromise(basePath + '.wasm').then(function(xhr) {
+			engineLoadPromise = loadPromise(basePath + '.' + (wasmFilenameExtensionOverride || 'wasm')).then(function(xhr) {
 				return xhr.response;
 			});
 			engineLoadPromise = engineLoadPromise.catch(function(err) {

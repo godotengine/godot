@@ -13,6 +13,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
+			Contains the audio data in bytes.
+		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset">

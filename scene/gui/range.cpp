@@ -71,10 +71,10 @@ void Range::set_value(double p_val) {
 		p_val = Math::round(p_val);
 	}
 
-	if (p_val > shared->max - shared->page)
+	if (!shared->allow_greater && p_val > shared->max - shared->page)
 		p_val = shared->max - shared->page;
 
-	if (p_val < shared->min)
+	if (!shared->allow_lesser && p_val < shared->min)
 		p_val = shared->min;
 
 	if (shared->val == p_val)
@@ -136,9 +136,9 @@ void Range::set_as_ratio(double p_value) {
 
 	double v;
 
-	if (shared->exp_ratio && get_min() > 0) {
+	if (shared->exp_ratio && get_min() >= 0) {
 
-		double exp_min = Math::log(get_min()) / Math::log((double)2);
+		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
 		v = Math::pow(2, exp_min + (exp_max - exp_min) * p_value);
 	} else {
@@ -151,21 +151,24 @@ void Range::set_as_ratio(double p_value) {
 			v = percent + get_min();
 		}
 	}
+	v = CLAMP(v, get_min(), get_max());
 	set_value(v);
 }
 double Range::get_as_ratio() const {
 
-	if (shared->exp_ratio && get_min() > 0) {
+	if (shared->exp_ratio && get_min() >= 0) {
 
-		double exp_min = Math::log(get_min()) / Math::log((double)2);
+		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		double v = Math::log(get_value()) / Math::log((double)2);
+		float value = CLAMP(get_value(), shared->min, shared->max);
+		double v = Math::log(value) / Math::log((double)2);
 
 		return (v - exp_min) / (exp_max - exp_min);
 
 	} else {
 
-		return (get_value() - get_min()) / (get_max() - get_min());
+		float value = CLAMP(get_value(), shared->min, shared->max);
+		return (value - get_min()) / (get_max() - get_min());
 	}
 }
 
@@ -193,6 +196,8 @@ void Range::unshare() {
 	nshared->val = shared->val;
 	nshared->step = shared->step;
 	nshared->page = shared->page;
+	nshared->allow_greater = shared->allow_greater;
+	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();
 	_ref_shared(nshared);
 }
@@ -236,6 +241,10 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_rounded_values"), &Range::is_using_rounded_values);
 	ClassDB::bind_method(D_METHOD("set_exp_ratio", "enabled"), &Range::set_exp_ratio);
 	ClassDB::bind_method(D_METHOD("is_ratio_exp"), &Range::is_ratio_exp);
+	ClassDB::bind_method(D_METHOD("set_allow_greater", "allow"), &Range::set_allow_greater);
+	ClassDB::bind_method(D_METHOD("is_greater_allowed"), &Range::is_greater_allowed);
+	ClassDB::bind_method(D_METHOD("set_allow_lesser", "allow"), &Range::set_allow_lesser);
+	ClassDB::bind_method(D_METHOD("is_lesser_allowed"), &Range::is_lesser_allowed);
 
 	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
@@ -251,6 +260,8 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
 }
 
 void Range::set_use_rounded_values(bool p_enable) {
@@ -273,6 +284,22 @@ bool Range::is_ratio_exp() const {
 	return shared->exp_ratio;
 }
 
+void Range::set_allow_greater(bool p_allow) {
+	shared->allow_greater = p_allow;
+}
+
+bool Range::is_greater_allowed() const {
+	return shared->allow_greater;
+}
+
+void Range::set_allow_lesser(bool p_allow) {
+	shared->allow_lesser = p_allow;
+}
+
+bool Range::is_lesser_allowed() const {
+	return shared->allow_lesser;
+}
+
 Range::Range() {
 	shared = memnew(Shared);
 	shared->min = 0;
@@ -282,6 +309,8 @@ Range::Range() {
 	shared->page = 0;
 	shared->owners.insert(this);
 	shared->exp_ratio = false;
+	shared->allow_greater = false;
+	shared->allow_lesser = false;
 
 	_rounded_values = false;
 }

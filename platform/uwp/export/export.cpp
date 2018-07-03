@@ -777,7 +777,7 @@ class EditorExportUWP : public EditorExportPlatform {
 		result = result.replace("$version_string$", version);
 
 		Platform arch = (Platform)(int)p_preset->get("architecture/target");
-		String architecture = arch == ARM ? "ARM" : arch == X86 ? "x86" : "x64";
+		String architecture = arch == ARM ? "arm" : arch == X86 ? "x86" : "x64";
 		result = result.replace("$architecture$", architecture);
 
 		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
@@ -1046,7 +1046,7 @@ public:
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "ARM,x86,x64"), 1));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "arm,x86,x64"), 1));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 

@@ -747,7 +747,7 @@ Ref<Script> NativeScriptInstance::get_script() const {
 	return script;
 }
 
-NativeScriptInstance::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_method) const {
+MultiplayerAPI::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
@@ -757,27 +757,33 @@ NativeScriptInstance::RPCMode NativeScriptInstance::get_rpc_mode(const StringNam
 		if (E) {
 			switch (E->get().rpc_mode) {
 				case GODOT_METHOD_RPC_MODE_DISABLED:
-					return RPC_MODE_DISABLED;
+					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
-					return RPC_MODE_REMOTE;
+					return MultiplayerAPI::RPC_MODE_REMOTE;
 				case GODOT_METHOD_RPC_MODE_SYNC:
-					return RPC_MODE_SYNC;
+					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
-					return RPC_MODE_MASTER;
+					return MultiplayerAPI::RPC_MODE_MASTER;
 				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return RPC_MODE_SLAVE;
+					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
+					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
+					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				case GODOT_METHOD_RPC_MODE_SLAVESYNC:
+					return MultiplayerAPI::RPC_MODE_SLAVESYNC;
 				default:
-					return RPC_MODE_DISABLED;
+					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
 		}
 
 		script_data = script_data->base_data;
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-NativeScriptInstance::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_variable) const {
+MultiplayerAPI::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
@@ -787,24 +793,24 @@ NativeScriptInstance::RPCMode NativeScriptInstance::get_rset_mode(const StringNa
 		if (E) {
 			switch (E.get().rset_mode) {
 				case GODOT_METHOD_RPC_MODE_DISABLED:
-					return RPC_MODE_DISABLED;
+					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
-					return RPC_MODE_REMOTE;
+					return MultiplayerAPI::RPC_MODE_REMOTE;
 				case GODOT_METHOD_RPC_MODE_SYNC:
-					return RPC_MODE_SYNC;
+					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
-					return RPC_MODE_MASTER;
+					return MultiplayerAPI::RPC_MODE_MASTER;
 				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return RPC_MODE_SLAVE;
+					return MultiplayerAPI::RPC_MODE_SLAVE;
 				default:
-					return RPC_MODE_DISABLED;
+					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
 		}
 
 		script_data = script_data->base_data;
 	}
 
-	return RPC_MODE_DISABLED;
+	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
 ScriptLanguage *NativeScriptInstance::get_language() {

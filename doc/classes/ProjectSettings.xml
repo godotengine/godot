@@ -156,6 +156,536 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
+			Scale the boot splash image to the full window length when engine starts (will leave it as default pixel size otherwise).
+		</member>
+		<member name="application/boot_splash/image" type="String" setter="" getter="">
+			Path to an image used for boot splash.
+		</member>
+		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="">
+			This directory is used for storing persistent data (user:// filesystem). If a custom name is set, then system paths will be used to store this on Desktop (AppData on Windows, user ~/.config on Unixes, etc), else the Godot config folder is used. This name needs to be unique, and it's recommended to set it to something before publishing.
+		the "use_custom_user_dir" setting must be enabled for this to take effect.
+		</member>
+		<member name="application/config/icon" type="String" setter="" getter="">
+			Icon used for the project, set when project loads. Exporters will use this icon when possible to.
+		</member>
+		<member name="application/config/name" type="String" setter="" getter="">
+			Name of the project. It is used from both project manager and by the exporters. Overriding this as name.locale allows setting it in multiple languages.
+		</member>
+		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
+			Allow the project to save to it's own custom user dir (in AppData on windows or ~/.config on unixes). This setting only works for desktop exporters. A name must be set in the "custom_user_dir_name" setting for this to take effect.
+		</member>
+		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
+			Disable printing to stderr on exported build.
+		</member>
+		<member name="application/run/disable_stdout" type="bool" setter="" getter="">
+			Disable printing to stdout on exported build.
+		</member>
+		<member name="application/run/frame_delay_msec" type="int" setter="" getter="">
+			Force a delay between frames in the main loop. This may be useful if you plan to disable vsync.
+		</member>
+		<member name="application/run/low_processor_mode" type="bool" setter="" getter="">
+			Turn on low processor mode. This setting only works on desktops. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) on games.
+		</member>
+		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="">
+			Amount of sleeping between frames when the low_processor_mode is enabled. This effectively reduces CPU usage when this mode is enabled.
+		</member>
+		<member name="application/run/main_scene" type="String" setter="" getter="">
+			Path to the main scene file that will be loaded when the project runs.
+		</member>
+		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="">
+			Audio buses will disable automatically when sound goes below a given DB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+		</member>
+		<member name="audio/channel_disable_time" type="float" setter="" getter="">
+			Audio buses will disable automatically when sound goes below a given DB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+		</member>
+		<member name="audio/driver" type="String" setter="" getter="">
+		</member>
+		<member name="audio/mix_rate" type="int" setter="" getter="">
+			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
+		</member>
+		<member name="audio/output_latency" type="int" setter="" getter="">
+		</member>
+		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
+			Setting to harcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
+		</member>
+		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="">
+			Default compression level for gzip. Affects compressed scenes and resources.
+		</member>
+		<member name="compression/formats/zlib/compression_level" type="int" setter="" getter="">
+			Default compression level for zlib. Affects compressed scenes and resources.
+		</member>
+		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="">
+			Default compression level for zstd. Affects compressed scenes and resources.
+		</member>
+		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="">
+			Enable long distance matching in zstd.
+		</member>
+		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
+		</member>
+		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="">
+		</member>
+		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="">
+		</member>
+		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="">
+			Maximum call stack allowed for debugging GDScript.
+		</member>
+		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="">
+			Maximum amount of functions per frame allowed when profiling.
+		</member>
+		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="">
+			Print frames per second to stdout. Not very useful in general.
+		</member>
+		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="">
+			Print more information to stdout when running. It shows info such as memory leaks, which scenes and resources are being loaded, etc.
+		</member>
+		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="">
+			Maximum call stack in visual scripting, to avoid infinite recursion.
+		</member>
+		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="">
+			Custom image for the mouse cursor.
+		</member>
+		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
+			Hotspot for the custom mouse cursor image.
+		</member>
+		<member name="display/window/allow_per_pixel_transparency" type="bool" setter="" getter="">
+			Allow per pixel transparency in a Desktop window. This affects performance if not needed, so leave it off.
+		</member>
+		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="">
+			Allow HiDPI display on Windows and OSX. On Desktop Linux, this can't be enabled or disabled.
+		</member>
+		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="">
+			Force keep the screen on, so the screensaver does not take over. Works on Desktop and Mobile.
+		</member>
+		<member name="display/window/handheld/orientation" type="String" setter="" getter="">
+			Default orientation for cell phone or tablet.
+		</member>
+		<member name="display/window/per_pixel_transparency" type="bool" setter="" getter="">
+		</member>
+		<member name="display/window/per_pixel_transparency_splash" type="bool" setter="" getter="">
+		</member>
+		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
+			Force the window to be always on top.
+		</member>
+		<member name="display/window/size/borderless" type="bool" setter="" getter="">
+			Force the window to be borderless.
+		</member>
+		<member name="display/window/size/fullscreen" type="bool" setter="" getter="">
+			Set the window to full screen when it starts.
+		</member>
+		<member name="display/window/size/height" type="int" setter="" getter="">
+			Set the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+		</member>
+		<member name="display/window/size/resizable" type="bool" setter="" getter="">
+			Allow the window to be resizable by default.
+		</member>
+		<member name="display/window/size/test_height" type="int" setter="" getter="">
+			Test a different height for the window. The main use for this is to test with stretch modes.
+		</member>
+		<member name="display/window/size/test_width" type="int" setter="" getter="">
+			Test a different width for the window. The main use for this is to test with stretch modes.
+		</member>
+		<member name="display/window/size/width" type="int" setter="" getter="">
+			Set the main window width. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+		</member>
+		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="">
+			Use VSync. Don't be stupid, don't turn this off.
+		</member>
+		<member name="editor/active" type="bool" setter="" getter="">
+			Internal editor setting, don't touch.
+		</member>
+		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="">
+		</member>
+		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="">
+			Enable swap OK and Cancel buttons on dialogs. This is because Windows/MacOS/Desktop Linux may use them in different order, so the GUI swaps them depending on the host OS. Disable this behavior by turning this setting off.
+		</member>
+		<member name="gui/theme/custom" type="String" setter="" getter="">
+			Use a custom theme resource, set a path to it here.
+		</member>
+		<member name="gui/theme/custom_font" type="String" setter="" getter="">
+			USe a custom default font resource, set a path to it here.
+		</member>
+		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="">
+			Make sure the theme used works with hidpi.
+		</member>
+		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="">
+			Timer setting for incremental search in Tree, IntemList, etc. controls.
+		</member>
+		<member name="gui/timers/text_edit_idle_detect_sec" type="int" setter="" getter="">
+			Timer for detecting idle in the editor.
+		</member>
+		<member name="input/ui_accept" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_cancel" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_down" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_end" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_focus_next" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_focus_prev" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_home" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_left" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_page_down" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_page_up" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_right" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_select" type="Array" setter="" getter="">
+		</member>
+		<member name="input/ui_up" type="Array" setter="" getter="">
+		</member>
+		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="">
+		</member>
+		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_10" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_11" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_12" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_13" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_14" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_15" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_16" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_17" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_18" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_19" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_2" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_20" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_3" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_5" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_6" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_7" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_8" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_10" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_11" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_12" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_13" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_14" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_15" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_16" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_17" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_18" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_19" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_4" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_5" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_6" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_7" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_8" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_10" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_11" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_12" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_13" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_14" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_15" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_16" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_17" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_18" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_19" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_2" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_20" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_3" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_5" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_6" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_7" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_8" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_10" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_11" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_12" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_13" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_16" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_17" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_18" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_19" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_4" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_5" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_6" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_7" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_8" type="String" setter="" getter="">
+		</member>
+		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="">
+		</member>
+		<member name="locale/fallback" type="String" setter="" getter="">
+		</member>
+		<member name="locale/test" type="String" setter="" getter="">
+		</member>
+		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="">
+			Log all output to a file.
+		</member>
+		<member name="logging/file_logging/log_path" type="String" setter="" getter="">
+			Path to logs withint he project. Using an user:// based path is recommended.
+		</member>
+		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="">
+			Amount of log files (used for rotation)/
+		</member>
+		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="">
+			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
+		</member>
+		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
+			This is used by servers when used in multi threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
+		</member>
+		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
+			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+		</member>
+		<member name="network/limits/debugger_stdout/max_errors_per_frame" type="int" setter="" getter="">
+			Maximum amount of errors allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+		</member>
+		<member name="network/limits/debugger_stdout/max_messages_per_frame" type="int" setter="" getter="">
+			Maximum amount of messages allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+		</member>
+		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
+			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
+		</member>
+		<member name="network/remote_fs/max_pages" type="int" setter="" getter="">
+			Maximum amount of pages used for remote filesystem (used by debugging).
+		</member>
+		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
+			Amount of read ahead used by remote filesystem. Improves latency.
+		</member>
+		<member name="network/remote_fs/page_size" type="int" setter="" getter="">
+			Page size used by remote filesystem.
+		</member>
+		<member name="network/ssl/certificates" type="String" setter="" getter="">
+			If your game or application uses HTTPS, a certificates file is needed. It must be set here.
+		</member>
+		<member name="node/name_casing" type="int" setter="" getter="">
+			When creating nodes names automatically, set the type of casing in this project. This is mostly an editor setting.
+		</member>
+		<member name="node/name_num_separator" type="int" setter="" getter="">
+			What to use to separate node name from number. This is mostly an editor setting.
+		</member>
+		<member name="physics/2d/physics_engine" type="String" setter="" getter="">
+		</member>
+		<member name="physics/2d/thread_model" type="int" setter="" getter="">
+			Set whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API Access to only physics process.
+		</member>
+		<member name="physics/3d/physics_engine" type="String" setter="" getter="">
+		</member>
+		<member name="physics/common/physics_fps" type="int" setter="" getter="">
+			Frames per second used in the physics. Physics always needs a fixed amount of frames per second.
+		</member>
+		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="">
+			Fix to improve physics jitter, specially on monitors where refresh rate is different than physics FPS.
+		</member>
+		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="">
+			Default background clear color.
+		</member>
+		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="">
+			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
+		</member>
+		<member name="rendering/limits/buffers/canvas_polygon_buffer_size_kb" type="int" setter="" getter="">
+			Max buffer size for drawing polygons. Any polygon bigger than this will not work.
+		</member>
+		<member name="rendering/limits/buffers/canvas_polygon_index_buffer_size_kb" type="int" setter="" getter="">
+			Max index buffer size for drawing polygons. Any polygon bigger than this will not work.
+		</member>
+		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="">
+			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
+		</member>
+		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
+			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not mesh themselves.
+		</member>
+		<member name="rendering/limits/time/time_rollover_secs" type="int" setter="" getter="">
+			Shaders have a time variable that constantly increases. At some point it needs to be rolled back to zero to avoid numerical errors on shader animations. This setting specifies when.
+		</member>
+		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">
+			Force snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
+		</member>
+		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="">
+			Disable depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
+		</member>
+		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="">
+			Do a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
+		</member>
+		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="">
+			Size in pixels of the directional shadow.
+		</member>
+		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
+		</member>
+		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
+			Maximum Anisotropic filter level used for textures when anisotropy enabled.
+		</member>
+		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="">
+			Force to use nearest mipmap filtering when using mipmaps. This may increase performance in mobile as less memory bandwidth is used.
+		</member>
+		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="">
+			Strategy used for framebuffer allocation. The simpler it is, the less memory it uses (but the least features it supports).
+		</member>
+		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/intended_usage/framebuffer_mode" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="">
+			For reflection probes and panorama backgrounds (sky), use a high amount of samples to create ggx blurred versions (used for roughness).
+		</member>
+		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="">
+			For reflection probes and panorama backgrounds (sky), use a texure array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
+		</member>
+		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="">
+			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality inmensely. Can work to optimize on very low end mobile.
+		</member>
+		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/quality/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/quality/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/quality/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="">
+			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		</member>
+		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="">
+			Size for shadow atlas (used for point and omni lights). See documentation.
+		</member>
+		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="">
+			Shadow filter mode. The more complex the filter, the more memory bandwidth required.
+		</member>
+		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="">
+			Improves quality of subsurface scattering, but cost significantly increases.
+		</member>
+		<member name="rendering/quality/subsurface_scattering/quality" type="int" setter="" getter="">
+			Quality setting for subsurface scaterring (samples taken).
+		</member>
+		<member name="rendering/quality/subsurface_scattering/scale" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/subsurface_scattering/weight_samples" type="bool" setter="" getter="">
+			Weight subsurface scattering samples. Helps to avoid reading samples from unrelated parts of the screen.
+		</member>
+		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="">
+			Use high quality voxel cone tracing (looks better, but requires a higher end GPU).
+		</member>
+		<member name="rendering/threads/thread_model" type="int" setter="" getter="">
+			Thread model for rendering. Rendering on a thread can vastly improve performance, but syncinc to the main thread can cause a bit more jitter.
+		</member>
+		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="">
+			If the project uses this compression (usually low end mobile), texture importer will import these.
+		</member>
+		<member name="rendering/vram_compression/import_etc2" type="bool" setter="" getter="">
+			If the project uses this compression (usually high end mobile), texture importer will import these.
+		</member>
+		<member name="rendering/vram_compression/import_pvrtc" type="bool" setter="" getter="">
+			If the project uses this compression (usually iOS), texture importer will import these.
+		</member>
+		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="">
+			If the project uses this compression (usually Desktop and Consoles), texture importer will import these.
+		</member>
+		<member name="script" type="Script" setter="" getter="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

@@ -70,7 +70,7 @@ namespace GodotSharpTools.Project
             var toolsGroup = root.AddPropertyGroup();
             toolsGroup.Condition = " '$(Configuration)|$(Platform)' == 'Tools|AnyCPU' ";
             toolsGroup.AddProperty("DebugSymbols", "true");
-            toolsGroup.AddProperty("DebugType", "full");
+            toolsGroup.AddProperty("DebugType", "portable");
             toolsGroup.AddProperty("Optimize", "false");
             toolsGroup.AddProperty("DefineConstants", "DEBUG;TOOLS;");
             toolsGroup.AddProperty("ErrorReport", "prompt");
@@ -148,7 +148,7 @@ namespace GodotSharpTools.Project
             var debugGroup = root.AddPropertyGroup();
             debugGroup.Condition = " '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ";
             debugGroup.AddProperty("DebugSymbols", "true");
-            debugGroup.AddProperty("DebugType", "full");
+            debugGroup.AddProperty("DebugType", "portable");
             debugGroup.AddProperty("Optimize", "false");
             debugGroup.AddProperty("DefineConstants", "DEBUG;");
             debugGroup.AddProperty("ErrorReport", "prompt");
@@ -157,7 +157,7 @@ namespace GodotSharpTools.Project
 
             var releaseGroup = root.AddPropertyGroup();
             releaseGroup.Condition = " '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ";
-            releaseGroup.AddProperty("DebugType", "full");
+            releaseGroup.AddProperty("DebugType", "portable");
             releaseGroup.AddProperty("Optimize", "true");
             releaseGroup.AddProperty("ErrorReport", "prompt");
             releaseGroup.AddProperty("WarningLevel", "4");

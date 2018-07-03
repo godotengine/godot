@@ -140,6 +140,42 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 	};
 }
 
+static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
+	if (!*is_focus_out) {
+		*is_focus_out = true;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+		[view_controller.view stopAnimation];
+		if (OS::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_focus_out();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->stop();
+	}
+}
+
+static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
+	if (*is_focus_out) {
+		*is_focus_out = false;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_IN);
+
+		[view_controller.view startAnimation];
+		if (OSIPhone::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_unpause();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->start();
+	}
+}
+
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
 	if (ios_joysticks == nil) {
@@ -569,6 +605,8 @@ static int frame_count = 0;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	CGRect rect = [[UIScreen mainScreen] bounds];
 
+	is_focus_out = false;
+
 	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
 	// application.idleTimerDisabled = YES;
@@ -628,6 +666,12 @@ static int frame_count = 0;
 
 	[self initGameControllers];
 
+	[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			   selector:@selector(onAudioInterruption:)
+				   name:AVAudioSessionInterruptionNotification
+				 object:[AVAudioSession sharedInstance]];
+
 	// OSIPhone::screen_width = rect.size.width - rect.origin.x;
 	// OSIPhone::screen_height = rect.size.height - rect.origin.y;
 
@@ -637,6 +681,18 @@ static int frame_count = 0;
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
 
 	return TRUE;
+};
+
+- (void)onAudioInterruption:(NSNotification *)notification {
+	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
+		if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeBegan]]) {
+			NSLog(@"Audio interruption began");
+			on_focus_out(view_controller, &is_focus_out);
+		} else if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded]]) {
+			NSLog(@"Audio interruption ended");
+			on_focus_in(view_controller, &is_focus_out);
+		}
+	}
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -653,44 +709,22 @@ static int frame_count = 0;
 	iphone_finish();
 };
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-	///@TODO maybe add pause motionManager? and where would we unpause it?
+// When application goes to background (e.g. user switches to another app or presses Home),
+// then applicationWillResignActive -> applicationDidEnterBackground are called.
+// When user opens the inactive app again,
+// applicationWillEnterForeground -> applicationDidBecomeActive are called.
 
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(
-				MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-
-	[view_controller.view stopAnimation];
-	if (OS::get_singleton()->native_video_is_playing()) {
-		OSIPhone::get_singleton()->native_video_focus_out();
-	};
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-	[view_controller.view startAnimation];
-}
+// There are cases when applicationWillResignActive -> applicationDidBecomeActive
+// sequence is called without the app going to background. For example, that happens
+// if you open the app list without switching to another app or open/close the
+// notification panel by swiping from the upper part of the screen.
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-	[view_controller.view
-					stopAnimation]; // FIXME: pause seems to be recommended elsewhere
+	on_focus_out(view_controller, &is_focus_out);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(
-				MainLoop::NOTIFICATION_WM_FOCUS_IN);
-
-	[view_controller.view
-					startAnimation]; // FIXME: resume seems to be recommended elsewhere
-	if (OSIPhone::get_singleton()->native_video_is_playing()) {
-		OSIPhone::get_singleton()->native_video_unpause();
-	};
-
-	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
-	if (AudioDriverCoreAudio::get_singleton() != NULL)
-		AudioDriverCoreAudio::get_singleton()->start();
+	on_focus_in(view_controller, &is_focus_out);
 }
 
 - (void)dealloc {

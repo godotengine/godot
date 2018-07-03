@@ -185,7 +185,8 @@ private:
 
 	///network///
 
-	Ref<MultiplayerAPI> multiplayer_api;
+	Ref<MultiplayerAPI> multiplayer;
+	bool multiplayer_poll;
 
 	void _network_peer_connected(int p_id);
 	void _network_peer_disconnected(int p_id);
@@ -410,8 +411,10 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer_api() const;
-	void set_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
+	Ref<MultiplayerAPI> get_multiplayer() const;
+	void set_multiplayer_poll_enabled(bool p_enabled);
+	bool is_multiplayer_poll_enabled() const;
+	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	bool is_network_server() const;

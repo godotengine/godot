@@ -109,6 +109,7 @@ void FindInFiles::start() {
 	_current_dir = "";
 	PoolStringArray init_folder;
 	init_folder.append(_root_dir);
+	_folders_stack.clear();
 	_folders_stack.push_back(init_folder);
 
 	_initial_files_count = 0;
@@ -127,11 +128,12 @@ void FindInFiles::_process() {
 	// This part can be moved to a thread if needed
 
 	OS &os = *OS::get_singleton();
-	float duration = 0.0;
-	while (duration < 1.0 / 120.0) {
-		float time_before = os.get_ticks_msec();
+	float time_before = os.get_ticks_msec();
+	while (is_processing()) {
 		_iterate();
-		duration += (os.get_ticks_msec() - time_before);
+		float elapsed = (os.get_ticks_msec() - time_before);
+		if (elapsed > 1000.0 / 120.0)
+			break;
 	}
 }
 
@@ -428,6 +430,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 void FindInFilesDialog::set_search_text(String text) {
 	_search_text_line_edit->set_text(text);
+	_on_search_text_modified(text);
 }
 
 String FindInFilesDialog::get_search_text() const {

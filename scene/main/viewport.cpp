@@ -72,6 +72,9 @@ void ViewportTexture::setup_local_to_scene() {
 	vp->viewport_textures.insert(this);
 
 	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
+
+	vp->texture_flags = flags;
+	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -122,20 +125,18 @@ Ref<Image> ViewportTexture::get_data() const {
 	return VS::get_singleton()->texture_get_data(vp->texture_rid);
 }
 void ViewportTexture::set_flags(uint32_t p_flags) {
+	flags = p_flags;
 
 	if (!vp)
 		return;
 
-	vp->texture_flags = p_flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, p_flags);
+	vp->texture_flags = flags;
+	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
 }
 
 uint32_t ViewportTexture::get_flags() const {
 
-	if (!vp)
-		return 0;
-
-	return vp->texture_flags;
+	return flags;
 }
 
 void ViewportTexture::_bind_methods() {
@@ -143,12 +144,13 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path"), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport"), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
 }
 
 ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
+	flags = 0;
 	set_local_to_scene(true);
 	proxy = VS::get_singleton()->texture_create();
 }
@@ -189,6 +191,7 @@ Viewport::GUI::GUI() {
 	tooltip = NULL;
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
+	subwindow_visibility_dirty = false;
 	subwindow_order_dirty = false;
 }
 
@@ -1251,6 +1254,24 @@ void Viewport::warp_mouse(const Vector2 &p_pos) {
 	Input::get_singleton()->warp_mouse_position(gpos);
 }
 
+void Viewport::_gui_prepare_subwindows() {
+
+	if (gui.subwindow_visibility_dirty) {
+
+		gui.subwindows.clear();
+		for (List<Control *>::Element *E = gui.all_known_subwindows.front(); E; E = E->next()) {
+			if (E->get()->is_visible_in_tree()) {
+				gui.subwindows.push_back(E->get());
+			}
+		}
+
+		gui.subwindow_visibility_dirty = false;
+		gui.subwindow_order_dirty = true;
+	}
+
+	_gui_sort_subwindows();
+}
+
 void Viewport::_gui_sort_subwindows() {
 
 	if (!gui.subwindow_order_dirty)
@@ -1287,13 +1308,37 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 }
 
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos) {
+
+	Vector2 pos = p_pos;
+	String tooltip;
+
+	while (p_control) {
+
+		tooltip = p_control->get_tooltip(pos);
+
+		if (tooltip != String())
+			break;
+		pos = p_control->get_transform().xform(pos);
+
+		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+			break;
+		if (p_control->is_set_as_toplevel())
+			break;
+
+		p_control = p_control->get_parent_control();
+	}
+
+	return tooltip;
+}
+
 void Viewport::_gui_show_tooltip() {
 
 	if (!gui.tooltip) {
 		return;
 	}
 
-	String tooltip = gui.tooltip->get_tooltip(gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
 	if (tooltip.length() == 0)
 		return; // bye
 
@@ -1326,7 +1371,7 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
 	gui.tooltip_label->set_text(tooltip.strip_edges());
-	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_combined_minimum_size() + ttp->get_minimum_size());
+	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_minimum_size() + ttp->get_minimum_size());
 	Rect2 vr = gui.tooltip_label->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
 		r.position.x = vr.size.x - r.size.x;
@@ -1367,12 +1412,14 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
+			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev);
+			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
 			if (gui.key_event_accepted)
@@ -1393,7 +1440,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 
 Control *Viewport::_gui_find_control(const Point2 &p_global) {
 
-	_gui_sort_subwindows();
+	_gui_prepare_subwindows();
 
 	for (List<Control *>::Element *E = gui.subwindows.back(); E; E = E->prev()) {
 
@@ -1541,7 +1588,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (mb->is_pressed()) {
 
 			Size2 pos = mpos;
-			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button && mb->get_button_index() == BUTTON_LEFT) {
+			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button) {
 
 				//do not steal mouse focus and stuff
 
@@ -1843,7 +1890,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (gui.tooltip_popup) {
 				if (can_tooltip) {
-					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)
 						_gui_cancel_tooltip();
@@ -1865,7 +1912,23 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		mm->set_position(pos);
 
-		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
+		Control::CursorShape cursor_shape = Control::CURSOR_ARROW;
+		{
+			Control *c = over;
+			Vector2 cpos = pos;
+			while (c) {
+				cursor_shape = c->get_cursor_shape(cpos);
+				cpos = c->get_transform().xform(cpos);
+				if (cursor_shape != Control::CURSOR_ARROW)
+					break;
+				if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+					break;
+				if (c->is_set_as_toplevel())
+					break;
+				c = c->get_parent_control();
+			}
+		}
+
 		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
 
 		if (over->can_process()) {
@@ -2093,8 +2156,14 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 
 List<Control *>::Element *Viewport::_gui_add_subwindow_control(Control *p_control) {
 
-	gui.subwindow_order_dirty = true;
-	return gui.subwindows.push_back(p_control);
+	p_control->connect("visibility_changed", this, "_subwindow_visibility_changed");
+
+	if (p_control->is_visible_in_tree()) {
+		gui.subwindow_order_dirty = true;
+		gui.subwindows.push_back(p_control);
+	}
+
+	return gui.all_known_subwindows.push_back(p_control);
 }
 
 void Viewport::_gui_set_subwindow_order_dirty() {
@@ -2168,9 +2237,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
-	if (gui.drag_preview) {
-		memdelete(gui.drag_preview);
-	}
+
 	gui.drag_preview = p_control;
 }
 
@@ -2181,7 +2248,17 @@ void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
 
 void Viewport::_gui_remove_subwindow_control(List<Control *>::Element *SI) {
 
-	gui.subwindows.erase(SI);
+	ERR_FAIL_COND(!SI);
+
+	Control *control = SI->get();
+
+	control->disconnect("visibility_changed", this, "_subwindow_visibility_changed");
+
+	List<Control *>::Element *E = gui.subwindows.find(control);
+	if (E)
+		gui.subwindows.erase(E);
+
+	gui.all_known_subwindows.erase(SI);
 }
 
 void Viewport::_gui_unfocus_control(Control *p_control) {
@@ -2208,7 +2285,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	*/
 
 	if (gui.key_focus == p_control)
-		gui.key_focus = NULL;
+		_gui_remove_focus();
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
@@ -2477,6 +2554,16 @@ bool Viewport::is_3d_disabled() const {
 	return disable_3d;
 }
 
+void Viewport::set_keep_3d_linear(bool p_keep_3d_linear) {
+	keep_3d_linear = p_keep_3d_linear;
+	VS::get_singleton()->viewport_set_keep_3d_linear(viewport, keep_3d_linear);
+}
+
+bool Viewport::get_keep_3d_linear() const {
+
+	return keep_3d_linear;
+}
+
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
@@ -2660,6 +2747,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_keep_3d_linear", "keep_3d_linear"), &Viewport::set_keep_3d_linear);
+	ClassDB::bind_method(D_METHOD("get_keep_3d_linear"), &Viewport::get_keep_3d_linear);
+
 	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
@@ -2673,6 +2763,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
+	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
@@ -2684,6 +2776,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
@@ -2752,6 +2845,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
 }
 
+void Viewport::_subwindow_visibility_changed() {
+
+	// unfortunately, we don't know the sender, i.e. which subwindow changed;
+	// so we have to check them all.
+	gui.subwindow_visibility_dirty = true;
+}
+
 Viewport::Viewport() {
 
 	world_2d = Ref<World2D>(memnew(World2D));
@@ -2806,6 +2906,7 @@ Viewport::Viewport() {
 
 	disable_input = false;
 	disable_3d = false;
+	keep_3d_linear = false;
 
 	//window tooltip
 	gui.tooltip_timer = -1;

@@ -78,7 +78,7 @@ void EditorHistory::cleanup_history() {
 		current = history.size() - 1;
 }
 
-void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change) {
+void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
 
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
@@ -88,6 +88,7 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 		o.ref = REF(r);
 	o.object = p_object;
 	o.property = p_property;
+	o.inspector_only = p_inspector_only;
 
 	History h;
 
@@ -120,6 +121,11 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 	current++;
 }
 
+void EditorHistory::add_object_inspector_only(ObjectID p_object) {
+
+	_add_object(p_object, "", -1, true);
+}
+
 void EditorHistory::add_object(ObjectID p_object) {
 
 	_add_object(p_object, "", -1);
@@ -140,6 +146,13 @@ int EditorHistory::get_history_len() {
 }
 int EditorHistory::get_history_pos() {
 	return current;
+}
+
+bool EditorHistory::is_history_obj_inspector_only(int p_obj) const {
+
+	ERR_FAIL_INDEX_V(p_obj, history.size(), false);
+	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), false);
+	return history[p_obj].path[history[p_obj].level].inspector_only;
 }
 
 ObjectID EditorHistory::get_history_obj(int p_obj) const {
@@ -180,6 +193,14 @@ bool EditorHistory::previous() {
 	return true;
 }
 
+bool EditorHistory::is_current_inspector_only() const {
+
+	if (current < 0 || current >= history.size())
+		return false;
+
+	const History &h = history[current];
+	return h.path[h.level].inspector_only;
+}
 ObjectID EditorHistory::get_current() {
 
 	if (current < 0 || current >= history.size())
@@ -364,6 +385,14 @@ void EditorData::notify_edited_scene_changed() {
 	}
 }
 
+void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
+
+	for (int i = 0; i < editor_plugins.size(); i++) {
+
+		editor_plugins[i]->notify_resource_saved(p_resource);
+	}
+}
+
 void EditorData::clear_editor_states() {
 
 	for (int i = 0; i < editor_plugins.size(); i++) {
@@ -410,6 +439,18 @@ void EditorData::paste_object_params(Object *p_object) {
 
 		p_object->set(E->get().name, E->get().value);
 	}
+}
+
+bool EditorData::call_build() {
+
+	bool result = true;
+
+	for (int i = 0; i < editor_plugins.size() && result; i++) {
+
+		result &= editor_plugins[i]->build();
+	}
+
+	return result;
 }
 
 UndoRedo &EditorData::get_undo_redo() {
@@ -890,7 +931,7 @@ Array EditorSelection::_get_transformable_selected_nodes() {
 	return ret;
 }
 
-Array EditorSelection::_get_selected_nodes() {
+Array EditorSelection::get_selected_nodes() {
 
 	Array ret;
 
@@ -908,7 +949,7 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
-	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::_get_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));

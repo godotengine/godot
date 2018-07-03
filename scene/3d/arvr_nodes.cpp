@@ -73,7 +73,10 @@ Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
 	ERR_FAIL_NULL_V(arvr_server, Vector3());
 
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector3());
+	if (arvr_interface.is_null()) {
+		// we might be in the editor or have VR turned off, just call superclass
+		return Camera::project_local_ray_normal(p_pos);
+	}
 
 	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
@@ -98,7 +101,10 @@ Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
 	ERR_FAIL_NULL_V(arvr_server, Vector2());
 
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector2());
+	if (arvr_interface.is_null()) {
+		// we might be in the editor or have VR turned off, just call superclass
+		return Camera::unproject_position(p_pos);
+	}
 
 	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
@@ -127,7 +133,10 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
 	ERR_FAIL_NULL_V(arvr_server, Vector3());
 
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector3());
+	if (arvr_interface.is_null()) {
+		// we might be in the editor or have VR turned off, just call superclass
+		return Camera::project_position(p_point);
+	}
 
 	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
@@ -157,7 +166,10 @@ Vector<Plane> ARVRCamera::get_frustum() const {
 	ERR_FAIL_NULL_V(arvr_server, Vector<Plane>());
 
 	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector<Plane>());
+	if (arvr_interface.is_null()) {
+		// we might be in the editor or have VR turned off, just call superclass
+		return Camera::get_frustum();
+	}
 
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 

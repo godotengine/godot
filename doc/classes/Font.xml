@@ -24,6 +24,8 @@
 			</argument>
 			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
+			<argument index="5" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
 				Draw "string" into a canvas item using the font at a given position, with "modulate" color, and optionally clipping the width. "position" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 			</description>
@@ -40,6 +42,8 @@
 			<argument index="3" name="next" type="int" default="-1">
 			</argument>
 			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="outline" type="bool" default="false">
 			</argument>
 			<description>
 				Draw character "char" into a canvas item using the font at a given position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "position" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
@@ -73,6 +77,12 @@
 			</argument>
 			<description>
 				Return the size of a string, taking kerning and advance into account.
+			</description>
+		</method>
+		<method name="has_outline" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_distance_field_hint" qualifiers="const">

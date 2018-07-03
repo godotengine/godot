@@ -78,7 +78,7 @@ public:
 	Variant get_default_input_value(int p_port) const;
 
 	virtual String get_caption() const = 0;
-	virtual String get_text() const = 0;
+	virtual String get_text() const;
 	virtual String get_category() const = 0;
 
 	//used by editor, this is not really saved
@@ -433,8 +433,8 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	VisualScriptInstance();
 	~VisualScriptInstance();

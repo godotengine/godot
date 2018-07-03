@@ -201,6 +201,9 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 		}
 	}
 
+	selectable_icon_size = p_scale;
+	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 40.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 80.0f));
+
 	ins.mesh = mesh;
 	ins.unscaled = true;
 	ins.billboard = true;
@@ -209,13 +212,13 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
+	selectable_icon_size = p_scale * 2.0;
+
 	instances.push_back(ins);
 }
 
-void EditorSpatialGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const AABB &p_bounds) {
-
+void EditorSpatialGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh) {
 	collision_mesh = p_tmesh;
-	collision_mesh_bounds = p_bounds;
 }
 
 void EditorSpatialGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
@@ -332,6 +335,27 @@ bool EditorSpatialGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
+	if (selectable_icon_size > 0.0f) {
+		Vector3 origin = spatial_node->get_global_transform().get_origin();
+
+		const Plane *p = p_frustum.ptr();
+		int fc = p_frustum.size();
+
+		bool any_out = false;
+
+		for (int j = 0; j < fc; j++) {
+
+			if (p[j].is_point_over(origin)) {
+				any_out = true;
+				break;
+			}
+		}
+
+		if (!any_out)
+			return true;
+		return false;
+	}
+
 	if (collision_segments.size()) {
 
 		const Plane *p = p_frustum.ptr();
@@ -341,55 +365,44 @@ bool EditorSpatialGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 		const Vector3 *vptr = collision_segments.ptr();
 		Transform t = spatial_node->get_global_transform();
 
-		for (int i = 0; i < vc / 2; i++) {
-
-			Vector3 a = t.xform(vptr[i * 2 + 0]);
-			Vector3 b = t.xform(vptr[i * 2 + 1]);
-
-			bool any_out = false;
-			for (int j = 0; j < fc; j++) {
-
-				if (p[j].distance_to(a) > 0 && p[j].distance_to(b) > 0) {
-
+		bool any_out = false;
+		for (int j = 0; j < fc; j++) {
+			for (int i = 0; i < vc; i++) {
+				Vector3 v = t.xform(vptr[i]);
+				if (p[j].is_point_over(v)) {
 					any_out = true;
 					break;
 				}
 			}
-
-			if (!any_out)
-				return true;
+			if (any_out) break;
 		}
 
-		return false;
+		if (!any_out) return true;
 	}
 
-	if (collision_mesh_bounds.size != Vector3(0.0, 0.0, 0.0)) {
+	if (collision_mesh.is_valid()) {
 		Transform t = spatial_node->get_global_transform();
-		const Plane *p = p_frustum.ptr();
-		int fc = p_frustum.size();
 
-		Vector3 mins = t.xform(collision_mesh_bounds.get_position());
-		Vector3 max = t.xform(collision_mesh_bounds.get_position() + collision_mesh_bounds.get_size());
+		Vector3 mesh_scale = t.get_basis().get_scale();
+		t.orthonormalize();
 
-		bool any_out = false;
+		Transform it = t.affine_inverse();
 
-		for (int j = 0; j < fc; j++) {
+		Vector<Plane> transformed_frustum;
 
-			if (p[j].distance_to(mins) > 0 || p[j].distance_to(max) > 0) {
-
-				any_out = true;
-				break;
-			}
+		for (int i = 0; i < 4; i++) {
+			transformed_frustum.push_back(it.xform(p_frustum[i]));
 		}
 
-		if (!any_out)
+		if (collision_mesh->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), mesh_scale)) {
 			return true;
+		}
 	}
 
 	return false;
 }
 
-bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle, bool p_sec_first) {
+bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle, bool p_sec_first) {
 
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
@@ -451,6 +464,43 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera, const Point2 &p_p
 			*r_gizmo_handle = idx;
 			return true;
 		}
+	}
+
+	if (selectable_icon_size > 0.0f) {
+
+		Transform t = spatial_node->get_global_transform();
+		t.orthonormalize();
+		t.set_look_at(t.origin, p_camera->get_camera_transform().origin, Vector3(0, 1, 0));
+
+		float scale = t.origin.distance_to(p_camera->get_camera_transform().origin);
+
+		if (p_camera->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
+			float h = Math::abs(p_camera->get_size());
+			scale = (h * 2.0);
+		}
+
+		Point2 center = p_camera->unproject_position(t.origin);
+
+		Transform oct = p_camera->get_camera_transform();
+
+		p_camera->look_at(t.origin, Vector3(0, 1, 0));
+		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
+		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
+
+		Point2 p0 = p_camera->unproject_position(c0);
+		Point2 p1 = p_camera->unproject_position(c1);
+
+		p_camera->set_global_transform(oct);
+
+		Rect2 rect(p0, p1 - p0);
+
+		rect.set_position(center - rect.get_size() / 2.0);
+
+		if (rect.has_point(p_point)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	if (collision_segments.size()) {
@@ -664,7 +714,7 @@ void EditorSpatialGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard"), &EditorSpatialGizmo::add_lines, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton"), &EditorSpatialGizmo::add_mesh, DEFVAL(false), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorSpatialGizmo::add_collision_segments);
-	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles", "bounds"), &EditorSpatialGizmo::add_collision_triangles);
+	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorSpatialGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "billboard", "secondary"), &EditorSpatialGizmo::add_handles, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorSpatialGizmo::_set_spatial_node);
@@ -1272,14 +1322,15 @@ bool MeshInstanceSpatialGizmo::can_draw() const {
 }
 void MeshInstanceSpatialGizmo::redraw() {
 
+	clear();
+
 	Ref<Mesh> m = mesh->get_mesh();
 	if (!m.is_valid())
 		return; //none
 
 	Ref<TriangleMesh> tm = m->generate_triangle_mesh();
 	if (tm.is_valid()) {
-		AABB aabb;
-		add_collision_triangles(tm, aabb);
+		add_collision_triangles(tm);
 	}
 }
 
@@ -1290,6 +1341,27 @@ MeshInstanceSpatialGizmo::MeshInstanceSpatialGizmo(MeshInstance *p_mesh) {
 }
 
 /////
+
+bool Sprite3DSpatialGizmo::can_draw() const {
+	return true;
+}
+void Sprite3DSpatialGizmo::redraw() {
+
+	clear();
+
+	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
+	if (tm.is_valid()) {
+		add_collision_triangles(tm);
+	}
+}
+
+Sprite3DSpatialGizmo::Sprite3DSpatialGizmo(SpriteBase3D *p_sprite) {
+
+	sprite = p_sprite;
+	set_spatial_node(p_sprite);
+}
+
+///
 
 void Position3DSpatialGizmo::redraw() {
 
@@ -1532,6 +1604,120 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton *p_skel) {
 
 	skel = p_skel;
 	set_spatial_node(p_skel);
+}
+
+PhysicalBoneSpatialGizmo::PhysicalBoneSpatialGizmo(PhysicalBone *p_pb) :
+		EditorSpatialGizmo(),
+		physical_bone(p_pb) {
+	set_spatial_node(p_pb);
+}
+
+void PhysicalBoneSpatialGizmo::redraw() {
+
+	clear();
+
+	if (!physical_bone)
+		return;
+
+	Skeleton *sk(physical_bone->find_skeleton_parent());
+	PhysicalBone *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
+	PhysicalBone *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
+
+	Vector<Vector3> points;
+
+	switch (physical_bone->get_joint_type()) {
+		case PhysicalBone::JOINT_TYPE_PIN: {
+
+			PinJointSpatialGizmo::CreateGizmo(physical_bone->get_joint_offset(), points);
+		} break;
+		case PhysicalBone::JOINT_TYPE_CONE: {
+
+			const PhysicalBone::ConeJointData *cjd(static_cast<const PhysicalBone::ConeJointData *>(physical_bone->get_joint_data()));
+			ConeTwistJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					cjd->swing_span,
+					cjd->twist_span,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_HINGE: {
+
+			const PhysicalBone::HingeJointData *hjd(static_cast<const PhysicalBone::HingeJointData *>(physical_bone->get_joint_data()));
+			HingeJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					hjd->angular_limit_lower,
+					hjd->angular_limit_upper,
+					hjd->angular_limit_enabled,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_SLIDER: {
+
+			const PhysicalBone::SliderJointData *sjd(static_cast<const PhysicalBone::SliderJointData *>(physical_bone->get_joint_data()));
+			SliderJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					sjd->angular_limit_lower,
+					sjd->angular_limit_upper,
+					sjd->linear_limit_lower,
+					sjd->linear_limit_upper,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_6DOF: {
+
+			const PhysicalBone::SixDOFJointData *sdofjd(static_cast<const PhysicalBone::SixDOFJointData *>(physical_bone->get_joint_data()));
+			Generic6DOFJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+
+					sdofjd->axis_data[0].angular_limit_lower,
+					sdofjd->axis_data[0].angular_limit_upper,
+					sdofjd->axis_data[0].linear_limit_lower,
+					sdofjd->axis_data[0].linear_limit_upper,
+					sdofjd->axis_data[0].angular_limit_enabled,
+					sdofjd->axis_data[0].linear_limit_enabled,
+
+					sdofjd->axis_data[1].angular_limit_lower,
+					sdofjd->axis_data[1].angular_limit_upper,
+					sdofjd->axis_data[1].linear_limit_lower,
+					sdofjd->axis_data[1].linear_limit_upper,
+					sdofjd->axis_data[1].angular_limit_enabled,
+					sdofjd->axis_data[1].linear_limit_enabled,
+
+					sdofjd->axis_data[2].angular_limit_lower,
+					sdofjd->axis_data[2].angular_limit_upper,
+					sdofjd->axis_data[2].linear_limit_lower,
+					sdofjd->axis_data[2].linear_limit_upper,
+					sdofjd->axis_data[2].angular_limit_enabled,
+					sdofjd->axis_data[2].linear_limit_enabled,
+
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		default:
+			return;
+	}
+
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+
+	add_collision_segments(points);
+	add_lines(points, material);
 }
 
 // FIXME: Kept as reference for reimplementation in 3.1+
@@ -2426,8 +2612,9 @@ void ParticlesGizmo::redraw() {
 	}
 
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
-	add_unscaled_billboard(icon, 0.05);
+
 	add_handles(handles);
+	add_unscaled_billboard(icon, 0.05);
 }
 ParticlesGizmo::ParticlesGizmo(Particles *p_particles) {
 
@@ -3733,6 +3920,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 
 		Ref<SkeletonSpatialGizmo> lsg = memnew(SkeletonSpatialGizmo(Object::cast_to<Skeleton>(p_spatial)));
 		return lsg;
+	}
+
+	if (Object::cast_to<PhysicalBone>(p_spatial)) {
+
+		Ref<PhysicalBoneSpatialGizmo> pbsg = memnew(PhysicalBoneSpatialGizmo(Object::cast_to<PhysicalBone>(p_spatial)));
+		return pbsg;
 	}
 
 	if (Object::cast_to<Position3D>(p_spatial)) {

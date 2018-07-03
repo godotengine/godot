@@ -4,7 +4,7 @@ import os
 import sys
 import subprocess
 
-from SCons.Script import BoolVariable, Dir, Environment, PathVariable, Variables
+from SCons.Script import BoolVariable, Dir, Environment, File, PathVariable, SCons, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
@@ -19,7 +19,7 @@ def find_file_in_dir(directory, files, prefix='', extension=''):
     return ''
 
 
-def can_build(platform):
+def can_build(env, platform):
     if platform in ["javascript"]:
         return False # Not yet supported
     return True
@@ -42,13 +42,24 @@ def copy_file(src_dir, dst_dir, name):
     copyfile(src_path, dst_path)
 
 
+def custom_path_is_dir_create(key, val, env):
+    """Validator to check if Path is a directory, creating it if it does not exist.
+       Similar to PathIsDirCreate, except it uses SCons.Script.Dir() and
+       SCons.Script.File() in order to support the '#' top level directory token.
+       """
+    # Dir constructor will throw an error if the path points to a file
+    fsDir = Dir(val)
+    if not fsDir.exists:
+        os.makedirs(fsDir.abspath)
+
+
 def configure(env):
     env.use_ptrcall = True
     env.add_module_version_string("mono")
 
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
-    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', PathVariable.PathIsDirCreate))
+    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', custom_path_is_dir_create))
     envvars.Update(env)
 
     bits = env['bits']
@@ -80,7 +91,11 @@ def configure(env):
 
         if mono_static:
             lib_suffix = Environment()['LIBSUFFIX']
-            mono_static_lib_name = 'libmono-static-sgen'
+
+            if env.msvc:
+                mono_static_lib_name = 'libmono-static-sgen'
+            else:
+                mono_static_lib_name = 'libmonosgen-2.0'
 
             if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
                 raise RuntimeError('Could not find static mono library in: ' + mono_lib_path)
@@ -93,7 +108,10 @@ def configure(env):
                 env.Append(LINKFLAGS='LIBCMT' + lib_suffix)
                 env.Append(LINKFLAGS='Psapi' + lib_suffix)
             else:
-                env.Append(LIBS=mono_static_lib_name)
+                env.Append(LINKFLAGS=os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix))
+
+                env.Append(LIBS='psapi')
+                env.Append(LIBS='version')
         else:
             mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
 
@@ -127,6 +145,22 @@ def configure(env):
         else:
             if os.getenv('MONO64_PREFIX'):
                 mono_root = os.getenv('MONO64_PREFIX')
+
+        # We can't use pkg-config to link mono statically,
+        # but we can still use it to find the mono root directory
+        if not mono_root and mono_static:
+            def pkgconfig_try_find_mono_root():
+                tmpenv = Environment()
+                tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
+                tmpenv.ParseConfig('pkg-config monosgen-2 --libs-only-L')
+                for hint_dir in tmpenv['LIBPATH']:
+                    name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix='lib', extension=sharedlib_ext)
+                    if name_found and os.path.isdir(os.path.join(hint_dir, '..', 'include', 'mono-2.0')):
+                        return os.path.join(hint_dir, '..')
+                return ''
+            mono_root = pkgconfig_try_find_mono_root()
+            if not mono_root:
+                raise RuntimeError('Building with mono_static=yes, but failed to find the mono prefix with pkg-config. Specify one manually')
 
         if mono_root:
             mono_lib_path = os.path.join(mono_root, 'lib')
@@ -168,8 +202,7 @@ def configure(env):
 
             copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
         else:
-            if mono_static:
-                raise RuntimeError('mono-static: Not supported with pkg-config. Specify a mono prefix manually')
+            assert not mono_static
 
             env.ParseConfig('pkg-config monosgen-2 --cflags --libs')
 

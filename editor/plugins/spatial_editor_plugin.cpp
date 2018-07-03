@@ -32,7 +32,7 @@
 
 #include "camera_matrix.h"
 #include "core/os/input.h"
-#include "editor/animation_editor.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -71,6 +71,14 @@
 
 #define MIN_FOV 0.01
 #define MAX_FOV 179
+
+#ifdef TOOLS_ENABLED
+#define get_global_gizmo_transform get_global_gizmo_transform
+#define get_local_gizmo_transform get_local_gizmo_transform
+#else
+#define get_global_gizmo_transform get_global_transform
+#define get_local_gizmo_transform get_transform
+#endif
 
 void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
@@ -209,7 +217,7 @@ bool SpatialEditorGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 	return false;
 }
 
-bool SpatialEditorGizmo::intersect_ray(const Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle, bool p_sec_first) {
+bool SpatialEditorGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle, bool p_sec_first) {
 
 	return false;
 }
@@ -312,24 +320,20 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
 void SpatialEditorViewport::_select(Spatial *p_node, bool p_append, bool p_single) {
 
 	if (!p_append) {
-
-		// should not modify the selection..
-
 		editor_selection->clear();
-		editor_selection->add_node(p_node);
+	}
 
-		if (Engine::get_singleton()->is_editor_hint())
-			editor->call("edit_node", p_node);
-
+	if (editor_selection->is_selected(p_node)) {
+		//erase
+		editor_selection->remove_node(p_node);
 	} else {
 
-		if (editor_selection->is_selected(p_node) && p_single) {
-			//erase
-			editor_selection->remove_node(p_node);
-		} else {
+		editor_selection->add_node(p_node);
+	}
 
-			editor_selection->add_node(p_node);
-		}
+	if (p_single) {
+		if (Engine::get_singleton()->is_editor_hint())
+			editor->call("edit_node", p_node);
 	}
 }
 
@@ -368,7 +372,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 		Vector3 normal;
 
 		int handle = -1;
-		bool inters = seg->intersect_ray(camera, p_pos, point, normal, NULL, p_alt_select);
+		bool inters = seg->intersect_ray(camera, p_pos, point, normal, &handle, p_alt_select);
 
 		if (!inters)
 			continue;
@@ -467,7 +471,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 
 	CameraMatrix cm;
-	cm.set_perspective(get_fov(), get_size().aspect(), get_znear(), get_zfar());
+	cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	float screen_w, screen_h;
 	cm.get_viewport_size(screen_w, screen_h);
 
@@ -477,7 +481,7 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	camera_transform.translate(0, 0, cursor.distance);
 
-	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_w, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_h, -get_znear()));
+	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_w, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_h, -(get_znear() + p_vector3.z)));
 }
 
 void SpatialEditorViewport::_select_region() {
@@ -485,23 +489,25 @@ void SpatialEditorViewport::_select_region() {
 	if (cursor.region_begin == cursor.region_end)
 		return; //nothing really
 
+	float z_offset = MAX(0.0, 5.0 - get_znear());
+
 	Vector3 box[4] = {
 		Vector3(
 				MIN(cursor.region_begin.x, cursor.region_end.x),
 				MIN(cursor.region_begin.y, cursor.region_end.y),
-				0),
+				z_offset),
 		Vector3(
 				MAX(cursor.region_begin.x, cursor.region_end.x),
 				MIN(cursor.region_begin.y, cursor.region_end.y),
-				0),
+				z_offset),
 		Vector3(
 				MAX(cursor.region_begin.x, cursor.region_end.x),
 				MAX(cursor.region_begin.y, cursor.region_end.y),
-				0),
+				z_offset),
 		Vector3(
 				MIN(cursor.region_begin.x, cursor.region_end.x),
 				MAX(cursor.region_begin.y, cursor.region_end.y),
-				0)
+				z_offset)
 	};
 
 	Vector<Plane> frustum;
@@ -521,7 +527,7 @@ void SpatialEditorViewport::_select_region() {
 	frustum.push_back(near);
 
 	Plane far = -near;
-	far.d += 500.0;
+	far.d += get_zfar();
 
 	frustum.push_back(far);
 
@@ -536,19 +542,26 @@ void SpatialEditorViewport::_select_region() {
 		if (!sp)
 			continue;
 
-		Ref<SpatialEditorGizmo> seg = sp->get_gizmo();
-
-		if (!seg.is_valid())
-			continue;
-
 		Spatial *root_sp = sp;
 		while (root_sp && root_sp != edited_scene && root_sp->get_owner() != edited_scene && !edited_scene->is_editable_instance(root_sp->get_owner())) {
 			root_sp = Object::cast_to<Spatial>(root_sp->get_owner());
 		}
 
-		if (selected.find(root_sp) == -1)
-			if (seg->intersect_frustum(camera, frustum))
-				_select(root_sp, true, false);
+		if (selected.find(root_sp) != -1) continue;
+
+		Ref<SpatialEditorGizmo> seg = sp->get_gizmo();
+
+		if (!seg.is_valid())
+			continue;
+
+		if (seg->intersect_frustum(camera, frustum)) {
+			selected.push_back(root_sp);
+		}
+	}
+
+	bool single = selected.size() == 1;
+	for (int i = 0; i < selected.size(); i++) {
+		_select(selected[i], true, single);
 	}
 }
 
@@ -584,8 +597,8 @@ void SpatialEditorViewport::_compute_edit(const Point2 &p_point) {
 		if (!se)
 			continue;
 
-		se->original = se->sp->get_global_transform();
-		se->original_local = se->sp->get_transform();
+		se->original = se->sp->get_global_gizmo_transform();
+		se->original_local = se->sp->get_local_gizmo_transform();
 	}
 }
 
@@ -1162,6 +1175,9 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (cursor.region_select) {
+
+						if (!clicked_wants_append) _clear_selected();
+
 						_select_region();
 						cursor.region_select = false;
 						surface->update();
@@ -1184,7 +1200,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							if (!se)
 								continue;
 
-							undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_transform());
+							undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 							undo_redo->add_undo_method(sp, "set_global_transform", se->original);
 						}
 						undo_redo->commit_action();
@@ -1271,7 +1287,6 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
-
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
@@ -1821,7 +1836,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE)
 				return;
 
-			if (!AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
+			if (!AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
 				set_message(TTR("Keying is disabled (no key inserted)."));
 				return;
 			}
@@ -2145,12 +2160,9 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
 
-			if (se->aabb.has_no_surface()) {
+			se->aabb = vi ? vi->get_aabb() : AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 
-				se->aabb = vi ? vi->get_aabb() : AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
-			}
-
-			Transform t = sp->get_global_transform();
+			Transform t = sp->get_global_gizmo_transform();
 			t.translate(se->aabb.position);
 
 			// apply AABB scaling before item's global transform
@@ -2503,7 +2515,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				xform.scale_basis(sp->get_scale());
 
 				undo_redo->add_do_method(sp, "set_global_transform", xform);
-				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 			}
 			undo_redo->commit_action();
 		} break;
@@ -2961,7 +2973,7 @@ void SpatialEditorViewport::focus_selection() {
 		if (!se)
 			continue;
 
-		center += sp->get_global_transform().origin;
+		center += sp->get_global_gizmo_transform().origin;
 		count++;
 	}
 
@@ -3043,7 +3055,7 @@ AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, c
 			MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(child);
 			if (mesh_instance) {
 				AABB mesh_instance_bounds = mesh_instance->get_aabb();
-				mesh_instance_bounds.position += mesh_instance->get_global_transform().origin - p_parent->get_global_transform().origin;
+				mesh_instance_bounds.position += mesh_instance->get_global_gizmo_transform().origin - p_parent->get_global_gizmo_transform().origin;
 				bounds.merge_with(mesh_instance_bounds);
 			}
 			bounds = _calculate_spatial_bounds(child, bounds);
@@ -3121,7 +3133,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 			if (!scene.is_valid()) { // invalid scene
 				return false;
 			} else {
-				instanced_scene = scene->instance();
+				instanced_scene = scene->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 			}
 		}
 	}
@@ -3154,7 +3166,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 	Transform global_transform;
 	Spatial *parent_spatial = Object::cast_to<Spatial>(parent);
 	if (parent_spatial)
-		global_transform = parent_spatial->get_global_transform();
+		global_transform = parent_spatial->get_global_gizmo_transform();
 
 	global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 
@@ -3787,7 +3799,8 @@ void SpatialEditor::update_transform_gizmo() {
 		if (!se)
 			continue;
 
-		Transform xf = se->sp->get_global_transform();
+		Transform xf = se->sp->get_global_gizmo_transform();
+
 		if (first) {
 			center.position = xf.origin;
 			first = false;
@@ -4054,7 +4067,7 @@ void SpatialEditor::_xform_dialog_action() {
 
 		bool post = xform_type->get_selected() > 0;
 
-		Transform tr = sp->get_global_transform();
+		Transform tr = sp->get_global_gizmo_transform();
 		if (post)
 			tr = tr * t;
 		else {
@@ -4064,7 +4077,7 @@ void SpatialEditor::_xform_dialog_action() {
 		}
 
 		undo_redo->add_do_method(sp, "set_global_transform", tr);
-		undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+		undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 	}
 	undo_redo->commit_action();
 }
@@ -4598,7 +4611,10 @@ void SpatialEditor::_init_grid() {
 	PoolVector<Color> grid_colors[3];
 	PoolVector<Vector3> grid_points[3];
 
-	Color grid_color = EditorSettings::get_singleton()->get("editors/3d/grid_color");
+	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
+	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");
+	int grid_size = EditorSettings::get_singleton()->get("editors/3d/grid_size");
+	int primary_grid_steps = EditorSettings::get_singleton()->get("editors/3d/primary_grid_steps");
 
 	for (int i = 0; i < 3; i++) {
 		Vector3 axis;
@@ -4608,19 +4624,17 @@ void SpatialEditor::_init_grid() {
 		Vector3 axis_n2;
 		axis_n2[(i + 2) % 3] = 1;
 
-#define ORIGIN_GRID_SIZE 50
-
-		for (int j = -ORIGIN_GRID_SIZE; j <= ORIGIN_GRID_SIZE; j++) {
-			Vector3 p1 = axis_n1 * j + axis_n2 * -ORIGIN_GRID_SIZE;
+		for (int j = -grid_size; j <= grid_size; j++) {
+			Vector3 p1 = axis_n1 * j + axis_n2 * -grid_size;
 			Vector3 p1_dest = p1 * (-axis_n2 + axis_n1);
-			Vector3 p2 = axis_n2 * j + axis_n1 * -ORIGIN_GRID_SIZE;
+			Vector3 p2 = axis_n2 * j + axis_n1 * -grid_size;
 			Vector3 p2_dest = p2 * (-axis_n1 + axis_n2);
 
-			Color line_color = grid_color;
+			Color line_color = secondary_grid_color;
 			if (j == 0) {
 				continue;
-			} else if (j % 10 == 0) {
-				line_color *= 1.5;
+			} else if (j % primary_grid_steps == 0) {
+				line_color = primary_grid_color;
 			}
 
 			grid_points[i].push_back(p1);

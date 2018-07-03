@@ -71,6 +71,7 @@ public:
 	StringName tree_entered;
 	StringName tree_exiting;
 	StringName tree_exited;
+	StringName ready;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
 	StringName sleeping_state_changed;
@@ -197,6 +198,8 @@ public:
 	StringName _default;
 
 	StringName node_configuration_warning_changed;
+
+	StringName output;
 
 	enum {
 		MAX_MATERIALS = 32

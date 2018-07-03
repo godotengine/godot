@@ -7,7 +7,7 @@
 		Rect2 consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/math/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -42,6 +42,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns a [code]Rect2[/code] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
 		<method name="clip">

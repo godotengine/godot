@@ -68,31 +68,31 @@ bool Sprite::_edit_use_rect() const {
 
 void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
 
-	Size2 s;
-	r_filter_clip = false;
+	Rect2 base_rect;
 
 	if (region) {
-
-		s = region_rect.size;
-		r_src_rect = region_rect;
 		r_filter_clip = region_filter_clip;
+		base_rect = region_rect;
 	} else {
-		s = Size2(texture->get_size());
-		s = s / Size2(hframes, vframes);
-
-		r_src_rect.size = s;
-		r_src_rect.position.x = float(frame % hframes) * s.x;
-		r_src_rect.position.y = float(frame / hframes) * s.y;
+		r_filter_clip = false;
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 	}
 
-	Point2 ofs = offset;
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
+
+	r_src_rect.size = frame_size;
+	r_src_rect.position = base_rect.position + frame_offset;
+
+	Point2 dest_offset = offset;
 	if (centered)
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 	if (Engine::get_singleton()->get_use_pixel_snap()) {
-		ofs = ofs.floor();
+		dest_offset = dest_offset.floor();
 	}
 
-	r_dst_rect = Rect2(ofs, s);
+	r_dst_rect = Rect2(dest_offset, frame_size);
 
 	if (hflip)
 		r_dst_rect.size.x = -r_dst_rect.size.x;
@@ -375,12 +375,12 @@ Rect2 Sprite::get_rect() const {
 	Size2i s;
 
 	if (region) {
-
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
-		s = s / Point2(hframes, vframes);
 	}
+
+	s = s / Point2(hframes, vframes);
 
 	Point2 ofs = offset;
 	if (centered)

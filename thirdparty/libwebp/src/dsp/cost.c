@@ -378,12 +378,7 @@ extern void VP8EncDspCostInitMIPS32(void);
 extern void VP8EncDspCostInitMIPSdspR2(void);
 extern void VP8EncDspCostInitSSE2(void);
 
-static volatile VP8CPUInfo cost_last_cpuinfo_used =
-    (VP8CPUInfo)&cost_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspCostInit(void) {
-  if (cost_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(VP8EncDspCostInit) {
   VP8GetResidualCost = GetResidualCost_C;
   VP8SetResidualCoeffs = SetResidualCoeffs_C;
 
@@ -405,8 +400,6 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspCostInit(void) {
     }
 #endif
   }
-
-  cost_last_cpuinfo_used = VP8GetCPUInfo;
 }
 
 //------------------------------------------------------------------------------
