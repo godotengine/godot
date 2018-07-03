@@ -4093,7 +4093,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 #endif
 					tokenizer->advance();
 
-					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport);
+					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport || member._export.type != Variant::NIL);
 					if (!subexpr) {
 						if (_recover_from_completion()) {
 							break;
