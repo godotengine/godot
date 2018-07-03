@@ -626,7 +626,7 @@ Rect2 Viewport::get_visible_rect() const {
 
 	if (size == Size2()) {
 
-		r = Rect2(Point2(), Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height));
+		r = Rect2(Point2(), Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height));
 	} else {
 
 		r = Rect2(Point2(), size);

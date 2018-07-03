@@ -498,7 +498,8 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+
 	if (win_size != last_screen_size) {
 
 		last_screen_size = win_size;
@@ -1117,7 +1118,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -2009,7 +2010,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_shrink = 1;
 
-	last_screen_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {
