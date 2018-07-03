@@ -1289,16 +1289,26 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	highlighters[p_highlighter->get_name()] = p_highlighter;
-	highlighter_menu->get_popup()->add_item(p_highlighter->get_name());
+	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
 }
 
 void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
+	if (p_highlighter != NULL)
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
+	else
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
 }
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
-	set_syntax_highlighter(highlighters[highlighter_menu->get_popup()->get_item_text(p_idx)]);
+	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
+	while (el != NULL) {
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
+		el = el->next();
+	}
+	// highlighter_menu->set_item_checked(p_idx, true);
+	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
 }
 
 void ScriptTextEditor::_bind_methods() {
@@ -1666,6 +1676,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 	edit_menu->get_popup()->add_separator();
+
 	PopupMenu *convert_case = memnew(PopupMenu);
 	convert_case->set_name("convert_case");
 	edit_menu->get_popup()->add_child(convert_case);
@@ -1674,6 +1685,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
+
+	highlighters["Standard"] = NULL;
+	highlighter_menu = memnew(PopupMenu);
+	highlighter_menu->set_name("highlighter_menu");
+	edit_menu->get_popup()->add_child(highlighter_menu);
+	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
+	highlighter_menu->add_radio_check_item(TTR("Standard"));
+	highlighter_menu->connect("id_pressed", this, "_change_syntax_highlighter");
 
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
@@ -1693,14 +1712,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_hb->add_child(edit_menu);
-
-	highlighters["Standard"] = NULL;
-
-	highlighter_menu = memnew(MenuButton);
-	highlighter_menu->set_text(TTR("Syntax Highlighter"));
-	highlighter_menu->get_popup()->add_item("Standard");
-	highlighter_menu->get_popup()->connect("id_pressed", this, "_change_syntax_highlighter");
-	edit_hb->add_child(highlighter_menu);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	add_child(quick_open);
