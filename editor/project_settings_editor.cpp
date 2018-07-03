@@ -1996,7 +1996,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(plugin_settings);
 
 	timer = memnew(Timer);
-	timer->set_wait_time(0.1);
+	timer->set_wait_time(1.5);
 	timer->connect("timeout", ProjectSettings::get_singleton(), "save");
 	timer->set_one_shot(true);
 	add_child(timer);

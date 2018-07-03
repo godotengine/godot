@@ -493,7 +493,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	//get_cancel()->set_text("Close");
 
 	timer = memnew(Timer);
-	timer->set_wait_time(0.1);
+	timer->set_wait_time(1.5);
 	timer->connect("timeout", this, "_settings_save");
 	timer->set_one_shot(true);
 	add_child(timer);
