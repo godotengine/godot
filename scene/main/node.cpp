@@ -1309,17 +1309,21 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
-bool Node::is_a_parent_of(const Node *p_node) const {
+bool Node::is_a_parent_of(const Node *p_node, bool p_direct) const {
 
 	ERR_FAIL_NULL_V(p_node, false);
 	Node *p = p_node->data.parent;
-	while (p) {
 
+	if (p_direct) {
 		if (p == this)
 			return true;
-		p = p->data.parent;
+	} else {
+		while (p) {
+			if (p == this)
+				return true;
+			p = p->data.parent;
+		}
 	}
-
 	return false;
 }
 
@@ -2583,7 +2587,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
-	ClassDB::bind_method(D_METHOD("is_a_parent_of", "node"), &Node::is_a_parent_of);
+	ClassDB::bind_method(D_METHOD("is_a_parent_of", "node", "direct"), &Node::is_a_parent_of, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
