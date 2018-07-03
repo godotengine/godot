@@ -410,7 +410,6 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 	if (r_gizmo_handle) {
 
 		Transform t = spatial_node->get_global_transform();
-		t.orthonormalize();
 		if (billboard_handle) {
 			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
 		}
@@ -444,7 +443,6 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 		min_d = 1e20;
 
 		for (int i = 0; i < handles.size(); i++) {
-
 			Vector3 hpos = t.xform(handles[i]);
 			Vector2 p = p_camera->unproject_position(hpos);
 			if (p.distance_to(p_point) < SpatialEditorGizmos::singleton->handle_t->get_width() * 0.6) {
@@ -804,7 +802,6 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 void LightSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
 
 	Transform gt = light->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -1039,7 +1036,6 @@ Variant AudioStreamPlayer3DSpatialGizmo::get_handle_value(int p_idx) const {
 void AudioStreamPlayer3DSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
 
 	Transform gt = player->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -1171,7 +1167,6 @@ Variant CameraSpatialGizmo::get_handle_value(int p_idx) const {
 void CameraSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
 
 	Transform gt = camera->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -1978,7 +1973,6 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const P
 		return;
 
 	Transform gt = cs->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
