@@ -443,3 +443,46 @@ void VideoStreamWebm::set_audio_track(int p_track) {
 
 	audio_track = p_track;
 }
+
+////////////
+
+RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		memdelete(f);
+		return RES();
+	}
+
+	VideoStreamWebm *stream = memnew(VideoStreamWebm);
+	stream->set_file(p_path);
+
+	Ref<VideoStreamWebm> webm_stream = Ref<VideoStreamWebm>(stream);
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return webm_stream;
+}
+
+void ResourceFormatLoaderWebm::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("webm");
+}
+
+bool ResourceFormatLoaderWebm::handles_type(const String &p_type) const {
+
+	return ClassDB::is_parent_class(p_type, "VideoStream");
+}
+
+String ResourceFormatLoaderWebm::get_resource_type(const String &p_path) const {
+
+	String el = p_path.get_extension().to_lower();
+	if (el == "webm")
+		return "VideoStreamWebm";
+	return "";
+}
