@@ -1895,7 +1895,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
 				// but remember non-instanced nodes that are hidden below instanced ones
 				if (descendant->data.owner != this) {
-					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this)
+					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this && descendant->data.owner != descendant->get_parent())
 						hidden_roots.push_back(descendant);
 					continue;
 				}
