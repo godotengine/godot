@@ -220,6 +220,7 @@ public:
 	Error generate_mipmaps(bool p_renormalize = false);
 
 	void clear_mipmaps();
+	void normalize(); //for normal maps
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
