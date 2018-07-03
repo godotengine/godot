@@ -108,6 +108,7 @@ public:
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
 		/* INTERPOLATE GAUSS */
+		INTERPOLATE_NONE,
 	};
 
 	enum CompressSource {
@@ -213,6 +214,9 @@ public:
 
 	void flip_x();
 	void flip_y();
+
+	void rotate_right();
+	void rotate_left();
 
 	/**
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
