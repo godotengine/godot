@@ -256,7 +256,6 @@ void SpatialMaterial::init_shaders() {
 
 	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
 	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
-	shader_names->particles_anim_loop = "particles_anim_loop";
 	shader_names->depth_min_layers = "depth_min_layers";
 	shader_names->depth_max_layers = "depth_max_layers";
 
@@ -423,7 +422,6 @@ void SpatialMaterial::_update_shader() {
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
-		code += "uniform bool particles_anim_loop;\n";
 	}
 
 	if (features[FEATURE_EMISSION]) {
@@ -553,7 +551,7 @@ void SpatialMaterial::_update_shader() {
 			//handle animation
 			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 			code += "\tint particle_frame = int(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
+			code += "\tparticle_frame=abs(particle_frame)%particle_total_frames;\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
 			code += "\tUV += vec2(float(particle_frame % particles_anim_h_frames) / float(particles_anim_h_frames),float(particle_frame / particles_anim_h_frames) / float(particles_anim_v_frames));\n";
 			//handle rotation
@@ -1431,17 +1429,6 @@ int SpatialMaterial::get_particles_anim_v_frames() const {
 	return particles_anim_v_frames;
 }
 
-void SpatialMaterial::set_particles_anim_loop(int p_frames) {
-
-	particles_anim_loop = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, p_frames);
-}
-
-int SpatialMaterial::get_particles_anim_loop() const {
-
-	return particles_anim_loop;
-}
-
 void SpatialMaterial::set_depth_deep_parallax(bool p_enable) {
 
 	deep_parallax = p_enable;
@@ -1788,9 +1775,6 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &SpatialMaterial::set_particles_anim_v_frames);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &SpatialMaterial::get_particles_anim_v_frames);
 
-	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "frames"), &SpatialMaterial::set_particles_anim_loop);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &SpatialMaterial::get_particles_anim_loop);
-
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax", "enable"), &SpatialMaterial::set_depth_deep_parallax);
 	ClassDB::bind_method(D_METHOD("is_depth_deep_parallax_enabled"), &SpatialMaterial::is_depth_deep_parallax_enabled);
 
@@ -1872,7 +1856,6 @@ void SpatialMaterial::_bind_methods() {
 	ADD_GROUP("Particles Anim", "particles_anim_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
 
 	ADD_GROUP("Albedo", "albedo_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color"), "set_albedo", "get_albedo");
@@ -2102,7 +2085,6 @@ SpatialMaterial::SpatialMaterial() :
 	set_billboard_mode(BILLBOARD_DISABLED);
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
-	set_particles_anim_loop(false);
 	set_alpha_scissor_threshold(0.98);
 	emission_op = EMISSION_OP_ADD;
 
