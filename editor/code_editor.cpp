@@ -815,6 +815,10 @@ void CodeTextEditor::_on_settings_change() {
 
 	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
 
+	// Custom completion theme constants
+	text_editor->add_constant_override("completion_lines", EDITOR_DEF("text_editor/completion/completion_lines", 7));
+	text_editor->add_constant_override("completion_max_width", EDITOR_DEF("text_editor/completion/completion_max_width", 50));
+
 	// call hint settings
 	text_editor->set_callhint_settings(
 			EDITOR_DEF("text_editor/completion/put_callhint_tooltip_below_current_line", true),
