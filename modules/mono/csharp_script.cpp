@@ -306,7 +306,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "    public override void _Ready()\n"
 							 "    {\n"
 							 "        \n"
-							 "     }\n"
+							 "    }\n"
 							 "\n"
 							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
 							 "//  public override void _Process(float delta)\n"
