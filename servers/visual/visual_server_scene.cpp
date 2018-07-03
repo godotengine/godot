@@ -1257,6 +1257,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
+	Transform light_transform = p_instance->transform;
+	light_transform.orthonormalize(); //scale does not count on lights
+
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 
 		case VS::LIGHT_DIRECTIONAL: {
@@ -1359,7 +1362,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// obtain the light frustm ranges (given endpoints)
 
-				Transform transform = p_instance->transform.orthonormalized(); //discard scale and stabilize light
+				Transform transform = light_transform; //discard scale and stabilize light
 
 				Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
 				Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
@@ -1469,7 +1472,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
-				Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 
 				for (int j = 0; j < cull_count; j++) {
 
@@ -1524,14 +1527,14 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						float z = i == 0 ? -1 : 1;
 						Vector<Plane> planes;
 						planes.resize(5);
-						planes[0] = p_instance->transform.xform(Plane(Vector3(0, 0, z), radius));
-						planes[1] = p_instance->transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
-						planes[2] = p_instance->transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
-						planes[3] = p_instance->transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
-						planes[4] = p_instance->transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
+						planes[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+						planes[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
+						planes[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
+						planes[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
+						planes[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
-						Plane near_plane(p_instance->transform.origin, p_instance->transform.basis.get_axis(2) * z);
+						Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 						for (int j = 0; j < cull_count; j++) {
 
@@ -1546,7 +1549,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
-						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, i);
+						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i);
 						VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 					}
 				} break;
@@ -1577,7 +1580,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							Vector3(0, -1, 0)
 						};
 
-						Transform xform = p_instance->transform * Transform().looking_at(view_normals[i], view_up[i]);
+						Transform xform = light_transform * Transform().looking_at(view_normals[i], view_up[i]);
 
 						Vector<Plane> planes = cm.get_projection_planes(xform);
 
@@ -1602,7 +1605,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 
 					//restore the regular DP matrix
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, 0);
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0);
 
 				} break;
 			}
@@ -1616,10 +1619,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			CameraMatrix cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
-			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);
+			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
-			Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
 
 				Instance *instance = instance_shadow_cull_result[j];
@@ -1633,7 +1636,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			}
 
-			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, p_instance->transform, radius, 0, 0);
+			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0);
 			VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, 0, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 
 		} break;
