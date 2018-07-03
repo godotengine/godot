@@ -444,6 +444,7 @@ GroupDialog::GroupDialog() {
 	set_title("Group Editor");
 	get_cancel()->hide();
 	set_as_toplevel(true);
+	set_resizable(true);
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
