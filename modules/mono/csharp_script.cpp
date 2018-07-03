@@ -296,28 +296,28 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 	String script_template = "using " BINDINGS_NAMESPACE ";\n"
 							 "using System;\n"
 							 "\n"
-							 "public class %CLASS_NAME% : %BASE_CLASS_NAME%\n"
+							 "public class %CLASS% : %BASE%\n"
 							 "{\n"
 							 "    // Declare member variables here. Examples:\n"
 							 "    // private int a = 2;\n"
 							 "    // private string b = \"text\";\n"
 							 "\n"
-							 "    // Called when the node enters the scene tree for the first time."
+							 "    // Called when the node enters the scene tree for the first time.\n"
 							 "    public override void _Ready()\n"
 							 "    {\n"
-							 "        "
-							 "    }\n"
+							 "        \n"
+							 "     }\n"
 							 "\n"
-							 "//    // Called every frame. 'delta' is the elapsed time since the previous frame."
-							 "//    public override void _Process(float delta)\n"
-							 "//    {\n"
-							 "//        "
-							 "//    }\n"
+							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
+							 "//  public override void _Process(float delta)\n"
+							 "//  {\n"
+							 "//      \n"
+							 "//  }\n"
 							 "}\n";
 
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
-	script_template = script_template.replace("%BASE_CLASS_NAME%", base_class_name)
-							  .replace("%CLASS_NAME%", p_class_name);
+	script_template = script_template.replace("%BASE%", base_class_name)
+							  .replace("%CLASS%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
