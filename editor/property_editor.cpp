@@ -847,6 +847,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (!color_picker) {
 				//late init for performance
 				color_picker = memnew(ColorPicker);
+				color_picker->set_deferred_mode(true);
 				add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", this, "_color_changed");

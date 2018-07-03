@@ -242,6 +242,14 @@ bool ColorPicker::is_raw_mode() const {
 	return raw_mode_enabled;
 }
 
+void ColorPicker::set_deferred_mode(bool p_enabled) {
+	deferred_mode_enabled = p_enabled;
+}
+
+bool ColorPicker::is_deferred_mode() const {
+	return deferred_mode_enabled;
+}
+
 void ColorPicker::_update_text_value() {
 	bool visible = true;
 	if (text_is_constructor) {
@@ -328,7 +336,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 			last_hsv = color;
 			set_pick_color(color);
 			_update_color();
+			if (!deferred_mode_enabled)
+				emit_signal("color_changed", color);
+		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			emit_signal("color_changed", color);
+			changing_color = false;
 		} else {
 			changing_color = false;
 		}
@@ -347,7 +359,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
 	}
 }
 
@@ -368,7 +381,10 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
+		else if (!bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT)
+			emit_signal("color_changed", color);
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
@@ -383,7 +399,8 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
 	}
 }
 
@@ -500,6 +517,8 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
 	ClassDB::bind_method(D_METHOD("set_raw_mode", "mode"), &ColorPicker::set_raw_mode);
 	ClassDB::bind_method(D_METHOD("is_raw_mode"), &ColorPicker::is_raw_mode);
+	ClassDB::bind_method(D_METHOD("set_deferred_mode", "mode"), &ColorPicker::set_deferred_mode);
+	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
@@ -522,6 +541,7 @@ void ColorPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 }
@@ -533,6 +553,7 @@ ColorPicker::ColorPicker() :
 	edit_alpha = true;
 	text_is_constructor = false;
 	raw_mode_enabled = false;
+	deferred_mode_enabled = false;
 	changing_color = false;
 	screen = NULL;
 
