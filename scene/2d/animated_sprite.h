@@ -145,6 +145,7 @@ class AnimatedSprite : public Node2D {
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
+	Rect2 _get_rect() const;
 
 protected:
 	static void _bind_methods();
@@ -160,6 +161,8 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+
+	virtual Rect2 get_anchorable_rect() const;
 
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;

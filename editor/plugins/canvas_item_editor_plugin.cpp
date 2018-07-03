@@ -543,7 +543,6 @@ void CanvasItemEditor::_get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResu
 
 	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 		Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
-		Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().to));
 
 		Vector<Vector2> bone_shape;
 		if (!_get_bone_shape(&bone_shape, NULL, E))
@@ -719,16 +718,17 @@ Vector2 CanvasItemEditor::_anchor_to_position(const Control *p_control, Vector2 
 	ERR_FAIL_COND_V(!p_control, Vector2());
 
 	Transform2D parent_transform = p_control->get_transform().affine_inverse();
-	Size2 parent_size = p_control->get_parent_area_size();
+	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
-	return parent_transform.xform(Vector2(parent_size.x * anchor.x, parent_size.y * anchor.y));
+	return parent_transform.xform(parent_rect.position + Vector2(parent_rect.size.x * anchor.x, parent_rect.size.y * anchor.y));
 }
 
 Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 position) {
 	ERR_FAIL_COND_V(!p_control, Vector2());
-	Size2 parent_size = p_control->get_parent_area_size();
 
-	return p_control->get_transform().xform(position) / parent_size;
+	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
+
+	return (p_control->get_transform().xform(position) - parent_rect.position) / parent_rect.size;
 }
 
 void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
@@ -2491,10 +2491,12 @@ void CanvasItemEditor::_draw_selection() {
 					Transform2D parent_transform = xform * control->get_transform().affine_inverse();
 					float node_pos_in_parent[4];
 
-					node_pos_in_parent[0] = control->get_anchor(MARGIN_LEFT) * control->get_parent_area_size().width + control->get_margin(MARGIN_LEFT);
-					node_pos_in_parent[1] = control->get_anchor(MARGIN_TOP) * control->get_parent_area_size().height + control->get_margin(MARGIN_TOP);
-					node_pos_in_parent[2] = control->get_anchor(MARGIN_RIGHT) * control->get_parent_area_size().width + control->get_margin(MARGIN_RIGHT);
-					node_pos_in_parent[3] = control->get_anchor(MARGIN_BOTTOM) * control->get_parent_area_size().height + control->get_margin(MARGIN_BOTTOM);
+					Rect2 parent_rect = control->get_parent_anchorable_rect();
+
+					node_pos_in_parent[0] = control->get_anchor(MARGIN_LEFT) * parent_rect.size.width + control->get_margin(MARGIN_LEFT) + parent_rect.position.x;
+					node_pos_in_parent[1] = control->get_anchor(MARGIN_TOP) * parent_rect.size.height + control->get_margin(MARGIN_TOP) + parent_rect.position.y;
+					node_pos_in_parent[2] = control->get_anchor(MARGIN_RIGHT) * parent_rect.size.width + control->get_margin(MARGIN_RIGHT) + parent_rect.position.x;
+					node_pos_in_parent[3] = control->get_anchor(MARGIN_BOTTOM) * parent_rect.size.height + control->get_margin(MARGIN_BOTTOM) + parent_rect.position.y;
 
 					Point2 start, end;
 					switch (drag_type) {
