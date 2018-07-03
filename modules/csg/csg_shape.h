@@ -334,10 +334,13 @@ private:
 	NodePath path_node;
 	float path_interval;
 	PathRotation path_rotation;
+	bool path_local;
 
 	Node *path_cache;
 
 	bool smooth_faces;
+	bool path_continuous_u;
+	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
@@ -374,6 +377,15 @@ public:
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
+
+	void set_path_local(bool p_enable);
+	bool is_path_local() const;
+
+	void set_path_continuous_u(bool p_enable);
+	bool is_path_continuous_u() const;
+
+	void set_path_joined(bool p_enable);
+	bool is_path_joined() const;
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
