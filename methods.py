@@ -1382,6 +1382,11 @@ def android_add_res_dir(self, subpath):
     if (base_path not in self.android_res_dirs):
         self.android_res_dirs.append(base_path)
 
+def android_add_asset_dir(self, subpath):
+    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
+    if (base_path not in self.android_asset_dirs):
+        self.android_asset_dirs.append(base_path)
+
 def android_add_aidl_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     if (base_path not in self.android_aidl_dirs):
