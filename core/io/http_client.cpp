@@ -30,6 +30,7 @@
 
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
+#include "version.h"
 
 const char *HTTPClient::_methods[METHOD_MAX] = {
 	"GET",
@@ -121,15 +122,29 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 	}
 	bool add_clen = p_body.size() > 0;
+	bool add_uagent = true;
+	bool add_accept = true;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
-		if (add_clen && p_headers[i].find("Content-Length:") == 0) {
+		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
+		}
+		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
+			add_uagent = false;
+		}
+		if (add_accept && p_headers[i].findn("Accept:") == 0) {
+			add_accept = false;
 		}
 	}
 	if (add_clen) {
 		request += "Content-Length: " + itos(p_body.size()) + "\r\n";
 		// Should it add utf8 encoding?
+	}
+	if (add_uagent) {
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+	}
+	if (add_accept) {
+		request += "Accept: */*\r\n";
 	}
 	request += "\r\n";
 	CharString cs = request.utf8();
@@ -173,16 +188,30 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	} else {
 		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 	}
+	bool add_uagent = true;
+	bool add_accept = true;
 	bool add_clen = p_body.length() > 0;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
-		if (add_clen && p_headers[i].find("Content-Length:") == 0) {
+		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
+		}
+		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
+			add_uagent = false;
+		}
+		if (add_accept && p_headers[i].findn("Accept:") == 0) {
+			add_accept = false;
 		}
 	}
 	if (add_clen) {
 		request += "Content-Length: " + itos(p_body.utf8().length()) + "\r\n";
 		// Should it add utf8 encoding?
+	}
+	if (add_uagent) {
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+	}
+	if (add_accept) {
+		request += "Accept: */*\r\n";
 	}
 	request += "\r\n";
 	request += p_body;
