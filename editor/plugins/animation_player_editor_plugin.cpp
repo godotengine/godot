@@ -328,6 +328,9 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	}
 
 	autoplay->set_pressed(current == player->get_autoplay());
+
+	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+	EditorNode::get_singleton()->update_keying();
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -850,8 +853,11 @@ void AnimationPlayerEditor::_update_player() {
 			active_idx = animation->get_item_count() - 1;
 	}
 
-	if (!player)
+	if (!player) {
+		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+		EditorNode::get_singleton()->update_keying();
 		return;
+	}
 
 	updating = false;
 	if (active_idx != -1) {
@@ -863,6 +869,8 @@ void AnimationPlayerEditor::_update_player() {
 
 		animation->select(0);
 		autoplay->set_pressed(animation->get_item_text(0) == player->get_autoplay());
+		_animation_selected(0);
+	} else {
 		_animation_selected(0);
 	}
 
