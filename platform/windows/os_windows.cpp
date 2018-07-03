@@ -70,6 +70,30 @@ __attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
 #define WM_TOUCH 576
 #endif
 
+typedef struct {
+	int count;
+	int screen;
+	Size2 size;
+} EnumSizeData;
+
+typedef struct {
+	int count;
+	int screen;
+	Point2 pos;
+} EnumPosData;
+
+static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumSizeData *data = (EnumSizeData *)dwData;
+	if (data->count == data->screen) {
+		data->size.x = lprcMonitor->right - lprcMonitor->left;
+		data->size.y = lprcMonitor->bottom - lprcMonitor->top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 static String format_error_message(DWORD id) {
 
 	LPWSTR messageBuffer = NULL;
@@ -980,6 +1004,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	WNDCLASSEXW wc;
 
 	if (is_hidpi_allowed()) {
+		print_line("hidpi aware?");
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
 
 		if (Shcore != NULL) {
@@ -1024,12 +1049,23 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	pre_fs_valid = true;
 	if (video_mode.fullscreen) {
 
+		/* this returns DPI unaware size, commenting
 		DEVMODE current;
 		memset(&current, 0, sizeof(current));
 		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &current);
 
 		WindowRect.right = current.dmPelsWidth;
 		WindowRect.bottom = current.dmPelsHeight;
+
+		*/
+
+		EnumSizeData data = { 0, 0, Size2() };
+		EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
+
+		WindowRect.right = data.size.width;
+		WindowRect.bottom = data.size.height;
+
+		print_line("wr right " + itos(WindowRect.right) + ", " + itos(WindowRect.bottom));
 
 		/*  DEVMODE dmScreenSettings;
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
@@ -1455,12 +1491,6 @@ void OS_Windows::set_current_screen(int p_screen) {
 	set_window_position(ofs + get_screen_position(p_screen));
 }
 
-typedef struct {
-	int count;
-	int screen;
-	Point2 pos;
-} EnumPosData;
-
 static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 
 	EnumPosData *data = (EnumPosData *)dwData;
@@ -1478,24 +1508,6 @@ Point2 OS_Windows::get_screen_position(int p_screen) const {
 	EnumPosData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, Point2() };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos;
-}
-
-typedef struct {
-	int count;
-	int screen;
-	Size2 size;
-} EnumSizeData;
-
-static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
-	EnumSizeData *data = (EnumSizeData *)dwData;
-	if (data->count == data->screen) {
-		data->size.x = lprcMonitor->right - lprcMonitor->left;
-		data->size.y = lprcMonitor->bottom - lprcMonitor->top;
-	}
-
-	data->count++;
-	return TRUE;
 }
 
 Size2 OS_Windows::get_screen_size(int p_screen) const {
@@ -1557,15 +1569,15 @@ Size2 OS_Windows::get_real_window_size() const {
 }
 void OS_Windows::set_window_size(const Size2 p_size) {
 
-	video_mode.width = p_size.width;
-	video_mode.height = p_size.height;
+	int w = p_size.width;
+	int h = p_size.height;
+
+	video_mode.width = w;
+	video_mode.height = h;
 
 	if (video_mode.fullscreen) {
 		return;
 	}
-
-	int w = p_size.width;
-	int h = p_size.height;
 
 	RECT rect;
 	GetWindowRect(hWnd, &rect);
