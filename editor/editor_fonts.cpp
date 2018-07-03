@@ -33,6 +33,7 @@
 #include "builtin_fonts.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+#include "core/os/dir_access.h"
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
 
@@ -100,16 +101,20 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
+	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
 	/* Custom font */
 
 	String custom_font = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/main_font_hinting");
 	Ref<DynamicFontData> CustomFont;
-	if (custom_font.length() > 0) {
+	if (custom_font.length() > 0 && dir->file_exists(custom_font)) {
 		CustomFont.instance();
 		CustomFont->set_hinting(font_hinting);
 		CustomFont->set_font_path(custom_font);
 		CustomFont->set_force_autohinter(true); //just looks better..i think?
+	} else {
+		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
 	}
 
 	/* Custom source code font */
@@ -117,11 +122,15 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	String custom_font_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
 	DynamicFontData::Hinting font_source_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/code_font_hinting");
 	Ref<DynamicFontData> CustomFontSource;
-	if (custom_font_source.length() > 0) {
+	if (custom_font_source.length() > 0 && dir->file_exists(custom_font_source)) {
 		CustomFontSource.instance();
 		CustomFontSource->set_hinting(font_source_hinting);
 		CustomFontSource->set_font_path(custom_font_source);
+	} else {
+		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
 	}
+
+	memdelete(dir);
 
 	/* Droid Sans */
 
