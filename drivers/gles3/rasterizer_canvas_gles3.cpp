@@ -1141,7 +1141,17 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 			if (current_clip) {
 
 				glEnable(GL_SCISSOR_TEST);
-				glScissor(current_clip->final_clip_rect.position.x, (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
+
+				real_t clip_y = (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height));
+				real_t clip_height = current_clip->final_clip_rect.size.height;
+
+				// If the render target is flipped, we also need to flip the scissor rectangle.
+				if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
+					real_t half_height = rt_size.height * 0.5;
+					clip_y = -(clip_y - half_height) + half_height - clip_height;
+				}
+
+				glScissor(current_clip->final_clip_rect.position.x, clip_y, current_clip->final_clip_rect.size.width, clip_height);
 
 			} else {
 
