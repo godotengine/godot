@@ -1567,7 +1567,7 @@ void EditorInspector::_clear() {
 
 void EditorInspector::refresh() {
 
-	if (refresh_countdown > 0)
+	if (refresh_countdown > 0 || changing)
 		return;
 	refresh_countdown = EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval");
 }
@@ -1768,9 +1768,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
-		changing++;
 		undo_redo->commit_action();
-		changing--;
 	}
 
 	if (editor_property_map.has(p_name)) {
@@ -1780,9 +1778,17 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 }
 
-void EditorInspector::_property_changed(const String &p_path, const Variant &p_value) {
+void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, bool changing) {
+
+	// The "changing" variable must be true for properties that trigger events as typing occurs,
+	// like "text_changed" signal. eg: Text property of Label, Button, RichTextLabel, etc.
+	if (changing)
+		this->changing++;
 
 	_edit_set(p_path, p_value, false, "");
+
+	if (changing)
+		this->changing--;
 }
 
 void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value) {
@@ -1956,8 +1962,8 @@ void EditorInspector::_changed_callback(Object *p_changed, const char *p_prop) {
 
 void EditorInspector::_bind_methods() {
 
+	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(false));
 	ClassDB::bind_method("_multiple_properties_changed", &EditorInspector::_multiple_properties_changed);
-	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed);
 	ClassDB::bind_method("_property_changed_update_all", &EditorInspector::_property_changed_update_all);
 
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
@@ -1969,6 +1975,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_property_selected", &EditorInspector::_property_selected);
 	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
+	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "res"), PropertyInfo(Variant::STRING, "prop")));
