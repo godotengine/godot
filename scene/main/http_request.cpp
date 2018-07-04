@@ -30,8 +30,6 @@
 
 #include "http_request.h"
 
-#include "version.h"
-
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
 
@@ -106,27 +104,9 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	validate_ssl = p_ssl_validate_domain;
 
-	bool has_user_agent = false;
-	bool has_accept = false;
 	headers = p_custom_headers;
 
 	request_data = p_request_data;
-
-	for (int i = 0; i < headers.size(); i++) {
-
-		if (headers[i].findn("user-agent:") == 0)
-			has_user_agent = true;
-		if (headers[i].findn("Accept:") == 0)
-			has_accept = true;
-	}
-
-	if (!has_user_agent) {
-		headers.push_back("User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")");
-	}
-
-	if (!has_accept) {
-		headers.push_back("Accept: */*");
-	}
 
 	requesting = true;
 
