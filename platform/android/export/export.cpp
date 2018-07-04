@@ -570,7 +570,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		// const int CHUNK_RESOURCEIDS = 0x00080180;
 		const int CHUNK_STRINGS = 0x001C0001;
 		// const int CHUNK_XML_END_NAMESPACE = 0x00100101;
-		// const int CHUNK_XML_END_TAG = 0x00100103;
+		const int CHUNK_XML_END_TAG = 0x00100103;
 		// const int CHUNK_XML_START_NAMESPACE = 0x00100100;
 		const int CHUNK_XML_START_TAG = 0x00100102;
 		// const int CHUNK_XML_TEXT = 0x00100104;
@@ -601,22 +601,26 @@ class EditorExportAndroid : public EditorExportPlatform {
 		bool screen_support_large = p_preset->get("screen/support_large");
 		bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
 
-		String user_perms[MAX_USER_PERMISSIONS];
-
-		for (int i = 0; i < MAX_USER_PERMISSIONS; i++) {
-
-			user_perms[i] = p_preset->get("user_permissions/" + itos(i));
-		}
-
-		Set<String> perms;
+		Vector<String> perms;
 
 		const char **aperms = android_perms;
 		while (*aperms) {
 
 			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
 			if (enabled)
-				perms.insert(String(*aperms));
+				perms.push_back("android.permission." + String(*aperms));
 			aperms++;
+		}
+
+		for (int i = 0; i < MAX_USER_PERMISSIONS; i++) {
+			String user_perm = p_preset->get("user_permissions/" + itos(i));
+			if (user_perm.strip_edges() != "" && user_perm.strip_edges() != "False")
+				perms.push_back(user_perm.strip_edges());
+		}
+
+		if (p_give_internet) {
+			if (perms.find("android.permission.INTERNET") == -1)
+				perms.push_back("android.permission.INTERNET");
 		}
 
 		while (ofs < (uint32_t)p_manifest.size()) {
@@ -741,27 +745,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 							print_line("version number: " + itos(decode_uint32(&p_manifest[iofs + 16])));
 						}
 
-						if (tname == "uses-permission" && /*nspace=="android" &&*/ attrname == "name") {
-
-							if (value.begins_with("godot.custom")) {
-
-								int which = value.get_slice(".", 2).to_int();
-								if (which >= 0 && which < MAX_USER_PERMISSIONS && user_perms[which].strip_edges() != "") {
-
-									string_table[attr_value] = user_perms[which].strip_edges();
-								}
-
-							} else if (value.begins_with("godot.")) {
-								String perm = value.get_slice(".", 1);
-
-								if (perms.has(perm) || (p_give_internet && perm == "INTERNET")) {
-
-									print_line("PERM: " + perm);
-									string_table[attr_value] = "android.permission." + perm;
-								}
-							}
-						}
-
 						if (tname == "supports-screens") {
 
 							if (attrname == "smallScreens") {
@@ -786,6 +769,91 @@ class EditorExportAndroid : public EditorExportPlatform {
 					}
 
 				} break;
+				case CHUNK_XML_END_TAG: {
+					int iofs = ofs + 8;
+					uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
+					String tname = string_table[name];
+
+					if (tname == "manifest") {
+						print_line("Found manifest end");
+
+						// save manifest ending so we can restore it
+						Vector<uint8_t> manifest_end;
+						uint32_t manifest_cur_size = p_manifest.size();
+						uint32_t node_size = size;
+
+						manifest_end.resize(p_manifest.size() - ofs);
+						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
+
+						int32_t attr_name_string = string_table.find("name");
+						ERR_EXPLAIN("Template does not have 'name' attribute");
+						ERR_FAIL_COND(attr_name_string == -1);
+
+						int32_t ns_android_string = string_table.find("android");
+						ERR_EXPLAIN("Template does not have 'android' namespace");
+						ERR_FAIL_COND(ns_android_string == -1);
+
+						int32_t attr_uses_permission_string = string_table.find("uses-permission");
+						if (attr_uses_permission_string == -1) {
+							string_table.push_back("uses-permission");
+							attr_uses_permission_string = string_table.size() - 1;
+						}
+
+						for (int i = 0; i < perms.size(); ++i) {
+							print_line("Adding permission " + perms[i]);
+
+							manifest_cur_size += 56 + 24; // node + end node
+							p_manifest.resize(manifest_cur_size);
+
+							// Add permission to the string pool
+							int32_t perm_string = string_table.find(perms[i]);
+							if (perm_string == -1) {
+								string_table.push_back(perms[i]);
+								perm_string = string_table.size() - 1;
+							}
+
+							// start tag
+							encode_uint16(0x102, &p_manifest[ofs]); // type
+							encode_uint16(16, &p_manifest[ofs + 2]); // headersize
+							encode_uint32(56, &p_manifest[ofs + 4]); // size
+							encode_uint32(0, &p_manifest[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest[ofs + 20]); // name
+							encode_uint16(20, &p_manifest[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest[ofs + 26]); // attr_size
+							encode_uint16(1, &p_manifest[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest[ofs + 34]); // style_index
+
+							// attribute
+							encode_uint32(ns_android_string, &p_manifest[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest[ofs + 40]); // 'name'
+							encode_uint32(perm_string, &p_manifest[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest[ofs + 48]); // typedvalue_size
+							p_manifest[ofs + 50] = 0; // typedvalue_always0
+							p_manifest[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(perm_string, &p_manifest[ofs + 52]); // typedvalue reference
+
+							ofs += 56;
+
+							// end tag
+							encode_uint16(0x103, &p_manifest[ofs]); // type
+							encode_uint16(16, &p_manifest[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest[ofs + 4]); // size
+							encode_uint32(0, &p_manifest[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest[ofs + 20]); // name
+
+							ofs += 24;
+						}
+
+						// copy footer back in
+						memcpy(&p_manifest[ofs], manifest_end.ptr(), manifest_end.size());
+					}
+				} break;
 			}
 
 			ofs += size;
@@ -806,17 +874,17 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 			encode_uint32(ofs, &ret[string_table_begins + i * 4]);
 			ofs += string_table[i].length() * 2 + 2 + 2;
-			//print_line("ofs: "+itos(i)+": "+itos(ofs));
 		}
+
 		ret.resize(ret.size() + ofs);
-		uint8_t *chars = &ret[ret.size() - ofs];
+		string_data_offset = ret.size() - ofs;
+		uint8_t *chars = &ret[string_data_offset];
 		for (int i = 0; i < string_table.size(); i++) {
 
 			String s = string_table[i];
-			//print_line("savint string :"+s);
 			encode_uint16(s.length(), chars);
 			chars += 2;
-			for (int j = 0; j < s.length(); j++) { //include zero?
+			for (int j = 0; j < s.length(); j++) {
 				encode_uint16(s[j], chars);
 				chars += 2;
 			}
@@ -828,6 +896,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 			ret.push_back(stable_extra[i]);
 		}
 
+		//pad
 		while (ret.size() % 4)
 			ret.push_back(0);
 
@@ -843,6 +912,8 @@ class EditorExportAndroid : public EditorExportPlatform {
 		encode_uint32(ret.size(), &ret[4]); //update new file size
 
 		encode_uint32(new_stable_end - 8, &ret[12]); //update new string table size
+		encode_uint32(string_table.size(), &ret[16]); //update new number of strings
+		encode_uint32(string_data_offset - 8, &ret[28]); //update new string data offset
 
 		//print_line("file size: "+itos(ret.size()));
 
