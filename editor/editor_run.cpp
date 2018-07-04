@@ -160,6 +160,14 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		}
 	}
 
+	String debug_options = ProjectSettings::get_singleton()->get("debug/settings/command_line/options");
+	if (debug_options != "") {
+		Vector<String> options = debug_options.split(",");
+		for (int i = 0; i < options.size(); i++) {
+			args.push_back(options[i]);
+		}
+	}
+
 	String exec = OS::get_singleton()->get_executable_path();
 
 	printf("Running: %ls", exec.c_str());
