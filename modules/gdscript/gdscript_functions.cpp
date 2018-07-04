@@ -105,6 +105,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"prints",
 		"printerr",
 		"printraw",
+		"print_debug",
 		"var2str",
 		"str2var",
 		"var2bytes",
@@ -701,6 +702,23 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 			r_ret = Variant();
 
+		} break;
+		case TEXT_PRINT_DEBUG: {
+			String str;
+			for (int i = 0; i < p_arg_count; i++) {
+
+				str += p_args[i]->operator String();
+			}
+
+			ScriptLanguage *script = GDScriptLanguage::get_singleton();
+			if (script->debug_get_stack_level_count() > 0) {
+				str += "\n\t";
+				str += "At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)); // + " in function '" + script->debug_get_stack_level_function(0) + "'";
+			}
+
+			//str+="\n";
+			print_line(str);
+			r_ret = Variant();
 		} break;
 		case VAR_TO_STR: {
 			VALIDATE_ARG_COUNT(1);
@@ -1728,6 +1746,14 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case TEXT_PRINTRAW: {
 
 			MethodInfo mi("printraw");
+			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
+			return mi;
+
+		} break;
+		case TEXT_PRINT_DEBUG: {
+
+			MethodInfo mi("print_debug");
 			mi.return_val.type = Variant::NIL;
 			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
