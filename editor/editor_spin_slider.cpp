@@ -56,6 +56,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 
 				grabbing_spinner_attempt = true;
+				grabbing_spinner_dist_cache = 0;
 				grabbing_spinner = false;
 				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 			}
@@ -69,13 +70,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 					update();
 				} else {
-					Rect2 gr = get_global_rect();
-					value_input->set_text(get_text_value());
-					value_input->set_position(gr.position);
-					value_input->set_size(gr.size);
-					value_input->call_deferred("show_modal");
-					value_input->call_deferred("grab_focus");
-					value_input->call_deferred("select_all");
+					_focus_entered();
 				}
 
 				grabbing_spinner = false;
@@ -89,21 +84,27 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (grabbing_spinner_attempt) {
 
-			if (!grabbing_spinner) {
+			double diff_x = mm->get_relative().x;
+			if (mm->get_shift() && grabbing_spinner) {
+				diff_x *= 0.1;
+			}
+			grabbing_spinner_dist_cache += diff_x;
+
+			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
+			} else {
+				if (mm->get_control() || updown_offset != -1) {
+					set_value(Math::round(get_value()));
+					if (ABS(grabbing_spinner_dist_cache) > 6) {
+						set_value(get_value() + SGN(grabbing_spinner_dist_cache));
+						grabbing_spinner_dist_cache = 0;
+					}
+				} else {
+					set_value(get_value() + get_step() * grabbing_spinner_dist_cache * 10);
+					grabbing_spinner_dist_cache = 0;
+				}
 			}
-
-			double v = get_value();
-
-			double diff_x = mm->get_relative().x;
-			diff_x = Math::pow(ABS(diff_x), 1.8) * SGN(diff_x);
-			diff_x *= 0.1;
-
-			v += diff_x * get_step();
-
-			set_value(v);
-
 		} else if (updown_offset != -1) {
 			bool new_hover = (mm->get_position().x > updown_offset);
 			if (new_hover != hover_updown) {
@@ -115,23 +116,8 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept")) {
-		Rect2 gr = get_global_rect();
-		value_input->set_text(get_text_value());
-		value_input->set_position(gr.position);
-		value_input->set_size(gr.size);
-		value_input->call_deferred("show_modal");
-		value_input->call_deferred("grab_focus");
-		value_input->call_deferred("select_all");
+		_focus_entered();
 	}
-}
-
-void EditorSpinSlider::_value_input_closed() {
-	set_value(value_input->get_text().to_double());
-}
-
-void EditorSpinSlider::_value_input_entered(const String &p_text) {
-	set_value(p_text.to_double());
-	value_input->hide();
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
@@ -225,7 +211,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 			draw_rect(grabber_rect, c);
 
-			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner;
+			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
 			if (grabber->is_visible() != display_grabber) {
 				if (display_grabber) {
 					grabber->show();
@@ -263,6 +249,12 @@ void EditorSpinSlider::_notification(int p_what) {
 		mouse_over_spin = false;
 		update();
 	}
+	if (p_what == NOTIFICATION_FOCUS_ENTER) {
+		if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
+			_focus_entered();
+		}
+		value_input_just_closed = false;
+	}
 }
 
 Size2 EditorSpinSlider::get_minimum_size() const {
@@ -294,6 +286,34 @@ String EditorSpinSlider::get_label() const {
 	return label;
 }
 
+//text_entered signal
+void EditorSpinSlider::_value_input_entered(const String &p_text) {
+	value_input_just_closed = true;
+	value_input->hide();
+}
+
+//modal_closed signal
+void EditorSpinSlider::_value_input_closed() {
+	set_value(value_input->get_text().to_double());
+	value_input_just_closed = true;
+}
+
+//focus_exited signal
+void EditorSpinSlider::_value_focus_exited() {
+	set_value(value_input->get_text().to_double());
+	// focus is not on the same element after the vlalue_input was exited
+	// -> focus is on next element
+	// -> TAB was pressed
+	// -> modal_close was not called
+	// -> need to close/hide manually
+	if (!value_input_just_closed) { //value_input_just_closed should do the same
+		value_input->hide();
+		//tab was pressed
+	} else {
+		//enter, click, esc
+	}
+}
+
 void EditorSpinSlider::_grabber_mouse_entered() {
 	mouse_over_grabber = true;
 	update();
@@ -314,6 +334,18 @@ bool EditorSpinSlider::is_read_only() const {
 	return read_only;
 }
 
+void EditorSpinSlider::_focus_entered() {
+	Rect2 gr = get_global_rect();
+	value_input->set_text(get_text_value());
+	value_input->set_position(gr.position);
+	value_input->set_size(gr.size);
+	value_input->call_deferred("show_modal");
+	value_input->call_deferred("grab_focus");
+	value_input->call_deferred("select_all");
+	value_input->set_focus_next(find_next_valid_focus()->get_path());
+	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
+}
+
 void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_label", "label"), &EditorSpinSlider::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorSpinSlider::get_label);
@@ -327,6 +359,7 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_grabber_gui_input"), &EditorSpinSlider::_grabber_gui_input);
 	ClassDB::bind_method(D_METHOD("_value_input_closed"), &EditorSpinSlider::_value_input_closed);
 	ClassDB::bind_method(D_METHOD("_value_input_entered"), &EditorSpinSlider::_value_input_entered);
+	ClassDB::bind_method(D_METHOD("_value_focus_exited"), &EditorSpinSlider::_value_focus_exited);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -336,7 +369,7 @@ EditorSpinSlider::EditorSpinSlider() {
 
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
-
+	grabbing_spinner_dist_cache = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
 	hover_updown = false;
@@ -358,6 +391,8 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input->hide();
 	value_input->connect("modal_closed", this, "_value_input_closed");
 	value_input->connect("text_entered", this, "_value_input_entered");
+	value_input->connect("focus_exited", this, "_value_focus_exited");
+	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;
 }
