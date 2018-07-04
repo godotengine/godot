@@ -80,6 +80,7 @@ class CreateDialog : public ConfirmationDialog {
 	Ref<Texture> _get_editor_icon(const String &p_type) const;
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
+	void add_custom_type(const String &p_type, Ref<Texture> p_icon, const String &parent_type, const String &built_in_parent_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
