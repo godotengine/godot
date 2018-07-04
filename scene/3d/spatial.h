@@ -100,10 +100,8 @@ class Spatial : public Node {
 #endif
 
 	} data;
-#ifdef TOOLS_ENABLED
 
 	void _update_gizmo();
-#endif
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
 
@@ -146,6 +144,11 @@ public:
 
 	Transform get_transform() const;
 	Transform get_global_transform() const;
+
+#ifdef TOOLS_ENABLED
+	virtual Transform get_global_gizmo_transform() const;
+	virtual Transform get_local_gizmo_transform() const;
+#endif
 
 	void set_as_toplevel(bool p_enabled);
 	bool is_set_as_toplevel() const;

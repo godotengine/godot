@@ -7,8 +7,8 @@
 		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/math/index.html
-		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -99,7 +99,9 @@
 			<argument index="1" name="up" type="Vector3">
 			</argument>
 			<description>
-				Rotate the transform around the up vector to face the target.
+				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.
+				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
+				Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalized">

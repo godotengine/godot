@@ -131,20 +131,20 @@ env.add_source_files(env.main_sources, "*.cpp")
 controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb_204.txt", "#main/godotcontrollerdb.txt"]
 
 env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
-env.Command("#main/default_controller_mappings.gen.cpp", controller_databases, make_default_controller_mappings)
+env.CommandNoCache("#main/default_controller_mappings.gen.cpp", controller_databases, make_default_controller_mappings)
 
 env.main_sources.append("#main/default_controller_mappings.gen.cpp")
 
 Export('env')
 
 env.Depends("#main/splash.gen.h", "#main/splash.png")
-env.Command("#main/splash.gen.h", "#main/splash.png", make_splash)
+env.CommandNoCache("#main/splash.gen.h", "#main/splash.png", make_splash)
 
 env.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
-env.Command("#main/splash_editor.gen.h", "#main/splash_editor.png", make_splash_editor)
+env.CommandNoCache("#main/splash_editor.gen.h", "#main/splash_editor.png", make_splash_editor)
 
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
-env.Command("#main/app_icon.gen.h", "#main/app_icon.png", make_app_icon)
+env.CommandNoCache("#main/app_icon.gen.h", "#main/app_icon.png", make_app_icon)
 
 SConscript('tests/SCsub')
 

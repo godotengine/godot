@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Multiple Master font interface (specification).             */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -286,7 +286,7 @@ FT_BEGIN_HEADER
   /* <Output>                                                              */
   /*    amaster :: The variation descriptor.                               */
   /*               Allocates a data structure, which the user must         */
-  /*               deallocate with `free' after use.                       */
+  /*               deallocate with a call to @FT_Done_MM_Var after use.    */
   /*                                                                       */
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
@@ -294,6 +294,26 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Error )
   FT_Get_MM_Var( FT_Face      face,
                  FT_MM_Var*  *amaster );
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    FT_Done_MM_Var                                                     */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Free the memory allocated by @FT_Get_MM_Var.                       */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    library :: A handle of the face's parent library object that was   */
+  /*               used in the call to @FT_Get_MM_Var to create `amaster'. */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  FT_EXPORT( FT_Error )
+  FT_Done_MM_Var( FT_Library   library,
+                  FT_MM_Var   *amaster );
 
 
   /*************************************************************************/
@@ -323,9 +343,13 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    To reset all axes to the default values, call the function with    */
-  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
-  /*    FreeType version 2.8.1).                                           */
+  /*    [Since 2.8.1] To reset all axes to the default values, call the    */
+  /*    function with `num_coords' set to zero and `coords' set to NULL.   */
+  /*                                                                       */
+  /*    [Since 2.9] If `num_coords' is larger than zero, this function     */
+  /*    sets the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags'    */
+  /*    field (i.e., @FT_IS_VARIATION will return true).  If `num_coords'  */
+  /*    is zero, this bit flag gets unset.                                 */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Design_Coordinates( FT_Face   face,
@@ -358,9 +382,15 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    To reset all axes to the default values, call the function with    */
-  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
-  /*    FreeType version 2.8.1).                                           */
+  /*    [Since 2.8.1] To reset all axes to the default values, call the    */
+  /*    function with `num_coords' set to zero and `coords' set to NULL.   */
+  /*    [Since 2.9] `Default values' means the currently selected named    */
+  /*    instance (or the base font if no named instance is selected).      */
+  /*                                                                       */
+  /*    [Since 2.9] If `num_coords' is larger than zero, this function     */
+  /*    sets the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags'    */
+  /*    field (i.e., @FT_IS_VARIATION will return true).  If `num_coords'  */
+  /*    is zero, this bit flag gets unset.                                 */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_Var_Design_Coordinates( FT_Face    face,
@@ -391,6 +421,9 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.7.1                                                              */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_Var_Design_Coordinates( FT_Face    face,
@@ -427,9 +460,15 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    To reset all axes to the default values, call the function with    */
-  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
-  /*    FreeType version 2.8.1).                                           */
+  /*    [Since 2.8.1] To reset all axes to the default values, call the    */
+  /*    function with `num_coords' set to zero and `coords' set to NULL.   */
+  /*    [Since 2.9] `Default values' means the currently selected named    */
+  /*    instance (or the base font if no named instance is selected).      */
+  /*                                                                       */
+  /*    [Since 2.9] If `num_coords' is larger than zero, this function     */
+  /*    sets the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags'    */
+  /*    field (i.e., @FT_IS_VARIATION will return true).  If `num_coords'  */
+  /*    is zero, this bit flag gets unset.                                 */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Blend_Coordinates( FT_Face    face,
@@ -462,6 +501,9 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.7.1                                                              */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_MM_Blend_Coordinates( FT_Face    face,
                                FT_UInt    num_coords,
@@ -490,6 +532,9 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    This is another name of @FT_Get_MM_Blend_Coordinates.              */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.7.1                                                              */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_Var_Blend_Coordinates( FT_Face    face,
                                 FT_UInt    num_coords,
@@ -508,6 +553,9 @@ FT_BEGIN_HEADER
   /* <Values>                                                              */
   /*    FT_VAR_AXIS_FLAG_HIDDEN ::                                         */
   /*      The variation axis should not be exposed to user interfaces.     */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.8.1                                                              */
   /*                                                                       */
 #define FT_VAR_AXIS_FLAG_HIDDEN  1
 
@@ -534,10 +582,50 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.8.1                                                              */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_Var_Axis_Flags( FT_MM_Var*  master,
                          FT_UInt     axis_index,
                          FT_UInt*    flags );
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    FT_Set_Named_Instance                                              */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Set or change the current named instance.                          */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face           :: A handle to the source face.                     */
+  /*                                                                       */
+  /*    instance_index :: The index of the requested instance, starting    */
+  /*                      with value 1.  If set to value 0, FreeType       */
+  /*                      switches to font access without a named          */
+  /*                      instance.                                        */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  /* <Note>                                                                */
+  /*    The function uses the value of `instance_index' to set bits 16-30  */
+  /*    of the face's `face_index' field.  It also resets any variation    */
+  /*    applied to the font, and the @FT_FACE_FLAG_VARIATION bit of the    */
+  /*    face's `face_flags' field gets reset to zero (i.e.,                */
+  /*    @FT_IS_VARIATION will return false).                               */
+  /*                                                                       */
+  /*    For Adobe MM fonts (which don't have named instances) this         */
+  /*    function simply resets the current face to the default instance.   */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.9                                                                */
+  /*                                                                       */
+  FT_EXPORT( FT_Error )
+  FT_Set_Named_Instance( FT_Face  face,
+                         FT_UInt  instance_index );
 
   /* */
 

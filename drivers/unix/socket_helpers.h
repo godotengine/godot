@@ -124,6 +124,13 @@ static int _socket_create(IP::Type &p_type, int type, int protocol) {
 			WARN_PRINT("Unable to set/unset IPv4 address mapping over IPv6");
 		}
 	}
+	if (protocol == IPPROTO_UDP && p_type != IP::TYPE_IPV6) {
+		// Enable broadcasting for UDP sockets if it's not IPv6 only (IPv6 has no broadcast option).
+		int broadcast = 1;
+		if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (char *)&broadcast, sizeof(broadcast)) != 0) {
+			WARN_PRINT("Error when enabling broadcasting");
+		}
+	}
 
 	return sockfd;
 }

@@ -14,7 +14,7 @@ namespace Godot
             else if (type == typeof(void))
                 sb.Append("void");
             else
-                sb.Append(type.ToString());
+                sb.Append(type);
 
             sb.Append(" ");
         }
@@ -32,7 +32,7 @@ namespace Godot
                 return;
             }
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             if (methodBase is MethodInfo)
                 sb.AppendTypeName(((MethodInfo)methodBase).ReturnType);

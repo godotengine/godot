@@ -17,6 +17,8 @@ platform/android/java/build.gradle
 platform/android/java/AndroidManifest.xml
 platform/android/java/libs/*
 platform/android/java/assets
+platform/android/java/.idea/*
+platform/android/java/*.iml
 
 # General c++ generated files
 *.lib
@@ -44,6 +46,7 @@ gmon.out
 # QT project files
 *.config
 *.creator
+*.creator.*
 *.files
 *.includes
 
@@ -288,6 +291,7 @@ logo.h
 TAGS
 !TAGS/
 tags
+*.tags
 !tags/
 gtags.files
 GTAGS

@@ -11,6 +11,18 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_h_scrollbar">
+			<return type="HScrollBar">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_scrollbar">
+			<return type="VScrollBar">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone">
@@ -22,7 +34,7 @@
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll">
-			The current horizontal scroll value.
+			The current vertical scroll value.
 		</member>
 		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
 			If [code]true[/code], enables vertical scrolling.
@@ -31,13 +43,19 @@
 	<signals>
 		<signal name="scroll_ended">
 			<description>
+				Emitted whenever scrolling stops.
 			</description>
 		</signal>
 		<signal name="scroll_started">
 			<description>
+				Emitted whenever scrolling is started.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+	</theme_items>
 </class>

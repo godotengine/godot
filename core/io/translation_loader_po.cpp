@@ -175,7 +175,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 		String prop = c.substr(0, p).strip_edges();
 		String value = c.substr(p + 1, c.length()).strip_edges();
 
-		if (prop == "X-Language") {
+		if (prop == "X-Language" || prop == "Language") {
 			translation->set_locale(value);
 		}
 	}

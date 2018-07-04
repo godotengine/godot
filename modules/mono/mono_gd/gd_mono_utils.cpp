@@ -30,12 +30,15 @@
 
 #include "gd_mono_utils.h"
 
+#include <mono/metadata/exception.h>
+
 #include "os/dir_access.h"
 #include "os/os.h"
 #include "project_settings.h"
 #include "reference.h"
 
 #include "../csharp_script.h"
+#include "../utils/macros.h"
 #include "gd_mono.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
@@ -120,6 +123,9 @@ void MonoCache::clear_members() {
 	class_SyncAttribute = NULL;
 	class_MasterAttribute = NULL;
 	class_SlaveAttribute = NULL;
+	class_RemoteSyncAttribute = NULL;
+	class_MasterSyncAttribute = NULL;
+	class_SlaveSyncAttribute = NULL;
 	class_GodotMethodAttribute = NULL;
 	field_GodotMethodAttribute_methodName = NULL;
 
@@ -208,6 +214,9 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
 	CACHE_CLASS_AND_CHECK(SlaveAttribute, GODOT_API_CLASS(SlaveAttribute));
+	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
+	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
+	CACHE_CLASS_AND_CHECK(SlaveSyncAttribute, GODOT_API_CLASS(SlaveSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 
@@ -391,10 +400,10 @@ MonoDomain *create_domain(const String &p_friendly_name) {
 	return domain;
 }
 
-String get_exception_name_and_message(MonoObject *p_ex) {
+String get_exception_name_and_message(MonoException *p_ex) {
 	String res;
 
-	MonoClass *klass = mono_object_get_class(p_ex);
+	MonoClass *klass = mono_object_get_class((MonoObject *)p_ex);
 	MonoType *type = mono_class_get_type(klass);
 
 	char *full_name = mono_type_full_name(type);
@@ -404,29 +413,31 @@ String get_exception_name_and_message(MonoObject *p_ex) {
 	res += ": ";
 
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = (MonoString *)mono_property_get_value(prop, p_ex, NULL, NULL);
+	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_ex, NULL, NULL);
 	res += GDMonoMarshal::mono_string_to_godot(msg);
 
 	return res;
 }
 
-void print_unhandled_exception(MonoObject *p_exc) {
-	print_unhandled_exception(p_exc, false);
+void debug_print_unhandled_exception(MonoException *p_exc) {
+	print_unhandled_exception(p_exc);
+	debug_send_unhandled_exception_error(p_exc);
 }
 
-void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
-	mono_print_unhandled_exception(p_exc);
+void debug_send_unhandled_exception_error(MonoException *p_exc) {
 #ifdef DEBUG_ENABLED
 	if (!ScriptDebugger::get_singleton())
 		return;
 
+	_TLS_RECURSION_GUARD_;
+
 	ScriptLanguage::StackInfo separator;
-	separator.file = "";
+	separator.file = String();
 	separator.func = "--- " + RTR("End of inner exception stack trace") + " ---";
 	separator.line = 0;
 
 	Vector<ScriptLanguage::StackInfo> si;
-	String exc_msg = "";
+	String exc_msg;
 
 	while (p_exc != NULL) {
 		GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
@@ -435,24 +446,16 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 		MonoBoolean need_file_info = true;
 		void *ctor_args[2] = { p_exc, &need_file_info };
 
-		MonoObject *unexpected_exc = NULL;
+		MonoException *unexpected_exc = NULL;
 		CACHED_METHOD(System_Diagnostics_StackTrace, ctor_Exception_bool)->invoke_raw(stack_trace, ctor_args, &unexpected_exc);
 
-		if (unexpected_exc != NULL) {
-			mono_print_unhandled_exception(unexpected_exc);
-
-			if (p_recursion_caution) {
-				// Called from CSharpLanguage::get_current_stack_info,
-				// so printing an error here could result in endless recursion
-				OS::get_singleton()->printerr("Mono: Method GDMonoUtils::print_unhandled_exception failed");
-				return;
-			} else {
-				ERR_FAIL();
-			}
+		if (unexpected_exc) {
+			GDMonoInternals::unhandled_exception(unexpected_exc);
+			_UNREACHABLE_();
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
-		if (stack_trace != NULL && !p_recursion_caution) {
+		if (stack_trace != NULL) {
 			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
 			for (int i = _si.size() - 1; i >= 0; i--)
 				si.insert(0, _si[i]);
@@ -460,10 +463,15 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 
 		exc_msg += (exc_msg.length() > 0 ? " ---> " : "") + GDMonoUtils::get_exception_name_and_message(p_exc);
 
-		GDMonoProperty *p_prop = GDMono::get_singleton()->get_class(mono_object_get_class(p_exc))->get_property("InnerException");
-		p_exc = p_prop != NULL ? p_prop->get_value(p_exc) : NULL;
-		if (p_exc != NULL)
+		GDMonoClass *exc_class = GDMono::get_singleton()->get_class(mono_get_exception_class());
+		GDMonoProperty *inner_exc_prop = exc_class->get_property("InnerException");
+		CRASH_COND(inner_exc_prop == NULL);
+
+		MonoObject *inner_exc = inner_exc_prop->get_value((MonoObject *)p_exc);
+		if (inner_exc != NULL)
 			si.insert(0, separator);
+
+		p_exc = (MonoException *)inner_exc;
 	}
 
 	String file = si.size() ? si[0].file : __FILE__;
@@ -474,5 +482,39 @@ void print_unhandled_exception(MonoObject *p_exc, bool p_recursion_caution) {
 	ScriptDebugger::get_singleton()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
 #endif
 }
+
+void debug_unhandled_exception(MonoException *p_exc) {
+#ifdef DEBUG_ENABLED
+	GDMonoUtils::debug_send_unhandled_exception_error(p_exc);
+	if (ScriptDebugger::get_singleton())
+		ScriptDebugger::get_singleton()->idle_poll();
+#endif
+	GDMonoInternals::unhandled_exception(p_exc); // prints the exception as well
+	_UNREACHABLE_();
+}
+
+void print_unhandled_exception(MonoException *p_exc) {
+	mono_print_unhandled_exception((MonoObject *)p_exc);
+}
+
+void set_pending_exception(MonoException *p_exc) {
+#ifdef HAS_PENDING_EXCEPTIONS
+	if (get_runtime_invoke_count() == 0) {
+		debug_unhandled_exception(p_exc);
+		_UNREACHABLE_();
+	}
+
+	if (!mono_runtime_set_pending_exception(p_exc, false)) {
+		ERR_PRINTS("Exception thrown from managed code, but it could not be set as pending:");
+		GDMonoUtils::debug_print_unhandled_exception(p_exc);
+	}
+#else
+	debug_unhandled_exception(p_exc);
+	_UNREACHABLE_();
+#endif
+}
+
+_THREAD_LOCAL_(int)
+current_invoke_count = 0;
 
 } // namespace GDMonoUtils

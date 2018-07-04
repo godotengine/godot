@@ -14,6 +14,7 @@ namespace Godot
 		public GodotTaskScheduler()
 		{
 			Context = new GodotSynchronizationContext();
+			SynchronizationContext.SetSynchronizationContext(Context);
 		}
 
 		protected sealed override void QueueTask(Task task)
@@ -36,7 +37,7 @@ namespace Godot
 				TryDequeue(task);
 			}
 
-			return base.TryExecuteTask(task);
+			return TryExecuteTask(task);
 		}
 
 		protected sealed override bool TryDequeue(Task task)
@@ -57,7 +58,6 @@ namespace Godot
 
 		public void Activate()
 		{
-			SynchronizationContext.SetSynchronizationContext(Context);
 			ExecuteQueuedTasks();
 			Context.ExecutePendingContinuations();
 		}

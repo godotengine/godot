@@ -217,12 +217,23 @@ void AudioDriverCoreAudio::start() {
 	if (!active) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStart failed");
+			ERR_PRINT(("AudioOutputUnitStart failed, code: " + itos(result)).utf8().get_data());
 		} else {
 			active = true;
 		}
 	}
 };
+
+void AudioDriverCoreAudio::stop() {
+	if (active) {
+		OSStatus result = AudioOutputUnitStop(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT(("AudioOutputUnitStop failed, code: " + itos(result)).utf8().get_data());
+		} else {
+			active = false;
+		}
+	}
+}
 
 int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;

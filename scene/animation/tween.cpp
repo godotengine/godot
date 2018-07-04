@@ -201,6 +201,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset_all"), &Tween::reset_all);
 	ClassDB::bind_method(D_METHOD("stop", "object", "key"), &Tween::stop, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("stop_all"), &Tween::stop_all);
+	ClassDB::bind_method(D_METHOD("is_stopped"), &Tween::is_stopped);
 	ClassDB::bind_method(D_METHOD("resume", "object", "key"), &Tween::resume, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("resume_all"), &Tween::resume_all);
 	ClassDB::bind_method(D_METHOD("remove", "object", "key"), &Tween::remove, DEFVAL(""));
@@ -743,6 +744,10 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 	return true;
 }
 
+bool Tween::is_stopped() const {
+	return tell() >= get_runtime();
+}
+
 bool Tween::stop_all() {
 
 	set_active(false);
@@ -886,6 +891,10 @@ real_t Tween::tell() const {
 
 real_t Tween::get_runtime() const {
 
+	if (speed_scale == 0) {
+		return INFINITY;
+	}
+
 	pending_update++;
 	real_t runtime = 0;
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -896,7 +905,8 @@ real_t Tween::get_runtime() const {
 			runtime = t;
 	}
 	pending_update--;
-	return runtime;
+
+	return runtime / speed_scale;
 }
 
 bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val) {

@@ -104,21 +104,6 @@ static void Upsample32Pixels_SSE2(const uint8_t r1[], const uint8_t r2[],
   Upsample32Pixels_SSE2(r1, r2, out);                                          \
 }
 
-#define CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y,                              \
-                    top_dst, bottom_dst, cur_x, num_pixels) {                  \
-  int n;                                                                       \
-  for (n = 0; n < (num_pixels); ++n) {                                         \
-    FUNC((top_y)[(cur_x) + n], r_u[n], r_v[n],                                 \
-         (top_dst) + ((cur_x) + n) * (XSTEP));                                 \
-  }                                                                            \
-  if ((bottom_y) != NULL) {                                                    \
-    for (n = 0; n < (num_pixels); ++n) {                                       \
-      FUNC((bottom_y)[(cur_x) + n], r_u[64 + n], r_v[64 + n],                  \
-           (bottom_dst) + ((cur_x) + n) * (XSTEP));                            \
-    }                                                                          \
-  }                                                                            \
-}
-
 #define CONVERT2RGB_32(FUNC, XSTEP, top_y, bottom_y,                           \
                        top_dst, bottom_dst, cur_x) do {                        \
   FUNC##32_SSE2((top_y) + (cur_x), r_u, r_v, (top_dst) + (cur_x) * (XSTEP));   \
@@ -135,7 +120,7 @@ static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,           \
                       uint8_t* top_dst, uint8_t* bottom_dst, int len) {        \
   int uv_pos, pos;                                                             \
   /* 16byte-aligned array to cache reconstructed u and v */                    \
-  uint8_t uv_buf[4 * 32 + 15];                                                 \
+  uint8_t uv_buf[14 * 32 + 15] = { 0 };                                        \
   uint8_t* const r_u = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);             \
   uint8_t* const r_v = r_u + 32;                                               \
                                                                                \
@@ -160,11 +145,22 @@ static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,           \
   }                                                                            \
   if (len > 1) {                                                               \
     const int left_over = ((len + 1) >> 1) - (pos >> 1);                       \
+    uint8_t* const tmp_top_dst = r_u + 4 * 32;                                 \
+    uint8_t* const tmp_bottom_dst = tmp_top_dst + 4 * 32;                      \
+    uint8_t* const tmp_top = tmp_bottom_dst + 4 * 32;                          \
+    uint8_t* const tmp_bottom = (bottom_y == NULL) ? NULL : tmp_top + 32;      \
     assert(left_over > 0);                                                     \
     UPSAMPLE_LAST_BLOCK(top_u + uv_pos, cur_u + uv_pos, left_over, r_u);       \
     UPSAMPLE_LAST_BLOCK(top_v + uv_pos, cur_v + uv_pos, left_over, r_v);       \
-    CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y, top_dst, bottom_dst,             \
-                pos, len - pos);                                               \
+    memcpy(tmp_top, top_y + pos, len - pos);                                   \
+    if (bottom_y != NULL) memcpy(tmp_bottom, bottom_y + pos, len - pos);       \
+    CONVERT2RGB_32(FUNC, XSTEP, tmp_top, tmp_bottom, tmp_top_dst,              \
+         tmp_bottom_dst, 0);                                                   \
+    memcpy(top_dst + pos * (XSTEP), tmp_top_dst, (len - pos) * (XSTEP));       \
+    if (bottom_y != NULL) {                                                    \
+      memcpy(bottom_dst + pos * (XSTEP), tmp_bottom_dst,                       \
+             (len - pos) * (XSTEP));                                           \
+    }                                                                          \
   }                                                                            \
 }
 

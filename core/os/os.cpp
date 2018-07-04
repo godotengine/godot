@@ -411,7 +411,7 @@ Error OS::set_cwd(const String &p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
 int OS::get_free_static_memory() const {
@@ -672,6 +672,7 @@ OS::OS() {
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
 	_allow_hidpi = false;
+	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;

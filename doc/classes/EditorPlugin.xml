@@ -7,7 +7,7 @@
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/development/plugins/index.html
+		<link>http://docs.godotengine.org/en/3.0/development/plugins/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -81,7 +81,7 @@
 		<method name="add_export_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="exporter" type="EditorExportPlugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
 			</description>
@@ -90,6 +90,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_inspector_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
 			</description>
@@ -114,6 +122,7 @@
 			<argument index="3" name="ud" type="Variant" default="null">
 			</argument>
 			<description>
+				Adds a custom menu to 'Project &gt; Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -132,6 +141,12 @@
 			<description>
 				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
 				This is used, for example, in shader editors to let the plugin know that it must apply the shader code being written by the user to the object.
+			</description>
+		</method>
+		<method name="build" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
@@ -340,7 +355,7 @@
 		<method name="remove_export_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="exporter" type="EditorExportPlugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
 			</description>
@@ -349,6 +364,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_inspector_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
 			</description>
@@ -367,6 +390,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Removes a menu [code]name[/code] from 'Project &gt; Tools'.
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
@@ -420,6 +444,12 @@
 			</argument>
 			<description>
 				Emitted when user change main screen view (2D, 3D, Script, AssetLib). Works also with screens which are defined by plugins.
+			</description>
+		</signal>
+		<signal name="resource_saved">
+			<argument index="0" name="resource" type="Object">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="scene_changed">

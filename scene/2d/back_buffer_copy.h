@@ -54,9 +54,11 @@ protected:
 
 public:
 	Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
+	Rect2 get_anchorable_rect() const;
 
 	void set_copy_mode(CopyMode p_mode);
 	CopyMode get_copy_mode() const;

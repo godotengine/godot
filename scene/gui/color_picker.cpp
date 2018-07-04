@@ -242,6 +242,14 @@ bool ColorPicker::is_raw_mode() const {
 	return raw_mode_enabled;
 }
 
+void ColorPicker::set_deferred_mode(bool p_enabled) {
+	deferred_mode_enabled = p_enabled;
+}
+
+bool ColorPicker::is_deferred_mode() const {
+	return deferred_mode_enabled;
+}
+
 void ColorPicker::_update_text_value() {
 	bool visible = true;
 	if (text_is_constructor) {
@@ -328,7 +336,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 			last_hsv = color;
 			set_pick_color(color);
 			_update_color();
+			if (!deferred_mode_enabled)
+				emit_signal("color_changed", color);
+		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			emit_signal("color_changed", color);
+			changing_color = false;
 		} else {
 			changing_color = false;
 		}
@@ -347,7 +359,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
 	}
 }
 
@@ -368,7 +381,10 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
+		else if (!bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT)
+			emit_signal("color_changed", color);
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
@@ -383,7 +399,8 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		last_hsv = color;
 		set_pick_color(color);
 		_update_color();
-		emit_signal("color_changed", color);
+		if (!deferred_mode_enabled)
+			emit_signal("color_changed", color);
 	}
 }
 
@@ -500,6 +517,8 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
 	ClassDB::bind_method(D_METHOD("set_raw_mode", "mode"), &ColorPicker::set_raw_mode);
 	ClassDB::bind_method(D_METHOD("is_raw_mode"), &ColorPicker::is_raw_mode);
+	ClassDB::bind_method(D_METHOD("set_deferred_mode", "mode"), &ColorPicker::set_deferred_mode);
+	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
@@ -522,6 +541,7 @@ void ColorPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 }
@@ -533,6 +553,7 @@ ColorPicker::ColorPicker() :
 	edit_alpha = true;
 	text_is_constructor = false;
 	raw_mode_enabled = false;
+	deferred_mode_enabled = false;
 	changing_color = false;
 	screen = NULL;
 
@@ -656,12 +677,19 @@ ColorPicker::ColorPicker() :
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
 
+	color = p_color;
 	update();
-	emit_signal("color_changed", p_color);
+	emit_signal("color_changed", color);
+}
+
+void ColorPickerButton::_modal_closed() {
+
+	emit_signal("popup_closed");
 }
 
 void ColorPickerButton::pressed() {
 
+	_update_picker();
 	popup->set_position(get_global_position() - picker->get_combined_minimum_size());
 	popup->popup();
 	picker->set_focus_on_line_edit();
@@ -674,43 +702,63 @@ void ColorPickerButton::_notification(int p_what) {
 		Ref<StyleBox> normal = get_stylebox("normal");
 		Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
 		draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
-		draw_rect(r, picker->get_pick_color());
+		draw_rect(r, color);
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
 		popup->hide();
 	}
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
 
-	picker->set_pick_color(p_color);
+	color = p_color;
+	if (picker) {
+		picker->set_pick_color(p_color);
+	}
+
 	update();
-	emit_signal("color_changed", p_color);
 }
 Color ColorPickerButton::get_pick_color() const {
 
-	return picker->get_pick_color();
+	return color;
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
 
-	picker->set_edit_alpha(p_show);
+	edit_alpha = p_show;
+	if (picker) {
+		picker->set_edit_alpha(p_show);
+	}
 }
 
 bool ColorPickerButton::is_editing_alpha() const {
 
-	return picker->is_editing_alpha();
+	return edit_alpha;
 }
 
-ColorPicker *ColorPickerButton::get_picker() const {
+ColorPicker *ColorPickerButton::get_picker() {
 
+	_update_picker();
 	return picker;
 }
 
 PopupPanel *ColorPickerButton::get_popup() const {
 
 	return popup;
+}
+
+void ColorPickerButton::_update_picker() {
+	if (!picker) {
+		popup = memnew(PopupPanel);
+		picker = memnew(ColorPicker);
+		popup->add_child(picker);
+		add_child(popup);
+		picker->connect("color_changed", this, "_color_changed");
+		popup->connect("modal_closed", this, "_modal_closed");
+		picker->set_pick_color(color);
+		picker->set_edit_alpha(edit_alpha);
+	}
 }
 
 void ColorPickerButton::_bind_methods() {
@@ -722,18 +770,20 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("_color_changed"), &ColorPickerButton::_color_changed);
+	ClassDB::bind_method(D_METHOD("_modal_closed"), &ColorPickerButton::_modal_closed);
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("popup_closed"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }
 
 ColorPickerButton::ColorPickerButton() {
 
-	popup = memnew(PopupPanel);
-	picker = memnew(ColorPicker);
-	popup->add_child(picker);
-
-	picker->connect("color_changed", this, "_color_changed");
-	add_child(popup);
+	//Initialization is now done deferred
+	//this improves performance in the inspector as the color picker
+	//can be expensive to initialize
+	picker = NULL;
+	popup = NULL;
+	edit_alpha = true;
 }

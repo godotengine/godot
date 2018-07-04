@@ -106,7 +106,11 @@ void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 	if (texture == p_texture)
 		return;
 	texture = p_texture;
-	region_rect = Rect2(Point2(), texture->get_size());
+	if (p_texture.is_null()) {
+		region_rect = Rect2(0, 0, 0, 0);
+	} else {
+		region_rect = Rect2(Point2(), texture->get_size());
+	}
 	emit_signal("texture_changed");
 	emit_changed();
 	_change_notify("texture");
@@ -132,8 +136,17 @@ Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 
+	ERR_FAIL_INDEX(p_margin, 4);
+
 	margin[p_margin] = p_size;
 	emit_changed();
+	static const char *margin_prop[4] = {
+		"content_margin_left",
+		"content_margin_top",
+		"content_margin_right",
+		"content_margin_bottom",
+	};
+	_change_notify(margin_prop[p_margin]);
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
 
@@ -182,7 +195,7 @@ Size2 StyleBoxTexture::get_center_size() const {
 	if (texture.is_null())
 		return Size2();
 
-	return texture->get_size() - get_minimum_size();
+	return region_rect.size - get_minimum_size();
 }
 
 void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {

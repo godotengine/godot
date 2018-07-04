@@ -22,14 +22,6 @@
 		1FF4C1851F584E3F00A41E41 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1841F584E3F00A41E41 /* GameKit.framework */; };
 		1FF4C1871F584E5600A41E41 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1861F584E5600A41E41 /* StoreKit.framework */; };
 		1FF4C1871F584E7600A41E41 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1881F584E7600A41E41 /* StoreKit.framework */; };
-		D07CD43F1C5D573600B7FB28 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */; };
-		D07CD4411C5D573600B7FB28 /* Default-667h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */; };
-		D07CD4421C5D573600B7FB28 /* Default-Portrait-736h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */; };
-		D07CD4441C5D573600B7FB28 /* Default-Landscape-736h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */; };
-		D07CD4451C5D573600B7FB28 /* Default-Landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */; };
-		D07CD4461C5D573600B7FB28 /* Default-Landscape-1366h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */; };
-		D07CD4471C5D573600B7FB28 /* Default-Portrait@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */; };
-		D07CD4481C5D573600B7FB28 /* Default-Portrait-1366h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
 		D0BCFE3818AEBDA2004A7AAE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */; };
 		D0BCFE3A18AEBDA2004A7AAE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3918AEBDA2004A7AAE /* CoreGraphics.framework */; };
@@ -57,14 +49,6 @@
 		1FF4C1881F584E7600A41E41 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1FF4C1881F584E6300A41E41 /* $binary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = $binary.entitlements; sourceTree = "<group>"; };
 		1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
-		D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-667h@2x.png"; sourceTree = "<group>"; };
-		D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait-736h@3x.png"; sourceTree = "<group>"; };
-		D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape-736h@3x.png"; sourceTree = "<group>"; };
-		D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x.png"; sourceTree = "<group>"; };
-		D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape-1366h@2x.png"; sourceTree = "<group>"; };
-		D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x.png"; sourceTree = "<group>"; };
-		D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait-1366h@2x.png"; sourceTree = "<group>"; };
 		D07CD44D1C5D589C00B7FB28 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = $binary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -159,14 +143,6 @@
 			isa = PBXGroup;
 			children = (
 				1FF4C1881F584E6300A41E41 /* $binary.entitlements */,
-				D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */,
-				D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */,
-				D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */,
-				D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */,
-				D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */,
-				D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */,
-				D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */,
-				D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */,
 				D07CD44D1C5D589C00B7FB28 /* Images.xcassets */,
 				D0BCFE4218AEBDA2004A7AAE /* Supporting Files */,
 				1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */,
@@ -254,14 +230,6 @@
 				1F1575721F582BE20003B888 /* dylibs in Resources */,
 				D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */,
 				D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */,
-				D07CD4471C5D573600B7FB28 /* Default-Portrait@2x.png in Resources */,
-				D07CD4461C5D573600B7FB28 /* Default-Landscape-1366h@2x.png in Resources */,
-				D07CD4411C5D573600B7FB28 /* Default-667h@2x.png in Resources */,
-				D07CD43F1C5D573600B7FB28 /* Default-568h@2x.png in Resources */,
-				D07CD4451C5D573600B7FB28 /* Default-Landscape@2x.png in Resources */,
-				D07CD4441C5D573600B7FB28 /* Default-Landscape-736h@3x.png in Resources */,
-				D07CD4421C5D573600B7FB28 /* Default-Portrait-736h@3x.png in Resources */,
-				D07CD4481C5D573600B7FB28 /* Default-Portrait-1366h@2x.png in Resources */,
 				D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */,
 				$additional_pbx_resources_build
 			);
@@ -377,6 +345,7 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = $binary/$binary.entitlements;
 				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
@@ -401,6 +370,7 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = $binary/$binary.entitlements;
 				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";

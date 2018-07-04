@@ -103,7 +103,7 @@ void RayCast::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
-		set_physics_process(p_enabled);
+		set_physics_process_internal(p_enabled);
 	if (!p_enabled)
 		collided = false;
 
@@ -150,12 +150,12 @@ void RayCast::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (enabled && !Engine::get_singleton()->is_editor_hint()) {
-				set_physics_process(true);
+				set_physics_process_internal(true);
 
 				if (get_tree()->is_debugging_collisions_hint())
 					_update_debug_shape();
 			} else
-				set_physics_process(false);
+				set_physics_process_internal(false);
 
 			if (Object::cast_to<CollisionObject>(get_parent())) {
 				if (exclude_parent_body)
@@ -168,14 +168,14 @@ void RayCast::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			if (enabled) {
-				set_physics_process(false);
+				set_physics_process_internal(false);
 			}
 
 			if (debug_shape)
 				_clear_debug_shape();
 
 		} break;
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (!enabled)
 				break;

@@ -238,6 +238,7 @@ Error InAppStore::restore_purchases() {
 				ret["type"] = "purchase";
 				ret["result"] = "error";
 				ret["product_id"] = pid;
+				ret["error"] = String::utf8([transaction.error.localizedDescription UTF8String]);
 				InAppStore::get_singleton()->_post_event(ret);
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 			} break;

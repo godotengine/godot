@@ -129,6 +129,7 @@ class AnimatedSprite : public Node2D {
 	bool playing;
 	StringName animation;
 	int frame;
+	float speed_scale;
 
 	bool centered;
 	Point2 offset;
@@ -140,9 +141,11 @@ class AnimatedSprite : public Node2D {
 
 	void _res_changed();
 
+	float _get_frame_duration();
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
+	Rect2 _get_rect() const;
 
 protected:
 	static void _bind_methods();
@@ -157,6 +160,9 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
+
+	virtual Rect2 get_anchorable_rect() const;
 
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
@@ -170,6 +176,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_speed_scale(float p_speed_scale);
+	float get_speed_scale() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;

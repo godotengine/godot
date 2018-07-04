@@ -36,11 +36,8 @@
 
 void AudioStreamPlayer2D::_mix_audio() {
 
-	if (!stream_playback.is_valid()) {
-		return;
-	}
-
-	if (!active) {
+	if (!stream_playback.is_valid() || !active ||
+			(stream_paused && stream_paused_fade <= 0.f)) {
 		return;
 	}
 
@@ -53,8 +50,10 @@ void AudioStreamPlayer2D::_mix_audio() {
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
-	//mix
-	stream_playback->mix(buffer, pitch_scale, buffer_size);
+	// Mix if we're not paused or we're fading out
+	if (!stream_paused || stream_paused_fade > 0.f) {
+		stream_playback->mix(buffer, pitch_scale, buffer_size);
+	}
 
 	//write all outputs
 	for (int i = 0; i < output_count; i++) {
@@ -85,6 +84,13 @@ void AudioStreamPlayer2D::_mix_audio() {
 		//mix!
 		AudioFrame vol_inc = (current.vol - prev_outputs[i].vol) / float(buffer_size);
 		AudioFrame vol = current.vol;
+
+		if (stream_paused) {
+			vol = vol * stream_paused_fade;
+			if (stream_paused_fade > 0.f) {
+				stream_paused_fade -= 0.1f;
+			}
+		}
 
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
@@ -140,6 +146,17 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
+	}
+
+	if (p_what == NOTIFICATION_PAUSED) {
+		if (!can_process()) {
+			// Node can't process so we start fading out to silence
+			set_stream_paused(true);
+		}
+	}
+
+	if (p_what == NOTIFICATION_UNPAUSED) {
+		set_stream_paused(false);
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
@@ -418,6 +435,19 @@ uint32_t AudioStreamPlayer2D::get_area_mask() const {
 	return area_mask;
 }
 
+void AudioStreamPlayer2D::set_stream_paused(bool p_pause) {
+
+	if (p_pause != stream_paused) {
+		stream_paused = p_pause;
+		stream_paused_fade = stream_paused ? 1.f : 0.f;
+	}
+}
+
+bool AudioStreamPlayer2D::get_stream_paused() const {
+
+	return stream_paused;
+}
+
 void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer2D::set_stream);
@@ -454,6 +484,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_area_mask", "mask"), &AudioStreamPlayer2D::set_area_mask);
 	ClassDB::bind_method(D_METHOD("get_area_mask"), &AudioStreamPlayer2D::get_area_mask);
 
+	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer2D::set_stream_paused);
+	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer2D::get_stream_paused);
+
 	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer2D::_bus_layout_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
@@ -461,8 +494,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,32,0.01"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_RANGE, "1,65536,1"), "set_max_distance", "get_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation", PROPERTY_HINT_EXP_EASING), "set_attenuation", "get_attenuation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_EXP_RANGE, "1,4096,1,or_greater"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 
@@ -483,6 +517,8 @@ AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	setplay = -1;
 	output_ready = false;
 	area_mask = 1;
+	stream_paused = false;
+	stream_paused_fade = 0.f;
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
 }
 

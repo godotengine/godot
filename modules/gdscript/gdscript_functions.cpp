@@ -120,8 +120,10 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"Color8",
 		"ColorN",
 		"print_stack",
+		"get_stack",
 		"instance_from_id",
 		"len",
+		"is_instance_valid",
 	};
 
 	return _names[p_func];
@@ -329,10 +331,24 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		} break;
 		case MATH_LERP: {
 			VALIDATE_ARG_COUNT(3);
-			VALIDATE_ARG_NUM(0);
-			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+			const double t = (double)*p_args[2];
+			switch (p_args[0]->get_type() == p_args[1]->get_type() ? p_args[0]->get_type() : Variant::REAL) {
+				case Variant::VECTOR2: {
+					r_ret = ((Vector2)*p_args[0]).linear_interpolate((Vector2)*p_args[1], t);
+				} break;
+				case Variant::VECTOR3: {
+					r_ret = ((Vector3)*p_args[0]).linear_interpolate((Vector3)*p_args[1], t);
+				} break;
+				case Variant::COLOR: {
+					r_ret = ((Color)*p_args[0]).linear_interpolate((Color)*p_args[1], t);
+				} break;
+				default: {
+					VALIDATE_ARG_NUM(0);
+					VALIDATE_ARG_NUM(1);
+					r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], t);
+				} break;
+			}
 		} break;
 		case MATH_INVERSE_LERP: {
 			VALIDATE_ARG_COUNT(3);
@@ -1198,6 +1214,22 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			};
 		} break;
 
+		case GET_STACK: {
+			VALIDATE_ARG_COUNT(0);
+
+			ScriptLanguage *script = GDScriptLanguage::get_singleton();
+			Array ret;
+			for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
+
+				Dictionary frame;
+				frame["source"] = script->debug_get_stack_level_source(i);
+				frame["function"] = script->debug_get_stack_level_function(i);
+				frame["line"] = script->debug_get_stack_level_line(i);
+				ret.push_back(frame);
+			};
+			r_ret = ret;
+		} break;
+
 		case INSTANCE_FROM_ID: {
 
 			VALIDATE_ARG_COUNT(1);
@@ -1274,6 +1306,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					r_ret = Variant();
 					r_ret = RTR("Object can't provide a length.");
 				}
+			}
+
+		} break;
+		case IS_INSTANCE_VALID: {
+
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type() != Variant::OBJECT) {
+				r_ret = false;
+			} else {
+				Object *obj = *p_args[0];
+				r_ret = ObjectDB::instance_validate(obj);
 			}
 
 		} break;
@@ -1488,7 +1531,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_LERP: {
-			MethodInfo mi("lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, "from"), PropertyInfo(Variant::NIL, "to"), PropertyInfo(Variant::REAL, "weight"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1787,6 +1830,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
+		case GET_STACK: {
+			MethodInfo mi("get_stack");
+			mi.return_val.type = Variant::NIL;
+			return mi;
+		} break;
 
 		case INSTANCE_FROM_ID: {
 			MethodInfo mi("instance_from_id", PropertyInfo(Variant::INT, "instance_id"));
@@ -1798,7 +1846,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
-
+		case IS_INSTANCE_VALID: {
+			MethodInfo mi("is_instance_valid", PropertyInfo(Variant::OBJECT, "instance"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL_V(MethodInfo());

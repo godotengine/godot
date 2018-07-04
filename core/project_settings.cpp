@@ -42,7 +42,7 @@
 #include "variant_parser.h"
 #include <zlib.h>
 
-#define FORMAT_VERSION 3
+#define FORMAT_VERSION 4
 
 ProjectSettings *ProjectSettings::singleton = NULL;
 
@@ -137,7 +137,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	else {
 
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
-			Vector<String> custom_feature_array = p_value;
+			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 
 				custom_features.insert(custom_feature_array[i]);
@@ -260,6 +260,23 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack) {
 	using_datapack = true;
 
 	return true;
+}
+
+void ProjectSettings::_convert_to_last_version() {
+	if (!has_setting("config_version") || (int)get_setting("config_version") <= 3) {
+
+		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
+		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
+			Variant value = E->get().variant;
+			if (String(E->key()).begins_with("input/") && value.get_type() == Variant::ARRAY) {
+				Array array = value;
+				Dictionary action;
+				action["deadzone"] = Variant(0.5f);
+				action["events"] = array;
+				E->get().variant = action;
+			}
+		}
+	}
 }
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
@@ -389,6 +406,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
+
+	_convert_to_last_version();
 
 	return OK;
 }
@@ -797,12 +816,11 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	Variant ret;
-	if (ProjectSettings::get_singleton()->has_setting(p_var)) {
-		ret = ProjectSettings::get_singleton()->get(p_var);
-	} else {
+	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
-		ret = p_default;
 	}
+	ret = ProjectSettings::get_singleton()->get(p_var);
+
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
 	return ret;

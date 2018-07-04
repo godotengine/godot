@@ -62,8 +62,8 @@ def get_opts():
         # XP support dropped after EOL due to missing API for IPv6 and other issues
         # Vista support dropped after EOL due to GH-10243
         ('target_win_version', 'Targeted Windows version, >= 0x0601 (Windows 7)', '0x0601'),
-        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
-        BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
+        EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         ('msvc_version', 'MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.', None),
         BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False),
     ]
@@ -193,7 +193,10 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
     env.AppendUnique(CXXFLAGS=['/TP']) # assume all sources are C++
     if manual_msvc_config: # should be automatic if SCons found it
-        env.Append(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+        if os.getenv("WindowsSdkDir") is not None:
+            env.Append(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+        else:
+            print("Missing environment variable: WindowsSdkDir")
 
     env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
                                    'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
@@ -211,7 +214,10 @@ def configure_msvc(env, manual_msvc_config):
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
-        env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
+        if os.getenv("WindowsSdkDir") is not None:
+            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
+        else:
+            print("Missing environment variable: WindowsSdkDir")
 
     ## LTO
 

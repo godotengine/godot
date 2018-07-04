@@ -100,17 +100,13 @@ public:
 	EditorScriptPreviewPlugin();
 };
 
-// FIXME: Needs to be rewritten for AudioStream in Godot 3.0+
-#if 0
-class EditorSamplePreviewPlugin : public EditorResourcePreviewGenerator {
+class EditorAudioStreamPreviewPlugin : public EditorResourcePreviewGenerator {
 public:
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
-
-	EditorSamplePreviewPlugin();
+	EditorAudioStreamPreviewPlugin();
 };
-#endif
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
@@ -140,4 +136,27 @@ public:
 	~EditorMeshPreviewPlugin();
 };
 
+class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
+
+	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator)
+
+	RID viewport;
+	RID viewport_texture;
+	RID canvas;
+	RID canvas_item;
+	volatile bool preview_done;
+
+	void _preview_done(const Variant &p_udata);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
+	virtual Ref<Texture> generate_from_path(const String &p_path);
+
+	EditorFontPreviewPlugin();
+	~EditorFontPreviewPlugin();
+};
 #endif // EDITORPREVIEWPLUGINS_H

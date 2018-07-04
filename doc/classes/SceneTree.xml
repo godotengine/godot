@@ -7,8 +7,8 @@
 		As one of the most important classes, the [code]SceneTree[/code] manages the hierarchy of nodes in a scene as well as scenes themselves. Nodes can be added, retrieved and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded. You can also use the SceneTree to organize your nodes into groups: every node can be assigned as many groups as you want to create, e.g. a "enemy" group. You can then iterate these groups or even call methods and set properties on all the group's members at once.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/scene_tree.html
-		http://docs.godotengine.org/en/3.0/tutorials/viewports/multiple_resolutions.html
+		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/scene_tree.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/viewports/multiple_resolutions.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -34,7 +34,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GROUP_CALL] flags.
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="change_scene">
@@ -160,7 +160,7 @@
 			<argument index="2" name="notification" type="int">
 			</argument>
 			<description>
-				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GROUP_CALL] flags.
+				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -220,7 +220,7 @@
 			<argument index="3" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GROUP_CALL] flags.
+				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="set_input_as_handled">
@@ -266,7 +266,12 @@
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
 		</member>
-		<member name="multiplayer_api" type="MultiplayerAPI" setter="set_multiplayer_api" getter="get_multiplayer_api">
+		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
+			The default [MultiplayerAPI] instance for this SceneTree.
+		</member>
+		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
+			If [code]true[/code] (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protecion when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
@@ -367,12 +372,16 @@
 	</signals>
 	<constants>
 		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">
+			Call a group with no flags (default).
 		</constant>
 		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
+			Call a group in reverse scene order.
 		</constant>
 		<constant name="GROUP_CALL_REALTIME" value="2" enum="GroupCallFlags">
+			Call a group immediately (calls are normally made on idle).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
+			Call a group only once even if the call is executed many times.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
 		</constant>

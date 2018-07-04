@@ -114,10 +114,10 @@ public:
 
 		APIType api;
 		ClassInfo *inherits_ptr;
-		HashMap<StringName, MethodBind *, StringNameHasher> method_map;
-		HashMap<StringName, int, StringNameHasher> constant_map;
+		HashMap<StringName, MethodBind *> method_map;
+		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName> > enum_map;
-		HashMap<StringName, MethodInfo, StringNameHasher> signal_map;
+		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
@@ -126,7 +126,7 @@ public:
 		List<MethodInfo> virtual_methods;
 		StringName category;
 #endif
-		HashMap<StringName, PropertySetGet, StringNameHasher> property_setget;
+		HashMap<StringName, PropertySetGet> property_setget;
 
 		StringName inherits;
 		StringName name;
@@ -143,9 +143,9 @@ public:
 	}
 
 	static RWLock *lock;
-	static HashMap<StringName, ClassInfo, StringNameHasher> classes;
-	static HashMap<StringName, StringName, StringNameHasher> resource_base_extensions;
-	static HashMap<StringName, StringName, StringNameHasher> compat_classes;
+	static HashMap<StringName, ClassInfo> classes;
+	static HashMap<StringName, StringName> resource_base_extensions;
+	static HashMap<StringName, StringName> compat_classes;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);

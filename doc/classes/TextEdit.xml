@@ -99,6 +99,8 @@
 			</argument>
 			<argument index="2" name="can_be_hidden" type="bool" default="true">
 			</argument>
+			<argument index="3" name="wrap_index" type="int" default="0">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -384,7 +386,7 @@
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
 			If [code]true[/code], enables text wrapping when it goes beyond he edge of what is visible.
 		</member>
-		<member name="wrap_lines" type="bool" setter="set_wrap" getter="is_wrapping">
+		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
 		</member>
 	</members>
 	<signals>

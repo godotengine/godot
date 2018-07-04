@@ -65,7 +65,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
@@ -110,6 +110,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_custom_minimum_size(Size2(64, 64));
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -170,7 +171,23 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
-					preview_images[i].button->set_icon(p_image);
+					if (preview_images[i].is_video) {
+						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
+						Ref<Image> thumbnail = p_image->get_data();
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+
+						thumbnail->lock();
+						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
+						thumbnail->unlock();
+
+						Ref<ImageTexture> tex;
+						tex.instance();
+						tex->create_from_image(thumbnail);
+
+						preview_images[i].button->set_icon(tex);
+					} else {
+						preview_images[i].button->set_icon(p_image);
+					}
 					break;
 				}
 			}
@@ -217,6 +234,7 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 			if (!preview_images[i].is_video) {
 				if (preview_images[i].image.is_valid()) {
 					preview->set_texture(preview_images[i].image);
+					minimum_size_changed();
 				}
 			} else {
 				_link_click(preview_images[i].video_link);
@@ -383,7 +401,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid())
-		icon->set_texture(get_icon("GodotAssetDefault", "EditorIcons"));
+		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	asset_installer->connect("confirmed", this, "_close");
@@ -407,13 +425,13 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 			switch (cstatus) {
 
 				case HTTPClient::STATUS_RESOLVING: {
-					status->set_text(TTR("Resolving.."));
+					status->set_text(TTR("Resolving..."));
 				} break;
 				case HTTPClient::STATUS_CONNECTING: {
-					status->set_text(TTR("Connecting.."));
+					status->set_text(TTR("Connecting..."));
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
-					status->set_text(TTR("Requesting.."));
+					status->set_text(TTR("Requesting..."));
 				} break;
 				default: {}
 			}
@@ -639,7 +657,7 @@ const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 
 void EditorAssetLibrary::_select_author(int p_id) {
 
-	//opemn author window
+	// Open author window
 }
 
 void EditorAssetLibrary::_select_category(int p_id) {
@@ -659,16 +677,6 @@ void EditorAssetLibrary::_select_category(int p_id) {
 void EditorAssetLibrary::_select_asset(int p_id) {
 
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
-
-	/*
-	if (description) {
-		memdelete(description);
-	}
-
-
-	description = memnew( EditorAssetLibraryItemDescription );
-	add_child(description);
-	description->popup_centered_minsize();*/
 }
 
 void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray &p_data, int p_queue_id) {
@@ -698,13 +706,24 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 		int len = image_data.size();
 		PoolByteArray::Read r = image_data.read();
-		Ref<Image> image = Ref<Image>(memnew(Image(r.ptr(), len)));
+		Ref<Image> image = Ref<Image>(memnew(Image));
+
+		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
+		uint8_t jpg_signature[3] = { 255, 216, 255 };
+
+		if (r.ptr()) {
+			if (memcmp(&r[0], &png_signature[0], 8) == 0) {
+				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
+			} else if (memcmp(&r[0], &jpg_signature[0], 3) == 0) {
+				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
+			}
+		}
 
 		if (!image->empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
-					image->resize(80 * EDSCALE, 80 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -734,7 +753,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 }
@@ -743,7 +762,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
-	if (p_status == HTTPRequest::RESULT_SUCCESS) {
+	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
 
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
@@ -774,10 +793,10 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting PNG file for asset id " + itos(image_queue[p_queue_id].asset_id));
+		// WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("ErrorSign", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
 		}
 	}
 
@@ -902,7 +921,7 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	if (filter->get_text() != String()) {
-		args += "&filter=" + filter->get_text().percent_encode();
+		args += "&filter=" + filter->get_text().http_escape();
 	}
 
 	if (p_page > 0) {
@@ -929,41 +948,43 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	if (to > p_page_count)
 		to = p_page_count;
 
-	Color gray = Color(0.65, 0.65, 0.65);
-
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 10);
+	hbc->add_constant_override("separation", 5);
 
+	Button *first = memnew(Button);
+	first->set_text(TTR("First"));
 	if (p_page != 0) {
-		LinkButton *first = memnew(LinkButton);
-		first->set_text(TTR("first"));
-		first->add_color_override("font_color", gray);
-		first->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		first->connect("pressed", this, "_search", varray(0));
-		hbc->add_child(first);
+	} else {
+		first->set_disabled(true);
+		first->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(first);
 
+	Button *prev = memnew(Button);
+	prev->set_text(TTR("Previous"));
 	if (p_page > 0) {
-		LinkButton *prev = memnew(LinkButton);
-		prev->set_text(TTR("prev"));
-		prev->add_color_override("font_color", gray);
-		prev->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		prev->connect("pressed", this, "_search", varray(p_page - 1));
-		hbc->add_child(prev);
+	} else {
+		prev->set_disabled(true);
+		prev->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(prev);
+	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
 
 		if (i == p_page) {
 
-			Label *current = memnew(Label);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
+			current->set_disabled(true);
+			current->set_focus_mode(Control::FOCUS_NONE);
+
 			hbc->add_child(current);
 		} else {
 
-			LinkButton *current = memnew(LinkButton);
-			current->add_color_override("font_color", gray);
-			current->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
 			current->connect("pressed", this, "_search", varray(i));
 
@@ -971,28 +992,26 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		}
 	}
 
+	Button *next = memnew(Button);
+	next->set_text(TTR("Next"));
 	if (p_page < p_page_count - 1) {
-		LinkButton *next = memnew(LinkButton);
-		next->set_text(TTR("next"));
-		next->add_color_override("font_color", gray);
-		next->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		next->connect("pressed", this, "_search", varray(p_page + 1));
-
-		hbc->add_child(next);
+	} else {
+		next->set_disabled(true);
+		next->set_focus_mode(Control::FOCUS_NONE);
 	}
+	hbc->add_child(memnew(VSeparator));
+	hbc->add_child(next);
 
+	Button *last = memnew(Button);
+	last->set_text(TTR("Last"));
 	if (p_page != p_page_count - 1) {
-		LinkButton *last = memnew(LinkButton);
-		last->set_text(TTR("last"));
-		last->add_color_override("font_color", gray);
-		last->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		hbc->add_child(last);
 		last->connect("pressed", this, "_search", varray(p_page_count - 1));
+	} else {
+		last->set_disabled(true);
+		last->set_focus_mode(Control::FOCUS_NONE);
 	}
-
-	Label *totals = memnew(Label);
-	totals->set_text("( " + itos(from * p_page_len) + " - " + itos(from * p_page_len + p_current_items - 1) + " / " + itos(p_total_items) + " )");
-	hbc->add_child(totals);
+	hbc->add_child(last);
 
 	hbc->add_spacer();
 
@@ -1382,7 +1401,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
-	support->set_text(TTR("Support.."));
+	support->set_text(TTR("Support..."));
 	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
 	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);

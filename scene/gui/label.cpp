@@ -93,6 +93,7 @@ void Label::_notification(int p_what) {
 		bool use_outline = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 		int line_spacing = get_constant("line_spacing");
+		Color font_outline_modulate = get_color("font_outline_modulate");
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
@@ -102,7 +103,8 @@ void Label::_notification(int p_what) {
 
 		int lines_visible = (size.y + line_spacing) / font_h;
 
-		int space_w = font->get_char_size(' ').width;
+		// ceiling to ensure autowrapping does not cut text
+		int space_w = Math::ceil(font->get_char_size(' ').width);
 		int chars_total = 0;
 
 		int vbegin = 0, vsep = 0;
@@ -150,6 +152,7 @@ void Label::_notification(int p_what) {
 
 		int line = 0;
 		int line_to = lines_skipped + (lines_visible > 0 ? lines_visible : 1);
+		FontDrawer drawer(font, font_outline_modulate);
 		while (wc) {
 			/* handle lines not meant to be drawn quickly */
 			if (line >= line_to)
@@ -244,11 +247,11 @@ void Label::_notification(int p_what) {
 								n = String::char_uppercase(c);
 							}
 
-							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow);
+							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, false);
 							if (use_outline) {
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, false);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -265,7 +268,7 @@ void Label::_notification(int p_what) {
 							n = String::char_uppercase(c);
 						}
 
-						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
+						x_ofs += drawer.draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
 						chars_total++;
 					}
 				}
@@ -329,7 +332,8 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			int char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			line_width += char_width;
 		}
 	}
@@ -382,7 +386,8 @@ void Label::regenerate_word_cache() {
 	int word_pos = 0;
 	int line_width = 0;
 	int space_count = 0;
-	int space_width = font->get_char_size(' ').width;
+	// ceiling to ensure autowrapping does not cut text
+	int space_width = Math::ceil(font->get_char_size(' ').width);
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
@@ -444,8 +449,8 @@ void Label::regenerate_word_cache() {
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
-
-			char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			current_word_size += char_width;
 			line_width += char_width;
 			total_char_cache++;

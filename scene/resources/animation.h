@@ -45,6 +45,9 @@ public:
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
 		TYPE_TRANSFORM, ///< Transform a node or a bone.
 		TYPE_METHOD, ///< Call any method on a specific node.
+		TYPE_BEZIER, ///< Bezier curve
+		TYPE_AUDIO,
+		TYPE_ANIMATION,
 	};
 
 	enum InterpolationType {
@@ -57,6 +60,7 @@ public:
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
 		UPDATE_TRIGGER,
+		UPDATE_CAPTURE,
 
 	};
 
@@ -137,6 +141,55 @@ private:
 		MethodTrack() { type = TYPE_METHOD; }
 	};
 
+	/* BEZIER TRACK */
+
+	struct BezierKey {
+		Vector2 in_handle; //relative (x always <0)
+		Vector2 out_handle; //relative (x always >0)
+		float value;
+	};
+
+	struct BezierTrack : public Track {
+
+		Vector<TKey<BezierKey> > values;
+
+		BezierTrack() {
+			type = TYPE_BEZIER;
+		}
+	};
+
+	/* AUDIO TRACK */
+
+	struct AudioKey {
+		RES stream;
+		float start_offset; //offset from start
+		float end_offset; //offset from end, if 0 then full length or infinite
+		AudioKey() {
+			start_offset = 0;
+			end_offset = 0;
+		}
+	};
+
+	struct AudioTrack : public Track {
+
+		Vector<TKey<AudioKey> > values;
+
+		AudioTrack() {
+			type = TYPE_AUDIO;
+		}
+	};
+
+	/* AUDIO TRACK */
+
+	struct AnimationTrack : public Track {
+
+		Vector<TKey<StringName> > values;
+
+		AnimationTrack() {
+			type = TYPE_ANIMATION;
+		}
+	};
+
 	Vector<Track *> tracks;
 
 	/*
@@ -167,6 +220,9 @@ private:
 
 	template <class T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T> > &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
+
+	template <class T>
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const;
 
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
@@ -238,6 +294,7 @@ public:
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
+	void track_swap(int p_track, int p_with_track);
 
 	void track_set_imported(int p_track, bool p_imported);
 	bool track_is_imported(int p_track) const;
@@ -245,7 +302,6 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
-	int transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat &p_rot = Quat(), const Vector3 &p_scale = Vector3());
 	void track_insert_key(int p_track, float p_time, const Variant &p_key, float p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, float p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
@@ -257,9 +313,32 @@ public:
 	float track_get_key_time(int p_track, int p_key_idx) const;
 	float track_get_key_transition(int p_track, int p_key_idx) const;
 
+	int transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat &p_rot = Quat(), const Vector3 &p_scale = Vector3());
 	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const;
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
+
+	int bezier_track_insert_key(int p_track, float p_time, float p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
+	void bezier_track_set_key_value(int p_track, int p_index, float p_value);
+	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle);
+	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle);
+	float bezier_track_get_key_value(int p_track, int p_index) const;
+	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
+	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
+
+	float bezier_track_interpolate(int p_track, float p_time) const;
+
+	int audio_track_insert_key(int p_track, float p_time, const RES &p_stream, float p_start_offset = 0, float p_end_offset = 0);
+	void audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream);
+	void audio_track_set_key_start_offset(int p_track, int p_key, float p_offset);
+	void audio_track_set_key_end_offset(int p_track, int p_key, float p_offset);
+	RES audio_track_get_key_stream(int p_track, int p_key) const;
+	float audio_track_get_key_start_offset(int p_track, int p_key) const;
+	float audio_track_get_key_end_offset(int p_track, int p_key) const;
+
+	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation);
+	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
+	StringName animation_track_get_key_animation(int p_track, int p_key) const;
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
@@ -276,6 +355,8 @@ public:
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
+
+	void track_get_key_indices_in_range(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 
 	void set_length(float p_length);
 	float get_length() const;

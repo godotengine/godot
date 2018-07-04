@@ -72,6 +72,7 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	String secret_character;
 	float placeholder_alpha;
 	String ime_text;
 	Point2 ime_selection;
@@ -123,7 +124,6 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_cursor();
-	void selection_delete();
 	void set_window_pos(int p_pos);
 
 	void set_cursor_at_pixel_pos(int p_x);
@@ -134,9 +134,7 @@ private:
 	void clear_internal();
 	void changed_internal();
 
-#ifdef TOOLS_ENABLED
 	void _editor_settings_changed();
-#endif
 
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
@@ -159,6 +157,7 @@ public:
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
+	void selection_delete();
 	void deselect();
 
 	void delete_char();
@@ -193,6 +192,9 @@ public:
 
 	void set_secret(bool p_secret);
 	bool is_secret() const;
+
+	void set_secret_character(const String &p_string);
+	String get_secret_character() const;
 
 	virtual Size2 get_minimum_size() const;
 

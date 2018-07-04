@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OrientedPathFollow" inherits="Spatial" category="Core" version="3.1">
+	<brief_description>
+		Oriented point sampler for a [Path].
+	</brief_description>
+	<description>
+		This node behaves like [PathFollow], except it uses its parent [Path] up vector information to enforce orientation. 
+		Make sure to check if the curve of this node's parent [Path] has up vectors enabled. See [PathFollow] and [Curve3D] for further information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation">
+			If [code]true[/code] the position between two cached points is interpolated cubically, and linearly otherwise.
+			The points along the [Curve3D] of the [Path] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
+			There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+		</member>
+		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
+			The node's offset along the curve.
+		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
+			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.
+		</member>
+		<member name="offset" type="float" setter="set_offset" getter="get_offset">
+			The distance from the first vertex, measured in 3D units along the path. This sets this node's position to a point within the path.
+		</member>
+		<member name="unit_offset" type="float" setter="set_unit_offset" getter="get_unit_offset">
+			The distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.
+		</member>
+		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
+			The node's offset perpendicular to the curve.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

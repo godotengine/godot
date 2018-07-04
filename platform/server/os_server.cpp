@@ -30,6 +30,7 @@
 #include "os_server.h"
 #include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
+#include "drivers/dummy/texture_loader_dummy.h"
 #include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
 #include <stdio.h>
@@ -83,6 +84,9 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	_ensure_user_data_dir();
 
+	resource_loader_dummy = memnew(ResourceFormatDummyTexture);
+	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
+
 	return OK;
 }
 
@@ -98,6 +102,8 @@ void OS_Server::finalize() {
 	memdelete(input);
 
 	memdelete(power_manager);
+
+	memdelete(resource_loader_dummy);
 
 	args.clear();
 }

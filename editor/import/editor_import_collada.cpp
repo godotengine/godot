@@ -138,7 +138,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_n
 		//should map this bone to something for animation?
 	} else {
 		print_line("no rest: " + joint->sid);
-		WARN_PRINT("Joint has no rest..");
+		WARN_PRINT("Joint has no rest...");
 	}
 
 	int id = r_bone++;
@@ -339,7 +339,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 	NodeMap nm;
 	nm.node = node;
 	node_map[p_node->id] = nm;
-	node_name_map[p_node->name] = p_node->id;
+	node_name_map[node->get_name()] = p_node->id;
 	Transform xf = p_node->default_transform;
 
 	xf = collada.fix_transform(xf) * p_node->post_transform;
@@ -1785,8 +1785,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 			}
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 
@@ -1838,8 +1837,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 

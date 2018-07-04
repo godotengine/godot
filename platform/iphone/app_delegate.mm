@@ -79,6 +79,7 @@ static ViewController *mainViewController = nil;
 }
 
 NSMutableDictionary *ios_joysticks = nil;
+NSMutableArray *pending_ios_joysticks = nil;
 
 - (GCControllerPlayerIndex)getFreePlayerIndex {
 	bool have_player_1 = false;
@@ -115,6 +116,66 @@ NSMutableDictionary *ios_joysticks = nil;
 	};
 };
 
+void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
+	// get a new id for our controller
+	int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
+	if (joy_id != -1) {
+		// assign our player index
+		if (controller.playerIndex == GCControllerPlayerIndexUnset) {
+			controller.playerIndex = [delegate getFreePlayerIndex];
+		};
+
+		// tell Godot about our new controller
+		OSIPhone::get_singleton()->joy_connection_changed(
+				joy_id, true, [controller.vendorName UTF8String]);
+
+		// add it to our dictionary, this will retain our controllers
+		[ios_joysticks setObject:controller
+						  forKey:[NSNumber numberWithInt:joy_id]];
+
+		// set our input handler
+		[delegate setControllerInputHandler:controller];
+	} else {
+		printf("Couldn't retrieve new joy id\n");
+	};
+}
+
+static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
+	if (!*is_focus_out) {
+		*is_focus_out = true;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+		[view_controller.view stopAnimation];
+		if (OS::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_focus_out();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->stop();
+	}
+}
+
+static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
+	if (*is_focus_out) {
+		*is_focus_out = false;
+		if (OS::get_singleton()->get_main_loop())
+			OS::get_singleton()->get_main_loop()->notification(
+					MainLoop::NOTIFICATION_WM_FOCUS_IN);
+
+		[view_controller.view startAnimation];
+		if (OSIPhone::get_singleton()->native_video_is_playing()) {
+			OSIPhone::get_singleton()->native_video_unpause();
+		}
+
+		AudioDriverCoreAudio *audio = dynamic_cast<AudioDriverCoreAudio *>(AudioDriverCoreAudio::get_singleton());
+		if (audio)
+			audio->start();
+	}
+}
+
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
 	if (ios_joysticks == nil) {
@@ -127,28 +188,12 @@ NSMutableDictionary *ios_joysticks = nil;
 		printf("Couldn't retrieve new controller\n");
 	} else if ([[ios_joysticks allKeysForObject:controller] count] != 0) {
 		printf("Controller is already registered\n");
+	} else if (frame_count > 1) {
+		_ios_add_joystick(controller, self);
 	} else {
-		// get a new id for our controller
-		int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
-		if (joy_id != -1) {
-			// assign our player index
-			if (controller.playerIndex == GCControllerPlayerIndexUnset) {
-				controller.playerIndex = [self getFreePlayerIndex];
-			};
-
-			// tell Godot about our new controller
-			OSIPhone::get_singleton()->joy_connection_changed(
-					joy_id, true, [controller.vendorName UTF8String]);
-
-			// add it to our dictionary, this will retain our controllers
-			[ios_joysticks setObject:controller
-							  forKey:[NSNumber numberWithInt:joy_id]];
-
-			// set our input handler
-			[self setControllerInputHandler:controller];
-		} else {
-			printf("Couldn't retrieve new joy id\n");
-		};
+		if (pending_ios_joysticks == nil)
+			pending_ios_joysticks = [[NSMutableArray alloc] init];
+		[pending_ios_joysticks addObject:controller];
 	};
 };
 
@@ -352,6 +397,27 @@ NSMutableDictionary *ios_joysticks = nil;
 		[ios_joysticks dealloc];
 		ios_joysticks = nil;
 	};
+
+	if (pending_ios_joysticks != nil) {
+		[pending_ios_joysticks dealloc];
+		pending_ios_joysticks = nil;
+	};
+};
+
+OS::VideoMode _get_video_mode() {
+	int backingWidth;
+	int backingHeight;
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+
+	OS::VideoMode vm;
+	vm.fullscreen = true;
+	vm.width = backingWidth;
+	vm.height = backingHeight;
+	vm.resizable = false;
+	return vm;
 };
 
 static int frame_count = 0;
@@ -360,19 +426,7 @@ static int frame_count = 0;
 
 	switch (frame_count) {
 		case 0: {
-			int backingWidth;
-			int backingHeight;
-			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-					GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-					GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-			OS::VideoMode vm;
-			vm.fullscreen = true;
-			vm.width = backingWidth;
-			vm.height = backingHeight;
-			vm.resizable = false;
-			OS::get_singleton()->set_video_mode(vm);
+			OS::get_singleton()->set_video_mode(_get_video_mode());
 
 			if (!OS::get_singleton()) {
 				exit(0);
@@ -409,6 +463,14 @@ static int frame_count = 0;
 
 			Main::setup2();
 			++frame_count;
+
+			if (pending_ios_joysticks != nil) {
+				for (GCController *controller in pending_ios_joysticks) {
+					_ios_add_joystick(controller, self);
+				}
+				[pending_ios_joysticks dealloc];
+				pending_ios_joysticks = nil;
+			}
 
 			// this might be necessary before here
 			NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
@@ -543,6 +605,8 @@ static int frame_count = 0;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	CGRect rect = [[UIScreen mainScreen] bounds];
 
+	is_focus_out = false;
+
 	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
 	// application.idleTimerDisabled = YES;
@@ -562,18 +626,13 @@ static int frame_count = 0;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
 	// UIViewAutoresizingFlexibleWidth];
 
-	int backingWidth;
-	int backingHeight;
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+	OS::VideoMode vm = _get_video_mode();
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
 			NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
 
-	int err = iphone_main(backingWidth, backingHeight, gargc, gargv, String::utf8([documentsDirectory UTF8String]));
+	int err = iphone_main(vm.width, vm.height, gargc, gargv, String::utf8([documentsDirectory UTF8String]));
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);
@@ -607,6 +666,12 @@ static int frame_count = 0;
 
 	[self initGameControllers];
 
+	[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			   selector:@selector(onAudioInterruption:)
+				   name:AVAudioSessionInterruptionNotification
+				 object:[AVAudioSession sharedInstance]];
+
 	// OSIPhone::screen_width = rect.size.width - rect.origin.x;
 	// OSIPhone::screen_height = rect.size.height - rect.origin.y;
 
@@ -616,6 +681,18 @@ static int frame_count = 0;
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
 
 	return TRUE;
+};
+
+- (void)onAudioInterruption:(NSNotification *)notification {
+	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
+		if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeBegan]]) {
+			NSLog(@"Audio interruption began");
+			on_focus_out(view_controller, &is_focus_out);
+		} else if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded]]) {
+			NSLog(@"Audio interruption ended");
+			on_focus_in(view_controller, &is_focus_out);
+		}
+	}
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -632,44 +709,22 @@ static int frame_count = 0;
 	iphone_finish();
 };
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-	///@TODO maybe add pause motionManager? and where would we unpause it?
+// When application goes to background (e.g. user switches to another app or presses Home),
+// then applicationWillResignActive -> applicationDidEnterBackground are called.
+// When user opens the inactive app again,
+// applicationWillEnterForeground -> applicationDidBecomeActive are called.
 
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(
-				MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-
-	[view_controller.view stopAnimation];
-	if (OS::get_singleton()->native_video_is_playing()) {
-		OSIPhone::get_singleton()->native_video_focus_out();
-	};
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-	[view_controller.view startAnimation];
-}
+// There are cases when applicationWillResignActive -> applicationDidBecomeActive
+// sequence is called without the app going to background. For example, that happens
+// if you open the app list without switching to another app or open/close the
+// notification panel by swiping from the upper part of the screen.
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-	[view_controller.view
-					stopAnimation]; // FIXME: pause seems to be recommended elsewhere
+	on_focus_out(view_controller, &is_focus_out);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(
-				MainLoop::NOTIFICATION_WM_FOCUS_IN);
-
-	[view_controller.view
-					startAnimation]; // FIXME: resume seems to be recommended elsewhere
-	if (OSIPhone::get_singleton()->native_video_is_playing()) {
-		OSIPhone::get_singleton()->native_video_unpause();
-	};
-
-	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
-	if (AudioDriverCoreAudio::get_singleton() != NULL)
-		AudioDriverCoreAudio::get_singleton()->start();
+	on_focus_in(view_controller, &is_focus_out);
 }
 
 - (void)dealloc {

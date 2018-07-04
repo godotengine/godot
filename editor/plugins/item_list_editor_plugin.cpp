@@ -388,7 +388,7 @@ ItemListEditor::ItemListEditor() {
 	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	tree = property_editor->get_scene_tree();
+	tree = property_editor->get_property_tree();
 }
 
 ItemListEditor::~ItemListEditor() {

@@ -162,7 +162,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next) const {
 	return ret;
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
 
 	const_cast<DynamicFontAtSize *>(this)->_update_char(p_char);
 
@@ -172,13 +172,15 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 		return 0;
 	}
 
-	Point2 cpos = p_pos;
-	cpos.x += c->h_align;
-	cpos.y -= get_ascent();
-	cpos.y += c->v_align;
-	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
-	if (c->texture_idx != -1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate);
+	if (!p_outline) {
+		Point2 cpos = p_pos;
+		cpos.x += c->h_align;
+		cpos.y -= get_ascent();
+		cpos.y += c->v_align;
+		ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
+		if (c->texture_idx != -1)
+			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate);
+	}
 
 	//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
 
@@ -459,12 +461,12 @@ bool DynamicFont::is_distance_field_hint() const {
 	return false;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
 
 	if (!data_at_size.is_valid())
 		return 0;
 
-	return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate);
+	return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, p_outline);
 }
 
 DynamicFont::DynamicFont() {

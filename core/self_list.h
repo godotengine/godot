@@ -39,6 +39,7 @@ public:
 	class List {
 
 		SelfList<T> *_first;
+		SelfList<T> *_last;
 
 	public:
 		void add(SelfList<T> *p_elem) {
@@ -48,45 +49,52 @@ public:
 			p_elem->_root = this;
 			p_elem->_next = _first;
 			p_elem->_prev = NULL;
-			if (_first)
+
+			if (_first) {
 				_first->_prev = p_elem;
+
+			} else {
+				_last = p_elem;
+			}
+
 			_first = p_elem;
 		}
+
 		void add_last(SelfList<T> *p_elem) {
 
 			ERR_FAIL_COND(p_elem->_root);
 
-			if (!_first) {
-				add(p_elem);
-				return;
-			}
-
-			SelfList<T> *e = _first;
-
-			while (e->next()) {
-				e = e->next();
-			}
-
-			e->_next = p_elem;
-			p_elem->_prev = e->_next;
 			p_elem->_root = this;
+			p_elem->_next = NULL;
+			p_elem->_prev = _last;
+
+			if (_last) {
+				_last->_next = p_elem;
+
+			} else {
+				_first = p_elem;
+			}
+
+			_last = p_elem;
 		}
 
 		void remove(SelfList<T> *p_elem) {
 
 			ERR_FAIL_COND(p_elem->_root != this);
 			if (p_elem->_next) {
-
 				p_elem->_next->_prev = p_elem->_prev;
 			}
-			if (p_elem->_prev) {
 
+			if (p_elem->_prev) {
 				p_elem->_prev->_next = p_elem->_next;
 			}
 
 			if (_first == p_elem) {
-
 				_first = p_elem->_next;
+			}
+
+			if (_last == p_elem) {
+				_last = p_elem->_prev;
 			}
 
 			p_elem->_next = NULL;
@@ -96,7 +104,10 @@ public:
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
-		_FORCE_INLINE_ List() { _first = NULL; }
+		_FORCE_INLINE_ List() {
+			_first = NULL;
+			_last = NULL;
+		}
 		_FORCE_INLINE_ ~List() { ERR_FAIL_COND(_first != NULL); }
 	};
 

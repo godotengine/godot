@@ -828,6 +828,58 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	//texture_set_flags(p_texture,texture->flags);
 }
 
+// Uploads pixel data to a sub-region of a texture, for the specified mipmap.
+// The texture pixels must have been allocated before, because most features seen in texture_set_data() make no sense in a partial update.
+// TODO If we want this to be usable without pre-filling pixels with a full image, we have to call glTexImage2D() with null data.
+void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, VS::CubeMapSide p_cube_side) {
+
+	Texture *texture = texture_owner.get(p_texture);
+
+	ERR_FAIL_COND(!texture);
+	ERR_FAIL_COND(!texture->active);
+	ERR_FAIL_COND(texture->render_target);
+	ERR_FAIL_COND(texture->format != p_image->get_format());
+	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
+	ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
+	ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > texture->alloc_width || dst_y + src_h > texture->alloc_height);
+	ERR_FAIL_COND(p_dst_mip < 0 || p_dst_mip >= texture->mipmaps);
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed;
+	bool srgb;
+
+	// Because OpenGL wants data as a dense array, we have to extract the sub-image if the source rect isn't the full image
+	Ref<Image> p_sub_img = p_image;
+	if (src_x > 0 || src_y > 0 || src_w != p_image->get_width() || src_h != p_image->get_height()) {
+		p_sub_img = p_image->get_rect(Rect2(src_x, src_y, src_w, src_h));
+	}
+
+	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, format, internal_format, type, compressed, srgb);
+
+	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_cube_side] : GL_TEXTURE_2D;
+
+	PoolVector<uint8_t>::Read read = img->get_data().read();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+
+	int src_data_size = img->get_data().size();
+	int src_ofs = 0;
+
+	if (texture->compressed) {
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		glCompressedTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, internal_format, src_data_size, &read[src_ofs]);
+
+	} else {
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		// `format` has to match the internal_format used when the texture was created
+		glTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, format, type, &read[src_ofs]);
+	}
+}
+
 Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side) const {
 
 	Texture *texture = texture_owner.get(p_texture);
@@ -1304,6 +1356,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		ERR_FAIL_COND(!texture);
 	}
 
+	texture = texture->get_ptr(); //resolve for proxies
+
 	glBindVertexArray(0);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -1615,6 +1669,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_SUB);
 			shaders.actions_canvas.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MUL);
 			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_PMALPHA);
+			shaders.actions_canvas.render_mode_values["blend_disabled"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_DISABLED);
 
 			shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_UNSHADED);
 			shaders.actions_canvas.render_mode_values["light_only"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
@@ -1912,7 +1967,7 @@ void RasterizerStorageGLES3::material_set_param(RID p_material, const StringName
 Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringName &p_param) const {
 
 	const Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, RID());
+	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->params.has(p_param))
 		return material->params[p_param];
@@ -4496,6 +4551,15 @@ Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleto
 	return ret;
 }
 
+void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	skeleton->base_transform_2d = p_base_transform;
+}
+
 void RasterizerStorageGLES3::update_dirty_skeletons() {
 
 	glActiveTexture(GL_TEXTURE0);
@@ -5833,9 +5897,9 @@ void RasterizerStorageGLES3::update_particles() {
 							tex = resources.white_tex;
 						} break;
 					}
-
 				} else {
 
+					t = t->get_ptr(); //resolve for proxies
 					target = t->target;
 					tex = t->tex_id;
 				}

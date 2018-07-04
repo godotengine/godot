@@ -16,7 +16,7 @@
 	</demos>
 	<methods>
 		<method name="_get" qualifiers="virtual">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="property" type="String">
 			</argument>
@@ -398,6 +398,7 @@
 	<signals>
 		<signal name="script_changed">
 			<description>
+				Emitted whenever the script of the Object is changed.
 			</description>
 		</signal>
 	</signals>

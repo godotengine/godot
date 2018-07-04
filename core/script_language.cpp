@@ -347,6 +347,20 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 	return Variant::NIL;
 }
 
+void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
+
+	if (script.is_valid()) {
+		script->get_script_method_list(p_list);
+	}
+}
+bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
+
+	if (script.is_valid()) {
+		return script->has_method(p_method);
+	}
+	return false;
+}
+
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
 
 	Set<StringName> new_values;

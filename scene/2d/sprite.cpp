@@ -58,33 +58,48 @@ bool Sprite::_edit_use_pivot() const {
 	return true;
 }
 
+Rect2 Sprite::_edit_get_rect() const {
+	return get_rect();
+}
+
+bool Sprite::_edit_use_rect() const {
+	if (texture.is_null())
+		return false;
+
+	return true;
+}
+
+Rect2 Sprite::get_anchorable_rect() const {
+	return get_rect();
+}
+
 void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
 
-	Size2 s;
-	r_filter_clip = false;
+	Rect2 base_rect;
 
 	if (region) {
-
-		s = region_rect.size;
-		r_src_rect = region_rect;
 		r_filter_clip = region_filter_clip;
+		base_rect = region_rect;
 	} else {
-		s = Size2(texture->get_size());
-		s = s / Size2(hframes, vframes);
-
-		r_src_rect.size = s;
-		r_src_rect.position.x = float(frame % hframes) * s.x;
-		r_src_rect.position.y = float(frame / hframes) * s.y;
+		r_filter_clip = false;
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 	}
 
-	Point2 ofs = offset;
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
+
+	r_src_rect.size = frame_size;
+	r_src_rect.position = base_rect.position + frame_offset;
+
+	Point2 dest_offset = offset;
 	if (centered)
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 	if (Engine::get_singleton()->get_use_pixel_snap()) {
-		ofs = ofs.floor();
+		dest_offset = dest_offset.floor();
 	}
 
-	r_dst_rect = Rect2(ofs, s);
+	r_dst_rect = Rect2(dest_offset, frame_size);
 
 	if (hflip)
 		r_dst_rect.size.x = -r_dst_rect.size.x;
@@ -323,7 +338,31 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	ERR_FAIL_COND_V(image.is_null(), false);
+	if (image->is_compressed()) {
+		return dst_rect.has_point(p_point);
+	}
 
+	bool is_repeat = texture->get_flags() & Texture::FLAG_REPEAT;
+	bool is_mirrored_repeat = texture->get_flags() & Texture::FLAG_MIRRORED_REPEAT;
+	if (is_repeat) {
+		int mirror_x = 0;
+		int mirror_y = 0;
+		if (is_mirrored_repeat) {
+			mirror_x = (int)(q.x / texture->get_size().width);
+			mirror_y = (int)(q.y / texture->get_size().height);
+		}
+		q.x = Math::fmod(q.x, texture->get_size().width);
+		q.y = Math::fmod(q.y, texture->get_size().height);
+		if (mirror_x % 2 == 1) {
+			q.x = texture->get_size().width - q.x - 1;
+		}
+		if (mirror_y % 2 == 1) {
+			q.y = texture->get_size().height - q.y - 1;
+		}
+	} else {
+		q.x = MIN(q.x, texture->get_size().width - 1);
+		q.y = MIN(q.y, texture->get_size().height - 1);
+	}
 	image->lock();
 	const Color c = image->get_pixel((int)q.x, (int)q.y);
 	image->unlock();
@@ -335,20 +374,16 @@ Rect2 Sprite::get_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0, 0, 1, 1);
-	/*
-	if (texture.is_null())
-		return CanvasItem::_edit_get_rect();
-	*/
 
 	Size2i s;
 
 	if (region) {
-
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
-		s = s / Point2(hframes, vframes);
 	}
+
+	s = s / Point2(hframes, vframes);
 
 	Point2 ofs = offset;
 	if (centered)

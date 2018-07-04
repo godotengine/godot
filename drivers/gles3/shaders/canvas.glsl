@@ -4,6 +4,11 @@
 layout(location=0) in highp vec2 vertex;
 layout(location=3) in vec4 color_attrib;
 
+#ifdef USE_SKELETON
+layout(location=6) in uvec4 bone_indices; // attrib:6
+layout(location=7) in vec4 bone_weights; // attrib:7
+#endif
+
 #ifdef USE_TEXTURE_RECT
 
 uniform vec4 dst_rect;
@@ -51,6 +56,12 @@ out highp vec2 pixel_size_interp;
 #endif
 
 
+#ifdef USE_SKELETON
+uniform mediump sampler2D skeleton_texture; // texunit:-1
+uniform highp mat4 skeleton_transform;
+uniform highp mat4 skeleton_transform_inverse;
+#endif
+
 #ifdef USE_LIGHTING
 
 layout(std140) uniform LightData { //ubo:1
@@ -74,7 +85,6 @@ out vec4 light_uv_interp;
 
 
 out vec4 local_rot;
-
 
 #ifdef USE_SHADOWS
 out highp vec2 pos;
@@ -100,6 +110,7 @@ MATERIAL_UNIFORMS
 };
 
 #endif
+
 
 VERTEX_SHADER_GLOBALS
 
@@ -146,6 +157,7 @@ void main() {
 
 #endif
 
+
 #define extra_matrix extra_matrix2
 
 {
@@ -174,6 +186,49 @@ VERTEX_SHADER_CODE
 	outvec.xy=floor(outvec+0.5).xy;
 #endif
 
+
+#ifdef USE_SKELETON
+
+	if (bone_weights!=vec4(0.0)){ //must be a valid bone
+		//skeleton transform
+
+		ivec4 bone_indicesi = ivec4(bone_indices);
+
+		ivec2 tex_ofs = ivec2( bone_indicesi.x%256, (bone_indicesi.x/256)*2 );
+
+		highp mat2x4 m = mat2x4(
+			texelFetch(skeleton_texture,tex_ofs,0),
+			texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
+		) * bone_weights.x;
+
+		tex_ofs = ivec2( bone_indicesi.y%256, (bone_indicesi.y/256)*2 );
+
+		m+= mat2x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
+				) * bone_weights.y;
+
+		tex_ofs = ivec2( bone_indicesi.z%256, (bone_indicesi.z/256)*2 );
+
+		m+= mat2x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
+				) * bone_weights.z;
+
+
+		tex_ofs = ivec2( bone_indicesi.w%256, (bone_indicesi.w/256)*2 );
+
+		m+= mat2x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0)
+				) * bone_weights.w;
+
+		mat4 bone_matrix = skeleton_transform * transpose(mat4(m[0],m[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))) * skeleton_transform_inverse;
+
+		outvec = bone_matrix * outvec;
+	}
+
+#endif
 
 	gl_Position = projection_matrix * outvec;
 
@@ -206,6 +261,7 @@ VERTEX_SHADER_CODE
 uniform mediump sampler2D color_texture; // texunit:0
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:1
+
 
 in highp vec2 uv_interp;
 in mediump vec4 color_interp;
@@ -285,7 +341,19 @@ MATERIAL_UNIFORMS
 
 FRAGMENT_SHADER_GLOBALS
 
-void light_compute(inout vec4 light,vec2 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
+void light_compute(
+	inout vec4 light,
+	inout vec2 light_vec,
+	inout float light_height,
+	inout vec4 light_color,
+	vec2 light_uv,
+	inout vec4 shadow_color,
+	vec3 normal,
+	vec2 uv,
+#if defined(SCREEN_UV_USED)
+	vec2 screen_uv,
+#endif
+	vec4 color) {
 
 #if defined(USE_LIGHT_SHADER_CODE)
 
@@ -462,39 +530,41 @@ FRAGMENT_SHADER_CODE
 	float att=1.0;
 
 	vec2 light_uv = light_uv_interp.xy;
-	vec4 light = texture(light_texture,light_uv) * light_color;
-#if defined(SHADOW_COLOR_USED)
-	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
-#endif
+	vec4 light = texture(light_texture,light_uv);
 
 	if (any(lessThan(light_uv_interp.xy,vec2(0.0,0.0))) || any(greaterThanEqual(light_uv_interp.xy,vec2(1.0,1.0)))) {
 		color.a*=light_outside_alpha; //invisible
 
 	} else {
+		float real_light_height = light_height;
+		vec4 real_light_color = light_color;
+		vec4 real_light_shadow_color = light_shadow_color;
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
-		light_compute(light,light_vec,light_height,light_color,light_uv,shadow,normal,uv,screen_uv,color);
+		light_compute(
+			light,
+			light_vec,
+			real_light_height,
+			real_light_color,
+			light_uv,
+			real_light_shadow_color,
+			normal,
+			uv,
+#if defined(SCREEN_UV_USED)
+			screen_uv,
+#endif
+			color);
+#endif
 
-#else
+		light *= real_light_color;
 
 		if (normal_used) {
-
-			vec3 light_normal = normalize(vec3(light_vec,-light_height));
+			vec3 light_normal = normalize(vec3(light_vec,-real_light_height));
 			light*=max(dot(-light_normal,normal),0.0);
 		}
 
 		color*=light;
-/*
-#ifdef USE_NORMAL
-	color.xy=local_rot.xy;//normal.xy;
-	color.zw=vec2(0.0,1.0);
-#endif
-*/
-
-//light shader code
-#endif
-
 
 #ifdef USE_SHADOWS
 
@@ -634,13 +704,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-
-#if defined(SHADOW_COLOR_USED)
-	color=mix(shadow_color,color,shadow_attenuation);
-#else
 	//color*=shadow_attenuation;
-	color=mix(light_shadow_color,color,shadow_attenuation);
-#endif
+	color=mix(real_light_shadow_color,color,shadow_attenuation);
 //use shadows
 #endif
 	}

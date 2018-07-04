@@ -303,6 +303,14 @@
 				Return whether the item is a separator. If it is, it would be displayed as a line.
 			</description>
 		</method>
+		<method name="is_item_shortcut_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_item">
 			<return type="void">
 			</return>
@@ -433,6 +441,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_item_shortcut_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_submenu">
 			<return type="void">
 			</return>
@@ -495,6 +513,7 @@
 			<argument index="0" name="ID" type="int">
 			</argument>
 			<description>
+				This event is emitted when user navigated to an item of some id using [code]ui_up[/code] or [code]ui_down[/code] action.
 			</description>
 		</signal>
 		<signal name="id_pressed">

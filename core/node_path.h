@@ -47,10 +47,14 @@ class NodePath {
 		StringName concatenated_subpath;
 		bool absolute;
 		bool has_slashes;
+		mutable bool hash_cache_valid;
+		mutable uint32_t hash_cache;
 	};
 
-	Data *data;
+	mutable Data *data;
 	void unref();
+
+	void _update_hash_cache() const;
 
 public:
 	_FORCE_INLINE_ StringName get_sname() const {
@@ -78,7 +82,14 @@ public:
 
 	NodePath get_parent() const;
 
-	uint32_t hash() const;
+	_FORCE_INLINE_ uint32_t hash() const {
+		if (!data)
+			return 0;
+		if (!data->hash_cache_valid) {
+			_update_hash_cache();
+		}
+		return data->hash_cache;
+	}
 
 	operator String() const;
 	bool is_empty() const;

@@ -40,6 +40,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -48,7 +49,7 @@
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Delay executing of the current thread by given milliseconds.
+				Delay execution of the current thread by given milliseconds.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -57,7 +58,7 @@
 			<argument index="0" name="usec" type="int">
 			</argument>
 			<description>
-				Delay executing of the current thread by given microseconds.
+				Delay execution of the current thread by given microseconds.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -67,7 +68,7 @@
 			</argument>
 			<description>
 				Dumps the memory allocation ringlist to a file (only works in debug).
-				Entry format per line: "Address - Size - Description"
+				Entry format per line: "Address - Size - Description".
 			</description>
 		</method>
 		<method name="dump_resources_to_file">
@@ -77,7 +78,7 @@
 			</argument>
 			<description>
 				Dumps all used resources to file (only works in debug).
-				Entry format per line: "Resource Type : Resource Location"
+				Entry format per line: "Resource Type : Resource Location".
 				At the end of the file is a statistic of all used Resource Types.
 			</description>
 		</method>
@@ -93,17 +94,24 @@
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Execute the file at the given path, optionally blocking until it returns.
-				Platform path resolution will take place.  The resolved file must exist and be executable.
-				Returns a process id.
-				For example:
+				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
+				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-c', '3', 'godotengine.org'])[/code] will resolve to [code]ping -c 3 godotengine.org[/code] in the system's shell.
+				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
+				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
+				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
+				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return -1.
+				Example of blocking mode and retrieving the shell output:
 				[codeblock]
 				var output = []
-				var pid = OS.execute('ls', [], true, output)
+				OS.execute('ls', ['-l', '/tmp'], true, output)
 				[/codeblock]
-				If you wish to access a shell built-in or perform a composite command, a platform specific shell can be invoked.  For example:
+				Example of non-blocking mode, running another instance of the project and storing its process ID:
 				[codeblock]
-				var pid = OS.execute('CMD.exe', ['/C', 'cd %TEMP% &amp;&amp; dir'], true, output)
+				var pid = OS.execute(OS.get_executable_path(), [], false)
+				[/codeblock]
+				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
+				[codeblock]
+				OS.execute('CMD.exe', ['/C', 'cd %TEMP% &amp;&amp; dir'], true, output)
 				[/codeblock]
 			</description>
 		</method>
@@ -120,14 +128,16 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the total number of available audio drivers.
 			</description>
 		</method>
 		<method name="get_audio_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="driver" type="int">
 			</argument>
 			<description>
+				Returns the audio driver name for the given index.
 			</description>
 		</method>
 		<method name="get_cmdline_args">
@@ -256,6 +266,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the window size including decorations like window borders.
 			</description>
 		</method>
 		<method name="get_scancode_string" qualifiers="const">
@@ -281,7 +292,6 @@
 			</argument>
 			<description>
 				Returns the dots per inch density of the specified screen.
-
 				On Android Devices, the actual screen densities are grouped into six generalized densities:
 					ldpi    - 120 dpi
 					mdpi    - 160 dpi
@@ -352,6 +362,13 @@
 				Returns the amount of time passed in milliseconds since the engine started.
 			</description>
 		</method>
+		<method name="get_ticks_usec" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the amount of time passed in microseconds since the engine started.
+			</description>
+		</method>
 		<method name="get_time" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -380,7 +397,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return	the current unix timestamp.
+				Returns the current unix epoch timestamp.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
@@ -414,13 +431,20 @@
 		<method name="get_video_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="driver" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
 			<return type="int">
+			</return>
+			<description>
+				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or it is currently hidden.
+			</description>
+		</method>
+		<method name="get_window_safe_area" qualifiers="const">
+			<return type="Rect2">
 			</return>
 			<description>
 			</description>
@@ -440,6 +464,7 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. See feature tags documentation.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
@@ -506,6 +531,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the window should always be on top of other windows.
 			</description>
 		</method>
 		<method name="kill">
@@ -514,7 +540,8 @@
 			<argument index="0" name="pid" type="int">
 			</argument>
 			<description>
-				Kill a process ID (this method can be used to kill processes that were not spawned by the game).
+				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
+				Note that this method can also be used to kill processes that were not spawned by the game.
 			</description>
 		</method>
 		<method name="native_video_is_playing">
@@ -642,6 +669,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets whether the window should always be on top.
 			</description>
 		</method>
 		<method name="set_window_title">
@@ -682,27 +710,33 @@
 			The current screen index (starting from 0).
 		</member>
 		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code">
+			The exit code passed to the OS when the main loop exits.
 		</member>
 		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
+			If [code]true[/code] the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
+			If [code]true[/code] the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
 			The current screen orientation.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
+			If [code]true[/code] vertical synchronization (Vsync) is enabled.
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
-			If [code]true[/code], removes the window frame.
+			If [code]true[/code] removes the window frame.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
-			If [code]true[/code], the window is fullscreen.
+			If [code]true[/code] the window is fullscreen.
 		</member>
 		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
-			If [code]true[/code], the window is maximized.
+			If [code]true[/code] the window is maximized.
 		</member>
 		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
-			If [code]true[/code], the window is minimized.
+			If [code]true[/code] the window is minimized.
+		</member>
+		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
@@ -716,82 +750,121 @@
 	</members>
 	<constants>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
+			Sunday.
 		</constant>
 		<constant name="DAY_MONDAY" value="1" enum="Weekday">
+			Monday.
 		</constant>
 		<constant name="DAY_TUESDAY" value="2" enum="Weekday">
+			Tuesday.
 		</constant>
 		<constant name="DAY_WEDNESDAY" value="3" enum="Weekday">
+			Wednesday.
 		</constant>
 		<constant name="DAY_THURSDAY" value="4" enum="Weekday">
+			Thursday.
 		</constant>
 		<constant name="DAY_FRIDAY" value="5" enum="Weekday">
+			Friday.
 		</constant>
 		<constant name="DAY_SATURDAY" value="6" enum="Weekday">
+			Saturday.
 		</constant>
 		<constant name="MONTH_JANUARY" value="1" enum="Month">
+			January.
 		</constant>
 		<constant name="MONTH_FEBRUARY" value="2" enum="Month">
+			February.
 		</constant>
 		<constant name="MONTH_MARCH" value="3" enum="Month">
+			March.
 		</constant>
 		<constant name="MONTH_APRIL" value="4" enum="Month">
+			April.
 		</constant>
 		<constant name="MONTH_MAY" value="5" enum="Month">
+			May.
 		</constant>
 		<constant name="MONTH_JUNE" value="6" enum="Month">
+			June.
 		</constant>
 		<constant name="MONTH_JULY" value="7" enum="Month">
+			July.
 		</constant>
 		<constant name="MONTH_AUGUST" value="8" enum="Month">
+			August.
 		</constant>
 		<constant name="MONTH_SEPTEMBER" value="9" enum="Month">
+			September.
 		</constant>
 		<constant name="MONTH_OCTOBER" value="10" enum="Month">
+			October.
 		</constant>
 		<constant name="MONTH_NOVEMBER" value="11" enum="Month">
+			November.
 		</constant>
 		<constant name="MONTH_DECEMBER" value="12" enum="Month">
+			December.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0" enum="ScreenOrientation">
+			Landscape screen orientation.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_PORTRAIT" value="1" enum="ScreenOrientation">
+			Portrait screen orientation.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
+			Reverse landscape screen orientation.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
+			Reverse portrait screen orientation.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
+			Uses landscape or reverse landscape based on the hardware sensor.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_SENSOR_PORTRAIT" value="5" enum="ScreenOrientation">
+			Uses portrait or reverse portrait based on the hardware sensor.
 		</constant>
 		<constant name="SCREEN_ORIENTATION_SENSOR" value="6" enum="ScreenOrientation">
+			Uses most suitable orientation based on the hardware sensor.
 		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
+			Desktop directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DCIM" value="1" enum="SystemDir">
+			DCIM (Digital Camera Images) directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DOCUMENTS" value="2" enum="SystemDir">
+			Documents directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DOWNLOADS" value="3" enum="SystemDir">
+			Downloads directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_MOVIES" value="4" enum="SystemDir">
+			Movies directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_MUSIC" value="5" enum="SystemDir">
+			Music directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_PICTURES" value="6" enum="SystemDir">
+			Pictures directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
+			Ringtones directory path.
 		</constant>
 		<constant name="POWERSTATE_UNKNOWN" value="0" enum="PowerState">
+			Unknown powerstate.
 		</constant>
 		<constant name="POWERSTATE_ON_BATTERY" value="1" enum="PowerState">
+			Unplugged, running on battery.
 		</constant>
 		<constant name="POWERSTATE_NO_BATTERY" value="2" enum="PowerState">
+			Plugged in, no battery available.
 		</constant>
 		<constant name="POWERSTATE_CHARGING" value="3" enum="PowerState">
+			Plugged in, battery charging.
 		</constant>
 		<constant name="POWERSTATE_CHARGED" value="4" enum="PowerState">
+			Plugged in, battery fully charged.
 		</constant>
 	</constants>
 </class>

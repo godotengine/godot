@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ShaderMaterial" inherits="Material" category="Core" version="3.1">
 	<brief_description>
+		A material that uses a custom [Shader] program.
 	</brief_description>
 	<description>
+		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +17,7 @@
 			<argument index="0" name="param" type="String">
 			</argument>
 			<description>
+				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
 		<method name="set_shader_param">
@@ -25,11 +28,13 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Changes the value set for this material of a uniform in the shader.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">
+			The [Shader] program used to render this material.
 		</member>
 	</members>
 	<constants>

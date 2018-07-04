@@ -4,7 +4,7 @@
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		This contains the list of built-in gdscript functions. Mostly math functions and other utilities. Everything else is expanded by objects.
+		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
 	</description>
 	<tutorials>
 	</tutorials>
@@ -326,7 +326,8 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Raises the Euler's constant [b]e[/b] to the power of [code]s[/code] and returns it. [b]e[/b] has an approximate value of 2.71828.
+				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
+				[b]e[/b] has an approximate value of 2.71828.
 				[codeblock]
 				a = exp(2) # approximately 7.39
 				[/codeblock]
@@ -484,6 +485,14 @@
 				Returns True/False whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
+		<method name="is_instance_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_nan">
 			<return type="bool">
 			</return>
@@ -509,9 +518,9 @@
 		<method name="lerp">
 			<return type="float">
 			</return>
-			<argument index="0" name="from" type="float">
+			<argument index="0" name="from" type="Variant">
 			</argument>
-			<argument index="1" name="to" type="float">
+			<argument index="1" name="to" type="Variant">
 			</argument>
 			<argument index="2" name="weight" type="float">
 			</argument>
@@ -1136,8 +1145,9 @@
 			<argument index="1" name="signal" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stops the function execution and returns the current state. Call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state.
-				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
+				Stops the function execution and returns the current suspended state to the calling function.
+				From the caller, call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state. Within the resumed function, [code]yield()[/code] returns whatever was passed to the [code]resume()[/code] function call.
+				If passed an object and a signal, the execution is resumed when the object emits the given signal. In this case, [code]yield()[/code] returns the argument passed to [code]emit_signal()[/code] if the signal takes only one argument, or an array containing all the arguments passed to [code]emit_signal()[/code] if the signal takes multiple arguments.
 			</description>
 		</method>
 	</methods>

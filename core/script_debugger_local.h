@@ -31,6 +31,7 @@
 #ifndef SCRIPT_DEBUGGER_LOCAL_H
 #define SCRIPT_DEBUGGER_LOCAL_H
 
+#include "list.h"
 #include "script_language.h"
 
 class ScriptDebuggerLocal : public ScriptDebugger {
@@ -38,8 +39,13 @@ class ScriptDebuggerLocal : public ScriptDebugger {
 	bool profiling;
 	float frame_time, idle_time, physics_time, physics_frame_time;
 	uint64_t idle_accum;
+	String target_function;
+	Map<String, String> options;
 
 	Vector<ScriptLanguage::ProfilingInfo> pinfo;
+
+	Pair<String, int> to_breakpoint(const String &p_line);
+	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
 
 public:
 	void debug(ScriptLanguage *p_script, bool p_can_continue);

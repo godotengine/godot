@@ -2316,13 +2316,10 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 
 		PoolVector<Vector3> vertices;
 		PoolVector<Color> colors;
-
-		int vtx_idx = 0;
 #define ADD_VTX(m_idx)                      \
 	;                                       \
 	vertices.push_back(face_points[m_idx]); \
-	colors.push_back(Color(1, 1, 1, 1));    \
-	vtx_idx++;
+	colors.push_back(Color(1, 1, 1, 1));
 
 		for (int i = 0; i < 6; i++) {
 
@@ -2338,9 +2335,9 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 				for (int k = 0; k < 3; k++) {
 
 					if (i < 3)
-						face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[j][(i + k) % 3] = v[k];
 					else
-						face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[3 - j][(i + k) % 3] = -v[k];
 				}
 			}
 

@@ -50,6 +50,7 @@
 #include "dependency_editor.h"
 #include "editor_dir_dialog.h"
 #include "editor_file_system.h"
+#include "script_create_dialog.h"
 
 class EditorNode;
 
@@ -75,6 +76,7 @@ private:
 		FILE_REIMPORT,
 		FILE_INFO,
 		FILE_NEW_FOLDER,
+		FILE_NEW_SCRIPT,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH
 	};
@@ -104,6 +106,7 @@ private:
 	Button *button_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
+	Button *button_show;
 	LineEdit *current_path;
 	LineEdit *search_box;
 	TextureRect *search_icon;
@@ -126,6 +129,7 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ScriptCreateDialog *make_script_dialog_text;
 
 	class FileOrFolder {
 	public:
@@ -201,6 +205,7 @@ private:
 	void _rescan();
 
 	void _favorites_pressed();
+	void _show_current_scene_file();
 	void _search_changed(const String &p_text);
 
 	void _dir_rmb_pressed(const Vector2 &p_pos);

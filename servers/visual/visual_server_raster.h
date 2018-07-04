@@ -139,6 +139,8 @@ public:
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
 #define BIND12(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
+#define BIND13(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12, m_type13) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12, m_type13 arg13) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13); }
 
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::storage
@@ -148,6 +150,7 @@ public:
 	BIND0R(RID, texture_create)
 	BIND5(texture_allocate, RID, int, int, Image::Format, uint32_t)
 	BIND3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
+	BIND10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, CubeMapSide)
 	BIND2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
@@ -285,6 +288,7 @@ public:
 	BIND2RC(Transform, skeleton_bone_get_transform, RID, int)
 	BIND3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	BIND2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
+	BIND2(skeleton_set_base_transform_2d, RID, const Transform2D &)
 
 	/* Light API */
 
@@ -450,6 +454,7 @@ public:
 	BIND2(viewport_set_hide_canvas, RID, bool)
 	BIND2(viewport_set_disable_environment, RID, bool)
 	BIND2(viewport_set_disable_3d, RID, bool)
+	BIND2(viewport_set_keep_3d_linear, RID, bool)
 
 	BIND2(viewport_attach_camera, RID, RID)
 	BIND2(viewport_set_scenario, RID, RID)
@@ -486,7 +491,7 @@ public:
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
 	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	BIND12(environment_set_ssao, RID, bool, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
@@ -580,7 +585,7 @@ public:
 	BIND11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
 	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
+	BIND10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
 	BIND4(canvas_item_add_mesh, RID, const RID &, RID, RID)
 	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)

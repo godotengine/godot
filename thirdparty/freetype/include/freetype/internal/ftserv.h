@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType services (specification only).                          */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -330,6 +330,32 @@ FT_BEGIN_HEADER
     { NULL, NULL }                                                          \
   };
 
+#define FT_DEFINE_SERVICEDESCREC10( class_,                                 \
+                                    serv_id_1, serv_data_1,                 \
+                                    serv_id_2, serv_data_2,                 \
+                                    serv_id_3, serv_data_3,                 \
+                                    serv_id_4, serv_data_4,                 \
+                                    serv_id_5, serv_data_5,                 \
+                                    serv_id_6, serv_data_6,                 \
+                                    serv_id_7, serv_data_7,                 \
+                                    serv_id_8, serv_data_8,                 \
+                                    serv_id_9, serv_data_9,                 \
+                                    serv_id_10, serv_data_10 )              \
+  static const FT_ServiceDescRec  class_[] =                                \
+  {                                                                         \
+    { serv_id_1, serv_data_1 },                                             \
+    { serv_id_2, serv_data_2 },                                             \
+    { serv_id_3, serv_data_3 },                                             \
+    { serv_id_4, serv_data_4 },                                             \
+    { serv_id_5, serv_data_5 },                                             \
+    { serv_id_6, serv_data_6 },                                             \
+    { serv_id_7, serv_data_7 },                                             \
+    { serv_id_8, serv_data_8 },                                             \
+    { serv_id_9, serv_data_9 },                                             \
+    { serv_id_10, serv_data_10 },                                           \
+    { NULL, NULL }                                                          \
+  };
+
 #else /* FT_CONFIG_OPTION_PIC */
 
 #define FT_DEFINE_SERVICEDESCREC1( class_,                                  \
@@ -557,7 +583,7 @@ FT_BEGIN_HEADER
                                                                             \
   FT_Error                                                                  \
   FT_Create_Class_ ## class_( FT_Library           library,                 \
-                              FT_ServiceDescRec**  output_class)            \
+                              FT_ServiceDescRec**  output_class )           \
   {                                                                         \
     FT_ServiceDescRec*  clazz  = NULL;                                      \
     FT_Error            error;                                              \
@@ -608,7 +634,7 @@ FT_BEGIN_HEADER
                                                                             \
   FT_Error                                                                  \
   FT_Create_Class_ ## class_( FT_Library           library,                 \
-                              FT_ServiceDescRec**  output_class)            \
+                              FT_ServiceDescRec**  output_class )           \
   {                                                                         \
     FT_ServiceDescRec*  clazz  = NULL;                                      \
     FT_Error            error;                                              \
@@ -662,7 +688,7 @@ FT_BEGIN_HEADER
                                                                             \
   FT_Error                                                                  \
   FT_Create_Class_ ## class_( FT_Library           library,                 \
-                              FT_ServiceDescRec**  output_class)            \
+                              FT_ServiceDescRec**  output_class )           \
   {                                                                         \
     FT_ServiceDescRec*  clazz  = NULL;                                      \
     FT_Error            error;                                              \
@@ -719,7 +745,7 @@ FT_BEGIN_HEADER
                                                                             \
   FT_Error                                                                  \
   FT_Create_Class_ ## class_( FT_Library           library,                 \
-                              FT_ServiceDescRec**  output_class)            \
+                              FT_ServiceDescRec**  output_class )           \
   {                                                                         \
     FT_ServiceDescRec*  clazz  = NULL;                                      \
     FT_Error            error;                                              \
@@ -749,6 +775,68 @@ FT_BEGIN_HEADER
     clazz[8].serv_data = serv_data_9;                                       \
     clazz[9].serv_id   = NULL;                                              \
     clazz[9].serv_data = NULL;                                              \
+                                                                            \
+    *output_class = clazz;                                                  \
+                                                                            \
+    return FT_Err_Ok;                                                       \
+  }
+
+#define FT_DEFINE_SERVICEDESCREC10( class_,                                 \
+                                    serv_id_1, serv_data_1,                 \
+                                    serv_id_2, serv_data_2,                 \
+                                    serv_id_3, serv_data_3,                 \
+                                    serv_id_4, serv_data_4,                 \
+                                    serv_id_5, serv_data_5,                 \
+                                    serv_id_6, serv_data_6,                 \
+                                    serv_id_7, serv_data_7,                 \
+                                    serv_id_8, serv_data_8,                 \
+                                    serv_id_9, serv_data_9,                 \
+                                    serv_id_10, serv_data_10 )              \
+  void                                                                      \
+  FT_Destroy_Class_ ## class_( FT_Library          library,                 \
+                               FT_ServiceDescRec*  clazz )                  \
+  {                                                                         \
+    FT_Memory  memory = library->memory;                                    \
+                                                                            \
+                                                                            \
+    if ( clazz )                                                            \
+      FT_FREE( clazz );                                                     \
+  }                                                                         \
+                                                                            \
+  FT_Error                                                                  \
+  FT_Create_Class_ ## class_( FT_Library           library,                 \
+                              FT_ServiceDescRec**  output_class )           \
+  {                                                                         \
+    FT_ServiceDescRec*  clazz  = NULL;                                      \
+    FT_Error            error;                                              \
+    FT_Memory           memory = library->memory;                           \
+                                                                            \
+                                                                            \
+    if ( FT_ALLOC( clazz, sizeof ( *clazz ) * 11 ) )                        \
+      return error;                                                         \
+                                                                            \
+    clazz[ 0].serv_id   = serv_id_1;                                        \
+    clazz[ 0].serv_data = serv_data_1;                                      \
+    clazz[ 1].serv_id   = serv_id_2;                                        \
+    clazz[ 1].serv_data = serv_data_2;                                      \
+    clazz[ 2].serv_id   = serv_id_3;                                        \
+    clazz[ 2].serv_data = serv_data_3;                                      \
+    clazz[ 3].serv_id   = serv_id_4;                                        \
+    clazz[ 3].serv_data = serv_data_4;                                      \
+    clazz[ 4].serv_id   = serv_id_5;                                        \
+    clazz[ 4].serv_data = serv_data_5;                                      \
+    clazz[ 5].serv_id   = serv_id_6;                                        \
+    clazz[ 5].serv_data = serv_data_6;                                      \
+    clazz[ 6].serv_id   = serv_id_7;                                        \
+    clazz[ 6].serv_data = serv_data_7;                                      \
+    clazz[ 7].serv_id   = serv_id_8;                                        \
+    clazz[ 7].serv_data = serv_data_8;                                      \
+    clazz[ 8].serv_id   = serv_id_9;                                        \
+    clazz[ 8].serv_data = serv_data_9;                                      \
+    clazz[ 9].serv_id   = serv_id_10;                                       \
+    clazz[ 9].serv_data = serv_data_10;                                     \
+    clazz[10].serv_id   = NULL;                                             \
+    clazz[10].serv_data = NULL;                                             \
                                                                             \
     *output_class = clazz;                                                  \
                                                                             \
@@ -898,7 +986,9 @@ FT_BEGIN_HEADER
    */
 
 #define FT_SERVICE_BDF_H                <freetype/internal/services/svbdf.h>
+#define FT_SERVICE_CFF_TABLE_LOAD_H     <freetype/internal/services/svcfftl.h>
 #define FT_SERVICE_CID_H                <freetype/internal/services/svcid.h>
+#define FT_SERVICE_FONT_FORMAT_H        <freetype/internal/services/svfntfmt.h>
 #define FT_SERVICE_GLYPH_DICT_H         <freetype/internal/services/svgldict.h>
 #define FT_SERVICE_GX_VALIDATE_H        <freetype/internal/services/svgxval.h>
 #define FT_SERVICE_KERNING_H            <freetype/internal/services/svkern.h>
@@ -912,10 +1002,9 @@ FT_BEGIN_HEADER
 #define FT_SERVICE_PROPERTIES_H         <freetype/internal/services/svprop.h>
 #define FT_SERVICE_SFNT_H               <freetype/internal/services/svsfnt.h>
 #define FT_SERVICE_TRUETYPE_ENGINE_H    <freetype/internal/services/svtteng.h>
+#define FT_SERVICE_TRUETYPE_GLYF_H      <freetype/internal/services/svttglyf.h>
 #define FT_SERVICE_TT_CMAP_H            <freetype/internal/services/svttcmap.h>
 #define FT_SERVICE_WINFNT_H             <freetype/internal/services/svwinfnt.h>
-#define FT_SERVICE_FONT_FORMAT_H        <freetype/internal/services/svfntfmt.h>
-#define FT_SERVICE_TRUETYPE_GLYF_H      <freetype/internal/services/svttglyf.h>
 
  /* */
 

@@ -486,7 +486,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -3 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -25 * EDSCALE);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -7 * EDSCALE);
-				type_button->set_text(TTR("Preset.."));
+				type_button->set_text(TTR("Preset..."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
 				type_button->get_popup()->add_item(TTR("Ease In"), EASING_EASE_IN);
@@ -530,14 +530,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 
 				List<String> names;
-				names.push_back(TTR("File.."));
+				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back(TTR("Dir.."));
+				names.push_back(TTR("Dir..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 			} else if (hint == PROPERTY_HINT_ENUM) {
@@ -847,6 +847,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (!color_picker) {
 				//late init for performance
 				color_picker = memnew(ColorPicker);
+				color_picker->set_deferred_mode(true);
 				add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", this, "_color_changed");
@@ -3273,22 +3274,34 @@ void PropertyEditor::update_tree() {
 				while (hint.begins_with(itos(Variant::ARRAY) + ":")) {
 					type_name += "<Array";
 					type_name_suffix += ">";
-					hint = hint.substr(2, hint.size() - 2);
+					hint = hint.right(2);
 				}
 				if (hint.find(":") >= 0) {
-					hint = hint.substr(0, hint.find(":"));
+					int colon_pos = hint.find(":");
+					String hint_string = hint.right(colon_pos + 1);
+					hint = hint.left(colon_pos);
+
+					PropertyHint property_hint = PROPERTY_HINT_NONE;
+
 					if (hint.find("/") >= 0) {
-						hint = hint.substr(0, hint.find("/"));
+						int slash_pos = hint.find("/");
+						property_hint = PropertyHint(hint.right(slash_pos + 1).to_int());
+						hint = hint.left(slash_pos);
 					}
-					type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+
+					if (property_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+						type_name += "<" + hint_string;
+					} else {
+						type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+					}
 					type_name_suffix += ">";
 				}
 				type_name += type_name_suffix;
 
 				if (v.is_array())
-					item->set_text(1, type_name + "[" + itos(v.call("size")) + "]");
+					item->set_text(1, type_name + "(" + itos(v.call("size")) + ")");
 				else
-					item->set_text(1, type_name + "[]");
+					item->set_text(1, type_name + "()");
 
 				if (show_type_icons)
 					item->set_icon(0, get_icon("PoolByteArray", "EditorIcons"));
@@ -4200,7 +4213,7 @@ void PropertyEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
 }
 
-Tree *PropertyEditor::get_scene_tree() {
+Tree *PropertyEditor::get_property_tree() {
 
 	return tree;
 }
@@ -4683,7 +4696,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(editor, true);
 
-	editor->get_scene_tree()->set_column_titles_visible(false);
+	editor->get_property_tree()->set_column_titles_visible(false);
 
 	editor->hide_top_label();
 

@@ -345,7 +345,7 @@ size_t FSE_countFast(unsigned* count, unsigned* maxSymbolValuePtr, const void* s
  */
 size_t FSE_countFast_wksp(unsigned* count, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize, unsigned* workSpace);
 
-/*! FSE_count_simple
+/*! FSE_count_simple() :
  * Same as FSE_countFast(), but does not use any additional memory (not even on stack).
  * This function is unsafe, and will segfault if any value within `src` is `> *maxSymbolValuePtr` (presuming it's also the size of `count`).
 */

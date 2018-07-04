@@ -407,6 +407,7 @@ ImportDock::ImportDock() {
 	set_name("Import");
 	imported = memnew(Label);
 	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
+	imported->set_clip_text(true);
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
@@ -415,7 +416,7 @@ ImportDock::ImportDock() {
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
-	preset->set_text(TTR("Preset.."));
+	preset->set_text(TTR("Preset..."));
 	preset->get_popup()->connect("index_pressed", this, "_preset_selected");
 	hb->add_child(preset);
 

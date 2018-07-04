@@ -224,24 +224,42 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 
 static bool _teststr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
+	String what = p_what;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+
+		what = what.substr(0, what.length() - 1);
+	}
+
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
 		return true;
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
 		return true;
 	return false;
 }
 
 static String _fixstr(const String &p_what, const String &p_str) {
 
-	if (p_what.findn("$" + p_str) != -1) //blender and other stuff
-		return p_what.replace("$" + p_str, "");
-	if (p_what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	if (p_what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
-		return p_what.substr(0, p_what.length() - (p_str.length() + 1));
-	return p_what;
+	String what = p_what;
+
+	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+
+		what = what.substr(0, what.length() - 1);
+	}
+
+	String end = p_what.substr(what.length(), p_what.length() - what.length());
+
+	if (what.findn("$" + p_str) != -1) //blender and other stuff
+		return what.replace("$" + p_str, "") + end;
+	if (what.to_lower().ends_with("-" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	if (what.to_lower().ends_with("_" + p_str)) //collada only supports "_" and "-" besides letters
+		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+	return what;
 }
 
 Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode) {
@@ -251,7 +269,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map, p_light_bake_mode);
 		if (!r) {
-			print_line("was erased..");
+			print_line("was erased...");
 			i--; //was erased
 		}
 	}
@@ -437,13 +455,19 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		Node *col;
 
 		if (_teststr(name, "col")) {
-			mi->set_name(_fixstr(name, "col"));
+			String new_name = _fixstr(name, "col");
+			if (mi->get_parent() && !mi->get_parent()->has_node(new_name)) {
+				mi->set_name(new_name);
+			}
 			col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
 			col->set_name("col");
 		} else {
-			mi->set_name(_fixstr(name, "convcol"));
+			String new_name = _fixstr(name, "convcol");
+			if (mi->get_parent() && !mi->get_parent()->has_node(new_name)) {
+				mi->set_name(new_name);
+			}
 			col = mi->create_convex_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
@@ -893,7 +917,6 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					}
 
 					String ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
-
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
 						//try to keep custom animation tracks
 						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
@@ -907,6 +930,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						}
 					}
 
+					anim->set_path(ext_name, true); //if not set, then its never saved externally
 					ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
 					p_animations[anim] = anim;
 				}
@@ -1152,7 +1176,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String ext = src_path.get_extension().to_lower();
 
 	EditorProgress progress("import", TTR("Import Scene"), 104);
-	progress.step(TTR("Importing Scene.."), 0);
+	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
 
@@ -1324,7 +1348,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		_make_external_resources(scene, base_path, external_animations, keep_custom_tracks, external_materials, keep_materials, external_meshes, anim_map, mat_map, mesh_map);
 	}
 
-	progress.step(TTR("Running Custom Script.."), 2);
+	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["nodes/custom_script"];
 	Ref<EditorScenePostImport> post_import_script;
@@ -1353,7 +1377,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	progress.step(TTR("Saving.."), 104);
+	progress.step(TTR("Saving..."), 104);
 
 	if (external_scenes) {
 		//save sub-scenes as instances!

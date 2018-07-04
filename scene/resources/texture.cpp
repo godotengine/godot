@@ -76,7 +76,9 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &Texture::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
+	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
 	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
@@ -220,12 +222,15 @@ Image::Format ImageTexture::get_format() const {
 	return format;
 }
 
-void ImageTexture::load(const String &p_path) {
+Error ImageTexture::load(const String &p_path) {
 
 	Ref<Image> img;
 	img.instance();
-	img->load(p_path);
-	create_from_image(img);
+	Error err = img->load(p_path);
+	if (err == OK) {
+		create_from_image(img);
+	}
+	return err;
 }
 
 void ImageTexture::set_data(const Ref<Image> &p_image) {

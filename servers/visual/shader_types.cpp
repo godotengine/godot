@@ -173,6 +173,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("shadows_disabled");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_lighting");
 
 	/************ CANVAS ITEM **************************/
@@ -207,7 +209,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["SCREEN_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"].can_discard = true;
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["POSITION"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
@@ -231,6 +233,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_disabled");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("unshaded");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");

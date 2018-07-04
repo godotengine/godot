@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_H
 #define AUDIO_STREAM_H
 
+#include "image.h"
 #include "resource.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"

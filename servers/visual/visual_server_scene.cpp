@@ -1257,6 +1257,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
+	Transform light_transform = p_instance->transform;
+	light_transform.orthonormalize(); //scale does not count on lights
+
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 
 		case VS::LIGHT_DIRECTIONAL: {
@@ -1359,7 +1362,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// obtain the light frustm ranges (given endpoints)
 
-				Transform transform = p_instance->transform.orthonormalized(); //discard scale and stabilize light
+				Transform transform = light_transform; //discard scale and stabilize light
 
 				Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
 				Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
@@ -1469,7 +1472,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
-				Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 
 				for (int j = 0; j < cull_count; j++) {
 
@@ -1524,14 +1527,14 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						float z = i == 0 ? -1 : 1;
 						Vector<Plane> planes;
 						planes.resize(5);
-						planes[0] = p_instance->transform.xform(Plane(Vector3(0, 0, z), radius));
-						planes[1] = p_instance->transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
-						planes[2] = p_instance->transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
-						planes[3] = p_instance->transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
-						planes[4] = p_instance->transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
+						planes[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+						planes[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
+						planes[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
+						planes[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
+						planes[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
-						Plane near_plane(p_instance->transform.origin, p_instance->transform.basis.get_axis(2) * z);
+						Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 						for (int j = 0; j < cull_count; j++) {
 
@@ -1546,7 +1549,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
-						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, i);
+						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i);
 						VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 					}
 				} break;
@@ -1577,7 +1580,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							Vector3(0, -1, 0)
 						};
 
-						Transform xform = p_instance->transform * Transform().looking_at(view_normals[i], view_up[i]);
+						Transform xform = light_transform * Transform().looking_at(view_normals[i], view_up[i]);
 
 						Vector<Plane> planes = cm.get_projection_planes(xform);
 
@@ -1602,7 +1605,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 
 					//restore the regular DP matrix
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, 0);
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0);
 
 				} break;
 			}
@@ -1616,10 +1619,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			CameraMatrix cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
-			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);
+			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
-			Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
 
 				Instance *instance = instance_shadow_cull_result[j];
@@ -1633,7 +1636,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			}
 
-			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, p_instance->transform, radius, 0, 0);
+			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0);
 			VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, 0, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 
 		} break;
@@ -1674,7 +1677,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_render_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), -1);
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_render_scene(camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 }
 
 void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
@@ -1684,7 +1688,6 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	ERR_FAIL_COND(!camera);
 
 	/* SETUP CAMERA, we are ignoring type and FOV here */
-	bool ortho = false;
 	float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 	CameraMatrix camera_matrix = p_interface->get_projection_for_eye(p_eye, aspect, camera->znear, camera->zfar);
 
@@ -1693,10 +1696,79 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
-	_render_scene(cam_transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), -1);
+	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
+	if (p_eye == ARVRInterface::EYE_LEFT) {
+		///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
+
+		// Center our transform, we assume basis is equal.
+		Transform mono_transform = cam_transform;
+		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+		mono_transform.origin += right_transform.origin;
+		mono_transform.origin *= 0.5;
+
+		// We need to combine our projection frustums for culling.
+		// Ideally we should use our clipping planes for this and combine them,
+		// however our shadow map logic uses our projection matrix.
+		// Note: as our left and right frustums should be mirrored, we don't need our right projection matrix.
+
+		// - get some base values we need
+		float eye_dist = (mono_transform.origin - cam_transform.origin).length();
+		float z_near = camera_matrix.get_z_near(); // get our near plane
+		float z_far = camera_matrix.get_z_far(); // get our far plane
+		float width = (2.0 * z_near) / camera_matrix.matrix[0][0];
+		float x_shift = width * camera_matrix.matrix[2][0];
+		float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
+		float y_shift = height * camera_matrix.matrix[2][1];
+
+		// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
+
+		// - calculate our near plane size (horizontal only, right_near is mirrored)
+		float left_near = -eye_dist - ((width - x_shift) * 0.5);
+
+		// - calculate our far plane size (horizontal only, right_far is mirrored)
+		float left_far = -eye_dist - (z_far * (width - x_shift) * 0.5 / z_near);
+		float left_far_right_eye = eye_dist - (z_far * (width + x_shift) * 0.5 / z_near);
+		if (left_far > left_far_right_eye) {
+			// on displays smaller then double our iod, the right eye far frustrum can overtake the left eyes.
+			left_far = left_far_right_eye;
+		}
+
+		// - figure out required z-shift
+		float slope = (left_far - left_near) / (z_far - z_near);
+		float z_shift = (left_near / slope) - z_near;
+
+		// - figure out new vertical near plane size (this will be slightly oversized thanks to our z-shift)
+		float top_near = (height - y_shift) * 0.5;
+		top_near += (top_near / z_near) * z_shift;
+		float bottom_near = -(height + y_shift) * 0.5;
+		bottom_near += (bottom_near / z_near) * z_shift;
+
+		// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
+
+		// - generate our frustum
+		CameraMatrix combined_matrix;
+		combined_matrix.set_frustum(left_near, -left_near, bottom_near, top_near, z_near + z_shift, z_far + z_shift);
+
+		// and finally move our camera back
+		Transform apply_z_shift;
+		apply_z_shift.origin = Vector3(0.0, 0.0, z_shift); // z negative is forward so this moves it backwards
+		mono_transform *= apply_z_shift;
+
+		// now prepare our scene with our adjusted transform projection matrix
+		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	} else if (p_eye == ARVRInterface::EYE_MONO) {
+		// For mono render, prepare as per usual
+		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	}
+
+	// And render our scene...
+	_render_scene(cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+	// Note, in stereo rendering:
+	// - p_cam_transform will be a transform in the middle of our two eyes
+	// - p_cam_projection is a wider frustrum that encompasses both eyes
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
@@ -1713,7 +1785,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	int cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
+	instance_cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
@@ -1731,7 +1803,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 	/* STEP 4 - REMOVE FURTHER CULLED OBJECTS, ADD LIGHTS */
 
-	for (int i = 0; i < cull_count; i++) {
+	for (int i = 0; i < instance_cull_count; i++) {
 
 		Instance *ins = instance_cull_result[i];
 
@@ -1857,8 +1929,8 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 		if (!keep) {
 			// remove, no reason to keep
-			cull_count--;
-			SWAP(instance_cull_result[i], instance_cull_result[cull_count]);
+			instance_cull_count--;
+			SWAP(instance_cull_result[i], instance_cull_result[instance_cull_count]);
 			i--;
 			ins->last_render_pass = 0; // make invalid
 		} else {
@@ -1870,7 +1942,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	/* STEP 5 - PROCESS LIGHTS */
 
 	RID *directional_light_ptr = &light_instance_cull_result[light_cull_count];
-	int directional_light_count = 0;
+	directional_light_count = 0;
 
 	// directional lights
 	{
@@ -2007,6 +2079,11 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 			}
 		}
 	}
+}
+
+void VisualServerScene::_render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	/* ENVIRONMENT */
 
@@ -2018,9 +2095,9 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	else
 		environment = scenario->fallback_environment;
 
-	/* STEP 6 - PROCESS GEOMETRY AND DRAW SCENE*/
+	/* PROCESS GEOMETRY AND DRAW SCENE */
 
-	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
@@ -2093,7 +2170,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
-		_render_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+		_render_scene(xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
 		//do roughness postprocess step until it believes it's done

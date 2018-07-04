@@ -167,13 +167,15 @@ public:
 	String get_cache_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
-	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default);
+	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
 
 	void set_favorite_dirs(const Vector<String> &p_favorites_dirs);
 	Vector<String> get_favorite_dirs() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites();
+
+	bool is_dark_theme();
 
 	void list_text_editor_themes();
 	void load_text_editor_theme();

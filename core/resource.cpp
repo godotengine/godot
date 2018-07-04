@@ -187,7 +187,6 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 
 void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
 
-	print_line("configure for local: " + get_class());
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -226,15 +225,20 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
-		Variant p = get(E->get().name).duplicate(true);
-		if (p.get_type() == Variant::OBJECT && p_subresources) {
+		Variant p = get(E->get().name);
+
+		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
+			p = p.duplicate(p_subresources); //does not make a long of sense but should work?
+		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
 
 			RES sr = p;
-			if (sr.is_valid())
-				p = sr->duplicate(true);
-		}
+			if (sr.is_valid()) {
+				r->set(E->get().name, sr->duplicate(p_subresources));
+			}
+		} else {
 
-		r->set(E->get().name, p);
+			r->set(E->get().name, p);
+		}
 	}
 
 	return Ref<Resource>(r);
@@ -288,7 +292,7 @@ uint32_t Resource::hash_edited_version() const {
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
-		if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (E->get().usage & PROPERTY_USAGE_STORAGE && E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			RES res = get(E->get().name);
 			if (res.is_valid()) {
 				hash = hash_djb2_one_32(res->hash_edited_version(), hash);

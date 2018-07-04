@@ -89,7 +89,7 @@ public:
 			StringName getter;
 			int line;
 			Node *expression;
-			ScriptInstance::RPCMode rpc_mode;
+			MultiplayerAPI::RPCMode rpc_mode;
 		};
 		struct Constant {
 			StringName identifier;
@@ -125,7 +125,7 @@ public:
 	struct FunctionNode : public Node {
 
 		bool _static;
-		ScriptInstance::RPCMode rpc_mode;
+		MultiplayerAPI::RPCMode rpc_mode;
 		StringName name;
 		Vector<StringName> arguments;
 		Vector<Node *> default_values;
@@ -134,7 +134,7 @@ public:
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			_static = false;
-			rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		}
 	};
 
@@ -493,7 +493,7 @@ private:
 
 	PropertyInfo current_export;
 
-	ScriptInstance::RPCMode rpc_mode;
+	MultiplayerAPI::RPCMode rpc_mode;
 
 	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
 	bool _recover_from_completion();

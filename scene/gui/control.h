@@ -148,6 +148,11 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+		Size2 minimum_size_cache;
+		bool minimum_size_valid;
+
+		Size2 last_minimum_size;
+		bool updating_last_minimum_size;
 
 		float margin[4];
 		float anchor[4];
@@ -164,7 +169,6 @@ private:
 		int h_size_flags;
 		int v_size_flags;
 		float expand;
-		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
 		bool pass_on_modal_close_click;
@@ -198,12 +202,12 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
-		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
-		HashMap<StringName, Ref<StyleBox>, StringNameHasher> style_override;
-		HashMap<StringName, Ref<Font>, StringNameHasher> font_override;
-		HashMap<StringName, Color, StringNameHasher> color_override;
-		HashMap<StringName, int, StringNameHasher> constant_override;
+		HashMap<StringName, Ref<Texture> > icon_override;
+		HashMap<StringName, Ref<Shader> > shader_override;
+		HashMap<StringName, Ref<StyleBox> > style_override;
+		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Color> color_override;
+		HashMap<StringName, int> constant_override;
 		Map<Ref<Font>, int> font_refcount;
 
 	} data;
@@ -216,10 +220,6 @@ private:
 
 	void _set_anchor(Margin p_margin, float p_anchor);
 
-	float _get_parent_range(int p_idx) const;
-	float _get_range(int p_idx) const;
-	float _s2a(float p_val, float p_anchor, float p_range) const;
-	float _a2s(float p_val, float p_anchor, float p_range) const;
 	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
@@ -228,6 +228,9 @@ private:
 
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
+
+	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
+	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 
 	void _size_changed();
 	String _get_tooltip() const;
@@ -243,6 +246,8 @@ private:
 	friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
+
+	void _update_minimum_size_cache();
 
 protected:
 	virtual void add_child_notify(Node *p_child);
@@ -277,11 +282,15 @@ public:
 
 	};
 
+	/* EDITOR */
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
 	virtual void _edit_set_position(const Point2 &p_position);
 	virtual Point2 _edit_get_position() const;
+
+	virtual void _edit_set_scale(const Size2 &p_scale);
+	virtual Size2 _edit_get_scale() const;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
 	virtual Rect2 _edit_get_rect() const;
@@ -349,6 +358,7 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_anchorable_rect() const;
 
 	void set_rotation(float p_radians);
 	void set_rotation_degrees(float p_degrees);
@@ -456,6 +466,7 @@ public:
 	bool is_toplevel_control() const;
 
 	Size2 get_parent_area_size() const;
+	Rect2 get_parent_anchorable_rect() const;
 
 	void grab_click_focus();
 

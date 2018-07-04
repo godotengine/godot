@@ -185,7 +185,8 @@ private:
 
 	///network///
 
-	Ref<MultiplayerAPI> multiplayer_api;
+	Ref<MultiplayerAPI> multiplayer;
+	bool multiplayer_poll;
 
 	void _network_peer_connected(int p_id);
 	void _network_peer_disconnected(int p_id);
@@ -390,10 +391,8 @@ public:
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
 
-#ifdef TOOLS_ENABLED
 	void set_edited_scene_root(Node *p_node);
 	Node *get_edited_scene_root() const;
-#endif
 
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
@@ -412,8 +411,10 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer_api() const;
-	void set_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api);
+	Ref<MultiplayerAPI> get_multiplayer() const;
+	void set_multiplayer_poll_enabled(bool p_enabled);
+	bool is_multiplayer_poll_enabled() const;
+	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	bool is_network_server() const;

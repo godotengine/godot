@@ -1,14 +1,15 @@
 language: cpp
 
+# OS config, depends on actual 'os' in build matrix
 dist: trusty
-
 sudo: false
 
 env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
-    - OPTIONS="verbose=yes progress=no openmp=no gdnative_wrapper=yes"
+    - OPTIONS="verbose=yes progress=no gdnative_wrapper=yes"
+    - secure: "QLFRizqry/Y5pnEZvDlQz5S3YydQ+600u4rHEzFgUTd0heYeQaETXAQeMzp0ymuG1BkdRAl5YJoLVJgAzjwI9hrvugvoUlh2//SfpqZCHN/Q1fYbtGgNTn01R3VFEpcfYQL93I2EjrxVm0WTM4PwCvMO+hU0aWTRDvCt1Lty0kMR+RMDQOO/woqunoXh5wvFNxTJJkAmuLe0v962DJYOIwJAnqMLR0aFYjmeQJ20bc/2X5oLt+WuJDuf/lGj6WSlD6z/o/kL3YxHoUyw4A/HAZ2IX0IfNHKuay60ESWzl/NlobnePiPwHAE2pdDVu//q16fanb9VeYnBYRFse49TpFRb86Lo+Qz8nKDJqpQEIY0YKNCFqekrubqTM++Lj6QvGpykQZNxUhybmELcEsRG4PS0UMvCpebdnJD46nNB+DtO2Lgb4xXDLQwpq19z1wizq/XDQ5hz61TIIx8+i8TsgdSQKCTeWovd4HcD4CVjAD5XTLGgyRmI/zC2d+lTnKo6W9diLq/bX/Goq2QPeaTPABqv817IaJka2JyugQ7Qal/+gNTjYRRsimRCL9B2tVh+Uh8rWhTFhQL4QbP5P65HF+p8qojUzqtAhPMbZ8mxUtNukUI3liVgPgiMss96sG0nTVglFgkkAkEjIMFnqMSKnTfG812K4jIhp2jCO2Q3NeI="
 
 cache:
   directories:
@@ -18,56 +19,68 @@ matrix:
   include:
     - env: STATIC_CHECKS=yes
       os: linux
-      compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools"
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-format-5.0
+
+        coverity_scan:
+          project:
+            name: "godotengine/godot"
+            description: "Godot Engine Coverity scans"
+          notification_email: coverity@godotengine.org
+          build_command_prepend: ""
+          build_command: "scons p=x11 -j2 $OPTIONS"
+          branch_pattern: coverity_scan
+
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no"
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang"
+      addons:
+        apt:
+          sources:
+            - mono
+          packages:
+            - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - &linux_mono_deps [mono-devel, msbuild]
+
+    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
       compiler: clang
-    #- env: GODOT_TARGET=windows TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
-    #  os: linux
-    #  compiler: gcc
-    - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-gcc
+      addons:
+        apt:
+          packages:
+            - *linux_deps
+
+    - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
-      compiler: gcc
-    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
+      compiler: clang
+
+    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-clang
       os: osx
+      osx_image: xcode9.3
       compiler: clang
+
     - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: osx
+      osx_image: xcode9.3
       compiler: clang
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-5.0
-    packages:
-      - build-essential
-      - scons
-      - pkg-config
-      - libx11-dev
-      - libxcursor-dev
-      - libxi-dev
-      - libxinerama-dev
-      - libxrandr-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
-      - libasound2-dev
-      - libfreetype6-dev
+    - env: GODOT_TARGET=server TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
+      os: linux
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - *linux_deps
 
-      # For cross-compiling to Windows.
-      #- binutils-mingw-w64-i686
-      #- binutils-mingw-w64-x86-64
-      #- gcc-mingw-w64-i686
-      #- gcc-mingw-w64-x86-64
-      #- g++-mingw-w64-i686
-      #- g++-mingw-w64-x86-64
-      #- mingw-w64
-
-      # For style checks.
-      - clang-format-5.0
+before_install:
+  - if [ "$STATIC_CHECKS" = "yes" ]; then
+      unset SCONS_CACHE;
+    fi
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
@@ -90,5 +103,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $OPTIONS;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $EXTRA_ARGS $OPTIONS;
     fi

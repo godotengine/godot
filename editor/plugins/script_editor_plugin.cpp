@@ -804,12 +804,12 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 void ScriptEditor::_file_dialog_action(String p_file) {
 
 	switch (file_dialog_option) {
-		case FILE_SAVE_THEME_AS: {
+		case THEME_SAVE_AS: {
 			if (!EditorSettings::get_singleton()->save_text_editor_theme_as(p_file)) {
 				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
 			}
 		} break;
-		case FILE_IMPORT_THEME: {
+		case THEME_IMPORT: {
 			if (!EditorSettings::get_singleton()->import_text_editor_theme(p_file)) {
 				editor->show_warning(TTR("Error importing theme"), TTR("Error importing"));
 			}
@@ -858,33 +858,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				return;
 
 			save_all_scripts();
-		} break;
-		case FILE_IMPORT_THEME: {
-			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_IMPORT_THEME;
-			file_dialog->clear_filters();
-			file_dialog->add_filter("*.tet");
-			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Import Theme"));
-		} break;
-		case FILE_RELOAD_THEME: {
-			EditorSettings::get_singleton()->load_text_editor_theme();
-		} break;
-		case FILE_SAVE_THEME: {
-			if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
-				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
-			}
-		} break;
-		case FILE_SAVE_THEME_AS: {
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_SAVE_THEME_AS;
-			file_dialog->clear_filters();
-			file_dialog->add_filter("*.tet");
-			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
-			file_dialog->popup_centered_ratio();
-			file_dialog->set_title(TTR("Save Theme As.."));
 		} break;
 		case SEARCH_HELP: {
 
@@ -1143,6 +1116,38 @@ void ScriptEditor::_menu_option(int p_option) {
 	}
 }
 
+void ScriptEditor::_theme_option(int p_option) {
+	switch (p_option) {
+		case THEME_IMPORT: {
+			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = THEME_IMPORT;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Import Theme"));
+		} break;
+		case THEME_RELOAD: {
+			EditorSettings::get_singleton()->load_text_editor_theme();
+		} break;
+		case THEME_SAVE: {
+			if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
+				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
+			}
+		} break;
+		case THEME_SAVE_AS: {
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = THEME_SAVE_AS;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Save Theme As..."));
+		} break;
+	}
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 
 	ensure_select_current();
@@ -1182,12 +1187,13 @@ void ScriptEditor::_notification(int p_what) {
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
+			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
 		} break;
 
 		case NOTIFICATION_READY: {
 
 			get_tree()->connect("tree_changed", this, "_tree_changed");
-			editor->connect("request_help", this, "_request_help");
+			editor->get_inspector_dock()->connect("request_help", this, "_request_help");
 			editor->connect("request_help_search", this, "_help_search");
 			editor->connect("request_help_index", this, "_help_index");
 		} break;
@@ -1213,6 +1219,9 @@ void ScriptEditor::_notification(int p_what) {
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
+
+			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
+			filename->add_style_override("normal", editor->get_gui_base()->get_stylebox("normal", "LineEdit"));
 
 			recent_scripts->set_as_minsize();
 		} break;
@@ -1403,15 +1412,26 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
+		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 		return;
 	}
 
 	if (members_overview_enabled && se->show_members_overview()) {
+		members_overview_alphabeta_sort_button->set_visible(true);
 		members_overview->set_visible(true);
+		overview_vbox->set_visible(true);
 	} else {
+		members_overview_alphabeta_sort_button->set_visible(false);
 		members_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 	}
+}
+
+void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
+	EditorSettings::get_singleton()->set("text_editor/tools/sort_members_outline_alphabetically", p_alphabetic_sort);
+	_update_members_overview();
 }
 
 void ScriptEditor::_update_members_overview() {
@@ -1423,10 +1443,19 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	Vector<String> functions = se->get_functions();
+	if (EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically")) {
+		functions.sort();
+	}
+
 	for (int i = 0; i < functions.size(); i++) {
 		members_overview->add_item(functions[i].get_slice(":", 0));
 		members_overview->set_item_metadata(i, functions[i].get_slice(":", 1).to_int() - 1);
 	}
+
+	String path = se->get_edited_script()->get_path();
+	bool built_in = !path.is_resource_file();
+	String name = built_in ? path.get_file() : se->get_name();
+	filename->set_text(name);
 }
 
 void ScriptEditor::_update_help_overview_visibility() {
@@ -1445,9 +1474,13 @@ void ScriptEditor::_update_help_overview_visibility() {
 	}
 
 	if (help_overview_enabled) {
+		members_overview_alphabeta_sort_button->set_visible(false);
 		help_overview->set_visible(true);
+		overview_vbox->set_visible(true);
+		filename->set_text(se->get_name());
 	} else {
 		help_overview->set_visible(false);
+		overview_vbox->set_visible(false);
 	}
 }
 
@@ -1536,9 +1569,10 @@ void ScriptEditor::_update_script_names() {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (se) {
 
-			String name = se->get_name();
 			Ref<Texture> icon = se->get_icon();
 			String path = se->get_edited_script()->get_path();
+			bool built_in = !path.is_resource_file();
+			String name = built_in ? path.get_file() : se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
@@ -2562,6 +2596,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
 	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
+	ClassDB::bind_method("_theme_option", &ScriptEditor::_theme_option);
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
 	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
@@ -2596,6 +2631,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
 	ClassDB::bind_method("_script_list_gui_input", &ScriptEditor::_script_list_gui_input);
+	ClassDB::bind_method("_toggle_members_overview_alpha_sort", &ScriptEditor::_toggle_members_overview_alpha_sort);
+	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
@@ -2656,14 +2693,39 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_menu_option");
 
+	overview_vbox = memnew(VBoxContainer);
+	overview_vbox->set_custom_minimum_size(Size2(0, 90));
+	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	list_split->add_child(overview_vbox);
+	buttons_hbox = memnew(HBoxContainer);
+	overview_vbox->add_child(buttons_hbox);
+
+	filename = memnew(Label);
+	filename->set_clip_text(true);
+	filename->set_h_size_flags(SIZE_EXPAND_FILL);
+	filename->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
+	buttons_hbox->add_child(filename);
+
+	members_overview_alphabeta_sort_button = memnew(ToolButton);
+	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
+	members_overview_alphabeta_sort_button->set_toggle_mode(true);
+	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
+	members_overview_alphabeta_sort_button->connect("toggled", this, "_toggle_members_overview_alpha_sort");
+
+	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
+
 	members_overview = memnew(ItemList);
-	list_split->add_child(members_overview);
+	overview_vbox->add_child(members_overview);
+
 	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
+	members_overview->set_allow_rmb_select(true);
+	members_overview->set_drag_forwarding(this);
 
 	help_overview = memnew(ItemList);
-	list_split->add_child(help_overview);
+	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
 	help_overview->set_custom_minimum_size(Size2(0, 90)); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2696,7 +2758,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As..")), FILE_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
@@ -2707,10 +2769,18 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), FILE_IMPORT_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
+
+	file_menu->get_popup()->add_submenu_item(TTR("Theme"), "Theme", FILE_THEME);
+
+	theme_submenu = memnew(PopupMenu);
+	theme_submenu->set_name("Theme");
+	file_menu->get_popup()->add_child(theme_submenu);
+	theme_submenu->connect("id_pressed", this, "_theme_option");
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), THEME_IMPORT);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), THEME_SAVE);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), THEME_SAVE_AS);
+
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
@@ -2725,7 +2795,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu = memnew(MenuButton);
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
-	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
+	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	script_search_menu->hide();
@@ -2814,7 +2884,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
-	error_dialog->get_ok()->set_text(TTR("I see.."));
+	error_dialog->get_ok()->set_text(TTR("I see..."));
 
 	debugger = memnew(ScriptEditorDebugger(editor));
 	debugger->connect("goto_script_line", this, "_goto_script_line");

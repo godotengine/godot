@@ -57,6 +57,7 @@ private:
 	float _frame_step;
 
 	int ips;
+	float physics_jitter_fix;
 	float _fps;
 	int _target_fps;
 	float _time_scale;
@@ -78,6 +79,9 @@ public:
 
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
+
+	void set_physics_jitter_fix(float p_threshold);
+	float get_physics_jitter_fix() const;
 
 	virtual void set_target_fps(int p_fps);
 	virtual float get_target_fps() const;
@@ -114,6 +118,11 @@ public:
 #endif
 
 	Dictionary get_version_info() const;
+	Dictionary get_author_info() const;
+	Array get_copyright_info() const;
+	Dictionary get_donor_info() const;
+	Dictionary get_license_info() const;
+	String get_license_text() const;
 
 	Engine();
 };

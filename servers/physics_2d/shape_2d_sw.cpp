@@ -1011,6 +1011,10 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 		stack[i]=0;
 	*/
 
+	if (segments.size() == 0 || points.size() == 0 || bvh.size() == 0) {
+		return;
+	}
+
 	int level = 0;
 
 	const Segment *segmentptr = &segments[0];

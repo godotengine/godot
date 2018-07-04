@@ -248,17 +248,19 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
-HashMap<StringName, ClassDB::ClassInfo, StringNameHasher> ClassDB::classes;
-HashMap<StringName, StringName, StringNameHasher> ClassDB::resource_base_extensions;
-HashMap<StringName, StringName, StringNameHasher> ClassDB::compat_classes;
+HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
+HashMap<StringName, StringName> ClassDB::resource_base_extensions;
+HashMap<StringName, StringName> ClassDB::compat_classes;
 
 ClassDB::ClassInfo::ClassInfo() {
 
+	api = API_NONE;
 	creation_func = NULL;
 	inherits_ptr = NULL;
 	disabled = false;
 	exposed = false;
 }
+
 ClassDB::ClassInfo::~ClassInfo() {
 }
 
@@ -355,7 +357,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 		ClassInfo *t = classes.getptr(E->get());
 		ERR_FAIL_COND_V(!t, 0);
-		if (t->api != p_api)
+		if (t->api != p_api || !t->exposed)
 			continue;
 		hash = hash_djb2_one_64(t->name.hash(), hash);
 		hash = hash_djb2_one_64(t->inherits.hash(), hash);

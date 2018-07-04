@@ -91,7 +91,7 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 }
 
 Size2 CurveEditor::get_minimum_size() const {
-	return Vector2(64, 64);
+	return Vector2(64, 150) * EDSCALE;
 }
 
 void CurveEditor::_notification(int p_what) {
@@ -639,7 +639,7 @@ void CurveEditor::_draw() {
 
 	Ref<Font> font = get_font("font", "Label");
 	float font_height = font->get_height();
-	const Color text_color = get_color("font_color", "Editor");
+	Color text_color = get_color("font_color", "Editor");
 
 	{
 		// X axis
@@ -720,6 +720,7 @@ void CurveEditor::_draw() {
 	// Help text
 
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
+		text_color.a *= 0.4;
 		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
 	}
 }
@@ -750,87 +751,28 @@ void CurveEditor::_bind_methods() {
 
 //---------------
 
+bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
+
+	return Object::cast_to<Curve>(p_object) != NULL;
+}
+
+void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
+
+	Curve *curve = Object::cast_to<Curve>(p_object);
+	ERR_FAIL_COND(!curve);
+	Ref<Curve> c(curve);
+
+	CurveEditor *editor = memnew(CurveEditor);
+	editor->set_curve(curve);
+	add_custom_control(editor);
+}
+
 CurveEditorPlugin::CurveEditorPlugin(EditorNode *p_node) {
-	_editor_node = p_node;
-
-	_view = memnew(CurveEditor);
-	_view->set_custom_minimum_size(Size2(100, 128 * EDSCALE));
-	_view->hide();
-
-	_toggle_button = _editor_node->add_bottom_panel_item(get_name(), _view);
-	_toggle_button->hide();
+	Ref<EditorInspectorPluginCurve> curve_plugin;
+	curve_plugin.instance();
+	EditorInspector::add_inspector_plugin(curve_plugin);
 
 	get_editor_interface()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
-}
-
-CurveEditorPlugin::~CurveEditorPlugin() {
-}
-
-void CurveEditorPlugin::edit(Object *p_object) {
-
-	Ref<Curve> curve_ref;
-
-	if (_current_ref.is_valid()) {
-		CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
-		if (ct)
-			ct->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_texture_changed");
-	}
-
-	if (p_object) {
-		Resource *res = Object::cast_to<Resource>(p_object);
-		ERR_FAIL_COND(res == NULL);
-		ERR_FAIL_COND(!handles(p_object));
-
-		_current_ref = Ref<Resource>(Object::cast_to<Resource>(p_object));
-
-		if (_current_ref.is_valid()) {
-			Curve *curve = Object::cast_to<Curve>(*_current_ref);
-			if (curve)
-				curve_ref = Ref<Curve>(curve);
-			else {
-				CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
-				if (ct) {
-					ct->connect(CoreStringNames::get_singleton()->changed, this, "_curve_texture_changed");
-					curve_ref = ct->get_curve();
-				}
-			}
-		}
-
-	} else {
-		_current_ref = Ref<Resource>();
-	}
-
-	_view->set_curve(curve_ref);
-}
-
-bool CurveEditorPlugin::handles(Object *p_object) const {
-	// Both handled so that we can keep the curve editor open
-	return Object::cast_to<Curve>(p_object) || Object::cast_to<CurveTexture>(p_object);
-}
-
-void CurveEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		_toggle_button->show();
-		_editor_node->make_bottom_panel_item_visible(_view);
-	} else {
-		_toggle_button->hide();
-		if (_view->is_visible_in_tree())
-			_editor_node->hide_bottom_panel();
-	}
-}
-
-void CurveEditorPlugin::_curve_texture_changed() {
-	// If the curve is shown indirectly as a CurveTexture is edited,
-	// we need to monitor when the curve property gets assigned
-	CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
-	if (ct) {
-		_view->set_curve(ct->get_curve());
-	}
-}
-
-void CurveEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_curve_texture_changed"), &CurveEditorPlugin::_curve_texture_changed);
 }
 
 //-----------------------------------
@@ -852,13 +794,13 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from) {
 	img_ref.instance();
 	Image &im = **img_ref;
 
-	im.create(thumbnail_size, thumbnail_size, 0, Image::FORMAT_RGBA8);
+	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
 
 	im.lock();
 
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
-		for (int j = 0; j < thumbnail_size; j++) {
+		for (int j = 0; j < thumbnail_size / 2; j++) {
 			im.set_pixel(i, j, bg_color);
 		}
 	}

@@ -42,6 +42,13 @@ class Polygon2D : public Node2D {
 	PoolVector<Color> vertex_colors;
 	PoolVector<int> splits;
 
+	struct Bone {
+		NodePath path;
+		PoolVector<float> weights;
+	};
+
+	Vector<Bone> bone_weights;
+
 	Color color;
 	Ref<Texture> texture;
 	Size2 tex_scale;
@@ -56,6 +63,11 @@ class Polygon2D : public Node2D {
 	mutable bool rect_cache_dirty;
 	mutable Rect2 item_rect;
 
+	NodePath skeleton;
+
+	Array _get_bones() const;
+	void _set_bones(const Array &p_bones);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -68,6 +80,7 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
@@ -112,6 +125,18 @@ public:
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
+
+	void add_bone(const NodePath &p_path = NodePath(), const PoolVector<float> &p_weights = PoolVector<float>());
+	int get_bone_count() const;
+	NodePath get_bone_path(int p_index) const;
+	PoolVector<float> get_bone_weights(int p_index) const;
+	void erase_bone(int p_idx);
+	void clear_bones();
+	void set_bone_weights(int p_index, const PoolVector<float> &p_weights);
+	void set_bone_path(int p_index, const NodePath &p_path);
+
+	void set_skeleton(const NodePath &p_skeleton);
+	NodePath get_skeleton() const;
 
 	Polygon2D();
 };

@@ -54,9 +54,13 @@
 #define _COMMA_10 ,
 #define _COMMA_11 ,
 #define _COMMA_12 ,
+#define _COMMA_13 ,
 
 // 1-based comma separated list of ITEMs
 #define COMMA_SEP_LIST(ITEM, LENGTH) _COMMA_SEP_LIST_##LENGTH(ITEM)
+#define _COMMA_SEP_LIST_13(ITEM) \
+	_COMMA_SEP_LIST_12(ITEM)     \
+	, ITEM(13)
 #define _COMMA_SEP_LIST_12(ITEM) \
 	_COMMA_SEP_LIST_11(ITEM)     \
 	, ITEM(12)
@@ -97,6 +101,9 @@
 
 // 1-based semicolon separated list of ITEMs
 #define SEMIC_SEP_LIST(ITEM, LENGTH) _SEMIC_SEP_LIST_##LENGTH(ITEM)
+#define _SEMIC_SEP_LIST_13(ITEM) \
+	_SEMIC_SEP_LIST_12(ITEM);    \
+	ITEM(13)
 #define _SEMIC_SEP_LIST_12(ITEM) \
 	_SEMIC_SEP_LIST_11(ITEM);    \
 	ITEM(12)
@@ -137,6 +144,9 @@
 
 // 1-based space separated list of ITEMs
 #define SPACE_SEP_LIST(ITEM, LENGTH) _SPACE_SEP_LIST_##LENGTH(ITEM)
+#define _SPACE_SEP_LIST_13(ITEM) \
+	_SPACE_SEP_LIST_12(ITEM)     \
+	ITEM(13)
 #define _SPACE_SEP_LIST_12(ITEM) \
 	_SPACE_SEP_LIST_11(ITEM)     \
 	ITEM(12)
@@ -262,7 +272,7 @@
 		ss->sem->wait();                                                              \
 	}
 
-#define MAX_CMD_PARAMS 12
+#define MAX_CMD_PARAMS 13
 
 class CommandQueueMT {
 
@@ -290,15 +300,15 @@ class CommandQueueMT {
 	};
 
 	DECL_CMD(0)
-	SPACE_SEP_LIST(DECL_CMD, 12)
+	SPACE_SEP_LIST(DECL_CMD, 13)
 
 	/* comands that return */
 	DECL_CMD_RET(0)
-	SPACE_SEP_LIST(DECL_CMD_RET, 12)
+	SPACE_SEP_LIST(DECL_CMD_RET, 13)
 
 	/* commands that don't return but sync */
 	DECL_CMD_SYNC(0)
-	SPACE_SEP_LIST(DECL_CMD_SYNC, 12)
+	SPACE_SEP_LIST(DECL_CMD_SYNC, 13)
 
 	/***** BASE *******/
 
@@ -432,15 +442,15 @@ class CommandQueueMT {
 public:
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
-	SPACE_SEP_LIST(DECL_PUSH, 12)
+	SPACE_SEP_LIST(DECL_PUSH, 13)
 
 	/* PUSH AND RET COMMANDS */
 	DECL_PUSH_AND_RET(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 12)
+	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 13)
 
 	/* PUSH AND RET SYNC COMMANDS*/
 	DECL_PUSH_AND_SYNC(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 12)
+	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 13)
 
 	void wait_and_flush_one() {
 		ERR_FAIL_COND(!sync);

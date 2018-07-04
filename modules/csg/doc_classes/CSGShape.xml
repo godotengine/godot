@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGShape" inherits="VisualInstance" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_root_shape" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape.Operation">
+		</member>
+		<member name="snap" type="float" setter="set_snap" getter="get_snap">
+		</member>
+		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision">
+		</member>
+	</members>
+	<constants>
+		<constant name="OPERATION_UNION" value="0" enum="Operation">
+		</constant>
+		<constant name="OPERATION_INTERSECTION" value="1" enum="Operation">
+		</constant>
+		<constant name="OPERATION_SUBTRACTION" value="2" enum="Operation">
+		</constant>
+	</constants>
+</class>

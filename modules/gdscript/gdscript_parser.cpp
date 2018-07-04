@@ -716,6 +716,14 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					expr = constant;
 					bfn = true;
 				}
+
+				if (!bfn && GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
+					//check from singletons
+					ConstantNode *constant = alloc_node<ConstantNode>();
+					constant->value = GDScriptLanguage::get_singleton()->get_named_globals_map()[identifier];
+					expr = constant;
+					bfn = true;
+				}
 			}
 
 			if (!bfn) {
@@ -970,7 +978,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		}
 
 		if (!expr) {
-			ERR_EXPLAIN("GDScriptParser bug, couldn't figure out what expression is..");
+			ERR_EXPLAIN("GDScriptParser bug, couldn't figure out what expression is...");
 			ERR_FAIL_COND_V(!expr, NULL);
 		}
 
@@ -1305,7 +1313,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression..");
+					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
@@ -1324,7 +1332,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		} else if (is_ternary) {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1343,7 +1351,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1380,7 +1388,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1390,7 +1398,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3365,7 +3373,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->line = fnline;
 
 				function->rpc_mode = rpc_mode;
-				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (_static)
 					p_class->static_functions.push_back(function);
@@ -3440,6 +3448,22 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 
 					tokenizer->advance();
+
+					String hint_prefix = "";
+					bool is_arrayed = false;
+
+					while (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE &&
+							tokenizer->get_token_type() == Variant::ARRAY &&
+							tokenizer->get_token(1) == GDScriptTokenizer::TK_COMMA) {
+						tokenizer->advance(); // Array
+						tokenizer->advance(); // Comma
+						if (is_arrayed) {
+							hint_prefix += itos(Variant::ARRAY) + ":";
+						} else {
+							is_arrayed = true;
+						}
+					}
+
 					if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 
 						Variant::Type type = tokenizer->get_token_type();
@@ -3454,28 +3478,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						current_export.type = type;
 						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 						tokenizer->advance();
-
-						String hint_prefix = "";
-
-						if (type == Variant::ARRAY && tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-							tokenizer->advance();
-
-							while (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
-								type = tokenizer->get_token_type();
-
-								tokenizer->advance();
-
-								if (type == Variant::ARRAY) {
-									hint_prefix += itos(Variant::ARRAY) + ":";
-									if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-										tokenizer->advance();
-									}
-								} else {
-									hint_prefix += itos(type);
-									break;
-								}
-							}
-						}
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 							// hint expected next!
@@ -3830,13 +3832,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								} break;
 							}
 						}
-						if (current_export.type == Variant::ARRAY && !hint_prefix.empty()) {
-							if (current_export.hint) {
-								hint_prefix += "/" + itos(current_export.hint);
-							}
-							current_export.hint_string = hint_prefix + ":" + current_export.hint_string;
-							current_export.hint = PROPERTY_HINT_NONE;
-						}
 
 					} else {
 
@@ -3923,13 +3918,23 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 
+					if (is_arrayed) {
+						hint_prefix += itos(current_export.type);
+						if (current_export.hint) {
+							hint_prefix += "/" + itos(current_export.hint);
+						}
+						current_export.hint_string = hint_prefix + ":" + current_export.hint_string;
+						current_export.hint = PROPERTY_HINT_TYPE_STRING;
+						current_export.type = Variant::ARRAY;
+					}
+
 					tokenizer->advance();
 				}
 
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC) {
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVESYNC) {
 
 					current_export = PropertyInfo();
-					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave' or 'sync'.");
+					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave', 'sync', 'remotesync', 'mastersync', 'slavesync'.");
 					return;
 				}
 
@@ -3962,7 +3967,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 				}
-				rpc_mode = ScriptInstance::RPC_MODE_REMOTE;
+				rpc_mode = MultiplayerAPI::RPC_MODE_REMOTE;
 
 				continue;
 			} break;
@@ -3983,7 +3988,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_MASTER;
+				rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_SLAVE: {
@@ -4003,9 +4008,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_SLAVE;
+				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVE;
 				continue;
 			} break;
+			case GDScriptTokenizer::TK_PR_REMOTESYNC:
 			case GDScriptTokenizer::TK_PR_SYNC: {
 
 				//may be fallthrough from export, ignore if so
@@ -4018,7 +4024,37 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				rpc_mode = ScriptInstance::RPC_MODE_SYNC;
+				rpc_mode = MultiplayerAPI::RPC_MODE_SYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_MASTERSYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_SLAVESYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_SLAVESYNC;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_VAR: {
@@ -4048,7 +4084,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance();
 
-				rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -4057,7 +4093,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 #endif
 					tokenizer->advance();
 
-					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport);
+					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport || member._export.type != Variant::NIL);
 					if (!subexpr) {
 						if (_recover_from_completion()) {
 							break;
@@ -4090,7 +4126,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else*/ {
+						} else*/
+						{
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 
@@ -4472,7 +4509,7 @@ void GDScriptParser::clear() {
 	current_class = NULL;
 
 	completion_found = false;
-	rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 	current_function = NULL;
 

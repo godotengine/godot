@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_buffered_fa.h"
 #include "core/project_settings.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -125,13 +126,20 @@ void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	use_gl2 = p_video_driver != 1;
+	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
+	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
+	use_gl2 = !use_gl3;
 
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud, use_gl2);
 
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
+	if (use_gl2) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		RasterizerGLES3::register_config();
+		RasterizerGLES3::make_current();
+	}
 
 	visual_server = memnew(VisualServerRaster);
 	/*	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -330,17 +338,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				{
-					Ref<InputEventMouseButton> ev;
-					ev.instance();
-					ev->set_button_index(BUTTON_LEFT);
-					ev->set_button_mask(BUTTON_MASK_LEFT);
-					ev->set_pressed(false);
-					ev->set_position(touch[0].pos);
-					ev->set_global_position(touch[0].pos);
-					input->parse_input_event(ev);
-				}
-
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;
@@ -358,21 +355,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				touch[i].pos = p_points[i].pos;
 			}
 
-			{
-				//send mouse
-				Ref<InputEventMouseButton> ev;
-				ev.instance();
-				// ev.type = Ref<InputEvent>::MOUSE_BUTTON;
-				ev->set_button_index(BUTTON_LEFT);
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_pressed(true);
-				ev->set_position(touch[0].pos);
-				ev->set_global_position(touch[0].pos);
-				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
-				last_mouse = touch[0].pos;
-				input->parse_input_event(ev);
-			}
-
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
 
@@ -386,19 +368,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 		} break;
 		case 1: { //motion
-
-			if (p_points.size()) {
-				//send mouse, should look for point 0?
-				Ref<InputEventMouseMotion> ev;
-				ev.instance();
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_position(p_points[0].pos);
-				input->set_mouse_position(Point2(ev->get_position().x, ev->get_position().y));
-				ev->set_speed(input->get_last_mouse_speed());
-				ev->set_relative(p_points[0].pos - last_mouse);
-				last_mouse = p_points[0].pos;
-				input->parse_input_event(ev);
-			}
 
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
@@ -432,16 +401,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				Ref<InputEventMouseButton> ev;
-				ev.instance();
-				ev->set_button_index(BUTTON_LEFT);
-				ev->set_button_mask(BUTTON_MASK_LEFT);
-				ev->set_pressed(false);
-				ev->set_position(touch[0].pos);
-				ev->set_global_position(touch[0].pos);
-				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
-				input->parse_input_event(ev);
-
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;
@@ -733,7 +692,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -755,6 +714,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	get_screen_dpi_func = p_get_screen_dpi_func;
 	get_unique_id_func = p_get_unique_id;
 	get_system_dir_func = p_get_sdir_func;
+	get_gl_version_code_func = p_get_gl_version_func;
 
 	video_play_func = p_video_play_func;
 	video_is_playing_func = p_video_is_playing_func;

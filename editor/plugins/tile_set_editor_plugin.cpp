@@ -123,10 +123,10 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
 				if (sb->is_shape_owner_disabled(E->get())) continue;
 
-				Transform2D shape_transform = sb->shape_owner_get_transform(E->get());
+				Transform2D shape_transform = sb->get_transform() * sb->shape_owner_get_transform(E->get());
 				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
 
-				shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				shape_transform[2] -= phys_offset;
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
@@ -149,6 +149,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		p_library->tile_set_light_occluder(id, occluder);
 		p_library->tile_set_occluder_offset(id, -phys_offset);
 		p_library->tile_set_navigation_polygon_offset(id, -phys_offset);
+		p_library->tile_set_z_index(id, mi->get_z_index());
 	}
 }
 
@@ -666,7 +667,7 @@ void TileSetEditor::_on_workspace_draw() {
 							if (mask & TileSet::BIND_BOTTOMRIGHT) {
 								workspace->draw_rect(Rect2(anchor + size / 2, size / 2), c);
 							}
-						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+						} else {
 							if (mask & TileSet::BIND_TOPLEFT) {
 								workspace->draw_rect(Rect2(anchor, size / 3), c);
 							}
@@ -805,7 +806,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							Vector2 coord((int)(mb->get_position().x / (spacing + size.x)), (int)(mb->get_position().y / (spacing + size.y)));
 							Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 							pos = mb->get_position() - pos;
-							uint16_t bit;
+							uint16_t bit = 0;
 							if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 								if (pos.x < size.x / 2) {
 									if (pos.y < size.y / 2) {
@@ -820,7 +821,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										bit = TileSet::BIND_BOTTOMRIGHT;
 									}
 								}
-							} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+							} else {
 								if (pos.x < size.x / 3) {
 									if (pos.y < size.y / 3) {
 										bit = TileSet::BIND_TOPLEFT;
@@ -868,7 +869,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						Vector2 coord((int)(mm->get_position().x / (spacing + size.x)), (int)(mm->get_position().y / (spacing + size.y)));
 						Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 						pos = mm->get_position() - pos;
-						uint16_t bit;
+						uint16_t bit = 0;
 						if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_2X2) {
 							if (pos.x < size.x / 2) {
 								if (pos.y < size.y / 2) {
@@ -883,7 +884,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									bit = TileSet::BIND_BOTTOMRIGHT;
 								}
 							}
-						} else if (tileset->autotile_get_bitmask_mode(get_current_tile()) == TileSet::BITMASK_3X3) {
+						} else {
 							if (pos.x < size.x / 3) {
 								if (pos.y < size.y / 3) {
 									bit = TileSet::BIND_TOPLEFT;
@@ -1146,7 +1147,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				case EDITMODE_COLLISION: {
 					if (!edited_collision_shape.is_null()) {
 						Vector<TileSet::ShapeData> sd = tileset->tile_get_shapes(get_current_tile());
-						int index;
+						int index = -1;
 						for (int i = 0; i < sd.size(); i++) {
 							if (sd[i].shape == edited_collision_shape) {
 								index = i;
@@ -1848,7 +1849,7 @@ void TileSetEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (selected_tile < 0 || tileset.is_null())
 		return;
 
-	p_list->push_back(PropertyInfo(Variant::INT, "bitmask_mode", PROPERTY_HINT_ENUM, "2x2,3x3"));
+	p_list->push_back(PropertyInfo(Variant::INT, "bitmask_mode", PROPERTY_HINT_ENUM, "2x2,3x3 (minimal),3x3"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "layout/tile_size"));
 	p_list->push_back(PropertyInfo(Variant::INT, "layout/spacing", PROPERTY_HINT_RANGE, "0,256,1"));
 }

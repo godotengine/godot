@@ -140,6 +140,18 @@
 				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
+		<method name="area_set_area_monitor_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_collision_layer">
 			<return type="void">
 			</return>
@@ -178,6 +190,16 @@
 				3: Instance ID of the object that entered/exited the area.
 				4: The shape index of the object that entered/exited the area.
 				5: The shape index of the area where the object entered/exited.
+			</description>
+		</method>
+		<method name="area_set_monitorable">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="monitorable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -566,7 +588,7 @@
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -688,7 +710,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assigns a space to the body (see [method create_space]).
+				Assigns a space to the body (see [method space_create]).
 			</description>
 		</method>
 		<method name="body_set_state">

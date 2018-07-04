@@ -11,7 +11,7 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_picker" qualifiers="const">
+		<method name="get_picker">
 			<return type="ColorPicker">
 			</return>
 			<description>
@@ -40,6 +40,10 @@
 			</argument>
 			<description>
 				Emitted when the color changes.
+			</description>
+		</signal>
+		<signal name="popup_closed">
+			<description>
 			</description>
 		</signal>
 	</signals>

@@ -195,7 +195,7 @@ $GODOT_HEAD_INCLUDE
 </head>
 <body>
 	<div id="container">
-		<canvas id="canvas" oncontextmenu="event.preventDefault();" width="640" height="480">
+		<canvas id="canvas" width="640" height="480">
 			HTML5 canvas appears to be unsupported in the current browser.<br />
 			Please try updating or use a different browser.
 		</canvas>
@@ -229,7 +229,7 @@ $GODOT_HEAD_INCLUDE
 
 		(function() {
 
-			const BASENAME = '$GODOT_BASENAME';
+			const MAIN_PACK = '$GODOT_BASENAME.pck';
 			const DEBUG_ENABLED = $GODOT_DEBUG_ENABLED;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
@@ -380,7 +380,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(BASENAME + '.pck').then(() => {
+				engine.startGame(MAIN_PACK).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "io/marshalls.h"
 #include "io/resource_loader.h"
+#include "main/input_default.h"
 #include "message_queue.h"
 #include "node.h"
 #include "os/keyboard.h"
@@ -484,7 +485,9 @@ bool SceneTree::idle(float p_time) {
 
 	idle_process_time = p_time;
 
-	multiplayer_api->poll();
+	if (multiplayer_poll) {
+		multiplayer->poll();
+	}
 
 	emit_signal("idle_frame");
 
@@ -495,7 +498,8 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+
 	if (win_size != last_screen_size) {
 
 		last_screen_size = win_size;
@@ -620,6 +624,13 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
 
+			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
+				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+				if (id) {
+					id->ensure_touch_mouse_raised();
+				}
+			}
+
 			get_root()->propagate_notification(p_notification);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -644,6 +655,11 @@ void SceneTree::_notification(int p_notification) {
 #ifdef TOOLS_ENABLED
 			}
 #endif
+		} break;
+
+		case NOTIFICATION_CRASH: {
+
+			get_root()->propagate_notification(p_notification);
 		} break;
 
 		default:
@@ -1102,7 +1118,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -1197,16 +1213,20 @@ void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, c
 	_update_root_rect();
 }
 
-#ifdef TOOLS_ENABLED
 void SceneTree::set_edited_scene_root(Node *p_node) {
+#ifdef TOOLS_ENABLED
 	edited_scene_root = p_node;
+#endif
 }
 
 Node *SceneTree::get_edited_scene_root() const {
 
+#ifdef TOOLS_ENABLED
 	return edited_scene_root;
-}
+#else
+	return NULL;
 #endif
+}
 
 void SceneTree::set_current_scene(Node *p_scene) {
 
@@ -1656,70 +1676,78 @@ void SceneTree::_server_disconnected() {
 	emit_signal("server_disconnected");
 }
 
-Ref<MultiplayerAPI> SceneTree::get_multiplayer_api() const {
-	return multiplayer_api;
+Ref<MultiplayerAPI> SceneTree::get_multiplayer() const {
+	return multiplayer;
 }
 
-void SceneTree::set_multiplayer_api(Ref<MultiplayerAPI> p_multiplayer_api) {
-	ERR_FAIL_COND(!p_multiplayer_api.is_valid());
+void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
+	multiplayer_poll = p_enabled;
+}
 
-	if (multiplayer_api.is_valid()) {
-		multiplayer_api->disconnect("network_peer_connected", this, "_network_peer_connected");
-		multiplayer_api->disconnect("network_peer_disconnected", this, "_network_peer_disconnected");
-		multiplayer_api->disconnect("connected_to_server", this, "_connected_to_server");
-		multiplayer_api->disconnect("connection_failed", this, "_connection_failed");
-		multiplayer_api->disconnect("server_disconnected", this, "_server_disconnected");
+bool SceneTree::is_multiplayer_poll_enabled() const {
+	return multiplayer_poll;
+}
+
+void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
+	ERR_FAIL_COND(!p_multiplayer.is_valid());
+
+	if (multiplayer.is_valid()) {
+		multiplayer->disconnect("network_peer_connected", this, "_network_peer_connected");
+		multiplayer->disconnect("network_peer_disconnected", this, "_network_peer_disconnected");
+		multiplayer->disconnect("connected_to_server", this, "_connected_to_server");
+		multiplayer->disconnect("connection_failed", this, "_connection_failed");
+		multiplayer->disconnect("server_disconnected", this, "_server_disconnected");
 	}
 
-	multiplayer_api = p_multiplayer_api;
-	multiplayer_api->set_root_node(root);
+	multiplayer = p_multiplayer;
+	multiplayer->set_root_node(root);
 
-	multiplayer_api->connect("network_peer_connected", this, "_network_peer_connected");
-	multiplayer_api->connect("network_peer_disconnected", this, "_network_peer_disconnected");
-	multiplayer_api->connect("connected_to_server", this, "_connected_to_server");
-	multiplayer_api->connect("connection_failed", this, "_connection_failed");
-	multiplayer_api->connect("server_disconnected", this, "_server_disconnected");
+	multiplayer->connect("network_peer_connected", this, "_network_peer_connected");
+	multiplayer->connect("network_peer_disconnected", this, "_network_peer_disconnected");
+	multiplayer->connect("connected_to_server", this, "_connected_to_server");
+	multiplayer->connect("connection_failed", this, "_connection_failed");
+	multiplayer->connect("server_disconnected", this, "_server_disconnected");
 }
 
 void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer) {
 
-	multiplayer_api->set_network_peer(p_network_peer);
+	multiplayer->set_network_peer(p_network_peer);
 }
 
 Ref<NetworkedMultiplayerPeer> SceneTree::get_network_peer() const {
 
-	return multiplayer_api->get_network_peer();
+	return multiplayer->get_network_peer();
 }
 
 bool SceneTree::is_network_server() const {
 
-	return multiplayer_api->is_network_server();
+	return multiplayer->is_network_server();
 }
 
 bool SceneTree::has_network_peer() const {
-	return multiplayer_api->has_network_peer();
+	return multiplayer->has_network_peer();
 }
 
 int SceneTree::get_network_unique_id() const {
 
-	return multiplayer_api->get_network_unique_id();
+	return multiplayer->get_network_unique_id();
 }
 
 Vector<int> SceneTree::get_network_connected_peers() const {
 
-	return multiplayer_api->get_network_connected_peers();
+	return multiplayer->get_network_connected_peers();
 }
 
 int SceneTree::get_rpc_sender_id() const {
-	return multiplayer_api->get_rpc_sender_id();
+	return multiplayer->get_rpc_sender_id();
 }
 
 void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
-	multiplayer_api->set_refuse_new_network_connections(p_refuse);
+	multiplayer->set_refuse_new_network_connections(p_refuse);
 }
 
 bool SceneTree::is_refusing_new_network_connections() const {
-	return multiplayer_api->is_refusing_new_network_connections();
+	return multiplayer->is_refusing_new_network_connections();
 }
 
 void SceneTree::_bind_methods() {
@@ -1737,10 +1765,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene"), &SceneTree::set_edited_scene_root);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &SceneTree::get_edited_scene_root);
-#endif
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
@@ -1790,8 +1816,10 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 
-	ClassDB::bind_method(D_METHOD("set_multiplayer_api", "multiplayer_api"), &SceneTree::set_multiplayer_api);
-	ClassDB::bind_method(D_METHOD("get_multiplayer_api"), &SceneTree::get_multiplayer_api);
+	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer"), &SceneTree::set_multiplayer);
+	ClassDB::bind_method(D_METHOD("get_multiplayer"), &SceneTree::get_multiplayer);
+	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
+	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &SceneTree::set_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_peer"), &SceneTree::get_network_peer);
 	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
@@ -1815,13 +1843,12 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
-#ifdef TOOLS_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
-#endif
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_api", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer_api", "get_multiplayer_api");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_multiplayer", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node")));
@@ -1926,7 +1953,8 @@ SceneTree::SceneTree() {
 		root->set_world(Ref<World>(memnew(World)));
 
 	// Initialize network state
-	set_multiplayer_api(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
+	multiplayer_poll = true;
+	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
@@ -1982,7 +2010,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_shrink = 1;
 
-	last_screen_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {

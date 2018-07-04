@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		This is a helper class to generate a flat [Button] (see [method Button.set_flat]), creating a ToolButton is equivalent to:
-
 		[codeblock]
 		var btn = Button.new()
 		btn.set_flat(true)

@@ -94,6 +94,14 @@ Point2 Control::_edit_get_position() const {
 	return get_position();
 };
 
+void Control::_edit_set_scale(const Size2 &p_scale) {
+	set_scale(p_scale);
+}
+
+Size2 Control::_edit_get_scale() const {
+	return data.scale;
+}
+
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
 	set_size(p_edit_rect.size.snapped(Vector2(1, 1)));
@@ -147,12 +155,29 @@ Size2 Control::get_custom_minimum_size() const {
 	return data.custom_minimum_size;
 }
 
-Size2 Control::get_combined_minimum_size() const {
+void Control::_update_minimum_size_cache() {
 
 	Size2 minsize = get_minimum_size();
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
-	return minsize;
+
+	bool size_changed = false;
+	if (data.minimum_size_cache != minsize)
+		size_changed = true;
+
+	data.minimum_size_cache = minsize;
+	data.minimum_size_valid = true;
+
+	if (size_changed)
+		minimum_size_changed();
+}
+
+Size2 Control::get_combined_minimum_size() const {
+
+	if (!data.minimum_size_valid) {
+		const_cast<Control *>(this)->_update_minimum_size_cache();
+	}
+	return data.minimum_size_cache;
 }
 
 Size2 Control::_edit_get_minimum_size() const {
@@ -251,14 +276,18 @@ void Control::_update_minimum_size() {
 	if (!is_inside_tree())
 		return;
 
-	data.pending_min_size_update = false;
 	Size2 minsize = get_combined_minimum_size();
 	if (minsize.x > data.size_cache.x ||
 			minsize.y > data.size_cache.y) {
 		_size_changed();
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	data.updating_last_minimum_size = false;
+
+	if (minsize != data.last_minimum_size) {
+		data.last_minimum_size = minsize;
+		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	}
 }
 
 bool Control::_get(const StringName &p_name, Variant &r_ret) const {
@@ -429,8 +458,10 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+		} break;
+		case NOTIFICATION_POST_ENTER_TREE: {
+			data.minimum_size_valid = false;
 			_size_changed();
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -612,13 +643,12 @@ void Control::_notification(int p_notification) {
 
 				if (is_inside_tree()) {
 					_modal_stack_remove();
-					minimum_size_changed();
 				}
 
 				//remove key focus
 				//remove modalness
 			} else {
-
+				data.minimum_size_valid = false;
 				_size_changed();
 			}
 
@@ -1244,21 +1274,23 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_type) c
 	return Theme::get_default()->has_constant(p_name, type);
 }
 
-Size2 Control::get_parent_area_size() const {
+Rect2 Control::get_parent_anchorable_rect() const {
+	if (!is_inside_tree())
+		return Rect2();
 
-	ERR_FAIL_COND_V(!is_inside_tree(), Size2());
-
-	Size2 parent_size;
-
+	Rect2 parent_rect;
 	if (data.parent_canvas_item) {
-
-		parent_size = data.parent_canvas_item->_edit_get_rect().size;
+		parent_rect = data.parent_canvas_item->get_anchorable_rect();
 	} else {
-
-		parent_size = get_viewport()->get_visible_rect().size;
+		parent_rect = get_viewport()->get_visible_rect();
 	}
 
-	return parent_size;
+	return parent_rect;
+}
+
+Size2 Control::get_parent_area_size() const {
+
+	return get_parent_anchorable_rect().size;
 }
 
 void Control::_size_changed() {
@@ -1266,13 +1298,13 @@ void Control::_size_changed() {
 	if (!is_inside_tree())
 		return;
 
-	Size2 parent_size = get_parent_area_size();
+	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	float margin_pos[4];
 
 	for (int i = 0; i < 4; i++) {
 
-		float area = parent_size[i & 1];
+		float area = parent_rect.size[i & 1];
 		margin_pos[i] = data.margin[i] + (data.anchor[i] * area);
 	}
 
@@ -1326,43 +1358,9 @@ void Control::_size_changed() {
 	}
 }
 
-float Control::_get_parent_range(int p_idx) const {
-
-	if (!is_inside_tree()) {
-
-		return 0;
-	}
-	if (data.parent_canvas_item) {
-
-		return data.parent_canvas_item->_edit_get_rect().size[p_idx & 1];
-	} else {
-		return get_viewport()->get_visible_rect().size[p_idx & 1];
-	}
-
-	return 0;
-}
-
-float Control::_get_range(int p_idx) const {
-
-	p_idx &= 1;
-
-	float parent_range = _get_parent_range(p_idx);
-	float from = _a2s(data.margin[p_idx], data.anchor[p_idx], parent_range);
-	float to = _a2s(data.margin[p_idx + 2], data.anchor[p_idx + 2], parent_range);
-
-	return to - from;
-}
-
-float Control::_s2a(float p_val, float p_anchor, float p_range) const {
-	return p_val - (p_anchor * p_range);
-}
-
-float Control::_a2s(float p_val, float p_anchor, float p_range) const {
-	return Math::floor(p_val + (p_anchor * p_range));
-}
-
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
-	float parent_range = _get_parent_range((p_margin == MARGIN_LEFT || p_margin == MARGIN_RIGHT) ? 0 : 1);
+	Rect2 parent_rect = get_parent_anchorable_rect();
+	float parent_range = (p_margin == MARGIN_LEFT || p_margin == MARGIN_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
 	float previous_margin_pos = data.margin[p_margin] + data.anchor[p_margin] * parent_range;
 	float previous_opposite_margin_pos = data.margin[(p_margin + 2) % 4] + data.anchor[(p_margin + 2) % 4] * parent_range;
 
@@ -1378,9 +1376,9 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bo
 	}
 
 	if (!p_keep_margin) {
-		data.margin[p_margin] = _s2a(previous_margin_pos, data.anchor[p_margin], parent_range);
+		data.margin[p_margin] = previous_margin_pos - data.anchor[p_margin] * parent_range;
 		if (p_push_opposite_anchor) {
-			data.margin[(p_margin + 2) % 4] = _s2a(previous_opposite_margin_pos, data.anchor[(p_margin + 2) % 4], parent_range);
+			data.margin[(p_margin + 2) % 4] = previous_opposite_margin_pos - data.anchor[(p_margin + 2) % 4] * parent_range;
 		}
 	}
 	if (is_inside_tree()) {
@@ -1534,8 +1532,7 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		new_size.y = min_size.y;
 	}
 
-	float pw = _get_parent_range(0);
-	float ph = _get_parent_range(1);
+	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	//Left
 	switch (p_preset) {
@@ -1547,21 +1544,21 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[0] = pw * (0.0 - data.anchor[0]) + p_margin;
+			data.margin[0] = parent_rect.size.x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.margin[0] = pw * (0.5 - data.anchor[0]) - new_size.x / 2;
+			data.margin[0] = parent_rect.size.x * (0.5 - data.anchor[0]) - new_size.x / 2 + parent_rect.position.x;
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			data.margin[0] = pw * (1.0 - data.anchor[0]) - new_size.x - p_margin;
+			data.margin[0] = parent_rect.size.x * (1.0 - data.anchor[0]) - new_size.x - p_margin + parent_rect.position.x;
 			break;
 	}
 
@@ -1575,21 +1572,21 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[1] = ph * (0.0 - data.anchor[1]) + p_margin;
+			data.margin[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin + parent_rect.position.y;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.margin[1] = ph * (0.5 - data.anchor[1]) - new_size.y / 2;
+			data.margin[1] = parent_rect.size.y * (0.5 - data.anchor[1]) - new_size.y / 2 + parent_rect.position.y;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_BOTTOM_WIDE:
-			data.margin[1] = ph * (1.0 - data.anchor[1]) - new_size.y - p_margin;
+			data.margin[1] = parent_rect.size.y * (1.0 - data.anchor[1]) - new_size.y - p_margin + parent_rect.position.y;
 			break;
 	}
 
@@ -1599,14 +1596,14 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
 		case PRESET_LEFT_WIDE:
-			data.margin[2] = pw * (0.0 - data.anchor[2]) + new_size.x + p_margin;
+			data.margin[2] = parent_rect.size.x * (0.0 - data.anchor[2]) + new_size.x + p_margin + parent_rect.position.x;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.margin[2] = pw * (0.5 - data.anchor[2]) + new_size.x / 2;
+			data.margin[2] = parent_rect.size.x * (0.5 - data.anchor[2]) + new_size.x / 2 + parent_rect.position.x;
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1617,7 +1614,7 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[2] = pw * (1.0 - data.anchor[2]) - p_margin;
+			data.margin[2] = parent_rect.size.x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
 			break;
 	}
 
@@ -1627,14 +1624,14 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
 		case PRESET_TOP_WIDE:
-			data.margin[3] = ph * (0.0 - data.anchor[3]) + new_size.y + p_margin;
+			data.margin[3] = parent_rect.size.y * (0.0 - data.anchor[3]) + new_size.y + p_margin + parent_rect.position.y;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.margin[3] = ph * (0.5 - data.anchor[3]) + new_size.y / 2;
+			data.margin[3] = parent_rect.size.y * (0.5 - data.anchor[3]) + new_size.y / 2 + parent_rect.position.y;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -1645,7 +1642,7 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_WIDE:
-			data.margin[3] = ph * (1.0 - data.anchor[3]) - p_margin;
+			data.margin[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin + parent_rect.position.y;
 			break;
 	}
 
@@ -1724,31 +1721,29 @@ void Control::set_global_position(const Point2 &p_point) {
 	set_position(inv.xform(p_point));
 }
 
+Rect2 Control::_compute_child_rect(const float p_anchors[4], const float p_margins[4]) const {
+
+	Rect2 anchorable = get_parent_anchorable_rect();
+	Rect2 result = anchorable;
+	for (int i = 0; i < 4; i++) {
+		result.grow_margin((Margin)i, p_anchors[i] * anchorable.get_size()[i % 2] + p_margins[i]);
+	}
+
+	return result;
+}
+
+void Control::_compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]) {
+
+	Size2 parent_rect_size = get_parent_anchorable_rect().size;
+	r_margins[0] = Math::floor(p_rect.position.x - (p_anchors[0] * parent_rect_size.x));
+	r_margins[1] = Math::floor(p_rect.position.y - (p_anchors[1] * parent_rect_size.y));
+	r_margins[2] = Math::floor(p_rect.position.x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x));
+	r_margins[3] = Math::floor(p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y));
+}
+
 void Control::set_position(const Size2 &p_point) {
 
-	float pw = _get_parent_range(0);
-	float ph = _get_parent_range(1);
-
-	float x = _a2s(data.margin[0], data.anchor[0], pw);
-	float y = _a2s(data.margin[1], data.anchor[1], ph);
-	float x2 = _a2s(data.margin[2], data.anchor[2], pw);
-	float y2 = _a2s(data.margin[3], data.anchor[3], ph);
-
-	Size2 ret = Size2(x2 - x, y2 - y);
-	Size2 min = get_combined_minimum_size();
-
-	Size2 size = Size2(MAX(min.width, ret.width), MAX(min.height, ret.height));
-	float w = size.x;
-	float h = size.y;
-
-	x = p_point.x;
-	y = p_point.y;
-
-	data.margin[0] = _s2a(x, data.anchor[0], pw);
-	data.margin[1] = _s2a(y, data.anchor[1], ph);
-	data.margin[2] = _s2a(x + w, data.anchor[2], pw);
-	data.margin[3] = _s2a(y + h, data.anchor[3], ph);
-
+	_compute_margins(Rect2(p_point, data.size_cache), data.anchor, data.margin);
 	_size_changed();
 }
 
@@ -1761,18 +1756,7 @@ void Control::set_size(const Size2 &p_size) {
 	if (new_size.y < min.y)
 		new_size.y = min.y;
 
-	float pw = _get_parent_range(0);
-	float ph = _get_parent_range(1);
-
-	float x = _a2s(data.margin[0], data.anchor[0], pw);
-	float y = _a2s(data.margin[1], data.anchor[1], ph);
-
-	float w = new_size.width;
-	float h = new_size.height;
-
-	data.margin[2] = _s2a(x + w, data.anchor[2], pw);
-	data.margin[3] = _s2a(y + h, data.anchor[3], ph);
-
+	_compute_margins(Rect2(data.pos_cache, new_size), data.anchor, data.margin);
 	_size_changed();
 }
 
@@ -1801,6 +1785,11 @@ Rect2 Control::get_window_rect() const {
 Rect2 Control::get_rect() const {
 
 	return Rect2(get_position(), get_size());
+}
+
+Rect2 Control::get_anchorable_rect() const {
+
+	return Rect2(Point2(), get_size());
 }
 
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
@@ -2302,12 +2291,11 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	Point2 points[4];
 
 	Transform2D xform = get_global_transform();
-	Rect2 rect = _edit_get_rect();
 
-	points[0] = xform.xform(rect.position);
-	points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
-	points[2] = xform.xform(rect.position + rect.size);
-	points[3] = xform.xform(rect.position + Point2(0, rect.size.y));
+	points[0] = xform.xform(Point2());
+	points[1] = xform.xform(Point2(get_size().x, 0));
+	points[2] = xform.xform(get_size());
+	points[3] = xform.xform(Point2(0, get_size().y));
 
 	const Vector2 dir[4] = {
 		Vector2(-1, 0),
@@ -2361,12 +2349,11 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Point2 points[4];
 
 		Transform2D xform = c->get_global_transform();
-		Rect2 rect = c->_edit_get_rect();
 
-		points[0] = xform.xform(rect.position);
-		points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
-		points[2] = xform.xform(rect.position + rect.size);
-		points[3] = xform.xform(rect.position + Point2(0, rect.size.y));
+		points[0] = xform.xform(Point2());
+		points[1] = xform.xform(Point2(get_size().x, 0));
+		points[2] = xform.xform(get_size());
+		points[3] = xform.xform(Point2(0, get_size().y));
 
 		float min = 1e7;
 
@@ -2456,17 +2443,25 @@ void Control::minimum_size_changed() {
 	if (!is_inside_tree() || data.block_minimum_size_adjust)
 		return;
 
-	if (data.pending_min_size_update)
+	Control *invalidate = this;
+
+	//invalidate cache upwards
+	while (invalidate && invalidate->data.minimum_size_valid) {
+		invalidate->data.minimum_size_valid = false;
+		if (invalidate->is_set_as_toplevel())
+			break; // do not go further up
+		invalidate = invalidate->data.parent;
+	}
+
+	if (!is_visible_in_tree())
 		return;
 
-	data.pending_min_size_update = true;
-	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
+	if (data.updating_last_minimum_size)
+		return;
 
-	if (!is_toplevel_control()) {
-		Control *pc = get_parent_control();
-		if (pc)
-			pc->minimum_size_changed();
-	}
+	data.updating_last_minimum_size = true;
+
+	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
 }
 
 int Control::get_v_size_flags() const {
@@ -2857,12 +2852,12 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
 
 	ADD_GROUP("Focus", "focus_");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_left"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_LEFT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
-	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next"), "set_focus_next", "get_focus_next");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous"), "set_focus_previous", "get_focus_previous");
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_LEFT);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 
 	ADD_GROUP("Mouse", "mouse_");
@@ -2977,7 +2972,6 @@ Control::Control() {
 	data.h_size_flags = SIZE_FILL;
 	data.v_size_flags = SIZE_FILL;
 	data.expand = 1;
-	data.pending_min_size_update = false;
 	data.rotation = 0;
 	data.parent_canvas_item = NULL;
 	data.scale = Vector2(1, 1);
@@ -2987,6 +2981,8 @@ Control::Control() {
 	data.disable_visibility_clip = false;
 	data.h_grow = GROW_DIRECTION_END;
 	data.v_grow = GROW_DIRECTION_END;
+	data.minimum_size_valid = false;
+	data.updating_last_minimum_size = false;
 
 	data.clip_contents = false;
 	for (int i = 0; i < 4; i++) {

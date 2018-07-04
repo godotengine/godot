@@ -85,6 +85,7 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_released(const StringName &p_action) const = 0;
+	virtual float get_action_strength(const StringName &p_action) const = 0;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;
@@ -117,8 +118,11 @@ public:
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	virtual bool is_emulating_touchscreen() const = 0;
+	virtual bool is_emulating_touch_from_mouse() const = 0;
+	virtual bool is_emulating_mouse_from_touch() const = 0;
 
+	virtual CursorShape get_default_cursor_shape() = 0;
+	virtual void set_default_cursor_shape(CursorShape p_shape) = 0;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) = 0;
 	virtual void set_mouse_in_window(bool p_in_window) = 0;
 

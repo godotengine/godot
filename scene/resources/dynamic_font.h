@@ -35,6 +35,7 @@
 #include "io/resource_loader.h"
 #include "os/mutex.h"
 #include "os/thread_safe.h"
+#include "pair.h"
 #include "scene/resources/font.h"
 
 #include <ft2build.h>
@@ -49,10 +50,10 @@ class DynamicFontData : public Resource {
 
 public:
 	struct CacheID {
-
 		union {
 			struct {
 				uint32_t size : 16;
+				uint32_t outline_size : 8;
 				bool mipmaps : 1;
 				bool filter : 1;
 			};
@@ -148,7 +149,21 @@ class DynamicFontAtSize : public Reference {
 			texture_idx = 0;
 			v_align = 0;
 		}
+
+		static Character not_found();
 	};
+
+	struct TexturePosition {
+		int index;
+		int x;
+		int y;
+	};
+
+	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	Character _make_outline_char(CharType p_char);
+	float _get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const;
+	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
+	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
 
 	static unsigned long _ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count);
 	static void _ft_stream_close(FT_Stream stream);
@@ -174,10 +189,10 @@ public:
 
 	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only = false) const;
 
 	void set_texture_flags(uint32_t p_flags);
-	bool update_oversampling();
+	void update_oversampling();
 
 	DynamicFontAtSize();
 	~DynamicFontAtSize();
@@ -200,16 +215,22 @@ public:
 private:
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
+	Ref<DynamicFontAtSize> outline_data_at_size;
 
 	Vector<Ref<DynamicFontData> > fallbacks;
 	Vector<Ref<DynamicFontAtSize> > fallback_data_at_size;
+	Vector<Ref<DynamicFontAtSize> > fallback_outline_data_at_size;
 
 	DynamicFontData::CacheID cache_id;
+	DynamicFontData::CacheID outline_cache_id;
+
 	bool valid;
 	int spacing_top;
 	int spacing_bottom;
 	int spacing_char;
 	int spacing_space;
+
+	Color outline_color;
 
 protected:
 	void _reload_cache();
@@ -226,6 +247,12 @@ public:
 
 	void set_size(int p_size);
 	int get_size() const;
+
+	void set_outline_size(int p_size);
+	int get_outline_size() const;
+
+	void set_outline_color(Color p_color);
+	Color get_outline_color() const;
 
 	bool get_use_mipmaps() const;
 	void set_use_mipmaps(bool p_enable);
@@ -251,7 +278,9 @@ public:
 
 	virtual bool is_distance_field_hint() const;
 
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
+	virtual bool has_outline() const;
+
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	SelfList<DynamicFont> font_list;
 

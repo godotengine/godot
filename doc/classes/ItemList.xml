@@ -148,6 +148,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if one or more items are selected.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -189,11 +190,12 @@
 		<method name="move_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_from_idx" type="int">
+			<argument index="0" name="from_idx" type="int">
 			</argument>
-			<argument index="1" name="p_to_idx" type="int">
+			<argument index="1" name="to_idx" type="int">
 			</argument>
 			<description>
+				Moves item at index [code]from_idx[/code] to [code]to_idx[/code].
 			</description>
 		</method>
 		<method name="remove_item">
@@ -346,6 +348,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Ensure there are no items selected.
 			</description>
 		</method>
 	</methods>

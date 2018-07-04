@@ -86,7 +86,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				o = o->_owner;
 			}
 
-			ERR_EXPLAIN("GDScriptCompiler bug..");
+			ERR_EXPLAIN("GDScriptCompiler bug...");
 			ERR_FAIL_V(NULL);
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
@@ -108,6 +108,21 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 #endif
 			return &GDScriptLanguage::get_singleton()->get_global_array()[address];
 		} break;
+#ifdef TOOLS_ENABLED
+		case ADDR_TYPE_NAMED_GLOBAL: {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_INDEX_V(address, _named_globals_count, NULL);
+#endif
+			StringName id = _named_globals_ptr[address];
+
+			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(id)) {
+				return (Variant *)&GDScriptLanguage::get_singleton()->get_named_globals_map()[id];
+			} else {
+				r_error = "Autoload singleton '" + String(id) + "' has been removed.";
+				return NULL;
+			}
+		} break;
+#endif
 		case ADDR_TYPE_NIL: {
 			return &nil;
 		} break;
@@ -1311,9 +1326,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-#endif
 	if (ScriptDebugger::get_singleton())
 		GDScriptLanguage::get_singleton()->exit_function();
+#endif
 
 	if (_stack_size) {
 		//free stack
@@ -1440,7 +1455,7 @@ GDScriptFunction::GDScriptFunction() :
 
 	_stack_size = 0;
 	_call_size = 0;
-	rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED
 	_func_cname = NULL;
@@ -1537,7 +1552,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
 			completed = false;
-			gdfs->previous_state = Ref<GDScriptFunctionState>(this);
+			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
 		}
 	}
 
@@ -1545,10 +1560,10 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 	state.result = Variant();
 
 	if (completed) {
-		GDScriptFunctionState *state = this;
-		while (state != NULL) {
-			state->emit_signal("completed", ret);
-			state = *(state->previous_state);
+		if (first_state.is_valid()) {
+			first_state->emit_signal("completed", ret);
+		} else {
+			emit_signal("completed", ret);
 		}
 	}
 
@@ -1599,7 +1614,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
 			completed = false;
-			gdfs->previous_state = Ref<GDScriptFunctionState>(this);
+			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
 		}
 	}
 
@@ -1607,10 +1622,10 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	state.result = Variant();
 
 	if (completed) {
-		GDScriptFunctionState *state = this;
-		while (state != NULL) {
-			state->emit_signal("completed", ret);
-			state = *(state->previous_state);
+		if (first_state.is_valid()) {
+			first_state->emit_signal("completed", ret);
+		} else {
+			emit_signal("completed", ret);
 		}
 	}
 

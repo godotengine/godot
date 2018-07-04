@@ -500,7 +500,7 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Повежи '%s' са '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
+msgid "Connect..."
 msgstr "Повежи..."
 
 #: editor/connections_dialog.cpp
@@ -925,11 +925,11 @@ msgid "Move Audio Bus"
 msgstr "Помери звучни бас"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
+msgid "Save Audio Bus Layout As..."
 msgstr "Сачувај распоред звучног баса као..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
+msgid "Location for New Layout..."
 msgstr "Локација за нови распоред..."
 
 #: editor/editor_audio_buses.cpp
@@ -1065,11 +1065,11 @@ msgid "Updating Scene"
 msgstr "Ажурирање сцене"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
+msgid "Storing local changes..."
 msgstr "Чувам локалне промене..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
+msgid "Updating scene..."
 msgstr "Ажурирам сцену..."
 
 #: editor/editor_data.cpp
@@ -1140,7 +1140,7 @@ msgid "Show In File Manager"
 msgstr "Покажи у менаџеру датотека"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
+msgid "New Folder..."
 msgstr "Нови директоријум..."
 
 #: editor/editor_file_dialog.cpp
@@ -1402,17 +1402,21 @@ msgstr "Обриши"
 msgid "Clear Output"
 msgstr "Излаз"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Грешка при чувању ресурса!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
+msgid "Save Resource As..."
 msgstr "Сачувај ресурс као..."
 
 #: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
-msgid "I see.."
+msgid "I see..."
 msgstr "Разумем..."
 
 #: editor/editor_node.cpp
@@ -1641,11 +1645,11 @@ msgid "Open Base Scene"
 msgstr "Отвори базну сцену"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Брзо отварање сцене..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Брзо отварање скриптице..."
 
 #: editor/editor_node.cpp
@@ -1657,7 +1661,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Сачувај промене '%s' пре изласка?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Сачувај сцену као..."
 
 #: editor/editor_node.cpp
@@ -1709,7 +1713,7 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Ова акција се не може опозвати. Настави?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Брзо покретање сцене..."
 
 #: editor/editor_node.cpp
@@ -1865,7 +1869,7 @@ msgid "Previous tab"
 msgstr "Претходни таб"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
+msgid "Filter Files..."
 msgstr "Филтрирај датотеке..."
 
 #: editor/editor_node.cpp
@@ -1877,11 +1881,11 @@ msgid "New Scene"
 msgstr "Нова сцена"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
+msgid "New Inherited Scene..."
 msgstr "Нова наслеђена сцена..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
+msgid "Open Scene..."
 msgstr "Отвори сцену..."
 
 #: editor/editor_node.cpp
@@ -1901,15 +1905,15 @@ msgid "Open Recent"
 msgstr "Отвори недавно коришћено"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
+msgid "Convert To..."
 msgstr "Конвертуј у..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
+msgid "MeshLibrary..."
 msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
+msgid "TileSet..."
 msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
@@ -2173,7 +2177,7 @@ msgid "Save the currently edited resource."
 msgstr "Сачувај тренутно измењени ресурс."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
+msgid "Save As..."
 msgstr "Сачувај као..."
 
 #: editor/editor_node.cpp
@@ -2282,7 +2286,7 @@ msgid "Creating Mesh Previews"
 msgstr "Направи приказ мрежа"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
+msgid "Thumbnail..."
 msgstr "Сличица..."
 
 #: editor/editor_plugin_settings.cpp
@@ -2437,7 +2441,7 @@ msgid "(Current)"
 msgstr "(Тренутно)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "Прихватам одредишта, молим сачекајте..."
 
 #: editor/export_template_manager.cpp
@@ -2517,7 +2521,7 @@ msgid "Error requesting url: "
 msgstr "Грешка при захтеву url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
+msgid "Connecting to Mirror..."
 msgstr "Повезивање са одредиштем..."
 
 #: editor/export_template_manager.cpp
@@ -2534,7 +2538,7 @@ msgstr "Не могу решити"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
+msgid "Connecting..."
 msgstr "Повезивање..."
 
 #: editor/export_template_manager.cpp
@@ -2548,7 +2552,7 @@ msgstr "Повезан"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "Захтевање..."
 
 #: editor/export_template_manager.cpp
@@ -2692,11 +2696,11 @@ msgid "Collapse all"
 msgstr "Умањи све"
 
 #: editor/filesystem_dock.cpp
-msgid "Rename.."
+msgid "Rename..."
 msgstr "Преименуј..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "Помери у..."
 
 #: editor/filesystem_dock.cpp
@@ -2709,16 +2713,16 @@ msgid "Instance"
 msgstr "Додај инстанцу"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "Измени зависности..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "Погледај власнике..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "Дуплирај"
 
 #: editor/filesystem_dock.cpp
@@ -2744,7 +2748,7 @@ msgstr "Направи следећу сцену/е као дете одабра
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Скенирање датотека,\n"
 "Молим сачекајте..."
@@ -2812,7 +2816,7 @@ msgid "Import Scene"
 msgstr "Увези сцену"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Увожење сцеене..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2826,7 +2830,7 @@ msgid "Generating for Mesh: "
 msgstr "Генерисање осног поравнаног граничниог оквира (AABB)"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "Обрађивање скриптице..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2842,7 +2846,7 @@ msgid "Error running post-import script:"
 msgstr "Грешка при обрађивању пост-увозне скриптице:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "Чување..."
 
 #: editor/import_dock.cpp
@@ -2862,7 +2866,7 @@ msgid "Import As:"
 msgstr "Увези као:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
+msgid "Preset..."
 msgstr "Поставке..."
 
 #: editor/import_dock.cpp
@@ -3280,7 +3284,7 @@ msgid "Transition Node"
 msgstr "Transition чвор"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
+msgid "Import Animations..."
 msgstr "Увези анимације..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3288,7 +3292,7 @@ msgid "Edit Node Filters"
 msgstr "Измени филтере чвора"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
+msgid "Filters..."
 msgstr "Филтери..."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -3357,7 +3361,7 @@ msgid "Fetching:"
 msgstr "Преузимање:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
+msgid "Resolving..."
 msgstr "Решавање..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3424,7 +3428,7 @@ msgid "Site:"
 msgstr "Веб страница:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
+msgid "Support..."
 msgstr "Подршка..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3614,6 +3618,7 @@ msgid "Use Rotation Snap"
 msgstr "Користи лепљење ротације"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Поставке лепљења..."
 
@@ -3708,6 +3713,16 @@ msgstr "Покажи лељире"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
 msgstr "Покажи водиче"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Прикажи центар"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 прозор"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3999,6 +4014,10 @@ msgid "Mesh has not surface to create outlines from!"
 msgstr "Мрежа нема површине за прављење ивица!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
 msgstr "Неуспех при прављењу ивица!"
 
@@ -4027,7 +4046,7 @@ msgid "Create Convex Collision Sibling"
 msgstr "Направи конвексног сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
+msgid "Create Outline Mesh..."
 msgstr "Направи ивичну мрежу..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4235,7 +4254,7 @@ msgid "Error loading image:"
 msgstr "Грешка при учитавању слике:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
+msgid "No pixels with transparency > 128 in image..."
 msgstr "У слици нема пиксела са транспарентношћу већом од 128..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -4600,7 +4619,7 @@ msgid "Import Theme"
 msgstr "Увези тему"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
+msgid "Save Theme As..."
 msgstr "Сачувај тему као..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4699,7 +4718,7 @@ msgstr "Прикажи панел скриптица"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-msgid "Find.."
+msgid "Find..."
 msgstr "Тражи..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4910,15 +4929,15 @@ msgid "Find Previous"
 msgstr "Нађи претходни"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
+msgid "Replace..."
 msgstr "Замени..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
+msgid "Goto Function..."
 msgstr "Иди на функцију..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
+msgid "Goto Line..."
 msgstr "Иди на линију..."
 
 #: editor/plugins/script_text_editor.cpp
@@ -5375,11 +5394,7 @@ msgid "Transform"
 msgstr "Трансформација"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Конфигуриши лепљење..."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr "Прозор трансформације..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5635,7 +5650,7 @@ msgid "Remove All"
 msgstr "Обриши све"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
+msgid "Edit theme..."
 msgstr "Измени тему..."
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5685,6 +5700,16 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Додај ствар"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "CheckBox Radio1"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Има"
 
@@ -5697,7 +5722,8 @@ msgid "Options"
 msgstr "Опција"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "Има,много,неколико,опција!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5896,7 +5922,7 @@ msgid "Presets"
 msgstr "Поставке"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
+msgid "Add..."
 msgstr "Додај..."
 
 #: editor/project_export.cpp
@@ -5989,6 +6015,11 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Неважеће име."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6180,7 +6211,9 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6208,7 +6241,7 @@ msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6325,10 +6358,6 @@ msgid "Delete Item"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
-msgstr ""
-
-#: editor/project_settings_editor.cpp
 msgid "Already existing"
 msgstr ""
 
@@ -6397,7 +6426,7 @@ msgid "Property:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6493,11 +6522,11 @@ msgid "Easing Out-In"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "File.."
+msgid "File..."
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "Dir.."
+msgid "Dir..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6669,7 +6698,7 @@ msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
+msgid "Save New Scene As..."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -7373,6 +7402,10 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
+msgstr ""
+
 #: modules/mono/editor/godotsharp_editor.cpp
 #, fuzzy
 msgid "Generating solution..."
@@ -8022,8 +8055,18 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
@@ -8106,6 +8149,13 @@ msgstr ""
 msgid "Invalid font size."
 msgstr "Неважећа величина фонта."
 
+#, fuzzy
+#~ msgid "Previous"
+#~ msgstr "Претходни таб"
+
+#~ msgid "Next"
+#~ msgstr "Следеће"
+
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
 #~ "identifier."
@@ -8115,9 +8165,6 @@ msgstr "Неважећа величина фонта."
 
 #~ msgid "Can't write file."
 #~ msgstr "Неуспех при записивању датотеке."
-
-#~ msgid "Next"
-#~ msgstr "Следеће"
 
 #~ msgid "Not found!"
 #~ msgstr "Није пронађено!"

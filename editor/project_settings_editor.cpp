@@ -149,53 +149,71 @@ void ProjectSettingsEditor::_action_edited() {
 	if (!ti)
 		return;
 
-	String new_name = ti->get_text(0);
-	String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
+	if (input_editor->get_selected_column() == 0) {
 
-	if (new_name == old_name)
-		return;
+		String new_name = ti->get_text(0);
+		String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
 
-	if (new_name == "" || !_validate_action_name(new_name)) {
+		if (new_name == old_name)
+			return;
 
-		ti->set_text(0, old_name);
-		add_at = "input/" + old_name;
+		if (new_name == "" || !_validate_action_name(new_name)) {
 
-		message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
-		message->popup_centered(Size2(300, 100) * EDSCALE);
-		return;
+			ti->set_text(0, old_name);
+			add_at = "input/" + old_name;
+
+			message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			message->popup_centered(Size2(300, 100) * EDSCALE);
+			return;
+		}
+
+		String action_prop = "input/" + new_name;
+
+		if (ProjectSettings::get_singleton()->has_setting(action_prop)) {
+
+			ti->set_text(0, old_name);
+			add_at = "input/" + old_name;
+
+			message->set_text(vformat(TTR("Action '%s' already exists!"), new_name));
+			message->popup_centered(Size2(300, 100) * EDSCALE);
+			return;
+		}
+
+		int order = ProjectSettings::get_singleton()->get_order(add_at);
+		Dictionary action = ProjectSettings::get_singleton()->get(add_at);
+
+		setting = true;
+		undo_redo->create_action(TTR("Rename Input Action Event"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", add_at);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_prop, action);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", action_prop, order);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", action_prop);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", add_at, action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", add_at, order);
+		undo_redo->add_do_method(this, "_update_actions");
+		undo_redo->add_undo_method(this, "_update_actions");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+		setting = false;
+
+		add_at = action_prop;
+	} else if (input_editor->get_selected_column() == 1) {
+
+		String name = "input/" + ti->get_text(0);
+		Dictionary old_action = ProjectSettings::get_singleton()->get(name);
+		Dictionary new_action = old_action.duplicate();
+		new_action["deadzone"] = ti->get_range(1);
+
+		undo_redo->create_action(TTR("Change Action deadzone"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, new_action);
+		undo_redo->add_do_method(this, "_update_actions");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_action);
+		undo_redo->add_undo_method(this, "_update_actions");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
 	}
-
-	String action_prop = "input/" + new_name;
-
-	if (ProjectSettings::get_singleton()->has_setting(action_prop)) {
-
-		ti->set_text(0, old_name);
-		add_at = "input/" + old_name;
-
-		message->set_text(vformat(TTR("Action '%s' already exists!"), new_name));
-		message->popup_centered(Size2(300, 100) * EDSCALE);
-		return;
-	}
-
-	int order = ProjectSettings::get_singleton()->get_order(add_at);
-	Array va = ProjectSettings::get_singleton()->get(add_at);
-
-	setting = true;
-	undo_redo->create_action(TTR("Rename Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", add_at);
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_prop, va);
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", action_prop, order);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", action_prop);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", add_at, va);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", add_at, order);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
-	setting = false;
-
-	add_at = action_prop;
 }
 
 void ProjectSettingsEditor::_device_input_add() {
@@ -203,8 +221,9 @@ void ProjectSettingsEditor::_device_input_add() {
 	Ref<InputEvent> ie;
 	String name = add_at;
 	int idx = edit_idx;
-	Array old_val = ProjectSettings::get_singleton()->get(name);
-	Array arr = old_val.duplicate();
+	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
+	Dictionary action = old_val.duplicate();
+	Array events = action["events"];
 
 	switch (add_type) {
 
@@ -215,9 +234,9 @@ void ProjectSettingsEditor::_device_input_add() {
 			mb->set_button_index(device_index->get_selected() + 1);
 			mb->set_device(_get_current_device());
 
-			for (int i = 0; i < arr.size(); i++) {
+			for (int i = 0; i < events.size(); i++) {
 
-				Ref<InputEventMouseButton> aie = arr[i];
+				Ref<InputEventMouseButton> aie = events[i];
 				if (aie.is_null())
 					continue;
 				if (aie->get_device() == mb->get_device() && aie->get_button_index() == mb->get_button_index()) {
@@ -236,11 +255,12 @@ void ProjectSettingsEditor::_device_input_add() {
 			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
 			jm->set_device(_get_current_device());
 
-			for (int i = 0; i < arr.size(); i++) {
+			for (int i = 0; i < events.size(); i++) {
 
-				Ref<InputEventJoypadMotion> aie = arr[i];
+				Ref<InputEventJoypadMotion> aie = events[i];
 				if (aie.is_null())
 					continue;
+
 				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
 					return;
 				}
@@ -257,9 +277,9 @@ void ProjectSettingsEditor::_device_input_add() {
 			jb->set_button_index(device_index->get_selected());
 			jb->set_device(_get_current_device());
 
-			for (int i = 0; i < arr.size(); i++) {
+			for (int i = 0; i < events.size(); i++) {
 
-				Ref<InputEventJoypadButton> aie = arr[i];
+				Ref<InputEventJoypadButton> aie = events[i];
 				if (aie.is_null())
 					continue;
 				if (aie->get_device() == jb->get_device() && aie->get_button_index() == jb->get_button_index()) {
@@ -272,14 +292,15 @@ void ProjectSettingsEditor::_device_input_add() {
 		default: {}
 	}
 
-	if (idx < 0 || idx >= arr.size()) {
-		arr.push_back(ie);
+	if (idx < 0 || idx >= events.size()) {
+		events.push_back(ie);
 	} else {
-		arr[idx] = ie;
+		events[idx] = ie;
 	}
+	action["events"] = events;
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
 	undo_redo->add_do_method(this, "_update_actions");
 	undo_redo->add_undo_method(this, "_update_actions");
@@ -320,12 +341,13 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	String name = add_at;
 	int idx = edit_idx;
 
-	Array old_val = ProjectSettings::get_singleton()->get(name);
-	Array arr = old_val.duplicate();
+	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
+	Dictionary action = old_val.duplicate();
+	Array events = action["events"];
 
-	for (int i = 0; i < arr.size(); i++) {
+	for (int i = 0; i < events.size(); i++) {
 
-		Ref<InputEventKey> aie = arr[i];
+		Ref<InputEventKey> aie = events[i];
 		if (aie.is_null())
 			continue;
 		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
@@ -333,14 +355,15 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		}
 	}
 
-	if (idx < 0 || idx >= arr.size()) {
-		arr.push_back(ie);
+	if (idx < 0 || idx >= events.size()) {
+		events.push_back(ie);
 	} else {
-		arr[idx] = ie;
+		events[idx] = ie;
 	}
+	action["events"] = events;
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, arr);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
 	undo_redo->add_do_method(this, "_update_actions");
 	undo_redo->add_undo_method(this, "_update_actions");
@@ -414,10 +437,11 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 		case INPUT_KEY: {
 
-			press_a_key_label->set_text(TTR("Press a Key.."));
+			press_a_key_label->set_text(TTR("Press a Key..."));
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
+
 		} break;
 		case INPUT_MOUSE_BUTTON: {
 
@@ -443,6 +467,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
+
 		} break;
 		case INPUT_JOY_MOTION: {
 
@@ -464,6 +489,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 				_set_current_device(0);
 				device_input->get_ok()->set_text(TTR("Add"));
 			}
+
 		} break;
 		case INPUT_JOY_BUTTON: {
 
@@ -522,18 +548,17 @@ void ProjectSettingsEditor::_action_activated() {
 
 	String name = "input/" + ti->get_parent()->get_text(0);
 	int idx = ti->get_metadata(0);
-	Array va = ProjectSettings::get_singleton()->get(name);
+	Dictionary action = ProjectSettings::get_singleton()->get(name);
+	Array events = action["events"];
 
-	ERR_FAIL_INDEX(idx, va.size());
-
-	Ref<InputEvent> ie = va[idx];
-
-	if (ie.is_null())
+	ERR_FAIL_INDEX(idx, events.size());
+	Ref<InputEvent> event = events[idx];
+	if (event.is_null())
 		return;
 
 	add_at = name;
 	edit_idx = idx;
-	_edit_item(ie);
+	_edit_item(event);
 }
 
 void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, int p_id) {
@@ -543,6 +568,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 	ERR_FAIL_COND(!ti);
 
 	if (p_id == 1) {
+		// Add action event
 		Point2 ofs = input_editor->get_global_position();
 		Rect2 ir = input_editor->get_item_rect(ti);
 		ir.position.y -= input_editor->get_scroll().y;
@@ -554,14 +580,12 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 		edit_idx = -1;
 
 	} else if (p_id == 2) {
-		//remove
+		// Remove
 
 		if (ti->get_parent() == input_editor->get_root()) {
-
-			//remove main thing
-
+			// Remove action
 			String name = "input/" + ti->get_text(0);
-			Variant old_val = ProjectSettings::get_singleton()->get(name);
+			Dictionary old_val = ProjectSettings::get_singleton()->get(name);
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
 			undo_redo->create_action(TTR("Erase Input Action"));
@@ -575,24 +599,19 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			undo_redo->commit_action();
 
 		} else {
-			//remove action
+			// Remove action event
 			String name = "input/" + ti->get_parent()->get_text(0);
-			Variant old_val = ProjectSettings::get_singleton()->get(name);
+			Dictionary old_val = ProjectSettings::get_singleton()->get(name);
+			Dictionary action = old_val.duplicate();
 			int idx = ti->get_metadata(0);
 
-			Array va = old_val;
-
-			ERR_FAIL_INDEX(idx, va.size());
-
-			for (int i = idx; i < va.size() - 1; i++) {
-
-				va[i] = va[i + 1];
-			}
-
-			va.resize(va.size() - 1);
+			Array events = action["events"];
+			ERR_FAIL_INDEX(idx, events.size());
+			events.remove(idx);
+			action["events"] = events;
 
 			undo_redo->create_action(TTR("Erase Input Action Event"));
-			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
 			undo_redo->add_do_method(this, "_update_actions");
 			undo_redo->add_undo_method(this, "_update_actions");
@@ -601,30 +620,31 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			undo_redo->commit_action();
 		}
 	} else if (p_id == 3) {
-		//edit
+		// Edit
 
 		if (ti->get_parent() == input_editor->get_root()) {
-
+			// Edit action name
 			ti->set_as_cursor(0);
 			input_editor->edit_selected();
 
 		} else {
-			//edit action
+			// Edit action event
 			String name = "input/" + ti->get_parent()->get_text(0);
 			int idx = ti->get_metadata(0);
-			Array va = ProjectSettings::get_singleton()->get(name);
+			Dictionary action = ProjectSettings::get_singleton()->get(name);
 
-			ERR_FAIL_INDEX(idx, va.size());
+			Array events = action["events"];
+			ERR_FAIL_INDEX(idx, events.size());
 
-			Ref<InputEvent> ie = va[idx];
+			Ref<InputEvent> event = events[idx];
 
-			if (ie.is_null())
+			if (event.is_null())
 				return;
 
 			ti->set_as_cursor(0);
 			add_at = name;
 			edit_idx = idx;
-			_edit_item(ie);
+			_edit_item(event);
 		}
 	}
 }
@@ -651,26 +671,34 @@ void ProjectSettingsEditor::_update_actions() {
 		if (name == "")
 			continue;
 
+		Dictionary action = ProjectSettings::get_singleton()->get(pi.name);
+		Array events = action["events"];
+
 		TreeItem *item = input_editor->create_item(root);
 		item->set_text(0, name);
-		item->add_button(0, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
-		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
-			item->set_editable(0, true);
-		}
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
 
-		Array actions = ProjectSettings::get_singleton()->get(pi.name);
+		item->set_editable(1, true);
+		item->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
+		item->set_range_config(1, 0.0, 1.0, 0.01);
+		item->set_range(1, action["deadzone"]);
+		item->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 
-		for (int i = 0; i < actions.size(); i++) {
+		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
+		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
+			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			item->set_editable(2, true);
+		}
 
-			Ref<InputEvent> ie = actions[i];
-			if (ie.is_null())
+		for (int i = 0; i < events.size(); i++) {
+
+			Ref<InputEvent> event = events[i];
+			if (event.is_null())
 				continue;
 
 			TreeItem *action = input_editor->create_item(item);
 
-			Ref<InputEventKey> k = ie;
+			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 
 				String str = keycode_get_string(k->get_scancode()).capitalize();
@@ -687,7 +715,7 @@ void ProjectSettingsEditor::_update_actions() {
 				action->set_icon(0, get_icon("Keyboard", "EditorIcons"));
 			}
 
-			Ref<InputEventJoypadButton> jb = ie;
+			Ref<InputEventJoypadButton> jb = event;
 
 			if (jb.is_valid()) {
 
@@ -701,7 +729,7 @@ void ProjectSettingsEditor::_update_actions() {
 				action->set_icon(0, get_icon("JoyButton", "EditorIcons"));
 			}
 
-			Ref<InputEventMouseButton> mb = ie;
+			Ref<InputEventMouseButton> mb = event;
 
 			if (mb.is_valid()) {
 				String str = _get_device_string(mb->get_device()) + ", ";
@@ -718,7 +746,7 @@ void ProjectSettingsEditor::_update_actions() {
 				action->set_icon(0, get_icon("Mouse", "EditorIcons"));
 			}
 
-			Ref<InputEventJoypadMotion> jm = ie;
+			Ref<InputEventJoypadMotion> jm = event;
 
 			if (jm.is_valid()) {
 
@@ -729,10 +757,11 @@ void ProjectSettingsEditor::_update_actions() {
 				action->set_text(0, str);
 				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
-			action->add_button(0, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
-			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);
-			action->set_meta("__input", ie);
+			action->set_meta("__input", event);
+
+			action->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			action->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 		}
 	}
 
@@ -745,7 +774,14 @@ void ProjectSettingsEditor::popup_project_settings() {
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
 	} else {
-		popup_centered_ratio();
+
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		popup_centered(popup_size);
 	}
 	globals_editor->update_category_list();
 	_update_translations();
@@ -755,7 +791,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 void ProjectSettingsEditor::_item_selected() {
 
-	TreeItem *ti = globals_editor->get_property_editor()->get_scene_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -864,7 +900,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 
 		if (!_validate_action_name(p_action)) {
 
-			action_add_error->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			action_add_error->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
@@ -892,10 +928,12 @@ void ProjectSettingsEditor::_action_adds(String) {
 
 void ProjectSettingsEditor::_action_add() {
 
-	Array va;
+	Dictionary action;
+	action["events"] = Array();
+	action["deadzone"] = 0.5f;
 	String name = "input/" + action_name->get_text();
 	undo_redo->create_action(TTR("Add Input Action"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 	undo_redo->add_do_method(this, "_update_actions");
 	undo_redo->add_undo_method(this, "_update_actions");
@@ -1695,7 +1733,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected", this, "_item_selected");
+	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
 	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 
@@ -1707,7 +1745,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(memnew(VSeparator));
 
 	popup_copy_to_feature = memnew(MenuButton);
-	popup_copy_to_feature->set_text(TTR("Override For.."));
+	popup_copy_to_feature->set_text(TTR("Override For..."));
 	popup_copy_to_feature->set_disabled(true);
 	add_prop_bar->add_child(popup_copy_to_feature);
 
@@ -1758,6 +1796,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor = memnew(Tree);
 	vbc->add_child(input_editor);
 	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	input_editor->set_columns(3);
+	input_editor->set_column_titles_visible(true);
+	input_editor->set_column_title(0, TTR("Action"));
+	input_editor->set_column_title(1, TTR("Deadzone"));
+	input_editor->set_column_expand(1, false);
+	input_editor->set_column_min_width(1, 80);
+	input_editor->set_column_expand(2, false);
+	input_editor->set_column_min_width(2, 50);
 	input_editor->connect("item_edited", this, "_action_edited");
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
@@ -1771,7 +1817,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_child(press_a_key);
 
 	l = memnew(Label);
-	l->set_text(TTR("Press a Key.."));
+	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
@@ -1834,7 +1880,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1858,7 +1904,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
-		Button *addtr = memnew(Button(TTR("Add..")));
+		Button *addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -1879,7 +1925,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
-		addtr = memnew(Button(TTR("Add..")));
+		addtr = memnew(Button(TTR("Add...")));
 		addtr->connect("pressed", this, "_translation_res_option_file_open");
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);

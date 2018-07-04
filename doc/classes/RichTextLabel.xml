@@ -8,7 +8,7 @@
 		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/gui/bbcode_in_richtextlabel.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/gui/bbcode_in_richtextlabel.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -45,6 +45,13 @@
 			</return>
 			<description>
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
+			</description>
+		</method>
+		<method name="get_content_height">
+			<return type="int">
+			</return>
+			<description>
+				Returns the height of the content.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -319,6 +326,8 @@
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
+		<theme_item name="font_color_shadow" type="Color">
+		</theme_item>
 		<theme_item name="italics_font" type="Font">
 		</theme_item>
 		<theme_item name="line_separation" type="int">
@@ -330,6 +339,12 @@
 		<theme_item name="normal_font" type="Font">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
+		</theme_item>
+		<theme_item name="shadow_as_outline" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_x" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_y" type="int">
 		</theme_item>
 		<theme_item name="table_hseparation" type="int">
 		</theme_item>

@@ -1625,14 +1625,14 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
 
 	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
@@ -2207,6 +2207,37 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 	return scalar_types[p_type];
 }
 
+int ShaderLanguage::get_cardinality(DataType p_type) {
+	static const int cardinality_table[] = {
+		0,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		1,
+		2,
+		3,
+		4,
+		2,
+		3,
+		4,
+		1,
+		1,
+		1,
+		1,
+	};
+
+	return cardinality_table[p_type];
+}
+
 bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier) {
 
 	identifier = StringName();
@@ -2269,7 +2300,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 	if (p_node->type == Node::TYPE_OPERATOR) {
 
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
-		if (op->type == OP_INDEX) {
+		if (op->op == OP_INDEX) {
 			return _validate_assign(op->arguments[0], p_builtin_types);
 		}
 	}
@@ -2677,7 +2708,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return NULL;
 				}
 
-				bool index_valid = false;
 				DataType member_type = TYPE_VOID;
 
 				switch (expr->get_datatype()) {
@@ -2696,7 +2726,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC2: member_type = TYPE_BOOL; break;
 							case TYPE_VEC2: member_type = TYPE_FLOAT; break;
@@ -2721,7 +2751,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC3: member_type = TYPE_BOOL; break;
 							case TYPE_VEC3: member_type = TYPE_FLOAT; break;
@@ -2745,7 +2775,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_error("Only integer constants are allowed as index at the moment");
 							return NULL;
 						}
-						index_valid = true;
+
 						switch (expr->get_datatype()) {
 							case TYPE_BVEC4: member_type = TYPE_BOOL; break;
 							case TYPE_VEC4: member_type = TYPE_FLOAT; break;
@@ -2758,11 +2788,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error("Object of type '" + get_datatype_name(expr->get_datatype()) + "' can't be indexed");
 						return NULL;
 					}
-				}
-
-				if (!index_valid) {
-					_set_error("Invalid index");
-					return NULL;
 				}
 
 				OperatorNode *op = alloc_node<OperatorNode>();
@@ -2966,7 +2991,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression..");
+					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
@@ -3003,12 +3028,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else if (is_ternary) {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
 			if (next_op + 2 >= expression.size() || !expression[next_op + 2].is_op || expression[next_op + 2].op != OP_SELECT_ELSE) {
-				_set_error("Mising matching ':' for select operator");
+				_set_error("Missing matching ':' for select operator");
 				return NULL;
 			}
 
@@ -3039,7 +3064,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3048,7 +3073,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -3064,7 +3089,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				// can be followed by a unary op in a valid combination,
 				// due to how precedence works, unaries will always disappear first
 
-				_set_error("Parser bug..");
+				_set_error("Parser bug...");
 			}
 
 			op->arguments.push_back(expression[next_op - 1].node); //expression goes as left
@@ -3117,9 +3142,18 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 				if (get_scalar_type(cn->datatype) == base) {
 
-					for (int j = 0; j < cn->values.size(); j++) {
-						values.push_back(cn->values[j]);
-					}
+					int cardinality = get_cardinality(op->arguments[i]->get_datatype());
+					if (cn->values.size() == cardinality) {
+
+						for (int j = 0; j < cn->values.size(); j++) {
+							values.push_back(cn->values[j]);
+						}
+					} else if (cn->values.size() == 1) {
+
+						for (int j = 0; j < cardinality; j++) {
+							values.push_back(cn->values[0]);
+						}
+					} // else: should be filtered by the parser as it's an invalid constructor
 				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
 
 					ConstantNode::Value v;
@@ -3213,7 +3247,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				precision = get_token_precision(tk.type);
 				tk = _get_token();
 				if (!is_token_nonvoid_datatype(tk.type)) {
-					_set_error("Expected datatype after precission");
+					_set_error("Expected datatype after precision");
 					return ERR_PARSE_ERROR;
 				}
 			}
@@ -3511,7 +3545,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			if (!p_can_break) {
 				//all is good
-				_set_error("Contiuning is not allowed here");
+				_set_error("Continuing is not allowed here");
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -3662,7 +3696,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					_set_error("void datatype not allowed here");
 					return ERR_PARSE_ERROR;
 				}
-				if (!uniform && type < TYPE_FLOAT && type > TYPE_VEC4) { // FIXME: always false! should it be || instead?
+
+				if (!uniform && (type < TYPE_FLOAT || type > TYPE_VEC4)) {
 					_set_error("Invalid type for varying, only float,vec2,vec3,vec4 allowed.");
 					return ERR_PARSE_ERROR;
 				}

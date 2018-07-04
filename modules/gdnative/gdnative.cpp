@@ -469,7 +469,9 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 
 	godot_variant result = E->get()(procedure_handle, (godot_array *)&p_arguments);
 
-	return *(Variant *)&result;
+	Variant res = *(Variant *)&result;
+	godot_variant_destroy(&result);
+	return res;
 }
 
 Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) {

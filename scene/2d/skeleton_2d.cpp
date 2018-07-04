@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  skeleton_2d.cpp                                                      */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "skeleton_2d.h"
 
 void Bone2D::_notification(int p_what) {
@@ -12,6 +42,8 @@ void Bone2D::_notification(int p_what) {
 				break;
 			if (!Object::cast_to<Bone2D>(parent))
 				break; //skeletons must be chained to Bone2Ds.
+
+			parent = parent->get_parent();
 		}
 
 		if (skeleton) {
@@ -24,6 +56,11 @@ void Bone2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (skeleton) {
 			skeleton->_make_transform_dirty();
+		}
+	}
+	if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
+		if (skeleton) {
+			skeleton->_make_bone_setup_dirty();
 		}
 	}
 
@@ -46,12 +83,22 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rest", "rest"), &Bone2D::set_rest);
 	ClassDB::bind_method(D_METHOD("get_rest"), &Bone2D::get_rest);
 	ClassDB::bind_method(D_METHOD("apply_rest"), &Bone2D::apply_rest);
+	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
+	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
+
+	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
+	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
+
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_length", PROPERTY_HINT_RANGE, "1,1024,1"), "set_default_length", "get_default_length");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
 	rest = p_rest;
 	if (skeleton)
 		skeleton->_make_bone_setup_dirty();
+
+	update_configuration_warning();
 }
 
 Transform2D Bone2D::get_rest() const {
@@ -71,22 +118,54 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
+void Bone2D::set_default_length(float p_length) {
+
+	default_length = p_length;
+}
+
+float Bone2D::get_default_length() const {
+	return default_length;
+}
+
+int Bone2D::get_index_in_skeleton() const {
+	ERR_FAIL_COND_V(!skeleton, -1);
+	skeleton->_update_bone_setup();
+	return skeleton_index;
+}
 String Bone2D::get_configuration_warning() const {
+
+	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
+		if (warning != String()) {
+			warning += "\n";
+		}
 		if (parent_bone) {
-			return TTR("This Bone2D chain should end at a Skeleton2D node.");
+			warning += TTR("This Bone2D chain should end at a Skeleton2D node.");
 		} else {
-			return TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
+			warning += TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
 		}
 	}
 
-	return Node2D::get_configuration_warning();
+	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
+	}
+
+	return warning;
 }
 
 Bone2D::Bone2D() {
 	skeleton = NULL;
 	parent_bone = NULL;
+	skeleton_index = -1;
+	default_length = 16;
 	set_notify_local_transform(true);
+	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
+	for (int i = 0; i < 3; i++) {
+		rest[i] = Vector2(0, 0);
+	}
 }
 
 //////////////////////////////////////
@@ -112,7 +191,14 @@ void Skeleton2D::_update_bone_setup() {
 	bones.sort(); //sorty so they are always in the same order/index
 
 	for (int i = 0; i < bones.size(); i++) {
-		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest(); //bind pose
+		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
+		bones[i].bone->skeleton_index = i;
+		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
+		if (parent_bone) {
+			bones[i].parent_index = parent_bone->skeleton_index;
+		} else {
+			bones[i].parent_index = -1;
+		}
 	}
 
 	transform_dirty = true;
@@ -140,13 +226,20 @@ void Skeleton2D::_update_transform() {
 
 	transform_dirty = false;
 
-	Transform2D global_xform = get_global_transform();
-	Transform2D global_xform_inverse = global_xform.affine_inverse();
+	for (int i = 0; i < bones.size(); i++) {
+
+		ERR_CONTINUE(bones[i].parent_index >= i);
+		if (bones[i].parent_index >= 0) {
+			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
+		} else {
+			bones[i].accum_transform = bones[i].bone->get_transform();
+		}
+	}
 
 	for (int i = 0; i < bones.size(); i++) {
 
-		Transform2D final_xform = bones[i].rest_inverse * bones[i].bone->get_relative_transform_to_parent(this);
-		VS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, global_xform * (final_xform * global_xform_inverse));
+		Transform2D final_xform = bones[i].accum_transform * bones[i].rest_inverse;
+		VS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
 	}
 }
 
@@ -177,10 +270,12 @@ void Skeleton2D::_notification(int p_what) {
 			_update_bone_setup();
 		if (transform_dirty)
 			_update_transform();
+
+		request_ready();
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		_make_transform_dirty();
+		VS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
 	}
 }
 
@@ -201,6 +296,7 @@ void Skeleton2D::_bind_methods() {
 Skeleton2D::Skeleton2D() {
 	bone_setup_dirty = true;
 	transform_dirty = true;
+
 	skeleton = VS::get_singleton()->skeleton_create();
 }
 

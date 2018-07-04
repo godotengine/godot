@@ -5,6 +5,7 @@ Import('env')
 gdn_env = env.Clone()
 gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
 gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
+gdn_env.add_source_files(env.modules_sources, "android/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
@@ -12,6 +13,7 @@ gdn_env.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cp
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
+SConscript("net/SCsub")
 SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 
@@ -23,7 +25,8 @@ def _build_gdnative_api_struct_header(api):
         '\textern const godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct;'
     ]
 
-    for name in api['extensions']:
+    for ext in api['extensions']:
+        name = ext['name']
         gdnative_api_init_macro.append(
             '\textern const godot_gdnative_ext_{0}_api_struct *_gdnative_wrapper_{0}_api_struct;'.format(name))
 
@@ -31,9 +34,10 @@ def _build_gdnative_api_struct_header(api):
     gdnative_api_init_macro.append('\tfor (unsigned int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
     gdnative_api_init_macro.append('\t\tswitch (_gdnative_wrapper_api_struct->extensions[i]->type) {')
 
-    for name in api['extensions']:
+    for ext in api['extensions']:
+        name = ext['name']
         gdnative_api_init_macro.append(
-            '\t\t\tcase GDNATIVE_EXT_%s:' % api['extensions'][name]['type'])
+            '\t\t\tcase GDNATIVE_EXT_%s:' % ext['type'])
         gdnative_api_init_macro.append(
             '\t\t\t\t_gdnative_wrapper_{0}_api_struct = (godot_gdnative_ext_{0}_api_struct *)'
             ' _gdnative_wrapper_api_struct->extensions[i];'.format(name))
@@ -47,6 +51,7 @@ def _build_gdnative_api_struct_header(api):
         '#define GODOT_GDNATIVE_API_STRUCT_H',
         '',
         '#include <gdnative/gdnative.h>',
+        '#include <android/godot_android.h>',
         '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
@@ -61,8 +66,8 @@ def _build_gdnative_api_struct_header(api):
         '\tGDNATIVE_' + api['core']['type'] + ','
     ]
 
-    for name in api['extensions']:
-        out += ['\tGDNATIVE_EXT_' + api['extensions'][name]['type'] + ',']
+    for ext in api['extensions']:
+        out += ['\tGDNATIVE_EXT_' + ext['type'] + ',']
 
     out += ['};', '']
 
@@ -88,8 +93,9 @@ def _build_gdnative_api_struct_header(api):
         return ret_val
 
 
-    for name in api['extensions']:
-        out += generate_extension_struct(name, api['extensions'][name], False)
+    for ext in api['extensions']:
+        name = ext['name']
+        out += generate_extension_struct(name, ext, False)
 
     out += [
         'typedef struct godot_gdnative_core_api_struct {',
@@ -151,12 +157,14 @@ def _build_gdnative_api_struct_source(api):
 
         return ret_val
 
-    for name in api['extensions']:
-        out += get_extension_struct_definition(name, api['extensions'][name], False)
+    for ext in api['extensions']:
+        name = ext['name']
+        out += get_extension_struct_definition(name, ext, False)
 
     out += ['', 'const godot_gdnative_api_struct *gdnative_extensions_pointers[] = {']
 
-    for name in api['extensions']:
+    for ext in api['extensions']:
+        name = ext['name']
         out += ['\t(godot_gdnative_api_struct *)&api_extension_' + name + '_struct,']
 
     out += ['};\n']
@@ -189,7 +197,7 @@ def build_gdnative_api_struct(target, source, env):
     with open(source.path, 'w') as fd:
         fd.write(_build_gdnative_api_struct_source(api))
 
-_, gensource = gdn_env.Command(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+_, gensource = gdn_env.CommandNoCache(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
                                'gdnative_api.json', build_gdnative_api_struct)
 gdn_env.add_source_files(env.modules_sources, [gensource])
 
@@ -214,7 +222,8 @@ def _build_gdnative_wrapper_code(api):
         'godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct = 0;',
     ]
 
-    for name in api['extensions']:
+    for ext in api['extensions']:
+        name = ext['name']
         out.append('godot_gdnative_ext_' + name + '_api_struct *_gdnative_wrapper_' + name + '_api_struct = 0;')
 
     out += ['']
@@ -232,8 +241,9 @@ def _build_gdnative_wrapper_code(api):
         out.append('}')
         out.append('')
 
-    for name in api['extensions']:
-        for funcdef in api['extensions'][name]['api']:
+    for ext in api['extensions']:
+        name = ext['name']
+        for funcdef in ext['api']:
             args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
             out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
@@ -267,16 +277,16 @@ def build_gdnative_wrapper_code(target, source, env):
 
 
 if ARGUMENTS.get('gdnative_wrapper', False):
-    #build wrapper code
-    gensource, = gdn_env.Command('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
+#build wrapper code
+    gensource, = gdn_env.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
 
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
     if gd_wrapper_env['use_lto']:
         if not env.msvc:
-            gd_wrapper_env.Append(CCFLAGS=['--no-lto'])
-            gd_wrapper_env.Append(LINKFLAGS=['--no-lto'])
+            gd_wrapper_env.Append(CCFLAGS=['-fno-lto'])
+            gd_wrapper_env.Append(LINKFLAGS=['-fno-lto'])
         else:
             gd_wrapper_env.Append(CCFLAGS=['/GL-'])
             gd_wrapper_env.Append(LINKFLAGS=['/LTCG:OFF'])

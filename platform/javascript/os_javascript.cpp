@@ -167,10 +167,9 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	int mask = _input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
-		// since the event is consumed, focus manually
-		if (!is_canvas_focused()) {
-			focus_canvas();
-		}
+		// Since the event is consumed, focus manually. The containing iframe,
+		// if used, may not have focus yet, so focus even if already focused.
+		focus_canvas();
 		mask |= button_flag;
 	} else if (mask & button_flag) {
 		mask &= ~button_flag;
@@ -181,7 +180,8 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	ev->set_button_mask(mask);
 
 	_input->parse_input_event(ev);
-	// prevent selection dragging
+	// Prevent multi-click text selection and wheel-click scrolling anchor.
+	// Context menu is prevented through contextmenu event.
 	return true;
 }
 
@@ -204,7 +204,7 @@ static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *m
 	ev->set_position(pos);
 	ev->set_global_position(ev->get_position());
 
-	ev->set_relative(ev->get_position() - _input->get_mouse_position());
+	ev->set_relative(Vector2(mouse_event->movementX, mouse_event->movementY));
 	_input->set_mouse_position(ev->get_position());
 	ev->set_speed(_input->get_last_mouse_speed());
 
@@ -285,23 +285,6 @@ static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *
 
 		_input->parse_input_event(ev);
 	}
-
-	if (touch_event->touches[lowest_id_index].isChanged) {
-
-		Ref<InputEventMouseButton> ev_mouse;
-		ev_mouse.instance();
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
-		dom2godot_mod(touch_event, ev_mouse);
-
-		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
-		ev_mouse->set_position(Point2(first_touch.canvasX, first_touch.canvasY));
-		ev_mouse->set_global_position(ev_mouse->get_position());
-
-		ev_mouse->set_button_index(BUTTON_LEFT);
-		ev_mouse->set_pressed(event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
-
-		_input->parse_input_event(ev_mouse);
-	}
 	return true;
 }
 
@@ -326,24 +309,6 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 		prev = ev->get_position();
 
 		_input->parse_input_event(ev);
-	}
-
-	if (touch_event->touches[lowest_id_index].isChanged) {
-
-		Ref<InputEventMouseMotion> ev_mouse;
-		ev_mouse.instance();
-		dom2godot_mod(touch_event, ev_mouse);
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
-
-		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
-		ev_mouse->set_position(Point2(first_touch.canvasX, first_touch.canvasY));
-		ev_mouse->set_global_position(ev_mouse->get_position());
-
-		ev_mouse->set_relative(ev_mouse->get_position() - _input->get_mouse_position());
-		_input->set_mouse_position(ev_mouse->get_position());
-		ev_mouse->set_speed(_input->get_last_mouse_speed());
-
-		_input->parse_input_event(ev_mouse);
 	}
 	return true;
 }

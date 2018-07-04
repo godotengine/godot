@@ -94,6 +94,7 @@ void CanvasItemMaterial::_update_shader() {
 		case BLEND_MODE_SUB: code += "blend_sub"; break;
 		case BLEND_MODE_MUL: code += "blend_mul"; break;
 		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
+		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
 	}
 
 	switch (light_mode) {
@@ -245,6 +246,14 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 
 ///////////////////////////////////////////////////////////////////
 
+bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (_edit_use_rect()) {
+		return _edit_get_rect().has_point(p_point);
+	} else {
+		return p_point.length() < p_tolerance;
+	}
+}
+
 bool CanvasItem::is_visible_in_tree() const {
 
 	if (!is_inside_tree())
@@ -310,11 +319,6 @@ void CanvasItem::hide() {
 
 	_propagate_visibility_changed(false);
 	_change_notify("visible");
-}
-
-Size2 CanvasItem::_edit_get_minimum_size() const {
-
-	return Size2(-1, -1); //no limit
 }
 
 void CanvasItem::_update_callback() {
@@ -980,11 +984,11 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_edit_set_position", "position"), &CanvasItem::_edit_set_position);
 	ClassDB::bind_method(D_METHOD("_edit_get_position"), &CanvasItem::_edit_get_position);
-	ClassDB::bind_method(D_METHOD("_edit_use_position"), &CanvasItem::_edit_use_position);
+	ClassDB::bind_method(D_METHOD("_edit_set_scale", "scale"), &CanvasItem::_edit_set_scale);
+	ClassDB::bind_method(D_METHOD("_edit_get_scale"), &CanvasItem::_edit_get_scale);
 	ClassDB::bind_method(D_METHOD("_edit_set_rect", "rect"), &CanvasItem::_edit_set_rect);
 	ClassDB::bind_method(D_METHOD("_edit_get_rect"), &CanvasItem::_edit_get_rect);
 	ClassDB::bind_method(D_METHOD("_edit_use_rect"), &CanvasItem::_edit_use_rect);
-	ClassDB::bind_method(D_METHOD("_edit_get_item_and_children_rect"), &CanvasItem::_edit_get_item_and_children_rect);
 	ClassDB::bind_method(D_METHOD("_edit_set_rotation", "degrees"), &CanvasItem::_edit_set_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_get_rotation"), &CanvasItem::_edit_get_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_use_rotation"), &CanvasItem::_edit_use_rotation);
@@ -1095,6 +1099,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
+	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
@@ -1162,21 +1167,6 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
-}
-
-Rect2 CanvasItem::_edit_get_item_and_children_rect() const {
-
-	Rect2 rect = _edit_get_rect();
-
-	for (int i = 0; i < get_child_count(); i++) {
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
-		if (c) {
-			Rect2 sir = c->get_transform().xform(c->_edit_get_item_and_children_rect());
-			rect = rect.merge(sir);
-		}
-	}
-
-	return rect;
 }
 
 CanvasItem::CanvasItem() :

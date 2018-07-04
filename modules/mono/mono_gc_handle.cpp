@@ -34,15 +34,12 @@
 
 uint32_t MonoGCHandle::make_strong_handle(MonoObject *p_object) {
 
-	return mono_gchandle_new(
-			p_object,
-			false /* do not pin the object */
-	);
+	return mono_gchandle_new(p_object, /* pinned: */ false);
 }
 
 uint32_t MonoGCHandle::make_weak_handle(MonoObject *p_object) {
 
-	return mono_gchandle_new_weakref(p_object, false);
+	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
 }
 
 Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {

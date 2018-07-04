@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines (specification).                        */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -62,7 +62,7 @@ FT_BEGIN_HEADER
    *
    *  by David Turner and Werner Lemberg
    *
-   *    http://www.tug.org/TUGboat/Articles/tb24-3/lemberg.pdf
+   *    https://www.tug.org/TUGboat/Articles/tb24-3/lemberg.pdf
    *
    *  with appropriate updates.
    *

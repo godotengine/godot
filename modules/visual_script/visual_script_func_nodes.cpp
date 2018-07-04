@@ -262,26 +262,6 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptFunctionCall::get_caption() const {
-
-	static const char *cname[5] = {
-		"CallSelf",
-		"CallNode",
-		"CallInstance",
-		"CallBasic",
-		"CallSingleton"
-	};
-
-	String caption = cname[call_mode];
-
-	if (rpc_call_mode) {
-		caption += " (RPC)";
-	}
-
-	return caption;
-}
-
-String VisualScriptFunctionCall::get_text() const {
-
 	if (call_mode == CALL_MODE_SELF)
 		return "  " + String(function) + "()";
 	if (call_mode == CALL_MODE_SINGLETON)
@@ -292,6 +272,14 @@ String VisualScriptFunctionCall::get_text() const {
 		return " [" + String(base_path.simplified()) + "]." + String(function) + "()";
 	else
 		return "  " + base_type + "." + String(function) + "()";
+}
+
+String VisualScriptFunctionCall::get_text() const {
+
+	if (rpc_call_mode) {
+		return "RPC";
+	}
+	return "";
 }
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
@@ -1075,36 +1063,31 @@ PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptPropertySet::get_caption() const {
 
-	static const char *cname[4] = {
-		"Self",
-		"Node",
-		"Instance",
-		"Basic"
+	static const char *opname[ASSIGN_OP_MAX] = {
+		"Set", "Add", "Subtract", "Multiply", "Divide", "Mod", "ShiftLeft", "ShiftRight", "BitAnd", "BitOr", "BitXor"
 	};
 
-	static const char *opname[ASSIGN_OP_MAX] = {
-		"Set", "Add", "Sub", "Mul", "Div", "Mod", "ShiftLeft", "ShiftRight", "BitAnd", "BitOr", "BitXor"
-	};
-	return String(cname[call_mode]) + opname[assign_op];
+	String prop = String(opname[assign_op]) + " " + property;
+	if (index != StringName()) {
+		prop += "." + String(index);
+	}
+
+	return prop;
 }
 
 String VisualScriptPropertySet::get_text() const {
 
-	String prop;
-
-	if (call_mode == CALL_MODE_BASIC_TYPE)
-		prop = Variant::get_type_name(basic_type) + "." + property;
-	else if (call_mode == CALL_MODE_NODE_PATH)
-		prop = String(base_path) + ":" + property;
-	else if (call_mode == CALL_MODE_SELF)
-		prop = property;
-	else if (call_mode == CALL_MODE_INSTANCE)
-		prop = String(base_type) + ":" + property;
-
-	if (index != StringName()) {
-		prop += "." + String(index);
+	if (call_mode == CALL_MODE_BASIC_TYPE) {
+		return String("On ") + Variant::get_type_name(basic_type);
 	}
-	return prop;
+
+	static const char *cname[3] = {
+		"Self",
+		"Scene Node",
+		"Instance"
+	};
+
+	return String("On ") + cname[call_mode];
 }
 
 void VisualScriptPropertySet::_update_base_type() {
@@ -1838,30 +1821,22 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptPropertyGet::get_caption() const {
 
-	static const char *cname[4] = {
-		"SelfGet",
-		"NodeGet",
-		"InstanceGet",
-		"BasicGet"
-	};
-
-	return cname[call_mode];
+	return String("Get ") + property;
 }
 
 String VisualScriptPropertyGet::get_text() const {
 
-	String prop;
+	if (call_mode == CALL_MODE_BASIC_TYPE) {
+		return String("On ") + Variant::get_type_name(basic_type);
+	}
 
-	if (call_mode == CALL_MODE_BASIC_TYPE)
-		prop = Variant::get_type_name(basic_type) + "." + property;
-	else if (call_mode == CALL_MODE_NODE_PATH)
-		prop = String(base_path) + ":" + property;
-	else if (call_mode == CALL_MODE_SELF)
-		prop = property;
-	else if (call_mode == CALL_MODE_INSTANCE)
-		prop = String(base_type) + ":" + property;
+	static const char *cname[3] = {
+		"Self",
+		"Scene Node",
+		"Instance"
+	};
 
-	return prop;
+	return String("On ") + cname[call_mode];
 }
 
 void VisualScriptPropertyGet::set_base_type(const StringName &p_type) {
@@ -2399,12 +2374,7 @@ PropertyInfo VisualScriptEmitSignal::get_output_value_port_info(int p_idx) const
 
 String VisualScriptEmitSignal::get_caption() const {
 
-	return "EmitSignal";
-}
-
-String VisualScriptEmitSignal::get_text() const {
-
-	return "emit " + String(name);
+	return "Emit " + String(name);
 }
 
 void VisualScriptEmitSignal::set_signal(const StringName &p_type) {

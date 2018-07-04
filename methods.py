@@ -1,5 +1,5 @@
 import os
-from compat import iteritems
+from compat import iteritems, itervalues, open_utf8, escape_string
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
@@ -93,7 +93,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 enumbase = ifdefline[:ifdefline.find("_EN_")]
                 ifdefline = ifdefline.replace("_EN_", "_")
                 line = line.replace("_EN_", "_")
-#				print(enumbase+":"+ifdefline);
                 if (enumbase not in header_data.enums):
                     header_data.enums[enumbase] = []
                 if (ifdefline not in header_data.enums[enumbase]):
@@ -192,9 +191,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
         line = line.replace("\r", "")
         line = line.replace("\n", "")
-        # line=line.replace("\\","\\\\")
-        # line=line.replace("\"","\\\"")
-        # line=line+"\\n\\"
 
         if (header_data.reading == "vertex"):
             header_data.vertex_lines += [line]
@@ -224,7 +220,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
     fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
@@ -262,10 +257,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int64_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, unsigned long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
-    #fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, long p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n")
@@ -367,10 +358,8 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             x = header_data.enums[xv]
             bits = 1
             amt = len(x)
-#			print(x)
             while(2**bits < amt):
                 bits += 1
-#			print("amount: "+str(amt)+" bits "+str(bits));
             strs = "{"
             for i in range(amt):
                 strs += "\"#define " + x[i] + "\\n\","
@@ -526,6 +515,232 @@ def build_gles2_headers(target, source, env):
     for x in source:
         build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True)
 
+def make_authors_header(target, source, env):
+
+    sections = ["Project Founders", "Lead Developer", "Project Manager", "Developers"]
+    sections_id = ["AUTHORS_FOUNDERS", "AUTHORS_LEAD_DEVELOPERS", "AUTHORS_PROJECT_MANAGERS", "AUTHORS_DEVELOPERS"]
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open_utf8(src, "r")
+    g = open_utf8(dst, "w")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_AUTHORS_H\n")
+    g.write("#define _EDITOR_AUTHORS_H\n")
+
+    current_section = ""
+    reading = False
+
+    def close_section():
+        g.write("\t0\n")
+        g.write("};\n")
+
+    for line in f:
+        if reading:
+            if line.startswith("    "):
+                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
+                continue
+        if line.startswith("## "):
+            if reading:
+                close_section()
+                reading = False
+            for i in range(len(sections)):
+                if line.strip().endswith(sections[i]):
+                    current_section = escape_string(sections_id[i])
+                    reading = True
+                    g.write("const char *const " + current_section + "[] = {\n")
+                    break
+
+    if reading:
+        close_section()
+
+    g.write("#endif\n")
+
+    g.close()
+    f.close()
+
+def make_donors_header(target, source, env):
+
+    sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors",
+            "Gold donors", "Silver donors", "Bronze donors"]
+    sections_id = ["DONORS_SPONSOR_PLAT", "DONORS_SPONSOR_GOLD", "DONORS_SPONSOR_MINI",
+            "DONORS_GOLD", "DONORS_SILVER", "DONORS_BRONZE"]
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open_utf8(src, "r")
+    g = open_utf8(dst, "w")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_DONORS_H\n")
+    g.write("#define _EDITOR_DONORS_H\n")
+
+    current_section = ""
+    reading = False
+
+    def close_section():
+        g.write("\t0\n")
+        g.write("};\n")
+
+    for line in f:
+        if reading >= 0:
+            if line.startswith("    "):
+                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
+                continue
+        if line.startswith("## "):
+            if reading:
+                close_section()
+                reading = False
+            for i in range(len(sections)):
+                if line.strip().endswith(sections[i]):
+                    current_section = escape_string(sections_id[i])
+                    reading = True
+                    g.write("const char *const " + current_section + "[] = {\n")
+                    break
+
+    if reading:
+        close_section()
+
+    g.write("#endif\n")
+
+    g.close()
+    f.close()
+
+
+def make_license_header(target, source, env):
+    src_copyright = source[0].srcnode().abspath
+    src_license = source[1].srcnode().abspath
+    dst = target[0].srcnode().abspath
+
+    class LicenseReader:
+        def __init__(self, license_file):
+            self._license_file = license_file
+            self.line_num = 0
+            self.current = self.next_line()
+
+        def next_line(self):
+            line = self._license_file.readline()
+            self.line_num += 1
+            while line.startswith("#"):
+                line = self._license_file.readline()
+                self.line_num += 1
+            self.current = line
+            return line
+
+        def next_tag(self):
+            if not ':' in self.current:
+                return ('',[])
+            tag, line = self.current.split(":", 1)
+            lines = [line.strip()]
+            while self.next_line() and self.current.startswith(" "):
+                lines.append(self.current.strip())
+            return (tag, lines)
+
+    from collections import OrderedDict
+    projects = OrderedDict()
+    license_list = []
+
+    with open_utf8(src_copyright, "r") as copyright_file:
+        reader = LicenseReader(copyright_file)
+        part = {}
+        while reader.current:
+            tag, content = reader.next_tag()
+            if tag in ("Files", "Copyright", "License"):
+                part[tag] = content[:]
+            elif tag == "Comment":
+                # attach part to named project
+                projects[content[0]] = projects.get(content[0], []) + [part]
+
+            if not tag or not reader.current:
+                # end of a paragraph start a new part
+                if "License" in part and not "Files" in part:
+                    # no Files tag in this one, so assume standalone license
+                    license_list.append(part["License"])
+                part = {}
+                reader.next_line()
+
+    data_list = []
+    for project in itervalues(projects):
+        for part in project:
+            part["file_index"] = len(data_list)
+            data_list += part["Files"]
+            part["copyright_index"] = len(data_list)
+            data_list += part["Copyright"]
+
+    with open_utf8(dst, "w") as f:
+
+        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        f.write("#ifndef _EDITOR_LICENSE_H\n")
+        f.write("#define _EDITOR_LICENSE_H\n")
+        f.write("const char *const GODOT_LICENSE_TEXT =")
+
+        with open_utf8(src_license, "r") as license_file:
+            for line in license_file:
+                escaped_string = escape_string(line.strip())
+                f.write("\n\t\t\"" + escaped_string + "\\n\"")
+        f.write(";\n\n")
+
+        f.write("struct ComponentCopyrightPart {\n"
+                "\tconst char *license;\n"
+                "\tconst char *const *files;\n"
+                "\tconst char *const *copyright_statements;\n"
+                "\tint file_count;\n"
+                "\tint copyright_count;\n"
+                "};\n\n")
+
+        f.write("struct ComponentCopyright {\n"
+                "\tconst char *name;\n"
+                "\tconst ComponentCopyrightPart *parts;\n"
+                "\tint part_count;\n"
+                "};\n\n")
+
+        f.write("const char *const COPYRIGHT_INFO_DATA[] = {\n")
+        for line in data_list:
+            f.write("\t\"" + escape_string(line) + "\",\n")
+        f.write("};\n\n")
+
+        f.write("const ComponentCopyrightPart COPYRIGHT_PROJECT_PARTS[] = {\n")
+        part_index = 0
+        part_indexes = {}
+        for project_name, project in iteritems(projects):
+            part_indexes[project_name] = part_index
+            for part in project:
+                f.write("\t{ \"" + escape_string(part["License"][0]) + "\", "
+                        + "&COPYRIGHT_INFO_DATA[" + str(part["file_index"]) + "], "
+                        + "&COPYRIGHT_INFO_DATA[" + str(part["copyright_index"]) + "], "
+                        + str(len(part["Files"])) + ", "
+                        + str(len(part["Copyright"])) + " },\n")
+                part_index += 1
+        f.write("};\n\n")
+
+        f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
+
+        f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
+        for project_name, project in iteritems(projects):
+            f.write("\t{ \"" + escape_string(project_name) + "\", "
+                    + "&COPYRIGHT_PROJECT_PARTS[" + str(part_indexes[project_name]) + "], "
+                    + str(len(project)) + " },\n")
+        f.write("};\n\n")
+
+        f.write("const int LICENSE_COUNT = " + str(len(license_list)) + ";\n")
+
+        f.write("const char *const LICENSE_NAMES[] = {\n")
+        for l in license_list:
+            f.write("\t\"" + escape_string(l[0]) + "\",\n")
+        f.write("};\n\n")
+
+        f.write("const char *const LICENSE_BODIES[] = {\n\n")
+        for l in license_list:
+            for line in l[1:]:
+                if line == ".":
+                    f.write("\t\"\\n\"\n")
+                else:
+                    f.write("\t\"" + escape_string(line) + "\\n\"\n")
+            f.write("\t\"\",\n\n")
+        f.write("};\n\n")
+
+        f.write("#endif\n")
 def add_module_version_string(self,s):
     self.module_version_string += "." + s
 
@@ -658,7 +873,6 @@ def win32_spawn(sh, escape, cmd, args, env):
     newargs = ' '.join(args[1:])
     cmdline = cmd + " " + newargs
     startupinfo = subprocess.STARTUPINFO()
-    #startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     for e in env:
         if type(env[e]) != type(""):
             env[e] = str(env[e])
@@ -998,7 +1212,6 @@ def detect_visual_c_compiler_version(tools_env):
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
     if 'VCTOOLSINSTALLDIR' in tools_env:
-        # print("Checking VCTOOLSINSTALLDIR")
 
         # Newer versions have a different path available
         vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
@@ -1026,13 +1239,6 @@ def detect_visual_c_compiler_version(tools_env):
                 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
-
-    # debug help
-    # print(vc_amd64_compiler_detection_index)
-    # print(vc_amd64_x86_compiler_detection_index)
-    # print(vc_x86_compiler_detection_index)
-    # print(vc_x86_amd64_compiler_detection_index)
-    # print("chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str))
 
     return vc_chosen_compiler_str
 
@@ -1066,7 +1272,6 @@ def generate_vs_project(env, num_jobs):
                                     'call "' + batch_file + '" !plat!']
 
             result = " ^& ".join(common_build_prefix + [commands])
-            # print("Building commandline: ", result)
             return result
 
         env.AddToVSProject(env.core_sources)
@@ -1124,3 +1329,8 @@ def add_program(env, name, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
+
+def CommandNoCache(env, target, sources, command, **args):
+    result = env.Command(target, sources, command, **args)
+    env.NoCache(result)
+    return result

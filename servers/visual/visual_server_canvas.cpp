@@ -694,7 +694,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, int p_count, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -702,6 +702,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	int ps = p_points.size();
 	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != ps && p_colors.size() != 1);
 	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != ps);
+	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != ps * 4);
+	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != ps * 4);
 
 	Vector<int> indices = p_indices;
 
@@ -726,6 +728,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->points = p_points;
 	polygon->uvs = p_uvs;
 	polygon->colors = p_colors;
+	polygon->bones = p_bones;
+	polygon->weights = p_weights;
 	polygon->indices = indices;
 	polygon->count = count;
 	polygon->antialiased = false;

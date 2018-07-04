@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGTorus" inherits="CSGPrimitive" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="inner_radius" type="float" setter="set_inner_radius" getter="get_inner_radius">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="outer_radius" type="float" setter="set_outer_radius" getter="get_outer_radius">
+		</member>
+		<member name="ring_sides" type="int" setter="set_ring_sides" getter="get_ring_sides">
+		</member>
+		<member name="sides" type="int" setter="set_sides" getter="get_sides">
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

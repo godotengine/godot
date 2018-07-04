@@ -268,7 +268,7 @@ protected:
 
 		if (String(p_name) == "export") {
 			script->set_variable_export(var, p_value);
-			EditorNode::get_singleton()->get_property_editor()->update_tree();
+			EditorNode::get_singleton()->get_inspector()->update_tree();
 			return true;
 		}
 
@@ -527,6 +527,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		GraphNode *gnode = memnew(GraphNode);
 		gnode->set_title(node->get_caption());
+		gnode->set_offset(pos * EDSCALE);
 		if (error_line == E->get()) {
 			gnode->set_overlay(GraphNode::OVERLAY_POSITION);
 		} else if (node->is_breakpoint()) {
@@ -543,8 +544,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_show_close_button(true);
 		}
 
-		if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
+		bool has_gnode_text = false;
 
+		if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
+			has_gnode_text = true;
 			LineEdit *line_edit = memnew(LineEdit);
 			line_edit->set_text(node->get_text());
 			line_edit->set_expand_to_text_length(true);
@@ -552,9 +555,13 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_child(line_edit);
 			line_edit->connect("text_changed", this, "_expression_text_changed", varray(E->get()));
 		} else {
-			Label *text = memnew(Label);
-			text->set_text(node->get_text());
-			gnode->add_child(text);
+			String text = node->get_text();
+			if (!text.empty()) {
+				has_gnode_text = true;
+				Label *label = memnew(Label);
+				label->set_text(text);
+				gnode->add_child(label);
+			}
 		}
 
 		if (Object::cast_to<VisualScriptComment>(node.ptr())) {
@@ -589,9 +596,21 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		int slot_idx = 0;
 
 		bool single_seq_output = node->get_output_sequence_port_count() == 1 && node->get_output_sequence_port_text(0) == String();
-		gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
-		gnode->set_offset(pos * EDSCALE);
-		slot_idx++;
+		if ((node->has_input_sequence_port() || single_seq_output) || has_gnode_text) {
+			// IF has_gnode_text is true BUT we have no sequence ports to draw (in here),
+			// we still draw the disabled default ones to shift up the slots by one,
+			// so the slots DON'T start with the content text.
+
+			// IF has_gnode_text is false, but we DO want to draw default sequence ports,
+			// we draw a dummy text to take up the position of the sequence nodes, so all the other ports are still aligned correctly.
+			if (!has_gnode_text) {
+				Label *dummy = memnew(Label);
+				dummy->set_text(" ");
+				gnode->add_child(dummy);
+			}
+			gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
+			slot_idx++;
+		}
 
 		int mixed_seq_ports = 0;
 
