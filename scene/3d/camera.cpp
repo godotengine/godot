@@ -102,7 +102,7 @@ void Camera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 
 			bool first_camera = get_viewport()->_camera_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
+			if (current || first_camera)
 				make_current();
 
 		} break;
