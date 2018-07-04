@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mono_gc_handle.cpp                                                   */
+/*  util_macros.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "mono_gc_handle.h"
+#ifndef UTIL_MACROS_H
+#define UTIL_MACROS_H
 
-#include "mono_gd/gd_mono.h"
+// noreturn
 
-uint32_t MonoGCHandle::make_strong_handle(MonoObject *p_object) {
+#undef _NO_RETURN_
 
-	return mono_gchandle_new(p_object, /* pinned: */ false);
-}
-
-uint32_t MonoGCHandle::make_weak_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_strong_handle(p_object)));
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(make_weak_handle(p_object)));
-}
-
-void MonoGCHandle::release() {
-
-#ifdef DEBUG_ENABLED
-	CRASH_COND(GDMono::get_singleton() == NULL);
+#ifdef __GNUC__
+#define _NO_RETURN_ __attribute__((noreturn))
+#elif _MSC_VER
+#define _NO_RETURN_ __declspec(noreturn)
+#else
+#error Platform or compiler not supported
 #endif
 
-	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
-		mono_gchandle_free(handle);
-		released = true;
-	}
-}
+// unreachable
 
-MonoGCHandle::MonoGCHandle(uint32_t p_handle) {
+#if defined(_MSC_VER)
+#define _UNREACHABLE_() __assume(0)
+#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#define _UNREACHABLE_() __builtin_unreachable()
+#else
+#define _UNREACHABLE_() \
+	CRASH_NOW();        \
+	do {                \
+	} while (true);
+#endif
 
-	released = false;
-	handle = p_handle;
-}
-
-MonoGCHandle::~MonoGCHandle() {
-
-	release();
-}
+#endif // UTIL_MACROS_H

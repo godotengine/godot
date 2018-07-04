@@ -138,47 +138,53 @@ bool GDMonoProperty::has_setter() {
 	return mono_property_get_set_method(mono_property) != NULL;
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoObject **r_exc) {
+void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
 	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
 
 	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
 	mono_array_set(params, MonoObject *, 0, p_value);
 
-	MonoObject *exc = NULL;
-	mono_runtime_invoke_array(prop_method, p_object, params, &exc);
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	mono_runtime_invoke_array(prop_method, p_object, params, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoObject **r_exc) {
-	MonoObject *exc = NULL;
-	mono_property_set_value(mono_property, p_object, p_params, &exc);
+void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoException **r_exc) {
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	mono_property_set_value(mono_property, p_object, p_params, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 }
 
-MonoObject *GDMonoProperty::get_value(MonoObject *p_object, MonoObject **r_exc) {
-	MonoObject *exc = NULL;
-	MonoObject *ret = mono_property_get_value(mono_property, p_object, NULL, &exc);
+MonoObject *GDMonoProperty::get_value(MonoObject *p_object, MonoException **r_exc) {
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = mono_property_get_value(mono_property, p_object, NULL, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
 		ret = NULL;
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
-			GDMonoUtils::print_unhandled_exception(exc);
+			GDMonoUtils::set_pending_exception(exc);
 		}
 	}
 

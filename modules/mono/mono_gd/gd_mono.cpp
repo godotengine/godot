@@ -53,14 +53,6 @@
 #include "main/main.h"
 #endif
 
-void gdmono_unhandled_exception_hook(MonoObject *exc, void *user_data) {
-
-	(void)user_data; // UNUSED
-
-	GDMonoUtils::print_unhandled_exception(exc);
-	abort();
-}
-
 #ifdef MONO_PRINT_HANDLER_ENABLED
 void gdmono_MonoPrintCallback(const char *string, mono_bool is_stdout) {
 
@@ -197,6 +189,8 @@ void GDMono::initialize() {
 
 	mono_config_parse(NULL);
 
+	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
+
 	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
 
 	ERR_EXPLAIN("Mono: Failed to initialize runtime");
@@ -278,8 +272,6 @@ void GDMono::initialize() {
 	if (OS::get_singleton()->is_stdout_verbose())
 		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
 #endif
-
-	mono_install_unhandled_exception_hook(gdmono_unhandled_exception_hook, NULL);
 
 	OS::get_singleton()->print("Mono: INITIALIZED\n");
 }
@@ -652,12 +644,12 @@ Error GDMono::_unload_scripts_domain() {
 
 	_GodotSharp::get_singleton()->_dispose_callback();
 
-	MonoObject *ex = NULL;
-	mono_domain_try_unload(domain, &ex);
+	MonoException *exc = NULL;
+	mono_domain_try_unload(domain, (MonoObject **)&exc);
 
-	if (ex) {
-		ERR_PRINT("Exception thrown when unloading scripts domain:");
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		ERR_PRINT("Exception thrown when unloading scripts domain");
+		GDMonoUtils::debug_unhandled_exception(exc);
 		return FAILED;
 	}
 
@@ -763,12 +755,12 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
 
-	MonoObject *ex = NULL;
-	mono_domain_try_unload(p_domain, &ex);
+	MonoException *exc = NULL;
+	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
-	if (ex) {
-		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`:");
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`");
+		GDMonoUtils::debug_unhandled_exception(exc);
 		return FAILED;
 	}
 
@@ -809,6 +801,21 @@ void GDMono::_domain_assemblies_cleanup(uint32_t p_domain_id) {
 	}
 
 	assemblies.erase(p_domain_id);
+}
+
+void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
+
+// This method will be called by the runtime when a thrown exception is not handled.
+// It won't be called when we manually treat a thrown exception as unhandled.
+// We assume the exception was already printed before calling this hook.
+
+#ifdef DEBUG_ENABLED
+	GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
+	if (ScriptDebugger::get_singleton())
+		ScriptDebugger::get_singleton()->idle_poll();
+#endif
+	abort();
+	_UNREACHABLE_();
 }
 
 GDMono::GDMono() {
