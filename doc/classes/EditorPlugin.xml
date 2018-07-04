@@ -235,6 +235,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_script_create_dialog">
+			<return type="ScriptCreateDialog">
+			</return>
+			<description>
+				Gets the Editor's dialogue used for making scripts. Note that users can configure it before use.
+			</description>
+		</method>
 		<method name="get_state" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
