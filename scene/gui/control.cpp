@@ -1295,9 +1295,6 @@ Size2 Control::get_parent_area_size() const {
 
 void Control::_size_changed() {
 
-	if (!is_inside_tree())
-		return;
-
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	float margin_pos[4];
@@ -1334,7 +1331,7 @@ void Control::_size_changed() {
 	}
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
+	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
 		new_size_cache = new_size_cache.round();
 		new_pos_cache = new_pos_cache.round();
 	}
@@ -1344,17 +1341,19 @@ void Control::_size_changed() {
 	data.pos_cache = new_pos_cache;
 	data.size_cache = new_size_cache;
 
-	if (size_changed) {
-		notification(NOTIFICATION_RESIZED);
-	}
-	if (pos_changed || size_changed) {
-		item_rect_changed(size_changed);
-		_change_notify_margins();
-		_notify_transform();
-	}
+	if (is_inside_tree()) {
+		if (size_changed) {
+			notification(NOTIFICATION_RESIZED);
+		}
+		if (pos_changed || size_changed) {
+			item_rect_changed(size_changed);
+			_change_notify_margins();
+			_notify_transform();
+		}
 
-	if (pos_changed && !size_changed) {
-		_update_canvas_item_transform(); //move because it won't be updated
+		if (pos_changed && !size_changed) {
+			_update_canvas_item_transform(); //move because it won't be updated
+		}
 	}
 }
 
