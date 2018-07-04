@@ -520,7 +520,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHTING
 
-	vec2 light_vec = (inverse(light_matrix)*vec4(normalize(light_uv_interp.zw),0.0,0.0)).xy; //for normal mapping
+	mat3 inverse_light_matrix = mat3(inverse(light_matrix));
+	inverse_light_matrix[0] = normalize(inverse_light_matrix[0]);
+	inverse_light_matrix[1] = normalize(inverse_light_matrix[1]);
+	inverse_light_matrix[2] = normalize(inverse_light_matrix[2]);
+	vec2 light_vec = (inverse_light_matrix * vec3(light_uv_interp.zw,0.0)).xy; //for normal mapping
 
 	if (normal_used) {
 		normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
