@@ -245,7 +245,7 @@ class EditorInspector : public ScrollContainer {
 	bool read_only;
 	bool keying;
 
-	int refresh_countdown;
+	float refresh_countdown;
 	bool update_tree_pending;
 	StringName _prop_edited;
 	StringName property_selected;
@@ -256,7 +256,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
-	void _property_changed(const String &p_path, const Variant &p_value);
+	void _property_changed(const String &p_path, const Variant &p_value, bool changing = false);
 	void _property_changed_update_all(const String &p_path, const Variant &p_value);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path);
