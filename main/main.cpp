@@ -715,6 +715,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			memdelete(sdr);
 		} else {
 			script_debugger = sdr;
+			sdr->set_allow_focus_steal_pid(allow_focus_steal_pid);
 		}
 	} else if (debug_mode == "local") {
 
@@ -1178,10 +1179,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
 #endif
-
-	if (allow_focus_steal_pid) {
-		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
-	}
 
 	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
 
