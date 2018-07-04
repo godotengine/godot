@@ -1054,7 +1054,40 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	_rescan();
 }
 
-void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
+void FileSystemDock::_move_with_overwrite() {
+	_move_operation_confirm(to_move_path, true);
+}
+
+bool FileSystemDock::_check_existing() {
+	String &p_to_path = to_move_path;
+	for (int i = 0; i < to_move.size(); i++) {
+		String ol_pth = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
+		String p_new_path = p_to_path.plus_file(ol_pth.get_file());
+		FileOrFolder p_item = to_move[i];
+
+		String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
+		String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+
+		if (p_item.is_file && FileAccess::exists(new_path)) {
+			return false;
+		} else if (!p_item.is_file && DirAccess::exists(new_path)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overwrite) {
+	if (!overwrite) {
+		to_move_path = p_to_path;
+		bool can_move = _check_existing();
+		if (!can_move) {
+			//ask to do something
+			overwrite_dialog->popup_centered_minsize();
+			overwrite_dialog->grab_focus();
+			return;
+		}
+	}
 
 	Map<String, String> file_renames;
 	Map<String, String> folder_renames;
@@ -1813,6 +1846,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_folder_option"), &FileSystemDock::_folder_option);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
+	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
 
@@ -2003,6 +2037,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", this, "_rename_operation_confirm");
+
+	overwrite_dialog = memnew(ConfirmationDialog);
+	overwrite_dialog->set_text(TTR("There is already file or folder with the same name in this location."));
+	overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
+	add_child(overwrite_dialog);
+	overwrite_dialog->connect("confirmed", this, "_move_with_overwrite");
 
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
