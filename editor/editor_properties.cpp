@@ -50,7 +50,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_signal("property_changed", get_edited_property(), p_string);
+	emit_signal("property_changed", get_edited_property(), p_string, true);
 }
 
 void EditorPropertyText::update_property() {
@@ -78,12 +78,12 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_signal("property_changed", get_edited_property(), big_text->get_text());
+	emit_signal("property_changed", get_edited_property(), big_text->get_text(), true);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
 
-	emit_signal("property_changed", get_edited_property(), text->get_text());
+	emit_signal("property_changed", get_edited_property(), text->get_text(), true);
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
