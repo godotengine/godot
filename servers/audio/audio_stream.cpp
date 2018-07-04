@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream.h"
+#include "os/os.h"
 
 //////////////////////////////
 
@@ -119,33 +120,11 @@ String AudioStreamMicrophone::get_stream_name() const {
 	return "Microphone";
 }
 
-void AudioStreamMicrophone::set_microphone_name(const String &p_name) {
-	if (microphone_name != p_name) {
-		microphone_name = p_name;
-
-		for (Set<AudioStreamPlaybackMicrophone *>::Element *E = playbacks.front(); E; E = E->next()) {
-			if (E->get()->active) {
-				// Is this the right thing to do?
-				E->get()->stop();
-				E->get()->start();
-			}
-		}
-	}
-}
-
-StringName AudioStreamMicrophone::get_microphone_name() const {
-	return microphone_name;
-}
-
 float AudioStreamMicrophone::get_length() const {
 	return 0;
 }
 
 void AudioStreamMicrophone::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_microphone_name", "name"), &AudioStreamMicrophone::set_microphone_name);
-	ClassDB::bind_method(D_METHOD("get_microphone_name"), &AudioStreamMicrophone::get_microphone_name);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "microphone_name"), "set_microphone_name", "get_microphone_name");
 }
 
 AudioStreamMicrophone::AudioStreamMicrophone() {
@@ -153,20 +132,25 @@ AudioStreamMicrophone::AudioStreamMicrophone() {
 
 void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
-	AudioDriver::MicrophoneDeviceOutput *microphone_device_output = reciever->owner;
-	const Vector<AudioFrame> &source_buffer = microphone_device_output->get_buffer();
-	int current_buffer_size = microphone_device_output->get_current_buffer_size();
+	AudioDriver::get_singleton()->lock();
+
+	Vector<int32_t> buf = AudioDriver::get_singleton()->get_audio_input_buffer();
 
 	for (int i = 0; i < p_frames; i++) {
-		if (current_buffer_size >= internal_mic_offset) {
-			if (internal_mic_offset >= source_buffer.size()) {
-				internal_mic_offset = 0;
-			}
-			p_buffer[i] = source_buffer[internal_mic_offset++];
-		} else {
-			p_buffer[i] = AudioFrame(0.f, 0.f);
+
+		float l = (buf[input_ofs++] >> 16) / 32768.f;
+		if (input_ofs >= buf.size()) {
+			input_ofs = 0;
 		}
+		float r = (buf[input_ofs++] >> 16) / 32768.f;
+		if (input_ofs >= buf.size()) {
+			input_ofs = 0;
+		}
+
+		p_buffer[i] = AudioFrame(l, r);
 	}
+
+	AudioDriver::get_singleton()->unlock();
 }
 
 void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
@@ -174,28 +158,21 @@ void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
-	return reciever->owner->get_mix_rate();
+	return AudioDriver::get_singleton()->get_mix_rate();
 }
 
 void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
-	internal_mic_offset = 0;
+	input_ofs = 0;
+
+	AudioDriver::get_singleton()->capture_start();
+
 	active = true;
-
-	// note: can this be called twice?
-	reciever = AudioServer::get_singleton()->create_microphone_reciever(microphone->get_microphone_name());
-	if (reciever == NULL) {
-		active = false;
-	}
-
 	_begin_resample();
 }
 
 void AudioStreamPlaybackMicrophone::stop() {
+	AudioDriver::get_singleton()->capture_stop();
 	active = false;
-	if (reciever != NULL) {
-		AudioServer::get_singleton()->destroy_microphone_reciever(reciever);
-		reciever = NULL;
-	}
 }
 
 bool AudioStreamPlaybackMicrophone::is_playing() const {
@@ -220,8 +197,6 @@ AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
 }
 
 AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
-	internal_mic_offset = 0;
-	reciever = NULL;
 }
 
 ////////////////////////////////

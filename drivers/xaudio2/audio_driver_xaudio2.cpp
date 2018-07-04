@@ -210,28 +210,6 @@ void AudioDriverXAudio2::finish() {
 	thread = NULL;
 };
 
-bool AudioDriverXAudio2::capture_device_start(StringName p_name) {
-
-	return false;
-}
-
-bool AudioDriverXAudio2::capture_device_stop(StringName p_name) {
-
-	return false;
-}
-
-PoolStringArray AudioDriverXAudio2::capture_device_get_names() {
-
-	PoolStringArray names;
-
-	return names;
-}
-
-StringName AudioDriverXAudio2::capture_device_get_default_name() {
-
-	return "";
-}
-
 AudioDriverXAudio2::AudioDriverXAudio2() {
 
 	mutex = NULL;

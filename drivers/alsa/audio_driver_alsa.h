@@ -83,11 +83,6 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	virtual bool capture_device_start(StringName p_name);
-	virtual bool capture_device_stop(StringName p_name);
-	virtual PoolStringArray capture_device_get_names();
-	virtual StringName capture_device_get_default_name();
-
 	AudioDriverALSA();
 	~AudioDriverALSA();
 };

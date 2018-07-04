@@ -52,9 +52,9 @@ class AudioDriverCoreAudio : public AudioDriver {
 	int mix_rate;
 	unsigned int channels;
 	unsigned int buffer_frames;
-	unsigned int buffer_size;
 
 	Vector<int32_t> samples_in;
+	Vector<int16_t> input_buf;
 
 #ifdef OSX_ENABLED
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
@@ -63,6 +63,12 @@ class AudioDriverCoreAudio : public AudioDriver {
 #endif
 
 	static OSStatus output_callback(void *inRefCon,
+			AudioUnitRenderActionFlags *ioActionFlags,
+			const AudioTimeStamp *inTimeStamp,
+			UInt32 inBusNumber, UInt32 inNumberFrames,
+			AudioBufferList *ioData);
+
+	static OSStatus input_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
 			const AudioTimeStamp *inTimeStamp,
 			UInt32 inBusNumber, UInt32 inNumberFrames,
@@ -86,10 +92,8 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	virtual bool capture_device_start(StringName p_name);
-	virtual bool capture_device_stop(StringName p_name);
-	virtual PoolStringArray capture_device_get_names();
-	virtual StringName capture_device_get_default_name();
+	virtual Error capture_start();
+	virtual Error capture_stop();
 
 	bool try_lock();
 	void stop();

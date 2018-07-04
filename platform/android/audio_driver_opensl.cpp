@@ -249,28 +249,6 @@ void AudioDriverOpenSL::finish() {
 	(*sl)->Destroy(sl);
 }
 
-bool AudioDriverOpenSL::capture_device_start(StringName p_name) {
-
-	return false;
-}
-
-bool AudioDriverOpenSL::capture_device_stop(StringName p_name) {
-
-	return false;
-}
-
-PoolStringArray AudioDriverOpenSL::capture_device_get_names() {
-
-	PoolStringArray names;
-
-	return names;
-}
-
-StringName AudioDriverOpenSL::capture_device_get_default_name() {
-
-	return "";
-}
-
 void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 	pause = p_pause;

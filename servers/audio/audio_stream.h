@@ -104,7 +104,6 @@ class AudioStreamMicrophone : public AudioStream {
 	friend class AudioStreamPlaybackMicrophone;
 
 	Set<AudioStreamPlaybackMicrophone *> playbacks;
-	StringName microphone_name;
 
 protected:
 	static void _bind_methods();
@@ -112,9 +111,6 @@ protected:
 public:
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
-
-	void set_microphone_name(const String &p_name);
-	StringName get_microphone_name() const;
 
 	virtual float get_length() const; //if supported, otherwise return 0
 
@@ -127,10 +123,9 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	friend class AudioStreamMicrophone;
 
 	bool active;
-	uint32_t internal_mic_offset;
+	unsigned int input_ofs;
 
 	Ref<AudioStreamMicrophone> microphone;
-	AudioDriver::MicrophoneReciever *reciever;
 
 protected:
 	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames);
