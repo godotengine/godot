@@ -930,6 +930,21 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 	}
 }
 
+void FileSystemDock::_update_project_settings_after_move(const Map<String, String> &p_renames) const {
+
+	// Find all project settings of type FILE and replace them if needed
+	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
+	for (const Map<StringName, PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
+		if (E->get().hint == PROPERTY_HINT_FILE) {
+			String old_path = GLOBAL_GET(E->key());
+			if (p_renames.has(old_path)) {
+				ProjectSettings::get_singleton()->set_setting(E->key(), p_renames[old_path]);
+			}
+		};
+	}
+	ProjectSettings::get_singleton()->save();
+}
+
 void FileSystemDock::_update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const {
 
 	Vector<String> favorite_dirs = EditorSettings::get_singleton()->get_favorite_dirs();
@@ -1012,6 +1027,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
+	_update_project_settings_after_move(file_renames);
 	_update_favorite_dirs_list_after_move(folder_renames);
 
 	//Rescan everything
@@ -1104,6 +1120,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 	if (is_moved) {
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
+		_update_project_settings_after_move(file_renames);
 		_update_favorite_dirs_list_after_move(folder_renames);
 
 		print_line("call rescan!");

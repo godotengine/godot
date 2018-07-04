@@ -189,6 +189,7 @@ private:
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
 	void _update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const;
+	void _update_project_settings_after_move(const Map<String, String> &p_renames) const;
 
 	void _make_dir_confirm();
 	void _rename_operation_confirm();
