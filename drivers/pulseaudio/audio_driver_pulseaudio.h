@@ -53,12 +53,10 @@ class AudioDriverPulseAudio : public AudioDriver {
 	String new_device;
 	String default_device;
 
-	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
 
 	unsigned int mix_rate;
 	unsigned int buffer_frames;
-	unsigned int pa_buffer_size;
 	int channels;
 	int pa_ready;
 	int pa_status;

@@ -280,8 +280,7 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 	buffer_frames = max_frames;
 
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	buffer_size = buffer_frames * channels;
-	samples_in.resize(buffer_size);
+	output_buffer.resize(buffer_frames * channels);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("WASAPI: detected " + itos(channels) + " channels");
@@ -439,15 +438,15 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 	AudioDriverWASAPI *ad = (AudioDriverWASAPI *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		ad->lock();
 		ad->start_counting_ticks();
 
 		if (ad->active) {
-			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
+			ad->audio_server_process(ad->buffer_frames, ad->output_buffer.ptrw());
+			ad->output_position += ad->output_buffer.size();
 		} else {
-			for (unsigned int i = 0; i < ad->buffer_size; i++) {
-				ad->samples_in[i] = 0;
+			for (unsigned int i = 0; i < ad->output_buffer.size(); i++) {
+				ad->output_buffer[i] = 0;
 			}
 		}
 
@@ -477,12 +476,12 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					if (ad->channels == ad->wasapi_channels) {
 						for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-							ad->write_sample(ad, buffer, i, ad->samples_in[buffer_idx++]);
+							ad->write_sample(ad, buffer, i, ad->output_buffer[buffer_idx++]);
 						}
 					} else {
 						for (unsigned int i = 0; i < write_frames; i++) {
 							for (unsigned int j = 0; j < MIN(ad->channels, ad->wasapi_channels); j++) {
-								ad->write_sample(ad, buffer, i * ad->wasapi_channels + j, ad->samples_in[buffer_idx++]);
+								ad->write_sample(ad, buffer, i * ad->wasapi_channels + j, ad->output_buffer[buffer_idx++]);
 							}
 							if (ad->wasapi_channels > ad->channels) {
 								for (unsigned int j = ad->channels; j < ad->wasapi_channels; j++) {
@@ -612,9 +611,6 @@ AudioDriverWASAPI::AudioDriverWASAPI() {
 	format_tag = 0;
 	bits_per_sample = 0;
 
-	samples_in.clear();
-
-	buffer_size = 0;
 	channels = 0;
 	wasapi_channels = 0;
 	mix_rate = 0;

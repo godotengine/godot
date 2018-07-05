@@ -51,6 +51,9 @@ class AudioDriver {
 #endif
 
 protected:
+	Vector<int32_t> output_buffer;
+	unsigned int output_position;
+
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
 
@@ -100,6 +103,10 @@ public:
 	uint64_t get_profiling_time() const { return prof_time; }
 	void reset_profiling_time() { prof_time = 0; }
 #endif
+
+	Vector<int32_t> get_output_buffer() { return output_buffer; }
+	unsigned int get_output_position() { return output_position; }
+	unsigned int get_output_channels() { return get_total_channels_by_speaker_mode(get_speaker_mode()); }
 
 	AudioDriver();
 	virtual ~AudioDriver() {}
@@ -336,6 +343,10 @@ public:
 	void set_device(String device);
 
 	float get_output_latency() { return output_latency; }
+
+	Vector<int32_t> get_output_buffer() { return AudioDriver::get_singleton()->get_output_buffer(); }
+	unsigned int get_output_position() { return AudioDriver::get_singleton()->get_output_position(); }
+	unsigned int get_output_channels() { return AudioDriver::get_singleton()->get_output_channels(); }
 
 	AudioServer();
 	virtual ~AudioServer();

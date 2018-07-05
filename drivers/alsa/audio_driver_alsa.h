@@ -47,7 +47,6 @@ class AudioDriverALSA : public AudioDriver {
 	String device_name;
 	String new_device;
 
-	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
 
 	Error init_device();

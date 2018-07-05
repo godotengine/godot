@@ -57,7 +57,6 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	Vector<int32_t> samples_in;
 
-	unsigned int buffer_size;
 	unsigned int channels;
 	unsigned int wasapi_channels;
 	int mix_rate;

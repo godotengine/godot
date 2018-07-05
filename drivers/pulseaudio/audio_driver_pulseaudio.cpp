@@ -157,7 +157,7 @@ Error AudioDriverPulseAudio::init_device() {
 
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	pa_buffer_size = buffer_frames * pa_map.channels;
+	int pa_buffer_size = buffer_frames * pa_map.channels;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("PulseAudio: detected " + itos(pa_map.channels) + " channels");
@@ -192,7 +192,8 @@ Error AudioDriverPulseAudio::init_device() {
 	int error_code = pa_stream_connect_playback(pa_str, dev, &attr, flags, NULL, NULL);
 	ERR_FAIL_COND_V(error_code < 0, ERR_CANT_OPEN);
 
-	samples_in.resize(buffer_frames * channels);
+	output_buffer.resize(buffer_frames * channels);
+	output_position = 0;
 	samples_out.resize(pa_buffer_size);
 
 	return OK;
@@ -293,36 +294,37 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (!ad->active) {
-			for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-				ad->samples_out[i] = 0;
-			}
-
+		if (ad->active) {
+			ad->audio_server_process(ad->buffer_frames, ad->output_buffer.ptrw());
 		} else {
-			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
+			for (unsigned int i = 0; i < ad->output_buffer.size(); i++) {
+				ad->output_buffer[i] = 0;
+			}
+		}
 
-			if (ad->channels == ad->pa_map.channels) {
-				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-					ad->samples_out[i] = ad->samples_in[i] >> 16;
-				}
-			} else {
-				// Uneven amount of channels
-				unsigned int in_idx = 0;
-				unsigned int out_idx = 0;
+		ad->output_position += ad->output_buffer.size();
 
-				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
-					for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
-						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
-					}
-					uint32_t l = ad->samples_in[in_idx++];
-					uint32_t r = ad->samples_in[in_idx++];
-					ad->samples_out[out_idx++] = (l >> 1 + r >> 1) >> 16;
+		if (ad->channels == ad->pa_map.channels) {
+			for (unsigned int i = 0; i < ad->output_buffer.size(); i++) {
+				ad->samples_out[i] = ad->output_buffer[i] >> 16;
+			}
+		} else {
+			// Uneven amount of channels
+			unsigned int in_idx = 0;
+			unsigned int out_idx = 0;
+
+			for (unsigned int i = 0; i < ad->buffer_frames; i++) {
+				for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
+					ad->samples_out[out_idx++] = ad->output_buffer[in_idx++] >> 16;
 				}
+				uint32_t l = ad->output_buffer[in_idx++];
+				uint32_t r = ad->output_buffer[in_idx++];
+				ad->samples_out[out_idx++] = (l >> 1 + r >> 1) >> 16;
 			}
 		}
 
 		int error_code;
-		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
+		int byte_size = ad->samples_out.size() * sizeof(int16_t);
 		int ret;
 		do {
 			ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
@@ -524,12 +526,10 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	new_device = "Default";
 	default_device = "";
 
-	samples_in.clear();
 	samples_out.clear();
 
 	mix_rate = 0;
 	buffer_frames = 0;
-	pa_buffer_size = 0;
 	channels = 0;
 	pa_ready = 0;
 	pa_status = 0;
