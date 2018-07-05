@@ -1385,7 +1385,7 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bo
 	}
 
 	update();
-	_change_notify();
+	_change_notify("anchor");
 }
 
 void Control::_set_anchor(Margin p_margin, float p_anchor) {
