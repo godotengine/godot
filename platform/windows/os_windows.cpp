@@ -434,11 +434,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
 			bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
 			bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
+			bmask |= (wParam & MK_XBUTTON1) ? (1 << 7) : 0;
+			bmask |= (wParam & MK_XBUTTON2) ? (1 << 8) : 0;
 			mm->set_button_mask(bmask);
 
 			last_button_state = mm->get_button_mask();
-			/*mm->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
-			mm->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
+
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
@@ -495,153 +496,168 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDBLCLK:
 		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
-			/*case WM_XBUTTONDOWN:
-		case WM_XBUTTONUP: */ {
+		case WM_XBUTTONDBLCLK:
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP: {
 
-				Ref<InputEventMouseButton> mb;
-				mb.instance();
+			Ref<InputEventMouseButton> mb;
+			mb.instance();
 
-				switch (uMsg) {
-					case WM_LBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(1);
-					} break;
-					case WM_LBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(1);
-					} break;
-					case WM_MBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(3);
-
-					} break;
-					case WM_MBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(3);
-					} break;
-					case WM_RBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(2);
-					} break;
-					case WM_RBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(2);
-					} break;
-					case WM_LBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(1);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_RBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(2);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_MBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(3);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_MOUSEWHEEL: {
-
-						mb->set_pressed(true);
-						int motion = (short)HIWORD(wParam);
-						if (!motion)
-							return 0;
-
-						if (motion > 0)
-							mb->set_button_index(BUTTON_WHEEL_UP);
-						else
-							mb->set_button_index(BUTTON_WHEEL_DOWN);
-
-					} break;
-					case WM_MOUSEHWHEEL: {
-
-						mb->set_pressed(true);
-						int motion = (short)HIWORD(wParam);
-						if (!motion)
-							return 0;
-
-						if (motion < 0) {
-							mb->set_button_index(BUTTON_WHEEL_LEFT);
-							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
-						} else {
-							mb->set_button_index(BUTTON_WHEEL_RIGHT);
-							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
-						}
-					} break;
-					/*
-				case WM_XBUTTONDOWN: {
-					mb->is_pressed()=true;
-					mb->get_button_index()=(HIWORD(wParam)==XBUTTON1)?6:7;
+			switch (uMsg) {
+				case WM_LBUTTONDOWN: {
+					mb->set_pressed(true);
+					mb->set_button_index(1);
 				} break;
-				case WM_XBUTTONUP:
-					mb->is_pressed()=true;
-					mb->get_button_index()=(HIWORD(wParam)==XBUTTON1)?6:7;
-				} break;*/
-					default: { return 0; }
-				}
+				case WM_LBUTTONUP: {
+					mb->set_pressed(false);
+					mb->set_button_index(1);
+				} break;
+				case WM_MBUTTONDOWN: {
+					mb->set_pressed(true);
+					mb->set_button_index(3);
 
-				mb->set_control((wParam & MK_CONTROL) != 0);
-				mb->set_shift((wParam & MK_SHIFT) != 0);
-				mb->set_alt(alt_mem);
-				//mb->get_alt()=(wParam&MK_MENU)!=0;
-				int bmask = 0;
-				bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
-				bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
-				bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
-				mb->set_button_mask(bmask);
+				} break;
+				case WM_MBUTTONUP: {
+					mb->set_pressed(false);
+					mb->set_button_index(3);
+				} break;
+				case WM_RBUTTONDOWN: {
+					mb->set_pressed(true);
+					mb->set_button_index(2);
+				} break;
+				case WM_RBUTTONUP: {
+					mb->set_pressed(false);
+					mb->set_button_index(2);
+				} break;
+				case WM_LBUTTONDBLCLK: {
 
-				last_button_state = mb->get_button_mask();
-				/*
-			mb->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
-			mb->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
-				mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+					mb->set_pressed(true);
+					mb->set_button_index(1);
+					mb->set_doubleclick(true);
+				} break;
+				case WM_RBUTTONDBLCLK: {
 
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+					mb->set_pressed(true);
+					mb->set_button_index(2);
+					mb->set_doubleclick(true);
+				} break;
+				case WM_MBUTTONDBLCLK: {
 
-					mb->set_position(Vector2(old_x, old_y));
-				}
+					mb->set_pressed(true);
+					mb->set_button_index(3);
+					mb->set_doubleclick(true);
+				} break;
+				case WM_MOUSEWHEEL: {
 
-				if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
-					if (mb->is_pressed()) {
+					mb->set_pressed(true);
+					int motion = (short)HIWORD(wParam);
+					if (!motion)
+						return 0;
 
-						if (++pressrc > 0)
-							SetCapture(hWnd);
+					if (motion > 0)
+						mb->set_button_index(BUTTON_WHEEL_UP);
+					else
+						mb->set_button_index(BUTTON_WHEEL_DOWN);
+
+				} break;
+				case WM_MOUSEHWHEEL: {
+
+					mb->set_pressed(true);
+					int motion = (short)HIWORD(wParam);
+					if (!motion)
+						return 0;
+
+					if (motion < 0) {
+						mb->set_button_index(BUTTON_WHEEL_LEFT);
+						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					} else {
-
-						if (--pressrc <= 0) {
-							ReleaseCapture();
-							pressrc = 0;
-						}
+						mb->set_button_index(BUTTON_WHEEL_RIGHT);
+						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					}
-				} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					// for reasons unknown to mankind, wheel comes in screen cordinates
-					POINT coords;
-					coords.x = mb->get_position().x;
-					coords.y = mb->get_position().y;
+				} break;
+				case WM_XBUTTONDOWN: {
 
-					ScreenToClient(hWnd, &coords);
+					mb->set_pressed(true);
+					if (HIWORD(wParam) == XBUTTON1)
+						mb->set_button_index(BUTTON_XBUTTON1);
+					else
+						mb->set_button_index(BUTTON_XBUTTON2);
+				} break;
+				case WM_XBUTTONUP: {
 
-					mb->set_position(Vector2(coords.x, coords.y));
+					mb->set_pressed(false);
+					if (HIWORD(wParam) == XBUTTON1)
+						mb->set_button_index(BUTTON_XBUTTON1);
+					else
+						mb->set_button_index(BUTTON_XBUTTON2);
+				} break;
+				case WM_XBUTTONDBLCLK: {
+
+					mb->set_pressed(true);
+					if (HIWORD(wParam) == XBUTTON1)
+						mb->set_button_index(BUTTON_XBUTTON1);
+					else
+						mb->set_button_index(BUTTON_XBUTTON2);
+					mb->set_doubleclick(true);
+				} break;
+				default: { return 0; }
+			}
+
+			mb->set_control((wParam & MK_CONTROL) != 0);
+			mb->set_shift((wParam & MK_SHIFT) != 0);
+			mb->set_alt(alt_mem);
+			//mb->get_alt()=(wParam&MK_MENU)!=0;
+			int bmask = 0;
+			bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
+			bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
+			bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
+			bmask |= (wParam & MK_XBUTTON1) ? (1 << 7) : 0;
+			bmask |= (wParam & MK_XBUTTON2) ? (1 << 8) : 0;
+			mb->set_button_mask(bmask);
+
+			last_button_state = mb->get_button_mask();
+			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+
+				mb->set_position(Vector2(old_x, old_y));
+			}
+
+			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
+				if (mb->is_pressed()) {
+
+					if (++pressrc > 0)
+						SetCapture(hWnd);
+				} else {
+
+					if (--pressrc <= 0) {
+						ReleaseCapture();
+						pressrc = 0;
+					}
 				}
+			} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
+				// for reasons unknown to mankind, wheel comes in screen cordinates
+				POINT coords;
+				coords.x = mb->get_position().x;
+				coords.y = mb->get_position().y;
 
-				mb->set_global_position(mb->get_position());
+				ScreenToClient(hWnd, &coords);
 
-				if (main_loop) {
-					input->parse_input_event(mb);
-					if (mb->is_pressed() && mb->get_button_index() > 3) {
-						//send release for mouse wheel
-						Ref<InputEventMouseButton> mbd = mb->duplicate();
-						mbd->set_pressed(false);
-						input->parse_input_event(mbd);
-					}
+				mb->set_position(Vector2(coords.x, coords.y));
+			}
+
+			mb->set_global_position(mb->get_position());
+
+			if (main_loop) {
+				input->parse_input_event(mb);
+				if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
+					//send release for mouse wheel
+					Ref<InputEventMouseButton> mbd = mb->duplicate();
+					mbd->set_pressed(false);
+					input->parse_input_event(mbd);
 				}
 			}
-			break;
+		} break;
 
 		case WM_SIZE: {
 			int window_w = LOWORD(lParam);
