@@ -4389,21 +4389,25 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	lock_button->connect("pressed", this, "_popup_callback", varray(LOCK_SELECTED));
 	lock_button->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
+	lock_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/lock_object", TTR("Lock the selected object in place (can't be moved).")));
 
 	unlock_button = memnew(ToolButton);
 	hb->add_child(unlock_button);
 	unlock_button->connect("pressed", this, "_popup_callback", varray(UNLOCK_SELECTED));
 	unlock_button->set_tooltip(TTR("Unlock the selected object (can be moved)."));
+	unlock_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/unlock_object", TTR("Unlock the selected object (can be moved).")));
 
 	group_button = memnew(ToolButton);
 	hb->add_child(group_button);
 	group_button->connect("pressed", this, "_popup_callback", varray(GROUP_SELECTED));
 	group_button->set_tooltip(TTR("Makes sure the object's children are not selectable."));
+	group_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/children_not_selectable", TTR("Makes sure the object's children are not selectable.")));
 
 	ungroup_button = memnew(ToolButton);
 	hb->add_child(ungroup_button);
 	ungroup_button->connect("pressed", this, "_popup_callback", varray(UNGROUP_SELECTED));
 	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
+	ungroup_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/children_selectable", TTR("Restores the object's children's ability to be selected.")));
 
 	hb->add_child(memnew(VSeparator));
 
