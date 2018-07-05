@@ -144,7 +144,24 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 	return Size2(ev.screenWidth, ev.screenHeight);
 }
 
-void OS_JavaScript::set_window_size(const Size2 p_size) {
+static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
+
+	Ref<InputEventMouseButton> ev;
+	ev.instance();
+	ev->set_pressed(event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
+	ev->set_position(Point2(mouse_event->canvasX, mouse_event->canvasY));
+	ev->set_global_position(ev->get_position());
+	dom2godot_mod(mouse_event, ev);
+	switch (mouse_event->button) {
+		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
+		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
+		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
+		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
+		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
+		default: return false;
+	}
 
 	int mask = _input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);

@@ -500,85 +500,22 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: {
 
-				Ref<InputEventMouseButton> mb;
-				mb.instance();
+			Ref<InputEventMouseButton> mb;
+			mb.instance();
 
-				switch (uMsg) {
-					case WM_LBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(1);
-					} break;
-					case WM_LBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(1);
-					} break;
-					case WM_MBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(3);
+			switch (uMsg) {
+				case WM_LBUTTONDOWN: {
+					mb->set_pressed(true);
+					mb->set_button_index(1);
+				} break;
+				case WM_LBUTTONUP: {
+					mb->set_pressed(false);
+					mb->set_button_index(1);
+				} break;
+				case WM_MBUTTONDOWN: {
+					mb->set_pressed(true);
+					mb->set_button_index(3);
 
-					} break;
-					case WM_MBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(3);
-					} break;
-					case WM_RBUTTONDOWN: {
-						mb->set_pressed(true);
-						mb->set_button_index(2);
-					} break;
-					case WM_RBUTTONUP: {
-						mb->set_pressed(false);
-						mb->set_button_index(2);
-					} break;
-					case WM_LBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(1);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_RBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(2);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_MBUTTONDBLCLK: {
-
-						mb->set_pressed(true);
-						mb->set_button_index(3);
-						mb->set_doubleclick(true);
-					} break;
-					case WM_MOUSEWHEEL: {
-
-						mb->set_pressed(true);
-						int motion = (short)HIWORD(wParam);
-						if (!motion)
-							return 0;
-
-						if (motion > 0)
-							mb->set_button_index(BUTTON_WHEEL_UP);
-						else
-							mb->set_button_index(BUTTON_WHEEL_DOWN);
-
-					} break;
-					case WM_MOUSEHWHEEL: {
-
-						mb->set_pressed(true);
-						int motion = (short)HIWORD(wParam);
-						if (!motion)
-							return 0;
-
-						if (motion < 0) {
-							mb->set_button_index(BUTTON_WHEEL_LEFT);
-							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
-						} else {
-							mb->set_button_index(BUTTON_WHEEL_RIGHT);
-							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
-						}
-					} break;
-					/*
-				case WM_XBUTTONDOWN: {
-					mb->is_pressed()=true;
-					mb->get_button_index()=(HIWORD(wParam)==XBUTTON1)?6:7;
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
