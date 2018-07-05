@@ -34,7 +34,7 @@
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 
-	if (!codegen.function_node || codegen.function_node->_static)
+	if (codegen.function_node && codegen.function_node->_static)
 		return false;
 
 	if (codegen.stack_identifiers.has(p_name))
