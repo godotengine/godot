@@ -130,7 +130,9 @@ void EditorSceneImporter::_bind_methods() {
 /////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
 
-	BIND_VMETHOD(MethodInfo("post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	ClassDB::bind_method(D_METHOD("get_source_folder"), &EditorScenePostImport::get_source_folder);
+	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImport::get_source_file);
 }
 
 Node *EditorScenePostImport::post_import(Node *p_scene) {
@@ -139,6 +141,21 @@ Node *EditorScenePostImport::post_import(Node *p_scene) {
 		return get_script_instance()->call("post_import", p_scene);
 
 	return p_scene;
+}
+
+String EditorScenePostImport::get_source_folder() const {
+
+	return source_folder;
+}
+
+String EditorScenePostImport::get_source_file() const {
+
+	return source_file;
+}
+
+void EditorScenePostImport::init(const String &p_source_folder, const String &p_source_file) {
+	source_folder = p_source_folder;
+	source_file = p_source_file;
 }
 
 EditorScenePostImport::EditorScenePostImport() {
@@ -1370,6 +1387,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	if (post_import_script.is_valid()) {
+		post_import_script->init(base_path, p_source_file);
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
 			EditorNode::add_io_error(TTR("Error running post-import script:") + " " + post_import_script_path);
