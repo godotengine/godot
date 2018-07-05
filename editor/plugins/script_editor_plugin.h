@@ -72,9 +72,9 @@ public:
 
 class ScriptEditorDebugger;
 
-class ScriptEditorBase : public Control {
+class ScriptEditorBase : public VBoxContainer {
 
-	GDCLASS(ScriptEditorBase, Control);
+	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
 	static void _bind_methods();
