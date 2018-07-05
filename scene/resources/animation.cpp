@@ -2363,7 +2363,6 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 
 int Animation::audio_track_insert_key(int p_track, float p_time, const RES &p_stream, float p_start_offset, float p_end_offset) {
 
-	print_line("really insert key? ");
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, -1);
