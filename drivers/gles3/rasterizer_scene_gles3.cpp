@@ -1336,7 +1336,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			glBindBuffer(GL_ARRAY_BUFFER, multi_mesh->buffer); //modify the buffer
 
-			int stride = (multi_mesh->xform_floats + multi_mesh->color_floats) * 4;
+			int stride = (multi_mesh->xform_floats + multi_mesh->color_floats + multi_mesh->custom_data_floats) * 4;
 			glEnableVertexAttribArray(8);
 			glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
 			glVertexAttribDivisor(8, 1);
@@ -1357,6 +1357,8 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 				color_ofs = 8 * 4;
 			}
 
+			int custom_data_ofs = color_ofs;
+
 			switch (multi_mesh->color_format) {
 
 				case VS::MULTIMESH_COLOR_NONE: {
@@ -1367,12 +1369,33 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 					glEnableVertexAttribArray(11);
 					glVertexAttribPointer(11, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, ((uint8_t *)NULL) + color_ofs);
 					glVertexAttribDivisor(11, 1);
+					custom_data_ofs += 4;
 
 				} break;
 				case VS::MULTIMESH_COLOR_FLOAT: {
 					glEnableVertexAttribArray(11);
 					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + color_ofs);
 					glVertexAttribDivisor(11, 1);
+					custom_data_ofs += 4 * 4;
+				} break;
+			}
+
+			switch (multi_mesh->custom_data_format) {
+
+				case VS::MULTIMESH_CUSTOM_DATA_NONE: {
+					glDisableVertexAttribArray(12);
+					glVertexAttrib4f(12, 1, 1, 1, 1);
+				} break;
+				case VS::MULTIMESH_CUSTOM_DATA_8BIT: {
+					glEnableVertexAttribArray(12);
+					glVertexAttribPointer(12, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, ((uint8_t *)NULL) + custom_data_ofs);
+					glVertexAttribDivisor(12, 1);
+
+				} break;
+				case VS::MULTIMESH_CUSTOM_DATA_FLOAT: {
+					glEnableVertexAttribArray(12);
+					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + custom_data_ofs);
+					glVertexAttribDivisor(12, 1);
 				} break;
 			}
 

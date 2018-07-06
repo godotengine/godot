@@ -1182,7 +1182,7 @@ RID RasterizerStorageGLES2::multimesh_create() {
 	return RID();
 }
 
-void RasterizerStorageGLES2::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) {
+void RasterizerStorageGLES2::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format,VS::MultimeshCustomDataFormat p_data) {
 }
 
 int RasterizerStorageGLES2::multimesh_get_instance_count(RID p_multimesh) const {
@@ -1201,6 +1201,9 @@ void RasterizerStorageGLES2::multimesh_instance_set_transform_2d(RID p_multimesh
 void RasterizerStorageGLES2::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
 }
 
+void RasterizerStorageGLES2::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
+}
+
 RID RasterizerStorageGLES2::multimesh_get_mesh(RID p_multimesh) const {
 	return RID();
 }
@@ -1215,6 +1218,15 @@ Transform2D RasterizerStorageGLES2::multimesh_instance_get_transform_2d(RID p_mu
 
 Color RasterizerStorageGLES2::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
 	return Color();
+}
+
+Color RasterizerStorageGLES2::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+	return Color();
+}
+
+void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {
+
+
 }
 
 void RasterizerStorageGLES2::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {

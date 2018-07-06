@@ -51,6 +51,7 @@
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/particles_2d.h"
+
 #include "scene/2d/path_2d.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -161,6 +162,7 @@
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
+#include "scene/3d/cpu_particles.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/scenario_fx.h"
 #include "scene/3d/spatial.h"
@@ -383,6 +385,7 @@ void register_scene_types() {
 	ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Particles>();
+	ClassDB::register_class<CPUParticles>();
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();

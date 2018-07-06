@@ -479,6 +479,16 @@ real_t Curve::interpolate_baked(real_t offset) {
 	}
 }
 
+void Curve::ensure_default_setup(float p_min, float p_max) {
+	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
+
+		add_point(Vector2(0, 1));
+		add_point(Vector2(1, 1));
+		set_min_value(p_min);
+		set_max_value(p_max);
+	}
+}
+
 void Curve::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));

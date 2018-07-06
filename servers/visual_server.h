@@ -309,13 +309,20 @@ public:
 		MULTIMESH_COLOR_FLOAT,
 	};
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, MultimeshColorFormat p_color_format) = 0;
+	enum MultimeshCustomDataFormat {
+		MULTIMESH_CUSTOM_DATA_NONE,
+		MULTIMESH_CUSTOM_DATA_8BIT,
+		MULTIMESH_CUSTOM_DATA_FLOAT,
+	};
+
+	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, MultimeshColorFormat p_color_format, MultimeshCustomDataFormat p_data_format = MULTIMESH_CUSTOM_DATA_NONE) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
 	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
@@ -323,6 +330,9 @@ public:
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
+	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -1023,6 +1033,7 @@ VARIANT_ENUM_CAST(VisualServer::RenderInfo);
 VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
+VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
