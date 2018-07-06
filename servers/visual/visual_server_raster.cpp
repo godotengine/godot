@@ -97,7 +97,9 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	changes = 0;
 
-	VSG::rasterizer->begin_frame(frame_step);
+	VS::get_singleton()->emit_signal("frame_pre_draw");
+
+	VSG::rasterizer->begin_frame();
 
 	VSG::scene->update_dirty_instances(); //update scene stuff
 
@@ -122,7 +124,7 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 		frame_drawn_callbacks.pop_front();
 	}
 
-	emit_signal("frame_drawn_in_thread");
+	VS::get_singleton()->emit_signal("frame_post_draw");
 }
 void VisualServerRaster::sync() {
 }

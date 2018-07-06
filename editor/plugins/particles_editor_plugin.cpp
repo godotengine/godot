@@ -32,15 +32,136 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "io/resource_loader.h"
 
-void ParticlesEditor::_node_removed(Node *p_node) {
+bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 
-	if (p_node == node) {
-		node = NULL;
-		hide();
+	bool use_normals = emission_fill->get_selected() == 1;
+
+	if (emission_fill->get_selected() < 2) {
+
+		float area_accum = 0;
+		Map<float, int> triangle_area_map;
+		print_line("geometry size: " + itos(geometry.size()));
+
+		for (int i = 0; i < geometry.size(); i++) {
+
+			float area = geometry[i].get_area();
+			if (area < CMP_EPSILON)
+				continue;
+			triangle_area_map[area_accum] = i;
+			area_accum += area;
+		}
+
+		if (!triangle_area_map.size() || area_accum == 0) {
+
+			err_dialog->set_text(TTR("Faces contain no area!"));
+			err_dialog->popup_centered_minsize();
+			return false;
+		}
+
+		int emissor_count = emission_amount->get_value();
+
+		for (int i = 0; i < emissor_count; i++) {
+
+			float areapos = Math::random(0.0f, area_accum);
+
+			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
+			ERR_FAIL_COND_V(!E, false)
+			int index = E->get();
+			ERR_FAIL_INDEX_V(index, geometry.size(), false);
+
+			// ok FINALLY get face
+			Face3 face = geometry[index];
+			//now compute some position inside the face...
+
+			Vector3 pos = face.get_random_point_inside();
+
+			points.push_back(pos);
+
+			if (use_normals) {
+				Vector3 normal = face.get_plane().normal;
+				normals.push_back(normal);
+			}
+		}
+	} else {
+
+		int gcount = geometry.size();
+
+		if (gcount == 0) {
+
+			err_dialog->set_text(TTR("No faces!"));
+			err_dialog->popup_centered_minsize();
+			return false;
+		}
+
+		PoolVector<Face3>::Read r = geometry.read();
+
+		AABB aabb;
+
+		for (int i = 0; i < gcount; i++) {
+
+			for (int j = 0; j < 3; j++) {
+
+				if (i == 0 && j == 0)
+					aabb.position = r[i].vertex[j];
+				else
+					aabb.expand_to(r[i].vertex[j]);
+			}
+		}
+
+		int emissor_count = emission_amount->get_value();
+
+		for (int i = 0; i < emissor_count; i++) {
+
+			int attempts = 5;
+
+			for (int j = 0; j < attempts; j++) {
+
+				Vector3 dir;
+				dir[Math::rand() % 3] = 1.0;
+				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
+
+				Vector3 ofsv = ofs + aabb.size * dir;
+
+				//space it a little
+				ofs -= dir;
+				ofsv += dir;
+
+				float max = -1e7, min = 1e7;
+
+				for (int k = 0; k < gcount; k++) {
+
+					const Face3 &f3 = r[k];
+
+					Vector3 res;
+					if (f3.intersects_segment(ofs, ofsv, &res)) {
+
+						res -= ofs;
+						float d = dir.dot(res);
+
+						if (d < min)
+							min = d;
+						if (d > max)
+							max = d;
+					}
+				}
+
+				if (max < min)
+					continue; //lost attempt
+
+				float val = min + (max - min) * Math::randf();
+
+				Vector3 point = ofs + dir * val;
+
+				points.push_back(point);
+				break;
+			}
+		}
 	}
+
+	return true;
 }
 
-void ParticlesEditor::_node_selected(const NodePath &p_path) {
+void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 
 	Node *sel = get_node(p_path);
 	if (!sel)
@@ -63,7 +184,7 @@ void ParticlesEditor::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	Transform geom_xform = node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
 	PoolVector<Face3>::Write w = geometry.write();
@@ -77,6 +198,65 @@ void ParticlesEditor::_node_selected(const NodePath &p_path) {
 	w = PoolVector<Face3>::Write();
 
 	emission_dialog->popup_centered(Size2(300, 130));
+}
+
+void ParticlesEditorBase::_bind_methods() {
+
+	ClassDB::bind_method("_node_selected", &ParticlesEditorBase::_node_selected);
+	ClassDB::bind_method("_generate_emission_points", &ParticlesEditorBase::_generate_emission_points);
+}
+
+ParticlesEditorBase::ParticlesEditorBase() {
+
+	emission_dialog = memnew(ConfirmationDialog);
+	emission_dialog->set_title(TTR("Create Emitter"));
+	add_child(emission_dialog);
+	VBoxContainer *emd_vb = memnew(VBoxContainer);
+	emission_dialog->add_child(emd_vb);
+
+	emission_amount = memnew(SpinBox);
+	emission_amount->set_min(1);
+	emission_amount->set_max(100000);
+	emission_amount->set_value(512);
+	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
+
+	emission_fill = memnew(OptionButton);
+	emission_fill->add_item(TTR("Surface Points"));
+	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
+	emission_fill->add_item(TTR("Volume"));
+	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
+
+	emission_dialog->get_ok()->set_text(TTR("Create"));
+	emission_dialog->connect("confirmed", this, "_generate_emission_points");
+
+	err_dialog = memnew(ConfirmationDialog);
+	add_child(err_dialog);
+
+	emission_file_dialog = memnew(EditorFileDialog);
+	add_child(emission_file_dialog);
+	emission_file_dialog->connect("file_selected", this, "_resource_seleted");
+	emission_tree_dialog = memnew(SceneTreeDialog);
+	add_child(emission_tree_dialog);
+	emission_tree_dialog->connect("selected", this, "_node_selected");
+
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Mesh", &extensions);
+
+	emission_file_dialog->clear_filters();
+	for (int i = 0; i < extensions.size(); i++) {
+
+		emission_file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+	}
+
+	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+}
+
+void ParticlesEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+		hide();
+	}
 }
 
 void ParticlesEditor::_notification(int p_notification) {
@@ -146,145 +326,21 @@ void ParticlesEditor::_generate_aabb() {
 
 void ParticlesEditor::edit(Particles *p_particles) {
 
+	base_node = p_particles;
 	node = p_particles;
 }
 
 void ParticlesEditor::_generate_emission_points() {
 
 	/// hacer codigo aca
-	PoolVector<float> points;
-	bool use_normals = emission_fill->get_selected() == 1;
-	PoolVector<float> normals;
+	PoolVector<Vector3> points;
+	PoolVector<Vector3> normals;
 
-	if (emission_fill->get_selected() < 2) {
-
-		float area_accum = 0;
-		Map<float, int> triangle_area_map;
-		print_line("geometry size: " + itos(geometry.size()));
-
-		for (int i = 0; i < geometry.size(); i++) {
-
-			float area = geometry[i].get_area();
-			if (area < CMP_EPSILON)
-				continue;
-			triangle_area_map[area_accum] = i;
-			area_accum += area;
-		}
-
-		if (!triangle_area_map.size() || area_accum == 0) {
-
-			err_dialog->set_text(TTR("Faces contain no area!"));
-			err_dialog->popup_centered_minsize();
-			return;
-		}
-
-		int emissor_count = emission_amount->get_value();
-
-		for (int i = 0; i < emissor_count; i++) {
-
-			float areapos = Math::random(0.0f, area_accum);
-
-			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
-			ERR_FAIL_COND(!E)
-			int index = E->get();
-			ERR_FAIL_INDEX(index, geometry.size());
-
-			// ok FINALLY get face
-			Face3 face = geometry[index];
-			//now compute some position inside the face...
-
-			Vector3 pos = face.get_random_point_inside();
-
-			points.push_back(pos.x);
-			points.push_back(pos.y);
-			points.push_back(pos.z);
-
-			if (use_normals) {
-				Vector3 normal = face.get_plane().normal;
-				normals.push_back(normal.x);
-				normals.push_back(normal.y);
-				normals.push_back(normal.z);
-			}
-		}
-	} else {
-
-		int gcount = geometry.size();
-
-		if (gcount == 0) {
-
-			err_dialog->set_text(TTR("No faces!"));
-			err_dialog->popup_centered_minsize();
-			return;
-		}
-
-		PoolVector<Face3>::Read r = geometry.read();
-
-		AABB aabb;
-
-		for (int i = 0; i < gcount; i++) {
-
-			for (int j = 0; j < 3; j++) {
-
-				if (i == 0 && j == 0)
-					aabb.position = r[i].vertex[j];
-				else
-					aabb.expand_to(r[i].vertex[j]);
-			}
-		}
-
-		int emissor_count = emission_amount->get_value();
-
-		for (int i = 0; i < emissor_count; i++) {
-
-			int attempts = 5;
-
-			for (int j = 0; j < attempts; j++) {
-
-				Vector3 dir;
-				dir[Math::rand() % 3] = 1.0;
-				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
-
-				Vector3 ofsv = ofs + aabb.size * dir;
-
-				//space it a little
-				ofs -= dir;
-				ofsv += dir;
-
-				float max = -1e7, min = 1e7;
-
-				for (int k = 0; k < gcount; k++) {
-
-					const Face3 &f3 = r[k];
-
-					Vector3 res;
-					if (f3.intersects_segment(ofs, ofsv, &res)) {
-
-						res -= ofs;
-						float d = dir.dot(res);
-
-						if (d < min)
-							min = d;
-						if (d > max)
-							max = d;
-					}
-				}
-
-				if (max < min)
-					continue; //lost attempt
-
-				float val = min + (max - min) * Math::randf();
-
-				Vector3 point = ofs + dir * val;
-
-				points.push_back(point.x);
-				points.push_back(point.y);
-				points.push_back(point.z);
-				break;
-			}
-		}
+	if (!_generate(points, normals)) {
+		return;
 	}
 
-	int point_count = points.size() / 3;
+	int point_count = points.size();
 
 	int w = 2048;
 	int h = (point_count / 2048) + 1;
@@ -295,8 +351,13 @@ void ParticlesEditor::_generate_emission_points() {
 	{
 		PoolVector<uint8_t>::Write iw = point_img.write();
 		zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-		PoolVector<float>::Read r = points.read();
-		copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
+		PoolVector<Vector3>::Read r = points.read();
+		float *wf = (float *)iw.ptr();
+		for (int i = 0; i < point_count; i++) {
+			wf[i * 3 + 0] = r[i].x;
+			wf[i * 3 + 1] = r[i].y;
+			wf[i * 3 + 2] = r[i].z;
+		}
 	}
 
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
@@ -308,7 +369,7 @@ void ParticlesEditor::_generate_emission_points() {
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
 
-	if (use_normals) {
+	if (normals.size() > 0) {
 
 		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 		material->set_emission_point_count(point_count);
@@ -320,8 +381,13 @@ void ParticlesEditor::_generate_emission_points() {
 		{
 			PoolVector<uint8_t>::Write iw = point_img2.write();
 			zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-			PoolVector<float>::Read r = normals.read();
-			copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
+			PoolVector<Vector3>::Read r = normals.read();
+			float *wf = (float *)iw.ptr();
+			for (int i = 0; i < point_count; i++) {
+				wf[i * 3 + 0] = r[i].x;
+				wf[i * 3 + 1] = r[i].y;
+				wf[i * 3 + 2] = r[i].z;
+			}
 		}
 
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
@@ -342,8 +408,6 @@ void ParticlesEditor::_generate_emission_points() {
 void ParticlesEditor::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &ParticlesEditor::_menu_option);
-	ClassDB::bind_method("_node_selected", &ParticlesEditor::_node_selected);
-	ClassDB::bind_method("_generate_emission_points", &ParticlesEditor::_generate_emission_points);
 	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
 }
 
@@ -361,48 +425,6 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
-
-	emission_dialog = memnew(ConfirmationDialog);
-	emission_dialog->set_title(TTR("Create Emitter"));
-	add_child(emission_dialog);
-	VBoxContainer *emd_vb = memnew(VBoxContainer);
-	emission_dialog->add_child(emd_vb);
-
-	emission_amount = memnew(SpinBox);
-	emission_amount->set_min(1);
-	emission_amount->set_max(100000);
-	emission_amount->set_value(512);
-	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
-
-	emission_fill = memnew(OptionButton);
-	emission_fill->add_item(TTR("Surface Points"));
-	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
-	emission_fill->add_item(TTR("Volume"));
-	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
-
-	emission_dialog->get_ok()->set_text(TTR("Create"));
-	emission_dialog->connect("confirmed", this, "_generate_emission_points");
-
-	err_dialog = memnew(ConfirmationDialog);
-	add_child(err_dialog);
-
-	emission_file_dialog = memnew(EditorFileDialog);
-	add_child(emission_file_dialog);
-	emission_file_dialog->connect("file_selected", this, "_resource_seleted");
-	emission_tree_dialog = memnew(SceneTreeDialog);
-	add_child(emission_tree_dialog);
-	emission_tree_dialog->connect("selected", this, "_node_selected");
-
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Mesh", &extensions);
-
-	emission_file_dialog->clear_filters();
-	for (int i = 0; i < extensions.size(); i++) {
-
-		emission_file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
-	}
-
-	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));

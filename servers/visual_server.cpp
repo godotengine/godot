@@ -1587,19 +1587,22 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_get_custom_aabb", "mesh"), &VisualServer::mesh_get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &VisualServer::mesh_clear);
 
-	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format"), &VisualServer::multimesh_allocate);
+	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &VisualServer::multimesh_allocate, DEFVAL(MULTIMESH_CUSTOM_DATA_NONE));
 	ClassDB::bind_method(D_METHOD("multimesh_get_instance_count", "multimesh"), &VisualServer::multimesh_get_instance_count);
 	ClassDB::bind_method(D_METHOD("multimesh_set_mesh", "multimesh", "mesh"), &VisualServer::multimesh_set_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform", "multimesh", "index", "transform"), &VisualServer::multimesh_instance_set_transform);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform_2d", "multimesh", "index", "transform"), &VisualServer::multimesh_instance_set_transform_2d);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_color", "multimesh", "index", "color"), &VisualServer::multimesh_instance_set_color);
+	ClassDB::bind_method(D_METHOD("multimesh_instance_set_custom_data", "multimesh", "index", "custom_data"), &VisualServer::multimesh_instance_set_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_get_mesh", "multimesh"), &VisualServer::multimesh_get_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_get_aabb", "multimesh"), &VisualServer::multimesh_get_aabb);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform", "multimesh", "index"), &VisualServer::multimesh_instance_get_transform);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform_2d", "multimesh", "index"), &VisualServer::multimesh_instance_get_transform_2d);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_color", "multimesh", "index"), &VisualServer::multimesh_instance_get_color);
+	ClassDB::bind_method(D_METHOD("multimesh_instance_get_custom_data", "multimesh", "index"), &VisualServer::multimesh_instance_get_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &VisualServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &VisualServer::multimesh_get_visible_instances);
+	ClassDB::bind_method(D_METHOD("multimesh_set_as_bulk_array", "multimesh", "array"), &VisualServer::multimesh_set_as_bulk_array);
 
 	ClassDB::bind_method(D_METHOD("immediate_create"), &VisualServer::immediate_create);
 	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &VisualServer::immediate_begin, DEFVAL(RID()));
@@ -2144,7 +2147,8 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_2x2);
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_3x3);
 
-	ADD_SIGNAL(MethodInfo("frame_drawn_in_thread"));
+	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
+	ADD_SIGNAL(MethodInfo("frame_post_draw"));
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {

@@ -40,14 +40,14 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class ParticlesEditor : public Control {
+class ParticlesEditorBase : public Control {
 
-	GDCLASS(ParticlesEditor, Control);
-
+	GDCLASS(ParticlesEditorBase, Control)
+protected:
+	Spatial *base_node;
 	Panel *panel;
 	MenuButton *options;
 	HBoxContainer *particles_editor_hb;
-	Particles *node;
 
 	EditorFileDialog *emission_file_dialog;
 	SceneTreeDialog *emission_tree_dialog;
@@ -58,8 +58,25 @@ class ParticlesEditor : public Control {
 	SpinBox *emission_amount;
 	OptionButton *emission_fill;
 
+	PoolVector<Face3> geometry;
+
+	bool _generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals);
+	virtual void _generate_emission_points() = 0;
+	void _node_selected(const NodePath &p_path);
+
+	static void _bind_methods();
+
+public:
+	ParticlesEditorBase();
+};
+
+class ParticlesEditor : public ParticlesEditorBase {
+
+	GDCLASS(ParticlesEditor, ParticlesEditorBase);
+
 	ConfirmationDialog *generate_aabb;
 	SpinBox *generate_seconds;
+	Particles *node;
 
 	enum Menu {
 
@@ -70,17 +87,13 @@ class ParticlesEditor : public Control {
 
 	};
 
-	PoolVector<Face3> geometry;
-
 	void _generate_aabb();
-	void _generate_emission_points();
-	void _node_selected(const NodePath &p_path);
 
 	void _menu_option(int);
 
-	void _populate();
-
 	friend class ParticlesEditorPlugin;
+
+	virtual void _generate_emission_points();
 
 protected:
 	void _notification(int p_notification);
