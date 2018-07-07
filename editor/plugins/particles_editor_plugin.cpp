@@ -31,7 +31,7 @@
 #include "particles_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "io/resource_loader.h"
-
+#include "scene/3d/cpu_particles.h"
 bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 
 	bool use_normals = emission_fill->get_selected() == 1;
@@ -294,6 +294,21 @@ void ParticlesEditor::_menu_option(int p_option) {
 			emission_tree_dialog->popup_centered_ratio();
 
 		} break;
+		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
+
+			UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+			CPUParticles *cpu_particles = memnew(CPUParticles);
+			cpu_particles->convert_from_particles(node);
+
+			undo_redo->create_action("Replace Particles by CPUParticles");
+			undo_redo->add_do_method(node, "replace_by", cpu_particles);
+			undo_redo->add_undo_method(cpu_particles, "replace_by", node);
+			undo_redo->add_do_reference(cpu_particles);
+			undo_redo->add_undo_reference(node);
+			undo_redo->commit_action();
+
+		} break;
 	}
 }
 
@@ -424,6 +439,9 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
+
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	generate_aabb = memnew(ConfirmationDialog);

@@ -1,5 +1,6 @@
 #include "cpu_particles.h"
 
+#include "particles.h"
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/surface_tool.h"
@@ -1072,6 +1073,74 @@ void CPUParticles::_notification(int p_what) {
 	}
 }
 
+void CPUParticles::convert_from_particles(Node *p_particles) {
+
+	Particles *particles = Object::cast_to<Particles>(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	set_emitting(particles->is_emitting());
+	set_amount(particles->get_amount());
+	set_lifetime(particles->get_lifetime());
+	set_one_shot(particles->get_one_shot());
+	set_pre_process_time(particles->get_pre_process_time());
+	set_explosiveness_ratio(particles->get_explosiveness_ratio());
+	set_randomness_ratio(particles->get_randomness_ratio());
+	set_use_local_coordinates(particles->get_use_local_coordinates());
+	set_fixed_fps(particles->get_fixed_fps());
+	set_fractional_delta(particles->get_fractional_delta());
+	set_speed_scale(particles->get_speed_scale());
+	set_draw_order(DrawOrder(particles->get_draw_order()));
+	set_mesh(particles->get_draw_pass_mesh(0));
+
+	Ref<ParticlesMaterial> material = particles->get_process_material();
+	if (material.is_null())
+		return;
+
+	set_spread(material->get_spread());
+	set_flatness(material->get_flatness());
+
+	set_color(material->get_color());
+
+	Ref<GradientTexture> gt = material->get_color_ramp();
+	if (gt.is_valid()) {
+		set_color_ramp(gt->get_gradient());
+	}
+
+	set_particle_flag(FLAG_ALIGN_Y_TO_VELOCITY, material->get_flag(ParticlesMaterial::FLAG_ALIGN_Y_TO_VELOCITY));
+	set_particle_flag(FLAG_ROTATE_Y, material->get_flag(ParticlesMaterial::FLAG_ROTATE_Y));
+	set_particle_flag(FLAG_DISABLE_Z, material->get_flag(ParticlesMaterial::FLAG_DISABLE_Z));
+	set_particle_flag(FLAG_ANIM_LOOP, material->get_flag(ParticlesMaterial::FLAG_ANIM_LOOP));
+
+	set_emission_shape(EmissionShape(material->get_emission_shape()));
+	set_emission_sphere_radius(material->get_emission_sphere_radius());
+	set_emission_box_extents(material->get_emission_box_extents());
+
+	set_gravity(material->get_gravity());
+
+#define CONVERT_PARAM(m_param)                                                            \
+	set_param(m_param, material->get_param(ParticlesMaterial::m_param));                  \
+	{                                                                                     \
+		Ref<CurveTexture> ctex = material->get_param_texture(ParticlesMaterial::m_param); \
+		if (ctex.is_valid()) set_param_curve(m_param, ctex->get_curve());                 \
+	}                                                                                     \
+	set_param_randomness(m_param, material->get_param_randomness(ParticlesMaterial::m_param));
+
+	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
+	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
+	//	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
+	CONVERT_PARAM(PARAM_LINEAR_ACCEL);
+	CONVERT_PARAM(PARAM_RADIAL_ACCEL);
+	CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
+	CONVERT_PARAM(PARAM_DAMPING);
+	CONVERT_PARAM(PARAM_ANGLE);
+	CONVERT_PARAM(PARAM_SCALE);
+	CONVERT_PARAM(PARAM_HUE_VARIATION);
+	CONVERT_PARAM(PARAM_ANIM_SPEED);
+	CONVERT_PARAM(PARAM_ANIM_OFFSET);
+
+#undef CONVERT_PARAM
+}
+
 void CPUParticles::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles::set_emitting);
@@ -1173,6 +1242,8 @@ void CPUParticles::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_gravity"), &CPUParticles::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &CPUParticles::set_gravity);
+
+	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles::convert_from_particles);
 
 	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles::_update_render_thread);
 

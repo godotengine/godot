@@ -244,6 +244,8 @@ public:
 
 	void restart();
 
+	void convert_from_particles(Node *p_particles);
+
 	CPUParticles();
 	~CPUParticles();
 };
