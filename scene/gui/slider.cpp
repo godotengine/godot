@@ -65,11 +65,12 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 			} else {
 				grab.active = false;
 			}
-		} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-
-			set_value(get_value() + get_step());
-		} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-			set_value(get_value() - get_step());
+		} else if (scrollable) {
+			if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+				set_value(get_value() + get_step());
+			} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+				set_value(get_value() - get_step());
+			}
 		}
 	}
 
@@ -247,6 +248,16 @@ bool Slider::is_editable() const {
 	return editable;
 }
 
+void Slider::set_scrollable(bool p_scrollable) {
+
+	scrollable = p_scrollable;
+}
+
+bool Slider::is_scrollable() const {
+
+	return scrollable;
+}
+
 void Slider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Slider::_gui_input);
@@ -258,8 +269,11 @@ void Slider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
+	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
+	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
@@ -272,5 +286,6 @@ Slider::Slider(Orientation p_orientation) {
 	ticks = 0;
 	custom_step = -1;
 	editable = true;
+	scrollable = true;
 	set_focus_mode(FOCUS_ALL);
 }
