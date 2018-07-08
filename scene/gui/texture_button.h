@@ -55,7 +55,6 @@ private:
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-	bool expand;
 	StretchMode stretch_mode;
 
 	Rect2 _texture_region;
@@ -63,7 +62,6 @@ private:
 	bool _tile;
 
 protected:
-	virtual Size2 get_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -82,9 +80,6 @@ public:
 	Ref<Texture> get_disabled_texture() const;
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
-
-	bool get_expand() const;
-	void set_expand(bool p_expand);
 
 	void set_stretch_mode(StretchMode p_stretch_mode);
 	StretchMode get_stretch_mode() const;

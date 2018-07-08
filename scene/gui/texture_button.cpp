@@ -32,30 +32,6 @@
 #include "core/typedefs.h"
 #include <stdlib.h>
 
-Size2 TextureButton::get_minimum_size() const {
-
-	Size2 rscale = Control::get_minimum_size();
-
-	if (!expand) {
-		if (normal.is_null()) {
-			if (pressed.is_null()) {
-				if (hover.is_null())
-					if (click_mask.is_null())
-						rscale = Size2();
-					else
-						rscale = click_mask->get_size();
-				else
-					rscale = hover->get_size();
-			} else
-				rscale = pressed->get_size();
-
-		} else
-			rscale = normal->get_size();
-	}
-
-	return rscale.abs();
-}
-
 bool TextureButton::has_point(const Point2 &p_point) const {
 
 	if (click_mask.is_valid()) {
@@ -158,60 +134,54 @@ void TextureButton::_notification(int p_what) {
 			}
 
 			if (texdraw.is_valid()) {
-				Point2 ofs;
-				Size2 size = texdraw->get_size();
-				_texture_region = Rect2(Point2(), texdraw->get_size());
-				_tile = false;
-				if (expand) {
-					switch (stretch_mode) {
-						case STRETCH_KEEP:
-							size = texdraw->get_size();
-							break;
-						case STRETCH_SCALE:
-							size = get_size();
-							break;
-						case STRETCH_TILE:
-							size = get_size();
-							_tile = true;
-							break;
-						case STRETCH_KEEP_CENTERED:
-							ofs = (get_size() - texdraw->get_size()) / 2;
-							size = texdraw->get_size();
-							break;
-						case STRETCH_KEEP_ASPECT_CENTERED:
-						case STRETCH_KEEP_ASPECT: {
-							Size2 _size = get_size();
-							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
-							float tex_height = _size.height;
+				switch (stretch_mode) {
+					case STRETCH_SCALE: {
+						draw_texture_rect(texdraw, Rect2(Point2(), get_size()), false);
+					} break;
+					case STRETCH_TILE: {
+						draw_texture_rect(texdraw, Rect2(Point2(), get_size()), true);
+					} break;
+					case STRETCH_KEEP: {
+						draw_texture_rect(texdraw, Rect2(Point2(), texdraw->get_size()), false);
 
-							if (tex_width > _size.width) {
-								tex_width = _size.width;
-								tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
-							}
+					} break;
+					case STRETCH_KEEP_CENTERED: {
 
-							if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
-								ofs.x = (_size.width - tex_width) / 2;
-								ofs.y = (_size.height - tex_height) / 2;
-							}
-							size.width = tex_width;
-							size.height = tex_height;
-						} break;
-						case STRETCH_KEEP_ASPECT_COVERED: {
-							size = get_size();
-							Size2 tex_size = texdraw->get_size();
-							Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
-							float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
-							Size2 scaledTexSize = tex_size * scale;
-							Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
-							_texture_region = Rect2(ofs, size / scale);
-						} break;
-					}
+						Vector2 ofs = (get_size() - texdraw->get_size()) / 2;
+						draw_texture_rect(texdraw, Rect2(ofs, texdraw->get_size()), false);
+					} break;
+					case STRETCH_KEEP_ASPECT_CENTERED:
+					case STRETCH_KEEP_ASPECT: {
+
+						Size2 size = get_size();
+						int tex_width = texdraw->get_width() * size.height / texdraw->get_height();
+						int tex_height = size.height;
+
+						if (tex_width > size.width) {
+							tex_width = size.width;
+							tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
+						}
+
+						int ofs_x = 0;
+						int ofs_y = 0;
+
+						if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
+							ofs_x += (size.width - tex_width) / 2;
+							ofs_y += (size.height - tex_height) / 2;
+						}
+
+						draw_texture_rect(texdraw, Rect2(ofs_x, ofs_y, tex_width, tex_height));
+					} break;
+					case STRETCH_KEEP_ASPECT_COVERED: {
+						Size2 size = get_size();
+						Size2 tex_size = texdraw->get_size();
+						Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
+						float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
+						Size2 scaledTexSize = tex_size * scale;
+						Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
+						draw_texture_rect_region(texdraw, Rect2(Point2(), size), Rect2(ofs, size / scale));
+					} break;
 				}
-				_position_rect = Rect2(ofs, size);
-				if (_tile)
-					draw_texture_rect(texdraw, _position_rect, _tile);
-				else
-					draw_texture_rect_region(texdraw, _position_rect, _texture_region);
 			}
 			if (has_focus() && focused.is_valid()) {
 
@@ -230,7 +200,6 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled_texture", "texture"), &TextureButton::set_disabled_texture);
 	ClassDB::bind_method(D_METHOD("set_focused_texture", "texture"), &TextureButton::set_focused_texture);
 	ClassDB::bind_method(D_METHOD("set_click_mask", "mask"), &TextureButton::set_click_mask);
-	ClassDB::bind_method(D_METHOD("set_expand", "p_expand"), &TextureButton::set_expand);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "p_mode"), &TextureButton::set_stretch_mode);
 
 	ClassDB::bind_method(D_METHOD("get_normal_texture"), &TextureButton::get_normal_texture);
@@ -239,7 +208,6 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_disabled_texture"), &TextureButton::get_disabled_texture);
 	ClassDB::bind_method(D_METHOD("get_focused_texture"), &TextureButton::get_focused_texture);
 	ClassDB::bind_method(D_METHOD("get_click_mask"), &TextureButton::get_click_mask);
-	ClassDB::bind_method(D_METHOD("get_expand"), &TextureButton::get_expand);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures", "texture_");
@@ -249,7 +217,6 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_disabled_texture", "get_disabled_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_focused_texture", "get_focused_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_expand", "get_expand");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
@@ -320,16 +287,6 @@ void TextureButton::set_focused_texture(const Ref<Texture> &p_focused) {
 	focused = p_focused;
 };
 
-bool TextureButton::get_expand() const {
-	return expand;
-}
-
-void TextureButton::set_expand(bool p_expand) {
-	expand = p_expand;
-	minimum_size_changed();
-	update();
-}
-
 void TextureButton::set_stretch_mode(StretchMode p_stretch_mode) {
 	stretch_mode = p_stretch_mode;
 	update();
@@ -340,7 +297,6 @@ TextureButton::StretchMode TextureButton::get_stretch_mode() const {
 }
 
 TextureButton::TextureButton() {
-	expand = false;
 	stretch_mode = STRETCH_SCALE;
 
 	_texture_region = Rect2();
