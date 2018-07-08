@@ -178,14 +178,22 @@ def configure(env):
 
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
-    lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + ndk_platform + "/" + env['ARCH']
+    if env['android_stl']:
+        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
+        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
+        env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
+    else:
+        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
+
+    lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + env['ndk_platform'] + "/" + env['ARCH']
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
         print("Using NDK unified headers")
         sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
-        env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
+        env.Append(CPPFLAGS=["--sysroot="+sysroot])
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
+        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
         # For unified headers this define has to be set manually
         env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(ndk_platform))])
     else:
@@ -232,14 +240,23 @@ def configure(env):
     if (sys.platform.startswith("darwin")):
         env['SHLIBSUFFIX'] = '.so'
 
-    env['LINKFLAGS'] = ['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel']
+    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
+        if LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
+            env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a','-Wl,--exclude-libs,libatomic.a','-nostdlib++'])
+        env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
+        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/"])
+        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libandroid_support.a"])
+        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libc++_shared.so"])
+    else:
+        env['LINKFLAGS'] = ['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel']
+        if mt_link:
+            env.Append(LINKFLAGS=['-Wl,--threads'])
+
     if env["android_arch"] == "armv7":
         env.Append(LINKFLAGS=string.split('-Wl,--fix-cortex-a8'))
     env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
     env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
 
-    if mt_link:
-        env.Append(LINKFLAGS=['-Wl,--threads'])
     env.Append(LINKFLAGS=target_opts)
     env.Append(LINKFLAGS=common_opts)
 
@@ -269,17 +286,6 @@ def configure(env):
         if (env["android_arch"] == "armv6" or env["android_arch"] == "armv7"):
             env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
         env.opus_fixed_point = "yes"
-
-    if (env['android_stl'] == 'yes'):
-        env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"] +
-                            "/sources/cxx-stl/gnu-libstdc++/4.9/include"])
-        env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"] +
-                            "/sources/cxx-stl/gnu-libstdc++/4.9/libs/" + arch_subpath + "/include"])
-        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] +
-                            "/sources/cxx-stl/gnu-libstdc++/4.9/libs/" + arch_subpath])
-        env.Append(LIBS=["gnustl_static"])
-    else:
-        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
 
     import methods
     env.Append(BUILDERS={'GLSL120': env.Builder(
