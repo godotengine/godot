@@ -1350,37 +1350,17 @@ void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWith
 	state->set_metakey((p_x11_state & Mod4Mask));
 }
 
-unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
+unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
 
-	unsigned int state = 0;
+	unsigned int mask = 1 << (p_x11_button - 1);
 
-	if (p_x11_state & Button1Mask) {
-
-		state |= 1 << 0;
+	if (p_x11_type == ButtonPress) {
+		last_button_state |= mask;
+	} else {
+		last_button_state &= ~mask;
 	}
 
-	if (p_x11_state & Button3Mask) {
-
-		state |= 1 << 1;
-	}
-
-	if (p_x11_state & Button2Mask) {
-
-		state |= 1 << 2;
-	}
-
-	if (p_x11_state & Button4Mask) {
-
-		state |= 1 << 3;
-	}
-
-	if (p_x11_state & Button5Mask) {
-
-		state |= 1 << 4;
-	}
-
-	last_button_state = state;
-	return state;
+	return last_button_state;
 }
 
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
@@ -1885,14 +1865,14 @@ void OS_X11::process_xevents() {
 				mb.instance();
 
 				get_key_modifier_state(event.xbutton.state, mb);
-				mb->set_button_mask(get_mouse_button_state(event.xbutton.state));
-				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
-				mb->set_global_position(mb->get_position());
-				mb->set_button_index(event.xbutton.button);
 				if (mb->get_button_index() == 2)
 					mb->set_button_index(3);
 				else if (mb->get_button_index() == 3)
 					mb->set_button_index(2);
+				mb->set_button_mask(get_mouse_button_state(event.xbutton.button, event.xbutton.type));
+				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
+				mb->set_global_position(mb->get_position());
+				mb->set_button_index(event.xbutton.button);
 
 				mb->set_pressed((event.type == ButtonPress));
 
@@ -1996,7 +1976,7 @@ void OS_X11::process_xevents() {
 				mm.instance();
 
 				get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask(get_mouse_button_state(event.xmotion.state));
+				mm->set_button_mask(get_mouse_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				input->set_mouse_position(pos);

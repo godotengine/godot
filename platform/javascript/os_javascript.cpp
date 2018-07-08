@@ -461,7 +461,6 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	InputDefault *input = get_singleton()->input;
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_button_mask(input->get_mouse_button_mask());
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -484,10 +483,14 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
+	int button_flag = 1 << (ev->get_button_index() - 1);
+
 	ev->set_pressed(true);
+	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
 	input->parse_input_event(ev);
 
 	ev->set_pressed(false);
+	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
 	input->parse_input_event(ev);
 
 	return true;

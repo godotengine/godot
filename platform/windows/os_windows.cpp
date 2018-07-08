@@ -430,15 +430,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			int bmask = 0;
-			bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
-			bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
-			bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
-			bmask |= (wParam & MK_XBUTTON1) ? (1 << 7) : 0;
-			bmask |= (wParam & MK_XBUTTON2) ? (1 << 8) : 0;
-			mm->set_button_mask(bmask);
-
-			last_button_state = mm->get_button_mask();
+			mm->set_button_mask(last_button_state);
 
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
@@ -607,15 +599,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mb->set_shift((wParam & MK_SHIFT) != 0);
 			mb->set_alt(alt_mem);
 			//mb->get_alt()=(wParam&MK_MENU)!=0;
-			int bmask = 0;
-			bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
-			bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
-			bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
-			bmask |= (wParam & MK_XBUTTON1) ? (1 << 7) : 0;
-			bmask |= (wParam & MK_XBUTTON2) ? (1 << 8) : 0;
-			mb->set_button_mask(bmask);
+			if (mb->is_pressed())
+				last_button_state |= (1 << (mb->get_button_index() - 1));
+			else
+				last_button_state &= ~(1 << (mb->get_button_index() - 1));
+			mb->set_button_mask(last_button_state);
 
-			last_button_state = mb->get_button_mask();
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -653,6 +642,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
 					//send release for mouse wheel
 					Ref<InputEventMouseButton> mbd = mb->duplicate();
+					last_button_state &= ~(1 << (mbd->get_button_index() - 1));
+					mbd->set_button_mask(last_button_state);
 					mbd->set_pressed(false);
 					input->parse_input_event(mbd);
 				}

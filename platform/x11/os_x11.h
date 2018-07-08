@@ -135,7 +135,7 @@ class OS_X11 : public OS_Unix {
 	} touch;
 #endif
 
-	unsigned int get_mouse_button_state(unsigned int p_x11_state);
+	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 
 	MouseMode mouse_mode;

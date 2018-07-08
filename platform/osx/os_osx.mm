@@ -1047,6 +1047,8 @@ static int remapKey(unsigned int key) {
 
 inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 
+	unsigned int mask = 1 << (button - 1);
+
 	Ref<InputEventMouseButton> sc;
 	sc.instance();
 
@@ -1057,9 +1059,13 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
 	sc->set_position(mouse_pos);
 	sc->set_global_position(mouse_pos);
+	button_mask |= mask;
 	sc->set_button_mask(button_mask);
 	OS_OSX::singleton->push_input(sc);
+
 	sc->set_pressed(false);
+	button_mask &= ~mask;
+	sc->set_button_mask(button_mask);
 	OS_OSX::singleton->push_input(sc);
 }
 
