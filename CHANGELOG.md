@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [3.0.5] - 2016-07-08
+
+### Added
+
+ - 'android_add_asset_dir('...') method to Android module gradle build config.
+
+### Fixed
+
+ - Android exporter no longer writes unnecessary permissions to the exported APK.
+ - Segfault when quitting the editor.
+ - Debugger 'focus stealing' now works more reliably.
+ - Subresources are now always saved when saving a scene.
+ - WebAssembly: Supply proper CORS heards.
+ - Mono: Annotated signal loading in exported projects.
+ - Mono: Serveral fixes.
+
 ## [3.0.4] - 2018-06-23
 
 ### Added
