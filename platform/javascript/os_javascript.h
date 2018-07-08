@@ -33,8 +33,6 @@
 
 #include "audio_driver_javascript.h"
 #include "main/input_default.h"
-#include "os/input.h"
-#include "os/main_loop.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "unix/os_unix.h"
@@ -71,7 +69,10 @@ class OS_JavaScript : public OS_Unix {
 	static EM_BOOL mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 	static EM_BOOL mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
 
-	static void _close_notification_funcs(const String &p_file, int p_flags);
+	static EM_BOOL wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data);
+
+	static EM_BOOL touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
+	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 
 	static EM_BOOL gamepad_change_callback(int p_event_type, const EmscriptenGamepadEvent *p_event, void *p_user_data);
 	void process_joypads();
@@ -80,11 +81,7 @@ class OS_JavaScript : public OS_Unix {
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
-	int video_driver_index;
-
 protected:
-	virtual int get_current_video_driver() const;
-
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 

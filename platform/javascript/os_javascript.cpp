@@ -30,13 +30,9 @@
 
 #include "os_javascript.h"
 
-#include "core/engine.h"
-#include "core/io/file_access_buffered_fa.h"
-#include "dom_keys.h"
-#include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
-#include "drivers/unix/dir_access_unix.h"
-#include "drivers/unix/file_access_unix.h"
+#include "gles2/rasterizer_gles2.h"
+#include "gles3/rasterizer_gles3.h"
+#include "io/file_access_buffered_fa.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "unix/dir_access_unix.h"
@@ -53,36 +49,7 @@
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
 
-template <typename T>
-static void dom2godot_mod(T emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
-
-	godot_event->set_shift(emscripten_event_ptr->shiftKey);
-	godot_event->set_alt(emscripten_event_ptr->altKey);
-	godot_event->set_control(emscripten_event_ptr->ctrlKey);
-	godot_event->set_metakey(emscripten_event_ptr->metaKey);
-}
-
-int OS_JavaScript::get_video_driver_count() const {
-
-	return VIDEO_DRIVER_MAX;
-}
-
-const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
-}
-
-int OS_JavaScript::get_audio_driver_count() const {
-
-	return 1;
-}
+// Window (canvas)
 
 static void focus_canvas() {
 
@@ -144,69 +111,22 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 	return Size2(ev.screenWidth, ev.screenHeight);
 }
 
-static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+void OS_JavaScript::set_window_size(const Size2 p_size) {
 
-	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
-
-	Ref<InputEventMouseButton> ev;
-	ev.instance();
-	ev->set_pressed(event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(mouse_event->canvasX, mouse_event->canvasY));
-	ev->set_global_position(ev->get_position());
-	dom2godot_mod(mouse_event, ev);
-	switch (mouse_event->button) {
-		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
-		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
-		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
-		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
-		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
-		default: return false;
-	}
-
-	int mask = _input->get_mouse_button_mask();
-	int button_flag = 1 << (ev->get_button_index() - 1);
-	if (ev->is_pressed()) {
-		// Since the event is consumed, focus manually. The containing iframe,
-		// if used, may not have focus yet, so focus even if already focused.
-		focus_canvas();
-		mask |= button_flag;
-	} else if (mask & button_flag) {
-		mask &= ~button_flag;
+	windowed_size = p_size;
+	if (is_window_fullscreen()) {
+		window_maximized = false;
+		set_window_fullscreen(false);
+	} else if (is_window_maximized()) {
+		set_window_maximized(false);
 	} else {
 		video_mode.width = p_size.x;
 		video_mode.height = p_size.y;
 		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
-	ev->set_button_mask(mask);
-
-	_input->parse_input_event(ev);
-	// Prevent multi-click text selection and wheel-click scrolling anchor.
-	// Context menu is prevented through contextmenu event.
-	return true;
 }
 
-static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
-
-	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
-	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
-	int input_mask = _input->get_mouse_button_mask();
-	Point2 pos = Point2(mouse_event->canvasX, mouse_event->canvasY);
-	// outside the canvas, only read mouse movement if dragging started inside
-	// the canvas; imitating desktop app behaviour
-	if (!is_cursor_inside_canvas() && !input_mask)
-		return false;
-
-	Ref<InputEventMouseMotion> ev;
-	ev.instance();
-	dom2godot_mod(mouse_event, ev);
-	ev->set_button_mask(input_mask);
-
-	ev->set_position(pos);
-	ev->set_global_position(ev->get_position());
-
-	ev->set_relative(Vector2(mouse_event->movementX, mouse_event->movementY));
-	_input->set_mouse_position(ev->get_position());
-	ev->set_speed(_input->get_last_mouse_speed());
+Size2 OS_JavaScript::get_window_size() const {
 
 	int canvas[3];
 	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
@@ -253,14 +173,50 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 	if (p_enabled == is_window_fullscreen()) {
 		return;
 	}
-	return true;
+
+	// Just request changes here, if successful, canvas is resized in
+	// _browser_resize_callback or _fullscreen_change_callback.
+	EMSCRIPTEN_RESULT result;
+	if (p_enabled) {
+		if (window_maximized) {
+			// Soft fullsreen during real fulllscreen can cause issues.
+			set_window_maximized(false);
+			window_maximized = true;
+		}
+		EmscriptenFullscreenStrategy strategy;
+		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+		strategy.canvasResizedCallback = NULL;
+		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+	} else {
+		result = emscripten_exit_fullscreen();
+		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
+			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
+		}
+	}
 }
 
 bool OS_JavaScript::is_window_fullscreen() const {
 
-		_input->parse_input_event(ev);
-	}
-	return true;
+	return video_mode.fullscreen;
+}
+
+void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
+
+	Size2 screen = get_screen_size();
+	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
+}
+
+// Keys
+
+template <typename T>
+static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
+
+	godot_event->set_shift(emscripten_event_ptr->shiftKey);
+	godot_event->set_alt(emscripten_event_ptr->altKey);
+	godot_event->set_control(emscripten_event_ptr->ctrlKey);
+	godot_event->set_metakey(emscripten_event_ptr->metaKey);
 }
 
 static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
@@ -317,38 +273,34 @@ EM_BOOL OS_JavaScript::keyup_callback(int p_event_type, const EmscriptenKeyboard
 
 // Mouse
 
-extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int notif) {
+Point2 OS_JavaScript::get_mouse_position() const {
 
-	if (notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || notif == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
-		_cursor_inside_canvas = notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
-	}
-	OS_JavaScript::get_singleton()->get_main_loop()->notification(notif);
+	return input->get_mouse_position();
+}
+
+int OS_JavaScript::get_mouse_button_state() const {
+
+	return input->get_mouse_button_mask();
 }
 
 EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
 
 	OS_JavaScript *os = get_singleton();
 
-	EmscriptenWebGLContextAttributes attributes;
-	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = false;
-	attributes.antialias = false;
-	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
-	switch (p_video_driver) {
-		case VIDEO_DRIVER_GLES3:
-			attributes.majorVersion = 2;
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-			break;
-		case VIDEO_DRIVER_GLES2:
-			attributes.majorVersion = 1;
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-			break;
+	Ref<InputEventMouseButton> ev;
+	ev.instance();
+	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
+	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
+	ev->set_global_position(ev->get_position());
+	dom2godot_mod(p_event, ev);
+	switch (p_event->button) {
+		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
+		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
+		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
+		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
+		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
+		default: return false;
 	}
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
-	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
-	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
@@ -373,69 +325,22 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
 
-	AudioDriverManager::initialize(p_audio_driver);
+	OS_JavaScript *os = get_singleton();
 
-	print_line("Init VS");
+	int input_mask = os->input->get_mouse_button_mask();
+	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
+	// For motion outside the canvas, only read mouse movement if dragging
+	// started inside the canvas; imitating desktop app behaviour.
+	if (!cursor_inside_canvas && !input_mask)
+		return false;
 
-	visual_server = memnew(VisualServerRaster());
-	//	visual_server->cursor_set_visible(false, 0);
+	Ref<InputEventMouseMotion> ev;
+	ev.instance();
+	dom2godot_mod(p_event, ev);
+	ev->set_button_mask(input_mask);
 
-	print_line("Init Physicsserver");
-
-	input = memnew(InputDefault);
-	_input = input;
-
-#define EM_CHECK(ev)                         \
-	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
-	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
-#define SET_EM_CALLBACK(target, ev, cb)                               \
-	result = emscripten_set_##ev##_callback(target, this, true, &cb); \
-	EM_CHECK(ev)
-#define SET_EM_CALLBACK_NODATA(ev, cb)                        \
-	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
-	EM_CHECK(ev)
-
-	EMSCRIPTEN_RESULT result;
-	SET_EM_CALLBACK("#window", mousemove, _mousemove_callback)
-	SET_EM_CALLBACK("#canvas", mousedown, _mousebutton_callback)
-	SET_EM_CALLBACK("#window", mouseup, _mousebutton_callback)
-	SET_EM_CALLBACK("#window", wheel, _wheel_callback)
-	SET_EM_CALLBACK("#window", touchstart, _touchpress_callback)
-	SET_EM_CALLBACK("#window", touchmove, _touchmove_callback)
-	SET_EM_CALLBACK("#window", touchend, _touchpress_callback)
-	SET_EM_CALLBACK("#window", touchcancel, _touchpress_callback)
-	SET_EM_CALLBACK("#canvas", keydown, _keydown_callback)
-	SET_EM_CALLBACK("#canvas", keypress, _keypress_callback)
-	SET_EM_CALLBACK("#canvas", keyup, _keyup_callback)
-	SET_EM_CALLBACK(NULL, resize, _browser_resize_callback)
-	SET_EM_CALLBACK(NULL, fullscreenchange, _fullscreen_change_callback)
-	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
-	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
-
-#undef SET_EM_CALLBACK_NODATA
-#undef SET_EM_CALLBACK
-#undef EM_CHECK
-
-	visual_server->init();
-
-	return OK;
-}
-
-void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
-
-	main_loop = p_main_loop;
-	input->set_main_loop(p_main_loop);
-}
-
-void OS_JavaScript::delete_main_loop() {
-
-	memdelete(main_loop);
-}
-
-void OS_JavaScript::finalize() {
-
-	memdelete(input);
-}
+	ev->set_position(pos);
+	ev->set_global_position(ev->get_position());
 
 	ev->set_relative(Vector2(p_event->movementX, p_event->movementY));
 	os->input->set_mouse_position(ev->get_position());
@@ -738,9 +643,6 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 }
 
 // Lifecycle
-int OS_JavaScript::get_current_video_driver() const {
-	return video_driver_index;
-}
 
 void OS_JavaScript::initialize_core() {
 
@@ -767,8 +669,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 			RasterizerGLES2::make_current();
 			break;
 	}
-
-	video_driver_index = p_video_driver;
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
 	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
 	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
@@ -1019,10 +919,6 @@ int OS_JavaScript::get_power_percent_left() {
 	return -1;
 }
 
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
-	return -1;
-}
-
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
 
 	OS_JavaScript *os = get_singleton();
@@ -1070,9 +966,6 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
-
-	AudioDriverManager::add_driver(&audio_driver_javascript);
-}
 
 	FileAccessUnix::close_notification_func = file_access_close_callback;
 }

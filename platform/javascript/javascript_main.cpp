@@ -34,11 +34,6 @@
 
 #include <emscripten/emscripten.h>
 
-static void main_loop() {
-
-	os->main_loop_iterate();
-}
-
 extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 
 	String idbfs_err = String::utf8(p_idbfs_err);
@@ -55,8 +50,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 
 int main(int argc, char *argv[]) {
 
-	// sync from persistent state into memory and then
-	// run the 'main_after_fs_sync' function
+	// Sync from persistent state into memory and then
+	// run the 'main_after_fs_sync' function.
 	/* clang-format off */
 	EM_ASM(
 		FS.mkdir('/userfs');
