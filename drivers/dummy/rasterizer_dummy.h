@@ -408,19 +408,23 @@ public:
 
 	virtual RID multimesh_create() { return RID(); }
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) {}
+	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
 	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
 	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
+	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
 
 	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
 
 	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
+	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
+
+	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
