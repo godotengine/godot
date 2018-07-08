@@ -30,7 +30,48 @@
 #include "marshalls.h"
 #include "os/keyboard.h"
 #include "print_string.h"
+#include <limits.h>
 #include <stdio.h>
+
+#define _S(a) ((int32_t)a)
+#define ERR_FAIL_ADD_OF(a, b, err) ERR_FAIL_COND_V(_S(b) < 0 || _S(a) < 0 || _S(a) > INT_MAX - _S(b), err)
+#define ERR_FAIL_MUL_OF(a, b, err) ERR_FAIL_COND_V(_S(a) < 0 || _S(b) <= 0 || _S(a) > INT_MAX / _S(b), err)
+
+static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r_string) {
+	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+
+	int32_t strlen = decode_uint32(buf);
+	int32_t pad = 0;
+
+	// Handle padding
+	if (strlen % 4) {
+		pad = 4 - strlen % 4;
+	}
+
+	buf += 4;
+	len -= 4;
+
+	// Ensure buffer is big enough
+	ERR_FAIL_ADD_OF(strlen, pad, ERR_FILE_EOF);
+	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > len, ERR_FILE_EOF);
+
+	String str;
+	ERR_FAIL_COND_V(str.parse_utf8((const char *)buf, strlen), ERR_INVALID_DATA);
+	r_string = str;
+
+	// Add padding
+	strlen += pad;
+
+	// Update buffer pos, left data count, and return size
+	buf += strlen;
+	len -= strlen;
+
+	if (r_len) {
+		(*r_len) += 4 + strlen;
+	}
+
+	return OK;
+}
 
 Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len) {
 
@@ -68,7 +109,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::INT: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			int val = decode_uint32(buf);
+			int32_t val = decode_uint32(buf);
 			r_variant = val;
 			if (r_len)
 				(*r_len) += 4;
@@ -76,7 +117,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::REAL: {
 
-			ERR_FAIL_COND_V(len < (int)4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			float val = decode_float(buf);
 			r_variant = val;
 			if (r_len)
@@ -85,28 +126,18 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::STRING: {
 
-			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t strlen = decode_uint32(buf);
-			buf += 4;
-			len -= 4;
-			ERR_FAIL_COND_V((int)strlen > len, ERR_INVALID_DATA);
-
 			String str;
-			str.parse_utf8((const char *)buf, strlen);
+			Error err = _decode_string(buf, len, r_len, str);
+			if (err)
+				return err;
 			r_variant = str;
-
-			if (r_len) {
-				if (strlen % 4)
-					(*r_len) += 4 - strlen % 4;
-				(*r_len) += 4 + strlen;
-			}
 
 		} break;
 
 		// math types
 		case Variant::VECTOR2: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 2, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 2, ERR_INVALID_DATA);
 			Vector2 val;
 			val.x = decode_float(&buf[0]);
 			val.y = decode_float(&buf[4]);
@@ -118,7 +149,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break; // 5
 		case Variant::RECT2: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Rect2 val;
 			val.pos.x = decode_float(&buf[0]);
 			val.pos.y = decode_float(&buf[4]);
@@ -132,7 +163,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::VECTOR3: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 3, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 3, ERR_INVALID_DATA);
 			Vector3 val;
 			val.x = decode_float(&buf[0]);
 			val.y = decode_float(&buf[4]);
@@ -145,7 +176,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::MATRIX32: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 6, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 6, ERR_INVALID_DATA);
 			Matrix32 val;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 2; j++) {
@@ -162,7 +193,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::PLANE: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Plane val;
 			val.normal.x = decode_float(&buf[0]);
 			val.normal.y = decode_float(&buf[4]);
@@ -176,7 +207,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::QUAT: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Quat val;
 			val.x = decode_float(&buf[0]);
 			val.y = decode_float(&buf[4]);
@@ -190,7 +221,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::_AABB: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 6, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 6, ERR_INVALID_DATA);
 			AABB val;
 			val.pos.x = decode_float(&buf[0]);
 			val.pos.y = decode_float(&buf[4]);
@@ -206,7 +237,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::MATRIX3: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 9, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 9, ERR_INVALID_DATA);
 			Matrix3 val;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
@@ -223,7 +254,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::TRANSFORM: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 12, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 12, ERR_INVALID_DATA);
 			Transform val;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
@@ -245,7 +276,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		// misc types
 		case Variant::COLOR: {
 
-			ERR_FAIL_COND_V(len < (int)4 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
 			Color val;
 			val.r = decode_float(&buf[0]);
 			val.g = decode_float(&buf[4]);
@@ -259,13 +290,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::IMAGE: {
 
-			ERR_FAIL_COND_V(len < (int)5 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len < 5 * 4, ERR_INVALID_DATA);
 			Image::Format fmt = (Image::Format)decode_uint32(&buf[0]);
 			ERR_FAIL_INDEX_V(fmt, Image::FORMAT_MAX, ERR_INVALID_DATA);
 			uint32_t mipmaps = decode_uint32(&buf[4]);
 			uint32_t w = decode_uint32(&buf[8]);
 			uint32_t h = decode_uint32(&buf[12]);
-			uint32_t datalen = decode_uint32(&buf[16]);
+			int32_t datalen = decode_uint32(&buf[16]);
 
 			Image img;
 			if (datalen > 0) {
@@ -292,7 +323,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::NODE_PATH: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t strlen = decode_uint32(buf);
+			int32_t strlen = decode_uint32(buf);
 
 			if (strlen & 0x80000000) {
 				//new format
@@ -315,22 +346,12 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				if (r_len)
 					(*r_len) += 12;
 
-				for (int i = 0; i < total; i++) {
-
-					ERR_FAIL_COND_V((int)len < 4, ERR_INVALID_DATA);
-					strlen = decode_uint32(buf);
-
-					int pad = 0;
-
-					if (strlen % 4)
-						pad += 4 - strlen % 4;
-
-					buf += 4;
-					len -= 4;
-					ERR_FAIL_COND_V((int)strlen + pad > len, ERR_INVALID_DATA);
+				for (uint32_t i = 0; i < total; i++) {
 
 					String str;
-					str.parse_utf8((const char *)buf, strlen);
+					Error err = _decode_string(buf, len, r_len, str);
+					if (err)
+						return err;
 
 					if (i < namecount)
 						names.push_back(str);
@@ -338,12 +359,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 						subnames.push_back(str);
 					else
 						prop = str;
-
-					buf += strlen + pad;
-					len -= strlen + pad;
-
-					if (r_len)
-						(*r_len) += 4 + strlen + pad;
 				}
 
 				r_variant = NodePath(names, subnames, flags & 1, prop);
@@ -351,17 +366,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			} else {
 				//old format, just a string
 
-				buf += 4;
-				len -= 4;
-				ERR_FAIL_COND_V((int)strlen > len, ERR_INVALID_DATA);
-
-				String str;
-				str.parse_utf8((const char *)buf, strlen);
-
-				r_variant = NodePath(str);
-
-				if (r_len)
-					(*r_len) += 4 + strlen;
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 		} break;
@@ -441,7 +446,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::DICTIONARY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
+			int32_t count = decode_uint32(buf);
 			bool shared = count & 0x80000000;
 			count &= 0x7FFFFFFF;
 
@@ -454,7 +459,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Dictionary d(shared);
 
-			for (uint32_t i = 0; i < count; i++) {
+			for (int i = 0; i < count; i++) {
 
 				Variant key, value;
 
@@ -486,7 +491,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
+			int32_t count = decode_uint32(buf);
 			bool shared = count & 0x80000000;
 			count &= 0x7FFFFFFF;
 
@@ -499,7 +504,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Array varr(shared);
 
-			for (uint32_t i = 0; i < count; i++) {
+			for (int i = 0; i < count; i++) {
 
 				int used = 0;
 				Variant v;
@@ -521,17 +526,17 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::RAW_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
-			ERR_FAIL_COND_V((int)count > len, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count > len, ERR_INVALID_DATA);
 
 			DVector<uint8_t> data;
 
 			if (count) {
 				data.resize(count);
 				DVector<uint8_t>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i] = buf[i];
 				}
@@ -551,10 +556,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::INT_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
-			ERR_FAIL_COND_V((int)count * 4 > len, ERR_INVALID_DATA);
+			ERR_FAIL_MUL_OF(count, 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * 4 > len, ERR_INVALID_DATA);
 
 			DVector<int> data;
 
@@ -562,7 +568,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				//const int*rbuf=(const int*)buf;
 				data.resize(count);
 				DVector<int>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i] = decode_uint32(&buf[i * 4]);
 				}
@@ -578,10 +584,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::REAL_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
-			ERR_FAIL_COND_V((int)count * 4 > len, ERR_INVALID_DATA);
+			ERR_FAIL_MUL_OF(count, 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * 4 > len, ERR_INVALID_DATA);
 
 			DVector<float> data;
 
@@ -589,7 +596,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				//const float*rbuf=(const float*)buf;
 				data.resize(count);
 				DVector<float>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i] = decode_float(&buf[i * 4]);
 				}
@@ -606,8 +613,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::STRING_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count < 0, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
 
 			DVector<String> strings;
 			buf += 4;
@@ -617,35 +623,14 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4;
 			//printf("string count: %i\n",count);
 
-			for (int i = 0; i < (int)count; i++) {
+			for (int32_t i = 0; i < count; i++) {
 
-				ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-				uint32_t strlen = decode_uint32(buf);
-
-				buf += 4;
-				len -= 4;
-				ERR_FAIL_COND_V((int)strlen > len, ERR_INVALID_DATA);
-
-				//printf("loaded string: %s\n",(const char*)buf);
 				String str;
-				str.parse_utf8((const char *)buf, strlen);
+				Error err = _decode_string(buf, len, r_len, str);
+				if (err)
+					return err;
 
 				strings.push_back(str);
-
-				buf += strlen;
-				len -= strlen;
-
-				if (r_len)
-					(*r_len) += 4 + strlen;
-
-				if (strlen % 4) {
-					int pad = 4 - (strlen % 4);
-					buf += pad;
-					len -= pad;
-					if (r_len) {
-						(*r_len) += pad;
-					}
-				}
 			}
 
 			r_variant = strings;
@@ -654,12 +639,12 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::VECTOR2_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count < 0, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
 
-			ERR_FAIL_COND_V((int)count * 4 * 2 > len, ERR_INVALID_DATA);
+			ERR_FAIL_MUL_OF(count, 4 * 2, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * 4 * 2 > len, ERR_INVALID_DATA);
 			DVector<Vector2> varray;
 
 			if (r_len) {
@@ -670,7 +655,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				varray.resize(count);
 				DVector<Vector2>::Write w = varray.write();
 
-				for (int i = 0; i < (int)count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i].x = decode_float(buf + i * 4 * 2 + 4 * 0);
 					w[i].y = decode_float(buf + i * 4 * 2 + 4 * 1);
@@ -690,12 +675,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::VECTOR3_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count < 0, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
 
-			ERR_FAIL_COND_V((int)count * 4 * 3 > len, ERR_INVALID_DATA);
+			ERR_FAIL_MUL_OF(count, 4 * 3, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * 4 * 3 > len, ERR_INVALID_DATA);
+
 			DVector<Vector3> varray;
 
 			if (r_len) {
@@ -706,7 +692,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				varray.resize(count);
 				DVector<Vector3>::Write w = varray.write();
 
-				for (int i = 0; i < (int)count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i].x = decode_float(buf + i * 4 * 3 + 4 * 0);
 					w[i].y = decode_float(buf + i * 4 * 3 + 4 * 1);
@@ -727,12 +713,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::COLOR_ARRAY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count < 0, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
 			buf += 4;
 			len -= 4;
 
-			ERR_FAIL_COND_V((int)count * 4 * 4 > len, ERR_INVALID_DATA);
+			ERR_FAIL_MUL_OF(count, 4 * 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(count < 0 || count * 4 * 4 > len, ERR_INVALID_DATA);
+
 			DVector<Color> carray;
 
 			if (r_len) {
@@ -743,7 +730,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				carray.resize(count);
 				DVector<Color>::Write w = carray.write();
 
-				for (int i = 0; i < (int)count; i++) {
+				for (int32_t i = 0; i < count; i++) {
 
 					w[i].r = decode_float(buf + i * 4 * 4 + 4 * 0);
 					w[i].g = decode_float(buf + i * 4 * 4 + 4 * 1);
@@ -1276,7 +1263,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
 				while (r_len % 4) {
 					r_len++; //pad
 					if (buf)
-						buf++;
+						*(buf++) = 0;
 				}
 			}
 
