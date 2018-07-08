@@ -1539,6 +1539,8 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+	play_last_run_scene_button->set_pressed(false);
+	play_last_run_scene_button->set_icon(gui_base->get_icon("PlayLastRunScene", "EditorIcons"));
 	play_custom_scene_button->set_pressed(false);
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
 
@@ -1638,10 +1640,17 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 		show_accept(TTR("Could not start subprocess!"), TTR("I see..."));
 		return;
+	} else {
+		last_run_scene = run_filename;
+		play_last_run_scene_button->set_disabled(false);
 	}
 
 	emit_signal("play_pressed");
-	if (p_current) {
+	if (_is_running_last_scene) {
+		play_last_run_scene_button->set_pressed(true);
+		play_last_run_scene_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
+		_is_running_last_scene = false;
+	} else if (p_current) {
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
 	} else if (p_custom != "") {
@@ -1977,6 +1986,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
 			play_scene_button->set_pressed(false);
 			play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+			play_last_run_scene_button->set_pressed(false);
+			play_last_run_scene_button->set_icon(gui_base->get_icon("PlayLastRunScene", "EditorIcons"));
 			play_custom_scene_button->set_pressed(false);
 			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
 			stop_button->set_disabled(true);
@@ -1997,6 +2008,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_save_default_environment();
 			_menu_option_confirm(RUN_STOP, true);
 			_run(true);
+
+		} break;
+		case RUN_PLAY_LAST_RUN_SCENE: {
+
+			_is_running_last_scene = true;
+			_save_default_environment();
+			_menu_option_confirm(RUN_STOP, true);
+			_run(false, last_run_scene);
 
 		} break;
 		case RUN_PLAY_NATIVE: {
@@ -5153,6 +5172,16 @@ EditorNode::EditorNode() {
 #else
 	play_scene_button->set_shortcut(ED_SHORTCUT("editor/play_scene", TTR("Play Scene"), KEY_F6));
 #endif
+
+	play_last_run_scene_button = memnew(ToolButton);
+	play_hb->add_child(play_last_run_scene_button);
+	play_last_run_scene_button->set_toggle_mode(true);
+	play_last_run_scene_button->set_focus_mode(Control::FOCUS_NONE);
+	play_last_run_scene_button->set_icon(gui_base->get_icon("PlayLastRunScene", "EditorIcons"));
+	play_last_run_scene_button->connect("pressed", this, "_menu_option", make_binds(RUN_PLAY_LAST_RUN_SCENE));
+	play_last_run_scene_button->set_tooltip(TTR("Play the previously-run scene."));
+	play_last_run_scene_button->set_disabled(true);
+	play_last_run_scene_button->set_shortcut(ED_SHORTCUT("editor/play_last_run_scene", TTR("Play Last Run Scene"), KEY_MASK_CMD | KEY_F6));
 
 	play_custom_scene_button = memnew(ToolButton);
 	play_hb->add_child(play_custom_scene_button);
