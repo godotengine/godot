@@ -3,5 +3,5 @@ name = "Godot Engine"
 major = 3
 minor = 0
 patch = 5
-status = "devel"
+status = "stable"
 module_config = ""
