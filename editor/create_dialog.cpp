@@ -83,9 +83,9 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 
 	_update_favorite_list();
 
-	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/create_new_node_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_bounds"));
+	// Restore valid window size or pop up at default size.
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/create_new_node_size")) {
+		popup_centered(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_size"));
 	} else {
 
 		Size2 popup_size = Size2(900, 700) * editor_get_scale();
@@ -393,7 +393,7 @@ void CreateDialog::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set("interface/dialogs/create_new_node_bounds", get_rect());
+			EditorSettings::get_singleton()->set("interface/dialogs/create_new_node_size", get_rect().get_size());
 		} break;
 	}
 }

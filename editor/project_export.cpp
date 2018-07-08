@@ -54,7 +54,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
+			EditorSettings::get_singleton()->set("interface/dialogs/export_size", get_rect().get_size());
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
@@ -77,9 +77,9 @@ void ProjectExportDialog::popup_export() {
 
 	_update_presets();
 
-	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/export_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/export_bounds"));
+	// Restore valid window size or pop up at default size.
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/export_size")) {
+		popup_centered(EditorSettings::get_singleton()->get("interface/dialogs/export_size"));
 	} else {
 
 		Size2 popup_size = Size2(900, 700) * editor_get_scale();
