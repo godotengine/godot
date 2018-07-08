@@ -704,7 +704,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 	_send_rpc(p_node, p_peer_id, p_unreliable, true, p_property, &vptr, 1);
 }
 
-Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to) {
+Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
 
 	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(!network_peer.is_valid(), ERR_UNCONFIGURED);
@@ -714,7 +714,10 @@ Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to) {
 	PoolVector<uint8_t>::Read r = p_data.read();
 	packet_cache[0] = NETWORK_COMMAND_RAW;
 	memcpy(&packet_cache[1], &r[0], p_data.size());
+
 	network_peer->set_target_peer(p_to);
+	network_peer->set_transfer_mode(p_mode);
+
 	return network_peer->put_packet(packet_cache.ptr(), p_data.size() + 1);
 }
 
@@ -770,7 +773,7 @@ Vector<int> MultiplayerAPI::get_network_connected_peers() const {
 
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
-	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id"), &MultiplayerAPI::send_bytes, DEFVAL(NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST));
+	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id"), &MultiplayerAPI::send_bytes, DEFVAL(NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE));
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &MultiplayerAPI::has_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_peer"), &MultiplayerAPI::get_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &MultiplayerAPI::get_network_unique_id);
