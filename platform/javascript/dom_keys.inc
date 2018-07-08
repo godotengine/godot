@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dom_keys.h                                                           */
+/*  dom_keys.inc                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,9 +27,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
-#ifndef DOM_KEYS_H
-#define DOM_KEYS_H
 
 #include "os/keyboard.h"
 
@@ -295,8 +292,8 @@ int dom2godot_scancode(int dom_keycode) {
 
 			//case DOM_VK_SELECT: return KEY_UNKNOWN;
 
-		case DOM_VK_PRINTSCREEN: // this is the usual printScreen key
-		case DOM_VK_PRINT: // maybe for alt+printScreen or physical printers?
+		case DOM_VK_PRINTSCREEN:
+		case DOM_VK_PRINT:
 			return KEY_PRINT;
 
 		//case DOM_VK_EXECUTE: return KEY_UNKNOWN;
@@ -311,11 +308,11 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_SLEEP:
 			return KEY_STANDBY;
 
-		// these are numpad keys according to MDN
+		// Numpad keys
 		case DOM_VK_MULTIPLY: return KEY_KP_MULTIPLY;
 		case DOM_VK_ADD: return KEY_KP_ADD;
 		case DOM_VK_SEPARATOR:
-			return KEY_KP_PERIOD; // good enough?
+			return KEY_KP_PERIOD; // Good enough?
 		case DOM_VK_SUBTRACT: return KEY_KP_SUBTRACT;
 		case DOM_VK_DECIMAL: return KEY_KP_PERIOD;
 		case DOM_VK_DIVIDE:
@@ -376,10 +373,8 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_QUOTE:
 			return KEY_APOSTROPHE;
 
-			// rest is OEM/unusual
+			// The rest is OEM/unusual.
 
 		default: return KEY_UNKNOWN;
 	};
 }
-
-#endif
