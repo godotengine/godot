@@ -74,10 +74,7 @@ void Camera::_update_camera() {
 	if (!is_inside_tree())
 		return;
 
-	Transform tr = get_camera_transform();
-	tr.origin += tr.basis.get_axis(1) * v_offset;
-	tr.origin += tr.basis.get_axis(0) * h_offset;
-	VisualServer::get_singleton()->camera_set_transform(camera, tr);
+	VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
 	// here goes listener stuff
 	/*
@@ -143,7 +140,10 @@ void Camera::_notification(int p_what) {
 
 Transform Camera::get_camera_transform() const {
 
-	return get_global_transform().orthonormalized();
+	Transform tr = get_global_transform().orthonormalized();
+	tr.origin += tr.basis.get_axis(1) * v_offset;
+	tr.origin += tr.basis.get_axis(0) * h_offset;
+	return tr;
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
