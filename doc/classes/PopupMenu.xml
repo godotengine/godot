@@ -516,6 +516,9 @@
 		</member>
 		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection">
 		</member>
+		<member name="submenu_popup_delay" type="real" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay">
+			Sets the delay time for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item. Default value: [code]0.3[/code] seconds.
+		</member>
 	</members>
 	<signals>
 		<signal name="id_focused">
