@@ -36,7 +36,7 @@
 void AudioStreamPlayer3D::_mix_audio() {
 
 	if (!stream_playback.is_valid() || !active ||
-			(stream_paused && stream_paused_fade <= 0.f)) {
+			(stream_paused && !stream_paused_fade_out)) {
 		return;
 	}
 
@@ -51,9 +51,13 @@ void AudioStreamPlayer3D::_mix_audio() {
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
+	if (stream_paused_fade_out) {
+		// Short fadeout ramp
+		buffer_size = MIN(buffer_size, 128);
+	}
+
 	// Mix if we're not paused or we're fading out
-	if ((output_count > 0 || out_of_range_mode == OUT_OF_RANGE_MIX) &&
-			(!stream_paused || stream_paused_fade > 0.f)) {
+	if ((output_count > 0 || out_of_range_mode == OUT_OF_RANGE_MIX)) {
 
 		float output_pitch_scale = 0.0;
 		if (output_count) {
@@ -103,15 +107,10 @@ void AudioStreamPlayer3D::_mix_audio() {
 		int buffers = AudioServer::get_singleton()->get_channel_count();
 
 		for (int k = 0; k < buffers; k++) {
-			AudioFrame vol_inc = (current.vol[k] - prev_outputs[i].vol[k]) / float(buffer_size);
-			AudioFrame vol = current.vol[k];
-
-			if (stream_paused) {
-				vol = vol * stream_paused_fade;
-				if (stream_paused_fade > 0.f) {
-					stream_paused_fade -= 0.1f;
-				}
-			}
+			AudioFrame target_volume = stream_paused_fade_out ? AudioFrame(0.f, 0.f) : current.vol[k];
+			AudioFrame vol_prev = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : prev_outputs[i].vol[k];
+			AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
+			AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol[k];
 
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 
@@ -193,6 +192,8 @@ void AudioStreamPlayer3D::_mix_audio() {
 	}
 
 	output_ready = false;
+	stream_paused_fade_in = false;
+	stream_paused_fade_out = false;
 }
 
 float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
@@ -846,7 +847,8 @@ void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade = stream_paused ? 1.f : 0.f;
+		stream_paused_fade_in = stream_paused ? false : true;
+		stream_paused_fade_out = stream_paused ? true : false;
 	}
 }
 
@@ -984,7 +986,8 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	out_of_range_mode = OUT_OF_RANGE_MIX;
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	stream_paused = false;
-	stream_paused_fade = 0.f;
+	stream_paused_fade_in = false;
+	stream_paused_fade_out = false;
 
 	velocity_tracker.instance();
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
