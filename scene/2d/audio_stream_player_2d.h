@@ -71,9 +71,10 @@ private:
 
 	float volume_db;
 	float pitch_scale;
-	float stream_paused_fade;
 	bool autoplay;
 	bool stream_paused;
+	bool stream_paused_fade_in;
+	bool stream_paused_fade_out;
 	StringName bus;
 
 	void _mix_audio();

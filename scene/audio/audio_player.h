@@ -56,9 +56,9 @@ private:
 	float mix_volume_db;
 	float pitch_scale;
 	float volume_db;
-	float stream_paused_fade;
 	bool autoplay;
 	bool stream_paused;
+	bool stream_paused_fade;
 	StringName bus;
 
 	MixTarget mix_target;
