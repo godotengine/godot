@@ -398,6 +398,15 @@ void PopupMenu::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_ENTER_TREE: {
+
+			PopupMenu *pm = Object::cast_to<PopupMenu>(get_parent());
+			if (pm) {
+				// Inherit submenu's popup delay time from parent menu
+				float pm_delay = pm->get_submenu_popup_delay();
+				set_submenu_popup_delay(pm_delay);
+			}
+		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 
 			for (int i = 0; i < items.size(); i++) {
@@ -1201,6 +1210,19 @@ bool PopupMenu::is_hide_on_multistate_item_selection() const {
 	return hide_on_multistate_item_selection;
 }
 
+void PopupMenu::set_submenu_popup_delay(float p_time) {
+
+	if (p_time <= 0)
+		p_time = 0.01;
+
+	submenu_timer->set_wait_time(p_time);
+}
+
+float PopupMenu::get_submenu_popup_delay() const {
+
+	return submenu_timer->get_wait_time();
+}
+
 String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 
 	int over = _get_mouse_over(p_pos);
@@ -1303,12 +1325,15 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_on_state_item_selection", "enable"), &PopupMenu::set_hide_on_multistate_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_state_item_selection"), &PopupMenu::is_hide_on_multistate_item_selection);
 
+	ClassDB::bind_method(D_METHOD("set_submenu_popup_delay", "seconds"), &PopupMenu::set_submenu_popup_delay);
+	ClassDB::bind_method(D_METHOD("get_submenu_popup_delay"), &PopupMenu::get_submenu_popup_delay);
 	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "ID")));
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "ID")));
