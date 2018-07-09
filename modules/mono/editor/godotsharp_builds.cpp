@@ -64,6 +64,7 @@ String _find_build_engine_on_unix(const String &p_name) {
 	const char *locations[] = {
 #ifdef OSX_ENABLED
 		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
+		"/usr/local/var/homebrew/linked/mono/bin/",
 #endif
 		"/opt/novell/mono/bin/"
 	};
