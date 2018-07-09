@@ -41,30 +41,22 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	int buffer_size = mix_buffer.size();
 
 	if (p_fadeout) {
-		buffer_size = MIN(buffer_size, 16); //short fadeout ramp
+		// Short fadeout ramp
+		buffer_size = MIN(buffer_size, 128);
 	}
 
-	// Mix if we're not paused or we're fading out
-	if (!stream_paused || stream_paused_fade > 0.f) {
-		stream_playback->mix(buffer, pitch_scale, buffer_size);
-	}
+	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//multiply volume interpolating to avoid clicks if this changes
 	float target_volume = p_fadeout ? -80.0 : volume_db;
 	float vol = Math::db2linear(mix_volume_db);
 	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
 
-	if (stream_paused) {
-		vol = vol * stream_paused_fade;
-		if (stream_paused_fade > 0.f) {
-			stream_paused_fade -= 0.1f;
-		}
-	}
-
 	for (int i = 0; i < buffer_size; i++) {
 		buffer[i] *= vol;
 		vol += vol_inc;
 	}
+
 	//set volume for next mix
 	mix_volume_db = target_volume;
 
@@ -99,8 +91,14 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
 void AudioStreamPlayer::_mix_audio() {
 
-	if (!stream_playback.is_valid() || !active ||
-			(stream_paused && stream_paused_fade <= 0.f)) {
+	if (!stream_playback.is_valid() || !active)
+		return;
+
+	if (stream_paused) {
+		if (stream_paused_fade) {
+			_mix_internal(true);
+			stream_paused_fade = false;
+		}
 		return;
 	}
 
@@ -295,7 +293,7 @@ void AudioStreamPlayer::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade = stream_paused ? 1.f : 0.f;
+		stream_paused_fade = p_pause ? true : false;
 	}
 }
 
@@ -385,7 +383,7 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	setseek = -1;
 	active = false;
 	stream_paused = false;
-	stream_paused_fade = 0.f;
+	stream_paused_fade = false;
 	mix_target = MIX_TARGET_STEREO;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
