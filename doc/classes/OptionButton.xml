@@ -201,7 +201,7 @@
 				This signal is emitted when user navigated to an item using [code]ui_up[/code] or [code]ui_down[/code] action. ID of the item selected is passed as argument (if no IDs were added, ID will be just the item index).
 			</description>
 		</signal>
-		<signal name="item_selected">
+		<signal name="selected">
 			<argument index="0" name="ID" type="int">
 			</argument>
 			<description>
