@@ -1038,7 +1038,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				//all is a wall
 				on_wall = true;
 			} else {
-				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle * 1.001)) { //floor
 
 					on_floor = true;
 					floor_velocity = collision.collider_vel;
@@ -1052,7 +1052,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						set_global_transform(gt);
 						return Vector2();
 					}
-				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
+				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle * 1.001)) { //ceiling
 					on_ceiling = true;
 				} else {
 					on_wall = true;
