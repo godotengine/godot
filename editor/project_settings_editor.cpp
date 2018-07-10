@@ -212,6 +212,29 @@ void ProjectSettingsEditor::_action_edited() {
 		undo_redo->add_undo_method(this, "_update_actions");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+	} else if (input_editor->get_selected_column() == 2) {
+
+		// Change action layer
+		String name = "input/" + ti->get_parent()->get_text(0);
+		Dictionary old_val = ProjectSettings::get_singleton()->get(name);
+		Dictionary action = old_val.duplicate();
+		int idx = ti->get_metadata(0);
+
+		Array events = action["events"];
+		ERR_FAIL_INDEX(idx, events.size());
+
+		Ref<InputEvent> ie = events[idx];
+		ERR_FAIL_COND(!ie.is_valid());
+
+		ie->set_layer(ti->get_range(2));
+
+		undo_redo->create_action(TTR("Change Action Event Layer"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_undo_method(this, "_update_actions");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
 	}
 }
 
@@ -683,10 +706,12 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_range(1, action["deadzone"]);
 		item->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 
-		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
+		item->set_custom_bg_color(2, get_color("prop_subsection", "Editor"));
+
+		item->add_button(3, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
-			item->set_editable(2, true);
+			item->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			item->set_editable(3, true);
 		}
 
 		for (int i = 0; i < events.size(); i++) {
@@ -759,8 +784,13 @@ void ProjectSettingsEditor::_update_actions() {
 			action->set_metadata(0, i);
 			action->set_meta("__input", event);
 
-			action->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
-			action->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			action->set_editable(2, true);
+			action->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
+			action->set_range_config(2, 0.0, 20.0, 1.0);
+			action->set_range(2, event->get_layer());
+
+			action->add_button(3, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			action->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 		}
 	}
 
@@ -1795,14 +1825,17 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor = memnew(Tree);
 	vbc->add_child(input_editor);
 	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	input_editor->set_columns(3);
+	input_editor->set_columns(4);
 	input_editor->set_column_titles_visible(true);
 	input_editor->set_column_title(0, TTR("Action"));
 	input_editor->set_column_title(1, TTR("Deadzone"));
 	input_editor->set_column_expand(1, false);
 	input_editor->set_column_min_width(1, 80);
+	input_editor->set_column_title(2, TTR("Layer"));
 	input_editor->set_column_expand(2, false);
 	input_editor->set_column_min_width(2, 50);
+	input_editor->set_column_expand(3, false);
+	input_editor->set_column_min_width(3, 50);
 	input_editor->connect("item_edited", this, "_action_edited");
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
