@@ -111,8 +111,12 @@ void mbedtls_threading_set_alt( void (*mutex_init)( mbedtls_threading_mutex_t * 
     mbedtls_mutex_lock = mutex_lock;
     mbedtls_mutex_unlock = mutex_unlock;
 
+#if defined(MBEDTLS_FS_IO)
     mbedtls_mutex_init( &mbedtls_threading_readdir_mutex );
+#endif
+#if defined(MBEDTLS_HAVE_TIME_DATE)
     mbedtls_mutex_init( &mbedtls_threading_gmtime_mutex );
+#endif
 }
 
 /*
@@ -120,8 +124,12 @@ void mbedtls_threading_set_alt( void (*mutex_init)( mbedtls_threading_mutex_t * 
  */
 void mbedtls_threading_free_alt( void )
 {
+#if defined(MBEDTLS_FS_IO)
     mbedtls_mutex_free( &mbedtls_threading_readdir_mutex );
+#endif
+#if defined(MBEDTLS_HAVE_TIME_DATE)
     mbedtls_mutex_free( &mbedtls_threading_gmtime_mutex );
+#endif
 }
 #endif /* MBEDTLS_THREADING_ALT */
 
@@ -131,7 +139,11 @@ void mbedtls_threading_free_alt( void )
 #ifndef MUTEX_INIT
 #define MUTEX_INIT
 #endif
+#if defined(MBEDTLS_FS_IO)
 mbedtls_threading_mutex_t mbedtls_threading_readdir_mutex MUTEX_INIT;
+#endif
+#if defined(MBEDTLS_HAVE_TIME_DATE)
 mbedtls_threading_mutex_t mbedtls_threading_gmtime_mutex MUTEX_INIT;
+#endif
 
 #endif /* MBEDTLS_THREADING_C */

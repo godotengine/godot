@@ -166,7 +166,7 @@ void mbedtls_entropy_free( mbedtls_entropy_context *ctx );
  * \param threshold Minimum required from source before entropy is released
  *                  ( with mbedtls_entropy_func() ) (in bytes)
  * \param strong    MBEDTLS_ENTROPY_SOURCE_STRONG or
- *                  MBEDTSL_ENTROPY_SOURCE_WEAK.
+ *                  MBEDTLS_ENTROPY_SOURCE_WEAK.
  *                  At least one strong source needs to be added.
  *                  Weaker sources (such as the cycle counter) can be used as
  *                  a complement.

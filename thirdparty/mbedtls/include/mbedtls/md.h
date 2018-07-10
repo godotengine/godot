@@ -1,7 +1,7 @@
  /**
  * \file md.h
  *
- * \brief The generic message-digest wrapper.
+ * \brief This file contains the generic message-digest wrapper.
  *
  * \author Adriaan de Jong <dejong@fox-it.com>
  */
@@ -46,7 +46,7 @@ extern "C" {
 #endif
 
 /**
- * \brief     Enumeration of supported message digests
+ * \brief     Supported message digests.
  *
  * \warning   MD2, MD4, MD5 and SHA-1 are considered weak message digests and
  *            their use constitutes a security risk. We recommend considering
@@ -54,16 +54,16 @@ extern "C" {
  *
  */
 typedef enum {
-    MBEDTLS_MD_NONE=0,
-    MBEDTLS_MD_MD2,
-    MBEDTLS_MD_MD4,
-    MBEDTLS_MD_MD5,
-    MBEDTLS_MD_SHA1,
-    MBEDTLS_MD_SHA224,
-    MBEDTLS_MD_SHA256,
-    MBEDTLS_MD_SHA384,
-    MBEDTLS_MD_SHA512,
-    MBEDTLS_MD_RIPEMD160,
+    MBEDTLS_MD_NONE=0,    /**< None. */
+    MBEDTLS_MD_MD2,       /**< The MD2 message digest. */
+    MBEDTLS_MD_MD4,       /**< The MD4 message digest. */
+    MBEDTLS_MD_MD5,       /**< The MD5 message digest. */
+    MBEDTLS_MD_SHA1,      /**< The SHA-1 message digest. */
+    MBEDTLS_MD_SHA224,    /**< The SHA-224 message digest. */
+    MBEDTLS_MD_SHA256,    /**< The SHA-256 message digest. */
+    MBEDTLS_MD_SHA384,    /**< The SHA-384 message digest. */
+    MBEDTLS_MD_SHA512,    /**< The SHA-512 message digest. */
+    MBEDTLS_MD_RIPEMD160, /**< The RIPEMD-160 message digest. */
 } mbedtls_md_type_t;
 
 #if defined(MBEDTLS_SHA512_C)
@@ -108,8 +108,8 @@ const int *mbedtls_md_list( void );
  *
  * \param md_name   The name of the digest to search for.
  *
- * \return          The message-digest information associated with \p md_name,
- *                  or NULL if not found.
+ * \return          The message-digest information associated with \p md_name.
+ * \return          NULL if the associated message-digest information is not found.
  */
 const mbedtls_md_info_t *mbedtls_md_info_from_string( const char *md_name );
 
@@ -119,8 +119,8 @@ const mbedtls_md_info_t *mbedtls_md_info_from_string( const char *md_name );
  *
  * \param md_type   The type of digest to search for.
  *
- * \return          The message-digest information associated with \p md_type,
- *                  or NULL if not found.
+ * \return          The message-digest information associated with \p md_type.
+ * \return          NULL if the associated message-digest information is not found.
  */
 const mbedtls_md_info_t *mbedtls_md_info_from_type( mbedtls_md_type_t md_type );
 
@@ -168,9 +168,10 @@ void mbedtls_md_free( mbedtls_md_context_t *ctx );
  * \param md_info   The information structure of the message-digest algorithm
  *                  to use.
  *
- * \returns         \c 0 on success,
- *                  #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter failure,
- *                  #MBEDTLS_ERR_MD_ALLOC_FAILED memory allocation failure.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
+ * \return          #MBEDTLS_ERR_MD_ALLOC_FAILED on memory-allocation failure.
  */
 int mbedtls_md_init_ctx( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info ) MBEDTLS_DEPRECATED;
 #undef MBEDTLS_DEPRECATED
@@ -187,12 +188,13 @@ int mbedtls_md_init_ctx( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_
  * \param ctx       The context to set up.
  * \param md_info   The information structure of the message-digest algorithm
  *                  to use.
- * \param hmac      <ul><li>0: HMAC is not used. Saves some memory.</li>
- *                  <li>non-zero: HMAC is used with this context.</li></ul>
+ * \param hmac      Defines if HMAC is used. 0: HMAC is not used (saves some memory),
+ *                  or non-zero: HMAC is used with this context.
  *
- * \returns         \c 0 on success,
- *                  #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter failure, or
- *                  #MBEDTLS_ERR_MD_ALLOC_FAILED on memory allocation failure.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
+ * \return          #MBEDTLS_ERR_MD_ALLOC_FAILED on memory-allocation failure.
  */
 int mbedtls_md_setup( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac );
 
@@ -212,8 +214,8 @@ int mbedtls_md_setup( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_inf
  * \param dst       The destination context.
  * \param src       The context to be cloned.
  *
- * \return          \c 0 on success,
- *                  #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter failure.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification failure.
  */
 int mbedtls_md_clone( mbedtls_md_context_t *dst,
                       const mbedtls_md_context_t *src );
@@ -260,8 +262,9 @@ const char *mbedtls_md_get_name( const mbedtls_md_info_t *md_info );
  *
  * \param ctx       The generic message-digest context.
  *
- * \returns         \c 0 on success, #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_starts( mbedtls_md_context_t *ctx );
 
@@ -277,8 +280,9 @@ int mbedtls_md_starts( mbedtls_md_context_t *ctx );
  * \param input     The buffer holding the input data.
  * \param ilen      The length of the input data.
  *
- * \returns         \c 0 on success, #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen );
 
@@ -296,8 +300,9 @@ int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, si
  * \param ctx       The generic message-digest context.
  * \param output    The buffer for the generic message-digest checksum result.
  *
- * \returns         \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_finish( mbedtls_md_context_t *ctx, unsigned char *output );
 
@@ -315,8 +320,9 @@ int mbedtls_md_finish( mbedtls_md_context_t *ctx, unsigned char *output );
  * \param ilen     The length of the input data.
  * \param output   The generic message-digest checksum result.
  *
- * \returns        \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                 parameter verification fails.
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                 failure.
  */
 int mbedtls_md( const mbedtls_md_info_t *md_info, const unsigned char *input, size_t ilen,
         unsigned char *output );
@@ -334,9 +340,10 @@ int mbedtls_md( const mbedtls_md_info_t *md_info, const unsigned char *input, si
  * \param path     The input file name.
  * \param output   The generic message-digest checksum result.
  *
- * \return         \c 0 on success,
- *                 #MBEDTLS_ERR_MD_FILE_IO_ERROR if file input failed, or
- *                 #MBEDTLS_ERR_MD_BAD_INPUT_DATA if \p md_info was NULL.
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_MD_FILE_IO_ERROR on an I/O error accessing
+ *                 the file pointed by \p path.
+ * \return         #MBEDTLS_ERR_MD_BAD_INPUT_DATA if \p md_info was NULL.
  */
 int mbedtls_md_file( const mbedtls_md_info_t *md_info, const char *path,
                      unsigned char *output );
@@ -356,8 +363,9 @@ int mbedtls_md_file( const mbedtls_md_info_t *md_info, const char *path,
  * \param key       The HMAC secret key.
  * \param keylen    The length of the HMAC key in Bytes.
  *
- * \returns         \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key,
                     size_t keylen );
@@ -377,8 +385,9 @@ int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key,
  * \param input     The buffer holding the input data.
  * \param ilen      The length of the input data.
  *
- * \returns         \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_hmac_update( mbedtls_md_context_t *ctx, const unsigned char *input,
                     size_t ilen );
@@ -397,8 +406,9 @@ int mbedtls_md_hmac_update( mbedtls_md_context_t *ctx, const unsigned char *inpu
  *                  context.
  * \param output    The generic HMAC checksum result.
  *
- * \returns         \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output);
 
@@ -413,8 +423,9 @@ int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output);
  * \param ctx       The message digest context containing an embedded HMAC
  *                  context.
  *
- * \returns         \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                  parameter verification fails.
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                  failure.
  */
 int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx );
 
@@ -436,8 +447,9 @@ int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx );
  * \param ilen     The length of the input data.
  * \param output   The generic HMAC result.
  *
- * \returns        \c 0 on success, or #MBEDTLS_ERR_MD_BAD_INPUT_DATA if
- *                 parameter verification fails.
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_MD_BAD_INPUT_DATA on parameter-verification
+ *                 failure.
  */
 int mbedtls_md_hmac( const mbedtls_md_info_t *md_info, const unsigned char *key, size_t keylen,
                 const unsigned char *input, size_t ilen,
