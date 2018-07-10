@@ -452,10 +452,10 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			device_index->add_item(TTR("Middle Button"));
 			device_index->add_item(TTR("Wheel Up Button"));
 			device_index->add_item(TTR("Wheel Down Button"));
-			device_index->add_item(TTR("Button 6"));
-			device_index->add_item(TTR("Button 7"));
-			device_index->add_item(TTR("Button 8"));
-			device_index->add_item(TTR("Button 9"));
+			device_index->add_item(TTR("Wheel Left Button"));
+			device_index->add_item(TTR("Wheel Right Button"));
+			device_index->add_item(TTR("X Button 1"));
+			device_index->add_item(TTR("X Button 2"));
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
 			Ref<InputEventMouseButton> mb = p_exiting_event;

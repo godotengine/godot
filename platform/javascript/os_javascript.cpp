@@ -46,6 +46,8 @@
 #define DOM_BUTTON_LEFT 0
 #define DOM_BUTTON_MIDDLE 1
 #define DOM_BUTTON_RIGHT 2
+#define DOM_BUTTON_XBUTTON1 3
+#define DOM_BUTTON_XBUTTON2 4
 
 template <typename T>
 static void dom2godot_mod(T emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
@@ -156,11 +158,12 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	ev->set_position(Point2(mouse_event->canvasX, mouse_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(mouse_event, ev);
-
 	switch (mouse_event->button) {
 		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
 		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
 		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
+		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
+		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
 		default: return false;
 	}
 

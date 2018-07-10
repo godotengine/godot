@@ -509,6 +509,12 @@ String InputEventMouseButton::as_text() const {
 		case BUTTON_WHEEL_RIGHT:
 			button_index_string = "BUTTON_WHEEL_RIGHT";
 			break;
+		case BUTTON_XBUTTON1:
+			button_index_string = "BUTTON_XBUTTON1";
+			break;
+		case BUTTON_XBUTTON2:
+			button_index_string = "BUTTON_XBUTTON2";
+			break;
 		default:
 			button_index_string = itos(get_button_index());
 			break;
@@ -600,6 +606,12 @@ String InputEventMouseMotion::as_text() const {
 			break;
 		case BUTTON_MASK_RIGHT:
 			button_mask_string = "BUTTON_MASK_RIGHT";
+			break;
+		case BUTTON_MASK_XBUTTON1:
+			button_mask_string = "BUTTON_MASK_XBUTTON1";
+			break;
+		case BUTTON_MASK_XBUTTON2:
+			button_mask_string = "BUTTON_MASK_XBUTTON2";
 			break;
 		default:
 			button_mask_string = itos(get_button_mask());
