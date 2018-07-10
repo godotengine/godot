@@ -3389,6 +3389,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	graph = memnew(GraphEdit);
 	add_child(graph);
+	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	graph->connect("node_selected", this, "_node_selected");
 	graph->connect("_begin_node_move", this, "_begin_node_move");
