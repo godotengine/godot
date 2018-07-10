@@ -44,6 +44,14 @@ int InputEvent::get_device() const {
 	return device;
 }
 
+void InputEvent::set_layer(int p_layer) {
+	layer = p_layer;
+}
+
+int InputEvent::get_layer() const {
+	return layer;
+}
+
 bool InputEvent::is_action(const StringName &p_action) const {
 
 	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
@@ -111,6 +119,9 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
+	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &InputEvent::set_layer);
+	ClassDB::bind_method(D_METHOD("get_layer"), &InputEvent::get_layer);
+
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
@@ -130,11 +141,13 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
 }
 
 InputEvent::InputEvent() {
 
 	device = 0;
+	layer = 0;
 }
 
 //////////////////

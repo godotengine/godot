@@ -108,6 +108,9 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
 		//	continue;
 
+		if (e->get_layer() != p_event->get_layer())
+			continue;
+
 		int device = e->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
 			if (e->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
