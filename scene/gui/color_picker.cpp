@@ -743,8 +743,9 @@ ColorPicker *ColorPickerButton::get_picker() {
 	return picker;
 }
 
-PopupPanel *ColorPickerButton::get_popup() const {
+PopupPanel *ColorPickerButton::get_popup() {
 
+	_update_picker();
 	return popup;
 }
 
