@@ -98,6 +98,7 @@ BOOL DeregisterEventSource(
 		_Inout_ HANDLE hEventLog) {
 	return 0;
 }
+#if !defined(NTDDI_VERSION) || (NTDDI_VERSION < NTDDI_WIN10_RS4)
 char *getenv(
 		const char *varname) {
 	//hardcoded environmental variables used for the appx testing application for store/phone
@@ -109,16 +110,19 @@ char *getenv(
 int setenv(const char *envname, const char *envval, int overwrite) {
 	return -1;
 }
+#endif
 int _getch(void) {
 	return 0;
 }
 int _kbhit() {
 	return 0;
 }
+#if !defined(NTDDI_VERSION) || (NTDDI_VERSION < NTDDI_WIN10_RS4)
 BOOL __cdecl FlushConsoleInputBuffer(
 		_In_ HANDLE hConsoleInput) {
 	return 0;
 }
+#endif
 int winrt_GetTickCount(void) {
 	LARGE_INTEGER t;
 	return (int)(QueryPerformanceCounter(&t) ? t.QuadPart : 0);
