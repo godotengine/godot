@@ -144,7 +144,7 @@ public:
 	bool is_editing_alpha() const;
 
 	ColorPicker *get_picker();
-	PopupPanel *get_popup() const;
+	PopupPanel *get_popup();
 
 	ColorPickerButton();
 };
