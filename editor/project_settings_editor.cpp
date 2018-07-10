@@ -207,7 +207,6 @@ void ProjectSettingsEditor::_action_edited() {
 
 		undo_redo->create_action(TTR("Change Action deadzone"));
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, new_action);
-		undo_redo->add_do_method(this, "_update_actions");
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_action);
 		undo_redo->add_undo_method(this, "_update_actions");
