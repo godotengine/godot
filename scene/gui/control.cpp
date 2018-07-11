@@ -1705,7 +1705,13 @@ Size2 Control::get_end() const {
 
 Point2 Control::get_global_position() const {
 
-	return get_global_transform().get_origin();
+	Transform2D inv;
+
+	if (data.parent_canvas_item) {
+
+		inv = data.parent_canvas_item->get_global_transform().affine_inverse();
+	}
+	return inv.xform(get_position());
 }
 
 void Control::set_global_position(const Point2 &p_point) {
