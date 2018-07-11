@@ -161,9 +161,14 @@ vec3 tonemap_aces(vec3 color, float white)
 	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
 }
 
-vec3 tonemap_reindhart(vec3 color, float white)
-{
-	return clamp((color) / (1.0f + color) * (1.0f + (color / (white))), vec3(0.0f), vec3(1.0f)); // whitepoint is probably not in linear space here!
+vec3 tonemap_aces(vec3 color, float white) {
+	float a = 2.51f;
+	float b = 0.03f;
+	float c = 2.43f;
+	float d = 0.59f;
+	float e = 0.14f;
+	color = (color * (a * color + b)) / (color * (c * color + d) + e);
+	return clamp(color / vec3((white * (a * white + b)) / (white * (c * white + d) + e)), vec3(0.0), vec3(1.0));
 }
 
 vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped input in range [0;1]
@@ -221,14 +226,11 @@ vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
 	#endif
 
-	return glow;
-}
+	color.rgb = tonemap_aces(color.rgb,white);
 
-vec3 apply_glow(vec3 color, vec3 glow) // apply glow using the selected blending mode
-{
-	#ifdef USE_GLOW_REPLACE
-		color = glow;
-	#endif
+# if defined(USING_GLOW)
+	glow = tonemap_aces(glow,white);
+# endif
 
 	#ifdef USE_GLOW_SCREEN
 		color = max((color + glow) - (color * glow), vec3(0.0));
