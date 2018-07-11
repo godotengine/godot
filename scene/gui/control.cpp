@@ -128,10 +128,7 @@ bool Control::_edit_use_rotation() const {
 }
 
 void Control::_edit_set_pivot(const Point2 &p_pivot) {
-	Vector2 delta_pivot = p_pivot - get_pivot_offset();
-	Vector2 move = Vector2((cos(data.rotation) - 1.0) * delta_pivot.x - sin(data.rotation) * delta_pivot.y, sin(data.rotation) * delta_pivot.x + (cos(data.rotation) - 1.0) * delta_pivot.y);
-	set_position(get_position() + move);
-	set_pivot_offset(p_pivot);
+	set_pivot_offset(get_transform().xform(p_pivot));
 }
 
 Point2 Control::_edit_get_pivot() const {
