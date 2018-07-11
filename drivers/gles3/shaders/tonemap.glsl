@@ -161,13 +161,14 @@ vec3 tonemap_filmic(vec3 color,float white) {
 
 }
 
-vec3 tonemap_aces(vec3 color) {
+vec3 tonemap_aces(vec3 color, float white) {
 	float a = 2.51f;
 	float b = 0.03f;
 	float c = 2.43f;
 	float d = 0.59f;
 	float e = 0.14f;
-	return color = clamp((color*(a*color+b))/(color*(c*color+d)+e),vec3(0.0),vec3(1.0));
+	color = (color * (a * color + b)) / (color * (c * color + d) + e);
+	return clamp(color / vec3((white * (a * white + b)) / (white * (c * white + d) + e)), vec3(0.0), vec3(1.0));
 }
 
 vec3 tonemap_reindhart(vec3 color,float white) {
@@ -250,10 +251,10 @@ void main() {
 
 #ifdef USE_ACES_TONEMAPPER
 
-	color.rgb = tonemap_aces(color.rgb);
+	color.rgb = tonemap_aces(color.rgb,white);
 
 # if defined(USING_GLOW)
-	glow = tonemap_aces(glow);
+	glow = tonemap_aces(glow,white);
 # endif
 
 #endif
