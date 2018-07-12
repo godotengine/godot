@@ -143,14 +143,13 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	window->KeyUp +=
 			ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &App::OnKeyUp);
 
+	os->set_window(window);
+
 	unsigned int argc;
 	char **argv = get_command_line(&argc);
 
 	Main::setup("uwp", argc, argv, false);
 
-	// The CoreWindow has been created, so EGL can be initialized.
-	ContextEGL *context = memnew(ContextEGL(window));
-	os->set_gl_context(context);
 	UpdateWindowSize(Size(window->Bounds.Width, window->Bounds.Height));
 
 	Main::setup2();
@@ -513,7 +512,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 	if (f == NULL) {
 
-		wprintf(L"Couldn't open command line file.");
+		wprintf(L"Couldn't open command line file.\n");
 		return fail_cl;
 	}
 
@@ -527,7 +526,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 	if (r < 4) {
 		fclose(f);
-		wprintf(L"Wrong cmdline length.");
+		wprintf(L"Wrong cmdline length.\n");
 		return (fail_cl);
 	}
 
@@ -539,7 +538,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 		if (r < 4) {
 			fclose(f);
-			wprintf(L"Wrong cmdline param length.");
+			wprintf(L"Wrong cmdline param length.\n");
 			return (fail_cl);
 		}
 
@@ -547,7 +546,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 		if (strlen > CMD_MAX_LEN) {
 			fclose(f);
-			wprintf(L"Wrong command length.");
+			wprintf(L"Wrong command length.\n");
 			return (fail_cl);
 		}
 
@@ -568,7 +567,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 			delete[] arg;
 			fclose(f);
-			wprintf(L"Error reading command.");
+			wprintf(L"Error reading command.\n");
 			return (fail_cl);
 		}
 	}
