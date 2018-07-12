@@ -42,6 +42,13 @@ using namespace Windows::UI::Core;
 
 class ContextEGL : public ContextGL {
 
+public:
+	enum Driver {
+		GLES_2_0,
+		GLES_3_0,
+	};
+
+private:
 	CoreWindow ^ window;
 
 	EGLDisplay mEglDisplay;
@@ -52,6 +59,8 @@ class ContextEGL : public ContextGL {
 	EGLint height;
 
 	bool vsync;
+
+	Driver driver;
 
 public:
 	virtual void release_current();
@@ -70,7 +79,7 @@ public:
 
 	void cleanup();
 
-	ContextEGL(CoreWindow ^ p_window);
+	ContextEGL(CoreWindow ^ p_window, Driver p_driver);
 	~ContextEGL();
 };
 
