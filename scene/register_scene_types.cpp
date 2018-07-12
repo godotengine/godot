@@ -135,6 +135,7 @@
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/cylinder_shape.h"
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
@@ -541,6 +542,7 @@ void register_scene_types() {
 	ClassDB::register_class<SphereShape>();
 	ClassDB::register_class<BoxShape>();
 	ClassDB::register_class<CapsuleShape>();
+	ClassDB::register_class<CylinderShape>();
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
