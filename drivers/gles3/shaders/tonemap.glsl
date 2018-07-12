@@ -161,14 +161,9 @@ vec3 tonemap_aces(vec3 color, float white)
 	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
 }
 
-vec3 tonemap_aces(vec3 color, float white) {
-	float a = 2.51f;
-	float b = 0.03f;
-	float c = 2.43f;
-	float d = 0.59f;
-	float e = 0.14f;
-	color = (color * (a * color + b)) / (color * (c * color + d) + e);
-	return clamp(color / vec3((white * (a * white + b)) / (white * (c * white + d) + e)), vec3(0.0), vec3(1.0));
+vec3 tonemap_reindhart(vec3 color, float white)
+{
+	return clamp((color) / (1.0f + color) * (1.0f + (color / (white))), vec3(0.0f), vec3(1.0f)); // whitepoint is probably not in linear space here!
 }
 
 vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped input in range [0;1]
@@ -226,23 +221,21 @@ vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
 	#endif
 
-	color.rgb = tonemap_aces(color.rgb,white);
+	return glow;
+}
 
-# if defined(USING_GLOW)
-	glow = tonemap_aces(glow,white);
-# endif
+vec3 apply_glow(vec3 color, vec3 glow) // apply glow using the selected blending mode
+{
+	#ifdef USE_GLOW_REPLACE
+		color = glow;
+	#endif
 
 	#ifdef USE_GLOW_SCREEN
 		color = max((color + glow) - (color * glow), vec3(0.0));
 	#endif
 
-#ifdef KEEP_3D_LINEAR
-	// leave color as is...
-#else
-	//regular Linear -> SRGB conversion
-	vec3 a = vec3(0.055);
-	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
-#endif
+	#ifdef USE_GLOW_SOFTLIGHT
+		glow = glow * vec3(0.5f) + vec3(0.5f);
 
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
 		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
