@@ -162,7 +162,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		draw_style_box(sb, Rect2(Vector2(), get_size()));
 		Ref<Font> font = get_font("font", "LineEdit");
 
-		int avail_width = get_size().width - sb->get_minimum_size().width - sb->get_minimum_size().width;
+		int avail_width = get_size().width - sb->get_minimum_size().width;
 		avail_width -= font->get_string_size(label).width;
 		Ref<Texture> updown = get_icon("updown", "SpinBox");
 
