@@ -64,11 +64,6 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 };
 
-uint8_t OSIPhone::get_orientations() const {
-
-	return supported_orientations;
-};
-
 extern int gl_view_base_fb; // from gl_view.mm
 
 void OSIPhone::set_data_dir(String p_dir) {
@@ -99,12 +94,6 @@ void OSIPhone::initialize_core() {
 };
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
-	supported_orientations = 0;
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_horizontal", true) ? 1 : 0) << LandscapeLeft);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_horizontal_flipped", false) ? 1 : 0) << LandscapeRight);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical", false) ? 1 : 0) << PortraitDown);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical_flipped", false) ? 1 : 0) << PortraitUp);
 
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
