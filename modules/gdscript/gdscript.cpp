@@ -297,6 +297,18 @@ bool GDScript::get_property_default_value(const StringName &p_property, Variant 
 	*/
 	const Map<StringName, Variant>::Element *E = member_default_values_cache.find(p_property);
 	if (E) {
+		if (E->get().get_type() == Variant::NIL) {
+			List<PropertyInfo> scr_pinfo;
+			get_script_property_list(&scr_pinfo);
+			for (List<PropertyInfo>::Element *PE = scr_pinfo.front(); PE; PE = PE->next()) {
+				if (PE->get().name == p_property && PE->get().type != Variant::NIL) {
+					Variant::CallError ce;
+					r_value = Variant::construct(PE->get().type, NULL, 0, ce);
+					return true;
+				}
+			}
+		}
+
 		r_value = E->get();
 		return true;
 	}

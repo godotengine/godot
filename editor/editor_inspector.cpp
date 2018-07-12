@@ -472,8 +472,10 @@ void EditorProperty::update_reload_status() {
 	if (!has_reload && !object->get_script().is_null()) {
 		Ref<Script> scr = object->get_script();
 		Variant orig_value;
+		scr->reload();
 		if (scr->get_property_default_value(property, orig_value)) {
-			if (orig_value != object->get(property)) {
+			Variant prop_obj = object->get(property);
+			if (orig_value != prop_obj && prop_obj.get_type() != Variant::NIL) {
 				has_reload = true;
 			}
 		}
