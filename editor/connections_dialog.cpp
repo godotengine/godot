@@ -428,6 +428,13 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool oshot = connect_dialog->get_oneshot();
 	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
 
+	bool add_script_function = connect_dialog->get_make_callback();
+	PoolStringArray script_function_args;
+	if (add_script_function) {
+		// pick up args here before "it" is deleted by update_tree
+		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
+	}
+
 	if (connect_dialog->is_editing()) {
 		_disconnect(*it);
 		_connect(cToMake);
@@ -435,9 +442,12 @@ void ConnectionsDock::_make_or_edit_connection() {
 		_connect(cToMake);
 	}
 
-	if (connect_dialog->get_make_callback()) {
-		PoolStringArray args = it->get_metadata(0).operator Dictionary()["args"];
-		editor->emit_signal("script_add_function_request", target, cToMake.method, args);
+	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree,
+	// which will delete the object "it" is pointing to
+	it = NULL;
+
+	if (add_script_function) {
+		editor->emit_signal("script_add_function_request", target, cToMake.method, script_function_args);
 		hide();
 	}
 
