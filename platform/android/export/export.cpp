@@ -228,7 +228,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 	};
 
 	Vector<Device> devices;
-	bool devices_changed;
+	volatile bool devices_changed;
 	Mutex *device_lock;
 	Thread *device_thread;
 	volatile bool quit_request;
@@ -1154,7 +1154,10 @@ public:
 	virtual bool poll_devices() {
 
 		bool dc = devices_changed;
-		devices_changed = false;
+		if (dc) {
+			// don't clear unless we're reporting true, to avoid race
+			devices_changed = false;
+		}
 		return dc;
 	}
 
@@ -1857,9 +1860,9 @@ public:
 		run_icon->create_from_image(img);
 
 		device_lock = Mutex::create();
-		device_thread = Thread::create(_device_poll_thread, this);
 		devices_changed = true;
 		quit_request = false;
+		device_thread = Thread::create(_device_poll_thread, this);
 	}
 
 	~EditorExportAndroid() {
