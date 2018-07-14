@@ -516,13 +516,14 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					bool hexa_found = false;
 					bool sign_found = false;
 					bool minus_exponent_found = false;
+					bool float_suffix_found = false;
 
 					String str;
 					int i = 0;
 
 					while (true) {
 						if (GETCHAR(i) == '.') {
-							if (period_found || exponent_found)
+							if (period_found || exponent_found || hexa_found || float_suffix_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							period_found = true;
 						} else if (GETCHAR(i) == 'x') {
@@ -530,11 +531,16 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							hexa_found = true;
 						} else if (GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found)
+							if (hexa_found || exponent_found || float_suffix_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							exponent_found = true;
+						} else if (GETCHAR(i) == 'f') {
+							if (hexa_found || exponent_found)
+								return _make_token(TK_ERROR, "Invalid numeric constant");
+							float_suffix_found = true;
 						} else if (_is_number(GETCHAR(i))) {
-							//all ok
+							if (float_suffix_found)
+								return _make_token(TK_ERROR, "Invalid numeric constant");
 						} else if (hexa_found && _is_hex(GETCHAR(i))) {
 
 						} else if ((GETCHAR(i) == '-' || GETCHAR(i) == '+') && exponent_found) {
@@ -550,21 +556,60 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						i++;
 					}
 
-					if (!_is_number(str[str.length() - 1]))
-						return _make_token(TK_ERROR, "Invalid numeric constant");
+					CharType last_char = str[str.length() - 1];
+
+					if (hexa_found) {
+						//hex integers eg."0xFF" or "0x12AB", etc - NOT supported yet
+						return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant - Not supported");
+					} else if (period_found || float_suffix_found) {
+						//floats
+						if (period_found) {
+							if (float_suffix_found) {
+								//checks for eg "1.f" or "1.99f" notations
+								if (last_char != 'f') {
+									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+								}
+							} else {
+								//checks for eg. "1." or "1.99" notations
+								if (last_char != '.' && !_is_number(last_char)) {
+									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+								}
+							}
+						} else if (float_suffix_found) {
+							// if no period found the float suffix must be the last character, like in "2f" for "2.0"
+							if (last_char != 'f') {
+								return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+							}
+						}
+
+						if (float_suffix_found) {
+							//strip the suffix
+							str = str.left(str.length() - 1);
+							//compensate reading cursor position
+							char_idx += 1;
+						}
+
+						if (!str.is_valid_float()) {
+							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+						}
+					} else {
+						//integers
+						if (!_is_number(last_char)) {
+							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+						}
+						if (!str.is_valid_integer()) {
+							return _make_token(TK_ERROR, "Invalid numeric constant");
+						}
+					}
 
 					char_idx += str.length();
 					Token tk;
-					if (period_found || minus_exponent_found)
+					if (period_found || minus_exponent_found || float_suffix_found)
 						tk.type = TK_REAL_CONSTANT;
 					else
 						tk.type = TK_INT_CONSTANT;
 
-					if (!str.is_valid_float()) {
-						return _make_token(TK_ERROR, "Invalid numeric constant");
-					}
-
-					tk.constant = str.to_double();
+					tk.constant = str.to_double(); //wont work with hex
 					tk.line = tk_line;
 
 					return tk;
