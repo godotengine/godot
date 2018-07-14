@@ -183,7 +183,7 @@ VisualShaderNodeVec3Constant::VisualShaderNodeVec3Constant() {
 ////////////// Transform
 
 String VisualShaderNodeTransformConstant::get_caption() const {
-	return "Transform";
+	return "Transform4x3";
 }
 
 int VisualShaderNodeTransformConstant::get_input_port_count() const {
@@ -587,10 +587,6 @@ void VisualShaderNodeCubeMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "CubeMap"), "set_cube_map", "get_cube_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normalmap"), "set_texture_type", "get_texture_type");
-
-	BIND_ENUM_CONSTANT(TYPE_DATA);
-	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
 }
 
 VisualShaderNodeCubeMap::VisualShaderNodeCubeMap() {
@@ -685,7 +681,7 @@ VisualShaderNodeScalarOp::VisualShaderNodeScalarOp() {
 ////////////// Vector Op
 
 String VisualShaderNodeVectorOp::get_caption() const {
-	return "VectorOp";
+	return "VecOp";
 }
 
 int VisualShaderNodeVectorOp::get_input_port_count() const {
@@ -898,16 +894,6 @@ void VisualShaderNodeColorOp::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeColorOp::get_operator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Screen,Difference,Darken,Lighten,Overlay,Dodge,Burn,SoftLight,HardLight"), "set_operator", "get_operator");
-
-	BIND_ENUM_CONSTANT(OP_SCREEN);
-	BIND_ENUM_CONSTANT(OP_DIFFERENCE);
-	BIND_ENUM_CONSTANT(OP_DARKEN);
-	BIND_ENUM_CONSTANT(OP_LIGHTEN);
-	BIND_ENUM_CONSTANT(OP_OVERLAY);
-	BIND_ENUM_CONSTANT(OP_DODGE);
-	BIND_ENUM_CONSTANT(OP_BURN);
-	BIND_ENUM_CONSTANT(OP_SOFT_LIGHT);
-	BIND_ENUM_CONSTANT(OP_HARD_LIGHT);
 }
 
 VisualShaderNodeColorOp::VisualShaderNodeColorOp() {
@@ -919,7 +905,7 @@ VisualShaderNodeColorOp::VisualShaderNodeColorOp() {
 ////////////// Transform Mult
 
 String VisualShaderNodeTransformMult::get_caption() const {
-	return "TransformMult";
+	return "TransMult";
 }
 
 int VisualShaderNodeTransformMult::get_input_port_count() const {
@@ -974,9 +960,6 @@ void VisualShaderNodeTransformMult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeTransformMult::get_operator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "A x B,B x A"), "set_operator", "get_operator");
-
-	BIND_ENUM_CONSTANT(OP_AxB);
-	BIND_ENUM_CONSTANT(OP_BxA);
 }
 
 VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
@@ -988,7 +971,7 @@ VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
 ////////////// TransformVec Mult
 
 String VisualShaderNodeTransformVecMult::get_caption() const {
-	return "TransformVectorMult";
+	return "TransVecMult";
 }
 
 int VisualShaderNodeTransformVecMult::get_input_port_count() const {
@@ -1167,7 +1150,7 @@ VisualShaderNodeScalarFunc::VisualShaderNodeScalarFunc() {
 ////////////// Vector Func
 
 String VisualShaderNodeVectorFunc::get_caption() const {
-	return "VectorFunc";
+	return "VecFunc";
 }
 
 int VisualShaderNodeVectorFunc::get_input_port_count() const {
@@ -1268,7 +1251,7 @@ VisualShaderNodeVectorFunc::VisualShaderNodeVectorFunc() {
 ////////////// Dot Product
 
 String VisualShaderNodeDotProduct::get_caption() const {
-	return "DotProduct";
+	return "DotProd";
 }
 
 int VisualShaderNodeDotProduct::get_input_port_count() const {
@@ -1303,7 +1286,7 @@ VisualShaderNodeDotProduct::VisualShaderNodeDotProduct() {
 ////////////// Vector Len
 
 String VisualShaderNodeVectorLen::get_caption() const {
-	return "VectorLen";
+	return "VecLen";
 }
 
 int VisualShaderNodeVectorLen::get_input_port_count() const {
@@ -1379,7 +1362,7 @@ VisualShaderNodeScalarInterp::VisualShaderNodeScalarInterp() {
 ////////////// Vector Interp
 
 String VisualShaderNodeVectorInterp::get_caption() const {
-	return "VectorInterp";
+	return "VecInterp";
 }
 
 int VisualShaderNodeVectorInterp::get_input_port_count() const {
@@ -1418,18 +1401,18 @@ VisualShaderNodeVectorInterp::VisualShaderNodeVectorInterp() {
 	set_input_port_default_value(2, Vector3());
 }
 
-////////////// Vector Compose
-String VisualShaderNodeVectorCompose::get_caption() const {
-	return "VectorCompose";
+////////////// Vector Construct
+String VisualShaderNodeVectorConstruct::get_caption() const {
+	return "VecConstr";
 }
 
-int VisualShaderNodeVectorCompose::get_input_port_count() const {
+int VisualShaderNodeVectorConstruct::get_input_port_count() const {
 	return 3;
 }
-VisualShaderNodeVectorCompose::PortType VisualShaderNodeVectorCompose::get_input_port_type(int p_port) const {
+VisualShaderNodeVectorConstruct::PortType VisualShaderNodeVectorConstruct::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
-String VisualShaderNodeVectorCompose::get_input_port_name(int p_port) const {
+String VisualShaderNodeVectorConstruct::get_input_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "x";
 	} else if (p_port == 1) {
@@ -1439,40 +1422,40 @@ String VisualShaderNodeVectorCompose::get_input_port_name(int p_port) const {
 	}
 }
 
-int VisualShaderNodeVectorCompose::get_output_port_count() const {
+int VisualShaderNodeVectorConstruct::get_output_port_count() const {
 	return 1;
 }
-VisualShaderNodeVectorCompose::PortType VisualShaderNodeVectorCompose::get_output_port_type(int p_port) const {
+VisualShaderNodeVectorConstruct::PortType VisualShaderNodeVectorConstruct::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
-String VisualShaderNodeVectorCompose::get_output_port_name(int p_port) const {
+String VisualShaderNodeVectorConstruct::get_output_port_name(int p_port) const {
 	return "vec";
 }
 
-String VisualShaderNodeVectorCompose::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeVectorConstruct::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
 	return "\t" + p_output_vars[0] + " = vec3( " + p_input_vars[0] + " , " + p_input_vars[1] + " , " + p_input_vars[2] + " );\n";
 }
 
-VisualShaderNodeVectorCompose::VisualShaderNodeVectorCompose() {
+VisualShaderNodeVectorConstruct::VisualShaderNodeVectorConstruct() {
 
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, 0.0);
 }
 
-////////////// Transform Compose
+////////////// Transform Construct
 
-String VisualShaderNodeTransformCompose::get_caption() const {
-	return "TransformCompose";
+String VisualShaderNodeTransformConstruct::get_caption() const {
+	return "TransConstr";
 }
 
-int VisualShaderNodeTransformCompose::get_input_port_count() const {
+int VisualShaderNodeTransformConstruct::get_input_port_count() const {
 	return 4;
 }
-VisualShaderNodeTransformCompose::PortType VisualShaderNodeTransformCompose::get_input_port_type(int p_port) const {
+VisualShaderNodeTransformConstruct::PortType VisualShaderNodeTransformConstruct::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
-String VisualShaderNodeTransformCompose::get_input_port_name(int p_port) const {
+String VisualShaderNodeTransformConstruct::get_input_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "x";
 	} else if (p_port == 1) {
@@ -1484,21 +1467,21 @@ String VisualShaderNodeTransformCompose::get_input_port_name(int p_port) const {
 	}
 }
 
-int VisualShaderNodeTransformCompose::get_output_port_count() const {
+int VisualShaderNodeTransformConstruct::get_output_port_count() const {
 	return 1;
 }
-VisualShaderNodeTransformCompose::PortType VisualShaderNodeTransformCompose::get_output_port_type(int p_port) const {
+VisualShaderNodeTransformConstruct::PortType VisualShaderNodeTransformConstruct::get_output_port_type(int p_port) const {
 	return PORT_TYPE_TRANSFORM;
 }
-String VisualShaderNodeTransformCompose::get_output_port_name(int p_port) const {
+String VisualShaderNodeTransformConstruct::get_output_port_name(int p_port) const {
 	return "xform";
 }
 
-String VisualShaderNodeTransformCompose::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeTransformConstruct::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
 	return "\t" + p_output_vars[0] + " = mat4( vec4(" + p_input_vars[0] + ", 0.0) , vec4(" + p_input_vars[1] + ", 0.0) , vec4(" + p_input_vars[2] + ",0.0), vec4(" + p_input_vars[3] + ",1.0) );\n";
 }
 
-VisualShaderNodeTransformCompose::VisualShaderNodeTransformCompose() {
+VisualShaderNodeTransformConstruct::VisualShaderNodeTransformConstruct() {
 
 	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, Vector3());
@@ -1506,28 +1489,28 @@ VisualShaderNodeTransformCompose::VisualShaderNodeTransformCompose() {
 	set_input_port_default_value(3, Vector3());
 }
 
-////////////// Vector Decompose
-String VisualShaderNodeVectorDecompose::get_caption() const {
-	return "VectorDecompose";
+////////////// Vector Destruct
+String VisualShaderNodeVectorDestruct::get_caption() const {
+	return "VecDestr";
 }
 
-int VisualShaderNodeVectorDecompose::get_input_port_count() const {
+int VisualShaderNodeVectorDestruct::get_input_port_count() const {
 	return 1;
 }
-VisualShaderNodeVectorDecompose::PortType VisualShaderNodeVectorDecompose::get_input_port_type(int p_port) const {
+VisualShaderNodeVectorDestruct::PortType VisualShaderNodeVectorDestruct::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
-String VisualShaderNodeVectorDecompose::get_input_port_name(int p_port) const {
+String VisualShaderNodeVectorDestruct::get_input_port_name(int p_port) const {
 	return "vec";
 }
 
-int VisualShaderNodeVectorDecompose::get_output_port_count() const {
+int VisualShaderNodeVectorDestruct::get_output_port_count() const {
 	return 3;
 }
-VisualShaderNodeVectorDecompose::PortType VisualShaderNodeVectorDecompose::get_output_port_type(int p_port) const {
+VisualShaderNodeVectorDestruct::PortType VisualShaderNodeVectorDestruct::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
-String VisualShaderNodeVectorDecompose::get_output_port_name(int p_port) const {
+String VisualShaderNodeVectorDestruct::get_output_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "x";
 	} else if (p_port == 1) {
@@ -1537,7 +1520,7 @@ String VisualShaderNodeVectorDecompose::get_output_port_name(int p_port) const {
 	}
 }
 
-String VisualShaderNodeVectorDecompose::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeVectorDestruct::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
 	String code;
 	code += "\t" + p_output_vars[0] + " = " + p_input_vars[0] + ".x;\n";
 	code += "\t" + p_output_vars[1] + " = " + p_input_vars[0] + ".y;\n";
@@ -1545,33 +1528,33 @@ String VisualShaderNodeVectorDecompose::generate_code(Shader::Mode p_mode, Visua
 	return code;
 }
 
-VisualShaderNodeVectorDecompose::VisualShaderNodeVectorDecompose() {
+VisualShaderNodeVectorDestruct::VisualShaderNodeVectorDestruct() {
 	set_input_port_default_value(0, Vector3());
 }
 
-////////////// Transform Decompose
+////////////// Transform Destruct
 
-String VisualShaderNodeTransformDecompose::get_caption() const {
-	return "TransformDecompose";
+String VisualShaderNodeTransformDestruct::get_caption() const {
+	return "TransDestr";
 }
 
-int VisualShaderNodeTransformDecompose::get_input_port_count() const {
+int VisualShaderNodeTransformDestruct::get_input_port_count() const {
 	return 1;
 }
-VisualShaderNodeTransformDecompose::PortType VisualShaderNodeTransformDecompose::get_input_port_type(int p_port) const {
+VisualShaderNodeTransformDestruct::PortType VisualShaderNodeTransformDestruct::get_input_port_type(int p_port) const {
 	return PORT_TYPE_TRANSFORM;
 }
-String VisualShaderNodeTransformDecompose::get_input_port_name(int p_port) const {
+String VisualShaderNodeTransformDestruct::get_input_port_name(int p_port) const {
 	return "xform";
 }
 
-int VisualShaderNodeTransformDecompose::get_output_port_count() const {
+int VisualShaderNodeTransformDestruct::get_output_port_count() const {
 	return 4;
 }
-VisualShaderNodeTransformDecompose::PortType VisualShaderNodeTransformDecompose::get_output_port_type(int p_port) const {
+VisualShaderNodeTransformDestruct::PortType VisualShaderNodeTransformDestruct::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
-String VisualShaderNodeTransformDecompose::get_output_port_name(int p_port) const {
+String VisualShaderNodeTransformDestruct::get_output_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "x";
 	} else if (p_port == 1) {
@@ -1583,7 +1566,7 @@ String VisualShaderNodeTransformDecompose::get_output_port_name(int p_port) cons
 	}
 }
 
-String VisualShaderNodeTransformDecompose::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeTransformDestruct::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
 	String code;
 	code += "\t" + p_output_vars[0] + " = " + p_input_vars[0] + "[0].xyz;\n";
 	code += "\t" + p_output_vars[1] + " = " + p_input_vars[0] + "[1].xyz;\n";
@@ -1592,7 +1575,7 @@ String VisualShaderNodeTransformDecompose::generate_code(Shader::Mode p_mode, Vi
 	return code;
 }
 
-VisualShaderNodeTransformDecompose::VisualShaderNodeTransformDecompose() {
+VisualShaderNodeTransformDestruct::VisualShaderNodeTransformDestruct() {
 	set_input_port_default_value(0, Transform());
 }
 
@@ -1675,7 +1658,7 @@ VisualShaderNodeColorUniform::VisualShaderNodeColorUniform() {
 ////////////// Vector Uniform
 
 String VisualShaderNodeVec3Uniform::get_caption() const {
-	return "VectorUniform";
+	return "VecUniform";
 }
 
 int VisualShaderNodeVec3Uniform::get_input_port_count() const {
@@ -1711,7 +1694,7 @@ VisualShaderNodeVec3Uniform::VisualShaderNodeVec3Uniform() {
 ////////////// Transform Uniform
 
 String VisualShaderNodeTransformUniform::get_caption() const {
-	return "TransformUniform";
+	return "TransUniform";
 }
 
 int VisualShaderNodeTransformUniform::get_input_port_count() const {
@@ -1747,7 +1730,7 @@ VisualShaderNodeTransformUniform::VisualShaderNodeTransformUniform() {
 ////////////// Texture Uniform
 
 String VisualShaderNodeTextureUniform::get_caption() const {
-	return "TextureUniform";
+	return "TexUniform";
 }
 
 int VisualShaderNodeTextureUniform::get_input_port_count() const {
@@ -1865,7 +1848,7 @@ VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
 ////////////// CubeMap Uniform
 
 String VisualShaderNodeCubeMapUniform::get_caption() const {
-	return "CubeMapUniform";
+	return "CubeMap";
 }
 
 int VisualShaderNodeCubeMapUniform::get_input_port_count() const {

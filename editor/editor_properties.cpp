@@ -405,6 +405,10 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	}
 }
 
+void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
+	options->set_clip_text(p_enable);
+}
+
 void EditorPropertyEnum::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_option_selected"), &EditorPropertyEnum::_option_selected);
@@ -2266,6 +2270,10 @@ void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &
 	}
 }
 
+void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
+	use_sub_inspector = p_enable;
+}
+
 void EditorPropertyResource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorPropertyResource::_file_selected);
@@ -2288,7 +2296,8 @@ EditorPropertyResource::EditorPropertyResource() {
 
 	sub_inspector = NULL;
 	sub_inspector_vbox = NULL;
-	use_sub_inspector = !bool(EDITOR_GET("interface/inspector/open_resources_in_new_inspector"));
+	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
+
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 	assign = memnew(Button);
@@ -2691,6 +2700,22 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		case Variant::OBJECT: {
 			EditorPropertyResource *editor = memnew(EditorPropertyResource);
 			editor->setup(p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
+
+			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+				String open_in_new = EDITOR_GET("interface/inspector/resources_types_to_open_in_new_inspector");
+				for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
+					String type = open_in_new.get_slicec(',', i).strip_edges();
+					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
+						String inherits = p_hint_text.get_slicec(',', j);
+
+						if (ClassDB::is_parent_class(inherits, type)) {
+
+							editor->set_use_sub_inspector(false);
+						}
+					}
+				}
+			}
+
 			add_property_editor(p_path, editor);
 
 		} break;

@@ -4709,6 +4709,10 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorRootMotionPlugin> rmp;
 		rmp.instance();
 		EditorInspector::add_inspector_plugin(rmp);
+
+		Ref<EditorInspectorShaderModePlugin> smp;
+		smp.instance();
+		EditorInspector::add_inspector_plugin(smp);
 	}
 
 	_pvrtc_register_compressors();
@@ -4750,7 +4754,8 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF("interface/inspector/capitalize_properties", true);
 	EDITOR_DEF("interface/inspector/disable_folding", false);
-	EDITOR_DEF("interface/inspector/open_resources_in_new_inspector", false);
+	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
+	EDITOR_DEF("interface/inspector/resources_types_to_open_in_new_inspector", "Material,Mesh");
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	theme_base = memnew(Control);
@@ -5511,8 +5516,7 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
 	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
-	// FIXME: Disabled for Godot 3.0 as made incompatible, it needs to be ported to the new API.
-	//add_editor_plugin(memnew(ShaderGraphEditorPlugin(this)));
+	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendTreeEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendSpace1DEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationNodeBlendSpace2DEditorPlugin(this)));

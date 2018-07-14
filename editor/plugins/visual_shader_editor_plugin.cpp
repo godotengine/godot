@@ -157,7 +157,7 @@ void VisualShaderEditor::_update_graph() {
 			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
 		}*/
 
-		node->set_offset(position);
+		node->set_offset(position * EDSCALE);
 
 		node->set_title(vsnode->get_caption());
 		node->set_name(itos(nodes[n_i]));
@@ -190,7 +190,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		for (int i = 0; i < plugins.size(); i++) {
-			custom_editor = plugins.write[i]->create_editor(vsnode);
+			custom_editor = plugins[i]->create_editor(vsnode);
 			if (custom_editor) {
 				break;
 			}
@@ -544,17 +544,6 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 	//EditorNode::get_singleton()->push_item(vsnode.ptr(), "", true);
 }
 
-void VisualShaderEditor::_input(const Ref<InputEvent> p_event) {
-	if (graph->has_focus()) {
-		Ref<InputEventMouseButton> mb = p_event;
-
-		if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-			add_node->get_popup()->set_position(get_viewport()->get_mouse_position());
-			add_node->get_popup()->show_modal();
-		}
-	}
-}
-
 void VisualShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -711,7 +700,6 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
-	ClassDB::bind_method("_input", &VisualShaderEditor::_input);
 }
 
 VisualShaderEditor *VisualShaderEditor::singleton = NULL;
@@ -735,7 +723,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
-	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_SCALAR);
+	//graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
 
@@ -768,17 +756,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("VectorOp", "Operators", "VisualShaderNodeVectorOp"));
 	add_options.push_back(AddOption("ColorOp", "Operators", "VisualShaderNodeColorOp"));
 	add_options.push_back(AddOption("TransformMult", "Operators", "VisualShaderNodeTransformMult"));
-	add_options.push_back(AddOption("TransformVectorMult", "Operators", "VisualShaderNodeTransformVecMult"));
+	add_options.push_back(AddOption("TransformVecMult", "Operators", "VisualShaderNodeTransformVecMult"));
 	add_options.push_back(AddOption("ScalarFunc", "Functions", "VisualShaderNodeScalarFunc"));
 	add_options.push_back(AddOption("VectorFunc", "Functions", "VisualShaderNodeVectorFunc"));
 	add_options.push_back(AddOption("DotProduct", "Functions", "VisualShaderNodeDotProduct"));
 	add_options.push_back(AddOption("VectorLen", "Functions", "VisualShaderNodeVectorLen"));
 	add_options.push_back(AddOption("ScalarInterp", "Interpolation", "VisualShaderNodeScalarInterp"));
 	add_options.push_back(AddOption("VectorInterp", "Interpolation", "VisualShaderNodeVectorInterp"));
-	add_options.push_back(AddOption("VectorCompose", "Compose", "VisualShaderNodeVectorCompose"));
-	add_options.push_back(AddOption("TransformCompose", "Compose", "VisualShaderNodeTransformCompose"));
-	add_options.push_back(AddOption("VectorDecompose", "Decompose", "VisualShaderNodeVectorDecompose"));
-	add_options.push_back(AddOption("TransformDecompose", "Decompose", "VisualShaderNodeTransformDecompose"));
+	add_options.push_back(AddOption("VectorConstruct", "Construct", "VisualShaderNodeVectorConstruct"));
+	add_options.push_back(AddOption("TransformConstruct", "Construct", "VisualShaderNodeTransformConstruct"));
+	add_options.push_back(AddOption("VectorDestruct", "Destruct", "VisualShaderNodeVectorDestruct"));
+	add_options.push_back(AddOption("TransformDestruct", "Destruct", "VisualShaderNodeTransformDestruct"));
 	add_options.push_back(AddOption("Scalar", "Uniforms", "VisualShaderNodeScalarUniform"));
 	add_options.push_back(AddOption("Vector", "Uniforms", "VisualShaderNodeVec3Uniform"));
 	add_options.push_back(AddOption("Color", "Uniforms", "VisualShaderNodeColorUniform"));
@@ -825,14 +813,12 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(visual_shader_editor);
-		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
 
 		if (visual_shader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
-		visual_shader_editor->set_process_input(false);
 		//visual_shader_editor->set_process(false);
 	}
 }
