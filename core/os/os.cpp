@@ -680,6 +680,15 @@ List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
+PoolStringArray OS::get_connected_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		return MIDIDriver::get_singleton()->get_connected_inputs();
+
+	PoolStringArray list;
+	return list;
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 
