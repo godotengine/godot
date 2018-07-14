@@ -79,6 +79,8 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_RENAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);
+	} else if (ED_IS_SHORTCUT("scene_tree/add_new_root", p_event)) {
+		_tool_selected(TOOL_NEW_ROOT);
 	} else if (ED_IS_SHORTCUT("scene_tree/instance_scene", p_event)) {
 		_tool_selected(TOOL_INSTANCE);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
@@ -283,6 +285,22 @@ bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_pat
 	return false;
 }
 
+/* Takes in a node and generates a preferred type based off of parenting.
+This is used to guess what type of node a user may like to add to a given scene. 
+Broken into a unique function to reduce code duplication and to allow for more 
+complex assumption making in the future. */
+String SceneTreeDock::_generate_preferred_node_type(Node *basis) {
+	if (basis) {
+
+		if (ClassDB::is_parent_class(basis->get_class_name(), "Node2D"))
+			return "Node2D";
+		else if (ClassDB::is_parent_class(basis->get_class_name(), "Spatial"))
+			return "Spatial";
+	}
+
+	return "";
+}
+
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	current_option = p_tool;
@@ -302,18 +320,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				tree->edit_selected();
 			}
 		} break;
-		case TOOL_NEW: {
-
-			String preferred = "";
+		case TOOL_NEW:
+		case TOOL_NEW_PARENT:
+		case TOOL_NEW_ROOT: {
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
+			String preferred = _generate_preferred_node_type(current_edited_scene_root);
 
-			if (current_edited_scene_root) {
-
-				if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Node2D"))
-					preferred = "Node2D";
-				else if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Spatial"))
-					preferred = "Spatial";
-			}
 			create_dialog->set_preferred_search_result_type(preferred);
 			create_dialog->popup_create(true);
 		} break;
@@ -339,7 +351,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		} break;
 		case TOOL_REPLACE: {
-
 			create_dialog->popup_create(false, true);
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
@@ -881,6 +892,17 @@ void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	}
 }
 
+void SceneTreeDock::_set_owner_down_tree(Node *starting_on, Node *owner) {
+	ERR_FAIL_COND(owner == NULL);
+	starting_on->set_owner(owner);
+
+	int children = starting_on->get_child_count();
+
+	for (int child_index = 0; child_index < children; child_index++) {
+		_set_owner_down_tree(starting_on->get_child(child_index), owner);
+	}
+}
+
 void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames) {
 
 	base_path.push_back(p_node->get_name());
@@ -1147,7 +1169,16 @@ bool SceneTreeDock::_validate_no_foreign() {
 	return true;
 }
 
-void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
+void SceneTreeDock::_node_reparent(Node *new_parent, Node *child, bool p_keep_global_xform) {
+	ERR_FAIL_COND(!new_parent);
+
+	Vector<Node *> nodes;
+	nodes.push_back(child); //TODO: There's got to be a better way!
+
+	_do_reparent(new_parent, -1, nodes, true);
+}
+
+void SceneTreeDock::_nodepath_reparent(NodePath p_path, bool p_keep_global_xform) {
 
 	Node *new_parent = scene_root->get_node(p_path);
 	ERR_FAIL_COND(!new_parent);
@@ -1447,15 +1478,14 @@ void SceneTreeDock::_create() {
 
 		Node *parent = NULL;
 
-		if (edited_scene) {
-			// If root exists in edited scene
-			parent = scene_tree->get_selected();
-			if (!parent)
-				parent = edited_scene;
+		parent = scene_root;
 
+		if (edited_scene) { //if scene has a root node
+			parent = edited_scene;
+			if (scene_tree->get_selected()) //if you have a valid selection
+				parent = scene_tree->get_selected();
 		} else {
-			// If no root exist in edited scene
-			parent = scene_root;
+			//If, by this point, there's no parent node then throw an error.
 			ERR_FAIL_COND(!parent);
 		}
 
@@ -1466,9 +1496,7 @@ void SceneTreeDock::_create() {
 		ERR_FAIL_COND(!child);
 
 		editor_data->get_undo_redo().create_action(TTR("Create Node"));
-
 		if (edited_scene) {
-
 			editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
 			editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_scene);
 			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
@@ -1482,17 +1510,17 @@ void SceneTreeDock::_create() {
 			editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + new_name));
 
 		} else {
-
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_do_reference(child);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
 		}
-
 		editor_data->get_undo_redo().commit_action();
+
 		editor->push_item(c);
 		editor_selection->clear();
 		editor_selection->add_node(child);
+
 		if (Object::cast_to<Control>(c)) {
 			//make editor more comfortable, so some controls don't appear super shrunk
 			Control *ct = Object::cast_to<Control>(c);
@@ -1504,6 +1532,62 @@ void SceneTreeDock::_create() {
 				ms.height = 40;
 			ct->set_size(ms);
 		}
+
+	} else if (current_option == TOOL_NEW_PARENT) {
+		Node *node_for_adoption = NULL;
+
+		if (edited_scene) {
+			node_for_adoption = edited_scene;
+			if (scene_tree->get_selected()) {
+				node_for_adoption = scene_tree->get_selected();
+			}
+		} else {
+			ERR_FAIL_COND(!node_for_adoption);
+		}
+
+		//Fail in the case that this is the root node, do TOOL_NEW_ROOT instead...
+		ERR_FAIL_COND(node_for_adoption == edited_scene);
+
+		Object *c = create_dialog->instance_selected();
+		ERR_FAIL_COND(!c);
+
+		Node *new_parent = Object::cast_to<Node>(c);
+		ERR_FAIL_COND(!new_parent);
+
+		Node *old_parent = node_for_adoption->get_parent();
+		ERR_FAIL_COND(!old_parent);
+
+		editor_data->get_undo_redo().create_action("Add Node As New Parent");
+
+		/* DO METHODS */
+		editor_data->get_undo_redo().add_do_method(old_parent, "add_child", new_parent);
+		editor_data->get_undo_redo().add_do_method(new_parent, "set_owner", edited_scene);
+
+		editor_data->get_undo_redo().add_do_method(old_parent, "remove_child", node_for_adoption);
+		editor_data->get_undo_redo().add_do_method(new_parent, "add_child", node_for_adoption);
+		editor_data->get_undo_redo().add_do_method(this, "_set_owner_down_tree", node_for_adoption, edited_scene);
+
+		editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
+		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", new_parent);
+		editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+		editor_data->get_undo_redo().add_do_reference(new_parent);
+
+		/* UNDO METHODS */
+		editor_data->get_undo_redo().add_undo_method(old_parent, "remove_child", new_parent);
+		editor_data->get_undo_redo().add_undo_method(new_parent, "remove_child", node_for_adoption);
+		editor_data->get_undo_redo().add_undo_method(old_parent, "add_child", node_for_adoption);
+		editor_data->get_undo_redo().add_undo_method(this, "_set_owner_down_tree", node_for_adoption, edited_scene);
+
+		editor_data->get_undo_redo().add_undo_method(editor_selection, "clear");
+		editor_data->get_undo_redo().add_undo_method(editor_selection, "add_node", node_for_adoption);
+
+		editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+
+		editor_data->get_undo_redo().commit_action();
+
+		editor->push_item(c);
+		editor_selection->clear();
+		editor_selection->add_node(node_for_adoption);
 
 	} else if (current_option == TOOL_REPLACE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
@@ -1520,6 +1604,64 @@ void SceneTreeDock::_create() {
 
 			replace_node(n, newnode);
 		}
+	} else if (current_option == TOOL_NEW_ROOT) {
+
+		Node *node_for_adoption = edited_scene;
+
+		if (!node_for_adoption) {
+			ERR_FAIL_COND(!node_for_adoption);
+		}
+
+		Object *c = create_dialog->instance_selected();
+		ERR_FAIL_COND(!c);
+
+		Node *new_parent = Object::cast_to<Node>(c);
+		ERR_FAIL_COND(!new_parent);
+
+		editor_data->get_undo_redo().create_action("Add Node As New Parent");
+
+		String scene_name = node_for_adoption->get_filename();
+		/*DO_METHODS*/
+		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", new_parent);
+
+		editor_data->get_undo_redo().add_do_method(new_parent, "add_child", node_for_adoption);
+		editor_data->get_undo_redo().add_do_method(this, "_set_owner_down_tree", node_for_adoption, new_parent);
+
+		editor_data->get_undo_redo().add_do_method(node_for_adoption, "set_filename", "");
+		editor_data->get_undo_redo().add_do_method(new_parent, "set_filename", scene_name);
+
+		editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
+		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", new_parent);
+
+		editor_data->get_undo_redo().add_do_reference(new_parent);
+
+		editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+
+		/*UNDO_METHODS*/
+		editor_data->get_undo_redo().add_undo_method(new_parent, "remove_child", node_for_adoption);
+
+		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", node_for_adoption);
+
+		editor_data->get_undo_redo().add_undo_method(node_for_adoption, "set_owner", (Object *)NULL);
+
+		//Make sure all of the children have the correct owner set....
+		for (int child = 0; child < node_for_adoption->get_child_count(); child++) {
+			editor_data->get_undo_redo().add_undo_method(this, "_set_owner_down_tree", node_for_adoption->get_child(child), node_for_adoption);
+		}
+
+		editor_data->get_undo_redo().add_undo_method(node_for_adoption, "set_filename", scene_name);
+		editor_data->get_undo_redo().add_undo_method(new_parent, "set_filename", new_parent);
+
+		editor_data->get_undo_redo().add_undo_method(editor_selection, "clear");
+		editor_data->get_undo_redo().add_undo_method(editor_selection, "add_node", node_for_adoption);
+
+		editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+
+		editor_data->get_undo_redo().commit_action();
+
+		editor->push_item(c);
+		editor_selection->clear();
+		editor_selection->add_node(node_for_adoption);
 	}
 }
 
@@ -1889,6 +2031,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_separator();
 
 		menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+
+		//Only allow adding new root when you have the root node selected.
+		if (scene_tree->get_selected() == edited_scene) {
+			menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_new_root"), TOOL_NEW_ROOT);
+		}
+
 		menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
@@ -2035,6 +2183,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tool_selected"), &SceneTreeDock::_tool_selected, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_create"), &SceneTreeDock::_create);
 	ClassDB::bind_method(D_METHOD("_node_reparent"), &SceneTreeDock::_node_reparent);
+	ClassDB::bind_method(D_METHOD("_nodepath_reparent"), &SceneTreeDock::_nodepath_reparent);
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_node_selected"), &SceneTreeDock::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_renamed"), &SceneTreeDock::_node_renamed);
@@ -2049,6 +2198,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_import_subscene"), &SceneTreeDock::_import_subscene);
 	ClassDB::bind_method(D_METHOD("_selection_changed"), &SceneTreeDock::_selection_changed);
 	ClassDB::bind_method(D_METHOD("_new_scene_from"), &SceneTreeDock::_new_scene_from);
+	ClassDB::bind_method(D_METHOD("_node_replace_owner"), &SceneTreeDock::_node_replace_owner);
 	ClassDB::bind_method(D_METHOD("_nodes_dragged"), &SceneTreeDock::_nodes_dragged);
 	ClassDB::bind_method(D_METHOD("_files_dropped"), &SceneTreeDock::_files_dropped);
 	ClassDB::bind_method(D_METHOD("_script_dropped"), &SceneTreeDock::_script_dropped);
@@ -2058,6 +2208,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_remote_tree_selected"), &SceneTreeDock::_remote_tree_selected);
 	ClassDB::bind_method(D_METHOD("_local_tree_selected"), &SceneTreeDock::_local_tree_selected);
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
+	ClassDB::bind_method(D_METHOD("_set_owner_down_tree"), &SceneTreeDock::_set_owner_down_tree);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
 
@@ -2082,6 +2233,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/rename", TTR("Rename"));
 	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_CMD | KEY_F2);
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
+	ED_SHORTCUT("scene_tree/add_new_root", TTR("Add New Root"), KEY_MASK_SHIFT | KEY_MASK_CTRL | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
 	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
@@ -2188,7 +2340,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	reparent_dialog = memnew(ReparentDialog);
 	add_child(reparent_dialog);
-	reparent_dialog->connect("reparent", this, "_node_reparent");
+	reparent_dialog->connect("reparent", this, "_nodepath_reparent");
 
 	accept = memnew(AcceptDialog);
 	add_child(accept);
