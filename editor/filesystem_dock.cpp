@@ -1862,7 +1862,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_option"), &FileSystemDock::_file_option);
 	ClassDB::bind_method(D_METHOD("_folder_option"), &FileSystemDock::_folder_option);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
-	ClassDB::bind_method(D_METHOD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
+	ClassDB::bind_method(D_METHOD("_move_operation_confirm", "to_path", "overwrite"), &FileSystemDock::_move_operation_confirm, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
