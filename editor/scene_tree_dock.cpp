@@ -103,6 +103,10 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
+	} else if (ED_IS_SHORTCUT("scene_tree/cut_node", p_event)) {
+		_tool_selected(TOOL_CUT_NODE);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
+		_tool_selected(TOOL_PASTE_NODE);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	}
@@ -523,6 +527,96 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (dupsingle)
 				editor->push_item(dupsingle);
 
+		} break;
+		case TOOL_CUT_NODE: {
+			if (!edited_scene)
+				break;
+
+			if (editor_selection->is_selected(edited_scene)) {
+
+				current_option = -1;
+				//accept->get_cancel()->hide();
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation can't be done on the tree root."));
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			if (!_validate_no_foreign())
+				break;
+
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (selection.size() == 0)
+				break;
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				cutpastecopy_map m;
+				m.action = NODE_CUT;
+				Node *node = E->get();
+				if (node) {
+					m.node = node;
+
+					cpc_map->push_back(m);
+				}
+			}
+		} break;
+		case TOOL_PASTE_NODE: {
+			if (!edited_scene)
+				break;
+
+			if (editor->get_edited_scene()->get_tree()->get_node_count() == 0) {
+				current_option = -1;
+				//accept->get_cancel()->hide();
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation can't be done without having the tree root."));
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			if (!_validate_no_foreign())
+				break;
+
+			if (cpc_map->size() == 0)
+				break;
+
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			// If nothing selected, then lets try to select root node.
+			if (selection.size() == 0) {
+				Node *p = editor->get_edited_scene();
+				// ...and paste it to there.
+				if (p)
+					selection.push_back(p);
+			}
+
+			// Should be just 1, we do not support multiple selection here.
+			if (selection.size() != 1)
+				break;
+
+			// Determine destination node for cut/copy(todo) operation.
+			Node *to_node = NULL;
+			List<Node *>::Element *E = selection.front();
+			if (E) {
+				to_node = E->get();
+
+				if (!to_node)
+					break; // something wrong with selected node.
+			}
+
+			Vector<Node *> nodes;
+			while (cpc_map->size() != 0) {
+				cutpastecopy_map item = cpc_map->get(0);
+
+				// Cut operation.
+				if (item.action == NODE_CUT)
+					nodes.push_back(item.node);
+
+				cpc_map->remove(0);
+			}
+
+			// Perform nodes cut-paste operation via reparenting nodes.
+			if (nodes.size() > 0)
+				_do_reparent(to_node, -1, nodes, true);
 		} break;
 		case TOOL_REPARENT: {
 
@@ -1903,6 +1997,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	menu->add_icon_shortcut(get_icon("Duplicate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
 	menu->add_icon_shortcut(get_icon("Reparent", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
 
+	menu->add_separator();
+	menu->add_icon_shortcut(get_icon("CutNode", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT_NODE);
+	menu->add_icon_shortcut(get_icon("PasteNode", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE_NODE);
+
 	if (selection.size() == 1) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
@@ -2093,6 +2191,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/cut_node", TTR("Cut Node"), KEY_MASK_CMD | KEY_X);
+	ED_SHORTCUT("scene_tree/paste_node", TTR("Paste Node"), KEY_MASK_CMD | KEY_V);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
@@ -2225,6 +2325,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
 	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
 	add_child(clear_inherit_confirm);
+
+	cpc_map = memnew(Vector<cutpastecopy_map>());
 
 	set_process_input(true);
 }

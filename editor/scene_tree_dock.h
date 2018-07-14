@@ -80,12 +80,26 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_SCENE_OPEN,
 		TOOL_SCENE_CLEAR_INHERITANCE,
 		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
-		TOOL_SCENE_OPEN_INHERITED
+		TOOL_SCENE_OPEN_INHERITED,
+		TOOL_CUT_NODE,
+		TOOL_PASTE_NODE,
 	};
 
 	enum {
 		EDIT_SUBRESOURCE_BASE = 100
 	};
+
+	enum CPC_ACTION {
+		NODE_CUT,
+		// TODO: NODE_COPY support?
+	};
+
+	struct cutpastecopy_map {
+		Node *node;
+		CPC_ACTION action;
+	};
+
+	Vector<cutpastecopy_map> *cpc_map;
 
 	Vector<ObjectID> subresources;
 
