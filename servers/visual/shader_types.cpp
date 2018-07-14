@@ -35,7 +35,7 @@ const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(
 	return shader_modes[p_mode].functions;
 }
 
-const Set<String> &ShaderTypes::get_modes(VS::ShaderMode p_mode) {
+const Vector<StringName> &ShaderTypes::get_modes(VS::ShaderMode p_mode) {
 
 	return shader_modes[p_mode].modes;
 }
@@ -140,43 +140,44 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].functions["light"].can_discard = true;
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mix");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_add");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_sub");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mul");
+	//order used puts first enum mode (default) first
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_mix");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_add");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_sub");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_mul");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_opaque");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_always");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_never");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_alpha_prepass");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_opaque");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_always");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_never");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_alpha_prepass");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_disable");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_test_disable");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_front");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disabled");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_back");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_front");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_disabled");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("unshaded");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_lambert");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_lambert_wrap");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_oren_nayar");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_burley");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_toon");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_lambert");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_lambert_wrap");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_oren_nayar");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_burley");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("diffuse_toon");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_schlick_ggx");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_blinn");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_phong");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_toon");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_disabled");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("specular_schlick_ggx");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("specular_blinn");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("specular_phong");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("specular_toon");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("specular_disabled");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("ensure_correct_normals");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("skip_vertex_transform");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("world_vertex_coords");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("ensure_correct_normals");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("shadows_disabled");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("shadows_disabled");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_lighting");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
 
 	/************ CANVAS ITEM **************************/
 
@@ -227,17 +228,17 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"].can_discard = true;
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("skip_vertex_transform");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("skip_vertex_transform");
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mix");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_add");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_disabled");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_mix");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_add");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_sub");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_mul");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_disabled");
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("unshaded");
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("unshaded");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("light_only");
 
 	/************ PARTICLES **************************/
 
@@ -257,9 +258,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"].can_discard = false;
 
-	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_force");
-	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_velocity");
-	shader_modes[VS::SHADER_PARTICLES].modes.insert("keep_data");
+	shader_modes[VS::SHADER_PARTICLES].modes.push_back("disable_force");
+	shader_modes[VS::SHADER_PARTICLES].modes.push_back("disable_velocity");
+	shader_modes[VS::SHADER_PARTICLES].modes.push_back("keep_data");
 
 	shader_types.insert("spatial");
 	shader_types.insert("canvas_item");

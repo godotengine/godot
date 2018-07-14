@@ -92,6 +92,8 @@ protected:
 
 	virtual bool _can_do_next_pass() const;
 
+	void _shader_changed();
+
 public:
 	void set_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader() const;

@@ -178,6 +178,7 @@ protected:
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property();
+	void set_option_button_clip(bool p_enable);
 	EditorPropertyEnum();
 };
 
@@ -530,6 +531,8 @@ public:
 
 	void collapse_all_folding();
 	void expand_all_folding();
+
+	void set_use_sub_inspector(bool p_enable);
 
 	EditorPropertyResource();
 };

@@ -585,6 +585,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel_disabled", "PopupMenu", make_stylebox(popup_bg_disabled_png, 4, 4, 4, 4));
 	theme->set_stylebox("hover", "PopupMenu", selected);
 	theme->set_stylebox("separator", "PopupMenu", make_stylebox(vseparator_png, 3, 3, 3, 3));
+	theme->set_stylebox("labeled_separator_left", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
+	theme->set_stylebox("labeled_separator_right", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
 
 	theme->set_icon("checked", "PopupMenu", make_icon(checked_png));
 	theme->set_icon("unchecked", "PopupMenu", make_icon(unchecked_png));

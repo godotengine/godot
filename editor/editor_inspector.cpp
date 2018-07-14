@@ -92,7 +92,7 @@ void EditorProperty::_notification(int p_what) {
 		Rect2 bottom_rect;
 
 		{
-			int child_room = size.width / 2;
+			int child_room = size.width * (1.0 - split_ratio);
 			Ref<Font> font = get_font("font", "Tree");
 			int height = font->get_height();
 
@@ -691,6 +691,15 @@ bool EditorProperty::is_selectable() const {
 	return selectable;
 }
 
+void EditorProperty::set_name_split_ratio(float p_ratio) {
+	split_ratio = p_ratio;
+}
+
+float EditorProperty::get_name_split_ratio() const {
+
+	return split_ratio;
+}
+
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
 	object = p_object;
 	property = p_property;
@@ -744,6 +753,7 @@ void EditorProperty::_bind_methods() {
 
 EditorProperty::EditorProperty() {
 
+	split_ratio = 0.5;
 	selectable = true;
 	text_size = 0;
 	read_only = false;
@@ -1113,6 +1123,30 @@ EditorInspectorSection::EditorInspectorSection() {
 
 Ref<EditorInspectorPlugin> EditorInspector::inspector_plugins[MAX_PLUGINS];
 int EditorInspector::inspector_plugin_count = 0;
+
+EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
+
+	for (int i = inspector_plugin_count - 1; i >= 0; i--) {
+
+		inspector_plugins[i]->parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage);
+		if (inspector_plugins[i]->added_editors.size()) {
+			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
+				memdelete(inspector_plugins[i]->added_editors[j].property_editor);
+			}
+
+			EditorProperty *prop = Object::cast_to<EditorProperty>(inspector_plugins[i]->added_editors[0].property_editor);
+			if (prop) {
+
+				inspector_plugins[i]->added_editors.clear();
+				return prop;
+			} else {
+				memdelete(inspector_plugins[i]->added_editors[0].property_editor);
+				inspector_plugins[i]->added_editors.clear();
+			}
+		}
+	}
+	return NULL;
+}
 
 void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
 

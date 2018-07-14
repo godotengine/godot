@@ -72,10 +72,11 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	return style;
 }
 
-static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, float p_grow = 1, bool p_vertical = false) {
+static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, float p_grow_begin = 1, float p_grow_end = 1, bool p_vertical = false) {
 	Ref<StyleBoxLine> style(memnew(StyleBoxLine));
 	style->set_color(p_color);
-	style->set_grow(p_grow);
+	style->set_grow_begin(p_grow_begin);
+	style->set_grow_end(p_grow_end);
 	style->set_thickness(p_thickness);
 	style->set_vertical(p_vertical);
 	return style;
@@ -462,8 +463,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
-	style_popup_separator->set_grow(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_separator->set_grow_begin(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_separator->set_grow_end(popup_margin_size - MAX(EDSCALE, border_width));
 	style_popup_separator->set_thickness(MAX(EDSCALE, border_width));
+
+	Ref<StyleBoxLine> style_popup_labeled_separator_left(memnew(StyleBoxLine));
+	style_popup_labeled_separator_left->set_grow_begin(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_left->set_color(separator_color);
+	style_popup_labeled_separator_left->set_thickness(MAX(EDSCALE, border_width));
+
+	Ref<StyleBoxLine> style_popup_labeled_separator_right(memnew(StyleBoxLine));
+	style_popup_labeled_separator_right->set_grow_end(popup_margin_size - MAX(EDSCALE, border_width));
+	style_popup_labeled_separator_right->set_color(separator_color);
+	style_popup_labeled_separator_right->set_thickness(MAX(EDSCALE, border_width));
 
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
@@ -578,6 +590,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("arrow", "OptionButton", theme->get_icon("GuiOptionArrow", "EditorIcons"));
 	theme->set_constant("arrow_margin", "OptionButton", default_margin_size * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
+	theme->set_constant("hseparation", "OptionButton", 4 * EDSCALE);
 
 	// CheckButton
 	theme->set_stylebox("normal", "CheckButton", style_menu);
@@ -626,6 +639,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_popup_menu = style_popup;
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
+	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
+	theme->set_stylebox("labeled_separator_right", "PopupMenu", style_popup_labeled_separator_right);
+
 	theme->set_color("font_color", "PopupMenu", font_color);
 	theme->set_color("font_color_hover", "PopupMenu", font_color_hl);
 	theme->set_color("font_color_accel", "PopupMenu", font_color_disabled);
@@ -780,7 +796,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
-	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, border_width, 0, true));
+	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, border_width, 0, 0, true));
 
 	// Debugger
 
@@ -1005,6 +1021,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
+
 	theme->set_icon("close", "GraphNode", theme->get_icon("GuiCloseCustomizable", "EditorIcons"));
 	theme->set_icon("resizer", "GraphNode", theme->get_icon("GuiResizer", "EditorIcons"));
 	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
