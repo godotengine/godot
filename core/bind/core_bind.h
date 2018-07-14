@@ -152,6 +152,8 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
 
+	virtual PoolStringArray get_connected_midi_inputs();
+
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);

@@ -35,6 +35,7 @@
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
+#include "drivers/winmidi/win_midi.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "power_windows.h"
@@ -143,6 +144,9 @@ class OS_Windows : public OS {
 #endif
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;
+#endif
+#ifdef WINMIDI_ENABLED
+	MIDIDriverWinMidi driver_midi;
 #endif
 
 	CrashHandler crash_handler;

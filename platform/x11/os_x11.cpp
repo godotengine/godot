@@ -342,6 +342,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	AudioDriverManager::initialize(p_audio_driver);
 
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.open();
+#endif
+
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(x11_window == 0, ERR_UNAVAILABLE);
 
@@ -606,6 +610,9 @@ void OS_X11::finalize() {
 		memdelete(debugger_connection_console);
 	}
 	*/
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.close();
+#endif
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);

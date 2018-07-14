@@ -38,6 +38,7 @@
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/alsamidi/alsa_midi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
@@ -166,6 +167,10 @@ class OS_X11 : public OS_Unix {
 
 #ifdef ALSA_ENABLED
 	AudioDriverALSA driver_alsa;
+#endif
+
+#ifdef ALSAMIDI_ENABLED
+	MIDIDriverALSAMidi driver_alsamidi;
 #endif
 
 #ifdef PULSEAUDIO_ENABLED

@@ -21,6 +21,11 @@ if (env["platform"] == "windows"):
 if env['xaudio2']:
     SConscript("xaudio2/SCsub")
 
+# Midi drivers
+SConscript('alsamidi/SCsub')
+SConscript('coremidi/SCsub')
+SConscript('winmidi/SCsub')
+
 # Graphics drivers
 if (env["platform"] != "server"):
     SConscript('gles3/SCsub')
