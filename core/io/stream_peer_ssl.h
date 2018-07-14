@@ -60,6 +60,9 @@ public:
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
+	void set_blocking_handshake_enabled(bool p_enabled);
+	bool is_blocking_handshake_enabled() const;
+
 	virtual void poll() = 0;
 	virtual Error accept_stream(Ref<StreamPeer> p_base) = 0;
 	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String()) = 0;

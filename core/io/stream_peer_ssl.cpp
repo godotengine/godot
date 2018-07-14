@@ -52,6 +52,14 @@ bool StreamPeerSSL::is_available() {
 	return available;
 }
 
+void StreamPeerSSL::set_blocking_handshake_enabled(bool p_enabled) {
+	blocking_handshake = p_enabled;
+}
+
+bool StreamPeerSSL::is_blocking_handshake_enabled() const {
+	return blocking_handshake;
+}
+
 PoolByteArray StreamPeerSSL::get_project_cert_array() {
 
 	PoolByteArray out;
@@ -84,7 +92,7 @@ PoolByteArray StreamPeerSSL::get_project_cert_array() {
 void StreamPeerSSL::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &StreamPeerSSL::accept_stream);
+	ClassDB::bind_method(D_METHOD("accept_stream"), &StreamPeerSSL::accept_stream);
 	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
 	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
