@@ -159,6 +159,8 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
+#include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
@@ -457,6 +459,39 @@ void register_scene_types() {
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
+	ClassDB::register_class<VisualShader>();
+	ClassDB::register_virtual_class<VisualShaderNode>();
+	ClassDB::register_class<VisualShaderNodeInput>();
+	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
+	ClassDB::register_class<VisualShaderNodeScalarConstant>();
+	ClassDB::register_class<VisualShaderNodeColorConstant>();
+	ClassDB::register_class<VisualShaderNodeVec3Constant>();
+	ClassDB::register_class<VisualShaderNodeTransformConstant>();
+	ClassDB::register_class<VisualShaderNodeScalarOp>();
+	ClassDB::register_class<VisualShaderNodeVectorOp>();
+	ClassDB::register_class<VisualShaderNodeColorOp>();
+	ClassDB::register_class<VisualShaderNodeTransformMult>();
+	ClassDB::register_class<VisualShaderNodeTransformVecMult>();
+	ClassDB::register_class<VisualShaderNodeScalarFunc>();
+	ClassDB::register_class<VisualShaderNodeVectorFunc>();
+	ClassDB::register_class<VisualShaderNodeDotProduct>();
+	ClassDB::register_class<VisualShaderNodeVectorLen>();
+	ClassDB::register_class<VisualShaderNodeScalarInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorConstruct>();
+	ClassDB::register_class<VisualShaderNodeTransformConstruct>();
+	ClassDB::register_class<VisualShaderNodeVectorDestruct>();
+	ClassDB::register_class<VisualShaderNodeTransformDestruct>();
+	ClassDB::register_class<VisualShaderNodeTexture>();
+	ClassDB::register_class<VisualShaderNodeCubeMap>();
+	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
+	ClassDB::register_class<VisualShaderNodeScalarUniform>();
+	ClassDB::register_class<VisualShaderNodeColorUniform>();
+	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
+	ClassDB::register_class<VisualShaderNodeTransformUniform>();
+	ClassDB::register_class<VisualShaderNodeTextureUniform>();
+	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
+
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
 	ClassDB::register_class<CanvasItemMaterial>();

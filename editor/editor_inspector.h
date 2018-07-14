@@ -76,6 +76,8 @@ private:
 	bool selected;
 	int selected_focusable;
 
+	float split_ratio;
+
 	Vector<Control *> focusables;
 	Control *label_reference;
 	Control *bottom_editor;
@@ -133,6 +135,9 @@ public:
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
+
+	void set_name_split_ratio(float p_ratio);
+	float get_name_split_ratio() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	EditorProperty();
@@ -284,6 +289,8 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
+
+	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 

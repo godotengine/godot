@@ -145,11 +145,17 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 
+	if (shader.is_valid()) {
+		shader->disconnect("changed", this, "_shader_changed");
+	}
+
 	shader = p_shader;
 
 	RID rid;
-	if (shader.is_valid())
+	if (shader.is_valid()) {
 		rid = shader->get_rid();
+		shader->connect("changed", this, "_shader_changed");
+	}
 
 	VS::get_singleton()->material_set_shader(_get_material(), rid);
 	_change_notify(); //properties for shader exposed
@@ -171,12 +177,17 @@ Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
 	return VS::get_singleton()->material_get_param(_get_material(), p_param);
 }
 
+void ShaderMaterial::_shader_changed() {
+	_change_notify(); //update all properties
+}
+
 void ShaderMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
 	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("_shader_changed"), &ShaderMaterial::_shader_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }

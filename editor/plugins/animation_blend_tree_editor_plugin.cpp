@@ -246,7 +246,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 
 	Point2 instance_pos = graph->get_scroll_ofs() + graph->get_size() * 0.5;
 
-	anode->set_position(instance_pos);
+	anode->set_position(instance_pos / EDSCALE);
 
 	String base_name = add_options[p_idx].name;
 	int base = 1;
