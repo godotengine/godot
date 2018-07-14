@@ -1219,6 +1219,10 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	AudioDriverManager::initialize(p_audio_driver);
 
+#ifdef WINMIDI_ENABLED
+	driver_midi.open();
+#endif
+
 	TRACKMOUSEEVENT tme;
 	tme.cbSize = sizeof(TRACKMOUSEEVENT);
 	tme.dwFlags = TME_LEAVE;
@@ -1346,6 +1350,10 @@ void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
 }
 
 void OS_Windows::finalize() {
+
+#ifdef WINMIDI_ENABLED
+	driver_midi.close();
+#endif
 
 	if (main_loop)
 		memdelete(main_loop);
