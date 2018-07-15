@@ -94,6 +94,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 
 	void _preview_select_port(int p_node, int p_port);
+	void _input(const Ref<InputEvent> p_event);
 
 protected:
 	void _notification(int p_what);
