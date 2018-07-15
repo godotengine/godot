@@ -1739,6 +1739,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"assert",
 		"breakpoint",
 		"class",
+		"class_name",
 		"extends",
 		"is",
 		"func",
@@ -1786,6 +1787,50 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
 		p_words->push_back(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)));
 	}
+}
+
+bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
+
+	return p_type == "GDScript";
+}
+
+String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type) const {
+
+	PoolVector<uint8_t> sourcef;
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (err) {
+		return String();
+	}
+
+	int len = f->get_len();
+	sourcef.resize(len + 1);
+	PoolVector<uint8_t>::Write w = sourcef.write();
+	int r = f->get_buffer(w.ptr(), len);
+	f->close();
+	memdelete(f);
+	ERR_FAIL_COND_V(r != len, String());
+	w[len] = 0;
+
+	String s;
+	if (s.parse_utf8((const char *)w.ptr())) {
+		return String();
+	}
+
+	GDScriptParser parser;
+
+	parser.parse(s, p_path.get_base_dir(), true, p_path);
+
+	if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
+
+		const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(parser.get_parse_tree());
+		if (r_base_type && c->extends_used && c->extends_class.size() == 1) {
+			*r_base_type = c->extends_class[0]; //todo, should work much better
+		}
+		return c->name;
+	}
+
+	return String();
 }
 
 GDScriptLanguage::GDScriptLanguage() {

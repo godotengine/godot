@@ -54,6 +54,14 @@ class ScriptServer {
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
 
+	struct GlobalScriptClass {
+		StringName language;
+		String path;
+		String base;
+	};
+
+	static HashMap<StringName, GlobalScriptClass> global_classes;
+
 public:
 	static ScriptEditRequestFunction edit_request_func;
 
@@ -69,6 +77,16 @@ public:
 
 	static void thread_enter();
 	static void thread_exit();
+
+	static void global_classes_clear();
+	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path);
+	static void remove_global_class(const StringName &p_class);
+	static bool is_global_class(const StringName &p_class);
+	static StringName get_global_class_language(const StringName &p_class);
+	static String get_global_class_path(const String &p_class);
+	static StringName get_global_class_base(const String &p_class);
+	static void get_global_class_list(List<StringName> *r_global_classes);
+	static void save_global_classes();
 
 	static void init_languages();
 	static void finish_languages();
@@ -285,7 +303,10 @@ public:
 
 	virtual void frame();
 
-	virtual ~ScriptLanguage(){};
+	virtual bool handles_global_class_type(const String &p_type) const { return false; }
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL) const { return String(); }
+
+	virtual ~ScriptLanguage() {}
 };
 
 extern uint8_t script_encryption_key[32];

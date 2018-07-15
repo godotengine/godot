@@ -515,7 +515,11 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 				}
 			} else {
 				// config_version is checked and dropped
-				set(section + "/" + assign, value);
+				if (section == String()) {
+					set(assign, value);
+				} else {
+					set(section + "/" + assign, value);
+				}
 			}
 		} else if (next_tag.name != String()) {
 			section = next_tag.name;

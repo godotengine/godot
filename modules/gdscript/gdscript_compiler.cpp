@@ -278,6 +278,41 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				return idx | (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 			}
 
+			/* TRY GLOBAL CLASSES */
+
+			if (ScriptServer::is_global_class(identifier)) {
+
+				const GDScriptParser::ClassNode *class_node = codegen.class_node;
+				while (class_node->owner) {
+					class_node = class_node->owner;
+				}
+
+				if (class_node->name == identifier) {
+					_set_error("Using own name in class file is not allowed (creates a cyclic reference)", p_expression);
+					return -1;
+				}
+
+				RES res = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
+				if (res.is_null()) {
+					_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
+					return -1;
+				}
+
+				Variant key = res;
+				int idx;
+
+				if (!codegen.constant_map.has(key)) {
+
+					idx = codegen.constant_map.size();
+					codegen.constant_map[key] = idx;
+
+				} else {
+					idx = codegen.constant_map[key];
+				}
+
+				return idx | (GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS); //make it a local constant (faster access)
+			}
+
 #ifdef TOOLS_ENABLED
 			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
 

@@ -3112,6 +3112,28 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 			} break;
+			case GDScriptTokenizer::TK_PR_CLASS_NAME: {
+
+				if (p_class->owner) {
+					_set_error("'class_name' is only valid for the main class namespace.");
+					return;
+				}
+				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_IDENTIFIER) {
+
+					_set_error("'class_name' syntax: 'class_name <UniqueName>'");
+					return;
+				}
+
+				p_class->name = tokenizer->get_token_identifier(1);
+
+				if (self_path != String() && ScriptServer::is_global_class(p_class->name) && ScriptServer::get_global_class_path(p_class->name) != self_path) {
+					_set_error("Unique global class '" + p_class->name + "' already exists at path: " + ScriptServer::get_global_class_path(p_class->name));
+					return;
+				}
+
+				tokenizer->advance(2);
+
+			} break;
 			case GDScriptTokenizer::TK_PR_TOOL: {
 
 				if (p_class->tool) {
@@ -3137,6 +3159,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 				name = tokenizer->get_token_identifier(1);
 				tokenizer->advance(2);
+
+				if (ScriptServer::is_global_class(name)) {
+					_set_error("Can't override name of unique global class '" + name + "' already exists at path: " + ScriptServer::get_global_class_path(p_class->name));
+					return;
+				}
 
 				ClassNode *newclass = alloc_node<ClassNode>();
 				newclass->initializer = alloc_node<BlockNode>();
