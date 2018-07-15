@@ -232,6 +232,55 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	p_types[p_type] = item;
 }
 
+void CreateDialog::add_custom_type(const String &p_type, Ref<Texture> p_icon, const String &parent_type, const String &built_in_parent_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select) {
+	if (p_types.has(p_type))
+		return;
+	if (p_type == base_type)
+		return;
+
+	bool show = search_box->get_text().is_subsequence_ofi(p_type);
+
+	if (!show)
+		return;
+
+	TreeItem *parent = p_root;
+
+	if (p_types.has(parent_type))
+		parent = p_types[parent_type];
+	else
+		parent = search_options->get_root();
+	TreeItem *item = search_options->create_item(parent);
+	item->set_text(0, p_type);
+
+	item->set_metadata(0, parent_type);
+	item->set_meta("built_in_type", built_in_parent_type);
+	bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
+	if ((!to_select && is_search_subsequence) || p_type == search_box->get_text()) {
+		*to_select = item;
+	}
+
+	if (bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
+		item->set_collapsed(false);
+	} else {
+		// don't collapse search results
+		bool collapse = (search_box->get_text() == "");
+		// don't collapse the root node
+		collapse &= (item != p_root);
+		// don't collapse abstract nodes on the first tree level
+		collapse &= ((parent != p_root) || (ClassDB::can_instance(p_type)));
+		item->set_collapsed(collapse);
+	}
+
+	const String &description = EditorHelp::get_doc_data()->class_list[p_type].brief_description;
+	item->set_tooltip(0, description);
+
+	if (p_icon.is_valid()) {
+		item->set_icon(0, p_icon);
+	}
+
+	p_types[p_type] = item;
+}
+
 void CreateDialog::_update_search() {
 
 	search_options->clear();
@@ -295,33 +344,21 @@ void CreateDialog::_update_search() {
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
 			//there are custom types based on this... cool.
+			List<StringName> types_to_handle = List<StringName>();
 
-			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
-			for (int i = 0; i < ct.size(); i++) {
+			types_to_handle.push_back(type);
 
-				bool show = search_box->get_text().is_subsequence_ofi(ct[i].name);
+			List<StringName>::Element *E = types_to_handle.front();
+			for (; E; E = E->next()) {
+				String current_type = E->get();
 
-				if (!show)
-					continue;
+				const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[current_type];
+				for (int i = 0; i < ct.size(); i++) {
+					if (EditorNode::get_editor_data().get_custom_types().has(ct[i].name)) {
+						types_to_handle.push_back(ct[i].name);
+					}
 
-				if (!types.has(type))
-					add_type(type, types, root, &to_select);
-
-				TreeItem *ti;
-				if (types.has(type))
-					ti = types[type];
-				else
-					ti = search_options->get_root();
-
-				TreeItem *item = search_options->create_item(ti);
-				item->set_metadata(0, type);
-				item->set_text(0, ct[i].name);
-				if (ct[i].icon.is_valid()) {
-					item->set_icon(0, ct[i].icon);
-				}
-
-				if (!to_select || ct[i].name == search_box->get_text()) {
-					to_select = item;
+					add_custom_type(ct[i].name, ct[i].icon, current_type, type, types, root, &to_select);
 				}
 			}
 		}
@@ -443,8 +480,14 @@ Object *CreateDialog::instance_selected() {
 		if (md.get_type() != Variant::NIL)
 			custom = md;
 
-		if (custom != String()) {
-			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+		Variant md2 = selected->get_meta("built_in_type");
+
+		String custom_base;
+		if (md2.get_type() != Variant::NIL)
+			custom_base = md2;
+
+		if (custom != String() && custom_base != String()) {
+			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom, custom_base);
 		} else {
 			return ClassDB::instance(selected->get_text(0));
 		}

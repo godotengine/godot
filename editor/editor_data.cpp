@@ -494,15 +494,18 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 }
 
 Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+	return instance_custom_type(p_type, p_inherits, p_inherits);
+}
+
+Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits, const String &p_inherits_built_in) {
 
 	if (get_custom_types().has(p_inherits)) {
-
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Texture> icon = get_custom_types()[p_inherits][i].icon;
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Object *ob = ClassDB::instance(p_inherits);
+				Object *ob = ClassDB::instance(p_inherits_built_in);
 				ERR_FAIL_COND_V(!ob, NULL);
 				if (ob->is_class("Node")) {
 					ob->call("set_name", p_type);
