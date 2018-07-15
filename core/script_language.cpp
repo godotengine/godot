@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "script_language.h"
+#include "project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -103,6 +104,20 @@ void ScriptServer::unregister_language(ScriptLanguage *p_language) {
 
 void ScriptServer::init_languages() {
 
+	{ //load global classes
+		global_classes_clear();
+		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
+			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
+
+			for (int i = 0; i < script_classes.size(); i++) {
+				Dictionary c = script_classes[i];
+				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base"))
+					continue;
+				add_global_class(c["class"], c["base"], c["language"], c["path"]);
+			}
+		}
+	}
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->init();
 	}
@@ -113,6 +128,7 @@ void ScriptServer::finish_languages() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->finish();
 	}
+	global_classes_clear();
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -139,6 +155,67 @@ void ScriptServer::thread_exit() {
 	}
 }
 
+HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
+
+void ScriptServer::global_classes_clear() {
+	global_classes.clear();
+}
+
+void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
+	GlobalScriptClass g;
+	g.language = p_language;
+	g.path = p_path;
+	g.base = p_base;
+	global_classes[p_class] = g;
+}
+void ScriptServer::remove_global_class(const StringName &p_class) {
+	global_classes.erase(p_class);
+}
+bool ScriptServer::is_global_class(const StringName &p_class) {
+	return global_classes.has(p_class);
+}
+StringName ScriptServer::get_global_class_language(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
+	return global_classes[p_class].language;
+}
+String ScriptServer::get_global_class_path(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	return global_classes[p_class].path;
+}
+
+StringName ScriptServer::get_global_class_base(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	return global_classes[p_class].base;
+}
+void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
+	const StringName *K = NULL;
+	List<StringName> classes;
+	while ((K = global_classes.next(K))) {
+		classes.push_back(*K);
+	}
+	classes.sort_custom<StringName::AlphCompare>();
+	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
+		r_global_classes->push_back(E->get());
+	}
+}
+void ScriptServer::save_global_classes() {
+	List<StringName> gc;
+	get_global_class_list(&gc);
+	Array gcarr;
+	for (List<StringName>::Element *E = gc.front(); E; E = E->next()) {
+		Dictionary d;
+		d["class"] = E->get();
+		d["language"] = global_classes[E->get()].language;
+		d["path"] = global_classes[E->get()].path;
+		d["base"] = global_classes[E->get()].base;
+		gcarr.push_back(d);
+	}
+
+	ProjectSettings::get_singleton()->set("_global_script_classes", gcarr);
+	ProjectSettings::get_singleton()->save();
+}
+
+////////////////////
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
 
 	List<PropertyInfo> pinfo;

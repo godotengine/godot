@@ -91,6 +91,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"match",
 	"func",
 	"class",
+	"class_name",
 	"extends",
 	"is",
 	"onready",
@@ -187,6 +188,7 @@ static const _kws _keyword_list[] = {
 	//func
 	{ GDScriptTokenizer::TK_PR_FUNCTION, "func" },
 	{ GDScriptTokenizer::TK_PR_CLASS, "class" },
+	{ GDScriptTokenizer::TK_PR_CLASS_NAME, "class_name" },
 	{ GDScriptTokenizer::TK_PR_EXTENDS, "extends" },
 	{ GDScriptTokenizer::TK_PR_IS, "is" },
 	{ GDScriptTokenizer::TK_PR_ONREADY, "onready" },
@@ -1137,7 +1139,7 @@ void GDScriptTokenizerText::advance(int p_amount) {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 12
+#define BYTECODE_VERSION 13
 
 Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
 
