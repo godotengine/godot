@@ -4,7 +4,7 @@
 		Generic array datatype.
 	</brief_description>
 	<description>
-		Generic array, cointains several elements of any type, accessible by numerical index starting at 0. Negative indices can be used to count from the back of the array, like in Python. To use negative indices, start from -1 and work backwards to -2, -3, -4 and so on. Arrays are always passed by reference.
+		Generic array, contains several elements of any type, accessible by numerical index starting at 0. Negative indices can be used to count from the back of the array, like in Python. To use negative indices, start from -1 and work backwards to -2, -3, -4 and so on. Arrays are always passed by reference.
 	</description>
 	<tutorials>
 	</tutorials>
