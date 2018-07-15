@@ -55,9 +55,12 @@ class ScrollContainer : public Container {
 	bool drag_touching;
 	bool drag_touching_deaccel;
 	bool click_handled;
+	bool beyond_deadzone;
 
 	bool scroll_h;
 	bool scroll_v;
+
+	int deadzone;
 
 	void _cancel_drag();
 
@@ -84,6 +87,9 @@ public:
 
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
+
+	int get_deadzone() const;
+	void set_deadzone(int p_deadzone);
 
 	virtual bool clips_input() const;
 	ScrollContainer();
