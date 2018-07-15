@@ -157,7 +157,7 @@ void VisualShaderEditor::_update_graph() {
 			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
 		}*/
 
-		node->set_offset(position * EDSCALE);
+		node->set_offset(position);
 
 		node->set_title(vsnode->get_caption());
 		node->set_name(itos(nodes[n_i]));
