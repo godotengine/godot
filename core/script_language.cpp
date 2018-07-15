@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "script_language.h"
+#include "project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;

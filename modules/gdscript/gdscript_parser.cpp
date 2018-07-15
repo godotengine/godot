@@ -3387,11 +3387,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				if (ClassDB::class_exists(p_class->name)) {
-					_set_error("Class '" + p_class->name + "' shadows a native class.");
-					return;
-				}
-
 				tokenizer->advance(2);
 
 			} break;
@@ -3420,29 +3415,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				name = tokenizer->get_token_identifier(1);
 				tokenizer->advance(2);
 
-				// Check if name is shadowing something else
-				if (ClassDB::class_exists(name) || ClassDB::class_exists("_" + name.operator String())) {
-					_set_error("Class '" + String(name) + "' shadows a native class.");
-					return;
-				}
 				if (ScriptServer::is_global_class(name)) {
 					_set_error("Can't override name of unique global class '" + name + "' already exists at path: " + ScriptServer::get_global_class_path(p_class->name));
 					return;
-				}
-				ClassNode *outer_class = p_class;
-				while (outer_class) {
-					for (int i = 0; i < outer_class->subclasses.size(); i++) {
-						if (outer_class->subclasses[i]->name == name) {
-							_set_error("Another class named '" + String(name) + "' already exists in this scope (at line " + itos(outer_class->subclasses[i]->line) + ").");
-							return;
-						}
-					}
-					if (outer_class->constant_expressions.has(name)) {
-						_set_error("A constant named '" + String(name) + "' already exists in the outer class scope (at line" + itos(outer_class->constant_expressions[name].expression->line) + ").");
-						return;
-					}
-
-					outer_class = outer_class->owner;
 				}
 
 				ClassNode *newclass = alloc_node<ClassNode>();
