@@ -621,8 +621,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeVectorConstruct : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorConstruct, VisualShaderNode)
+class VisualShaderNodeVectorCompose : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeVectorCompose, VisualShaderNode)
 
 public:
 	virtual String get_caption() const;
@@ -637,13 +637,13 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeVectorConstruct();
+	VisualShaderNodeVectorCompose();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeTransformConstruct : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformConstruct, VisualShaderNode)
+class VisualShaderNodeTransformCompose : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTransformCompose, VisualShaderNode)
 
 public:
 	virtual String get_caption() const;
@@ -658,13 +658,13 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeTransformConstruct();
+	VisualShaderNodeTransformCompose();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeVectorDestruct : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeVectorDestruct, VisualShaderNode)
+class VisualShaderNodeVectorDecompose : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeVectorDecompose, VisualShaderNode)
 
 public:
 	virtual String get_caption() const;
@@ -679,13 +679,13 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeVectorDestruct();
+	VisualShaderNodeVectorDecompose();
 };
 
 ///////////////////////////////////////
 
-class VisualShaderNodeTransformDestruct : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeTransformDestruct, VisualShaderNode)
+class VisualShaderNodeTransformDecompose : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTransformDecompose, VisualShaderNode)
 
 public:
 	virtual String get_caption() const;
@@ -700,7 +700,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeTransformDestruct();
+	VisualShaderNodeTransformDecompose();
 };
 
 ///////////////////////////////////////
