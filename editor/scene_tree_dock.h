@@ -80,7 +80,12 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_SCENE_OPEN,
 		TOOL_SCENE_CLEAR_INHERITANCE,
 		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
-		TOOL_SCENE_OPEN_INHERITED
+		TOOL_SCENE_OPEN_INHERITED,
+
+		TOOL_CREATE_2D_SCENE,
+		TOOL_CREATE_3D_SCENE,
+		TOOL_CREATE_USER_INTERFACE,
+
 	};
 
 	enum {
@@ -133,6 +138,8 @@ class SceneTreeDock : public VBoxContainer {
 	Node *scene_root;
 	Node *edited_scene;
 	EditorNode *editor;
+
+	VBoxContainer *create_root_dialog;
 
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
