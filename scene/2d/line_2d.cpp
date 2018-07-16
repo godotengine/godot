@@ -349,7 +349,7 @@ void Line2D::_bind_methods() {
 	ADD_GROUP("Fill", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile"), "set_texture_mode", "get_texture_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile,Stretch"), "set_texture_mode", "get_texture_mode");
 	ADD_GROUP("Capping", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round"), "set_joint_mode", "get_joint_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_begin_cap_mode", "get_begin_cap_mode");
@@ -368,6 +368,7 @@ void Line2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_NONE);
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_TILE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_STRETCH);
 
 	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
 }

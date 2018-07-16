@@ -117,5 +117,8 @@
 		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
 			Tiles the texture over the line. The texture need to be imported with Repeat Enabled for it to work properly.
 		</constant>
+		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
+			Stretches the texture across the line. Import the texture with Repeat Disabled for best results.
+		</constant>
 	</constants>
 </class>
