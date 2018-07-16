@@ -4454,21 +4454,6 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	}
 }
 
-void EditorNode::_video_driver_selected(int p_which) {
-
-	String driver = video_driver->get_item_metadata(p_which);
-
-	String current = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
-
-	if (driver == current) {
-		return;
-	}
-
-	video_driver_request = driver;
-	video_restart_dialog->popup_centered_minsize();
-	video_driver->select(video_driver_current);
-}
-
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
@@ -4538,8 +4523,6 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_resources_reimported"), &EditorNode::_resources_reimported);
 	ClassDB::bind_method(D_METHOD("_bottom_panel_raise_toggled"), &EditorNode::_bottom_panel_raise_toggled);
-
-	ClassDB::bind_method(D_METHOD("_video_driver_selected"), &EditorNode::_video_driver_selected);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
