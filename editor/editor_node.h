@@ -377,7 +377,11 @@ private:
 
 	PanelContainer *bottom_panel;
 	HBoxContainer *bottom_panel_hb;
+	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	ToolButton *bottom_panel_raise;
+
+	void _bottom_panel_raise_toggled(bool);
 
 	EditorInterface *editor_interface;
 
