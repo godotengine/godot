@@ -757,6 +757,26 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+		case TOOL_CREATE_2D_SCENE:
+		case TOOL_CREATE_3D_SCENE:
+		case TOOL_CREATE_USER_INTERFACE: {
+
+			Node *new_node;
+			switch (p_tool) {
+				case TOOL_CREATE_2D_SCENE: new_node = memnew(Node2D); break;
+				case TOOL_CREATE_3D_SCENE: new_node = memnew(Spatial); break;
+				case TOOL_CREATE_USER_INTERFACE: new_node = memnew(Control); break;
+			}
+
+			editor_data->get_undo_redo().create_action("New Scene Root");
+			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", new_node);
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_do_reference(new_node);
+			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+			editor_data->get_undo_redo().commit_action();
+
+		} break;
+
 		default: {
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -803,6 +823,35 @@ void SceneTreeDock::_notification(int p_what) {
 
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 
+			create_root_dialog->add_child(memnew(Label(TTR("Create Root Node:"))));
+
+			Button *button_2d = memnew(Button);
+			create_root_dialog->add_child(button_2d);
+
+			button_2d->set_text(TTR("2D Scene"));
+			button_2d->set_icon(get_icon("Node2D", "EditorIcons"));
+			button_2d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_2D_SCENE, false));
+
+			Button *button_3d = memnew(Button);
+			create_root_dialog->add_child(button_3d);
+			button_3d->set_text(TTR("3D Scene"));
+			button_3d->set_icon(get_icon("Spatial", "EditorIcons"));
+			button_3d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_3D_SCENE, false));
+
+			Button *button_ui = memnew(Button);
+			create_root_dialog->add_child(button_ui);
+			button_ui->set_text(TTR("User Interface"));
+			button_ui->set_icon(get_icon("Control", "EditorIcons"));
+			button_ui->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_USER_INTERFACE, false));
+
+			Button *button_custom = memnew(Button);
+			create_root_dialog->add_child(button_custom);
+			button_custom->set_text(TTR("Custom Node"));
+			button_custom->set_icon(get_icon("Add", "EditorIcons"));
+			button_custom->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
+
+			create_root_dialog->add_spacer();
+
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -819,6 +868,21 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
 
 			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		} break;
+		case NOTIFICATION_PROCESS: {
+
+			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == NULL;
+
+			if (show_create_root != create_root_dialog->is_visible_in_tree()) {
+				if (show_create_root) {
+					create_root_dialog->show();
+					scene_tree->hide();
+				} else {
+					create_root_dialog->hide();
+					scene_tree->show();
+				}
+			}
+
 		} break;
 	}
 }
@@ -2153,6 +2217,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	remote_tree = NULL;
 	button_hb->hide();
 
+	create_root_dialog = memnew(VBoxContainer);
+	vbc->add_child(create_root_dialog);
+	create_root_dialog->hide();
+
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 
 	vbc->add_child(scene_tree);
@@ -2227,4 +2295,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);
+	set_process(true);
+
+	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
 }
