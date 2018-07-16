@@ -544,6 +544,17 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 	//EditorNode::get_singleton()->push_item(vsnode.ptr(), "", true);
 }
 
+void VisualShaderEditor::_input(const Ref<InputEvent> p_event) {
+	if (graph->has_focus()) {
+		Ref<InputEventMouseButton> mb = p_event;
+
+		if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+			add_node->get_popup()->set_position(get_viewport()->get_mouse_position());
+			add_node->get_popup()->show_modal();
+		}
+	}
+}
+
 void VisualShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -700,6 +711,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
+	ClassDB::bind_method("_input", &VisualShaderEditor::_input);
 }
 
 VisualShaderEditor *VisualShaderEditor::singleton = NULL;
@@ -813,12 +825,14 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(visual_shader_editor);
+		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
 
 		if (visual_shader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
+		visual_shader_editor->set_process_input(false);
 		//visual_shader_editor->set_process(false);
 	}
 }
