@@ -170,7 +170,7 @@ void LineBuilder::build() {
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			uvx0 = 0.5f / tile_aspect;
 		}
-		new_arc(pos0, pos_up0 - pos0, -Math_PI, color0, Rect2(0.f, 0.f, 1.f, 1.f));
+		new_arc(pos0, pos_up0 - pos0, -Math_PI, color0, Rect2(0.f, 0.f, fmin(uvx0 * 2, 1.f), 1.f));
 		total_distance += width;
 		current_distance0 += hw;
 		current_distance1 = current_distance0;
