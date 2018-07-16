@@ -228,7 +228,10 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			version = data_str;
 		}
 
-		fc++;
+		if (file.get_file().size() != 0) {
+			fc++;
+		}
+
 		ret = unzGoToNextFile(pkg);
 	}
 
@@ -267,6 +270,11 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
 		String file = String(fname).get_file();
+
+		if (file.size() == 0) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
