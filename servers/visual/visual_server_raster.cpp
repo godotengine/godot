@@ -95,9 +95,10 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 
 void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
-	changes = 0;
-
+	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	VS::get_singleton()->emit_signal("frame_pre_draw");
+
+	changes = 0;
 
 	VSG::rasterizer->begin_frame();
 

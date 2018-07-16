@@ -34,10 +34,11 @@
 #include "curve.h"
 #include "io/resource_loader.h"
 #include "math_2d.h"
+#include "os/mutex.h"
+#include "os/thread_safe.h"
 #include "resource.h"
 #include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -519,6 +520,72 @@ public:
 
 	ProxyTexture();
 	~ProxyTexture();
+};
+
+class AnimatedTexture : public Texture {
+	GDCLASS(AnimatedTexture, Texture)
+
+	_THREAD_SAFE_CLASS_
+
+private:
+	enum {
+		MAX_FRAMES = 256
+	};
+
+	RID proxy;
+
+	struct Frame {
+
+		Ref<Texture> texture;
+		float delay_sec;
+
+		Frame() {
+			delay_sec = 0;
+		}
+	};
+
+	Frame frames[MAX_FRAMES];
+	int frame_count;
+	int current_frame;
+
+	float fps;
+
+	float time;
+
+	uint64_t prev_ticks;
+
+	void _update_proxy();
+
+protected:
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
+
+public:
+	void set_frames(int p_frames);
+	int get_frames() const;
+
+	void set_frame_texture(int p_frame, const Ref<Texture> &p_texture);
+	Ref<Texture> get_frame_texture(int p_frame) const;
+
+	void set_frame_delay(int p_frame, float p_delay_sec);
+	float get_frame_delay(int p_frame) const;
+
+	void set_fps(float p_fps);
+	float get_fps() const;
+
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual RID get_rid() const;
+
+	virtual bool has_alpha() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	virtual Ref<Image> get_data() const;
+
+	AnimatedTexture();
+	~AnimatedTexture();
 };
 
 #endif

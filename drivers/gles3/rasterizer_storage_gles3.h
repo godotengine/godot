@@ -268,6 +268,7 @@ public:
 		GLuint tex_id;
 
 		bool using_srgb;
+		bool redraw_if_visible;
 
 		uint16_t stored_cube_sides;
 
@@ -306,6 +307,7 @@ public:
 			detect_normal = NULL;
 			detect_normal_ud = NULL;
 			proxy = NULL;
+			redraw_if_visible = false;
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -366,6 +368,7 @@ public:
 	virtual void texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 
 	virtual void texture_set_proxy(RID p_texture, RID p_proxy);
+	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable);
 
 	/* SKY API */
 

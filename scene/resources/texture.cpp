@@ -1669,3 +1669,208 @@ ProxyTexture::~ProxyTexture() {
 
 	VS::get_singleton()->free(proxy);
 }
+//////////////////////////////////////////////
+
+void AnimatedTexture::_update_proxy() {
+
+	_THREAD_SAFE_METHOD_
+
+	float delta;
+	if (prev_ticks == 0) {
+		delta = 0;
+		prev_ticks = OS::get_singleton()->get_ticks_usec();
+	} else {
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		delta = float(double(ticks - prev_ticks) / 1000000.0);
+		prev_ticks = ticks;
+	}
+
+	time += delta;
+
+	float limit;
+
+	if (fps == 0) {
+		limit = 0;
+	} else {
+		limit = 1.0 / fps;
+	}
+
+	int iter_max = frame_count;
+	while (iter_max) {
+		float frame_limit = limit + frames[current_frame].delay_sec;
+
+		if (time > frame_limit) {
+			current_frame++;
+			if (current_frame >= frame_count) {
+				current_frame = 0;
+			}
+			time -= frame_limit;
+		} else {
+			break;
+		}
+		iter_max--;
+	}
+
+	if (frames[current_frame].texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_proxy(proxy, frames[current_frame].texture->get_rid());
+	}
+}
+
+void AnimatedTexture::set_frames(int p_frames) {
+	ERR_FAIL_COND(p_frames < 1 || p_frames > MAX_FRAMES);
+
+	_THREAD_SAFE_METHOD_
+
+	frame_count = p_frames;
+}
+int AnimatedTexture::get_frames() const {
+	return frame_count;
+}
+
+void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture> &p_texture) {
+	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
+
+	_THREAD_SAFE_METHOD_
+
+	frames[p_frame].texture = p_texture;
+}
+Ref<Texture> AnimatedTexture::get_frame_texture(int p_frame) const {
+	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, Ref<Texture>());
+
+	_THREAD_SAFE_METHOD_
+
+	return frames[p_frame].texture;
+}
+
+void AnimatedTexture::set_frame_delay(int p_frame, float p_delay_sec) {
+	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
+
+	_THREAD_SAFE_METHOD_
+
+	frames[p_frame].delay_sec = p_delay_sec;
+}
+float AnimatedTexture::get_frame_delay(int p_frame) const {
+	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, 0);
+
+	_THREAD_SAFE_METHOD_
+
+	return frames[p_frame].delay_sec;
+}
+
+void AnimatedTexture::set_fps(float p_fps) {
+	ERR_FAIL_COND(p_fps < 0 || p_fps >= 1000);
+
+	fps = p_fps;
+}
+float AnimatedTexture::get_fps() const {
+	return fps;
+}
+
+int AnimatedTexture::get_width() const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!frames[current_frame].texture.is_valid()) {
+		return 1;
+	}
+
+	return frames[current_frame].texture->get_width();
+}
+int AnimatedTexture::get_height() const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!frames[current_frame].texture.is_valid()) {
+		return 1;
+	}
+
+	return frames[current_frame].texture->get_height();
+}
+RID AnimatedTexture::get_rid() const {
+	return proxy;
+}
+
+bool AnimatedTexture::has_alpha() const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!frames[current_frame].texture.is_valid()) {
+		return false;
+	}
+
+	return frames[current_frame].texture->has_alpha();
+}
+
+Ref<Image> AnimatedTexture::get_data() const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!frames[current_frame].texture.is_valid()) {
+		return Ref<Image>();
+	}
+
+	return frames[current_frame].texture->get_data();
+}
+
+void AnimatedTexture::set_flags(uint32_t p_flags) {
+}
+uint32_t AnimatedTexture::get_flags() const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!frames[current_frame].texture.is_valid()) {
+		return 0;
+	}
+
+	return frames[current_frame].texture->get_flags();
+}
+
+void AnimatedTexture::_validate_property(PropertyInfo &property) const {
+
+	String prop = property.name;
+	if (prop.begins_with("frame_")) {
+		int frame = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
+		if (frame >= frame_count) {
+			property.usage = 0;
+		}
+	}
+}
+
+void AnimatedTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_frames", "frames"), &AnimatedTexture::set_frames);
+	ClassDB::bind_method(D_METHOD("get_frames"), &AnimatedTexture::get_frames);
+
+	ClassDB::bind_method(D_METHOD("set_fps", "fps"), &AnimatedTexture::set_fps);
+	ClassDB::bind_method(D_METHOD("get_fps"), &AnimatedTexture::get_fps);
+
+	ClassDB::bind_method(D_METHOD("set_frame_texture", "frame", "texture"), &AnimatedTexture::set_frame_texture);
+	ClassDB::bind_method(D_METHOD("get_frame_texture", "frame"), &AnimatedTexture::get_frame_texture);
+
+	ClassDB::bind_method(D_METHOD("set_frame_delay", "frame", "delay"), &AnimatedTexture::set_frame_delay);
+	ClassDB::bind_method(D_METHOD("get_frame_delay", "frame"), &AnimatedTexture::get_frame_delay);
+
+	ClassDB::bind_method(D_METHOD("_update_proxy"), &AnimatedTexture::_update_proxy);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frames", PROPERTY_HINT_RANGE, "1," + itos(MAX_FRAMES), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_frames", "get_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
+
+	for (int i = 0; i < MAX_FRAMES; i++) {
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_frame_texture", "get_frame_texture", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::REAL, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01"), "set_frame_delay", "get_frame_delay", i);
+	}
+}
+
+AnimatedTexture::AnimatedTexture() {
+	proxy = VS::get_singleton()->texture_create();
+	VisualServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
+	time = 0;
+	frame_count = 1;
+	fps = 4;
+	prev_ticks = 0;
+	current_frame = 0;
+	VisualServer::get_singleton()->connect("frame_pre_draw", this, "_update_proxy");
+}
+
+AnimatedTexture::~AnimatedTexture() {
+	VS::get_singleton()->free(proxy);
+}
