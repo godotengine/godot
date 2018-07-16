@@ -643,7 +643,7 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
-	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/keep_screen_on", true)) ? YES : NO);
+	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true)) ? YES : NO);
 	glView.useCADisplayLink =
 			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
