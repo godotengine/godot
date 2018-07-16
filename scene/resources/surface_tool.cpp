@@ -863,8 +863,6 @@ void SurfaceTool::generate_tangents() {
 
 void SurfaceTool::generate_normals(bool p_flip) {
 
-	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
-
 	bool was_indexed = index_array.size();
 
 	deindex();
