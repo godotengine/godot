@@ -551,6 +551,32 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			reparent_dialog->set_current(nodeset);
 
 		} break;
+		case TOOL_MAKE_ROOT: {
+
+			List<Node *> nodes = editor_selection->get_selected_node_list();
+			ERR_FAIL_COND(nodes.size() != 1);
+
+			Node *node = nodes.front()->get();
+			Node *root = get_tree()->get_edited_scene_root();
+
+			if (node == root)
+				return;
+
+			editor_data->get_undo_redo().create_action("Make node as Root");
+			_node_replace_owner(root, node, node, MODE_DO);
+			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
+			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
+			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
+
+			editor_data->get_undo_redo().add_undo_method(node, "set_filename", String());
+			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
+			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
+			_node_replace_owner(root, node, root, MODE_UNDO);
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_undo_reference(root);
+			editor_data->get_undo_redo().commit_action();
+		} break;
 		case TOOL_MULTI_EDIT: {
 
 			Node *root = EditorNode::get_singleton()->get_edited_scene();
@@ -887,18 +913,31 @@ void SceneTreeDock::_notification(int p_what) {
 	}
 }
 
-void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root) {
+void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
 
 	if (p_base != p_node) {
 		if (p_node->get_owner() == p_base) {
 			UndoRedo *undo_redo = &editor_data->get_undo_redo();
-			undo_redo->add_do_method(p_node, "set_owner", p_root);
-			undo_redo->add_undo_method(p_node, "set_owner", p_base);
+			switch (p_mode) {
+				case MODE_BIDI: {
+					undo_redo->add_do_method(p_node, "set_owner", p_root);
+					undo_redo->add_undo_method(p_node, "set_owner", p_base);
+
+				} break;
+				case MODE_DO: {
+					undo_redo->add_do_method(p_node, "set_owner", p_root);
+
+				} break;
+				case MODE_UNDO: {
+					undo_redo->add_undo_method(p_node, "set_owner", p_root);
+
+				} break;
+			}
 		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_node_replace_owner(p_base, p_node->get_child(i), p_root);
+		_node_replace_owner(p_base, p_node->get_child(i), p_root, p_mode);
 	}
 }
 
@@ -1968,6 +2007,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	menu->add_icon_shortcut(get_icon("Reparent", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
 
 	if (selection.size() == 1) {
+
+		menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
 		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
@@ -2154,6 +2195,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/move_down", TTR("Move Down"), KEY_MASK_CMD | KEY_DOWN);
 	ED_SHORTCUT("scene_tree/duplicate", TTR("Duplicate"), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
+	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
