@@ -227,6 +227,10 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			version = data_str;
 		}
 
+		if (file.get_file().size() != 0) {
+			fc++;
+		}
+
 		ret = unzGoToNextFile(pkg);
 	}
 
