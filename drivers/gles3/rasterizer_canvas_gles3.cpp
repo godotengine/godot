@@ -211,6 +211,10 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 
 		} else {
 
+			if (texture->redraw_if_visible) { //check before proxy, because this is usually used with proxies
+				VisualServerRaster::redraw_request();
+			}
+
 			texture = texture->get_ptr();
 
 			if (texture->render_target)
@@ -247,6 +251,10 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 			state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, false);
 
 		} else {
+
+			if (normal_map->redraw_if_visible) { //check before proxy, because this is usually used with proxies
+				VisualServerRaster::redraw_request();
+			}
 
 			normal_map = normal_map->get_ptr();
 			glActiveTexture(GL_TEXTURE1);
@@ -1264,6 +1272,10 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 						//check hints
 
 						continue;
+					}
+
+					if (t->redraw_if_visible) { //check before proxy, because this is usually used with proxies
+						VisualServerRaster::redraw_request();
 					}
 
 					t = t->get_ptr();

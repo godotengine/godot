@@ -107,6 +107,8 @@ public:
 
 	FUNC2(texture_set_proxy, RID, RID)
 
+	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
+
 	/* SKY API */
 
 	FUNCRID(sky)

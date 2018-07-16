@@ -173,6 +173,8 @@ public:
 
 	BIND2(texture_set_proxy, RID, RID)
 
+	BIND2(texture_set_force_redraw_if_visible, RID, bool)
+
 	/* SKY API */
 
 	BIND0R(RID, sky_create)
