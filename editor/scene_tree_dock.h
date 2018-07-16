@@ -68,6 +68,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
@@ -147,7 +148,14 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
-	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
+
+	enum ReplaceOwnerMode {
+		MODE_BIDI,
+		MODE_DO,
+		MODE_UNDO
+	};
+
+	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 
