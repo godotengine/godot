@@ -962,14 +962,24 @@ void Physics2DServerSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result) {
+bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
+}
+
+int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+	ERR_FAIL_COND_V(!body->get_space(), false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
+
+	return body->get_space()->test_body_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 }
 
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
