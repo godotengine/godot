@@ -140,6 +140,10 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 
 			texture = texture->get_ptr();
 
+			if (texture->redraw_if_visible) {
+				VisualServerRaster::redraw_request();
+			}
+
 			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
 			}
@@ -908,6 +912,10 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 					}
 
 					t = t->get_ptr();
+
+					if (t->redraw_if_visible) {
+						VisualServerRaster::redraw_request();
+					}
 
 					glBindTexture(t->target, t->tex_id);
 				}

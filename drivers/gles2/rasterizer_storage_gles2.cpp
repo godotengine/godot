@@ -674,6 +674,15 @@ void RasterizerStorageGLES2::texture_set_proxy(RID p_texture, RID p_proxy) {
 	}
 }
 
+void RasterizerStorageGLES2::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
+
+	Texture *texture = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->redraw_if_visible = p_enable;
+
+}
+
 void RasterizerStorageGLES2::texture_set_detect_3d_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata) {
 	// TODO
 }

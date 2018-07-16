@@ -176,11 +176,14 @@ public:
 		bool active;
 		GLenum tex_id;
 
+
 		uint16_t stored_cube_sides;
 
 		RenderTarget *render_target;
 
 		Ref<Image> images[6];
+
+		bool redraw_if_visible;
 
 		Texture() {
 			flags = 0;
@@ -205,6 +208,8 @@ public:
 			proxy = NULL;
 
 			render_target = NULL;
+
+			redraw_if_visible = false;
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -263,6 +268,8 @@ public:
 	virtual void texture_set_detect_3d_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_srgb_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
+
+	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable);
 
 	/* SKY API */
 
