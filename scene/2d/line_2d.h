@@ -52,8 +52,8 @@ public:
 
 	enum LineTextureMode {
 		LINE_TEXTURE_NONE = 0,
-		LINE_TEXTURE_TILE
-		// TODO STRETCH mode
+		LINE_TEXTURE_TILE,
+		LINE_TEXTURE_STRETCH
 	};
 
 	Line2D();
