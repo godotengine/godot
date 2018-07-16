@@ -309,7 +309,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision);
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collisionz);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
 
 	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);

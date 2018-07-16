@@ -487,7 +487,156 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb) {
 	return amount;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result) {
+int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin) {
+
+	Rect2 body_aabb;
+
+	for (int i = 0; i < p_body->get_shape_count(); i++) {
+
+		if (i == 0)
+			body_aabb = p_body->get_shape_aabb(i);
+		else
+			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+	}
+
+	// Undo the currently transform the physics server is aware of and apply the provided one
+	body_aabb = p_transform.xform(p_body->get_inv_transform().xform(body_aabb));
+	body_aabb = body_aabb.grow(p_margin);
+
+	Transform2D body_transform = p_transform;
+
+	for (int i = 0; i < p_result_max; i++) {
+		//reset results
+		r_results[i].collision_depth = 0;
+	}
+
+	int rays_found = 0;
+
+	{
+		// raycast AND separate
+
+		const int max_results = 32;
+		int recover_attempts = 4;
+		Vector2 sr[max_results * 2];
+		Physics2DServerSW::CollCbkData cbk;
+		cbk.max = max_results;
+		Physics2DServerSW::CollCbkData *cbkptr = &cbk;
+		CollisionSolver2DSW::CallbackResult cbkres = Physics2DServerSW::_shape_col_cbk;
+
+		do {
+
+			Vector2 recover_motion;
+
+			bool collided = false;
+
+			int amount = _cull_aabb_for_body(p_body, body_aabb);
+			int ray_index = 0;
+
+			for (int j = 0; j < p_body->get_shape_count(); j++) {
+				if (p_body->is_shape_set_as_disabled(j))
+					continue;
+
+				Shape2DSW *body_shape = p_body->get_shape(j);
+
+				if (body_shape->get_type() != Physics2DServer::SHAPE_RAY)
+					continue;
+
+				Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(j);
+
+				for (int i = 0; i < amount; i++) {
+
+					const CollisionObject2DSW *col_obj = intersection_query_results[i];
+					int shape_idx = intersection_query_subindex_results[i];
+
+					cbk.amount = 0;
+					cbk.ptr = sr;
+					cbk.invalid_by_dir = 0;
+
+					if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
+						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+						if (p_infinite_inertia && Physics2DServer::BODY_MODE_STATIC != b->get_mode() && Physics2DServer::BODY_MODE_KINEMATIC != b->get_mode()) {
+							continue;
+						}
+					}
+
+					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+
+						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
+						cbk.valid_depth = p_margin; //only valid depth is the collision margin
+						cbk.invalid_by_dir = 0;
+
+					} else {
+						cbk.valid_dir = Vector2();
+						cbk.valid_depth = 0;
+						cbk.invalid_by_dir = 0;
+					}
+
+					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
+					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, NULL, p_margin)) {
+						if (cbk.amount > 0) {
+							collided = true;
+						}
+
+						if (ray_index < p_result_max) {
+							Physics2DServer::SeparationResult &result = r_results[ray_index];
+
+							for (int k = 0; k < cbk.amount; k++) {
+								Vector2 a = sr[k * 2 + 0];
+								Vector2 b = sr[k * 2 + 1];
+
+								recover_motion += (b - a) * 0.4;
+
+								float depth = a.distance_to(b);
+								if (depth > result.collision_depth) {
+
+									result.collision_depth = depth;
+									result.collision_point = b;
+									result.collision_normal = (b - a).normalized();
+									result.collision_local_shape = shape_idx;
+									result.collider = col_obj->get_self();
+									result.collider_id = col_obj->get_instance_id();
+									result.collider_metadata = col_obj->get_shape_metadata(shape_idx);
+									if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
+										Body2DSW *body = (Body2DSW *)col_obj;
+
+										Vector2 rel_vec = b - body->get_transform().get_origin();
+										result.collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
+									}
+								}
+							}
+						}
+					}
+				}
+
+				ray_index++;
+			}
+
+			rays_found = MAX(ray_index, rays_found);
+
+			if (!collided || recover_motion == Vector2()) {
+				break;
+			}
+
+			body_transform.elements[2] += recover_motion;
+			body_aabb.position += recover_motion;
+
+			recover_attempts--;
+		} while (recover_attempts);
+	}
+
+	//optimize results (remove non colliding)
+	for (int i = 0; i < rays_found; i++) {
+		if (r_results[i].collision_depth == 0) {
+			rays_found--;
+			SWAP(r_results[i], r_results[rays_found]);
+		}
+	}
+
+	r_recover_motion = body_transform.elements[2] - p_transform.elements[2];
+	return rays_found;
+}
+
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
 
 	//give me back regular physics engine logic
 	//this is madness
@@ -547,8 +696,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				if (p_body->is_shape_set_as_disabled(j))
 					continue;
 
-				Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(j);
 				Shape2DSW *body_shape = p_body->get_shape(j);
+				if (p_exclude_raycast_shapes && body_shape->get_type() == Physics2DServer::SHAPE_RAY) {
+					continue;
+				}
+
+				Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(j);
 				for (int i = 0; i < amount; i++) {
 
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
@@ -635,8 +788,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			if (p_body->is_shape_set_as_disabled(body_shape_idx))
 				continue;
 
-			Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
 			Shape2DSW *body_shape = p_body->get_shape(body_shape_idx);
+			if (p_exclude_raycast_shapes && body_shape->get_type() == Physics2DServer::SHAPE_RAY) {
+				continue;
+			}
+
+			Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(body_shape_idx);
 
 			bool stuck = false;
 

@@ -1099,11 +1099,11 @@ void RigidBody2D::_reload_physics_characteristics() {
 
 //////////////////////////
 
-Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia) {
+Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_only_move_if_collided, float p_custom_margin) {
 
 	Collision col;
 
-	if (move_and_collide(p_motion, p_infinite_inertia, col)) {
+	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_only_move_if_collided, p_custom_margin)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
@@ -1117,11 +1117,48 @@ Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p
 	return Ref<KinematicCollision2D>();
 }
 
-bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision) {
+bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision) {
+
+	Physics2DServer::SeparationResult sep_res[8]; //max 8 rays
+
+	Transform2D gt = get_global_transform();
+
+	Vector2 recover;
+	int hits = Physics2DServer::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
+	int deepest = -1;
+	float deepest_depth;
+	for (int i = 0; i < hits; i++) {
+		if (deepest == -1 || sep_res[i].collision_depth > deepest_depth) {
+			deepest = i;
+			deepest_depth = sep_res[i].collision_depth;
+		}
+	}
+
+	gt.elements[2] += recover;
+	set_global_transform(gt);
+
+	if (deepest != -1) {
+		r_collision.collider = sep_res[deepest].collider_id;
+		r_collision.collider_metadata = sep_res[deepest].collider_metadata;
+		r_collision.collider_shape = sep_res[deepest].collider_shape;
+		r_collision.collider_vel = sep_res[deepest].collider_velocity;
+		r_collision.collision = sep_res[deepest].collision_point;
+		r_collision.normal = sep_res[deepest].collision_normal;
+		r_collision.local_shape = sep_res[deepest].collision_local_shape;
+		r_collision.travel = recover;
+		r_collision.remainder = Vector2();
+
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_only_move_if_collided, float p_custom_margin) {
 
 	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
-	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result);
+	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, p_custom_margin >= 0 ? p_custom_margin : margin, &result, p_exclude_raycast_shapes);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1135,13 +1172,15 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 		r_collision.local_shape = result.collision_local_shape;
 	}
 
-	gt.elements[2] += result.motion;
-	set_global_transform(gt);
+	if (!p_only_move_if_collided || colliding) {
+		gt.elements[2] += result.motion;
+		set_global_transform(gt);
+	}
 
 	return colliding;
 }
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, bool p_infinite_inertia, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, bool p_infinite_inertia, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle, const Vector2 &p_snap) {
 
 	Vector2 motion = (floor_velocity + p_linear_velocity) * get_physics_process_delta_time();
 	Vector2 lv = p_linear_velocity;
@@ -1155,51 +1194,83 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	while (p_max_slides) {
 
 		Collision collision;
+		bool found_collision = false;
 
-		bool collided = move_and_collide(motion, p_infinite_inertia, collision);
-
-		if (collided) {
-
-			motion = collision.remainder;
-
-			if (p_floor_direction == Vector2()) {
-				//all is a wall
-				on_wall = true;
-			} else {
-				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
-
-					on_floor = true;
-					floor_velocity = collision.collider_vel;
-
-					Vector2 rel_v = lv - floor_velocity;
-					Vector2 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
-
-					if (collision.travel.length() < 1 && hv.length() < p_slope_stop_min_velocity) {
-						Transform2D gt = get_global_transform();
-						gt.elements[2] -= collision.travel;
-						set_global_transform(gt);
-						return Vector2();
-					}
-				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
-					on_ceiling = true;
-				} else {
-					on_wall = true;
+		for (int i = 0; i < 2; i++) {
+			bool collided;
+			if (i == 0) { //collide
+				collided = move_and_collide(motion, p_infinite_inertia, collision);
+				if (!collided) {
+					motion = Vector2(); //clear because no collision happened and motion completed
+				}
+			} else { //separate raycasts (if any)
+				collided = separate_raycast_shapes(p_infinite_inertia, collision);
+				if (collided) {
+					collision.remainder = motion; //keep
+					collision.travel = Vector2();
 				}
 			}
 
-			Vector2 n = collision.normal;
-			motion = motion.slide(n);
-			lv = lv.slide(n);
+			if (collided) {
+				found_collision = true;
+			}
 
-			colliders.push_back(collision);
+			if (collided) {
 
-		} else {
-			break;
+				motion = collision.remainder;
+
+				if (p_floor_direction == Vector2()) {
+					//all is a wall
+					on_wall = true;
+				} else {
+					if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+
+						on_floor = true;
+						floor_velocity = collision.collider_vel;
+
+						Vector2 rel_v = lv - floor_velocity;
+						Vector2 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
+
+						if (collision.travel.length() < 1 && hv.length() < p_slope_stop_min_velocity) {
+							Transform2D gt = get_global_transform();
+							gt.elements[2] -= collision.travel;
+							set_global_transform(gt);
+							return Vector2();
+						}
+					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
+						on_ceiling = true;
+					} else {
+						on_wall = true;
+					}
+				}
+
+				Vector2 n = collision.normal;
+				motion = motion.slide(n);
+				lv = lv.slide(n);
+
+				colliders.push_back(collision);
+			}
 		}
 
+		if (!found_collision) {
+			break;
+		}
 		p_max_slides--;
 		if (motion == Vector2())
 			break;
+	}
+
+	if (p_snap != Vector2() && (on_floor || snapped)) {
+
+		Collision collision;
+		if (move_and_collide(p_snap, p_infinite_inertia, collision, false, true, 0)) {
+			snapped = true;
+		} else {
+			snapped = false;
+		}
+
+	} else {
+		snapped = false;
 	}
 
 	return lv;
@@ -1268,8 +1339,8 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 
 void KinematicBody2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia"), &KinematicBody2D::_move, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "infinite_inertia", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(true), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "only_move_if_collided", "custom_margin"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "infinite_inertia", "slope_stop_min_velocity", "max_bounces", "floor_max_angle", "snap"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(true), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(Vector2()));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody2D::test_move);
 
@@ -1295,6 +1366,7 @@ KinematicBody2D::KinematicBody2D() :
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;
+	snapped = false;
 }
 KinematicBody2D::~KinematicBody2D() {
 	if (motion_cache.is_valid()) {
