@@ -757,36 +757,32 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 
 	Vector<String> ret;
 	const int len = length();
-	int from = len;
+	int remaining_len = len;
 
 	while (true) {
 
-		int end = rfind(p_splitter, from);
-		if (end < 0)
-			end = 0;
-
-		if (p_allow_empty || (end < from)) {
-			const String str = substr(end > 0 ? end + p_splitter.length() : end, end > 0 ? from - end : from + 2);
-
-			if (p_maxsplit <= 0) {
-				ret.push_back(str);
-			} else if (p_maxsplit > 0) {
-
-				// Put rest of the string and leave cycle.
-				if (p_maxsplit == ret.size()) {
-					ret.push_back(substr(0, from + 2));
-					break;
-				}
-
-				// Otherwise, push items until positive limit is reached.
-				ret.push_back(str);
+		if (remaining_len < p_splitter.length() || (p_maxsplit > 0 && p_maxsplit == ret.size())) {
+			// no room for another splitter or hit max splits, push what's left and we're done
+			if (p_allow_empty || remaining_len > 0) {
+				ret.push_back(substr(0, remaining_len));
 			}
+			break;
 		}
 
-		if (end == 0)
-			break;
+		int left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
 
-		from = end - p_splitter.length();
+		if (left_edge < 0) {
+			// no more splitters, we're done
+			ret.push_back(substr(0, remaining_len));
+			break;
+		}
+
+		int substr_start = left_edge + p_splitter.length();
+		if (p_allow_empty || substr_start < remaining_len) {
+			ret.push_back(substr(substr_start, remaining_len - substr_start));
+		}
+
+		remaining_len = left_edge;
 	}
 
 	ret.invert();
