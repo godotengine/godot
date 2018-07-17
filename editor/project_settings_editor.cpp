@@ -394,6 +394,7 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 		while (child) {
 			Variant input = child->get_meta("__input");
 			if (p_event == input) {
+				r->set_collapsed(false);
 				child->select(0);
 				found = true;
 				break;
@@ -654,6 +655,14 @@ void ProjectSettingsEditor::_update_actions() {
 	if (setting)
 		return;
 
+	Map<String, bool> collapsed;
+
+	if (input_editor->get_root() && input_editor->get_root()->get_children()) {
+		for (TreeItem *item = input_editor->get_root()->get_children(); item; item = item->get_next()) {
+			collapsed[item->get_text(0)] = item->is_collapsed();
+		}
+	}
+
 	input_editor->clear();
 	TreeItem *root = input_editor->create_item();
 	input_editor->set_hide_root(true);
@@ -677,6 +686,8 @@ void ProjectSettingsEditor::_update_actions() {
 		TreeItem *item = input_editor->create_item(root);
 		item->set_text(0, name);
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+		if (collapsed.has(name))
+			item->set_collapsed(collapsed[name]);
 
 		item->set_editable(1, true);
 		item->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
