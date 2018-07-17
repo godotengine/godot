@@ -488,6 +488,7 @@ class EditorPropertyResource : public EditorProperty {
 	};
 
 	Button *assign;
+	TextureRect *preview;
 	Button *edit;
 	PopupMenu *menu;
 	EditorFileDialog *file;
