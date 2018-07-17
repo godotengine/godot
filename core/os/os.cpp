@@ -614,6 +614,9 @@ bool OS::has_feature(const String &p_feature) {
 	if (_check_internal_feature_support(p_feature))
 		return true;
 
+	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature))
+		return true;
+
 	return false;
 }
 
