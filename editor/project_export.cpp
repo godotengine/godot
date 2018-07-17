@@ -985,7 +985,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_debug = memnew(CheckButton);
 	export_debug->set_text(TTR("Export With Debug"));
-	export_debug->set_pressed(true);
+	export_debug->set_pressed(false);
 	export_project->get_vbox()->add_child(export_debug);
 
 	export_pck_zip_debug = memnew(CheckButton);
