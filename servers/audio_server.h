@@ -33,6 +33,7 @@
 
 #include "audio_frame.h"
 #include "object.h"
+#include "os/os.h"
 #include "servers/audio/audio_effect.h"
 #include "variant.h"
 
@@ -44,9 +45,22 @@ class AudioDriver {
 	uint64_t _last_mix_time;
 	uint64_t _mix_amount;
 
+#ifdef DEBUG_ENABLED
+	uint64_t prof_ticks;
+	uint64_t prof_time;
+#endif
+
 protected:
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+#else
+	_FORCE_INLINE_ void start_counting_ticks() {}
+	_FORCE_INLINE_ void stop_counting_ticks() {}
+#endif
 
 public:
 	double get_mix_time() const; //useful for video -> audio sync
@@ -81,6 +95,11 @@ public:
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
+
+#ifdef DEBUG_ENABLED
+	uint64_t get_profiling_time() const { return prof_time; }
+	void reset_profiling_time() { prof_time = 0; }
+#endif
 
 	AudioDriver();
 	virtual ~AudioDriver() {}
@@ -129,6 +148,9 @@ private:
 	uint32_t buffer_size;
 	uint64_t mix_count;
 	uint64_t mix_frames;
+#ifdef DEBUG_ENABLED
+	uint64_t prof_time;
+#endif
 
 	float channel_disable_threshold_db;
 	uint32_t channel_disable_frames;
@@ -166,6 +188,9 @@ private:
 		struct Effect {
 			Ref<AudioEffect> effect;
 			bool enabled;
+#ifdef DEBUG_ENABLED
+			uint64_t prof_time;
+#endif
 		};
 
 		Vector<Effect> effects;
@@ -276,6 +301,7 @@ public:
 
 	virtual void init();
 	virtual void finish();
+	virtual void update();
 	virtual void load_default_bus_layout();
 
 	/* MISC config */

@@ -72,7 +72,6 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	Error init_device(bool reinit = false);
 	Error finish_device();
-	Error reopen();
 
 public:
 	virtual const char *get_name() const {
