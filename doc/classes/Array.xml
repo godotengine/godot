@@ -4,7 +4,16 @@
 		Generic array datatype.
 	</brief_description>
 	<description>
-		Generic array, contains several elements of any type, accessible by numerical index starting at 0. Negative indices can be used to count from the right, like in Python. Arrays are always passed by reference.
+		Generic array, contains several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.). Example:
+		[codeblock]
+		var array = ["One", 2, 3, "Four"]
+		print(array[0])   # One
+		print(array[2])   # 3
+		print(array[-1])  # Four
+		array[2] = "Three"
+		print(array[-2])  # Three
+		[/codeblock]
+		Arrays are always passed by reference.
 	</description>
 	<tutorials>
 	</tutorials>
