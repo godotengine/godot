@@ -75,7 +75,7 @@ private:
 	ConfirmationDialog *confirm_keystore;
 
 	Button *button_reload;
-	LineEdit *filters, *filters_exclude;
+	LineEdit *filters, *filters_exclude, *filters_exclude_dir;
 	HBoxContainer *plat_errors;
 	Label *platform_error_string;
 
@@ -155,6 +155,7 @@ private:
 
 	void _filters_edited(String what);
 	void _filters_exclude_edited(String what);
+	void _filters_exclude_dir_edited(String what);
 	void _update_group_tree();
 
 	void _image_filter_changed(String);
