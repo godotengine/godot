@@ -38,10 +38,14 @@ void CollisionObject2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			Transform2D global_transform = get_global_transform();
+
 			if (area)
-				Physics2DServer::get_singleton()->area_set_transform(rid, get_global_transform());
+				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
 			else
-				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, get_global_transform());
+				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
+
+			last_transform = global_transform;
 
 			RID space = get_world_2d()->get_space();
 			if (area) {
@@ -60,10 +64,18 @@ void CollisionObject2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
+			Transform2D global_transform = get_global_transform();
+
+			if (only_update_transform_changes && global_transform == last_transform) {
+				return;
+			}
+
 			if (area)
-				Physics2DServer::get_singleton()->area_set_transform(rid, get_global_transform());
+				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
 			else
-				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, get_global_transform());
+				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
+
+			last_transform = global_transform;
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -318,6 +330,10 @@ void CollisionObject2D::_mouse_exit() {
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 }
 
+void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
+	only_update_transform_changes = p_enable;
+}
+
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
@@ -384,6 +400,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	pickable = true;
 	set_notify_transform(true);
 	total_subshapes = 0;
+	only_update_transform_changes = false;
 
 	if (p_area) {
 

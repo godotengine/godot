@@ -984,10 +984,18 @@ int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p
 
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
 
+	if ((using_threads && !doing_sync)) {
+		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
+		ERR_FAIL_V(NULL);
+	}
+
+	if (!body_owner.owns(p_body))
+		return NULL;
+
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
 
-	if ((using_threads && !doing_sync) || body->get_space()->is_locked()) {
+	if (body->get_space()->is_locked()) {
 
 		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
 		ERR_FAIL_V(NULL);

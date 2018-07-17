@@ -130,7 +130,6 @@ void Node2D::_update_xform_values() {
 
 void Node2D::_update_transform() {
 
-	Transform2D mat(angle, pos);
 	_mat.set_rotation_and_scale(angle, _scale);
 	_mat.elements[2] = pos;
 

@@ -971,11 +971,11 @@ RigidBody2D::~RigidBody2D() {
 
 //////////////////////////
 
-Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes) {
+Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Collision col;
 
-	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes)) {
+	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
@@ -1026,7 +1026,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	}
 }
 
-bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes) {
+bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
@@ -1039,23 +1039,36 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 		r_collision.collision = result.collision_point;
 		r_collision.normal = result.collision_normal;
 		r_collision.collider = result.collider_id;
+		r_collision.collider_rid = result.collider;
 		r_collision.travel = result.motion;
 		r_collision.remainder = result.remainder;
 		r_collision.local_shape = result.collision_local_shape;
 	}
 
-	gt.elements[2] += result.motion;
-	set_global_transform(gt);
+	if (!p_test_only) {
+		gt.elements[2] += result.motion;
+		set_global_transform(gt);
+	}
 
 	return colliding;
 }
 
 Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, bool p_infinite_inertia, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle) {
 
-	Vector2 motion = (floor_velocity + p_linear_velocity) * get_physics_process_delta_time();
+	Vector2 floor_motion = floor_velocity;
+	if (on_floor && on_floor_body.is_valid()) {
+		//this approach makes sure there is less delay between the actual body velocity and the one we saved
+		Physics2DDirectBodyState *bs = Physics2DServer::get_singleton()->body_get_direct_state(on_floor_body);
+		if (bs) {
+			floor_motion = bs->get_linear_velocity();
+		}
+	}
+
+	Vector2 motion = (floor_motion + p_linear_velocity) * get_physics_process_delta_time();
 	Vector2 lv = p_linear_velocity;
 
 	on_floor = false;
+	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
 	colliders.clear();
@@ -1096,6 +1109,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 					if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
 
 						on_floor = true;
+						on_floor_body = collision.collider_rid;
 						floor_velocity = collision.collider_vel;
 
 						Vector2 rel_v = lv - floor_velocity;
@@ -1133,20 +1147,29 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	return lv;
 }
 
-bool KinematicBody2D::snap_to_floor(const Vector2 &p_direction, float p_floor_max_angle) {
+Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction, bool p_infinite_inertia, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle) {
 
+	bool was_on_floor = on_floor;
+
+	Vector2 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_infinite_inertia, p_slope_stop_min_velocity, p_max_slides, p_floor_max_angle);
+	if (!was_on_floor || p_snap == Vector2()) {
+		return ret;
+	}
+
+	Collision col;
 	Transform2D gt = get_global_transform();
-	Physics2DServer::MotionResult result;
-	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_direction, false, margin, &result, false);
-	if (colliding) {
-		gt.elements[2] += result.motion;
-		if (Math::acos(p_direction.normalized().dot(-result.collision_normal)) < p_floor_max_angle) {
+
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+		gt.elements[2] += col.travel;
+		if (p_floor_direction != Vector2() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
 			on_floor = true;
+			on_floor_body = col.collider_rid;
+			floor_velocity = col.collider_vel;
 		}
 		set_global_transform(gt);
 	}
 
-	return colliding;
+	return ret;
 }
 
 bool KinematicBody2D::is_on_floor() const {
@@ -1210,11 +1233,60 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
+void KinematicBody2D::set_sync_to_physics(bool p_enable) {
+
+	if (sync_to_physics == p_enable) {
+		return;
+	}
+	sync_to_physics = p_enable;
+	if (p_enable) {
+		Physics2DServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+		set_only_update_transform_changes(true);
+		set_notify_local_transform(true);
+	} else {
+		Physics2DServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
+		set_only_update_transform_changes(false);
+		set_notify_local_transform(false);
+	}
+}
+
+bool KinematicBody2D::is_sync_to_physics_enabled() const {
+	return sync_to_physics;
+}
+
+void KinematicBody2D::_direct_state_changed(Object *p_state) {
+
+	if (!sync_to_physics)
+		return;
+
+	Physics2DDirectBodyState *state = Object::cast_to<Physics2DDirectBodyState>(p_state);
+
+	last_valid_transform = state->get_transform();
+	set_notify_local_transform(false);
+	set_global_transform(last_valid_transform);
+	set_notify_local_transform(true);
+}
+
+void KinematicBody2D::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		last_valid_transform = get_global_transform();
+	}
+
+	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
+		//used by sync to physics, send the new transform to the physics
+		Transform2D new_transform = get_global_transform();
+		Physics2DServer::get_singleton()->body_set_state(get_rid(), Physics2DServer::BODY_STATE_TRANSFORM, new_transform);
+		//but then revert changes
+		set_notify_local_transform(false);
+		set_global_transform(last_valid_transform);
+		set_notify_local_transform(true);
+	}
+}
 void KinematicBody2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "infinite_inertia", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(true), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
-	ClassDB::bind_method(D_METHOD("snap_to_floor", "motion", "max_floor_angle"), &KinematicBody2D::snap_to_floor, DEFVAL(Math::deg2rad(45.0)));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "infinite_inertia", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(true), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody2D::test_move);
 
@@ -1229,7 +1301,13 @@ void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody2D::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody2D::_get_slide_collision);
 
+	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &KinematicBody2D::set_sync_to_physics);
+	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &KinematicBody2D::is_sync_to_physics_enabled);
+
+	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &KinematicBody2D::_direct_state_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion/sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
 }
 
 KinematicBody2D::KinematicBody2D() :
@@ -1240,6 +1318,7 @@ KinematicBody2D::KinematicBody2D() :
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;
+	sync_to_physics = false;
 }
 KinematicBody2D::~KinematicBody2D() {
 	if (motion_cache.is_valid()) {
