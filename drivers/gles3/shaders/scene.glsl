@@ -571,11 +571,6 @@ in vec3 normal_interp;
 
 /* PBR CHANNELS */
 
-//used on forward mainly
-uniform bool no_ambient_light;
-
-
-
 #ifdef USE_RADIANCE_MAP
 
 
@@ -1752,42 +1747,43 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_RADIANCE_MAP
 
-	if (no_ambient_light) {
-		ambient_light=vec3(0.0,0.0,0.0);
-	} else {
-		{
+#ifdef AMBIENT_LIGHT_DISABLED
+	ambient_light=vec3(0.0,0.0,0.0);
+#else
+	{
 
-			{ //read radiance from dual paraboloid
+		{ //read radiance from dual paraboloid
 
-				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
-				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
-				vec3 radiance = textureDualParaboloid(radiance_map,ref_vec,roughness) * bg_energy;
-				env_reflection_light = radiance;
-
-			}
-			//no longer a cubemap
-			//vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
+			vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
+			ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
+			vec3 radiance = textureDualParaboloid(radiance_map,ref_vec,roughness) * bg_energy;
+			env_reflection_light = radiance;
 
 		}
-#ifndef USE_LIGHTMAP
-		{
+		//no longer a cubemap
+		//vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 
-			vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
-			vec3 env_ambient=textureDualParaboloid(radiance_map,ambient_dir,1.0) * bg_energy;
-
-			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
-			//ambient_light=vec3(0.0,0.0,0.0);
-		}
-#endif
 	}
+#ifndef USE_LIGHTMAP
+	{
+
+		vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
+		vec3 env_ambient=textureDualParaboloid(radiance_map,ambient_dir,1.0) * bg_energy;
+
+		ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
+		//ambient_light=vec3(0.0,0.0,0.0);
+	}
+#endif
+#endif //AMBIENT_LIGHT_DISABLED
 
 #else
 
-	if (no_ambient_light){
-		ambient_light=vec3(0.0,0.0,0.0);
-	} else {
-		ambient_light=ambient_light_color.rgb;
-	}
+#ifdef AMBIENT_LIGHT_DISABLED
+	ambient_light=vec3(0.0,0.0,0.0);
+#else
+	ambient_light=ambient_light_color.rgb;
+#endif //AMBIENT_LIGHT_DISABLED
+
 #endif
 
 	ambient_light*=ambient_energy;
