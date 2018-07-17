@@ -617,8 +617,10 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		}
 
 		if (name == "") {
-			name = "Layer " + itos(i + 1);
+			name = TTR("Layer") + " " + itos(i + 1);
 		}
+
+		name += "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i);
 
 		names.push_back(name);
 	}
