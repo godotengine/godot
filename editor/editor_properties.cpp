@@ -1832,7 +1832,18 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 	RES p = get_edited_object()->get(get_edited_property());
 	if (p.is_valid() && p->get_instance_id() == p_obj) {
 		if (p_preview.is_valid()) {
-			assign->set_icon(p_preview);
+			String type = p->get_class_name();
+			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_constant("hseparation", "Button"));
+			if (type == "GradientTexture") {
+				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
+				assign->set_custom_minimum_size(Size2(1, 1));
+			} else {
+				preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+				thumbnail_size *= EDSCALE;
+				assign->set_custom_minimum_size(Size2(1, thumbnail_size));
+			}
+			preview->set_texture(p_preview);
 		}
 	}
 }
@@ -2073,6 +2084,7 @@ void EditorPropertyResource::update_property() {
 #endif
 	}
 
+	preview->set_texture(Ref<Texture>());
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture>());
 		assign->set_text(TTR("[empty]"));
@@ -2310,6 +2322,14 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_drag_forwarding(this);
 	assign->connect("draw", this, "_button_draw");
 	hbc->add_child(assign);
+
+	preview = memnew(TextureRect);
+	preview->set_expand(true);
+	preview->set_anchors_and_margins_preset(PRESET_WIDE);
+	preview->set_margin(MARGIN_TOP, 1);
+	preview->set_margin(MARGIN_BOTTOM, -1);
+	preview->set_margin(MARGIN_RIGHT, -1);
+	assign->add_child(preview);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
