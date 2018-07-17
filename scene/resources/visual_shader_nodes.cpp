@@ -587,6 +587,10 @@ void VisualShaderNodeCubeMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "CubeMap"), "set_cube_map", "get_cube_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normalmap"), "set_texture_type", "get_texture_type");
+
+	BIND_ENUM_CONSTANT(TYPE_DATA);
+	BIND_ENUM_CONSTANT(TYPE_COLOR);
+	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
 }
 
 VisualShaderNodeCubeMap::VisualShaderNodeCubeMap() {
@@ -894,6 +898,16 @@ void VisualShaderNodeColorOp::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeColorOp::get_operator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Screen,Difference,Darken,Lighten,Overlay,Dodge,Burn,SoftLight,HardLight"), "set_operator", "get_operator");
+
+	BIND_ENUM_CONSTANT(OP_SCREEN);
+	BIND_ENUM_CONSTANT(OP_DIFFERENCE);
+	BIND_ENUM_CONSTANT(OP_DARKEN);
+	BIND_ENUM_CONSTANT(OP_LIGHTEN);
+	BIND_ENUM_CONSTANT(OP_OVERLAY);
+	BIND_ENUM_CONSTANT(OP_DODGE);
+	BIND_ENUM_CONSTANT(OP_BURN);
+	BIND_ENUM_CONSTANT(OP_SOFT_LIGHT);
+	BIND_ENUM_CONSTANT(OP_HARD_LIGHT);
 }
 
 VisualShaderNodeColorOp::VisualShaderNodeColorOp() {
@@ -960,6 +974,9 @@ void VisualShaderNodeTransformMult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeTransformMult::get_operator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "A x B,B x A"), "set_operator", "get_operator");
+
+	BIND_ENUM_CONSTANT(OP_AxB);
+	BIND_ENUM_CONSTANT(OP_BxA);
 }
 
 VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
