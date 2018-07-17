@@ -290,7 +290,7 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 
-	set_keep_screen_on(GLOBAL_DEF("display/window/keep_screen_on", true));
+	set_keep_screen_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 
 	return OK;
 }
