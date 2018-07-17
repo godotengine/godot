@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  path_editor_plugin.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -40,6 +40,8 @@ class PathSpatialGizmo : public EditorSpatialGizmo {
 
 	Path *path;
 	mutable Vector3 original;
+	mutable float orig_in_length;
+	mutable float orig_out_length;
 
 public:
 	virtual String get_handle_name(int p_idx) const;
@@ -60,6 +62,7 @@ class PathEditorPlugin : public EditorPlugin {
 	ToolButton *curve_edit;
 	ToolButton *curve_del;
 	ToolButton *curve_close;
+	MenuButton *handle_menu;
 
 	EditorNode *editor;
 
@@ -67,6 +70,15 @@ class PathEditorPlugin : public EditorPlugin {
 
 	void _mode_changed(int p_idx);
 	void _close_curve();
+	void _handle_option_pressed(int p_option);
+	bool handle_clicked;
+	bool mirror_handle_angle;
+	bool mirror_handle_length;
+
+	enum HandleOption {
+		HANDLE_OPTION_ANGLE,
+		HANDLE_OPTION_LENGTH
+	};
 
 protected:
 	void _notification(int p_what);
@@ -87,6 +99,11 @@ public:
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
+
+	bool mirror_angle_enabled() { return mirror_handle_angle; }
+	bool mirror_length_enabled() { return mirror_handle_length; }
+	bool is_handle_clicked() { return handle_clicked; }
+	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	PathEditorPlugin(EditorNode *p_node);
 	~PathEditorPlugin();
