@@ -74,6 +74,12 @@ void ScrollContainer::_cancel_drag() {
 	drag_accum = Vector2();
 	last_drag_accum = Vector2();
 	drag_from = Vector2();
+
+	if (beyond_deadzone) {
+		emit_signal("scroll_ended");
+		propagate_notification(NOTIFICATION_SCROLL_END);
+		beyond_deadzone = false;
+	}
 }
 
 void ScrollContainer::_input_event(const InputEvent &p_input_event) {
@@ -123,13 +129,7 @@ void ScrollContainer::_input_event(const InputEvent &p_input_event) {
 			if (mb.pressed) {
 
 				if (drag_touching) {
-					set_fixed_process(false);
-					drag_touching_deaccel = false;
-					drag_touching = false;
-					drag_speed = Vector2();
-					drag_accum = Vector2();
-					last_drag_accum = Vector2();
-					drag_from = Vector2();
+					_cancel_drag();
 				}
 
 				if (true) {
@@ -139,6 +139,7 @@ void ScrollContainer::_input_event(const InputEvent &p_input_event) {
 					drag_from = Vector2(h_scroll->get_val(), v_scroll->get_val());
 					drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
 					drag_touching_deaccel = false;
+					beyond_deadzone = false;
 					time_since_motion = 0;
 					if (drag_touching) {
 						set_fixed_process(true);
@@ -150,9 +151,7 @@ void ScrollContainer::_input_event(const InputEvent &p_input_event) {
 				if (drag_touching) {
 
 					if (drag_speed == Vector2()) {
-						drag_touching_deaccel = false;
-						drag_touching = false;
-						set_fixed_process(false);
+						_cancel_drag();
 					} else {
 
 						drag_touching_deaccel = true;
@@ -169,17 +168,26 @@ void ScrollContainer::_input_event(const InputEvent &p_input_event) {
 
 				Vector2 motion = Vector2(mm.relative_x, mm.relative_y);
 				drag_accum -= motion;
-				Vector2 diff = drag_from + drag_accum;
+				if (beyond_deadzone || scroll_h && Math::abs(drag_accum.x) > deadzone || scroll_v && Math::abs(drag_accum.y) > deadzone) {
+					if (!beyond_deadzone) {
+						propagate_notification(NOTIFICATION_SCROLL_BEGIN);
+						emit_signal("scroll_started");
 
-				if (scroll_h)
-					h_scroll->set_val(diff.x);
-				else
-					drag_accum.x = 0;
-				if (scroll_v)
-					v_scroll->set_val(diff.y);
-				else
-					drag_accum.y = 0;
-				time_since_motion = 0;
+						beyond_deadzone = true;
+						// resetting drag_accum here ensures smooth scrolling after reaching deadzone
+						drag_accum = -motion;
+					}
+					Vector2 diff = drag_from + drag_accum;
+					if (scroll_h)
+						h_scroll->set_val(diff.x);
+					else
+						drag_accum.x = 0;
+					if (scroll_v)
+						v_scroll->set_val(diff.y);
+					else
+						drag_accum.y = 0;
+					time_since_motion = 0;
+				}
 			}
 
 		} break;
@@ -317,9 +325,7 @@ void ScrollContainer::_notification(int p_what) {
 				drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
 
 				if (turnoff_h && turnoff_v) {
-					set_fixed_process(false);
-					drag_touching = false;
-					drag_touching_deaccel = false;
+					_cancel_drag();
 				}
 
 			} else {
@@ -407,6 +413,7 @@ int ScrollContainer::get_v_scroll() const {
 
 	return v_scroll->get_val();
 }
+
 void ScrollContainer::set_v_scroll(int p_pos) {
 
 	v_scroll->set_val(p_pos);
@@ -417,10 +424,19 @@ int ScrollContainer::get_h_scroll() const {
 
 	return h_scroll->get_val();
 }
+
 void ScrollContainer::set_h_scroll(int p_pos) {
 
 	h_scroll->set_val(p_pos);
 	_cancel_drag();
+}
+
+int ScrollContainer::get_deadzone() const {
+	return deadzone;
+}
+
+void ScrollContainer::set_deadzone(int p_deadzone) {
+	deadzone = p_deadzone;
 }
 
 void ScrollContainer::_bind_methods() {
@@ -436,9 +452,15 @@ void ScrollContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 	ObjectTypeDB::bind_method(_MD("set_v_scroll", "val"), &ScrollContainer::set_v_scroll);
 	ObjectTypeDB::bind_method(_MD("get_v_scroll"), &ScrollContainer::get_v_scroll);
+	ObjectTypeDB::bind_method(_MD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
+	ObjectTypeDB::bind_method(_MD("get_deadzone"), &ScrollContainer::get_deadzone);
+
+	ADD_SIGNAL(MethodInfo("scroll_started"));
+	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll/horizontal"), _SCS("set_enable_h_scroll"), _SCS("is_h_scroll_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll/vertical"), _SCS("set_enable_v_scroll"), _SCS("is_v_scroll_enabled"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll/deadzone"), _SCS("set_deadzone"), _SCS("get_deadzone"));
 };
 
 ScrollContainer::ScrollContainer() {
@@ -457,6 +479,9 @@ ScrollContainer::ScrollContainer() {
 	drag_speed = Vector2();
 	drag_touching = false;
 	drag_touching_deaccel = false;
+	beyond_deadzone = false;
 	scroll_h = true;
 	scroll_v = true;
+
+	deadzone = GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 };
