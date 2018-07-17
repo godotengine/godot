@@ -1679,6 +1679,9 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
+			if (!particles->emitting && particles->inactive)
+				break;
+
 			if (!particles->use_local_coords) //not using local coordinates? then clear transform..
 				state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, Transform());
 
