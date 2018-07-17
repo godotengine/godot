@@ -2545,7 +2545,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			TkPos pos = _get_tkpos();
 			tk = _get_token();
 
-			if (tk.type == TK_PERIOD) {
+			if (tk.type == TK_CURSOR) {
+				//do nothing
+			} else if (tk.type == TK_PERIOD) {
 
 				StringName identifier;
 				if (_get_completable_identifier(p_block, COMPLETION_INDEX, identifier)) {
@@ -4130,8 +4132,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 	switch (completion_type) {
 
 		case COMPLETION_NONE: {
-			//do none
-			return ERR_PARSE_ERROR;
+			//do nothing
+			return OK;
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			for (int i = 0; i < p_render_modes.size(); i++) {
