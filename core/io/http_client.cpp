@@ -279,6 +279,7 @@ void HTTPClient::close() {
 	chunk_left = 0;
 	read_until_eof = false;
 	response_num = 0;
+	handshaking = false;
 }
 
 Error HTTPClient::poll() {
@@ -327,16 +328,40 @@ Error HTTPClient::poll() {
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
-						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
-						Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
-						if (err != OK) {
+						Ref<StreamPeerSSL> ssl;
+						if (!handshaking) {
+							// Connect the StreamPeerSSL and start handshaking
+							ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+							ssl->set_blocking_handshake_enabled(false);
+							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
+							if (err != OK) {
+								close();
+								status = STATUS_SSL_HANDSHAKE_ERROR;
+								return ERR_CANT_CONNECT;
+							}
+							connection = ssl;
+							handshaking = true;
+						} else {
+							// We are already handshaking, which means we can use your already active SSL connection
+							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							ssl->poll(); // Try to finish the handshake
+						}
+
+						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
+							// Handshake has been successfull
+							handshaking = false;
+							status = STATUS_CONNECTED;
+							return OK;
+						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
+							// Handshake has failed
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
-						connection = ssl;
+						// ... we will need to poll more for handshake to finish
+					} else {
+						status = STATUS_CONNECTED;
 					}
-					status = STATUS_CONNECTED;
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_ERROR:
@@ -669,6 +694,7 @@ HTTPClient::HTTPClient() {
 	response_num = 0;
 	ssl = false;
 	blocking = false;
+	handshaking = false;
 	read_chunk_size = 4096;
 }
 

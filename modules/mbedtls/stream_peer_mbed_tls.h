@@ -48,8 +48,6 @@ private:
 	Status status;
 	String hostname;
 
-	bool connected;
-
 	Ref<StreamPeer> base;
 
 	static StreamPeerSSL *_create_func();
@@ -57,15 +55,19 @@ private:
 
 	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
+	void _cleanup();
 
 protected:
 	static mbedtls_x509_crt cacert;
+
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	mbedtls_ssl_context ssl;
 	mbedtls_ssl_config conf;
 
 	static void _bind_methods();
+
+	Error _do_handshake();
 
 public:
 	virtual void poll();
