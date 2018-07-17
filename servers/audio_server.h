@@ -215,6 +215,9 @@ private:
 
 	Mutex *audio_data_lock;
 
+	float output_latency;
+	uint64_t output_latency_ticks;
+
 	void init_channels_and_buffers();
 
 	void _mix_step();
@@ -330,6 +333,8 @@ public:
 	Array get_device_list();
 	String get_device();
 	void set_device(String device);
+
+	float get_output_latency() { return output_latency; }
 
 	AudioServer();
 	virtual ~AudioServer();
