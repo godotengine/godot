@@ -128,6 +128,18 @@ Viewport::GUI::GUI() {
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
 	subwindow_order_dirty = false;
+
+	for (int i=0;i<GUI_TOUCH_FOCUS_MAX;++i) {
+		touch_focus[i].control = NULL;
+		touch_focus[i].index -1;
+	}
+}
+
+Viewport::GUI::TouchFocus * Viewport::GUI::get_touch_focus(const int index) {
+	for (int i=0;i<GUI_TOUCH_FOCUS_MAX;++i) {
+		if (touch_focus[i].index == index) return &(touch_focus[i]);
+	}
+	return NULL;
 }
 
 /////////////////////////////////////
@@ -1523,7 +1535,9 @@ void Viewport::_gui_call_input(Control *p_control, const InputEvent &p_input) {
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (!cant_stop_me_now && control->data.stop_mouse && (ev.type == InputEvent::MOUSE_BUTTON || ev.type == InputEvent::MOUSE_MOTION))
+			bool stop = control->data.stop_mouse && (ev.type == InputEvent::MOUSE_BUTTON || ev.type == InputEvent::MOUSE_MOTION) ||
+						control->data.stop_touch && (ev.type == InputEvent::SCREEN_TOUCH || ev.type == InputEvent::SCREEN_DRAG);
+			if (!cant_stop_me_now && stop)
 				break;
 		}
 
@@ -1945,6 +1959,89 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}
 				//change mouse accordingly i guess
 			}
+
+		} break;
+		case InputEvent::SCREEN_TOUCH: {
+			gui.key_event_accepted = false;
+
+			Point2 tpos = Point2(p_event.screen_touch.x, p_event.screen_touch.y);
+			Size2 pos = tpos;
+
+			if (p_event.screen_touch.pressed) {
+
+				_gui_sort_modal_stack();
+				while (!gui.modal_stack.empty()) {
+
+					Control *top = gui.modal_stack.back()->get();
+					Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(tpos);
+					if (!top->has_point(pos)) {
+
+						if (top->data.modal_exclusive || top->data.modal_frame == OS::get_singleton()->get_frames_drawn()) {
+							//cancel event, sorry, modal exclusive EATS UP ALL
+							//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
+							get_tree()->set_input_as_handled();
+							return; // no one gets the event if exclusive NO ONE
+						}
+
+						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
+						top->_modal_stack_remove();
+						top->hide();
+					} else {
+						break;
+					}
+				}
+
+				Control *control = _gui_find_control(pos);
+				GUI::TouchFocus *focus = gui.get_touch_focus(-1);
+
+				if (!control || !focus) break;
+
+				focus->control = control;
+				focus->index = p_event.screen_touch.index;
+				pos = gui.focus_inv_xform.xform(pos);
+				p_event.screen_touch.x = pos.x;
+				p_event.screen_touch.y = pos.y;
+
+				if (control->can_process()) _gui_call_input(control, p_event);
+
+				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", p_event.ID);
+				get_tree()->set_input_as_handled();
+
+			}
+			else {
+
+				GUI::TouchFocus *focus = gui.get_touch_focus(p_event.screen_touch.index);
+				if (!focus || !focus->control) break;
+
+				pos = gui.focus_inv_xform.xform(pos);
+				p_event.screen_touch.x = pos.x;
+				p_event.screen_touch.y = pos.y;
+
+				if (focus->control->can_process()) _gui_call_input(focus->control, p_event);
+
+				focus->control = NULL;
+				focus->index = -1;
+
+				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", p_event.ID);
+				get_tree()->set_input_as_handled();
+
+			}
+
+		} break;
+		case InputEvent::SCREEN_DRAG: {
+
+			GUI::TouchFocus *focus = gui.get_touch_focus(p_event.screen_drag.index);
+			if (!focus || !focus->control) break;
+
+			Point2 tpos = Point2(p_event.screen_drag.x, p_event.screen_drag.y);
+
+			tpos = gui.focus_inv_xform.xform(tpos);
+			p_event.screen_touch.x = tpos.x;
+			p_event.screen_touch.y = tpos.y;
+
+			if (focus->control->can_process()) _gui_call_input(focus->control, p_event);
+
+			get_tree()->set_input_as_handled();
 
 		} break;
 		case InputEvent::ACTION:

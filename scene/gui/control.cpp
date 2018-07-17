@@ -2081,6 +2081,14 @@ bool Control::is_stopping_mouse() const {
 	return data.stop_mouse;
 }
 
+void Control::set_stop_touch(const bool p_stop) {
+	data.stop_touch = p_stop;
+}
+
+bool Control::is_stopping_touch() const {
+	return data.stop_touch;
+}
+
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
@@ -2303,6 +2311,8 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_stop_mouse", "stop"), &Control::set_stop_mouse);
 	ObjectTypeDB::bind_method(_MD("is_stopping_mouse"), &Control::is_stopping_mouse);
+	ObjectTypeDB::bind_method(_MD("set_stop_touch", "stop"), &Control::set_stop_touch);
+	ObjectTypeDB::bind_method(_MD("is_stopping_touch"), &Control::is_stopping_touch);
 
 	ObjectTypeDB::bind_method(_MD("grab_click_focus"), &Control::grab_click_focus);
 
@@ -2340,6 +2350,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour/bottom"), _SCS("set_focus_neighbour"), _SCS("get_focus_neighbour"), MARGIN_BOTTOM);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "focus/ignore_mouse"), _SCS("set_ignore_mouse"), _SCS("is_ignoring_mouse"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "focus/stop_mouse"), _SCS("set_stop_mouse"), _SCS("is_stopping_mouse"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "focus/stop_touch"), _SCS("set_stop_touch"), _SCS("is_stopping_touch"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags/horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"), _SCS("get_h_size_flags"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags/vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"), _SCS("get_v_size_flags"));
@@ -2404,6 +2415,7 @@ Control::Control() {
 
 	data.ignore_mouse = false;
 	data.stop_mouse = true;
+	data.stop_touch = true;
 
 	data.SI = NULL;
 	data.MI = NULL;

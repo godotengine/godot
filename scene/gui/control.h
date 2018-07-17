@@ -126,6 +126,7 @@ private:
 
 		bool ignore_mouse;
 		bool stop_mouse;
+		bool stop_touch;
 
 		Control *parent;
 		ObjectID drag_owner;
@@ -322,7 +323,9 @@ public:
 	bool is_ignoring_mouse() const;
 
 	void set_stop_mouse(bool p_stop);
+	void set_stop_touch(const bool p_stop);
 	bool is_stopping_mouse() const;
+	bool is_stopping_touch() const;
 
 	/* SKINNING */
 

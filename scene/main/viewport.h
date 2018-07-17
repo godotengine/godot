@@ -170,12 +170,20 @@ private:
 	struct GUI {
 		// info used when this is a window
 
+#define GUI_TOUCH_FOCUS_MAX 10
+
+		struct TouchFocus {
+			Control *control;
+			int index = -1;
+		};
+
 		bool key_event_accepted;
 		Control *mouse_focus;
 		int mouse_focus_button;
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
+		TouchFocus touch_focus[GUI_TOUCH_FOCUS_MAX];
 		Panel *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
@@ -195,6 +203,7 @@ private:
 		List<Control *> roots;
 
 		GUI();
+		TouchFocus* get_touch_focus(const int index);
 	} gui;
 
 	bool disable_input;
