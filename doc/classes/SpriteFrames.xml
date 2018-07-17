@@ -127,6 +127,13 @@
 				Changes the animation's name to [code]newname[/code].
 			</description>
 		</method>
+		<method name="get_animation_names">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
+			</description>
+		</method>
 		<method name="set_animation_loop">
 			<return type="void">
 			</return>
