@@ -234,6 +234,13 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		todo -= to_copy;
 		to_mix -= to_copy;
 	}
+
+	// Calculate latency for Performance.AUDIO_OUTPUT_LATENCY
+	if (OS::get_singleton()) {
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		output_latency = (ticks - output_latency_ticks) / 1000000.f;
+		output_latency_ticks = ticks;
+	}
 }
 
 void AudioServer::_mix_step() {
@@ -1178,6 +1185,8 @@ AudioServer::AudioServer() {
 	mix_frames = 0;
 	channel_count = 0;
 	to_mix = 0;
+	output_latency = 0;
+	output_latency_ticks = 0;
 }
 
 AudioServer::~AudioServer() {
