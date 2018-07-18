@@ -103,8 +103,6 @@
 
 #define BINDINGS_GENERATOR_VERSION UINT32_C(2)
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(2)
-
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
 bool BindingsGenerator::verbose_output = false;
@@ -1338,7 +1336,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		} else if (return_type->cs_out.empty()) {
 			p_output.push_back("return " + im_call + ";\n");
 		} else {
-			p_output.push_back(INDENT3);
 			p_output.push_back(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
 			p_output.push_back("\n");
 		}

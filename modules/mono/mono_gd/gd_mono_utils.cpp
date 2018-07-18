@@ -234,13 +234,13 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
-	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method_thunk("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method_thunk("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsDictionaryGenericType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("SignalCallback", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("FailureCallback", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method_thunk("Activate", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method("GetPtr", 0)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method("GetPtr", 0)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method("IsArrayGenericType", 1)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method("IsDictionaryGenericType", 1)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("FailureCallback", 0)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method("Activate", 0)->get_thunk());
 
 #ifdef DEBUG_ENABLED
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, (DebugUtils_StackFrameInfo)GODOT_API_CLASS(DebuggingUtils)->get_method_thunk("GetStackFrameInfo", 4));
@@ -463,10 +463,10 @@ MonoDomain *create_domain(const String &p_friendly_name) {
 	return domain;
 }
 
-String get_exception_name_and_message(MonoException *p_ex) {
+String get_exception_name_and_message(MonoException *p_exc) {
 	String res;
 
-	MonoClass *klass = mono_object_get_class((MonoObject *)p_ex);
+	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
 	MonoType *type = mono_class_get_type(klass);
 
 	char *full_name = mono_type_full_name(type);
@@ -476,10 +476,22 @@ String get_exception_name_and_message(MonoException *p_ex) {
 	res += ": ";
 
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_ex, NULL, NULL);
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_exc, NULL, NULL);
+	GD_MONO_END_RUNTIME_INVOKE;
 	res += GDMonoMarshal::mono_string_to_godot(msg);
 
 	return res;
+}
+
+void set_exception_message(MonoException *p_exc, String message) {
+	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
+	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
+	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
+	void *params[1] = { msg };
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	mono_property_set_value(prop, (MonoObject *)p_exc, params, NULL);
+	GD_MONO_END_RUNTIME_INVOKE;
 }
 
 void debug_print_unhandled_exception(MonoException *p_exc) {
