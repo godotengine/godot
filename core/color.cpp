@@ -344,6 +344,10 @@ Color Color::named(const String &p_name) {
 	}
 }
 
+void Color::cleanup() {
+	_named_colors.clear();
+}
+
 String _to_hex(float p_val) {
 
 	int v = p_val * 255;

@@ -135,6 +135,10 @@ struct Color {
 		b = p_b;
 		a = p_a;
 	}
+
+private:
+	friend void unregister_core_types();
+	static void cleanup();
 };
 
 bool Color::operator<(const Color &p_color) const {
