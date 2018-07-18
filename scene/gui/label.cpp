@@ -75,7 +75,7 @@ void Label::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		if (clip || autowrap) {
+		if (clip) {
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 		}
 
